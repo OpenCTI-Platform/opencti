@@ -242,7 +242,7 @@ describe('buildChanges standard behavior', async () => {
     const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Markings',previous:['PAP:GREEN'],added:['TLP:GREEN'],removed:[]}]);
   });
-  it('should build changes for mutliple attribute update (second "marking" removed )', async () => {
+  it('should build changes for multiple attribute update (second "marking" removed )', async () => {
     const inputs = [
       {
         'key': 'objectMarking',
@@ -374,13 +374,147 @@ describe('buildChanges standard behavior', async () => {
     ];
 
     const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{field:'Markings',previous:['PAP:GREEN', 'TLP:GREEN'],added:[],removed:['PAP:GREEN']}]);
+    expect(changes).toEqual([{field:'Markings',previous:['PAP:GREEN', 'TLP:GREEN'],added:[],removed:['TLP:GREEN']}]);
   });
 
   it('should build changes for integer (like confidence level)', async () => {
     const inputs = [{'key':'confidence','previous':[58],'value':[52]}];
     const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Confidence',previous:[58], new: [52]}]);
+  });
+
+  it('should build changes for remove labels', async () => {
+    const inputs =
+  [
+    {
+      'key': 'objectLabel',
+      'operation': 'remove',
+      'previous': [
+        {
+          '_id': 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          '_index': 'opencti_stix_meta_objects-000001',
+          'base_type': 'ENTITY',
+          'color': '#5ce3b1',
+          'confidence': 100,
+          'created': '2025-10-28T13:58:44.914Z',
+          'created_at': '2025-10-28T13:58:44.914Z',
+          'creator_id': [
+            '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+          ],
+          'entity_type': 'Label',
+          'i_relation': {
+            '_id': 'd86192fa-3d75-4930-b984-af07ff2c5c68',
+            '_index': 'opencti_stix_meta_relationships-000001',
+            'base_type': 'RELATION',
+            'entity_type': 'object-label',
+            'fromId': '66cba5b6-fa96-4ec5-bbd3-6f277d56e926',
+            'fromName': 'coucou',
+            'fromRole': 'object-label_from',
+            'fromType': 'Report',
+            'id': 'd86192fa-3d75-4930-b984-af07ff2c5c68',
+            'internal_id': 'd86192fa-3d75-4930-b984-af07ff2c5c68',
+            'relationship_type': 'object-label',
+            'sort': [
+              'relationship-meta--01c2fc35-74b8-4138-bfa2-a8a52e5bc5a8'
+            ],
+            'source_ref': 'report--temporary',
+            'standard_id': 'relationship-meta--01c2fc35-74b8-4138-bfa2-a8a52e5bc5a8',
+            'target_ref': 'label--temporary',
+            'toId': 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+            'toName': 'anti-sandbox',
+            'toRole': 'object-label_to',
+            'toType': 'Label'
+          },
+          'id': 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          'internal_id': 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          'modified': '2025-10-28T13:58:44.914Z',
+          'parent_types': [
+            'Basic-Object',
+            'Stix-Object',
+            'Stix-Meta-Object'
+          ],
+          'refreshed_at': '2025-10-28T16:14:59.505Z',
+          'standard_id': 'label--84f47fea-17d1-58bd-88ee-053d92e591c0',
+          'updated_at': '2025-10-28T13:58:44.914Z',
+          'value': 'anti-sandbox',
+          'x_opencti_stix_ids': []
+        },
+        {
+          '_id': '8cee9d94-105e-42ae-ad56-cae421a927a2',
+          '_index': 'opencti_stix_meta_objects-000001',
+          'base_type': 'ENTITY',
+          'color': '#bd10e0',
+          'confidence': 100,
+          'created': '2025-10-21T09:22:42.066Z',
+          'created_at': '2025-10-21T09:22:42.066Z',
+          'creator_id': [
+            '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+          ],
+          'entity_type': 'Label',
+          'i_relation': {
+            '_id': '11b424c7-d914-4e3a-9c1c-7377a1cef35f',
+            '_index': 'opencti_stix_meta_relationships-000001',
+            'base_type': 'RELATION',
+            'entity_type': 'object-label',
+            'fromId': '66cba5b6-fa96-4ec5-bbd3-6f277d56e926',
+            'fromName': 'coucou',
+            'fromRole': 'object-label_from',
+            'fromType': 'Report',
+            'id': '11b424c7-d914-4e3a-9c1c-7377a1cef35f',
+            'internal_id': '11b424c7-d914-4e3a-9c1c-7377a1cef35f',
+            'sort': [
+              'relationship-meta--13d16999-d63a-4862-bbbc-58590107d6f0'
+            ],
+            'source_ref': 'report--temporary',
+            'standard_id': 'relationship-meta--13d16999-d63a-4862-bbbc-58590107d6f0'
+          },
+          'id': '8cee9d94-105e-42ae-ad56-cae421a927a2',
+          'internal_id': '8cee9d94-105e-42ae-ad56-cae421a927a2',
+          'modified': '2025-10-21T09:22:42.066Z',
+          'parent_types': [
+            'Basic-Object',
+            'Stix-Object',
+            'Stix-Meta-Object'
+          ],
+          'refreshed_at': '2025-10-21T09:22:42.066Z',
+          'standard_id': 'label--f5658bbf-8549-5a15-9194-0c3d502a8c2a',
+          'updated_at': '2025-10-21T09:22:42.066Z',
+          'value': 'angie',
+          'x_opencti_stix_ids': []
+        }
+      ],
+      'value': [
+        {
+          '_id': 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          '_index': 'opencti_stix_meta_objects-000001',
+          'base_type': 'ENTITY',
+          'color': '#5ce3b1',
+          'confidence': 100,
+          'created': '2025-10-28T13:58:44.914Z',
+          'created_at': '2025-10-28T13:58:44.914Z',
+          'creator_id': [
+            '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+          ],
+          'entity_type': 'Label',
+          'id': 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          'internal_id': 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          'modified': '2025-10-28T13:58:44.914Z',
+          'parent_types': [
+            'Basic-Object',
+            'Stix-Object',
+            'Stix-Meta-Object'
+          ],
+          'refreshed_at': '2025-10-28T16:14:59.505Z',
+          'standard_id': 'label--84f47fea-17d1-58bd-88ee-053d92e591c0',
+          'updated_at': '2025-10-28T13:58:44.914Z',
+          'value': 'anti-sandbox',
+          'x_opencti_stix_ids': []
+        }
+      ]
+    }
+  ];
+    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{field:'Label',previous:['anti-sandbox', 'angie'], removed:['anti-sandbox'], added:[]}]);
   });
 
 });
