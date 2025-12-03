@@ -52,7 +52,13 @@ import { getPirWithAccessCheck } from './pir-checkPirAccess';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { addDynamicFromAndToToFilters, addFilter, extractFilterKeyValues, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
-import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, OBJECT_CONTAINS_FILTER, RELATION_TO_FILTER, RELATION_TYPE_FILTER } from '../../utils/filtering/filtering-constants';
+import {
+  INSTANCE_DYNAMIC_REGARDING_OF,
+  INSTANCE_REGARDING_OF,
+  OBJECT_CONTAINS_FILTER,
+  RELATION_TO_FILTER,
+  RELATION_TYPE_SUBFILTER,
+} from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
@@ -155,7 +161,7 @@ export const findPirContainers = async (
     filters: [{
       key: [INSTANCE_REGARDING_OF],
       values: [
-        { key: RELATION_TYPE_FILTER, values: [RELATION_IN_PIR] },
+        { key: RELATION_TYPE_SUBFILTER, values: [RELATION_IN_PIR] },
         { key: 'id', values: [pir.id] },
       ],
     }],
@@ -171,7 +177,7 @@ export const findPirContainers = async (
       {
         key: [INSTANCE_DYNAMIC_REGARDING_OF],
         values: [
-          { key: RELATION_TYPE_FILTER, values: [RELATION_OBJECT] },
+          { key: RELATION_TYPE_SUBFILTER, values: [RELATION_OBJECT] },
           { key: 'dynamic', values: [flaggedEntitiesFilter] },
         ],
       }

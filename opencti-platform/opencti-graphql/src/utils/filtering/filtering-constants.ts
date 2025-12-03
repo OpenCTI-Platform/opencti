@@ -24,7 +24,6 @@ export const INSTANCE_REGARDING_OF_DIRECTION_FORCED = 'direction_forced';
 export const INSTANCE_REGARDING_OF_DIRECTION_REVERSE = 'direction_reverse';
 // ---- relationships
 // TODO remove and migration in favor of exploiting directly 'connections' in the relationship model
-export const RELATION_DYNAMIC_FILTER = 'dynamic';
 export const RELATION_FROM_FILTER = 'fromId';
 export const RELATION_DYNAMIC_FROM_FILTER = 'dynamicFrom';
 export const RELATION_TO_FILTER = 'toId';
@@ -39,8 +38,13 @@ export const INSTANCE_RELATION_TYPES_FILTER = 'elementWithTargetTypes'; // TODO 
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId'; // TODO Rename/migrate to triggerListenId
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 
+// regardingOf filter subfilter keys
+export const RELATION_DYNAMIC_SUBFILTER = 'dynamic';
+export const RELATION_TYPE_SUBFILTER = 'relationship_type';
+export const ID_SUBFILTER = 'id';
+export const RELATION_INFERRED_SUBFILTER = 'is_inferred';
+
 // Values that do not need resolution when matching against stix object
-export const ID_FILTER = 'id';
 export const TYPE_FILTER = 'entity_type';
 export const RELATION_TYPE_FILTER = 'relationship_type';
 export const INDICATOR_FILTER = 'indicator_types';
