@@ -8,7 +8,7 @@ import { completeConnector, connector } from '../database/repository';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, findContractByContainerImage, findContractBySlug } from '../modules/catalog/catalog-domain';
+import { computeConnectorTargetContract, findContractByContainerImage } from '../modules/catalog/catalog-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_USER } from '../schema/internalObject';
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
