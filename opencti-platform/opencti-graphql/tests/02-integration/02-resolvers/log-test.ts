@@ -1,11 +1,10 @@
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
-import gql from "graphql-tag";
-import {addReport, findById} from "../../../src/domain/report";
-import {ADMIN_USER, testContext} from "../../utils/testQuery";
-import {stixDomainObjectDelete, stixDomainObjectEditField} from "../../../src/domain/stixDomainObject";
-import {awaitUntilCondition, queryAsAdminWithSuccess} from "../../utils/testQueryHelper";
-import {utcDate} from "../../../src/utils/format";
-import {waitInSec} from "../../../src/database/utils";
+import gql from 'graphql-tag';
+import {addReport} from '../../../src/domain/report';
+import {ADMIN_USER, testContext} from '../../utils/testQuery';
+import {stixDomainObjectDelete, stixDomainObjectEditField} from '../../../src/domain/stixDomainObject';
+import {awaitUntilCondition, queryAsAdminWithSuccess} from '../../utils/testQueryHelper';
+import {utcDate} from '../../../src/utils/format';
 
 const READ_QUERY = gql`
   query Logs($first: Int, $filters: FilterGroup) {
@@ -40,29 +39,29 @@ describe('Log resolver standard behavior', async () => {
       published: utcDate(),
   });
   reportInternalId = report.id;
-  })
+  });
 
   afterAll(async() => {
-    await stixDomainObjectDelete(testContext, ADMIN_USER, reportInternalId)
+    await stixDomainObjectDelete(testContext, ADMIN_USER, reportInternalId);
   });
   it('should log previous and value for description update', async () => {
     // Update description
-    await stixDomainObjectEditField(testContext, ADMIN_USER, reportInternalId, [{key: 'description', value: ['new description']}])
+    await stixDomainObjectEditField(testContext, ADMIN_USER, reportInternalId, [{key: 'description', value: ['new description']}]);
 
     // Wait until the log is available
     await awaitUntilCondition(async () => {
       const queryResult = await queryAsAdminWithSuccess({
         query: READ_QUERY,
         variables: {
-          "filters": {
-            "mode": "and",
-            "filterGroups": [],
-            "filters": [
+          'filters': {
+            'mode': 'and',
+            'filterGroups': [],
+            'filters': [
               {
-                "key": [
-                  "context_data.id"
+                'key': [
+                  'context_data.id'
                 ],
-                "values": [reportInternalId]
+                'values': [reportInternalId]
               }
             ]
           }
@@ -74,23 +73,23 @@ describe('Log resolver standard behavior', async () => {
     const queryResult = await queryAsAdminWithSuccess({
       query: READ_QUERY,
       variables: {
-        "filters": {
-          "mode": "and",
-          "filterGroups": [],
-          "filters": [
+        'filters': {
+          'mode': 'and',
+          'filterGroups': [],
+          'filters': [
             {
-              "key": [
-                "context_data.id"
+              'key': [
+                'context_data.id'
               ],
-              "values": [reportInternalId]
+              'values': [reportInternalId]
             }
           ]
         }
       }
-    })
+    });
     expect(queryResult?.data?.logs.edges[0].node.event_scope).toEqual('update');
     expect(queryResult?.data?.logs.edges[0].node.context_data.changes[0]).toEqual({
-      field: "Description",
+      field: 'Description',
       previous: [],
       new: ['new description'],
       added: null,

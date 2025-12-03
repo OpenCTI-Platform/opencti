@@ -45,12 +45,12 @@ import {
 import {
   elAggregationCount,
   elAggregationRelationsCount,
+  elConnection,
   elDeleteElements,
   elFindByIds,
   elHistogramCount,
   elIndexElements,
   elList,
-  elConnection,
   elMarkElementsAsDraftDelete,
   elPaginate,
   elUpdateElement,
@@ -179,13 +179,13 @@ import {
   buildAggregationRelationFilter,
   buildEntityFilters,
   buildThingsFilters,
+  fullEntitiesThroughRelationsToList,
+  fullRelationsList,
   internalFindByIds,
   internalLoadById,
-  fullRelationsList,
-  fullEntitiesThroughRelationsToList,
+  storeLoadById,
   topEntitiesList,
-  topRelationsList,
-  storeLoadById
+  topRelationsList
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
@@ -223,7 +223,7 @@ import {
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
-import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage, storeFileConverter } from './file-storage';
+import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
@@ -1446,7 +1446,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       const groupedAddOperations = R.groupBy((s) => s.relationType, addOperations);
       const operations = Object.entries(groupedAddOperations)
         .map(([key, vals]) => {
-          // eslint-disable-next-line camelcase
+           
           const { _index, entity_type } = R.head(vals);
           const ids = vals.map((v) => v.data.internal_id);
           return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
@@ -1517,8 +1517,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
     }
   }
-
-  // eslint-disable-next-line no-use-before-define
+   
   const data = await updateAttributeRaw(context, user, targetEntity, updateAttributes);
   const { impactedInputs } = data;
   // region Update elasticsearch
@@ -2060,15 +2059,15 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
 };
 
 const buildAttribute = (array) => {
-return array.map((item) => (typeof item === 'string' ? item : (item && extractEntityRepresentativeName(item, 250))))
-  .filter((item) => item !== null && item !== undefined)
+  return array.map((item) => (typeof item === 'string' ? item : (item && extractEntityRepresentativeName(item, 250))))
+  .filter((item) => item !== null && item !== undefined);
 };
 
 export const buildChanges = (entityType, inputs) => {
   const changes = [];
-  logApp.info('inputs====', {inputs})
+  logApp.info('inputs====', {inputs});
   inputs.forEach((input) => {
-    const { key, previous, value } = input;
+    const { key, previous, value, operation } = input;
     if (!key) return;
     const field = getKeyName(entityType, key);
     const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
@@ -2080,27 +2079,40 @@ export const buildChanges = (entityType, inputs) => {
       isMultiple = relationsRefDefinition.multiple;
     }
 
-    const previousArray = Array.isArray(previous) ? previous : [previous];
-    const valueArray = Array.isArray(value) ? value : [value];
+    const previousArrayFull = Array.isArray(previous) ? previous : [previous];
+    const valueArrayFull = Array.isArray(value) ? value : [value];
+    const previousArray = buildAttribute(previousArrayFull);
+    const valueArray = buildAttribute(valueArrayFull);
 
     if (isMultiple) {
-      const added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-      const removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+      let added  = [];
+      let removed = [];
+      if(operation !== 'add'){
+        removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+      }
+
+      if(operation !== 'remove'){
+        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+      }
+
       if (added.length > 0 || removed.length > 0) {
         changes.push({
           field,
-          previous: buildAttribute(previousArray),
-          added: buildAttribute(added),
-          removed: buildAttribute(removed),
+          previous: previousArray,
+          added: added,
+          removed: removed,
         });
       }
     }
     else if (isMultiple === false) {
       changes.push({
         field,
-        previous: buildAttribute(previousArray),
-        new: buildAttribute(valueArray),
+        previous: previousArray,
+        new: valueArray,
       });
+    } else {
+      // This should not happen so better at least log at info level to be able to debug.
+      logApp.info('Changes cannot be computed', {inputs, entityType});
     }
   });
   return changes;
@@ -3031,7 +3043,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
     fromRule: ruleContent.field,
     bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
   };
-  // eslint-disable-next-line camelcase
+   
   const { fromId, toId, relationship_type } = input;
   // In some cases, we can try to create with the same from and to, ignore
   if (fromId === toId) {
