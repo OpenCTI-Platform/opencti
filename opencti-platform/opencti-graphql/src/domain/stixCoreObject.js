@@ -835,7 +835,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
   }
   // check entity access
-  if (!validateUserAccessOperation(user, previous, 'edit')) {
+  if (!(await validateUserAccessOperation(context, user, previous, 'edit'))) {
     throw ForbiddenAccess();
   }
   const participantIds = getInstanceIds(previous);
@@ -978,7 +978,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     throw UnsupportedError('Cant delete a file of none existing element', { entityId });
   }
   // check entity access
-  if (!validateUserAccessOperation(user, previous, 'edit')) {
+  if (!(await validateUserAccessOperation(context, user, previous, 'edit'))) {
     throw ForbiddenAccess();
   }
   let lock;

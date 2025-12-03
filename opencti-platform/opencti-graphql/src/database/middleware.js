@@ -2169,7 +2169,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   if (updates.some((e) => e.key === 'authorized_authorities')) {
     accessOperation = 'manage-authorities-access';
   }
-  if (!validateUserAccessOperation(user, initial, accessOperation)) {
+  if (!(await validateUserAccessOperation(context, user, initial, accessOperation))) {
     throw ForbiddenAccess();
   }
   // Split attributes and meta
@@ -2887,7 +2887,9 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   }
 
   // check if user has "edit" access on from and to
-  if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
+  const canEditFrom = await validateUserAccessOperation(context, user, from, 'edit');
+  const canEditTo = await validateUserAccessOperation(context, user, to, 'edit');
+  if (!canEditFrom || !canEditTo) {
     throw ForbiddenAccess();
   }
 
@@ -3108,7 +3110,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   // endregion
   // validate authorized members access (when creating a new entity with authorized members)
   if (input.restricted_members?.length > 0) {
-    if (!validateUserAccessOperation(user, input, 'manage-access')) {
+    if (!(await validateUserAccessOperation(context, user, input, 'manage-access'))) {
       throw ForbiddenAccess();
     }
     if (schemaAttributesDefinition.getAttribute(type, authorizedMembersActivationDate.name)) {
@@ -3390,7 +3392,7 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   if (element.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
     await verifyCanDeleteOrganization(context, user, element);
   }
-  if (!validateUserAccessOperation(user, element, 'delete')) {
+  if (!(await validateUserAccessOperation(context, user, element, 'delete'))) {
     throw ForbiddenAccess();
   }
   // Check inference operation
@@ -3553,7 +3555,10 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
     }
   }
   const toThing = await internalLoadById(context, user, toId, opts);// check if user has "edit" access on from and to
-  if (!validateUserAccessOperation(user, fromThing, 'edit') || !validateUserAccessOperation(user, toThing, 'edit')) {
+  const canEditFrom = await validateUserAccessOperation(context, user, fromThing, 'edit');
+  const canEditTo = await validateUserAccessOperation(context, user, toThing, 'edit');
+
+  if (!canEditFrom || !canEditTo) {
     throw ForbiddenAccess();
   }
   // Looks like the caller doesn't give the correct from, to currently

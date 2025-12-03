@@ -56,7 +56,7 @@ export const getAuthorizedMembers = async (
   if (isEmptyField(entity.restricted_members)) {
     return [];
   }
-  if (!validateUserAccessOperation(user, entity, 'manage-access')) {
+  if (!(await validateUserAccessOperation(context, user, entity, 'manage-access'))) {
     return []; // return empty if user doesn't have the right access_right
   }
   const entityRestrictedMembers = entity.restricted_members ?? [];

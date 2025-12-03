@@ -18,12 +18,14 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { findById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import type { UpdateEvent } from '../types/event';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicStoreCommon } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
+import { getDraftContext } from './draftContext';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -844,22 +846,11 @@ export const isDirectAdministrator = (user: AuthUser, element: any) => {
   return elementAccessIds.some((a: string) => userMemberAccessIds.includes(a));
 };
 
-// ensure that user can access the element (operation: edit / delete / manage-access)
-export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access') => {
-  if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    return true;
-  }
-  if (isStixObject(element.entity_type)
-    && operation === 'manage-access'
-    && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
-  ) {
-    return false;
-  }
-  if (operation === 'manage-authorities-access'
-    && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
-  ) {
-    return false;
-  }
+const hasUserAccessToOperation = (
+  user: AuthUser,
+  element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[]; },
+  operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access'
+) => {
   const userAccessRight = getUserAccessRight(user, element);
   if (!userAccessRight) { // user has no access
     return false;
@@ -871,6 +862,41 @@ export const validateUserAccessOperation = (user: AuthUser, element: any, operat
     return userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN;
   }
   return true;
+};
+
+// Ensure that user can access the element (operation: edit / delete / manage-access)
+export const validateUserAccessOperation = async (context: AuthContext, user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access') => {
+  // 1. Check draft authorized members permissions
+  const draftId = getDraftContext(context, user);
+  if (draftId) {
+    const draft = await findById(context, user, draftId);
+    if (!hasUserAccessToOperation(user, draft, operation)) {
+      return false;
+    }
+  }
+  
+  // 2. Internal objects management
+  if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    return true;
+  }
+
+  // 3. Specific STIX object management restrictions
+  if (isStixObject(element.entity_type)
+    && operation === 'manage-access'
+    && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
+  ) {
+    return false;
+  }
+
+  // 4. General access management restrictions
+  if (operation === 'manage-authorities-access'
+    && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
+  ) {
+    return false;
+  }
+
+  // 5. Check access to the element (entity, container, etc.)
+  return hasUserAccessToOperation(user, element, operation);
 };
 
 export const isValidMemberAccessRight = (accessRight: string) => {
