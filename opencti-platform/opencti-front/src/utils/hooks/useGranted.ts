@@ -1,4 +1,3 @@
-import { filter, includes } from 'ramda';
 import useAuth from './useAuth';
 
 export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
@@ -74,9 +73,8 @@ const useGranted = (capabilities: string[], matchAll = false): boolean => {
   let numberOfAvailableCapabilities = 0;
   for (let index = 0; index < capabilities.length; index += 1) {
     const checkCapability = capabilities[index];
-    const matchingCapabilities = filter(
-      (r) => includes(checkCapability, r),
-      userCapabilities,
+    const matchingCapabilities = userCapabilities.filter(
+      (capa) => checkCapability !== BYPASS && capa.includes(checkCapability)
     );
     if (matchingCapabilities.length > 0) {
       numberOfAvailableCapabilities += 1;
