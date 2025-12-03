@@ -2060,7 +2060,8 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
 };
 
 const buildAttribute = (array) => {
-return array.map((item) => (typeof item === 'string' ? item : (item && extractEntityRepresentativeName(item, 250)))).filter((item) => item !== null && item !== undefined)
+return array.map((item) => (typeof item === 'string' ? item : (item && extractEntityRepresentativeName(item, 250))))
+  .filter((item) => item !== null && item !== undefined)
 };
 
 export const buildChanges = (entityType, inputs) => {
@@ -2071,18 +2072,24 @@ export const buildChanges = (entityType, inputs) => {
     if (!key) return;
     const field = getKeyName(entityType, key);
     const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
-    const isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
+    const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
+    let isMultiple = false;
+    if (attributeDefinition) {
+      isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
+    } else if (relationsRefDefinition) {
+      isMultiple = relationsRefDefinition.multiple;
+    }
 
     const previousArray = Array.isArray(previous) ? previous : [previous];
     const valueArray = Array.isArray(value) ? value : [value];
 
     if (isMultiple) {
-      const added = valueArray.filter((item) => !previousArray.includes(item));
-      const removed = previousArray.filter((item) => !valueArray.includes(item));
-
+      const added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+      const removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
       if (added.length > 0 || removed.length > 0) {
         changes.push({
           field,
+          previous: buildAttribute(previousArray),
           added: buildAttribute(added),
           removed: buildAttribute(removed),
         });

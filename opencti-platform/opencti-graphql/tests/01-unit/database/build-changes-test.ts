@@ -52,7 +52,7 @@ describe('buildChanges standard behavior', async () => {
   it('should build changes for multiple attribute update ("Malware types" added)', async () => {
     const inputs = [{key:'malware_types',previous:['backdoor'],value:['backdoor', 'bootkit']}]
     const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs)
-    expect(changes).toEqual([{field:"Malware types",added:['bootkit'],removed:[]}]);
+    expect(changes).toEqual([{field:"Malware types", previous: ['backdoor'], added:['bootkit'],removed:[]}]);
   });
   it('should build changes for mutliple attribute update ("Malware types" removed)', async () => {
     const inputs = [
@@ -63,7 +63,7 @@ describe('buildChanges standard behavior', async () => {
       }
     ]
     const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs)
-    expect(changes).toEqual([{field: 'Malware types', added:[], removed:['bootkit']}]);
+    expect(changes).toEqual([{field: 'Malware types', previous: ['backdoor', 'bootkit'], added:[], removed:['bootkit']}]);
   });
   it('should build changes for mutliple attribute update ("participant" added )', async () => {
     const inputs = [{
@@ -76,7 +76,7 @@ describe('buildChanges standard behavior', async () => {
         user_email:"user1@user1.com"}]}];
 
     const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs)
-    expect(changes).toEqual([{field:'Participants',previous:[],new:['User 1']}]);
+    expect(changes).toEqual([{field:'Participants', previous: [], added:['User 1'],removed:[]}]);
   })
   it('should build changes for mutliple attribute update (second "participant" added )', async () => {
     const inputs = [{
@@ -84,16 +84,21 @@ describe('buildChanges standard behavior', async () => {
       operation:"add",
       value:[{
         entity_type:"User",
+        id:"9b854803-7158-4e4e-a492-f8845ac33aad",
+        name:"User 1",
+      },
+        {
+        entity_type:"User",
         id:"7c854803-7158-4e4e-a492-f8845ac33agp",
         name:"User 2",
-        user_email:"user1@user1.com"}],
+        }],
     previous:[{
       entity_type:"User",
       id:"9b854803-7158-4e4e-a492-f8845ac33aad",
       name:"User 1",
-      user_email:"user1@user1.com"}]}];
+      }]}];
 
     const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs)
-    expect(changes).toEqual([{field: 'Participants',previous:['User 1'],new:['User 1', 'User 2']}]);
+    expect(changes).toEqual([{field: 'Participants', previous: ["User 1"], added:['User 2'],removed:[]}]);
   })
 });
