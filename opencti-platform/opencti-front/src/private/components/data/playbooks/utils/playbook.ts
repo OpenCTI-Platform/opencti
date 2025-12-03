@@ -1,18 +1,5 @@
 import { Edge } from 'reactflow';
-interface PortDefinition {
-  id: string
-  type: string
-}
-interface PlaybookComponent {
-    readonly configuration_schema?: string | null;
-    readonly description: string;
-    readonly icon: string;
-    readonly id: string;
-    readonly is_entry_point?: boolean | null;
-    readonly is_internal?: boolean | null;
-    readonly name: string;
-    readonly ports:  readonly PortDefinition[];
-}
+import { PlaybookComponent } from '../types/playbook-types';
 
 interface LinkDefinition {
   id: string,
