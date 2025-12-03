@@ -186,6 +186,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             perform_health_check=False,  # No need to prevent worker start if API is not available yet
             custom_headers=self.opencti_api_custom_headers,
             requests_timeout=self.opencti_api_requests_timeout,
+            provider='worker'
         )
         self.worker_logger = self.api.logger_class("worker")
 
