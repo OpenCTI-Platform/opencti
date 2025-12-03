@@ -48,6 +48,9 @@ class User:
                 capabilities {
                     id, name
                 }
+                capabilitiesInDraft {
+                    id, name
+                }
             }
             groups {
                 edges {
@@ -134,6 +137,9 @@ class User:
                 id, name
             }
             capabilities {
+                id, name, description
+            }
+            capabilitiesInDraft {
                 id, name, description
             }
             groups {

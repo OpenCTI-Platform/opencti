@@ -72,23 +72,38 @@ export const roleEditionCapabilitiesLinesSearch = graphql`
         }
       }
     }
+    capabilitiesInDraft(first: 500) {
+      edges {
+        node {
+          id
+          name
+          description
+        }
+      }
+    }
   }
 `;
 
 interface RoleEditionCapabilitiesComponentProps {
   role: RoleEditionCapabilities_role$data;
   queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
+  isCapabilitiesInDraft?: boolean;
 }
 
-const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef }) => {
+const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef, isCapabilitiesInDraft = false }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const { capabilities } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
+  const { capabilities, capabilitiesInDraft } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
     queryRef,
   );
-  const roleCapabilities = (role.capabilities ?? []).map((n) => ({
+
+  const relationshipType = isCapabilitiesInDraft ? 'has-capability-in-draft' : 'has-capability';
+  const capabilitiesType = isCapabilitiesInDraft ? 'capabilitiesInDraft' : 'capabilities';
+  const capabilitiesBaseList = isCapabilitiesInDraft ? capabilitiesInDraft : capabilities;
+
+  const roleCapabilities = (role[capabilitiesType] ?? []).map((n) => ({
     name: n?.name,
   })) as { name: string }[];
   const [commitAddCapability] = useApiMutation(roleEditionAddCapability);
@@ -105,7 +120,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
           id: roleId,
           input: {
             toId: capabilityId,
-            relationship_type: 'has-capability',
+            relationship_type: relationshipType,
           },
         },
       });
@@ -114,7 +129,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
         variables: {
           id: roleId,
           toId: capabilityId,
-          relationship_type: 'has-capability',
+          relationship_type: relationshipType,
         },
       });
     }
@@ -138,7 +153,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
 
   const { isSensitive } = useSensitiveModifications('roles');
 
-  if (capabilities && capabilities.edges) {
+  if (capabilitiesBaseList && capabilitiesBaseList.edges) {
     return (
       <List dense={true}>
         {isSensitive && (
@@ -168,7 +183,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             />
           </ListItem>
         )}
-        {capabilities.edges.map((edge) => {
+        {capabilitiesBaseList.edges.map((edge) => {
           const capability = edge?.node;
           if (capability) {
             const paddingLeft = capability.name.split('_').length * 20 - 20;
@@ -219,6 +234,11 @@ const RoleEditionCapabilities = createFragmentContainer(
         id
         can_manage_sensitive_config
         capabilities {
+          id
+          name
+          description
+        }
+        capabilitiesInDraft {
           id
           name
           description

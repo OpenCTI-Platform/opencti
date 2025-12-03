@@ -203,6 +203,9 @@ const meUserFragment = graphql`
     capabilities {
       name
     }
+    capabilitiesInDraft {
+      name
+    }
     unit_system
     submenu_show_icons
     submenu_auto_collapse

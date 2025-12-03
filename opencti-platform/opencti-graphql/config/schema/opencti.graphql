@@ -1731,6 +1731,7 @@ type User implements BasicObject & InternalObject {
     orderMode: OrderingMode
   ): [Role!]!
   capabilities: [Capability]!
+  capabilitiesInDraft: [Capability]!
   default_hidden_types: [String!]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
@@ -1788,6 +1789,7 @@ type MeUser implements BasicObject & InternalObject {
   personal_notifiers: [Notifier!]
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
+  capabilitiesInDraft: [Capability]!
   default_hidden_types: [String]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
@@ -1904,6 +1906,7 @@ type Role implements BasicObject & InternalObject {
   updated_at: DateTime!
   refreshed_at: DateTime
   capabilities: [Capability]
+  capabilitiesInDraft: [Capability]
   editContext: [EditUserContext!]
   can_manage_sensitive_config: Boolean
 }
@@ -13552,6 +13555,7 @@ type Query {
   sessions: [UserSession] @auth(for: [SETTINGS_SETACCESSES])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
+  capabilitiesInDraft(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   connector(id: String!): Connector @auth(for: [MODULES])
   connectors: [Connector!]! @auth(for: [MODULES])
   connectorManager(managerId: ID!): ConnectorManager! @auth(for: [MODULES])
