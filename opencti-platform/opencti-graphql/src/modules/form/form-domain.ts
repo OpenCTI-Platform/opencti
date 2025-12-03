@@ -415,12 +415,12 @@ export const formSubmit = async (
   const observableInputs = [];
   observableInputs.push({
     type: form.main_entity_type,
-    value: values.value,
+    ...values,
   });
   for (const additionalEntity of additionalEntities) {
     observableInputs.push({
       type: additionalEntity.entityType,
-      value: values[`additional_${additionalEntity.id}`].value, // stock this way in DB
+      ...values[`additional_${additionalEntity.id}`], // stock this way in DB
     });
   }
 
