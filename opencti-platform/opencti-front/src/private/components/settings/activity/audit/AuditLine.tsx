@@ -150,6 +150,8 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                             <TableCell></TableCell>
                             <TableCell align="left">Previous value</TableCell>
                             <TableCell align="left">New value</TableCell>
+                            <TableCell align="left">Added</TableCell>
+                            <TableCell align="left">Removed</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -161,8 +163,10 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                               <TableCell component="th" scope="row">
                                 {row?.field}
                               </TableCell>
-                              <TableCell align="left">{row?.previous ?? '-'}</TableCell>
-                              <TableCell align="left">{row?.new ?? '-'}</TableCell>
+                              <TableCell align="left">{row?.previous ? JSON.stringify(row?.previous): '-'}</TableCell>
+                              <TableCell align="left">{row?.new ? JSON.stringify(row?.new): '-'}</TableCell>
+                              <TableCell align="left">{row?.added ? JSON.stringify(row?.added): '-'}</TableCell>
+                              <TableCell align="left">{row?.removed ? JSON.stringify(row?.removed): '-'}</TableCell>
                             </TableRow>
                           ))
                             ): (
