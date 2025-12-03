@@ -2,6 +2,11 @@ name: Run OpenCTI api tests
 
 on:
   workflow_call:
+    inputs:
+      checkout_ref:
+        description: "Reference of the branch or commit sha"
+        type: string
+        default: ${{ github.sha }}
 
 jobs:
   run-opencti-integration-test:
@@ -11,6 +16,8 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
@@ -125,6 +132,8 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
@@ -196,6 +205,8 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
