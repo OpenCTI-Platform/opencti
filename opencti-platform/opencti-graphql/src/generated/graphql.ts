@@ -3411,7 +3411,7 @@ export type Change = {
   added?: Maybe<Array<Scalars['String']['output']>>;
   field: Scalars['String']['output'];
   new?: Maybe<Array<Scalars['String']['output']>>;
-  previous: Array<Scalars['String']['output']>;
+  previous?: Maybe<Array<Scalars['String']['output']>>;
   removed?: Maybe<Array<Scalars['String']['output']>>;
 };
 
@@ -38731,7 +38731,7 @@ export type ChangeResolvers<ContextType = any, ParentType extends ResolversParen
   added?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   new?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  previous?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  previous?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   removed?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
 }>;
 

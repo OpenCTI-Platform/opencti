@@ -525,7 +525,7 @@ type LogEdge {
 
 type Change {
   field: String!
-  previous: [String!]!
+  previous: [String!]
   new: [String!]
   added: [String!]
   removed: [String!]
