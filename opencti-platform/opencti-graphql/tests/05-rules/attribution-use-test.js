@@ -6,15 +6,78 @@ import { RELATION_ATTRIBUTED_TO, RELATION_USES } from '../../src/schema/stixCore
 import { RULE_PREFIX } from '../../src/schema/general';
 import AttributionUseRule from '../../src/rules/attribution-use/AttributionUseRule';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
-import { FIVE_MINUTES, testContext, TEN_SECONDS } from '../utils/testQuery';
+import { FIVE_MINUTES, testContext, TEN_SECONDS, queryAsAdmin } from '../utils/testQuery';
 import { wait } from '../../src/database/utils';
 import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../src/schema/stixDomainObject';
+import gql from 'graphql-tag';
 
 const RULE = RULE_PREFIX + AttributionUseRule.id;
 const APT41 = 'intrusion-set--d12c5319-f308-5fef-9336-20484af42084';
 const PARADISE_RANSOMWARE = 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714';
 const SPELEVO = 'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85';
 const TLP_CLEAR_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+
+const LIST_QUERY = gql`
+  query globalSearch(
+    $filters: FilterGroup
+  ) {
+    globalSearch(
+      filters: $filters
+    ) {
+      edges {
+        node {
+          id
+          standard_id
+          representative {
+            main
+          }
+          entity_type
+        }
+      }
+    }
+  }
+`;
+
+const generateRegardingOfFilter = (
+  withRegardingOf = true,
+  regardingOfOperator = 'eq',
+  isInferredSubFilterValue = false,
+) => {
+  return {
+    mode: 'and',
+    filters: [
+      {
+        key: 'entity_type',
+        values: ['Malware', 'Intrusion-Set'],
+        operator: 'eq',
+        mode: 'or'
+      }
+    ],
+    filterGroups: [
+      {
+        mode: 'and',
+        filters: withRegardingOf ? [
+          {
+            key: 'regardingOf',
+            operator: regardingOfOperator,
+            values: [
+              {
+                key: 'relationship_type',
+                values: ['uses']
+              },
+              {
+                key: 'inferred',
+                values: [isInferredSubFilterValue ? 'true' : 'false']
+              },
+            ],
+            mode: 'or'
+          }
+        ] : [],
+        filterGroups: []
+      }
+    ]
+  };
+};
 
 describe('Attribute use rule', () => {
   it(
@@ -72,6 +135,14 @@ describe('Attribute use rule', () => {
       expect(myThreatToSpelevo.confidence).toBe(100); // RULE_MANAGER_USER's confidence
       expect(myThreatToSpelevo.start_time).toBe('2020-01-20T20:30:00.000Z');
       expect(myThreatToSpelevo.stop_time).toBe('2020-02-28T14:00:00.000Z');
+      // test regardingOf filter with false value in inferred subfilter
+      const eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateRegardingOfFilter(true, 'eq', false) } });
+      expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
+      expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+      expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+      const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateRegardingOfFilter(true, 'not_eq', false) } });
+      expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
+      expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
       // Disable the rule
       await disableRule(AttributionUseRule.id);
       // Check the number of inferences
