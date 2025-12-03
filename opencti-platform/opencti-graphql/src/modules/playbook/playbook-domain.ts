@@ -77,7 +77,7 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
     if (playbook.playbook_definition) {
       const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
       const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
-      if (instance && (instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM' || instance.component_id === 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER')) {
+      if (instance && instance.component_id === 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER') {
         const { filters } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
         const jsonFilters = filters ? JSON.parse(filters) : null;
         const newFilters = {
@@ -203,7 +203,7 @@ const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkD
     childrenNodes = definition.nodes.filter((n) => linksToDelete.map((o) => o.to.id).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
     if (childrenNodes.length > 0) {
       nodesToDelete.push(...childrenNodes);
-      // eslint-disable-next-line @typescript-eslint/no-loop-func
+       
       childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
     } else {
       childrenLinks = [];
@@ -262,7 +262,7 @@ export const playbookReplaceNode = async (
   }
   const oldComponent = PLAYBOOK_COMPONENTS[oldComponentId];
   if (oldComponent.ports.length > relatedComponent.ports.length) {
-    // eslint-disable-next-line no-plusplus
+     
     for (let i = oldComponent.ports.length - 1; i >= relatedComponent.ports.length; i--) {
       // Find all links to the port
       const linksToDelete = definition.links.filter((n) => n.from.id === nodeId && n.from.port === oldComponent.ports[i].id);
