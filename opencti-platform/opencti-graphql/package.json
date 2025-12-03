@@ -160,6 +160,7 @@
     "source-map": "0.7.6",
     "tough-cookie": "6.0.0",
     "turndown": "7.2.2",
+    "undici": "7.16.0",
     "unzipper": "0.12.3",
     "uuid": "11.1.0",
     "uuid-time": "1.0.0",
@@ -214,7 +215,6 @@
     "jose": "5.10.0",
     "json5": "2.2.3",
     "@datadog/pprof": "patch:@datadog/pprof@5.12.0#./patch/@datadog-pprof.patch",
-    "eventsource": "patch:eventsource@4.1.0#./patch/eventsource-2.0.2.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.11.1#./patch/node-calls-python.patch",
     "openid-client": "patch:openid-client@5.7.1#./patch/openid-client.patch"

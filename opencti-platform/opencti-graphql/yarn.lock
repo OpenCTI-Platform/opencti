@@ -9128,17 +9128,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventsource@npm:2.0.2":
-  version: 2.0.2
-  resolution: "eventsource@npm:2.0.2"
-  checksum: 10c0/0b8c70b35e45dd20f22ff64b001be9d530e33b92ca8bdbac9e004d0be00d957ab02ef33c917315f59bf2f20b178c56af85c52029bc8e6cc2d61c31d87d943573
+"eventsource-parser@npm:^3.0.1":
+  version: 3.0.6
+  resolution: "eventsource-parser@npm:3.0.6"
+  checksum: 10c0/70b8ccec7dac767ef2eca43f355e0979e70415701691382a042a2df8d6a68da6c2fca35363669821f3da876d29c02abe9b232964637c1b6635c940df05ada78a
   languageName: node
   linkType: hard
 
-"eventsource@patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 2.0.2
-  resolution: "eventsource@patch:eventsource@npm%3A2.0.2#./patch/eventsource-2.0.2.patch::version=2.0.2&hash=524b62&locator=opencti-graphql%40workspace%3A."
-  checksum: 10c0/e99a3d20317304aab046d3434c39c58486731da1a508862e6da20bacc9dfac919fe961ab44bbe49461c300339366d6f191066b2c5553eadedfab3828e45354ac
+"eventsource@npm:4.1.0":
+  version: 4.1.0
+  resolution: "eventsource@npm:4.1.0"
+  dependencies:
+    eventsource-parser: "npm:^3.0.1"
+  checksum: 10c0/5d8f0f60fdafc5a3b4ce5d53f6a6c75cf07fbec250cfb870c44ea38d9689b9996e4a6f3779e520a6e7d32fbf398f42ea011a2c10772a9bc932fb419accede73e
   languageName: node
   linkType: hard
 
@@ -12637,7 +12639,7 @@ __metadata:
     eslint-import-resolver-typescript: "npm:4.4.4"
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-import-newlines: "npm:1.4.0"
-    eventsource: "npm:2.0.2"
+    eventsource: "npm:4.1.0"
     express: "npm:5.1.0"
     express-rate-limit: "npm:8.2.1"
     express-session: "npm:1.18.2"
@@ -12697,6 +12699,7 @@ __metadata:
     turndown: "npm:7.2.2"
     typescript: "npm:5.9.3"
     typescript-eslint: "npm:8.47.0"
+    undici: "npm:7.16.0"
     unzipper: "npm:0.12.3"
     uuid: "npm:11.1.0"
     uuid-time: "npm:1.0.0"
@@ -15208,6 +15211,13 @@ __metadata:
   version: 7.10.0
   resolution: "undici-types@npm:7.10.0"
   checksum: 10c0/8b00ce50e235fe3cc601307f148b5e8fb427092ee3b23e8118ec0a5d7f68eca8cee468c8fc9f15cbb2cf2a3797945ebceb1cbd9732306a1d00e0a9b6afa0f635
+  languageName: node
+  linkType: hard
+
+"undici@npm:7.16.0":
+  version: 7.16.0
+  resolution: "undici@npm:7.16.0"
+  checksum: 10c0/efd867792e9f233facf9efa0a087e2d9c3e4415c0b234061b9b40307ca4fa01d945fee4d43c7b564e1b80e0d519bcc682f9f6e0de13c717146c00a80e2f1fb0f
   languageName: node
   linkType: hard
 
