@@ -1446,7 +1446,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       const groupedAddOperations = R.groupBy((s) => s.relationType, addOperations);
       const operations = Object.entries(groupedAddOperations)
         .map(([key, vals]) => {
-           
+
           const { _index, entity_type } = R.head(vals);
           const ids = vals.map((v) => v.data.internal_id);
           return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
@@ -1517,7 +1517,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
     }
   }
-   
+
   const data = await updateAttributeRaw(context, user, targetEntity, updateAttributes);
   const { impactedInputs } = data;
   // region Update elasticsearch
@@ -2065,7 +2065,6 @@ const buildAttribute = (array) => {
 
 export const buildChanges = (entityType, inputs) => {
   const changes = [];
-  logApp.info('inputs====', {inputs});
   inputs.forEach((input) => {
     const { key, previous, value, operation } = input;
     if (!key) return;
@@ -3043,7 +3042,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
     fromRule: ruleContent.field,
     bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
   };
-   
+
   const { fromId, toId, relationship_type } = input;
   // In some cases, we can try to create with the same from and to, ignore
   if (fromId === toId) {
