@@ -998,7 +998,7 @@ class Report:
                     stix_object["opencti_upsert_operations"]
                     if "opencti_upsert_operations" in stix_object
                     else None
-                )
+                ),
             )
         else:
             self.opencti.app_logger.error(
