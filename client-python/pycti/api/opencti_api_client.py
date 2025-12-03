@@ -146,6 +146,8 @@ class OpenCTIApiClient:
     :type custom_headers: str, optional must in the format header01:value;header02:value
     :param perform_health_check: if client init must check the api access
     :type perform_health_check: bool, optional
+    :param requests_timeout: define the timeout for API requests in seconds
+    :type requests_timeout: int, optional
     """
 
     def __init__(
@@ -160,6 +162,7 @@ class OpenCTIApiClient:
         cert: Union[str, Tuple[str, str], None] = None,
         custom_headers: str = None,
         perform_health_check: bool = True,
+        requests_timeout: int = 300,
     ):
         """Constructor method"""
 
@@ -188,6 +191,7 @@ class OpenCTIApiClient:
             token, custom_headers, self.app_logger
         )
         self.session = requests.session()
+        self.session_requests_timeout = requests_timeout
         # Define the dependencies
         self.work = OpenCTIApiWork(self)
         self.notification = OpenCTIApiNotification(self)
@@ -551,7 +555,7 @@ class OpenCTIApiClient:
                 verify=self.ssl_verify,
                 cert=self.cert,
                 proxies=self.proxies,
-                timeout=300,
+                timeout=self.session_requests_timeout,
             )
         # If no
         else:
@@ -562,7 +566,7 @@ class OpenCTIApiClient:
                 verify=self.ssl_verify,
                 cert=self.cert,
                 proxies=self.proxies,
-                timeout=300,
+                timeout=self.session_requests_timeout,
             )
         # Build response
         if r.status_code == 200:
