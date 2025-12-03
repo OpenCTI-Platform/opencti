@@ -47,6 +47,35 @@ describe('XTM hub', () => {
       expect(result.status).toBe(XtmHubRegistrationStatus.Unregistered);
     });
 
+    it('should reset registration when platform is not found', async () => {
+      const settings: Partial<BasicStoreSettings> = {
+        id: 'id',
+        xtm_hub_token,
+        xtm_hub_registration_status: XtmHubRegistrationStatus.Registered
+      };
+
+      getEntityFromCacheSpy.mockResolvedValue(settings);
+      xtmHubClientRefreshStatusSpy.mockResolvedValue('not_found');
+
+      const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+      expect(result.status).toBe(XtmHubRegistrationStatus.Unregistered);
+      expect(updateAttributeSpy).toBeCalledWith(
+        testContext,
+        HUB_REGISTRATION_MANAGER_USER,
+        'id',
+        ENTITY_TYPE_SETTINGS,
+        [
+          { key: 'xtm_hub_token', value: [] },
+          { key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.Unregistered] },
+          { key: 'xtm_hub_registration_user_id', value: [] },
+          { key: 'xtm_hub_registration_user_name', value: [] },
+          { key: 'xtm_hub_registration_date', value: [] },
+          { key: 'xtm_hub_last_connectivity_check', value: [] }
+        ]
+      );
+    })
+
     it('should update registration status when connectivity is lost', async () => {
       const settings: Partial<BasicStoreSettings> = {
         id: 'id',
@@ -88,8 +117,8 @@ describe('XTM hub', () => {
         ENTITY_TYPE_SETTINGS,
         [
           { key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.Registered] },
-          { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
           { key: 'xtm_hub_should_send_connectivity_email', value: [true] },
+          { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
           { key: 'xtm_hub_backend_is_reachable', value: [true] }
         ]
       );
