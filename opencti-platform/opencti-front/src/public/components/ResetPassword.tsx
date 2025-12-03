@@ -262,14 +262,6 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
           {({ isSubmitting, isValid }) => {
             return (
               <Form>
-                {
-                  askOtpError && (
-                    <AlertMessage 
-                      severity="error" 
-                      text={t_i18n('You have already requested a new code to reset your password. You can request a new code after a delay of 30 seconds.')}
-                    />
-                  )
-                }
                 <Field
                   component={TextField}
                   name="email"
