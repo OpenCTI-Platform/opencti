@@ -209,19 +209,38 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
  * @param {*} context
  * @param {*} user
  * @param {string} stixDomainObjectId
- * @param {string | string[]} expectedEntityType - Required entity type(s) for validation
+ * @param {string | string[]} stixDomainObjectType - Required entity type(s) for validation
  */
-export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, expectedEntityType) => {
-  // If we are in a draft, we need to also search for deleted elements
-  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, { includeDeletedInDraft: true });
+export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, stixDomainObjectType) => {
+  const allowedTypes = Array.isArray(stixDomainObjectType) ? stixDomainObjectType : [stixDomainObjectType];
+  
+  // Validate all types are valid STIX Domain Objects
+  for (const type of allowedTypes) {
+    if (!isStixDomainObject(type)) {
+      throw FunctionalError(
+        `Invalid stixDomainObjectType: ${type} is not a STIX Domain Object`,
+        { invalidType: type }
+      );
+    }
+  }
+  
+  // Optimize: use concrete type directly if not abstract
+  const isConcreteType = allowedTypes.length === 1 && !allowedTypes[0].startsWith('Abstract-');
+  const loadType = isConcreteType ? allowedTypes[0] : ABSTRACT_STIX_DOMAIN_OBJECT;
+  
+  const stixDomainObject = await storeLoadById(
+    context,
+    user,
+    stixDomainObjectId,
+    loadType,
+    { includeDeletedInDraft: true }
+  );
+  
   if (!stixDomainObject) {
     throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.', { stixDomainObjectId });
   }
   
-  // Handle both string and array types for flexibility
-  const allowedTypes = Array.isArray(expectedEntityType) ? expectedEntityType : [expectedEntityType];
-  
-  // Check if the entity type matches any of the expected types
+  // Verify type matches expected types
   if (!allowedTypes.includes(stixDomainObject.entity_type)) {
     throw FunctionalError(
       `Cannot delete the object, type mismatch: expected ${allowedTypes.join(', ')}, found ${stixDomainObject.entity_type}.`,
@@ -235,10 +254,17 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, 
 };
 
 export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsIds) => {
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < stixDomainObjectsIds.length; i += 1) {
-    await stixDomainObjectDelete(context, user, stixDomainObjectsIds[i], ABSTRACT_STIX_DOMAIN_OBJECT);
+  // Optimization: Load all entities in a single query to get their actual types
+  const entities = await storeLoadByIds(context, user, stixDomainObjectsIds);
+  
+  // Delete each entity with its correct specific type
+  // Relations cannot be created in parallel, so we iterate
+  for (const entity of entities) {
+    if (entity) {
+      await stixDomainObjectDelete(context, user, entity.id, entity.entity_type);
+    }
   }
+  
   return stixDomainObjectsIds;
 };
 
