@@ -2291,13 +2291,13 @@ enum ConnectorPriorityGroup {
 
 input ConnectorMigrationAssessmentInput {
   connectorId: ID!
-  contractSlug: String!
+  containerImage: String!
   configuration: [ContractConfigInput!]
 }
 
 input MigrateConnectorToManagedInput {
   connectorId: ID!
-  contractSlug: String!
+  containerImage: String!
   configuration: [ContractConfigInput!]
   resetConnectorState: Boolean
   convertUserToServiceAccount: Boolean
@@ -2338,7 +2338,7 @@ type MissingConfigKey {
 type MigrationAssessment {
   connector_id: ID!
   connector_name: String!
-  contract_slug: String!
+  contract_image: String!
   summary: MigrationAssessmentSummary!
   mapped: [MappedConfigKey!]!
   ignored: [IgnoredConfigKey!]!
@@ -8837,7 +8837,7 @@ type Query {
   connectorsForImport: [Connector]
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
-  connectorMigrationAssessment(connectorId: ID!, contractSlug: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
+  connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
   work(id: ID!): Work
   isWorkAlive(id: ID!): Boolean
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection

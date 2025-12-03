@@ -428,17 +428,34 @@ export const findCatalog = async (_context: AuthContext, _user: AuthUser) => {
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
 };
 
-export const findContractBySlug = async (_context: AuthContext, _user: AuthUser, contractSlug: string) => {
-  const catalogDefinitions = await getCatalogs();
+const findContract = (_context: AuthContext, _user: AuthUser, predicate: (contract: any) => boolean) => {
+  const catalogDefinitions = getCatalogs();
   if (!catalogDefinitions) {
     return null;
   }
+
   const catalogs = Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
   const foundContract = catalogs
     .map((catalog) => {
-      const contract = catalog.contracts.find((contractStr) => JSON.parse(contractStr).slug === contractSlug);
+      const contract = catalog.contracts.find((contractStr: string) => {
+        const parsedContract = JSON.parse(contractStr);
+        return predicate(parsedContract);
+      });
       return contract ? { catalog_id: catalog.id, contract } : null;
     })
     .find((contract) => contract !== null);
+
   return foundContract || null;
+};
+
+export const findContractBySlug = (context: AuthContext, user: AuthUser, contractSlug: string) => {
+  return findContract(context, user, (contract) => contract.slug === contractSlug);
+};
+
+export const findContractByContainerImage = (context: AuthContext, user: AuthUser, containerImage: string) => {
+  return findContract(context, user, (contract) => {
+    const { container_image } = contract;
+    console.log('---  container_image', container_image);
+    return contract.container_image === containerImage;
+  });
 };

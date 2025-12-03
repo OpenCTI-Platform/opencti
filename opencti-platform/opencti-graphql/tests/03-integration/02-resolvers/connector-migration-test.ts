@@ -178,7 +178,7 @@ describe('Check connector migration', () => {
           variables: {
             input: {
               connectorId: standaloneConnector.id,
-              contractSlug: 'nist-nvd-cve',
+              containerImage: 'opencti/connector-cve',
               resetConnectorState: false,
               convertUserToServiceAccount: true,
               configuration: [
@@ -189,15 +189,15 @@ describe('Check connector migration', () => {
           },
         });
 
-        const contractFound = catalogDomain.findContractBySlug(testContext, ADMIN_USER, 'nist-nvd-cve');
+        const contractFound = catalogDomain.findContractByContainerImage(testContext, ADMIN_USER, 'opencti/connector-cve');
         if (!contractFound?.contract) {
-          throw new Error('Connector nist-nvd-cve slug not found in catalog');
+          throw new Error('Connector nist-nvd-cve container-image not found in catalog');
         }
 
         let contractParsed;
         try {
           contractParsed = JSON.parse(contractFound?.contract);
-        } catch (e) {
+        } catch {
           throw new Error('Cannot parse nist-nvd-cve catalog');
         }
 

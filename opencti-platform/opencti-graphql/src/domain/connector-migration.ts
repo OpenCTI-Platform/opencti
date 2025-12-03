@@ -8,7 +8,7 @@ import { completeConnector, connector } from '../database/repository';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, findContractBySlug } from '../modules/catalog/catalog-domain';
+import { computeConnectorTargetContract, findContractByContainerImage, findContractBySlug } from '../modules/catalog/catalog-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_USER } from '../schema/internalObject';
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
@@ -149,7 +149,7 @@ const findIgnoredKeys = (schemaProperties: any, configMap: Map<string, string>):
   return ignored;
 };
 
-export const assessConnectorMigration = async (context: AuthContext, user: AuthUser, connectorId: string, contractSlug: string, configuration: ConfigInput[]) => {
+export const assessConnectorMigration = async (context: AuthContext, user: AuthUser, connectorId: string, containerImage: string, configuration: ConfigInput[]) => {
   const existingConnector = await connector(context, user, connectorId);
 
   if (!existingConnector) {
@@ -160,9 +160,9 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     throw FunctionalError('Connector is already managed', { id: connectorId });
   }
 
-  const contractData = await findContractBySlug(context, user, contractSlug);
+  const contractData = await findContractByContainerImage(context, user, containerImage);
   if (!contractData) {
-    throw FunctionalError('Contract not found', { slug: contractSlug });
+    throw FunctionalError('Contract not found', { container_image: containerImage });
   }
 
   let contract;
@@ -210,7 +210,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     connector_id: connectorId,
     connector_name: existingConnector.name,
     connector_type: existingConnector.connector_type,
-    contract_slug: contractSlug,
+    contract_slug: contractDefinition.contract_slug,
     contract_title: contractDefinition.title,
     contract_image: contractDefinition.container_image,
     summary: {
@@ -239,14 +239,14 @@ export const migrateConnectorToManaged = async (
   context: AuthContext,
   user: AuthUser,
   connectorId: string,
-  contractSlug: string,
+  containerImage: string,
   configuration: ConfigInput[] | null,
   convertUserToServiceAccount: boolean = true,
   resetConnectorState: boolean = false,
 ) => {
-  const contractData = await findContractBySlug(context, user, contractSlug);
+  const contractData = await findContractByContainerImage(context, user, containerImage);
   if (!contractData) {
-    throw FunctionalError('Contract not found', { slug: contractSlug });
+    throw FunctionalError('Contract not found', { container_image: containerImage });
   }
 
   let contract;
@@ -372,14 +372,6 @@ export const migrateConnectorToManaged = async (
   // delete queues like in connector.deleteQueues but for that specific connector id
   await unregisterConnector(existingConnector.id);
   try { await unregisterExchanges(); } catch { /* nothing */ }
-
-  await patchAttribute(
-    context,
-    user,
-    existingConnector.id,
-    ENTITY_TYPE_CONNECTOR,
-    managedConnectorData
-  );
 
   const { element } = await patchAttribute(
     context,

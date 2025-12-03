@@ -89,8 +89,8 @@ const connectorResolvers = {
     // region new managed connectors
     connectorManager: (_, { managerId }, context) => connectorManager(context, context.user, managerId),
     connectorManagers: (_, __, context) => connectorManagers(context, context.user),
-    connectorMigrationAssessment: async (_, { connectorId, contractSlug, configuration }, context) => {
-      return assessConnectorMigration(context, context.user, connectorId, contractSlug, configuration);
+    connectorMigrationAssessment: async (_, { connectorId, containerImage, configuration }, context) => {
+      return assessConnectorMigration(context, context.user, connectorId, containerImage, configuration);
     }
     // endregion
   },
@@ -192,12 +192,12 @@ const connectorResolvers = {
     synchronizerTest: (_, { input }, context) => testSync(context, context.user, input),
 
     connectorMigrateToManaged: (_, { input }, context) => {
-      const { connectorId, contractSlug, configuration, resetConnectorState, convertUserToServiceAccount = false } = input;
+      const { connectorId, containerImage, configuration, resetConnectorState, convertUserToServiceAccount = false } = input;
       return migrateConnectorToManaged(
         context,
         context.user,
         connectorId,
-        contractSlug,
+        containerImage,
         configuration,
         convertUserToServiceAccount,
         resetConnectorState,

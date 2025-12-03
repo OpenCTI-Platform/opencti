@@ -4177,7 +4177,7 @@ export type ConnectorMetadata = {
 export type ConnectorMigrationAssessmentInput = {
   configuration?: InputMaybe<Array<ContractConfigInput>>;
   connectorId: Scalars['ID']['input'];
-  contractSlug: Scalars['String']['input'];
+  containerImage: Scalars['String']['input'];
 };
 
 export enum ConnectorPriorityGroup {
@@ -14995,7 +14995,7 @@ export type MetricsByMimeType = {
 export type MigrateConnectorToManagedInput = {
   configuration?: InputMaybe<Array<ContractConfigInput>>;
   connectorId: Scalars['ID']['input'];
-  contractSlug: Scalars['String']['input'];
+  containerImage: Scalars['String']['input'];
   convertUserToServiceAccount?: InputMaybe<Scalars['Boolean']['input']>;
   resetConnectorState?: InputMaybe<Scalars['Boolean']['input']>;
 };
@@ -15009,7 +15009,7 @@ export type MigrationAssessment = {
   __typename?: 'MigrationAssessment';
   connector_id: Scalars['ID']['output'];
   connector_name: Scalars['String']['output'];
-  contract_slug: Scalars['String']['output'];
+  contract_image: Scalars['String']['output'];
   ignored: Array<IgnoredConfigKey>;
   mapped: Array<MappedConfigKey>;
   missing: Array<MissingConfigKey>;
@@ -22585,7 +22585,7 @@ export type QueryConnectorManagerArgs = {
 export type QueryConnectorMigrationAssessmentArgs = {
   configuration?: InputMaybe<Array<ContractConfigInput>>;
   connectorId: Scalars['ID']['input'];
-  contractSlug: Scalars['String']['input'];
+  containerImage: Scalars['String']['input'];
 };
 
 
@@ -43116,7 +43116,7 @@ export type MigrateConnectorToManagedResultResolvers<ContextType = any, ParentTy
 export type MigrationAssessmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['MigrationAssessment'] = ResolversParentTypes['MigrationAssessment']> = ResolversObject<{
   connector_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   connector_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  contract_slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  contract_image?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   ignored?: Resolver<Array<ResolversTypes['IgnoredConfigKey']>, ParentType, ContextType>;
   mapped?: Resolver<Array<ResolversTypes['MappedConfigKey']>, ParentType, ContextType>;
   missing?: Resolver<Array<ResolversTypes['MissingConfigKey']>, ParentType, ContextType>;
@@ -44934,7 +44934,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
   connectorManagers?: Resolver<Array<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
-  connectorMigrationAssessment?: Resolver<ResolversTypes['MigrationAssessment'], ParentType, ContextType, RequireFields<QueryConnectorMigrationAssessmentArgs, 'connectorId' | 'contractSlug'>>;
+  connectorMigrationAssessment?: Resolver<ResolversTypes['MigrationAssessment'], ParentType, ContextType, RequireFields<QueryConnectorMigrationAssessmentArgs, 'connectorId' | 'containerImage'>>;
   connectors?: Resolver<Array<ResolversTypes['Connector']>, ParentType, ContextType>;
   connectorsForAnalysis?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForExport?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
