@@ -68,6 +68,8 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                         <TableCell></TableCell>
                         <TableCell align="left">{t_i18n('Previous value')}</TableCell>
                         <TableCell align="left">{t_i18n('New value')}</TableCell>
+                        <TableCell align="left">{t_i18n('Added')}</TableCell>
+                        <TableCell align="left">{t_i18n('Removed')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -79,8 +81,10 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                           <TableCell component="th" scope="row">
                             {row?.field}
                           </TableCell>
-                          <TableCell align="left">{row?.previous ?? '-'}</TableCell>
-                          <TableCell align="left">{row?.new ?? '-'}</TableCell>
+                          <TableCell align="left">{row?.previous ? JSON.stringify(row?.previous): '-'}</TableCell>
+                          <TableCell align="left">{row?.new ? JSON.stringify(row?.new): '-'}</TableCell>
+                          <TableCell align="left">{row?.added ? JSON.stringify(row?.added): '-'}</TableCell>
+                          <TableCell align="left">{row?.removed ? JSON.stringify(row?.removed): '-'}</TableCell>
                         </TableRow>
                       ))
                         ) : (
