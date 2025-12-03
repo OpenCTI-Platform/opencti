@@ -215,6 +215,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       <FilterIconButton
         filters={filters}
         redirection
+        styleNumber={2}
         helpers={helpers}
         entityTypes={['History']}
       />
