@@ -10499,10 +10499,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ipaddr.js@npm:2.2.0":
-  version: 2.2.0
-  resolution: "ipaddr.js@npm:2.2.0"
-  checksum: 10c0/e4ee875dc1bd92ac9d27e06cfd87cdb63ca786ff9fd7718f1d4f7a8ef27db6e5d516128f52d2c560408cbb75796ac2f83ead669e73507c86282d45f84c5abbb6
+"ipaddr.js@npm:2.3.0":
+  version: 2.3.0
+  resolution: "ipaddr.js@npm:2.3.0"
+  checksum: 10c0/084bab99e2f6875d7a62adc3325e1c64b038a12c9521e35fb967b5e263a8b3afb1b8884dd77c276092331f5d63298b767491e10997ef147c62da01b143780bbd
   languageName: node
   linkType: hard
 
@@ -12637,7 +12637,7 @@ __metadata:
     http-proxy-agent: "npm:7.0.2"
     https-proxy-agent: "npm:7.0.6"
     ioredis: "npm:5.8.2"
-    ipaddr.js: "npm:2.2.0"
+    ipaddr.js: "npm:2.3.0"
     js-deep-equals: "npm:2.1.1"
     json-to-plain-text: "npm:1.2.0"
     jsonpath-plus: "npm:10.3.0"
