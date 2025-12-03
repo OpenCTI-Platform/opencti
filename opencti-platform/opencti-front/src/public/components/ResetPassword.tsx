@@ -110,7 +110,6 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
   const [transactionId, setTransactionId] = useState('');
   const [otp, setOtp] = useState('');
 
-  const [askOtpError, setAskOtpError] = useState(false);
   const [validateOtpError, setValidateOtpError] = useState(false);
   const [changePasswordError, setChangePasswordError] = useState(false);
   const [resendCodeDisabled, setResendCodeDisabled] = useState(false);
@@ -189,10 +188,9 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
         startResendCooldown();
       },
       onError: (error) => {
-        setAskOtpError(true);
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
-        startResendCooldown(() => setAskOtpError(false));
+        startResendCooldown();
       }
     });
   };
