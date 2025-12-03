@@ -95,10 +95,10 @@ const useGranted = (capabilities: string[], matchAll = false): boolean => {
   } else {
     userCapabilities = userBaseCapabilities;
   } 
-  
+
+  // Check if any of the user capabilities includes the requested capability as a substring
   const capabilityMatches = (requestedCapability: string) =>
-    // Check if any of the user capabilities includes the requested capability as a substring
-    userCapabilities.some((u) => u.includes(requestedCapability));
+    userCapabilities.some((u) => requestedCapability !== BYPASS && u.includes(requestedCapability));
 
   return matchAll
     ? capabilities.every(capabilityMatches)

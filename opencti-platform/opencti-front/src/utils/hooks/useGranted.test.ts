@@ -41,6 +41,17 @@ describe('useGranted', () => {
     expect(useGranted(['ANYTHING'])).toBe(true);
   });
 
+  it('should returns false if user has capa with BYPASS in substring', () => {
+    mockAuthMe({
+      capabilities: [
+        { name: 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE' },
+        { name: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS' },
+      ],
+    });
+
+    expect(useGranted([BYPASS])).toBe(false);
+  });
+
   it('should returns true if any capability matches parent capability (OR mode)', () => {
     mockAuthMe({
       capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }],
