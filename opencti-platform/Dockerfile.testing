@@ -85,7 +85,8 @@ FROM builder AS testing
 
 WORKDIR /opt/opencti
 
-RUN apk add --no-cache tini python3 python3-dev
+RUN apk add --no-cache tini python3 python3-dev libmagic
+
 RUN set -eux; \
     apk add --no-cache gcc; \
     rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED; \
