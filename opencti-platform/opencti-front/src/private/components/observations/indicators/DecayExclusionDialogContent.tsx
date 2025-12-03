@@ -1,10 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import {
-  IndicatorDetails_indicator$data
-} from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
-import {useTheme} from '@mui/styles';
-import {Theme} from '@mui/material/styles/createTheme';
-import {useFormatter} from 'src/components/i18n';
+import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
+import { useFormatter } from 'src/components/i18n';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -13,7 +9,7 @@ import { Typography } from '@mui/material';
 import Alert from "src/components/Alert"
 import Security from 'src/utils/Security';
 import { SETTINGS_SETCUSTOMIZATION } from 'src/utils/hooks/useGranted';
-import {Link, useNavigate} from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import { resolveLink } from 'src/utils/Entity';
 
 interface DecayExclusionDialogContentProps {
@@ -22,14 +18,13 @@ interface DecayExclusionDialogContentProps {
 }
 
 const DecayExclusionDialogContent: FunctionComponent<DecayExclusionDialogContentProps> = ({ indicator, onClose }) => {
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
 
   const handleClick = () => {
     const link = resolveLink('DecayRule') ?? '';
-    navigate(link, { state: { decayTab: 'decayExclusionRule' } });
     onClose();
+    navigate(link, { state: { decayTab: 'decayExclusionRule' } });
   }
 
   return (
@@ -52,7 +47,7 @@ const DecayExclusionDialogContent: FunctionComponent<DecayExclusionDialogContent
       </DialogContent>
         <DialogActions>
           <Security needs={[SETTINGS_SETCUSTOMIZATION]}>
-            <Button link color="secondary" onClick={handleClick}>View Rule</Button>
+            <Button color="secondary" onClick={handleClick}>{t_i18n('View rule')}</Button>
           </Security>
           <Button onClick={onClose}>
             {t_i18n('Close')}
