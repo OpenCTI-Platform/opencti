@@ -152,38 +152,39 @@ import { extractEntityRepresentativeName, extractRepresentative } from './entity
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { addFilter, checkAndConvertFilters, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
-  ALIAS_FILTER,
-  BULK_SEARCH_KEYWORDS_FILTER,
-  BULK_SEARCH_KEYWORDS_FILTER_KEYS,
-  COMPUTED_RELIABILITY_FILTER,
-  ID_FILTER,
-  IDS_FILTER,
-  INSTANCE_DYNAMIC_REGARDING_OF,
-  INSTANCE_REGARDING_OF,
-  INSTANCE_REGARDING_OF_DIRECTION_FORCED,
-  INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
-  INSTANCE_RELATION_FILTER,
-  INSTANCE_RELATION_TYPES_FILTER,
-  IS_INFERRED_FILTER,
-  isComplexConversionFilterKey,
-  LAST_PIR_SCORE_DATE_FILTER_PREFIX,
-  PIR_SCORE_FILTER_PREFIX,
-  RELATION_DYNAMIC_FILTER,
-  RELATION_DYNAMIC_FROM_FILTER,
-  RELATION_DYNAMIC_TO_FILTER,
-  RELATION_FROM_FILTER,
-  RELATION_FROM_ROLE_FILTER,
-  RELATION_FROM_TYPES_FILTER,
-  RELATION_TO_FILTER,
-  RELATION_TO_ROLE_FILTER,
-  RELATION_TO_SIGHTING_FILTER,
-  RELATION_TO_TYPES_FILTER,
-  RELATION_TYPE_FILTER,
-  SOURCE_RELIABILITY_FILTER,
-  TYPE_FILTER,
-  USER_SERVICE_ACCOUNT_FILTER,
-  WORKFLOW_FILTER,
-  X_OPENCTI_WORKFLOW_ID
+ALIAS_FILTER,
+BULK_SEARCH_KEYWORDS_FILTER,
+  BULK_SEARCH_KEYWORDS_FILTER_KEYS,COMPUTED_RELIABILITY_FILTER,
+IDS_FILTER,
+INSTANCE_DYNAMIC_REGARDING_OF,
+INSTANCE_REGARDING_OF,
+INSTANCE_REGARDING_OF_DIRECTION_FORCED,
+INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
+INSTANCE_RELATION_FILTER,
+INSTANCE_RELATION_TYPES_FILTER,
+IS_INFERRED_FILTER,
+isComplexConversionFilterKey,
+LAST_PIR_SCORE_DATE_FILTER_PREFIX,
+PIR_SCORE_FILTER_PREFIX,
+RELATION_DYNAMIC_SUBFILTER,
+RELATION_DYNAMIC_FROM_FILTER,
+RELATION_DYNAMIC_TO_FILTER,
+RELATION_FROM_FILTER,
+RELATION_FROM_ROLE_FILTER,
+RELATION_FROM_TYPES_FILTER,
+RELATION_TO_FILTER,
+RELATION_TO_ROLE_FILTER,
+RELATION_TO_SIGHTING_FILTER,
+RELATION_TO_TYPES_FILTER,
+RELATION_TYPE_FILTER,
+SOURCE_RELIABILITY_FILTER,
+TYPE_FILTER,
+USER_SERVICE_ACCOUNT_FILTER,
+WORKFLOW_FILTER,
+X_OPENCTI_WORKFLOW_ID,
+ID_SUBFILTER,
+RELATION_TYPE_SUBFILTER,
+RELATION_INFERRED_SUBFILTER
 } from '../utils/filtering/filtering-constants';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
 import {
@@ -2630,6 +2631,86 @@ const adaptFilterToEntityTypeFilterKey = (filter: any) => {
   return { newFilter, newFilterGroup };
 };
 
+export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter) => {
+  const { key: filterKey } = filter;
+  const regardingFilters = [];
+  const idParameter = filter.values.find((i) => i.key === ID_SUBFILTER);
+  const typeParameter = filter.values.find((i) => i.key === RELATION_TYPE_SUBFILTER);
+  const dynamicParameter = filter.values.find((i) => i.key === RELATION_DYNAMIC_SUBFILTER);
+  // Check parameters
+  if (!idParameter && !dynamicParameter && !typeParameter) {
+    throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
+  }
+  if (dynamicParameter && !typeParameter?.values?.length) {
+    throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type: typeParameter });
+  }
+  // Check operator
+  if (filter.operator && filter.operator !== 'eq' && filter.operator !== 'not_eq') {
+    throw UnsupportedError('regardingOf only support equality restriction');
+  }
+  // Check for PIR has it required
+  if (typeParameter) {
+    const isPirRelatedType = (typeParameter.values ?? []).includes(RELATION_IN_PIR);
+    if (isPirRelatedType && !isUserHasCapability(user, PIRAPI)) {
+      throw ForbiddenAccess('You are not allowed to use PIR filtering');
+    }
+  }
+  let ids = idParameter?.values ?? [];
+  // Limit the number of possible ids in the regardingOf
+  if (ids.length > ES_MAX_PAGINATION) {
+    throw UnsupportedError('Too much ids specified', { size: ids.length, max: ES_MAX_PAGINATION });
+  }
+  if (ids.length > 0) {
+    // Keep ids the user has access to
+    const filteredEntities = await elFindByIds(context, user, ids, { baseData: true }) as BasicStoreBase[];
+    // If no type specified, we also need to check if the user have the correct capability for Pirs
+    if (!typeParameter && !isUserHasCapability(user, PIRAPI)) {
+      const isIncludingPir = (await uniqAsyncMap(filteredEntities, (value) => value.entity_type))
+        .includes(ENTITY_TYPE_PIR);
+      if (isIncludingPir) {
+        throw ForbiddenAccess('You are not allowed to use PIR filtering');
+      }
+    }
+    ids = filteredEntities.map((n) => n.id);
+    if (ids.length === 0) { // If no id available, reject the query
+      throw ResourceNotFoundError('Specified ids not found or restricted');
+    }
+  }
+  // Check dynamic
+  const dynamicFilter = dynamicParameter?.values ?? [];
+  if (isNotEmptyField(dynamicFilter)) {
+    const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
+    const relatedEntities = await elPaginate(context, user, computedIndices, {
+      connectionFormat: false,
+      first: ES_MAX_PAGINATION,
+      baseData: true,
+      filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
+    }) as BasicStoreBase[];
+    if (relatedEntities.length > 0) {
+      const relatedIds = relatedEntities.map((n) => n.id);
+      ids.push(...relatedIds);
+    } else {
+      ids.push('<invalid id>'); // To force empty result in the query result
+    }
+  }
+  const types = typeParameter?.values;
+  // Construct and push the final regarding of filter
+  const mode = (filter.operator === 'eq' || isEmptyField(filter.operator)) ? FilterMode.Or : FilterMode.And;
+  if (isEmptyField(ids)) {
+    const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
+      : types.map((t: string) => buildRefRelationKey(t, '*'));
+    keys.forEach((relKey: string) => {
+      regardingFilters.push({ key: [relKey], operator: filter.operator, values: ['EXISTS'] });
+    });
+  } else {
+    const keys = isEmptyField(types)
+      ? buildRefRelationKey('*', '*')
+      : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
+    regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids });
+  }
+  return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [] } };;
+};
+
 export const adaptFilterToIdsFilterKey = (filter: Filter) => {
   const { key, mode = FilterMode.Or, operator = FilterOperator.Eq } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -3582,82 +3663,8 @@ const completeSpecialFilterKeys = async (
       }
       const filterKey = arrayKeys[0];
       if (filterKey === INSTANCE_REGARDING_OF || filterKey === INSTANCE_DYNAMIC_REGARDING_OF) {
-        const regardingFilters = [];
-        const idParameter = filter.values.find((i) => i.key === ID_FILTER);
-        const typeParameter = filter.values.find((i) => i.key === RELATION_TYPE_FILTER);
-        const dynamicParameter = filter.values.find((i) => i.key === RELATION_DYNAMIC_FILTER);
-        // Check parameters
-        if (!idParameter && !dynamicParameter && !typeParameter) {
-          throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
-        }
-        if (dynamicParameter && !typeParameter?.values?.length) {
-          throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type: typeParameter });
-        }
-        // Check operator
-        if (filter.operator && filter.operator !== 'eq' && filter.operator !== 'not_eq') {
-          throw UnsupportedError('regardingOf only support equality restriction');
-        }
-        // Check for PIR has it required
-        if (typeParameter) {
-          const isPirRelatedType = (typeParameter.values ?? []).includes(RELATION_IN_PIR);
-          if (isPirRelatedType && !isUserHasCapability(user, PIRAPI)) {
-            throw ForbiddenAccess('You are not allowed to use PIR filtering');
-          }
-        }
-        let ids = idParameter?.values ?? [];
-        // Limit the number of possible ids in the regardingOf
-        if (ids.length > ES_MAX_PAGINATION) {
-          throw UnsupportedError('Too much ids specified', { size: ids.length, max: ES_MAX_PAGINATION });
-        }
-        if (ids.length > 0) {
-          // Keep ids the user has access to
-          const filteredEntities = await elFindByIds(context, user, ids, { baseData: true }) as BasicStoreBase[];
-          // If no type specified, we also need to check if the user have the correct capability for Pirs
-          if (!typeParameter && !isUserHasCapability(user, PIRAPI)) {
-            const isIncludingPir = (await uniqAsyncMap(filteredEntities, (value) => value.entity_type))
-              .includes(ENTITY_TYPE_PIR);
-            if (isIncludingPir) {
-              throw ForbiddenAccess('You are not allowed to use PIR filtering');
-            }
-          }
-          ids = filteredEntities.map((n) => n.id);
-          if (ids.length === 0) { // If no id available, reject the query
-            throw ResourceNotFoundError('Specified ids not found or restricted');
-          }
-        }
-        // Check dynamic
-        const dynamicFilter = dynamicParameter?.values ?? [];
-        if (isNotEmptyField(dynamicFilter)) {
-          const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
-          const relatedEntities = await elPaginate(context, user, computedIndices, {
-            connectionFormat: false,
-            first: ES_MAX_PAGINATION,
-            baseData: true,
-            filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
-          }) as BasicStoreBase[];
-          if (relatedEntities.length > 0) {
-            const relatedIds = relatedEntities.map((n) => n.id);
-            ids.push(...relatedIds);
-          } else {
-            ids.push('<invalid id>'); // To force empty result in the query result
-          }
-        }
-        const types = typeParameter?.values;
-        // Construct and push the final regarding of filter
-        const mode = (filter.operator === 'eq' || isEmptyField(filter.operator)) ? FilterMode.Or : FilterMode.And;
-        if (isEmptyField(ids)) {
-          const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
-            : types.map((t: string) => buildRefRelationKey(t, '*'));
-          keys.forEach((relKey: string) => {
-            regardingFilters.push({ key: [relKey], operator: filter.operator, values: ['EXISTS'] });
-          });
-        } else {
-          const keys = isEmptyField(types)
-            ? buildRefRelationKey('*', '*')
-            : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
-          regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids });
-        }
-        finalFilterGroups.push({ mode, filters: regardingFilters, filterGroups: [] });
+        const { newFilterGroup } = await adaptFilterToRegardingOfFilterKey(context, user, filter);
+        finalFilterGroups.push(newFilterGroup);
       }
       if (filterKey === IDS_FILTER) {
         // the special filter key 'ids' take all the ids into account
@@ -4302,8 +4309,8 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
       const sideIdManualInferred = new Map();
       for (let i = 0; i < extractedFilters.length; i += 1) {
         const { values } = extractedFilters[i];
-        const ids = values.filter((v) => v.key === ID_FILTER).map((f) => f.values).flat();
-        const types = values.filter((v) => v.key === RELATION_TYPE_FILTER).map((f) => f.values).flat();
+        const ids = values.filter((v) => v.key === ID_SUBFILTER).map((f) => f.values).flat();
+        const types = values.filter((v) => v.key === RELATION_TYPE_SUBFILTER).map((f) => f.values).flat();
         const directionForced = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED).map((f) => f.values).flat()) ?? false;
         const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
         // resolve all relationships that target the id values, forcing the type is available
