@@ -56,10 +56,8 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   // Don't generate new redis key under 30-second delay
   const previousKey = await redisGetForgotPasswordOtpPointer(input.email);
   const isTooRecent = previousKey.ttl > (OTP_TTL - 30);
-  console.log('isTooRecent ?? ', isTooRecent, '--- previousKey.ttl',  previousKey.ttl, ' OTP_TTL - 30', OTP_TTL - 30);
   if (isTooRecent) {
-    // return transactionId;
-    throw FunctionalError('remaining time too recent', { ttl: previousKey.ttl });
+    return transactionId;
   } 
 
   // Delete the previous OTP if it exists based on the pointer
