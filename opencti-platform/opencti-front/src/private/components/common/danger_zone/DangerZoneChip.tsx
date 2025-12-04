@@ -30,9 +30,9 @@ const DangerZoneChip = ({ style }: { style?: React.CSSProperties }) => {
       <Tooltip
         title={t_i18n('DangerZoneTooltip')}
       >
-        <>
+        <span>
           Danger Zone
-        </>
+        </span>
       </Tooltip>
     </div>
   );

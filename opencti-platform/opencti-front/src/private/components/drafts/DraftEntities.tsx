@@ -14,6 +14,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { useComputeLink } from '../../../utils/hooks/useAppData';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 const draftEntitiesLineFragment = graphql`
     fragment DraftEntities_node on StixCoreObject {
@@ -223,7 +224,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   };
 
   let createButton: ReactNode;
-  if (!isReadOnly) {
+  if (!isReadOnly && useGranted([KNOWLEDGE_KNUPDATE])) {
     createButton = entitiesType === 'Stix-Cyber-Observable' ? (
       <>
         <StixCyberObservableCreation

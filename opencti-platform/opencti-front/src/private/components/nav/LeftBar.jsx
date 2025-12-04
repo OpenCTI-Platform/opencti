@@ -110,6 +110,7 @@ import useGranted, {
   TAXIIAPI,
   VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
+import useHasOnlyAccessToImportDraftTab from '../../../utils/hooks/useHasOnlyAccessToImportDraftTab';
 import { MESSAGING$ } from '../../../relay/environment';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -224,7 +225,7 @@ const LeftBar = () => {
   } = useAuth();
   const navigate = useNavigate();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
-  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
+  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]) || useHasOnlyAccessToImportDraftTab();
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);

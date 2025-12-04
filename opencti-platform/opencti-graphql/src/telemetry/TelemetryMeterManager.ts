@@ -26,6 +26,8 @@ export class TelemetryMeterManager {
 
   rolesWithCapabilityInDraftCount = 0;
 
+  capabilitiesInDraftUpdatedCount = 0;
+
   // Number of active drafts
   draftCount = 0;
 
@@ -190,6 +192,10 @@ export class TelemetryMeterManager {
     this.rolesWithCapabilityInDraftCount = n;
   }
 
+  setCapabilitiesInDraftUpdatedCount(n: number) {
+    this.capabilitiesInDraftUpdatedCount = n;
+  }
+
   setDraftCount(n: number) {
     this.draftCount = n;
   }
@@ -306,6 +312,7 @@ export class TelemetryMeterManager {
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
     this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
     this.registerGauge('roles_with_capability_in_draft_count', 'number of roles with capability in draft', 'rolesWithCapabilityInDraftCount');
+    this.registerGauge('capabilities_in_draft_tab_loaded_count', 'number of times the capabilities in draft tab is loaded', 'capabilitiesInDraftTabLoadedCount');
     this.registerGauge('active_drafts_count', 'number of active drafts', 'draftCount');
     this.registerGauge('draft_creation_count', 'number of draft creation', 'draftCreationCount');
     this.registerGauge('draft_validation_count', 'number of draft validation', 'draftValidationCount');

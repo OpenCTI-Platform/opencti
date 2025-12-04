@@ -17,6 +17,7 @@ import { computeValidationProgress } from '../../../utils/draft/draftUtils';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
+import useHasOnlyAccessToImportDraftTab from '../../../utils/hooks/useHasOnlyAccessToImportDraftTab';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -128,6 +129,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
   const draftColor = getDraftModeColor(theme);
   const validatedDraftColor = theme.palette.success.main;
   const draftContext = useDraftContext();
+  const hasOnlyAccessToImportDraftTab = useHasOnlyAccessToImportDraftTab();
   const { setTitle } = useConnectedDocumentModifier();
   if (!entityId) {
     setTitle(t_i18n('Drafts'));
@@ -222,7 +224,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
           <Breadcrumbs
             elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
           />
-          <ImportMenu />
+          {!hasOnlyAccessToImportDraftTab && (<ImportMenu />)}
         </>
       )}
       {queryRef && (

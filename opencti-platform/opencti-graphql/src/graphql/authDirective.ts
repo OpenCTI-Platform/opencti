@@ -1,28 +1,62 @@
-/* eslint-disable no-underscore-dangle,no-param-reassign */
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-import { filter, includes, map } from 'ramda';
 // eslint-disable-next-line import/extensions
 import { defaultFieldResolver } from 'graphql/index.js';
+import type { GraphQLFieldConfig, GraphQLSchema } from 'graphql';
 import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
+import { Capabilities } from '../generated/graphql';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
+import type { AuthContext } from '../types/user';
 import { BYPASS, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
+import { getDraftContext } from '../utils/draftContext';
 
-// eslint-disable-next-line
-export const authDirectiveBuilder = (directiveName) => {
-  const typeDirectiveArgumentMaps = {};
+/**
+ * Type representing a capability string value from the Capabilities enum
+ */
+type CapabilityString = `${Capabilities}`;
+
+/**
+ * Arguments passed to the auth directive in GraphQL schema
+ * @example @auth(for: ["KNOWLEDGE_KNUPDATE"], and: true)
+ */
+interface AuthDirectiveArgs {
+  /** Array of required capabilities - must be valid Capabilities enum values */
+  for: CapabilityString[];
+  /** If true, ALL capabilities in 'for' are required. If false/undefined, ANY capability is sufficient */
+  and?: boolean;
+}
+
+/**
+ * Type for the directive argument maps stored by type name
+ */
+type TypeDirectiveArgumentMaps = Record<string, AuthDirectiveArgs>;
+
+/**
+ * Return type of authDirectiveBuilder function
+ */
+interface AuthDirectiveBuilder {
+  /**
+   * Transforms a GraphQL schema by applying auth directive logic
+   * @param schema - The GraphQL schema to transform
+   * @returns The transformed schema with auth checks
+   */
+  authDirectiveTransformer: (schema: GraphQLSchema) => GraphQLSchema;
+}
+
+export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilder => {
+  const typeDirectiveArgumentMaps: TypeDirectiveArgumentMaps = {};
   return {
-    authDirectiveTransformer: (schema) => mapSchema(schema, {
+    authDirectiveTransformer: (schema: GraphQLSchema) => mapSchema(schema, {
       [MapperKind.TYPE]: (type) => {
         const directive = getDirective(schema, type, directiveName);
-        const authDirective = directive?.[0];
+        const authDirective = directive?.[0] as AuthDirectiveArgs | undefined;
         if (authDirective) {
           typeDirectiveArgumentMaps[type.name] = authDirective;
         }
         return undefined;
       },
-      [MapperKind.OBJECT_FIELD]: (fieldConfig, _fieldName, typeName) => {
+      [MapperKind.OBJECT_FIELD]: (fieldConfig: GraphQLFieldConfig<any, any>, _fieldName: string, typeName: string) => {
         const directive = getDirective(schema, fieldConfig, directiveName);
-        const authDirective = directive?.[0] ?? typeDirectiveArgumentMaps[typeName];
+        const authDirective = (directive?.[0] as AuthDirectiveArgs | undefined) ?? typeDirectiveArgumentMaps[typeName];
         if (!authDirective && (typeName === 'Query' || typeName === 'Mutation')) {
           const publicDirective = getDirective(schema, fieldConfig, 'public')?.[0];
           if (!publicDirective) {
@@ -33,7 +67,7 @@ export const authDirectiveBuilder = (directiveName) => {
           const { for: requiredCapabilities, and: requiredAll } = authDirective;
           if (requiredCapabilities) {
             const { resolve = defaultFieldResolver } = fieldConfig;
-            fieldConfig.resolve = (source, args, context, info) => {
+            fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
               // Get user from the session
               const { user, otp_mandatory, user_otp_validated } = context;
               if (!user) {
@@ -64,30 +98,40 @@ export const authDirectiveBuilder = (directiveName) => {
                 return resolve(source, args, context, info);
               }
               // Compute user capabilities
-              const userCapabilities = map((c) => c.name, user.capabilities);
+              const userBaseCapabilities = user.capabilities.map((c) => c.name);
               // Accept everything if bypass capability or the system user (protection).
-              const shouldBypass = userCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
+              const shouldBypass = userBaseCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
               if (shouldBypass) {
                 return resolve(source, args, context, info);
               }
+              
+              let userCapabilities: string[] = [];
+
+              const isInDraftContext = !!getDraftContext(context, user);
+              // If the user is in draft mode, add capabilities in draft to the base capabilities
+              if (isInDraftContext) {
+                const userCapabilitiesInDraft = user.capabilitiesInDraft?.map((c) => c.name) ?? [];
+                userCapabilities = Array.from(new Set([...userBaseCapabilities, ...userCapabilitiesInDraft]));
+              } else {
+                userCapabilities = userBaseCapabilities;
+              }
+              
               if (typeName === 'Organization' && requiredCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(SETTINGS_SET_ACCESSES)) {
                 if (user.administrated_organizations.some(({ id }) => id === source.id)) {
                   return resolve(source, args, context, info);
                 }
                 return null;
               }
-              // Check the user capabilities
-              let numberOfAvailableCapabilities = 0;
-              for (let index = 0; index < requiredCapabilities.length; index += 1) {
-                const checkCapability = requiredCapabilities[index];
-                const matchingCapabilities = filter((r) => checkCapability !== BYPASS && includes(checkCapability, r), userCapabilities);
-                if (matchingCapabilities.length > 0) {
-                  numberOfAvailableCapabilities += 1;
-                }
-              }
-              const isAccessForbidden = numberOfAvailableCapabilities === 0
-                || (requiredAll && numberOfAvailableCapabilities !== requiredCapabilities.length);
-              if (isAccessForbidden) {
+
+              const capabilityMatches = (requestedCapability: string) =>
+                // Check if any of the user capabilities includes the requested capability as a substring
+                userCapabilities.some((u) => requestedCapability !== BYPASS && u.includes(requestedCapability));
+
+              const isGrantedAccess = requiredAll
+                ? requiredCapabilities.every(capabilityMatches)
+                : requiredCapabilities.some(capabilityMatches);
+
+              if (!isGrantedAccess) {
                 throw ForbiddenAccess();
               }
               return resolve(source, args, context, info);
