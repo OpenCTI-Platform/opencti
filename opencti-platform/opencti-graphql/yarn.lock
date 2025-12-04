@@ -7099,7 +7099,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"body-parser@npm:2.2.1, body-parser@npm:^2.2.0":
+"body-parser@npm:2.2.1, body-parser@npm:^2.2.0, body-parser@npm:^2.2.1":
   version: 2.2.1
   resolution: "body-parser@npm:2.2.1"
   dependencies:
@@ -9183,17 +9183,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:5.1.0":
-  version: 5.1.0
-  resolution: "express@npm:5.1.0"
+"express@npm:5.2.1":
+  version: 5.2.1
+  resolution: "express@npm:5.2.1"
   dependencies:
     accepts: "npm:^2.0.0"
-    body-parser: "npm:^2.2.0"
+    body-parser: "npm:^2.2.1"
     content-disposition: "npm:^1.0.0"
     content-type: "npm:^1.0.5"
     cookie: "npm:^0.7.1"
     cookie-signature: "npm:^1.2.1"
     debug: "npm:^4.4.0"
+    depd: "npm:^2.0.0"
     encodeurl: "npm:^2.0.0"
     escape-html: "npm:^1.0.3"
     etag: "npm:^1.8.1"
@@ -9214,7 +9215,7 @@ __metadata:
     statuses: "npm:^2.0.1"
     type-is: "npm:^2.0.1"
     vary: "npm:^1.1.2"
-  checksum: 10c0/80ce7c53c5f56887d759b94c3f2283e2e51066c98d4b72a4cc1338e832b77f1e54f30d0239cc10815a0f849bdb753e6a284d2fa48d4ab56faf9c501f55d751d6
+  checksum: 10c0/45e8c841ad188a41402ddcd1294901e861ee0819f632fb494f2ed344ef9c43315d294d443fb48d594e6586a3b779785120f43321417adaef8567316a55072949
   languageName: node
   linkType: hard
 
@@ -12638,7 +12639,7 @@ __metadata:
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-import-newlines: "npm:1.4.0"
     eventsource: "npm:2.0.2"
-    express: "npm:5.1.0"
+    express: "npm:5.2.1"
     express-rate-limit: "npm:8.2.1"
     express-session: "npm:1.18.2"
     fast-json-patch: "npm:3.1.1"
