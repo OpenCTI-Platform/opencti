@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { Field, useFormikContext } from 'formik';
 import SwitchField from '../../../../../../../components/fields/SwitchField';
-import { FieldOption, fieldSpacingContainerStyle, KillChainPhaseFieldOption } from '../../../../../../../utils/field';
+import { FieldOption, KillChainPhaseFieldOption } from '../../../../../../../utils/field';
 import { isEmptyField } from '../../../../../../../utils/utils';
 import CreatedByField from '../../../../../common/form/CreatedByField';
 import KillChainPhasesField from '../../../../../common/form/KillChainPhasesField';
@@ -177,7 +177,7 @@ const PlaybookActionValueField = ({
         <OpenVocabField
           name={formValueName}
           type={'case_severity_ov'}
-          containerStyle={fieldSpacingContainerStyle}
+          label={t_i18n('Severity')}
           onChange={(_, severity) => {
             setFieldValue(
               valueName,
@@ -195,7 +195,7 @@ const PlaybookActionValueField = ({
         <OpenVocabField
           name={formValueName}
           type="indicator_type_ov"
-          containerStyle={fieldSpacingContainerStyle}
+          label={t_i18n('Types')}
           multiple
           onChange={(_, indicatorTypes) => {
             setFieldValue(
@@ -214,7 +214,7 @@ const PlaybookActionValueField = ({
         <OpenVocabField
           name={formValueName}
           type="platforms_ov"
-          containerStyle={fieldSpacingContainerStyle}
+          label={t_i18n('Platforms')}
           multiple
           onChange={(_, mitrePlatforms) => {
             setFieldValue(
@@ -233,7 +233,7 @@ const PlaybookActionValueField = ({
         <OpenVocabField
           name={formValueName}
           type="case_priority_ov"
-          containerStyle={fieldSpacingContainerStyle}
+          label={t_i18n('Priority')}
           onChange={(_, priority) => {
             setFieldValue(
               valueName,

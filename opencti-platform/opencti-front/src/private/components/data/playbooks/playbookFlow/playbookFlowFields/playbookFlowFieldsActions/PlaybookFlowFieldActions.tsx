@@ -23,7 +23,7 @@ import { fieldSpacingContainerStyle } from '../../../../../../../utils/field';
 import { isEmptyField } from '../../../../../../../utils/utils';
 import type { Theme } from '../../../../../../../components/Theme';
 import SelectField from '../../../../../../../components/fields/SelectField';
-import { PlaybookUpdateActionsForm } from './playbookAction-types';
+import { attributesMultiple, PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
 import PlaybookActionAlerts from './PlaybookActionAlerts';
 import useActionFieldOptions from './useActionFieldOptions';
 import PlaybookActionValueField from './PlaybookActionValueField';
@@ -46,6 +46,32 @@ const PlaybookFlowFieldActions = ({
     if (a.attribute === 'x_opencti_detection') return true;
     return a.op && a.attribute && a.value && a.value.length > 0;
   });
+
+  /**
+   * When changing either the operation (op) or the attribute, we need to reset
+   * the field for the value of the action.
+   * 
+   * @param index Index of the action in the array of actions in the form.
+   * @param attribute The new value of attribute concerned by the action (undefined = it's the 'op' that has changed).
+   */
+  const resetActionValue = (index: number, attribute?: string) => {
+    if (actions[index]) {
+      const newValue: PlaybookUpdateAction = {
+        // By default we only set in the new object the operation.
+        op: actions[index].op
+      };
+      if (attribute) {
+        newValue.attribute = attribute;
+      }
+      setFieldValue(`actions.${index}`, newValue);
+    }
+    if (formActionsValues[index] !== undefined) {
+      // We also reset in the array containing form data, it's either null or empty array
+      // depending of the kind of attribute manipulated (multiple or not).
+      const isMultiple = attributesMultiple.includes(attribute ?? '');
+      setFieldValue(`actionsFormValues.${index}`, isMultiple ? [] : null);
+    }
+  };
 
   return (
     <FieldArray
@@ -91,6 +117,7 @@ const PlaybookFlowFieldActions = ({
                         name={`actions.${i}.op`}
                         containerstyle={{ width: '100%' }}
                         label={t_i18n('Action type')}
+                        onChange={() => resetActionValue(i)}
                       >
                         {operations.map((op) => (
                           <MenuItem key={op} value={op}>
@@ -107,6 +134,7 @@ const PlaybookFlowFieldActions = ({
                         name={`actions.${i}.attribute`}
                         containerstyle={{ width: '100%' }}
                         label={t_i18n('Field')}
+                        onChange={(_: string, val: string) => resetActionValue(i, val)}
                       >
                         {fieldOptions.length === 0
                           ? <MenuItem value="none">{t_i18n('None')}</MenuItem>

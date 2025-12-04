@@ -30,3 +30,13 @@ export interface PlaybookUpdateActionsForm {
   actions?: PlaybookUpdateAction[]
   actionsFormValues?: PlaybookUpdateAction['value'][]
 }
+
+export const attributesMultiple = [
+  'objectMarking',
+  'objectLabel',
+  'objectAssignee',
+  'objectParticipant',
+  'killChainPhases',
+  'indicator_types',
+  'x_mitre_platforms'
+];
