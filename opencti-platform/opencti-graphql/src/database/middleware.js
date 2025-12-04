@@ -2086,22 +2086,27 @@ export const buildChanges = (entityType, inputs) => {
     if (isMultiple) {
       let added  = [];
       let removed = [];
+      let newValues = [];
       if(operation === UPDATE_OPERATION_ADD){
         added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+        newValues = previousArray.concat(valueArray);
       } else if(operation === UPDATE_OPERATION_REMOVE){
         removed = valueArray;
+        newValues = previousArray.filter((valueItem) => !valueArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
       } else{
         // UPDATE_OPERATION_REPLACE or no operation is the same
         removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
         added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+        newValues = valueArray;
       }
 
       if (added.length > 0 || removed.length > 0) {
         changes.push({
           field,
           previous: previousArray,
-          added: added,
-          removed: removed,
+          new: newValues,
+          added,
+          removed,
         });
       }
     }
