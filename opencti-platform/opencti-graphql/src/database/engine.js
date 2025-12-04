@@ -4516,7 +4516,7 @@ export const prepareElementForIndexing = async (element) => {
     } else if (isDateAttribute(key)) { // Date is an object but natively supported
       thing[key] = value;
     } else if (isBooleanAttribute(key)) { // Patch field is string generic so need to be cast to boolean
-      thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
+      thing[key] = (!value || typeof value === 'boolean') ? value : value.toLowerCase() === 'true';
     } else if (isNumericAttribute(key)) {
       thing[key] = isNotEmptyField(value) ? Number(value) : undefined;
     } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
