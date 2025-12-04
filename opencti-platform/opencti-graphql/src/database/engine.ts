@@ -4300,7 +4300,6 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
   elements: T[],
   filters: FilterGroup | undefined | null
 ) => {
-  console.log('---------------filters', JSON.stringify(filters));
   // First check if there is an "in regards of" filter
   // If its case we need to ensure elements are filtered according to denormalization rights.
   if (isNotEmptyField(filters)) {
@@ -4314,9 +4313,7 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
         const { values } = extractedFilters[i];
         const ids = values.filter((v) => v.key === ID_SUBFILTER).map((f) => f.values).flat();
         const types = values.filter((v) => v.key === RELATION_TYPE_SUBFILTER).map((f) => f.values).flat();
-        console.log('-------values', values);
         const inferredParameterValues = values.filter((v) => v.key === RELATION_INFERRED_SUBFILTER).map((f) => f.values).flat();
-        console.log('----------inferredparameter', inferredParameterValues);
         const directionForced = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED).map((f) => f.values).flat()) ?? false;
         const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
         // resolve all relationships that target the id values, forcing the type is available
