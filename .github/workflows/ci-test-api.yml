@@ -159,17 +159,8 @@ jobs:
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex;
-            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
-            apk add build-base git libffi-dev cargo;
-            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
-            cd /home/workspace/opencti-platform/opencti-graphql
-            npm install -g corepack
-            cp /home/workspace/opencti-platform/.yarnrc.yml .
-            yarn install
-            yarn build
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules
+          filigran/platform:${{ github.sha }} \
+          sh -c 'NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules
         '
 
     # Output all logs used during the job
@@ -226,19 +217,8 @@ jobs:
           -e APP__BASE_URL=http://unit-and-other-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex;
-            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
-            apk add build-base git libffi-dev cargo;
-            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
-            cd /home/workspace/opencti-platform/opencti-graphql
-            npm install -g corepack
-            cp /home/workspace/opencti-platform/.yarnrc.yml .
-            yarn install
-            yarn build
-            yarn check-ts
-            yarn lint
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit-and-others
+          filigran/platform:${{ github.sha }} \
+          sh -c 'NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit-and-others
         '
 
     # Output all logs used during the job
