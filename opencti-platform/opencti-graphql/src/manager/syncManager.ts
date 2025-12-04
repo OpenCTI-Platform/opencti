@@ -1,4 +1,5 @@
-import EventSource from 'eventsource';
+import { EventSource } from 'eventsource';
+import type { AddOperation } from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import conf, { booleanConf, getPlatformHttpProxyAgent, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -15,57 +16,71 @@ import { isEmptyField, wait } from '../database/utils';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { getHttpClient } from '../utils/http-client';
+import type { GetHttpClient} from '../utils/http-client';
 import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
+import type { BasicStoreEntitySynchronizer } from '../types/connector';
+import type { AuthContext } from '../types/user';
+import type { UpdateEvent } from '../types/event';
+import type { StixObject } from '../types/stix-2-1-common';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
 
-const syncManagerInstance = (syncId) => {
+const syncManagerInstance = (syncId: string) => {
   const MIN_QUEUE_SIZE = 100;
   const MAX_QUEUE_SIZE = 500;
   const lDelay = 0;
   const hDelay = 1000;
   // Variables
-  let connectionId = null;
-  let eventsQueue;
-  let eventSource;
-  let lastState;
-  let lastStateSaveTime;
-  const handleEvent = (event) => {
-    const { type, data, lastEventId } = event;
+  let connectionId: string | undefined;
+  let eventsQueue: Queue | undefined;
+  let eventSource: EventSource;
+  let eventSourceUrl: string;
+  let lastState: number;
+  let lastStateSaveTime: number;
+  const handleEvent = (type: string) => (event: MessageEvent) => {
+    const { data, lastEventId } = event;
     const { data: stixData, context, version, event_id } = JSON.parse(data);
     if (version === EVENT_CURRENT_VERSION) {
-      eventsQueue.enqueue({ id: lastEventId, type, data: stixData, context, event_id });
+      eventsQueue?.enqueue({ id: lastEventId, type, data: stixData, context, event_id });
     }
   };
-  const startStreamListening = (sseUri, syncElement) => {
-    const { token, ssl_verify: ssl = false } = syncElement;
+  const startStreamListening = (sseUri: string, syncElement: BasicStoreEntitySynchronizer) => {
+    const { token, ssl_verify: _ssl = false } = syncElement;
     eventsQueue = new Queue();
-    eventSource = new EventSource(sseUri, {
-      rejectUnauthorized: ssl,
-      headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
-      agent: getPlatformHttpProxyAgent(sseUri)
+    eventSourceUrl = sseUri;
+    // TODO rejectUnauthorized: ssl,
+    const customFetch: typeof fetch = (_ignored, init) => fetch(
+      eventSourceUrl,
+      {
+        ...init,
+        headers: {
+          ...(init?.headers ?? {}),
+          ...(!isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined),
+        },
+        dispatcher: getPlatformHttpProxyAgent(sseUri, true),
+      });
+    eventSource = new EventSource(sseUri, { fetch: customFetch });
+    eventSource.addEventListener('heartbeat', ({ lastEventId }) => {
+      eventsQueue?.enqueue({ id: lastEventId, type: 'heartbeat' });
     });
-    eventSource.on('heartbeat', ({ lastEventId, type }) => {
-      eventsQueue.enqueue({ id: lastEventId, type });
-    });
-    eventSource.on('create', (d) => handleEvent(d));
-    eventSource.on('update', (d) => handleEvent(d));
-    eventSource.on('delete', (d) => handleEvent(d));
-    eventSource.on('merge', (d) => handleEvent(d));
-    eventSource.on('connected', (d) => {
+    eventSource.addEventListener('create', (d) => handleEvent('create')(d));
+    eventSource.addEventListener('update', (d) => handleEvent('update')(d));
+    eventSource.addEventListener('delete', (d) => handleEvent('delete')(d));
+    eventSource.addEventListener('merge', (d) => handleEvent('merge')(d));
+    eventSource.addEventListener('connected', (d) => {
       connectionId = JSON.parse(d.data).connectionId;
       logApp.info(`[OPENCTI] Sync ${syncId}: listening ${eventSource.url} with id ${connectionId}`);
     });
-    eventSource.on('error', (error) => {
+    eventSource.addEventListener('error', (error) => {
       logApp.warn('[OPENCTI] Sync stream error', { id: syncId, manager: 'SYNC_MANAGER', cause: error });
     });
   };
-  const manageBackPressure = async (httpClient, { uri }, currentDelay) => {
+  const manageBackPressure = async (httpClient: ReturnType<typeof getHttpClient>, { uri }: BasicStoreEntitySynchronizer, currentDelay: number) => {
     if (connectionId) {
       const connectionManagement = `${httpBase(uri)}stream/connection/${connectionId}`;
-      const currentQueueLength = eventsQueue.getLength();
+      const currentQueueLength = eventsQueue?.getLength() ?? 0;
       // If queue length keeps increasing even with an increased delay, we keep increasing the delay until we are able to go back below MIN_QUEUE_SIZE
       if (currentQueueLength > MAX_QUEUE_SIZE && currentDelay * MAX_QUEUE_SIZE < hDelay * (currentQueueLength - MAX_QUEUE_SIZE)) {
         const newDelay = currentDelay + hDelay;
@@ -81,7 +96,7 @@ const syncManagerInstance = (syncId) => {
     }
     return currentDelay;
   };
-  const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
+  const transformDataWithReverseIdAndFilesData = async (sync: BasicStoreEntitySynchronizer, httpClient: ReturnType<typeof getHttpClient>, data: StixObject, context: UpdateEvent['context']) => {
     const { uri } = sync;
     const processingData = { ...data };
     // Reverse patch the id if modified
@@ -95,20 +110,20 @@ const syncManagerInstance = (syncId) => {
         const response = await httpClient.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`);
         entityFile.data = Buffer.from(response.data, 'utf-8').toString('base64');
       } catch (e) {
-        logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
+        logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: (e as Error).message });
       }
     }
-    return { data: processingData, previous_standard: idOperation?.value };
+    return { data: processingData, previous_standard: (idOperation as AddOperation<unknown>)?.value };
   };
-  const saveCurrentState = async (context, type, sync, eventId) => {
-    const currentTime = new Date().getTime();
+  const saveCurrentState = async (context: AuthContext, type: string, sync: BasicStoreEntitySynchronizer, eventId: string) => {
+    const currentTime = Date.now();
     const [time] = eventId.split('-');
     const dateTime = parseInt(time, 10);
     const eventDate = utcDate(dateTime).toISOString();
     if (lastStateSaveTime === undefined || (dateTime !== lastState && (currentTime - lastStateSaveTime) > 15000)) {
       logApp.info(`[OPENCTI] Sync ${syncId}: saving state from ${type} to ${eventId}/${eventDate}`);
-      await patchSync(context, SYSTEM_USER, syncId, { current_state_date: eventDate });
-      eventSource.updateUrl(createSyncHttpUri(sync, eventDate, false));
+      await patchSync(context, SYSTEM_USER, syncId, { current_state_date: new Date(dateTime) });
+      eventSourceUrl = createSyncHttpUri(sync, eventDate, false);
       lastState = dateTime;
       lastStateSaveTime = currentTime;
     }
@@ -119,22 +134,22 @@ const syncManagerInstance = (syncId) => {
     stop: () => {
       logApp.info(`[OPENCTI] Sync ${syncId}: stopping manager`);
       eventSource.close();
-      eventsQueue = null;
+      eventsQueue = undefined;
     },
-    start: async (context) => {
+    start: async (context: AuthContext) => {
       logApp.info(`[OPENCTI] Sync ${syncId}: starting manager`);
-      const sync = await storeLoadById(context, SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
+      const sync = await storeLoadById<BasicStoreEntitySynchronizer>(context, SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
       const synchronized = sync.synchronized ?? false;
       const { token, ssl_verify: ssl = false } = sync;
       const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
-      const httpClientOptions = { headers, rejectUnauthorized: ssl, responseType: 'arraybuffer' };
+      const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ssl, responseType: 'arraybuffer' };
       const httpClient = getHttpClient(httpClientOptions);
-      lastState = sync.current_state_date;
-      const sseUri = createSyncHttpUri(sync, lastState, false);
+      lastState = sync.current_state_date.getDate();
+      const sseUri = createSyncHttpUri(sync, `${lastState}`, false);
       startStreamListening(sseUri, sync);
       let currentDelay = lDelay;
       while (isRunning()) {
-        const event = eventsQueue.dequeue();
+        const event = eventsQueue?.dequeue();
         if (event) {
           try {
             currentDelay = await manageBackPressure(httpClient, sync, currentDelay);
@@ -152,7 +167,7 @@ const syncManagerInstance = (syncId) => {
                 synchronized,
                 previous_standard,
                 update: true,
-                applicant_id: sync.user_id ?? OPENCTI_SYSTEM_UUID,
+                applicant_id: (sync as unknown as { user_id: string }).user_id ?? OPENCTI_SYSTEM_UUID,
                 content
               });
               await saveCurrentState(context, 'event', sync, eventId);
@@ -170,14 +185,14 @@ const syncManagerInstance = (syncId) => {
 };
 
 const initSyncManager = () => {
-  let scheduler;
+  let scheduler: ReturnType<typeof setIntervalAsync>;
   let syncListening = true;
   let managerRunning = false;
   const syncManagers = new Map();
   const processStep = async () => {
     // Get syncs definition
     const context = executionContext('sync_manager');
-    const syncs = await topEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
+    const syncs = await topEntitiesList<BasicStoreEntitySynchronizer>(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
     // region Handle management of existing synchronizer
     for (let index = 0; index < syncs.length; index += 1) {
       const { id, running } = syncs[index];
@@ -209,14 +224,13 @@ const initSyncManager = () => {
     }
     // endregion
   };
-  const processingLoop = async (lock) => {
+  const processingLoop = async (lock: {signal: AbortSignal, extend: () => Promise<void>, unlock: () => Promise<void>}) => {
     while (syncListening) {
       lock.signal.throwIfAborted();
       await processStep();
       await wait(WAIT_TIME_ACTION);
     }
     // Stopping
-    // eslint-disable-next-line no-restricted-syntax
     for (const syncManager of syncManagers.values()) {
       if (syncManager.isRunning()) {
         await syncManager.stop();
@@ -224,14 +238,14 @@ const initSyncManager = () => {
     }
   };
   const syncManagerHandler = async () => {
-    let lock;
+    let lock: {signal: AbortSignal, extend: () => Promise<void>, unlock: () => Promise<void>} | undefined;
     try {
       logApp.debug('[OPENCTI-MODULE] Running sync manager');
       lock = await lockResources([SYNC_MANAGER_KEY], { retryCount: 0 });
       managerRunning = true;
-      await processingLoop(lock);
+      await processingLoop(lock!);
     } catch (e) {
-      if (e.name === TYPE_LOCK_ERROR) {
+      if ((e as Error).name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Sync manager already in progress by another API');
       } else {
         logApp.error('[OPENCTI-MODULE] Sync manager handler error', { cause: e, manager: 'SYNC_MANAGER' });

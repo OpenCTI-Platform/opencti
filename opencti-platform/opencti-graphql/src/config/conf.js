@@ -8,6 +8,7 @@ import ipaddr from 'ipaddr.js';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { HttpProxyAgent } from 'http-proxy-agent';
+import { ProxyAgent } from 'undici';
 import { v4 as uuid } from 'uuid';
 import { GraphQLError } from 'graphql/index';
 import * as O from '../schema/internalObject';
@@ -389,7 +390,7 @@ export const configureCA = (certificates) => {
   if (certificates && certificates.length > 0) {
     return { ca: certificates };
   }
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const cert of LINUX_CERTFILES) {
     try {
       if (lstatSync(cert).isFile()) {
@@ -459,28 +460,43 @@ export const getPlatformHttpProxies = () => {
   process.env.HTTP_PROXY = '';
   process.env.HTTPS_PROXY = '';
   process.env.NO_PROXY = '';
-  const proxies = {};
+  const agents = {};
+  const dispatchers = {};
   if (https) {
-    proxies['https:'] = {
+    agents['https:'] = {
       build: () => new HttpsProxyAgent(https, {
         rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
         ...configureCA(proxyCA)
       }),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
-  }
-  if (http) {
-    proxies['http:'] = {
-      build: () => new HttpProxyAgent(http),
+    dispatchers['https:'] = {
+      build: () => new ProxyAgent({
+        uri: https,
+        proxyTls: {
+          rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
+          ...configureCA(proxyCA)
+        },
+      }),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
   }
-  return proxies;
+  if (http) {
+    agents['http:'] = {
+      build: () => new HttpProxyAgent(http),
+      isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
+    };
+    dispatchers['http:'] = {
+      build: () => new ProxyAgent({ uri: http }),
+      isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
+    };
+  }
+  return { agents, dispatchers };
 };
-export const getPlatformHttpProxyAgent = (uri) => {
-  const platformProxies = getPlatformHttpProxies();
+export const getPlatformHttpProxyAgent = (uri, fetchDispatcher = false) => {
   const targetUrl = new URL(uri);
-  const targetProxy = platformProxies[targetUrl.protocol]; // Select the proxy according to target protocol
+  const { agents, dispatchers } = getPlatformHttpProxies();
+  const targetProxy = (fetchDispatcher ? dispatchers : agents)[targetUrl.protocol]; // Select the proxy according to target protocol
   if (targetProxy) {
     // If proxy found, check if hostname is not excluded
     if (targetProxy.isExcluded(targetUrl.hostname)) {

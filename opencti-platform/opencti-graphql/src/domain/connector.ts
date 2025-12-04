@@ -37,7 +37,6 @@ import {
   type HealthConnectorStatusInput,
   IngestionAuthType,
   type LogsConnectorStatusInput,
-  type MutationSynchronizerTestArgs,
   type RegisterConnectorInput,
   type RegisterConnectorsManagerInput,
   type RequestConnectorStatusInput,
@@ -510,7 +509,7 @@ export const unregisterConnectorForIngestion = async (context: AuthContext, id: 
   await connectorDelete(context, SYSTEM_USER, connectorId);
 };
 
-export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { running: boolean }) => {
+export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { running?: boolean, current_state_date?: Date }) => {
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };
@@ -525,7 +524,7 @@ export const findSyncPaginated = async (context: AuthContext, user: AuthUser, op
   return pageEntitiesConnection(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
 
-export const testSync = async (context: AuthContext, user: AuthUser, sync: MutationSynchronizerTestArgs) => {
+export const testSync = async (context: AuthContext, user: AuthUser, sync: SynchronizerAddInput) => {
   return testSyncUtils(context, user, sync);
 };
 
