@@ -2637,7 +2637,7 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
   const idParameter = filter.values.find((i) => i.key === ID_SUBFILTER);
   const typeParameter = filter.values.find((i) => i.key === RELATION_TYPE_SUBFILTER);
   const dynamicParameter = filter.values.find((i) => i.key === RELATION_DYNAMIC_SUBFILTER);
-  const inferredParameter = filter.values.find((i) => i.key === RELATION_INFERRED_SUBFILTER);
+  // const inferredParameter = filter.values.find((i) => i.key === RELATION_INFERRED_SUBFILTER);
   // Check parameters
   if (!idParameter && !dynamicParameter && !typeParameter) {
     throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
@@ -2700,28 +2700,14 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
   if (isEmptyField(ids)) {
     const keys = isEmptyField(types)
       ? buildRefRelationKey('*', '*')
-      : types.map((t: string) => {
-        if (inferredParameter) {
-          const isInferred = inferredParameter.values.includes('true');
-          return isInferred ? buildRefRelationKey(t, ID_INFERRED) : buildRefRelationKey(t, ID_INTERNAL); // keep only inferred or not inferred ids
-        } else {
-          return buildRefRelationKey(t, '*');
-        }
-      });
+      : types.map((t: string) => buildRefRelationKey(t, '*'));
     keys.forEach((relKey: string) => {
       regardingFilters.push({ key: [relKey], operator: filter.operator, values: ['EXISTS'] });
     });
   } else {
     const keys = isEmptyField(types)
       ? buildRefRelationKey('*', '*')
-      : types.flatMap((t: string) => {
-        if (inferredParameter) {
-          const isInferred = inferredParameter.values.includes('true');
-          return isInferred ? buildRefRelationKey(t, ID_INFERRED) : buildRefRelationKey(t, ID_INTERNAL); // keep only inferred or not inferred ids
-        } else {
-          return [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)];
-        }
-      });
+      : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
     regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids });
   }
   return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [] } };
@@ -4314,6 +4300,7 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
   elements: T[],
   filters: FilterGroup | undefined | null
 ) => {
+  console.log('---------------filters', JSON.stringify(filters));
   // First check if there is an "in regards of" filter
   // If its case we need to ensure elements are filtered according to denormalization rights.
   if (isNotEmptyField(filters)) {
@@ -4327,6 +4314,9 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
         const { values } = extractedFilters[i];
         const ids = values.filter((v) => v.key === ID_SUBFILTER).map((f) => f.values).flat();
         const types = values.filter((v) => v.key === RELATION_TYPE_SUBFILTER).map((f) => f.values).flat();
+        console.log('-------values', values);
+        const inferredParameterValues = values.filter((v) => v.key === RELATION_INFERRED_SUBFILTER).map((f) => f.values).flat();
+        console.log('----------inferredparameter', inferredParameterValues);
         const directionForced = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED).map((f) => f.values).flat()) ?? false;
         const directionReverse = R.head(values.filter((v) => v.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE).map((f) => f.values).flat()) ?? false;
         // resolve all relationships that target the id values, forcing the type is available
@@ -4355,13 +4345,23 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
             filterTo.push({ key: ['toId'], values: ids });
             filterFrom.push({ key: ['fromId'], values: ids });
           }
-          paginateArgs.filters = {
+          // Handle inferred parameter
+          const isInferredFilter = inferredParameterValues.length > 0 ? { key: ['is_inferred'], values: inferredParameterValues } : undefined;
+          console.log('-------------isInferredFilter', isInferredFilter);
+          // Construct filters
+          const directionFilterGroup = {
             mode: FilterMode.Or,
             filters: [],
             filterGroups: [
               { mode: FilterMode.And, filterGroups: [], filters: filterTo },
               { mode: FilterMode.And, filterGroups: [], filters: filterFrom }]
           };
+          paginateArgs.filters = isInferredFilter
+            ? {
+            mode: FilterMode.And,
+            filters: [isInferredFilter as Filter],
+            filterGroups: [directionFilterGroup],
+          } : directionFilterGroup;
         }
         const relationships = await elList<BasicStoreRelation>(context, user, READ_RELATIONSHIPS_INDICES, paginateArgs);
         // compute side ids
