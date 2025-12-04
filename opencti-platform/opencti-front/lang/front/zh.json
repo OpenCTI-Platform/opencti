@@ -3789,6 +3789,7 @@
   "The public dashboard is disabled": "公共仪表板已禁用",
   "The relations attached to selected entities will be copied to the merged entity.": "附加到选定实体的关系将复制到归并的实体中。",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "您输入的重置密码无效或已过期。您可以在延迟 30 秒后申请新代码。",
+  "The reset code you entered is invalid or has expired. You can request a new code.": "您输入的重置密码无效或已过期。您可以申请新的代码。",
   "The retention policy will be applied on global files (files contained in": "保留策略将应用于全局文件（包含在",
   "The retention policy will be applied on global workbenches (workbenches contained in": "保留策略将应用于全局工作台（工作台包含在",
   "The rule has been disabled, clean-up launched...": "该规则已禁用，清理已启动",

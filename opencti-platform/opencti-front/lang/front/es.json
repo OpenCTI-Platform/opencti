@@ -3789,6 +3789,7 @@
   "The public dashboard is disabled": "El panel público está desactivado",
   "The relations attached to selected entities will be copied to the merged entity.": "Las relaciones adjuntadas a las entidades seleccionadas serán copiadas a la entidad fusionada.",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "El código de restablecimiento que ha introducido no es válido o ha caducado. Puede solicitar un nuevo código tras un retraso de 30 segundos.",
+  "The reset code you entered is invalid or has expired. You can request a new code.": "El código de restablecimiento introducido no es válido o ha caducado. Puedes solicitar un nuevo código.",
   "The retention policy will be applied on global files (files contained in": "La política de retención se aplicará a los ficheros globales (ficheros contenidos en",
   "The retention policy will be applied on global workbenches (workbenches contained in": "La política de retención se aplicará a los bancos de trabajo globales (bancos de trabajo contenidos en",
   "The rule has been disabled, clean-up launched...": "La regla ha sido desactivada, limpieza lanzada...",
