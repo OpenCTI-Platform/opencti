@@ -7,7 +7,7 @@ import StixRelationshipsMultiLineChart from '@components/common/stix_relationshi
 import StixRelationshipsMultiAreaChart from '@components/common/stix_relationships/StixRelationshipsMultiAreaChart';
 import StixRelationshipsTimeline from '@components/common/stix_relationships/StixRelationshipsTimeline';
 import StixRelationshipsDonut from '@components/common/stix_relationships/StixRelationshipsDonut';
-import StixRelationshipsMultiHorizontalBars from '@components/common/stix_relationships/StixRelationshipsMultiHorizontalBars';
+import StixRelationshipsMultiHorizontalBars from '@components/common/stix_relationships/StixRelationshipsMultiHorizontalBars/StixRelationshipsMultiHorizontalBars';
 import StixRelationshipsHorizontalBars from '@components/common/stix_relationships/StixRelationshipsHorizontalBars';
 import StixRelationshipsRadar from '@components/common/stix_relationships/StixRelationshipsRadar';
 import StixRelationshipsPolarArea from '@components/common/stix_relationships/StixRelationshipsPolarArea';
