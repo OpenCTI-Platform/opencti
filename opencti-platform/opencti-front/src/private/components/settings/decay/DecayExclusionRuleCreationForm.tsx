@@ -48,7 +48,7 @@ const decayExclusionRuleCreationValidator = (t: (value: string) => string) => {
   });
 };
 
-export const enabledFilters = ['creator_id', 'createdBy', 'objectMarking', 'objectLabel', 'pattern_type', 'indicator_types', "x_opencti_main_observable_type"];
+export const enabledFilters = ['creator_id', 'createdBy', 'objectMarking', 'objectLabel', 'pattern_type', 'indicator_types', 'x_opencti_main_observable_type'];
 
 const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: DecayExclusionRuleCreationFormProps) => {
   const { t_i18n } = useFormatter();

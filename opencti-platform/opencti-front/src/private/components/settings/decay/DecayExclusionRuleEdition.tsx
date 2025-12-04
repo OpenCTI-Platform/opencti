@@ -6,7 +6,7 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import * as Yup from 'yup';
 import { DecayExclusionRules_node$data } from '@components/settings/decay/__generated__/DecayExclusionRules_node.graphql';
 import Box from '@mui/material/Box';
-import Alert from "src/components/Alert"
+import Alert from 'src/components/Alert';
 import Filters from '@components/common/lists/Filters';
 import FilterIconButton from 'src/components/FilterIconButton';
 import useFiltersState from 'src/utils/filters/useFiltersState';

@@ -6,7 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
-import Alert from "src/components/Alert"
+import Alert from 'src/components/Alert';
 import Security from 'src/utils/Security';
 import { SETTINGS_SETCUSTOMIZATION } from 'src/utils/hooks/useGranted';
 import { useNavigate} from 'react-router-dom';
@@ -25,7 +25,7 @@ const DecayExclusionDialogContent: FunctionComponent<DecayExclusionDialogContent
     const link = resolveLink('DecayRule') ?? '';
     onClose();
     navigate(link, { state: { decayTab: 'decayExclusionRule' } });
-  }
+  };
 
   return (
     <>
@@ -45,16 +45,16 @@ const DecayExclusionDialogContent: FunctionComponent<DecayExclusionDialogContent
           }}
         />
       </DialogContent>
-        <DialogActions>
-          <Security needs={[SETTINGS_SETCUSTOMIZATION]}>
-            <Button color="secondary" onClick={handleClick}>{t_i18n('View rule')}</Button>
-          </Security>
-          <Button onClick={onClose}>
-            {t_i18n('Close')}
-          </Button>
-        </DialogActions>
+      <DialogActions>
+        <Security needs={[SETTINGS_SETCUSTOMIZATION]}>
+          <Button color="secondary" onClick={handleClick}>{t_i18n('View rule')}</Button>
+        </Security>
+        <Button onClick={onClose}>
+          {t_i18n('Close')}
+        </Button>
+      </DialogActions>
     </>
-  )
+  );
 };
 
 export default DecayExclusionDialogContent;

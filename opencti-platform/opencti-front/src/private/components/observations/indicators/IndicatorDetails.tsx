@@ -69,40 +69,40 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
   };
 
   return (
-    <Box sx={{ height: "100%" }} className="break">
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n("Details")}
+    <Box sx={{ height: '100%' }} className='break'>
+      <Typography variant='h4' gutterBottom={true}>
+        {t_i18n('Details')}
       </Typography>
       <Paper
         classes={{ root: classes.paper }}
-        className={"paper-for-grid"}
-        variant="outlined"
+        className={'paper-for-grid'}
+        variant='outlined'
       >
-        <Typography variant="h3" gutterBottom={true}>
-          {t_i18n("Indicator pattern")}
+        <Typography variant='h3' gutterBottom={true}>
+          {t_i18n('Indicator pattern')}
         </Typography>
-        <ExpandablePre source={indicator.pattern ?? ""} limit={300} />
-        <Grid container={true} spacing={3} sx={{ marginTop: "10px" }}>
+        <ExpandablePre source={indicator.pattern ?? ''} limit={300} />
+        <Grid container={true} spacing={3} sx={{ marginTop: '10px' }}>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t_i18n("Valid from")}
+            <Typography variant='h3' gutterBottom={true}>
+              {t_i18n('Valid from')}
             </Typography>
             <Chip
               classes={{ root: classes.chip }}
               label={fldt(indicator.valid_from)}
             />
-            <Grid container columnSpacing={1} sx={{ marginTop: "20px" }}>
+            <Grid container columnSpacing={1} sx={{ marginTop: '20px' }}>
               <Grid item xs={4}>
-                <Typography variant="h3" gutterBottom={true}>
-                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                    <span>{t_i18n("Score")}</span>
+                <Typography variant='h3' gutterBottom={true}>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <span>{t_i18n('Score')}</span>
                     {indicator.decay_applied_rule && (
                       <Tooltip
                         title={t_i18n(
-                          "This score is updated with the decay rule applied to this indicator.",
+                          'This score is updated with the decay rule applied to this indicator.',
                         )}
                       >
-                        <InformationOutline fontSize="small" color="primary" />
+                        <InformationOutline fontSize='small' color='primary' />
                       </Tooltip>
                     )}
                   </Box>
@@ -113,14 +113,14 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                 !!indicator.decay_exclusion_applied_rule) && (
                 <Grid item xs={8}>
                   <Button
-                    size="small"
-                    variant="outlined"
+                    size='small'
+                    variant='outlined'
                     onClick={openLifecycleDialog}
                     startIcon={<TroubleshootOutlined />}
-                    sx={{ marginTop: "22px" }}
-                    color={!!indicator.decay_exclusion_applied_rule ? 'warning' : "primary"}
+                    sx={{ marginTop: '22px' }}
+                    color={indicator.decay_exclusion_applied_rule ? 'warning' : 'primary'}
                   >
-                    {t_i18n("Lifecycle")}
+                    {t_i18n('Lifecycle')}
                   </Button>
                   <Dialog
                     slotProps={{ paper: { elevation: 1 } }}
@@ -129,9 +129,9 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                     slots={{ transition: Transition }}
                     onClose={onDecayLifecycleClose}
                     fullWidth
-                    maxWidth="lg"
+                    maxWidth='lg'
                   >
-                    {!!indicator.decay_exclusion_applied_rule ? (
+                    {indicator.decay_exclusion_applied_rule ? (
                       <DecayExclusionDialogContent
                         indicator={indicator}
                         onClose={onDecayLifecycleClose}
@@ -147,11 +147,11 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               )}
             </Grid>
             <Typography
-              variant="h3"
+              variant='h3'
               gutterBottom={true}
-              sx={{ marginTop: "20px" }}
+              sx={{ marginTop: '20px' }}
             >
-              {t_i18n("Description")}
+              {t_i18n('Description')}
             </Typography>
             <ExpandableMarkdown
               source={indicator.description}
@@ -160,23 +160,23 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             />
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t_i18n("Valid until")}
+            <Typography variant='h3' gutterBottom={true}>
+              {t_i18n('Valid until')}
             </Typography>
             <Chip
               classes={{ root: classes.chip }}
               label={fldt(indicator.valid_until)}
             />
             <Typography
-              variant="h3"
+              variant='h3'
               gutterBottom={true}
-              sx={{ marginTop: "20px" }}
+              sx={{ marginTop: '20px' }}
             >
-              {t_i18n("Detection")}
+              {t_i18n('Detection')}
             </Typography>
             <ItemBoolean
               label={
-                indicator.x_opencti_detection ? t_i18n("Yes") : t_i18n("No")
+                indicator.x_opencti_detection ? t_i18n('Yes') : t_i18n('No')
               }
               status={indicator.x_opencti_detection}
             />
@@ -185,14 +185,14 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={3} sx={{ marginBottom: "10px" }}>
+        <Grid container={true} spacing={3} sx={{ marginBottom: '10px' }}>
           <Grid item xs={4}>
             <Typography
-              variant="h3"
+              variant='h3'
               gutterBottom={true}
-              sx={{ marginTop: "20px" }}
+              sx={{ marginTop: '20px' }}
             >
-              {t_i18n("Indicator types")}
+              {t_i18n('Indicator types')}
             </Typography>
             <FieldOrEmpty source={indicator.indicator_types}>
               {indicator.indicator_types?.map((indicatorType) => (
@@ -206,11 +206,11 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
           </Grid>
           <Grid item xs={4}>
             <Typography
-              variant="h3"
+              variant='h3'
               gutterBottom={true}
-              sx={{ marginTop: "20px" }}
+              sx={{ marginTop: '20px' }}
             >
-              {t_i18n("Main observable type")}
+              {t_i18n('Main observable type')}
             </Typography>
             <FieldOrEmpty source={indicator.x_opencti_main_observable_type}>
               <Chip
@@ -221,11 +221,11 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
           </Grid>
           <Grid item xs={4}>
             <Typography
-              variant="h3"
+              variant='h3'
               gutterBottom={true}
-              sx={{ marginTop: "20px" }}
+              sx={{ marginTop: '20px' }}
             >
-              {t_i18n("Platforms")}
+              {t_i18n('Platforms')}
             </Typography>
             <FieldOrEmpty source={indicator.x_mitre_platforms}>
               <List>

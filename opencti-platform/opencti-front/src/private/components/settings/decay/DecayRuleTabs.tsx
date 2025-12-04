@@ -15,7 +15,7 @@ const DecayRuleTabs = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const { isFeatureEnable } = useHelper();
-  const location = useLocation()
+  const location = useLocation();
   setTitle(t_i18n('Decay Rules | Customization | Settings'));
 
   const isDecayExclusionRuleFeatureEnabled = isFeatureEnable('DECAY_EXCLUSION_RULE_ENABLED');
@@ -23,7 +23,7 @@ const DecayRuleTabs = () => {
   const [currentTab, setCurrentTab] = useState<number>(0);
 
   useEffect(() => {
-    if (location.state?.decayTab === "decayExclusionRule") setCurrentTab(1);
+    if (location.state?.decayTab === 'decayExclusionRule') setCurrentTab(1);
   }, []);
 
   const handleChangeTab = (_: React.SyntheticEvent, value: number) => setCurrentTab(value);
