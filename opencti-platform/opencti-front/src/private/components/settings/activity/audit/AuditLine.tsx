@@ -10,6 +10,14 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@components/common/drawer/Drawer';
 import { ListItemButton } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import { DataColumns } from '../../../../../components/list_lines';
 import { AuditLine_node$data, AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
 import type { Theme } from '../../../../../components/Theme';
@@ -70,6 +78,13 @@ const AuditLineFragment = graphql`
       message
       from_id
       to_id
+      changes{
+        field
+        previous
+        new
+        added
+        removed
+      }
     }
   }
 `;
@@ -85,6 +100,8 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const data = useFragment(AuditLineFragment, node);
   const message = useGenerateAuditMessage<AuditLine_node$data>(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
+  const changes= data?.context_data?.changes;
+
   return (
     <>
       <Drawer
@@ -112,6 +129,63 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
             </div>
           )}
           <div style={{ marginTop: 16 }}>
+            <Grid item xs={6}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t_i18n('Details')}
+              </Typography>
+              <Paper style={{ marginTop: theme.spacing(1), position: 'relative' }}>
+                <div style={{ height: '100%', width: '100%' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    textAlign: 'center',
+                  }}
+                  >
+                    <TableContainer component={Paper}>
+                      <Table sx={{ minWidth: 650 }} size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell></TableCell>
+                            <TableCell align="left">Previous value</TableCell>
+                            <TableCell align="left">New value</TableCell>
+                            <TableCell align="left">Added</TableCell>
+                            <TableCell align="left">Removed</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {changes && changes.length > 0 ? (changes.map((row) => (
+                            <TableRow
+                              key={row?.field}
+                              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                              <TableCell component="th" scope="row">
+                                {row?.field}
+                              </TableCell>
+                              <TableCell align="left">{row?.previous ? JSON.stringify(row?.previous): '-'}</TableCell>
+                              <TableCell align="left">{row?.new ? JSON.stringify(row?.new): '-'}</TableCell>
+                              <TableCell align="left">{row?.added ? JSON.stringify(row?.added): '-'}</TableCell>
+                              <TableCell align="left">{row?.removed ? JSON.stringify(row?.removed): '-'}</TableCell>
+                            </TableRow>
+                          ))
+                            ): (
+                              <TableRow>
+                                <TableCell align="center" colSpan={3}>
+                                  No changes
+                                </TableCell>
+                              </TableRow>
+                            )}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+
+                  </div>
+                </div>
+              </Paper>
+            </Grid>
+          </div>
+          <div style={{ marginTop: 20}}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Raw data')}
             </Typography>

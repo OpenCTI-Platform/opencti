@@ -1,54 +1,45 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import Typography from '@mui/material/Typography';
-import inject18n from '../../../../components/i18n';
-import StixCoreRelationshipHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreRelationshipHistoryLines';
-import { QueryRenderer } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
+import StixCoreRelationshipHistoryLines, { stixCoreRelationshipHistoryLinesQuery } from './StixCoreRelationshipHistoryLines';
+import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 
-class StixCoreRelationshipLatestHistory extends Component {
-  render() {
-    const { t, stixCoreRelationshipId } = this.props;
+const StixCoreRelationshipLatestHistory = ({stixCoreRelationshipId}) => {
+  const { t_i18n } = useFormatter();
+ const paginationOptions = {
+   filters: {
+     mode: 'and',
+     filterGroups: [],
+     filters: [
+       { key: 'context_data.id', values: [stixCoreRelationshipId] },
+       { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
+     ],
+   },
+   first: 7,
+   orderBy: 'timestamp',
+   orderMode: 'desc',
+ };
+  const queryRef = useQueryLoading(
+    stixCoreRelationshipHistoryLinesQuery,
+    paginationOptions,
+  );
     return (
       <div className="break">
         <Typography variant="h4" gutterBottom={true}>
-          {t('Most recent history')}
+          {t_i18n('Most recent history')}
         </Typography>
-        <QueryRenderer
-          query={stixCoreObjectHistoryLinesQuery}
-          variables={{
-            filters: {
-              mode: 'and',
-              filterGroups: [],
-              filters: [
-                { key: 'context_data.id', values: [stixCoreRelationshipId] },
-                { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
-              ],
-            },
-            first: 7,
-            orderBy: 'timestamp',
-            orderMode: 'desc',
-          }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <StixCoreRelationshipHistoryLines
-                  stixCoreRelationshipId={stixCoreRelationshipId}
-                  data={props}
-                  isRelationLog={false}
-                />
-              );
-            }
-            return <div />;
-          }}
-        />
+        {queryRef && (
+        <React.Suspense fallback={<div />}>
+          <StixCoreRelationshipHistoryLines
+            stixCoreRelationshipId={stixCoreRelationshipId}
+            queryRef={queryRef}
+            isRelationLog={false}
+            paginationOptions={paginationOptions}
+          />
+        </React.Suspense>
+              )}
       </div>
     );
-  }
-}
+  };
 
-StixCoreRelationshipLatestHistory.propTypes = {
-  t: PropTypes.func,
-  stixCoreRelationshipId: PropTypes.string,
-};
-
-export default inject18n(StixCoreRelationshipLatestHistory);
+export default StixCoreRelationshipLatestHistory;

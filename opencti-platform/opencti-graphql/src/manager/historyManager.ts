@@ -8,7 +8,7 @@ import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from 
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
+import type {Change, SseEvent, StreamDataEvent, UpdateEvent} from '../types/event';
 import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
@@ -47,6 +47,7 @@ interface HistoryContext {
   pir_ids?: Array<string>;
   pir_score?: number;
   pir_match_from?: boolean;
+  changes?: Array<Change>
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -180,6 +181,8 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         const relatedMarkings = updateEvent.context.related_restrictions.markings ?? [];
         eventMarkingRefs.push(...relatedMarkings);
       }
+      // add changes
+      contextData.changes = updateEvent.context.changes;
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;

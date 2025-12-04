@@ -48,6 +48,13 @@ export const StixCoreObjectHistoryFragment = graphql`
         url
         description
       }
+      changes{
+        field
+        previous
+        new
+        added
+        removed
+      }
     }
   }
 `;

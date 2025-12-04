@@ -64,7 +64,7 @@ const ruleMergeHandler = async (event: MergeEvent): Promise<Array<BaseEvent>> =>
   // endregion
   // region 03 - Generate event for merged entity
   const updateEvent = buildInternalEvent(EVENT_TYPE_UPDATE, data) as UpdateEvent;
-  updateEvent.context = { patch: eventContext.patch, reverse_patch: eventContext.reverse_patch };
+  updateEvent.context = { patch: eventContext.patch, reverse_patch: eventContext.reverse_patch, changes: [] };
   events.push(updateEvent);
   // endregion
   return events;

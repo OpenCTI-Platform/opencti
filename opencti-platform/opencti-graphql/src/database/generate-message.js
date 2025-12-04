@@ -85,7 +85,7 @@ const getValuesArray = (value) => {
   const valuesFromArray = Array.isArray(value) ? value : [value];
   return valuesFromArray.filter((v) => isNotEmptyField(v));
 };
-const getKeyName = (entityType, key, object_path) => {
+export const getKeyName = (entityType, key, object_path) => {
   let keyName;
   const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
   const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
@@ -150,16 +150,14 @@ const buildMessageForValues = (entityType, key, values, data = {}, specificOpera
 };
 const MAX_DISPLAYED_VALUES = 3;
 const buildUpdateMessageForPatchOperation = (operationType, patchOperation, entityType, data = {}, specificOperationCases = {}) => {
-  const { key, value, object_path, previous } = patchOperation;
+  const { key, value, object_path } = patchOperation;
   const keyName = getKeyName(entityType, key, object_path);
   const valuesArray = getValuesArray(value);
-  const previousArray = getValuesArray(previous);
   const messageForValues = buildMessageForValues(entityType, key, valuesArray, data, specificOperationCases);
-  const messageForPrevious = buildMessageForValues(entityType, key, previousArray, data);
 
   let message = `\`${messageForValues}\``;
   if (operationType === 'replace') {
-    message = `\`${messageForPrevious}\` with \`${messageForValues}\``;
+    message = `\`${truncate(messageForValues)}\``;
   }
   message += ` in \`${keyName}\``;
   if (valuesArray.length > MAX_DISPLAYED_VALUES) {
