@@ -1446,7 +1446,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       const groupedAddOperations = R.groupBy((s) => s.relationType, addOperations);
       const operations = Object.entries(groupedAddOperations)
         .map(([key, vals]) => {
-
           const { _index, entity_type } = R.head(vals);
           const ids = vals.map((v) => v.data.internal_id);
           return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
