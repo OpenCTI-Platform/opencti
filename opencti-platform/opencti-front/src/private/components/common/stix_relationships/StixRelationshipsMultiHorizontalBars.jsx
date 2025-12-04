@@ -448,13 +448,13 @@ const StixRelationshipsMultiHorizontalBars = ({
                     distributionKey = getMainRepresentative(distribution.entity, t_i18n('Restricted'))
                   } else if(distribution.entity) {
                     distributionKey = 
-                    distribution.entity.name 
-                    ? distribution.entity.name
-                    : distribution.entity.representative
-                      ? getMainRepresentative(distribution.entity, t_i18n('Restricted'))
+                    distribution.entity.representative
+                    ? getMainRepresentative(distribution.entity, t_i18n('Restricted'))
+                    : distribution.entity.name
+                      ? distribution.entity.name
                       : distribution.entity.label
                         ? distribution.entity.label 
-                        : ''
+                        : distribution.label
                   } else {
                     distributionKey = distribution.label
                   }
@@ -508,7 +508,7 @@ const StixRelationshipsMultiHorizontalBars = ({
               data: Object.entries(categoriesValues).map((category) => category[1][index])
               };
             })
-            // To avoid displaying empty categories - especially for 'Others' category
+            // To avoid displaying empty categories - especially for 'Others'
             .filter(entity => entity.data.some(data => data > 0))
 
             let subSectionIdsOrder = [];
