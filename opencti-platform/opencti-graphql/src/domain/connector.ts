@@ -308,7 +308,6 @@ export const registerConnector = async (
   connectorData: RegisterConnectorInput,
   opts: RegisterOptions = {}
 ) => {
-   
   const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
   const { auto = null, auto_update = null, enrichment_resolution = null } = connectorData;
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
@@ -532,7 +531,7 @@ export const testSync = async (context: AuthContext, user: AuthUser, sync: Mutat
 
 export const computeStreamRemoteUrl = (inputUri: string) => {
   const inputAsURL = new URL(inputUri);
-  if(inputAsURL.protocol !== 'http:' && inputAsURL.protocol !== 'https:') {
+  if (inputAsURL.protocol !== 'http:' && inputAsURL.protocol !== 'https:') {
     throw FunctionalError('Stream URL format is not correct');
   }
   const sanitizeUri = `${inputAsURL.origin}${inputAsURL.pathname}`;
@@ -565,10 +564,9 @@ export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, i
     return data.data.streamCollections.edges.map((e: any) => e.node);
   } catch (e) {
     let errorMessage = '';
-    if(e instanceof AxiosError){
-      const axiosError = e as AxiosError;
-      logApp.error('[OPENCTI-MODULE] Issue when trying to call OpenCTI remote stream', {httpStatus: axiosError.status, message: axiosError.message, streamURI: uri});
-      errorMessage = axiosError.message;
+    if (e instanceof AxiosError) {
+      logApp.error('[OPENCTI-MODULE] Issue when trying to call OpenCTI remote stream', { httpStatus: e.status, message: e.message, streamURI: uri });
+      errorMessage = e.message;
     }
     throw ValidationError('Error getting the streams from remote OpenCTI', 'uri', {cause: errorMessage});
   }
