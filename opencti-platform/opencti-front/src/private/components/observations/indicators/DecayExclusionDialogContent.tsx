@@ -29,7 +29,7 @@ const DecayExclusionDialogContent: FunctionComponent<DecayExclusionDialogContent
 
   return (
     <>
-      <DialogTitle style={{ display: "flex", justifyContent: 'space-between'}}>
+      <DialogTitle style={{ display: 'flex', justifyContent: 'space-between'}}>
         {t_i18n('Lifecycle details')}
         <div>{indicator.decay_exclusion_applied_rule?.decay_exclusion_name ?? ''}</div>
       </DialogTitle>
@@ -39,7 +39,7 @@ const DecayExclusionDialogContent: FunctionComponent<DecayExclusionDialogContent
         <Typography style={{ marginTop: 20 }}>{t_i18n('Please contact your administrator to have more details about this rule & why this indicator is impacted.')}</Typography>
         <Alert
           content={t_i18n('This IOC might be impacted by an Exclusion Rule with criteria not matching anymore this IOC: once a rule is applied to an IOC, the rule does not change.')}
-          severity="warning"
+          severity='warning'
           style={{
             marginTop: 40,
           }}
@@ -47,7 +47,7 @@ const DecayExclusionDialogContent: FunctionComponent<DecayExclusionDialogContent
       </DialogContent>
       <DialogActions>
         <Security needs={[SETTINGS_SETCUSTOMIZATION]}>
-          <Button color="secondary" onClick={handleClick}>{t_i18n('View rule')}</Button>
+          <Button color='secondary' onClick={handleClick}>{t_i18n('View rule')}</Button>
         </Security>
         <Button onClick={onClose}>
           {t_i18n('Close')}

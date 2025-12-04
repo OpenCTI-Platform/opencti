@@ -6,7 +6,6 @@ import { insertNode } from 'src/utils/store';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { DecayExclusionRulesLinesPaginationQuery$variables } from './__generated__/DecayExclusionRulesLinesPaginationQuery.graphql';
 import DecayExclusionRuleCreationForm from './DecayExclusionRuleCreationForm';
-import Alert from 'src/components/Alert';
 
 type DecayExclusionRuleCreationProps = {
   paginationOptions: DecayExclusionRulesLinesPaginationQuery$variables;
