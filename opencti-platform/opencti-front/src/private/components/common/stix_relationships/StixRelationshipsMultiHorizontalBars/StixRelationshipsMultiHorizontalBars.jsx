@@ -374,7 +374,10 @@ const StixRelationshipsMultiHorizontalBars = ({
         }
       }
     }
+    
     const finalField = selection.attribute || field || 'entity_type';
+    const finalSubDistributionField = subSelection.attribute || field || 'entity_type';
+    
     let variables = {
       field: finalField,
       operation: 'count',
@@ -387,7 +390,7 @@ const StixRelationshipsMultiHorizontalBars = ({
       dynamicFrom: selection.dynamicFrom,
       dynamicTo: selection.dynamicTo,
     };
-    const finalSubDistributionField = subSelection.attribute || field || 'entity_type';
+    
     if (subSelection.perspective === 'entities') {
       variables = {
         ...variables,
@@ -421,36 +424,38 @@ const StixRelationshipsMultiHorizontalBars = ({
     }
 
     const queryToCall = subSelection.perspective === 'entities'
-            ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
-            : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
+      ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
+      : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
 
     const dataFromQuery = useLazyLoadQuery(queryToCall, variables);
+    
     const {
-                chartData,
-                redirectionUtils,
-                categories
-              } = useStixRelationshipsMultiHorizontalBars(subSelection, dataFromQuery.stixRelationshipsDistribution, finalSubDistributionField, finalField);
+      chartData,
+      redirectionUtils,
+      categories
+    } = useStixRelationshipsMultiHorizontalBars(subSelection, dataFromQuery.stixRelationshipsDistribution, finalSubDistributionField, finalField);
 
-              if(dataFromQuery.stixRelationshipsDistribution && dataFromQuery.stixRelationshipsDistribution.length > 0){
-                return (
-                  <WidgetHorizontalBars
-                    series={chartData}
-                    distributed={parameters.distributed}
-                    withExport={withExportPopover}
-                    readonly={isReadOnly}
-                    redirectionUtils={redirectionUtils}
-                    stacked
-                    total
-                    legend
-                    categories={categories}
-                  />
-            );
-              } 
-              if (dataFromQuery) {
-                return <WidgetNoData />;
-              }
-              return <Loader variant={LoaderVariant.inElement} />;
+    if(dataFromQuery.stixRelationshipsDistribution && dataFromQuery.stixRelationshipsDistribution.length > 0){
+        return (
+          <WidgetHorizontalBars
+            series={chartData}
+            distributed={parameters.distributed}
+            withExport={withExportPopover}
+            readonly={isReadOnly}
+            redirectionUtils={redirectionUtils}
+            stacked
+            total
+            legend
+            categories={categories}
+          />
+      );
+    } 
+    if (dataFromQuery) {
+      return <WidgetNoData />;
+    }
+    return <Loader variant={LoaderVariant.inElement} />;
   };
+
   return (
     <WidgetContainer
       height={height}

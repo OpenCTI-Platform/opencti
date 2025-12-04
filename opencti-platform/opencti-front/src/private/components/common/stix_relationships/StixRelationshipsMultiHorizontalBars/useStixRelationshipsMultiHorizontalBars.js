@@ -17,7 +17,7 @@ export const useStixRelationshipsMultiHorizontalBars = (
   const categories = stixRelationshipsDistribution.map((n) =>
     getMainRepresentative(n.entity, t_i18n('Restricted'))
   );
-  const entitiesMapping = {};
+
   const getDistributionKey = (distribution) => {
     let distributionKey;
     if (finalSubDistributionField === 'internal_id') {
@@ -38,6 +38,8 @@ export const useStixRelationshipsMultiHorizontalBars = (
     }
     return distributionKey;
   };
+
+  const entitiesMapping = {};
   for (const distrib of stixRelationshipsDistribution) {
     for (const subDistrib of distrib.entity[distributionKey]) {
       const subDistributionKey = getDistributionKey(subDistrib);
@@ -45,10 +47,12 @@ export const useStixRelationshipsMultiHorizontalBars = (
         (entitiesMapping[subDistributionKey] || 0) + subDistrib.value;
     }
   }
+
   const sortedEntityMapping = R.take(
     subSelection.number ?? 15,
     Object.entries(entitiesMapping).sort(([, a], [, b]) => b - a)
   );
+
   const categoriesValues = {};
   for (const distrib of stixRelationshipsDistribution) {
     for (const sortedEntity of sortedEntityMapping) {
@@ -82,6 +86,7 @@ export const useStixRelationshipsMultiHorizontalBars = (
     }
   }
   sortedEntityMapping.push(['Others', 0]);
+
   const chartData = sortedEntityMapping
     .map((sortedEntity, index) => {
       return {
@@ -113,6 +118,7 @@ export const useStixRelationshipsMultiHorizontalBars = (
         .map((k) => k[0])
     );
   }
+  
   const redirectionUtils =
     finalField === 'internal_id'
       ? stixRelationshipsDistribution.map((n) => ({
