@@ -124,7 +124,7 @@ const OpenVocabFieldComponent: FunctionComponent<OpenVocabProps> = ({
         name={name}
         required={required}
         onFocus={onFocus}
-        onChange={(n: string, v: VocabFieldOption & VocabFieldOption[]) => {
+        onChange={(n: string, v: VocabFieldOption | VocabFieldOption[]) => {
           internalOnChange?.(n, v);
           internalOnSubmit?.(n, v);
         }}
