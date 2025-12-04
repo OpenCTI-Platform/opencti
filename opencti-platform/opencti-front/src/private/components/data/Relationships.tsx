@@ -333,6 +333,7 @@ const Relationships = () => {
           lineFragment={relationshipsStixCoreRelationshipsLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
           exportContext={{ entity_type: 'stix-core-relationship' }}
+          availableEntityTypes={['stix-core-relationship']}
         />
       )}
     </div>

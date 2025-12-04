@@ -782,6 +782,7 @@ const useSearchEntities = ({
             && !availableEntityTypes.includes('Stix-Cyber-Observable')
             && !availableEntityTypes.includes('Stix-Domain-Object')
             && !availableEntityTypes.includes('Stix-Core-Object')
+            && !availableEntityTypes.includes('stix-core-relationship')
           ) {
             let completedAvailableEntityTypes = availableEntityTypes;
             if (availableEntityTypes.includes('Container')) {
