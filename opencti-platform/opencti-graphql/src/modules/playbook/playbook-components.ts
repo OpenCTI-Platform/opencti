@@ -59,7 +59,7 @@ import { internalFindByIds, fullEntitiesList, fullRelationsList, storeLoadById }
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
-import { logApp } from '../../config/conf';
+import { isFeatureEnabled, logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { extractStixRepresentative } from '../../database/stix-representative';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
