@@ -11,13 +11,18 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RenderOption } from '../../../../components/list_lines';
 import { FieldOption } from '../../../../utils/field';
 
+interface VocabFieldOption extends FieldOption {
+  description?: string;
+  category: string;
+}
+
 interface OpenVocabProps {
-  type: string;
+  type: string | string[];
   name: string;
   label: string;
   required?: boolean;
   variant?: string;
-  onFocus?: (name: string, value: FieldOption) => void;
+  onFocus?: (name: string, value: VocabFieldOption) => void;
   containerStyle?: Record<string, string | number>;
   editContext?: unknown;
   disabled?: boolean;
@@ -30,12 +35,12 @@ interface OpenVocabProps {
 
 export const vocabularyQuery = graphql`
   query OpenVocabFieldQuery(
-    $category: VocabularyCategory!
+    $filters: FilterGroup
     $orderBy: VocabularyOrdering
     $orderMode: OrderingMode
   ) {
     vocabularies(
-      category: $category
+      filters: $filters
       orderBy: $orderBy
       orderMode: $orderMode
     ) {
@@ -45,17 +50,19 @@ export const vocabularyQuery = graphql`
           name
           description
           is_hidden
+          category {
+            key
+          }
         }
       }
     }
   }
 `;
 
-const OpenVocabFieldComponent: FunctionComponent<
-Omit<OpenVocabProps, 'type'>
-> = ({
+const OpenVocabFieldComponent: FunctionComponent<OpenVocabProps> = ({
   name,
   label,
+  type,
   required = false,
   variant,
   onChange,
@@ -75,15 +82,17 @@ Omit<OpenVocabProps, 'type'>
   const openVocabList = (vocabularies?.edges ?? [])
     .map(({ node }) => node)
     .filter((node) => node.is_hidden !== true)
-    .map(({ name: value, description }) => ({
+    .map(({ name: value, description, category }) => ({
       value,
       label: value,
       description,
-    }));
-  let internalOnChange: ((n: string, v: FieldOption | FieldOption[]) => void) | undefined;
-  let internalOnSubmit: ((n: string, v: FieldOption | FieldOption[]) => void) | undefined;
+      category: category.key,
+    }))
+    .sort((a, b) => a.category.localeCompare(b.category));
+  let internalOnChange: ((n: string, v: VocabFieldOption | VocabFieldOption[]) => void) | undefined;
+  let internalOnSubmit: ((n: string, v: VocabFieldOption | VocabFieldOption[]) => void) | undefined;
   if (onChange) {
-    internalOnChange = (n: string, v: FieldOption | FieldOption[]) => (Array.isArray(v)
+    internalOnChange = (n: string, v: VocabFieldOption | VocabFieldOption[]) => (Array.isArray(v)
       ? onChange(
         n,
         v.map((nV) => nV?.value ?? nV),
@@ -91,7 +100,7 @@ Omit<OpenVocabProps, 'type'>
       : onChange(n, v?.value ?? v));
   }
   if (onSubmit) {
-    internalOnSubmit = (n: string, v: FieldOption | FieldOption[]) => (Array.isArray(v)
+    internalOnSubmit = (n: string, v: VocabFieldOption | VocabFieldOption[]) => (Array.isArray(v)
       ? onSubmit?.(
         n,
         v.map((nV) => nV?.value ?? nV),
@@ -115,7 +124,7 @@ Omit<OpenVocabProps, 'type'>
         name={name}
         required={required}
         onFocus={onFocus}
-        onChange={(n: string, v: FieldOption & FieldOption[]) => {
+        onChange={(n: string, v: VocabFieldOption | VocabFieldOption[]) => {
           internalOnChange?.(n, v);
           internalOnSubmit?.(n, v);
         }}
@@ -124,9 +133,10 @@ Omit<OpenVocabProps, 'type'>
         style={containerStyle}
         disabled={disabled}
         options={openVocabList}
+        groupBy={Array.isArray(type) ? (option: VocabFieldOption) => option.category : undefined}
         renderOption={renderOption}
-        getOptionDisabled={(option: FieldOption) => disabledOptions.includes(option.value)}
-        isOptionEqualToValue={(option: FieldOption, value: string) => option.value === value
+        getOptionDisabled={(option: VocabFieldOption) => disabledOptions.includes(option.value)}
+        isOptionEqualToValue={(option: VocabFieldOption, value: string) => option.value === value
         }
         textfieldprops={{
           label,
@@ -148,9 +158,10 @@ Omit<OpenVocabProps, 'type'>
       multiple={multiple}
       style={containerStyle}
       options={openVocabList}
+      groupBy={Array.isArray(type) ? (option: VocabFieldOption) => option.category : undefined}
       renderOption={renderOption}
-      getOptionDisabled={(option: FieldOption) => disabledOptions.includes(option.value)}
-      isOptionEqualToValue={(option: FieldOption, value: string) => option.value === value
+      getOptionDisabled={(option: VocabFieldOption) => disabledOptions.includes(option.value)}
+      isOptionEqualToValue={(option: VocabFieldOption, value: string) => option.value === value
       }
       textfieldprops={{
         label,
@@ -167,8 +178,22 @@ const OpenVocabField: FunctionComponent<Omit<OpenVocabProps, 'queryRef'>> = (
 ) => {
   const { name, label, multiple, containerStyle, required } = props;
   const { typeToCategory } = useVocabularyCategory();
+  const filterCategories = Array.isArray(props.type)
+    ? props.type.map((n) => typeToCategory(n))
+    : [typeToCategory(props.type)];
   const queryRef = useQueryLoading<OpenVocabFieldQuery>(vocabularyQuery, {
-    category: typeToCategory(props.type),
+    filters: {
+      mode: 'or',
+      filters: [
+        {
+          key: ['category'],
+          values: filterCategories,
+          operator: 'eq',
+          mode: 'or'
+        },
+      ],
+      filterGroups: [],
+    }
   });
   return queryRef ? (
     <React.Suspense

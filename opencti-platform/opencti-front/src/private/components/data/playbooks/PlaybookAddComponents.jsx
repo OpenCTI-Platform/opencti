@@ -380,7 +380,7 @@ const PlaybookAddComponentsContent = ({
         return (
           <OpenVocabField
             name={`actions-${i}-value`}
-            type={'case_severity_ov'}
+            type={['case_severity_ov', 'incident_severity_ov']}
             containerStyle={fieldSpacingContainerStyle}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
