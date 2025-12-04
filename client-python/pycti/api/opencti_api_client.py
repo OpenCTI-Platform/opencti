@@ -623,7 +623,7 @@ class OpenCTIApiClient:
         :rtype: bool
         """
         try:
-            self.app_logger.info("Health check (platform version)...")
+            self.app_logger.info("Health check (platform version) TEST LOCAL PYCTI...")
             test = self.query(
                 """
                   query healthCheck {
