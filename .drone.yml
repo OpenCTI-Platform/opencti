@@ -182,8 +182,6 @@ steps:
       - pip3 install .
       - cd examples/
        - /bin/bash run_all.sh
-    depends_on:
-      - client-test-312
 
   - name: slack
     image: plugins/slack
