@@ -113,13 +113,14 @@ import {
 } from '../schema/general';
 import { isAnId, isValidDate } from '../schema/schemaUtils';
 import {
-  isStixRefRelationship,
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_GRANTED_TO,
-  RELATION_OBJECT,
-  RELATION_OBJECT_MARKING,
-  STIX_REF_RELATIONSHIP_TYPES,
+isStixRefRelationship,
+objectOrganization,
+RELATION_CREATED_BY,
+RELATION_EXTERNAL_REFERENCE,
+RELATION_GRANTED_TO,
+RELATION_OBJECT,
+RELATION_OBJECT_MARKING,
+STIX_REF_RELATIONSHIP_TYPES,
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
@@ -2506,6 +2507,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       } : undefined;
       const relatedRestrictions = extractObjectsRestrictionsFromInputs(updatedInputs, initial.entity_type);
       const { pir_ids } = extractObjectsPirsFromInputs(updatedInputs, initial.entity_type);
+      const security = updatedInputs.find((input) => input.key === (objectOrganization.name || authorizedMembers.name));
       const event = await storeUpdateEvent(
         context,
         user,
@@ -2515,6 +2517,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         changes,
         {
           ...opts,
+          noHistory: security ?? false,
           commit,
           related_restrictions: relatedRestrictions,
           pir_ids,
