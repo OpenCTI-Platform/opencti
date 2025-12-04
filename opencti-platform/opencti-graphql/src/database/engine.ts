@@ -4345,25 +4345,23 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
             filterTo.push({ key: ['toId'], values: ids });
             filterFrom.push({ key: ['fromId'], values: ids });
           }
-          // Handle inferred parameter
-          const isInferredFilter = inferredParameterValues.length > 0 ? { key: ['is_inferred'], values: inferredParameterValues } : undefined;
-          console.log('-------------isInferredFilter', isInferredFilter);
-          // Construct filters
-          const directionFilterGroup = {
+          paginateArgs.filters = {
             mode: FilterMode.Or,
             filters: [],
             filterGroups: [
               { mode: FilterMode.And, filterGroups: [], filters: filterTo },
               { mode: FilterMode.And, filterGroups: [], filters: filterFrom }]
           };
-          paginateArgs.filters = isInferredFilter
-            ? {
-            mode: FilterMode.And,
-            filters: [isInferredFilter as Filter],
-            filterGroups: [directionFilterGroup],
-          } : directionFilterGroup;
         }
-        const relationships = await elList<BasicStoreRelation>(context, user, READ_RELATIONSHIPS_INDICES, paginateArgs);
+        let relationshipIndices = READ_RELATIONSHIPS_INDICES;
+        if (inferredParameterValues.length > 0) {
+          if (inferredParameterValues.includes('true')) {
+            relationshipIndices = [READ_INDEX_INFERRED_RELATIONSHIPS];
+          } else if (inferredParameterValues.includes('false')) {
+            relationshipIndices = READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
+          };
+        };
+        const relationships = await elList<BasicStoreRelation>(context, user, relationshipIndices, paginateArgs);
         // compute side ids
         const addTypeSide = (sideId: string, sideType: string) => {
           targetValidatedIds.add(sideId);
