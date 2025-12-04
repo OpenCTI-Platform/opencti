@@ -6,6 +6,7 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import * as Yup from 'yup';
 import { DecayExclusionRules_node$data } from '@components/settings/decay/__generated__/DecayExclusionRules_node.graphql';
 import Box from '@mui/material/Box';
+import Alert from "src/components/Alert"
 import Filters from '@components/common/lists/Filters';
 import FilterIconButton from 'src/components/FilterIconButton';
 import useFiltersState from 'src/utils/filters/useFiltersState';
@@ -100,68 +101,75 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
       open={isOpen}
       onClose={handleClose}
     >
-      <Formik<DecayExclusionRuleEditionFormData>
-        initialValues={initialValues}
-        validationSchema={decayExclusionRuleEditionValidator(t_i18n)}
-        onSubmit={onSubmit}
-      >
-        {({ submitForm, handleReset, isSubmitting }) => (
-          <Form>
-            <Field
-              component={TextField}
-              name="name"
-              label={t_i18n('Name')}
-              fullWidth={true}
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t_i18n('Description')}
-              fullWidth
-              multiline
-              rows={2}
-              style={{ marginTop: 20 }}
-            />
-            <Box sx={{
-              paddingTop: '20px',
-              display: 'flex',
-              gap: 1,
-            }}
-            >
-              <Filters
-                availableFilterKeys={enabledFilters}
+      <>
+        <Alert
+          content={t_i18n('Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule')}
+          severity="warning"
+          style={{ marginBottom: 20 }}
+        />
+        <Formik<DecayExclusionRuleEditionFormData>
+          initialValues={initialValues}
+          validationSchema={decayExclusionRuleEditionValidator(t_i18n)}
+          onSubmit={onSubmit}
+        >
+          {({ submitForm, handleReset, isSubmitting }) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                name="name"
+                label={t_i18n('Name')}
+                fullWidth={true}
+              />
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t_i18n('Description')}
+                fullWidth
+                multiline
+                rows={2}
+                style={{ marginTop: 20 }}
+              />
+              <Box sx={{
+                paddingTop: '20px',
+                display: 'flex',
+                gap: 1,
+              }}
+              >
+                <Filters
+                  availableFilterKeys={enabledFilters}
+                  helpers={filterHelpers}
+                  searchContext={{ entityTypes: ['Indicator'] }}
+                />
+              </Box>
+              <FilterIconButton
+                filters={filters}
                 helpers={filterHelpers}
+                styleNumber={2}
                 searchContext={{ entityTypes: ['Indicator'] }}
               />
-            </Box>
-            <FilterIconButton
-              filters={filters}
-              helpers={filterHelpers}
-              styleNumber={2}
-              searchContext={{ entityTypes: ['Indicator'] }}
-            />
-            <div style={{ marginTop: 20, textAlign: 'right' }}>
-              <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                style={{ marginLeft: 16 }}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                style={{ marginLeft: 16 }}
-              >
-                {t_i18n('Update')}
-              </Button>
-            </div>
-          </Form>
-        )}
-      </Formik>
+              <div style={{ marginTop: 20, textAlign: 'right' }}>
+                <Button
+                  variant="contained"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  style={{ marginLeft: 16 }}
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                  style={{ marginLeft: 16 }}
+                >
+                  {t_i18n('Update')}
+                </Button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      </>
     </Drawer>
   );
 };

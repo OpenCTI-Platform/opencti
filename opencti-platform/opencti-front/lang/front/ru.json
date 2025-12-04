@@ -405,6 +405,7 @@
   "based-on": "на основе",
   "Basic information": "Основная информация",
   "Basic user / password": "Основной пользователь / пароль",
+  "Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule": "Будьте внимательны, задайте какой-нибудь фильтр для правила исключения, иначе, поскольку фильтры не заданы, любой индикатор будет соответствовать правилу и будет иметь правило исключения",
   "Be careful, you are about to delete the selected entities": "Будьте осторожны, вы собираетесь удалить выбранные сущности.",
   "Be careful, you are about to delete the selected entities (not the relationships)": "Будьте осторожны, вы собираетесь удалить выбранные сущности (не связи).",
   "Be careful, you are about to delete the selected observables (not the relationships)": "Будьте осторожны, вы собираетесь удалить выбранные объекты наблюдения (не отношения).",

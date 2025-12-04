@@ -405,6 +405,7 @@
   "based-on": "관찰 가능 항목 기반",
   "Basic information": "기본 정보",
   "Basic user / password": "기본 사용자 / 비밀번호",
+  "Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule": "제외 규칙에 대한 필터를 정의하지 않으면 필터가 설정되어 있지 않으므로 모든 지표가 규칙과 일치하고 제외 규칙을 갖게 되므로 주의하세요",
   "Be careful, you are about to delete the selected entities": "주의하십시오, 선택한 엔터티를 삭제하려고 합니다",
   "Be careful, you are about to delete the selected entities (not the relationships)": "주의하십시오, 선택한 엔터티를 삭제하려고 합니다 (관계는 제외)",
   "Be careful, you are about to delete the selected observables (not the relationships)": "주의하십시오, 선택한 관찰 가능 항목을 삭제하려고 합니다 (관계는 제외)",

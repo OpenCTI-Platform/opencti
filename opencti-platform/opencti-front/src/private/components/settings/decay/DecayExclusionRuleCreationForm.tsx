@@ -16,6 +16,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import Alert from 'src/components/Alert';
 
 const decayExclusionRuleCreationFormAddMutation = graphql`
   mutation DecayExclusionRuleCreationFormAddMutation($input: DecayExclusionRuleAddInput!) {
@@ -93,79 +94,86 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
   };
 
   return (
-    <Formik<DecayExclusionRuleCreationFormData>
-      initialValues={initialValues}
-      validateOnBlur={true}
-      validateOnChange={true}
-      validationSchema={decayExclusionRuleCreationValidator(t_i18n)}
-      onSubmit={onSubmit}
-      onReset={onReset}
-    >
-      {({ submitForm, handleReset, isSubmitting }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-            component={TextField}
-            name='name'
-            label={t_i18n('Name')}
-            fullWidth
-            required
-          />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t_i18n('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows={2}
-            style={{ marginTop: 20 }}
-          />
-          <Box sx={{
-            paddingTop: '20px',
-            display: 'flex',
-            gap: 1,
-          }}
-          >
-            <Filters
-              availableFilterKeys={enabledFilters}
+    <>
+      <Alert
+        content={t_i18n('Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule')}
+        severity="warning"
+        style={{ marginBottom: 20 }}
+      />
+      <Formik<DecayExclusionRuleCreationFormData>
+        initialValues={initialValues}
+        validateOnBlur={true}
+        validateOnChange={true}
+        validationSchema={decayExclusionRuleCreationValidator(t_i18n)}
+        onSubmit={onSubmit}
+        onReset={onReset}
+      >
+        {({ submitForm, handleReset, isSubmitting }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={TextField}
+              name='name'
+              label={t_i18n('Name')}
+              fullWidth
+              required
+            />
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t_i18n('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows={2}
+              style={{ marginTop: 20 }}
+            />
+            <Box sx={{
+              paddingTop: '20px',
+              display: 'flex',
+              gap: 1,
+            }}
+            >
+              <Filters
+                availableFilterKeys={enabledFilters}
+                helpers={filterHelpers}
+                searchContext={{ entityTypes: ['Indicator'] }}
+              />
+            </Box>
+            <FilterIconButton
+              filters={filters}
               helpers={filterHelpers}
+              styleNumber={2}
               searchContext={{ entityTypes: ['Indicator'] }}
             />
-          </Box>
-          <FilterIconButton
-            filters={filters}
-            helpers={filterHelpers}
-            styleNumber={2}
-            searchContext={{ entityTypes: ['Indicator'] }}
-          />
-          <Field
-            component={SwitchField}
-            type="checkbox"
-            name="active"
-            label={t_i18n('Active')}
-            containerstyle={fieldSpacingContainerStyle}
-          />
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
-            <Button
-              variant="contained"
-              onClick={handleReset}
-              disabled={isSubmitting}
-              style={{ marginLeft: 16 }}
-            >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
-              style={{ marginLeft: 16 }}
-            >
-              {t_i18n('Create')}
-            </Button>
-          </div>
-        </Form>
-      )}
-    </Formik>
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="active"
+              label={t_i18n('Active')}
+              containerstyle={fieldSpacingContainerStyle}
+            />
+            <div style={{ marginTop: 20, textAlign: 'right' }}>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                style={{ marginLeft: 16 }}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                style={{ marginLeft: 16 }}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </>
   );
 };
 

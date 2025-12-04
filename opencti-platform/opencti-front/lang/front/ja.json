@@ -405,6 +405,7 @@
   "based-on": "観測結果をベースにする",
   "Basic information": "基本情報",
   "Basic user / password": "基本ユーザー/パスワード",
+  "Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule": "さもないと、フィルターが設定されていないため、どのインジケーターもルールにマッチし、除外ルールを持つことになります。",
   "Be careful, you are about to delete the selected entities": "選択したエンティティを削除しようとしているので注意してください。",
   "Be careful, you are about to delete the selected entities (not the relationships)": "選択したエンティティを削除しようとしているので注意してください（リレーションシップではありません）。",
   "Be careful, you are about to delete the selected observables (not the relationships)": "注意してください、選択されたオブザーバブルを削除しようとしています(リレーションシップではありません)",

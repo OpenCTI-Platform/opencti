@@ -405,6 +405,7 @@
   "based-on": "Basé sur un observable",
   "Basic information": "Informations de base",
   "Basic user / password": "Utilisateur / mot de passe",
+  "Be careful, please define some filter for your exclusion rule, otherwise, since no filters are set, any indicator will match the rule and will have an exclusion rule": "Attention, définissez un filtre pour votre règle d'exclusion, sinon, comme aucun filtre n'est défini, n'importe quel indicateur correspondra à la règle et aura une règle d'exclusion",
   "Be careful, you are about to delete the selected entities": "Attention, vous êtes sur le point de supprimer les entités sélectionnées",
   "Be careful, you are about to delete the selected entities (not the relationships)": "Attention, vous êtes sur le point de supprimer les entités sélectionnées (pas les relations)",
   "Be careful, you are about to delete the selected observables (not the relationships)": "Attention, vous êtes sur le point de supprimer les observables sélectionnés (pas les relations)",
