@@ -209,7 +209,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           resolvePath={(data: GroupingsLines_data$data) => data.groupings?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={groupingLineFragment}
           exportContext={{ entity_type: 'Grouping' }}

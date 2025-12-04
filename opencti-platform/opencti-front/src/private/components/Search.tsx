@@ -239,7 +239,7 @@ const Search = () => {
           resolvePath={(data: SearchStixCoreObjectsLines_data$data) => data.globalSearch?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           globalSearch={searchTerm}
           lineFragment={searchLineFragment}
           preloadedPaginationProps={preloadedPaginationOptions}

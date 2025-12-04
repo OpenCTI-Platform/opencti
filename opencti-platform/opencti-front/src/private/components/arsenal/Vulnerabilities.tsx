@@ -168,7 +168,7 @@ const Vulnerabilities = () => {
           resolvePath={(data: VulnerabilitiesLines_data$data) => (data?.vulnerabilities?.edges || []).map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={vulnerabilityLineFragment}
           exportContext={{ entity_type: 'Vulnerability' }}

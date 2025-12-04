@@ -150,7 +150,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ImportFilesContentQuery>;
 
-  const toolbarFilters = {
+  const contextFilters = {
     mode: 'and',
     filters: [
       {
@@ -210,7 +210,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
           resolvePath={(data: ImportFilesContentLines_data$data) => data.importFiles?.edges?.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={toolbarFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={workbenchLineFragment}
           entityTypes={['InternalFile']}

@@ -192,7 +192,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
           resolvePath={(data: FeedbacksLines_data$data) => data.feedbacks?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY_FEEDBACK}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={feedbackFragment}
           exportContext={{ entity_type: 'Feedback' }}
