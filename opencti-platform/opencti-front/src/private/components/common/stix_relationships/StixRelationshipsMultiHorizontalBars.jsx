@@ -445,7 +445,7 @@ const StixRelationshipsMultiHorizontalBars = ({
             const getDistributionKey = (distribution) => {
                   let distributionKey;
                   if(finalSubDistributionField === 'internal_id') {
-                    distributionKey = getMainRepresentative(distribution.entity, t_i18n('Restricted'))
+                    distributionKey = getMainRepresentative(distribution.entity, t_i18n('Restricted'));
                   } else if(distribution.entity) {
                     distributionKey = 
                     distribution.entity.representative
@@ -454,12 +454,12 @@ const StixRelationshipsMultiHorizontalBars = ({
                       ? distribution.entity.name
                       : distribution.entity.label
                         ? distribution.entity.label 
-                        : distribution.label
+                        : distribution.label;
                   } else {
-                    distributionKey = distribution.label
+                    distributionKey = distribution.label;
                   }
                   return distributionKey;
-                  }
+                  };
             for (const distrib of props.stixRelationshipsDistribution) {
               for (const subDistrib of distrib.entity[distributionKey]) {
                 const subDistributionKey = getDistributionKey(subDistrib);
@@ -509,7 +509,7 @@ const StixRelationshipsMultiHorizontalBars = ({
               };
             })
             // To avoid displaying empty categories - especially for 'Others'
-            .filter(entity => entity.data.some(data => data > 0))
+            .filter(entity => entity.data.some(data => data > 0));
 
             let subSectionIdsOrder = [];
             if (
