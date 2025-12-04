@@ -4,15 +4,17 @@ import Drafts from '../../drafts/Drafts';
 import WorkbenchFile from '../../common/files/workbench/WorkbenchFile';
 import ImportFilesContent from './ImportFilesContent';
 import ImportWorkbenchesContent from './ImportWorkbenchesContent';
-import useGranted, { canOnlyAccesToImportDataDrafts, KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import useHasOnlyAccessToImportDraftTab from '../../../../utils/hooks/useHasOnlyAccessToImportDraftTab';
 
 const Root = () => {
-  const restrictAccessToDraftOnly = useGranted([KNOWLEDGE_KNASKIMPORT]) || !canOnlyAccesToImportDataDrafts();
+  const hasOnlyAccessToImportDraftTab = useHasOnlyAccessToImportDraftTab();
+  const restrictAccessToDraftOnly = useGranted([KNOWLEDGE_KNASKIMPORT]) || !hasOnlyAccessToImportDraftTab;
   return (
     <Routes>
       <Route
         path="/"
-        element={<Navigate to={canOnlyAccesToImportDataDrafts() ? '/dashboard/data/import/draft' : '/dashboard/data/import/file'} replace/>}
+        element={<Navigate to={hasOnlyAccessToImportDraftTab ? '/dashboard/data/import/draft' : '/dashboard/data/import/file'} replace/>}
       />
       {restrictAccessToDraftOnly && (
         <>

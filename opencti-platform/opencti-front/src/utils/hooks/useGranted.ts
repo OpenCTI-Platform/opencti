@@ -58,19 +58,8 @@ export const isOnlyOrganizationAdmin = () => {
   return userCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS_SETACCESSES);
 };
 
-const getCapabilitiesName = (capabilities: readonly { name: string }[]) => {
+export const getCapabilitiesName = (capabilities: readonly { name: string }[]) => {
   return (capabilities ?? []).map((capability) => capability?.name);
-};
-
-// Check if the user can only access import data drafts
-export const canOnlyAccesToImportDataDrafts = (): boolean => {
-  if (useGranted([KNOWLEDGE_KNASKIMPORT])) {
-    return false;
-  }
-  const { me } = useAuth();
-  
-  const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
-  return userCapabilitiesInDraft.includes(KNOWLEDGE);
 };
 
 const useGranted = (capabilities: string[], matchAll = false): boolean => {

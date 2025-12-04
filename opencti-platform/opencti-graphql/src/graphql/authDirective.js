@@ -1,7 +1,5 @@
- 
-import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-import { map } from 'ramda';
- 
+import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'; 
+// eslint-disable-next-line import/extensions
 import { defaultFieldResolver } from 'graphql/index.js';
 import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
@@ -64,7 +62,7 @@ export const authDirectiveBuilder = (directiveName) => {
                 return resolve(source, args, context, info);
               }
               // Compute user capabilities
-              const userBaseCapabilities = map((c) => c.name, user.capabilities);
+              const userBaseCapabilities = user.capabilities.map((c) => c.name);
               // Accept everything if bypass capability or the system user (protection).
               const shouldBypass = userBaseCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
               if (shouldBypass) {
@@ -81,7 +79,7 @@ export const authDirectiveBuilder = (directiveName) => {
               const isInDraftContext = !!getDraftContext(context, user);
               // If the user is in draft mode, add capabilities in draft to the base capabilities 
               if (isInDraftContext) {
-                const userCapabilitiesInDraft = map((c) => c.name, user.capabilitiesInDraft);
+                const userCapabilitiesInDraft = user.capabilitiesInDraft.map((c) => c.name);
                 userCapabilities = Array.from(new Set([...userBaseCapabilities, ...userCapabilitiesInDraft]));
               } else {
                 userCapabilities = userBaseCapabilities;
