@@ -30,6 +30,8 @@ import { createStixPattern } from '../../python/pythonBridge';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
+import { checkObservableSyntax } from '../../utils/syntax';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -274,13 +276,13 @@ const transformSpecialFields = async (
   const fieldsSource = isRelationship && data.fields ? data.fields : data;
 
   // Find special fields that need transformation
-  // eslint-disable-next-line no-restricted-syntax
+   
   for (const field of fields) {
     const attrName = field.attributeMapping.attributeName;
     const value = (fieldsSource as any)[attrName];
 
     if (!value) {
-      // eslint-disable-next-line no-continue
+       
       continue;
     }
 
@@ -302,7 +304,7 @@ const transformSpecialFields = async (
     } else if (field.type === 'objectMarking' && Array.isArray(value)) {
       // Transform objectMarking from array of internal_ids
       const markings = [];
-      // eslint-disable-next-line no-restricted-syntax
+       
       for (const markingId of value) {
         if (typeof markingId === 'string') {
           const markingEntity = await internalLoadById(context, user, markingId);
@@ -346,7 +348,7 @@ const transformSpecialFields = async (
     } else if (field.type === 'externalReferences' && Array.isArray(value)) {
       // Transform external references
       const references = [];
-      // eslint-disable-next-line no-restricted-syntax
+       
       for (const refId of value) {
         if (typeof refId === 'string') {
           const refEntity = await internalLoadById(context, user, refId);
@@ -404,8 +406,38 @@ export const formSubmit = async (
   } catch (error) {
     throw FunctionalError('Cannot read values', { error });
   }
-
   const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
+
+  // check if any addionalEntities are present in the form
+  const additionalEntities = schema.additionalEntities ?? [];
+
+  // we need to check here the syntax of observables to be sure the format is respected
+  const observableInputs = [];
+  observableInputs.push({
+    type: form.main_entity_type,
+    ...values,
+  });
+  for (const additionalEntity of additionalEntities) {
+    observableInputs.push({
+      type: additionalEntity.entityType,
+      ...values[`additional_${additionalEntity.id}`], // stock this way in DB
+    });
+  }
+
+  observableInputs.forEach((observable) => {
+    if (!isStixCyberObservable(observable.type)) {
+      return;
+    }
+    const observableSyntaxResult = checkObservableSyntax(observable.type, observable);
+    if (observableSyntaxResult !== true) {
+      throw FunctionalError('Observable is not correctly formatted', {
+        type: observable.type,
+        input: observable.value,
+        doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+      });
+    }
+  });
+
   const errors: string[] = [];
 
   // Enforce draft settings from schema
