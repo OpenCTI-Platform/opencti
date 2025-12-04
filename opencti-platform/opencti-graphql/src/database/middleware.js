@@ -525,11 +525,55 @@ const convertStoreToStixWithResolvedFiles = async (instance, version = Version.S
   }
   return instanceInStix;
 };
+// Function to enrich hashed observables with all hashes from existing objects
+const enrichHashedObservables = async (context, user, elements) => {
+  const enrichedElements = [];
+  
+  for (let i = 0; i < elements.length; i += 1) {
+    const element = elements[i];
+    const entityType = element.entity_type;
+    
+    // Check if this is a hashed observable type
+    const isHashedObservable = entityType === ENTITY_HASHED_OBSERVABLE_STIX_FILE
+      || entityType === ENTITY_HASHED_OBSERVABLE_ARTIFACT
+      || entityType === 'X509-Certificate';
+    
+    if (isHashedObservable && element.hashes) {
+      // Query for existing objects with any matching hashes
+      const existingObjects = await listEntitiesByHashes(context, user, entityType, element.hashes);
+      
+      if (existingObjects.length > 0) {
+        // Merge all hashes from existing objects
+        const allHashes = { ...element.hashes };
+        
+        for (let j = 0; j < existingObjects.length; j += 1) {
+          const existing = existingObjects[j];
+          if (existing.hashes) {
+            Object.assign(allHashes, existing.hashes);
+          }
+        }
+        
+        // Create enriched element with merged hashes
+        enrichedElements.push({ ...element, hashes: allHashes });
+      } else {
+        enrichedElements.push(element);
+      }
+    } else {
+      enrichedElements.push(element);
+    }
+  }
+  
+  return enrichedElements;
+};
+
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
   const { resolveStixFiles = false, version = Version.Stix_2_1 } = opts;
   const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
+  // Enrich hashed observables with all hashes from existing objects
+  const enrichedElements = await enrichHashedObservables(context, user, elements);
+
   // As stix load by ids doesn't respect the ordering we need to remap the result
-  const loadedInstancesMap = new Map(elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
+  const loadedInstancesMap = new Map(enrichedElements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
     .flat().map((o) => o.ids.map((id) => [id, o.instance])).flat());
   if (resolveStixFiles) {
     const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
