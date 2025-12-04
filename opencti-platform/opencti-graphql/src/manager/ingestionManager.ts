@@ -173,10 +173,14 @@ interface DataItem {
 
 const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, entry: RssItem): DataItem => {
   const { updated } = feed;
+  // Safe access to title with fallback to link if title is missing
+  const link = isNotEmptyField(entry.link) ? (entry.link as { href: string }).href?.trim() : '';
+  const title = entry.title?._ || link || 'Untitled';
+  
   return {
-    title: entry.title._,
+    title,
     description: turndownService.turndown(entry.summary?._ ?? ''),
-    link: isNotEmptyField(entry.link) ? (entry.link as { href: string }).href?.trim() : '',
+    link,
     content: turndownService.turndown(entry.content?._ ?? ''),
     labels: [], // No label in rss v1
     pubDate: utcDate(sanitizeForMomentParsing(entry.updated?._ ?? updated?._ ?? FROM_START_STR)),
@@ -185,10 +189,14 @@ const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, en
 
 const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement, item: RssItem): DataItem => {
   const { pubDate } = channel;
+  // Safe access to title with fallback to link if title is missing
+  const link = isNotEmptyField(item.link) ? ((item.link as { _: string })._ ?? '').trim() : '';
+  const title = item.title?._ || link || 'Untitled';
+  
   return {
-    title: item.title._ ?? '',
+    title,
     description: turndownService.turndown(item.description?._ ?? ''),
-    link: isNotEmptyField(item.link) ? ((item.link as { _: string })._ ?? '').trim() : '',
+    link,
     content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),
     labels: R.uniq(asArray(item.category).filter((c) => isNotEmptyField(c)).map((c) => (c as { _: string })._.trim())),
     pubDate: utcDate(sanitizeForMomentParsing(item.pubDate?._ ?? pubDate?._ ?? FROM_START_STR)),
