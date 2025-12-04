@@ -59,6 +59,7 @@ export const findDraftWorkspaceRestrictedPaginated = (context: AuthContext, user
 
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
     ...args,
+    includeAuthorities: true,
     filters,
   });
 };
