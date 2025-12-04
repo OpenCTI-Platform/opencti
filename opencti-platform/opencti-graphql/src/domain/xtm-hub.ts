@@ -5,13 +5,18 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { xtmHubClient } from '../modules/xtm/hub/xtm-hub-client';
 import { type AutoRegisterInput, XtmHubRegistrationStatus } from '../generated/graphql';
 import { updateAttribute } from '../database/middleware';
-import { booleanConf, BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
+import { booleanConf, BUS_TOPICS, logApp, PLATFORM_VERSION } from '../config/conf';
 import { HUB_REGISTRATION_MANAGER_USER } from '../utils/access';
 import { getSettings, settingsEditField } from './settings';
 import { notify } from '../database/redis';
 import { utcDate } from '../utils/format';
 import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-hub-email';
 import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
+
+interface AttributeUpdate {
+  key: keyof BasicStoreSettings
+  value: unknown[]
+}
 
 export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUser): Promise<{
   status: XtmHubRegistrationStatus
@@ -22,34 +27,26 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   }
   const platformInformation = { platformId: settings.id, token: settings.xtm_hub_token, platformVersion: PLATFORM_VERSION };
   const status = await xtmHubClient.refreshRegistrationStatus(platformInformation);
+  if (status === 'not_found') {
+    logApp.warn('[XTMH] Platform was not found on XTM Hub');
+    await resetRegistration(context, user, settings);
+    return { status: XtmHubRegistrationStatus.Unregistered };
+  }
+
   const isConnectivityActive = status === 'active';
   const newRegistrationStatus: XtmHubRegistrationStatus = isConnectivityActive ? XtmHubRegistrationStatus.Registered : XtmHubRegistrationStatus.LostConnectivity;
-  const attributeUpdates: { key: string, value: unknown[] }[] = [];
+  const attributeUpdates: AttributeUpdate[] = [];
 
   const shouldUpdateRegistrationStatus = newRegistrationStatus !== settings.xtm_hub_registration_status;
   if (shouldUpdateRegistrationStatus) {
     attributeUpdates.push({ key: 'xtm_hub_registration_status', value: [newRegistrationStatus] });
   }
 
-  const lastCheckDate = utcDate(settings.xtm_hub_last_connectivity_check);
-  const are24HoursPassed = utcDate().diff(lastCheckDate, 'hours') >= 24;
-  const isEmailEnabled = booleanConf('xtm:xtmhub_connectivity_email_enabled', true);
-  const shouldSendLostConnectivityEmail = !isConnectivityActive
-    && are24HoursPassed
-    && settings.xtm_hub_should_send_connectivity_email
-    && isEmailEnabled;
-  if (shouldSendLostConnectivityEmail) {
-    await sendAdministratorsLostConnectivityEmail(context, settings);
-    attributeUpdates.push({ key: 'xtm_hub_should_send_connectivity_email', value: [false] });
-  }
+  const emailAttributeUpdates = await handleLostConnectivityEmail(context, settings, isConnectivityActive);
+  attributeUpdates.push(...emailAttributeUpdates);
 
   if (isConnectivityActive) {
     attributeUpdates.push({ key: 'xtm_hub_last_connectivity_check', value: [new Date()] });
-
-    const shouldAllowConnectivityLostEmailAgain = !settings.xtm_hub_should_send_connectivity_email;
-    if (shouldAllowConnectivityLostEmailAgain) {
-      attributeUpdates.push({ key: 'xtm_hub_should_send_connectivity_email', value: [true] });
-    }
   }
 
   const { isReachable } = await xtmHubClient.isBackendReachable();
@@ -102,4 +99,66 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
     ]
   );
   return { success: true };
+};
+
+const resetRegistration = async (context: AuthContext, user: AuthUser, settings: BasicStoreSettings) => {
+  const attributeUpdates: AttributeUpdate[] = [
+    {
+      key: 'xtm_hub_token',
+      value: []
+    },
+    {
+      key: 'xtm_hub_registration_status',
+      value: [XtmHubRegistrationStatus.Unregistered]
+    },
+    {
+      key: 'xtm_hub_registration_user_id',
+      value: []
+    },
+    {
+      key: 'xtm_hub_registration_user_name',
+      value: []
+    },
+    {
+      key: 'xtm_hub_registration_date',
+      value: []
+    },
+    {
+      key: 'xtm_hub_last_connectivity_check',
+      value: []
+    }
+  ];
+
+  await updateAttribute(
+    context,
+    user,
+    settings.id,
+    ENTITY_TYPE_SETTINGS,
+    attributeUpdates
+  );
+
+  const updatedSettings = await getSettings(context);
+  await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
+};
+
+const handleLostConnectivityEmail = async (context: AuthContext, settings: BasicStoreSettings, isConnectivityActive: boolean): Promise<AttributeUpdate[]> => {
+  const lastCheckDate = utcDate(settings.xtm_hub_last_connectivity_check);
+  const are24HoursPassed = utcDate().diff(lastCheckDate, 'hours') >= 24;
+  const isEmailEnabled = booleanConf('xtm:xtmhub_connectivity_email_enabled', true);
+  const shouldSendLostConnectivityEmail = !isConnectivityActive
+    && are24HoursPassed
+    && settings.xtm_hub_should_send_connectivity_email
+    && isEmailEnabled;
+  const attributeUpdates: AttributeUpdate[] = [];
+  if (shouldSendLostConnectivityEmail) {
+    await sendAdministratorsLostConnectivityEmail(context, settings);
+    attributeUpdates.push({ key: 'xtm_hub_should_send_connectivity_email', value: [false] });
+  }
+
+  const shouldAllowConnectivityLostEmailAgain = isConnectivityActive && !settings.xtm_hub_should_send_connectivity_email;
+  if (shouldAllowConnectivityLostEmailAgain) {
+    attributeUpdates.push({ key: 'xtm_hub_should_send_connectivity_email', value: [true] });
+  }
+
+  return attributeUpdates;
 };

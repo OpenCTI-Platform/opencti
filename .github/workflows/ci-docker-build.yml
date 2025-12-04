@@ -6,7 +6,11 @@ on:
       image_tag:
         description: "Image Tag"
         type: string
-        required: true
+        default: ${{ github.sha }}
+      checkout_ref:
+        description: "Reference of the branch or commit sha"
+        type: string
+        default: ${{ github.sha }}
     outputs:
       image-tag-version-cleaned:
         description: "Image tag after formatting"
@@ -24,6 +28,8 @@ jobs:
       version: ${{ steps.meta.outputs.version }}
     steps:
     - uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -61,6 +67,8 @@ jobs:
       version: ${{ steps.meta.outputs.version }}
     steps:
     - uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3

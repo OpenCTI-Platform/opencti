@@ -8,7 +8,7 @@ import { deleteQueues } from '../../src/domain/connector';
 import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './testQuery';
 import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
-import { createRedisClient, initializeRedisClients, shutdownRedisClients } from '../../src/database/redis';
+import { createRedisClient, initializeRedisClients } from '../../src/database/redis';
 import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
 import { initializeAdminUser } from '../../src/config/providers-initialization';
@@ -16,7 +16,7 @@ import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain
 import { initializeInternalQueues } from '../../src/database/rabbitmq';
 import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
-import { shutdownModules, startModules } from '../../src/managers';
+import { startModules } from '../../src/managers';
 import { deleteAllBucketContent } from '../../src/database/file-storage';
 import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
@@ -67,18 +67,6 @@ const testPlatformStart = async () => {
     logApp.error(e);
     process.exit(1);
   }
-};
-
-const testPlatformStop = async () => {
-  logApp.info('[vitest-global-setup] stopping platform');
-  const stopTime = new Date().getTime();
-  // Shutdown the cache manager
-  await cacheManager.shutdown();
-  // Destroy the modules
-  await shutdownModules();
-  // Shutdown the redis clients
-  shutdownRedisClients();
-  logApp.info(`[vitest-global-setup] Platform stopped in ${new Date().getTime() - stopTime} ms`);
 };
 
 const platformClean = async () => {
@@ -146,6 +134,5 @@ export async function setup() {
 }
 
 export async function teardown() {
-  // Stop the platform
-  await testPlatformStop();
+  // Better to let vite kill it in 5s than wait +60s for a gracefully stop.
 }

@@ -1,15 +1,21 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { defineConfig } from 'vitest/config';
+ import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
 
-const buildTestConfig = (include: string[]) => defineConfig({
+export const buildTestConfig = (include: string[]) => defineConfig({
   plugins: [graphql() as PluginOption],
   test: {
     include,
     testTimeout: 300000,
-    teardownTimeout: 20000,
-    setupFiles: ['./tests/utils/testSetup.js'],
+    teardownTimeout: 5000,
+    setupFiles: [],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**'],
+      exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
+      reporter: ['text', 'json', 'html'],
+    },
+    maxWorkers: 10,
   },
 });
 

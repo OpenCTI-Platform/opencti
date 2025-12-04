@@ -2,6 +2,11 @@ name: Run OpenCTI api tests
 
 on:
   workflow_call:
+    inputs:
+      checkout_ref:
+        description: "Reference of the branch or commit sha"
+        type: string
+        default: ${{ github.sha }}
 
 jobs:
   run-opencti-integration-test:
@@ -11,6 +16,8 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
@@ -66,11 +73,11 @@ jobs:
             cp /home/workspace/opencti-platform/.yarnrc.yml .
             yarn install
             yarn build
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration  --coverage
         '
 
     - name: Upload backend test result
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: always()
       continue-on-error: true
       with:
@@ -125,6 +132,8 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
@@ -167,7 +176,7 @@ jobs:
             cp /home/workspace/opencti-platform/.yarnrc.yml .
             yarn install
             yarn build
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
         '
 
     # Output all logs used during the job
@@ -196,6 +205,8 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
@@ -222,7 +233,6 @@ jobs:
           sh -c 'set -ex;
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
             apk add build-base git libffi-dev cargo;
-            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
             cd /home/workspace/opencti-platform/opencti-graphql
             npm install -g corepack
             cp /home/workspace/opencti-platform/.yarnrc.yml .
@@ -230,7 +240,7 @@ jobs:
             yarn build
             yarn check-ts
             yarn lint
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit-and-others
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit --coverage
         '
 
     # Output all logs used during the job
