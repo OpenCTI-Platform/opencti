@@ -1,14 +1,11 @@
-import React from 'react';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
-import { QueryRenderer } from '../../../../relay/environment';
-import { useFormatter } from '../../../../components/i18n';
-import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useFormatter } from '../../../../../components/i18n';
+import { buildFiltersAndOptionsForWidgets } from '../../../../../utils/filters/filtersUtils';
+import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
+import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
+import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import { graphql, useLazyLoadQuery } from 'react-relay';
+import {useStixRelationshipsMultiHorizontalBars} from './useStixRelationshipsMultiHorizontalBars';
 
 const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = graphql`
   query StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery(
@@ -366,11 +363,10 @@ const StixRelationshipsMultiHorizontalBars = ({
     let subSelection = {};
     let subDistributionTypes = null;
     if (dataSelection) {
-      // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
       if (dataSelection.length > 1) {
-        // eslint-disable-next-line prefer-destructuring
+         
         subSelection = dataSelection[1];
         subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters, { isKnowledgeRelationshipWidget: true });
         if (subSelection.perspective === 'entities') {
@@ -423,149 +419,37 @@ const StixRelationshipsMultiHorizontalBars = ({
         subDistributionFilters: subDistributionFiltersAndOptions?.filters,
       };
     }
-    return (
-      <QueryRenderer
-        query={
-          subSelection.perspective === 'entities'
-            ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
-            : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
-        }
-        variables={variables}
-        render={({ props }) => {
-          const distributionKey = subSelection.perspective === 'entities'
-            ? 'stixCoreObjectsDistribution'
-            : 'stixCoreRelationshipsDistribution';
-          if (
-            props
-            && props.stixRelationshipsDistribution
-            && props.stixRelationshipsDistribution.length > 0
-          ) {
-            const categories = props.stixRelationshipsDistribution.map((n) => getMainRepresentative(n.entity, t_i18n('Restricted')));
-            const entitiesMapping = {};
-            const getDistributionKey = (distribution) => {
-                  let distributionKey;
-                  if(finalSubDistributionField === 'internal_id') {
-                    distributionKey = getMainRepresentative(distribution.entity, t_i18n('Restricted'));
-                  } else if(distribution.entity) {
-                    distributionKey = 
-                    distribution.entity.representative
-                    ? getMainRepresentative(distribution.entity, t_i18n('Restricted'))
-                    : distribution.entity.name
-                      ? distribution.entity.name
-                      : distribution.entity.label
-                        ? distribution.entity.label 
-                        : distribution.label;
-                  } else {
-                    distributionKey = distribution.label;
-                  }
-                  return distributionKey;
-                  };
-            for (const distrib of props.stixRelationshipsDistribution) {
-              for (const subDistrib of distrib.entity[distributionKey]) {
-                const subDistributionKey = getDistributionKey(subDistrib);
-                entitiesMapping[subDistributionKey] = (entitiesMapping[subDistributionKey] || 0) + subDistrib.value;
-              }
-            }
-            const sortedEntityMapping = R.take(
-              subSelection.number ?? 15,
-              Object.entries(entitiesMapping).sort(([, a], [, b]) => b - a),
-            );
-            const categoriesValues = {};
-            for (const distrib of props.stixRelationshipsDistribution) {
-              for (const sortedEntity of sortedEntityMapping) {
-                const entityData = R.head(
-                  distrib.entity?.[distributionKey].filter(
-                    (entityDistrib) => getDistributionKey(entityDistrib) === sortedEntity[0],
-                  ),
-                );
-                let value = 0;
-                if (entityData) {
-                  value = entityData.value;
-                }
-                if (categoriesValues[getMainRepresentative(distrib.entity)]) {
-                  categoriesValues[getMainRepresentative(distrib.entity)].push(value);
-                } else {
-                  categoriesValues[getMainRepresentative(distrib.entity)] = [value];
-                }
-              }
-              const sum = (
-                categoriesValues[getMainRepresentative(distrib.entity)] || []
-              ).reduce((partialSum, a) => partialSum + a, 0);
-              if (categoriesValues[getMainRepresentative(distrib.entity)]) {
-                categoriesValues[getMainRepresentative(distrib.entity)].push(
-                  distrib.value - sum,
-                );
-              } else {
-                categoriesValues[getMainRepresentative(distrib.entity)] = [
-                  distrib.value - sum,
-                ];
-              }
-            }
-            sortedEntityMapping.push(['Others', 0]);
-            const chartData = sortedEntityMapping.map((sortedEntity, index) => {
-              return {
-              name: sortedEntity[0],
-              data: Object.entries(categoriesValues).map((category) => category[1][index])
-              };
-            })
-            // To avoid displaying empty categories - especially for 'Others'
-            .filter(entity => entity.data.some(data => data > 0));
 
-            let subSectionIdsOrder = [];
-            if (
-              finalField === 'internal_id'
-              && finalSubDistributionField === 'internal_id'
-            ) {
-              // find subbars orders for entity subbars redirection
-              for (const distrib of props.stixRelationshipsDistribution) {
-                for (const subDistrib of distrib.entity[distributionKey]) {
-                  subSectionIdsOrder[subDistrib.label] = (subSectionIdsOrder[subDistrib.label] || 0)
-                    + subDistrib.value;
-                }
-              }
-              subSectionIdsOrder = R.take(
-                subSelection.number ?? 15,
-                Object.entries(subSectionIdsOrder)
-                  .sort(([, a], [, b]) => b - a)
-                  .map((k) => k[0]),
-              );
-            }
-            const redirectionUtils = finalField === 'internal_id'
-              ? props.stixRelationshipsDistribution.map((n) => ({
-                id: n.label,
-                entity_type: n.entity?.entity_type,
-                series: subSectionIdsOrder.map((subSectionId) => {
-                  const [entity] = n.entity[distributionKey]?.filter(
-                    (e) => e.label === subSectionId,
-                  ) ?? [];
-                  return {
-                    id: subSectionId,
-                    entity_type: entity ? entity.entity?.entity_type : null,
-                  };
-                }),
-              }))
-              : null;
-            return (
-              <WidgetHorizontalBars
-                series={chartData}
-                distributed={parameters.distributed}
-                withExport={withExportPopover}
-                readonly={isReadOnly}
-                redirectionUtils={redirectionUtils}
-                stacked
-                total
-                legend
-                categories={categories}
-              />
+    const queryToCall = subSelection.perspective === 'entities'
+            ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
+            : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
+
+    const dataFromQuery = useLazyLoadQuery(queryToCall, variables);
+    const {
+                chartData,
+                redirectionUtils,
+                categories
+              } = useStixRelationshipsMultiHorizontalBars(subSelection, dataFromQuery.stixRelationshipsDistribution, finalSubDistributionField, finalField);
+
+              if(dataFromQuery.stixRelationshipsDistribution && dataFromQuery.stixRelationshipsDistribution.length > 0){
+                return (
+                  <WidgetHorizontalBars
+                    series={chartData}
+                    distributed={parameters.distributed}
+                    withExport={withExportPopover}
+                    readonly={isReadOnly}
+                    redirectionUtils={redirectionUtils}
+                    stacked
+                    total
+                    legend
+                    categories={categories}
+                  />
             );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
+              } 
+              if (dataFromQuery) {
+                return <WidgetNoData />;
+              }
+              return <Loader variant={LoaderVariant.inElement} />;
   };
   return (
     <WidgetContainer
