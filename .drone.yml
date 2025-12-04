@@ -99,8 +99,6 @@ steps:
       - yarn check-ts
       - yarn lint
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
-    depends_on:
-        - generate-licenses
 
   - name: frontend-e2e-tests
     image: node:22.21.1
