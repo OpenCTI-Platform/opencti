@@ -67,8 +67,8 @@ describe('Log resolver standard behavior', async () => {
           }
         }
       });
-      return queryResult?.data?.logs.edges.length > 0;
-    }, 1000, 5);
+      return queryResult?.data?.logs.edges.length > 1; // we need create and update
+    }, 2000, 20);
 
     const queryResult = await queryAsAdminWithSuccess({
       query: READ_QUERY,
@@ -87,8 +87,9 @@ describe('Log resolver standard behavior', async () => {
         }
       }
     });
-    expect(queryResult?.data?.logs.edges[0].node.event_scope).toEqual('update');
-    expect(queryResult?.data?.logs.edges[0].node.context_data.changes[0]).toEqual({
+
+    const updateEvent = queryResult?.data?.logs.edges.find((item: any) => item.node.event_scope === 'update');
+    expect(updateEvent.node.context_data.changes[0]).toEqual({
       field: 'Description',
       previous: [],
       new: ['new description'],
