@@ -538,10 +538,10 @@ export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id
     description: playbook.description,
     playbook_running: false,
     playbook_start: playbook.playbook_start,
-    playbook_mode: playbook.playbook_mode,
+    playbook_mode: playbook.playbook_mode as string,
     playbook_definition: playbook.playbook_definition,
   };
-  const importPlaybook = await createEntity(context, user, newPlaybook, ENTITY_TYPE_PLAYBOOK);
+  const importPlaybook = await createPlaybook(context, user, newPlaybook);
   const importPlaybookId = importPlaybook.id;
   await publishUserAction({
     user,
