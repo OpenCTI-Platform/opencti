@@ -32,7 +32,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS } from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS, isAbstract } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
@@ -241,10 +241,27 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, 
   }
   
   // Verify type matches expected types
-  if (!allowedTypes.includes(stixDomainObject.entity_type)) {
+  // For abstract types, check if entity_type is in parent_types
+  const isValidType = allowedTypes.some(allowedType => {
+    if (allowedType === stixDomainObject.entity_type) {
+      return true; // Exact match
+    }
+    // Check if allowedType is an abstract parent of the actual entity
+    if (isAbstract(allowedType) && stixDomainObject.parent_types) {
+      return stixDomainObject.parent_types.includes(allowedType);
+    }
+    return false;
+  });
+  
+  if (!isValidType) {
     throw FunctionalError(
       `Cannot delete the object, type mismatch: expected ${allowedTypes.join(', ')}, found ${stixDomainObject.entity_type}.`,
-      { expectedTypes: allowedTypes, actualType: stixDomainObject.entity_type, objectId: stixDomainObjectId }
+      { 
+        expectedTypes: allowedTypes, 
+        actualType: stixDomainObject.entity_type,
+        parentTypes: stixDomainObject.parent_types,
+        objectId: stixDomainObjectId 
+      }
     );
   }
   
