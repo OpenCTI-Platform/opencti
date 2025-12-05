@@ -491,8 +491,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     """
                     if resolve_result_indicators
                     else ""
-                ) +
-                """
+                )
+                + """
                         }
                     }
                 """
