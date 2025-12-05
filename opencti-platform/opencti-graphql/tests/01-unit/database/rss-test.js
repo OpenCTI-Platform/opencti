@@ -40,7 +40,7 @@ describe('Rss parsing testing', () => {
     const rssFeed = fs.readFileSync('./tests/data/rss-feeds/rss-wago.xml', { encoding: 'utf8', flag: 'r' });
     const turndownService = new TurndownService();
     const items = await rssDataParser(turndownService, rssFeed, undefined);
-    expect(items.length).toBe(43); // 44 minus 1 with empty title
+    expect(items.length).toBe(44); // All 44 items now processed (including one with empty title that gets "Untitled" fallback)
     expect(items[0].labels.length).toBe(0);
     expect(items[0].link).toBe('https://cert.vde.com/de-de/advisories/vde-2018-010');
     expect(items[0].description).toBe('An unauthenticated user can exploit a vulnerability (CVE-2018-12981) to inject code in the WBM via reflected cross-site scripting (XSS), if he is able trick a user to open a special crafted web site. \\[...\\]');
