@@ -858,16 +858,6 @@ jobs:
       - checkout
       - kubernetes/install-kubectl
       - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment -l app=opencti
-      - add_ssh_keys:
-          fingerprints:
-            - "SHA256:IvWtRsS9fYztJKWsJIFZAtq/tSr7wG2mVNO9FXOxneA"
-      - run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -H 34.155.26.110 >> ~/.ssh/known_hosts
-          cat ~/.ssh/known_hosts
-          ssh filigran@34.155.26.110 "kubectl -n customer-prerelease-ce rollout restart deployment -l app=opencti"
-
 
   deploy_prerelease:
     docker:
