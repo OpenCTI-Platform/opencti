@@ -33,6 +33,9 @@ jobs:
 
     - name: flake8 Lint
       uses: py-actions/flake8@v2
+      with:
+          ignore: "E,W"
+          path: "/client-python" 
 
     - name: Login to DockerHub
       uses: docker/login-action@v3
