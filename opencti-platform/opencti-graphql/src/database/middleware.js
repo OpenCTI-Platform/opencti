@@ -2115,10 +2115,10 @@ export const buildChanges = async (context, user, entityType, inputs) => {
       const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
       const resolvedValue = (array) => {
         if (field === 'Workflow status') {
-          // workflow_id must contain the name and not the internal id
+          // we want the status name and not its internal id
           const workflowId = array[0];
           const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-          return workflowStatus ? workflowStatus.name : null;
+          return workflowStatus ? [workflowStatus.name] : null;
         }
         return array;
       };
