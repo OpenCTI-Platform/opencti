@@ -141,8 +141,7 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
-      - attach_workspace:
-          at: ~/
+      - checkout
       - run:
           command: ./scripts/ci/wait-for-url-200.sh https://raw.githubusercontent.com/OpenCTI-Platform/connectors/refs/tags/${CIRCLE_TAG}/manifest.json 450 60
 
