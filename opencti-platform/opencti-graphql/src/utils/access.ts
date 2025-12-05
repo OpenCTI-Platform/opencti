@@ -9,6 +9,7 @@ import { telemetry } from '../config/tracing';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
 import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
+import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
@@ -18,14 +19,12 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { findById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import type { UpdateEvent } from '../types/event';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicStoreCommon } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
-import { getDraftContext } from './draftContext';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -865,14 +864,10 @@ const hasUserAccessToOperation = (
 };
 
 // Ensure that user can access the element (operation: edit / delete / manage-access)
-export const validateUserAccessOperation = async (context: AuthContext, user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access') => {
+export const validateUserAccessOperation = async (context: AuthContext, user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access', draft?: BasicStoreEntityDraftWorkspace | null) => {
   // 1. Check draft authorized members permissions
-  const draftId = getDraftContext(context, user);
-  if (draftId) {
-    const draft = await findById(context, user, draftId);
-    if (!hasUserAccessToOperation(user, draft, operation)) {
-      return false;
-    }
+  if (draft && !hasUserAccessToOperation(user, draft, operation)) {
+    return false;
   }
   
   // 2. Internal objects management

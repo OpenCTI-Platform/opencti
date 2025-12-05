@@ -110,6 +110,7 @@ import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
+import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -835,7 +836,9 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
   }
   // check entity access
-  if (!(await validateUserAccessOperation(context, user, previous, 'edit'))) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!(await validateUserAccessOperation(context, user, previous, 'edit', draft))) {
     throw ForbiddenAccess();
   }
   const participantIds = getInstanceIds(previous);
@@ -978,7 +981,9 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     throw UnsupportedError('Cant delete a file of none existing element', { entityId });
   }
   // check entity access
-  if (!(await validateUserAccessOperation(context, user, previous, 'edit'))) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!(await validateUserAccessOperation(context, user, previous, 'edit', draft))) {
     throw ForbiddenAccess();
   }
   let lock;
