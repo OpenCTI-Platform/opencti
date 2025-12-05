@@ -2637,6 +2637,7 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
   const idParameter = filter.values.find((i) => i.key === ID_SUBFILTER);
   const typeParameter = filter.values.find((i) => i.key === RELATION_TYPE_SUBFILTER);
   const dynamicParameter = filter.values.find((i) => i.key === RELATION_DYNAMIC_SUBFILTER);
+  const inferredParameter = filter.values.find((i) => i.key === RELATION_INFERRED_SUBFILTER);
   // const inferredParameter = filter.values.find((i) => i.key === RELATION_INFERRED_SUBFILTER);
   // Check parameters
   if (!idParameter && !dynamicParameter && !typeParameter) {
@@ -2646,8 +2647,12 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
     throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type: typeParameter });
   }
   // Check operator
-  if (filter.operator && filter.operator !== 'eq' && filter.operator !== 'not_eq') {
-    throw UnsupportedError('regardingOf only support equality restriction');
+  if (filter.operator && filter.operator !== 'eq' && filter.operator !== 'not_eq') { // should be eq or not_eq
+    throw UnsupportedError('regardingOf filter only supports equality restriction');
+  }
+  if (inferredParameter && filter.operator && filter.operator !== 'eq') {
+    // if inferred parameter is specified, operator should be eq because inferred parameter is treated in post-filtering, which only handles eq operator
+    throw UnsupportedError('regardingOf filter with inferred subfilter only supports eq operator');
   }
   // Check for PIR has it required
   if (typeParameter) {
