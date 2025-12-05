@@ -1262,7 +1262,7 @@ interface BasicObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
 }
 
@@ -1581,7 +1581,7 @@ type Group implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   auto_integration_assignation: [String]!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Group
   name: String!
@@ -1763,7 +1763,7 @@ type User implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # User
   user_email: String!
@@ -1950,7 +1950,7 @@ type Role implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Role
   name: String!
@@ -1981,7 +1981,7 @@ type Capability implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Capability
   name: String!
@@ -2221,7 +2221,7 @@ type Connector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Connector
   name: String!
@@ -2269,7 +2269,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Connector
   name: String!
@@ -2299,7 +2299,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # Manager
   name: String!
@@ -2375,7 +2375,7 @@ interface StixObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2414,7 +2414,7 @@ interface StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   x_opencti_stix_ids: [StixId]
@@ -2453,7 +2453,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2524,7 +2524,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2584,7 +2584,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2670,7 +2670,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2754,7 +2754,7 @@ interface StixCoreObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -2925,7 +2925,7 @@ interface StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -3095,7 +3095,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -3331,7 +3331,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -3516,7 +3516,7 @@ interface Container {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -3675,7 +3675,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -3911,7 +3911,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -4123,7 +4123,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -4354,7 +4354,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -4576,7 +4576,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -4759,7 +4759,7 @@ interface Identity {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -4933,7 +4933,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -5121,7 +5121,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -5304,7 +5304,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -5496,7 +5496,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -5680,7 +5680,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -5870,7 +5870,7 @@ interface Location {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6045,7 +6045,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6231,7 +6231,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6411,7 +6411,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6590,7 +6590,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6782,7 +6782,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -6980,7 +6980,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -7135,7 +7135,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -7332,7 +7332,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -7515,7 +7515,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -7801,7 +7801,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -7990,7 +7990,7 @@ interface StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8108,7 +8108,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8238,7 +8238,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8372,7 +8372,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8498,7 +8498,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8626,7 +8626,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8764,7 +8764,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -8912,7 +8912,7 @@ interface HashedObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9032,7 +9032,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9171,7 +9171,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9319,7 +9319,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9502,7 +9502,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9631,7 +9631,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9758,7 +9758,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -9884,7 +9884,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10010,7 +10010,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10159,7 +10159,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10331,7 +10331,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10478,7 +10478,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10604,7 +10604,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10757,7 +10757,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -10887,7 +10887,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11017,7 +11017,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11143,7 +11143,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11269,7 +11269,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11395,7 +11395,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11521,7 +11521,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11647,7 +11647,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11778,7 +11778,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11907,7 +11907,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12036,7 +12036,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12162,7 +12162,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12294,7 +12294,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12429,7 +12429,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12557,7 +12557,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -12698,7 +12698,7 @@ interface BasicRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
@@ -12716,7 +12716,7 @@ type InternalRelationship implements BasicRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
@@ -13065,7 +13065,7 @@ interface StixRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
@@ -13142,7 +13142,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
@@ -13284,7 +13284,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
@@ -13390,7 +13390,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   fromRole: String
   toRole: String
