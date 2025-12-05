@@ -297,7 +297,7 @@ class Narrative:
             final_data = final_data + data
             while result["data"]["narratives"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["narratives"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Narratives", {"after": after})
+                self.opencti.app_logger.debug("Listing Narratives", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

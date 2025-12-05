@@ -319,7 +319,7 @@ class Language:
             final_data = final_data + data
             while result["data"]["languages"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["languages"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Languages", {"after": after})
+                self.opencti.app_logger.debug("Listing Languages", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

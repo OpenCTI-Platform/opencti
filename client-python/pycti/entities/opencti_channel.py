@@ -291,7 +291,7 @@ class Channel:
             final_data = final_data + data
             while result["data"]["channels"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["channels"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Channels", {"after": after})
+                self.opencti.app_logger.debug("Listing Channels", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

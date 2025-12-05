@@ -32,7 +32,7 @@ class Capability:
         :rtype: List[Dict]
         """
         custom_attributes = kwargs.get("customAttributes")
-        self.opencti.admin_logger.info("Listing capabilities")
+        self.opencti.admin_logger.debug("Listing capabilities")
         query = (
             """
             query CapabilityList {

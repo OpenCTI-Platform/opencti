@@ -553,7 +553,7 @@ class CaseRft:
             final_data = final_data + data
             while result["data"]["caseRfts"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["caseRfts"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Case Rfts", {"after": after})
+                self.opencti.app_logger.debug("Listing Case Rfts", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

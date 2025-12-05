@@ -543,7 +543,7 @@ class Note:
             final_data = final_data + data
             while result["data"]["notes"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["notes"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Notes", {"after": after})
+                self.opencti.app_logger.debug("Listing Notes", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

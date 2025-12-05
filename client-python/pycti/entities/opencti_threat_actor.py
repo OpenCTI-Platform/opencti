@@ -223,7 +223,7 @@ class ThreatActor:
             final_data = final_data + data
             while result["data"]["threatActors"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["threatActors"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing threatActors", {"after": after})
+                self.opencti.app_logger.debug("Listing threatActors", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

@@ -328,7 +328,7 @@ class Campaign:
             final_data = final_data + data
             while result["data"]["campaigns"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["campaigns"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Campaigns", {"after": after})
+                self.opencti.app_logger.debug("Listing Campaigns", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

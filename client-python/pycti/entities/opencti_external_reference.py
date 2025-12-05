@@ -373,7 +373,7 @@ class ExternalReference:
 
     def list_files(self, **kwargs):
         id = kwargs.get("id", None)
-        self.opencti.app_logger.info("Listing files of External-Reference", {"id": id})
+        self.opencti.app_logger.debug("Listing files of External-Reference", {"id": id})
         query = """
             query externalReference($id: String!) {
                 externalReference(id: $id) {

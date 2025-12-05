@@ -554,7 +554,7 @@ class CaseRfi:
             final_data = final_data + data
             while result["data"]["caseRfis"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["caseRfis"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Case Rfis", {"after": after})
+                self.opencti.app_logger.debug("Listing Case Rfis", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

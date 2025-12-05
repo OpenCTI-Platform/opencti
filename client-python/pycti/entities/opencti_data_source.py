@@ -299,7 +299,7 @@ class DataSource:
             final_data = final_data + data
             while result["data"]["dataSources"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["dataSources"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Data-Sources", {"after": after})
+                self.opencti.app_logger.debug("Listing Data-Sources", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

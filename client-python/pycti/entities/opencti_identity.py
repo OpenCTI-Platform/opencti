@@ -366,7 +366,7 @@ class Identity:
             final_data = final_data + data
             while result["data"]["identities"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["identities"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Identities", {"after": after})
+                self.opencti.app_logger.debug("Listing Identities", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

@@ -94,7 +94,7 @@ class Label:
             final_data = final_data + data
             while result["data"]["labels"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["labels"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Labels", {"after": after})
+                self.opencti.app_logger.debug("Listing Labels", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
