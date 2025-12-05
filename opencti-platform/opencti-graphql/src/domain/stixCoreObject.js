@@ -80,7 +80,7 @@ import { extractEntityRepresentativeName, extractRepresentative } from '../datab
 import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator } from '../generated/graphql';
@@ -838,7 +838,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
   // check entity access
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
-  if (!validateUserAccessOperation(user, previous, 'edit', draft)) {
+  if (!validateUserAccessOperation(user, previous, AccessOperation.EDIT, draft)) {
     throw ForbiddenAccess();
   }
   const participantIds = getInstanceIds(previous);
@@ -983,7 +983,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
   // check entity access
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
-  if (!validateUserAccessOperation(user, previous, 'edit', draft)) {
+  if (!validateUserAccessOperation(user, previous, AccessOperation.EDIT, draft)) {
     throw ForbiddenAccess();
   }
   let lock;

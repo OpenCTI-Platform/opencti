@@ -22,6 +22,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import {
+  AccessOperation,
   type AuthorizedMember,
   isUserHasCapabilities,
   isValidMemberAccessRight,
@@ -59,7 +60,7 @@ export const getAuthorizedMembers = async (
   }
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
-  if (!validateUserAccessOperation(user, entity, 'manage-access', draft)) {
+  if (!validateUserAccessOperation(user, entity, AccessOperation.MANAGE_ACCESS, draft)) {
     return []; // return empty if user doesn't have the right access_right
   }
   const entityRestrictedMembers = entity.restricted_members ?? [];

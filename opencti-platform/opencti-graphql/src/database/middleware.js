@@ -155,6 +155,7 @@ import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepare
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
+  AccessOperation,
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
@@ -2146,9 +2147,9 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     return { element: initial };
   }
   // Check user access update
-  let accessOperation = 'edit';
+  let accessOperation = AccessOperation.EDIT;
   if (updates.some((e) => e.key === authorizedMembers.name)) {
-    accessOperation = 'manage-access';
+    accessOperation = AccessOperation.MANAGE_ACCESS;
     if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
       && (!initial.restricted_members || initial.restricted_members.length === 0)
       && updates.some((e) => e.key === authorizedMembers.name && e.value?.length > 0)) {
@@ -2168,7 +2169,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
 
   if (updates.some((e) => e.key === 'authorized_authorities')) {
-    accessOperation = 'manage-authorities-access';
+    accessOperation = AccessOperation.MANAGE_AUTHORITIES_ACCESS;
   }
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
@@ -2892,8 +2893,8 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   // check if user has "edit" access on from and to
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
-  const canEditFrom = validateUserAccessOperation(user, from, 'edit', draft);
-  const canEditTo = validateUserAccessOperation(user, to, 'edit', draft);
+  const canEditFrom = validateUserAccessOperation(user, from, AccessOperation.EDIT, draft);
+  const canEditTo = validateUserAccessOperation(user, to, AccessOperation.EDIT, draft);
   if (!canEditFrom || !canEditTo) {
     throw ForbiddenAccess();
   }
@@ -3117,12 +3118,12 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   // validate user access to create the entity in draft
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
-  if (!validateUserAccessOperation(user, input, 'edit', draft)) {
+  if (!validateUserAccessOperation(user, input, AccessOperation.EDIT, draft)) {
     throw ForbiddenAccess();
   }
   // validate authorized members access (when creating a new entity with authorized members)
   if (input.restricted_members?.length > 0) {
-    if (!validateUserAccessOperation(user, input, 'manage-access', draft)) {
+    if (!validateUserAccessOperation(user, input, AccessOperation.MANAGE_ACCESS, draft)) {
       throw ForbiddenAccess();
     }
     if (schemaAttributesDefinition.getAttribute(type, authorizedMembersActivationDate.name)) {
@@ -3386,7 +3387,7 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
-  if (!validateUserAccessOperation(user, element, 'delete', draft)) {
+  if (!validateUserAccessOperation(user, element, AccessOperation.DELETE, draft)) {
     throw ForbiddenAccess();
   }
 
@@ -3572,8 +3573,8 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   const toThing = await internalLoadById(context, user, toId, opts);// check if user has "edit" access on from and to
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
-  const canEditFrom = validateUserAccessOperation(user, fromThing, 'edit', draft);
-  const canEditTo = validateUserAccessOperation(user, toThing, 'edit', draft);
+  const canEditFrom = validateUserAccessOperation(user, fromThing, AccessOperation.EDIT, draft);
+  const canEditTo = validateUserAccessOperation(user, toThing, AccessOperation.EDIT, draft);
 
   if (!canEditFrom || !canEditTo) {
     throw ForbiddenAccess();

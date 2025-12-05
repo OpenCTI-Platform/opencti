@@ -72,6 +72,13 @@ export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
 
+export enum AccessOperation {
+  EDIT = 'edit',
+  DELETE = 'delete',
+  MANAGE_ACCESS = 'manage-access',
+  MANAGE_AUTHORITIES_ACCESS = 'manage-authorities-access',
+}
+
 export const MEMBER_ACCESS_ALL = 'ALL';
 export const MEMBER_ACCESS_CREATOR = 'CREATOR';
 export const MEMBER_ACCESS_RIGHT_ADMIN = 'admin';
@@ -848,7 +855,7 @@ export const isDirectAdministrator = (user: AuthUser, element: any) => {
 const hasUserAccessToOperation = (
   user: AuthUser,
   element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[]; },
-  operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access'
+  operation: AccessOperation
 ) => {
   const userAccessRight = getUserAccessRight(user, element);
   if (!userAccessRight) { // user has no access
@@ -864,7 +871,7 @@ const hasUserAccessToOperation = (
 };
 
 // Ensure that user can access the element (operation: edit / delete / manage-access)
-export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access', draft?: BasicStoreEntityDraftWorkspace | null) => {
+export const validateUserAccessOperation = (user: AuthUser, element: any, operation: AccessOperation, draft?: BasicStoreEntityDraftWorkspace | null) => {
   // 1. Check draft authorized members permissions
   if (draft && !hasUserAccessToOperation(user, draft, operation)) {
     return false;
