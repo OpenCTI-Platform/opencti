@@ -95,5 +95,37 @@ export const xtmHubClient = {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return { success: false };
     }
+  },
+  contactUs: async (platform: { platformId: string, platformToken: string }): Promise<Success> => {
+    const query = `
+      mutation ContactUs {
+        contactUs {
+          success
+        }
+      }
+    `;
+
+    const httpClient = getHttpClient({
+      baseURL: HUB_BACKEND_URL,
+      responseType: 'json',
+      headers: {
+        'Content-Type': 'application/json',
+        'XTM-Hub-Platform-Token': platform.platformToken,
+        'XTM-Hub-Platform-Id': platform.platformId
+      },
+    });
+
+    try {
+      const response = await httpClient.post('/graphql-api', { query });
+      const { data, errors } = response.data;
+      if ((errors?.length ?? 0) > 0 || !data?.contactUs?.success) {
+        logApp.warn('XTM Hub contactUs failed', { reason: errors?.[0] });
+        return { success: false };
+      }
+      return data?.contactUs;
+    } catch (error) {
+      logApp.warn('XTM Hub is unreachable', { reason: error });
+      return { success: false };
+    }
   }
 };

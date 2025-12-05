@@ -3749,6 +3749,8 @@
   "text/markdown": "MD",
   "text/plain": "TXT",
   "Textarea": "Area di testo",
+  "Thank you!": "Grazie!",
+  "Thank you for reaching out, we'll get back to you shortly.": "Grazie per averci contattato, ti risponderemo a breve.",
   "The alias has been added": "L'alias è stato aggiunto",
   "The alias has been removed": "L'alias è stato rimosso",
   "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.": "La quantità di risultati può variare in base ai dati/alle relazioni, poiché ogni occorrenza di una relazione dedotta viene contata per questo widget.",

@@ -3749,6 +3749,8 @@
   "text/markdown": "MD",
   "text/plain": "TXT",
   "Textarea": "텍스트 영역",
+  "Thank you!": "감사합니다!",
+  "Thank you for reaching out, we'll get back to you shortly.": "감사합니다. 곧 연락드리겠습니다.",
   "The alias has been added": "별명이 추가되었습니다",
   "The alias has been removed": "별명이 제거되었습니다",
   "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.": "이 위젯에서는 추론된 관계가 발생할 때마다 계산되므로 결과의 양은 데이터/관계에 따라 달라질 수 있습니다.",
