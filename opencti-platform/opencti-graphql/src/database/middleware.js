@@ -242,6 +242,7 @@ import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
+import {publishUserAction} from '../listener/UserActionListener';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2507,7 +2508,20 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       } : undefined;
       const relatedRestrictions = extractObjectsRestrictionsFromInputs(updatedInputs, initial.entity_type);
       const { pir_ids } = extractObjectsPirsFromInputs(updatedInputs, initial.entity_type);
-      const security = updatedInputs.find((input) => input.key === (objectOrganization.name || authorizedMembers.name));
+      const isSecurityUpdate = () => {
+        return updatedInputs.some((input) => input.key === objectOrganization.name || input.key === authorizedMembers.name);
+      };
+      const securityUpdate = isSecurityUpdate();
+      if (securityUpdate) {
+        await publishUserAction({
+          user,
+          event_type: 'mutation',
+          event_scope: 'update',
+          event_access: 'administration',
+          message,
+          context_data: { id: updatedInstance.id, entity_type: updatedInstance.entity_type, input: updatedInputs }
+        });
+      }
       const event = await storeUpdateEvent(
         context,
         user,
@@ -2517,7 +2531,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         changes,
         {
           ...opts,
-          noHistory: security ?? false,
+          noHistory: securityUpdate,
           commit,
           related_restrictions: relatedRestrictions,
           pir_ids,
@@ -3172,7 +3186,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   const input = { ...rawInput };
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
-  // authorized_members renaming
+  // authori  zed_members renaming
   if (input.authorized_members?.length > 0) {
     input.restricted_members = input.authorized_members;
   }
