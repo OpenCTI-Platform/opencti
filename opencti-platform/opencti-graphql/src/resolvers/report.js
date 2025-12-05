@@ -1,32 +1,32 @@
 import {
-  addReport,
-  findReportPaginated,
-  findById,
-  reportContainsStixObjectOrStixRelationship,
-  reportDeleteElementsCount,
-  reportDeleteWithElements,
-  reportsDistributionByEntity,
-  reportsNumber,
-  reportsNumberByAuthor,
-  reportsNumberByEntity,
-  reportsTimeSeries,
-  reportsTimeSeriesByAuthor,
-  reportsTimeSeriesByEntity,
-} from '../domain/report';
+addReport,
+findReportPaginated,
+findById,
+reportContainsStixObjectOrStixRelationship,
+reportDeleteElementsCount,
+reportDeleteWithElements,
+reportsDistributionByEntity,
+reportsNumber,
+reportsNumberByAuthor,
+reportsNumberByEntity,
+reportsTimeSeries,
+reportsTimeSeriesByAuthor,
+reportsTimeSeriesByEntity
+} from '../domain/report';;
 import {
-  stixDomainObjectAddRelation,
-  stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
-  stixDomainObjectDeleteRelation,
-  stixDomainObjectEditContext,
-  stixDomainObjectEditField,
-} from '../domain/stixDomainObject';
-import { distributionEntities } from '../database/middleware';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { loadThroughDenormalized } from './stix';
-import { INPUT_PARTICIPANT } from '../schema/general';
-import { filterMembersWithUsersOrgs } from '../utils/access';
-import { findSecurityCoverageByCoveredId } from '../modules/securityCoverage/securityCoverage-domain';
+stixDomainObjectAddRelation,
+stixDomainObjectCleanContext,
+stixDomainObjectDelete,
+stixDomainObjectDeleteRelation,
+stixDomainObjectEditContext,
+stixDomainObjectEditField
+} from '../domain/stixDomainObject';;
+import { distributionEntities } from '../database/middleware';;
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';;
+import { loadThroughDenormalized } from './stix';;
+import { INPUT_PARTICIPANT } from '../schema/general';;
+import { filterMembersWithUsersOrgs } from '../utils/access';;
+import { findSecurityCoverageByCoveredId } from '../modules/securityCoverage/securityCoverage-domain';;
 
 const reportResolvers = {
   Query: {
@@ -73,7 +73,12 @@ const reportResolvers = {
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({
-      delete: ({ purgeElements }) => (purgeElements ? reportDeleteWithElements(context, context.user, id) : stixDomainObjectDelete(context, context.user, id)),
+      delete: ({ purgeElements }) => {
+        if (purgeElements) {
+          return reportDeleteWithElements(context, context.user, id);
+        }
+        return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_REPORT);
+      },
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

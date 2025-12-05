@@ -32,7 +32,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS } from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS, isAbstract } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
@@ -205,22 +205,83 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const stixDomainObjectDelete = async (context, user, stixDomainObjectId) => {
-  // If we are in a draft, we need to also search for deleted elements
-  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, { includeDeletedInDraft: true });
+/**
+ * @param {*} context
+ * @param {*} user
+ * @param {string} stixDomainObjectId
+ * @param {string | string[]} stixDomainObjectType - Required entity type(s) for validation
+ */
+export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, stixDomainObjectType) => {
+  const allowedTypes = Array.isArray(stixDomainObjectType) ? stixDomainObjectType : [stixDomainObjectType];
+  
+  // Validate all types are valid STIX Domain Objects
+  for (const type of allowedTypes) {
+    if (!isStixDomainObject(type)) {
+      throw FunctionalError(
+        `Invalid stixDomainObjectType: ${type} is not a STIX Domain Object`,
+        { invalidType: type }
+      );
+    }
+  }
+  
+  // Optimize: use concrete type directly if not abstract
+  const isConcreteType = allowedTypes.length === 1 && !allowedTypes[0].startsWith('Abstract-');
+  const loadType = isConcreteType ? allowedTypes[0] : ABSTRACT_STIX_DOMAIN_OBJECT;
+  
+  const stixDomainObject = await storeLoadById(
+    context,
+    user,
+    stixDomainObjectId,
+    loadType,
+    { includeDeletedInDraft: true }
+  );
+  
   if (!stixDomainObject) {
     throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.');
   }
+  
+  // Verify type matches expected types
+  // For abstract types, check if entity_type is in parent_types
+  const isValidType = allowedTypes.some(allowedType => {
+    if (allowedType === stixDomainObject.entity_type) {
+      return true; // Exact match
+    }
+    // Check if allowedType is an abstract parent of the actual entity
+    if (isAbstract(allowedType) && stixDomainObject.parent_types) {
+      return stixDomainObject.parent_types.includes(allowedType);
+    }
+    return false;
+  });
+  
+  if (!isValidType) {
+    throw FunctionalError(
+      `Cannot delete the object, type mismatch: expected ${allowedTypes.join(', ')}, found ${stixDomainObject.entity_type}.`,
+      { 
+        expectedTypes: allowedTypes, 
+        actualType: stixDomainObject.entity_type,
+        parentTypes: stixDomainObject.parent_types,
+        objectId: stixDomainObjectId 
+      }
+    );
+  }
+  
   await deleteElementById(context, user, stixDomainObjectId, stixDomainObject.entity_type);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, stixDomainObject, user);
   return stixDomainObjectId;
 };
 
 export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsIds) => {
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < stixDomainObjectsIds.length; i += 1) {
-    await stixDomainObjectDelete(user, stixDomainObjectsIds[i]);
+  // Optimization: Load all entities in a single query to get their actual types
+  const entities = await storeLoadByIds(context, user, stixDomainObjectsIds);
+  
+  // Delete each entity with its correct specific type
+  // Relations cannot be created in parallel, so we iterate
+  for (const entity of entities) {
+    if (entity) {
+      await stixDomainObjectDelete(context, user, entity.id, entity.entity_type);
+    }
   }
+  
   return stixDomainObjectsIds;
 };
 
