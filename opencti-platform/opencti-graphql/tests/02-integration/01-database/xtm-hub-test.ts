@@ -47,6 +47,25 @@ describe('XTM hub', () => {
       expect(result.status).toBe(XtmHubRegistrationStatus.Unregistered);
     });
 
+    it('should check if backend is reachable', async () => {
+      const settings = {
+        id: 'id'
+      };
+      getEntityFromCacheSpy.mockResolvedValue(settings);
+
+      await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+      expect(updateAttributeSpy).toBeCalledWith(
+        testContext,
+        HUB_REGISTRATION_MANAGER_USER,
+        'id',
+        ENTITY_TYPE_SETTINGS,
+        [
+          { key: 'xtm_hub_backend_is_reachable', value: [true] }
+        ]
+      );
+    });
+
     it('should reset registration when platform is not found', async () => {
       const settings: Partial<BasicStoreSettings> = {
         id: 'id',
@@ -74,7 +93,7 @@ describe('XTM hub', () => {
           { key: 'xtm_hub_last_connectivity_check', value: [] }
         ]
       );
-    })
+    });
 
     it('should update registration status when connectivity is lost', async () => {
       const settings: Partial<BasicStoreSettings> = {
@@ -93,7 +112,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.LostConnectivity] }, { key: 'xtm_hub_backend_is_reachable', value: [true] }]
+        [{ key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.LostConnectivity] }]
       );
     });
 
@@ -118,8 +137,7 @@ describe('XTM hub', () => {
         [
           { key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.Registered] },
           { key: 'xtm_hub_should_send_connectivity_email', value: [true] },
-          { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
-          { key: 'xtm_hub_backend_is_reachable', value: [true] }
+          { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }
         ]
       );
     });
@@ -184,7 +202,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }, { key: 'xtm_hub_backend_is_reachable', value: [true] }]
+        [{ key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }]
       );
     });
 
@@ -208,7 +226,7 @@ describe('XTM hub', () => {
           HUB_REGISTRATION_MANAGER_USER,
           'id',
           ENTITY_TYPE_SETTINGS,
-          [{ key: 'xtm_hub_should_send_connectivity_email', value: [false] }, { key: 'xtm_hub_backend_is_reachable', value: [true] }]
+          [{ key: 'xtm_hub_should_send_connectivity_email', value: [false] }]
         );
       });
 
