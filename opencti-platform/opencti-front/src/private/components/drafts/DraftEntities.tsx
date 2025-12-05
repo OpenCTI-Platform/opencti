@@ -130,6 +130,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   isReadOnly,
 }) => {
   const computeLink = useComputeLink();
+  const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
   const { draftId } = useParams() as { draftId: string };
   const [open, setOpen] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
@@ -224,7 +225,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   };
 
   let createButton: ReactNode;
-  if (!isReadOnly && useGranted([KNOWLEDGE_KNUPDATE])) {
+  if (!isReadOnly && canUpdateKnowledge) {
     createButton = entitiesType === 'Stix-Cyber-Observable' ? (
       <>
         <StixCyberObservableCreation

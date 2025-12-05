@@ -116,6 +116,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
   const [displayAuthorizeMembersDialog, setDisplayAuthorizeMembersDialog] = useState(false);
   const navigate = useNavigate();
   const draftContext = useDraftContext();
+  const canDeleteKnowledge = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
 
   const { draftWorkspace } = usePreloadedQuery<DraftContextBannerQuery>(draftContextBannerQuery, queryRef);
@@ -229,7 +230,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             {t_i18n('Exit draft')}
           </Button>
         </div>
-        {useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && currentAccessRight.canEdit && (
+        {canDeleteKnowledge && currentAccessRight.canEdit && (
           <div style={{ padding: '0 12px' }}>
             <Button
               variant="contained"
