@@ -9935,6 +9935,7 @@ type Mutation {
   formImport(file: Upload!): Form
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
+  contactUsXtmHub: Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
 }
 

@@ -14892,6 +14892,7 @@ export type Mutation = {
   checkXTMHubConnectivity: CheckXtmHubConnectivityResponse;
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
+  contactUsXtmHub: Success;
   containerEdit?: Maybe<ContainerEditMutations>;
   countryAdd?: Maybe<Country>;
   countryEdit?: Maybe<CountryEditMutations>;
@@ -42536,6 +42537,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkXTMHubConnectivity?: Resolver<ResolversTypes['CheckXTMHubConnectivityResponse'], ParentType, ContextType>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
+  contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType>;
   containerEdit?: Resolver<Maybe<ResolversTypes['ContainerEditMutations']>, ParentType, ContextType, RequireFields<MutationContainerEditArgs, 'id'>>;
   countryAdd?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<MutationCountryAddArgs, 'input'>>;
   countryEdit?: Resolver<Maybe<ResolversTypes['CountryEditMutations']>, ParentType, ContextType, RequireFields<MutationCountryEditArgs, 'id'>>;

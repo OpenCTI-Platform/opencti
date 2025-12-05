@@ -21,7 +21,7 @@ interface TopBannerProps {
   bannerText: React.ReactNode;
   bannerColor?: TopBannerColor;
   buttonText: React.ReactNode;
-  onButtonClick: () => void;
+  onButtonClick?: () => void;
 }
 
 const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onButtonClick }: TopBannerProps) => {

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import moment from 'moment/moment';
 import { UserContext } from '../../utils/hooks/useAuth';
 import { dateFormat, daysBetweenDates, now } from '../../utils/Time';
@@ -6,13 +6,30 @@ import TopBanner, { TopBannerColor } from '../../components/TopBanner';
 import { useFormatter } from '../../components/i18n';
 import { RootSettings$data } from '../__generated__/RootSettings.graphql';
 import useHelper from '../../utils/hooks/useHelper';
+import { graphql } from 'react-relay';
+import useApiMutation from '../../utils/hooks/useApiMutation';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 
 export const LICENSE_OPTION_TRIAL = 'trial';
+
+const contactUsXtmHubMutation = graphql`
+  mutation LicenceBannerContactUsMutation {
+    contactUsXtmHub {
+      success
+    }
+  }
+`;
 
 interface BannerInfo {
   message: React.ReactNode;
   bannerColor: TopBannerColor;
   buttonText ?: string;
+  onButtonClick?: () => void;
 }
 
 const getBannerColor = (remainingDays: number) => {
@@ -21,7 +38,7 @@ const getBannerColor = (remainingDays: number) => {
   return 'gradient_blue';
 };
 
-const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_edition']): BannerInfo | undefined => {
+const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_edition'], onButtonClick?: () => void): BannerInfo | undefined => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   if (!eeSettings.license_validated) {
@@ -48,6 +65,7 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
             <strong> {remainingDays} {remainingDays === 1 ? t_i18n('Day remaining') : t_i18n('Days remaining')}</strong>
           </>
         ),
+        onButtonClick
       };
     }
     return {
@@ -59,16 +77,44 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
 };
 
 const LicenceBanner = () => {
+  const { t_i18n } = useFormatter();
   const { settings } = useContext(UserContext);
+  const [showThankYouDialog, setShowThankYouDialog] = useState(false);
+  const [commitContactUs] = useApiMutation(contactUsXtmHubMutation);
   const eeSettings = settings?.platform_enterprise_edition;
   const isEE = eeSettings?.license_enterprise;
   if (!isEE) return <></>;
 
-  const bannerInfo = computeBannerInfo(eeSettings);
+  const bannerInfo = computeBannerInfo(eeSettings, () => {
+    commitContactUs({
+      variables: {},
+      onCompleted: () => setShowThankYouDialog(true),
+    });
+  });
   if (!bannerInfo) return <></>;
 
   return (
-    <TopBanner bannerColor={bannerInfo.bannerColor} bannerText={bannerInfo.message} buttonText={bannerInfo.buttonText} onButtonClick={() => {}}/>
+    <>
+      <TopBanner
+        bannerColor={bannerInfo.bannerColor}
+        bannerText={bannerInfo.message}
+        buttonText={bannerInfo.buttonText}
+        onButtonClick={bannerInfo.onButtonClick}
+      />
+      <Dialog open={showThankYouDialog} onClose={() => setShowThankYouDialog(false)}>
+        <DialogTitle>{t_i18n('Thank you!')}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n("Thank you for reaching out, we'll get back to you shortly.")}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowThankYouDialog(false)} color="primary">
+            {t_i18n('Close')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
