@@ -143,7 +143,7 @@ jobs:
     steps:
       - checkout
       - run:
-          command: ./scripts/ci/wait-for-url-200.sh https://raw.githubusercontent.com/OpenCTI-Platform/connectors/refs/tags/${CIRCLE_TAG}/manifest.json 450 60
+          command: ./scripts/ci/wait-for-url-200.sh https://raw.githubusercontent.com/OpenCTI-Platform/connectors/refs/tags/${CIRCLE_TAG}/manifest.json 900 30
 
 
   build_platform:
@@ -949,8 +949,7 @@ workflows:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              only:
-                - oob/ci-release-waitformanifest
+              ignore: /.*/
       - build_platform:
           filters:
             tags:
