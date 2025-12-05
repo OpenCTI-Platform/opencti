@@ -164,7 +164,7 @@ class OpenCTIApiClient:
         cert: Union[str, Tuple[str, str], None] = None,
         custom_headers: str = None,
         perform_health_check: bool = True,
-        provider: str = None
+        provider: str = None,
     ):
         """Constructor method"""
 
