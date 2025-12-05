@@ -838,7 +838,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
   // check entity access
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
-  if (!(await validateUserAccessOperation(context, user, previous, 'edit', draft))) {
+  if (!validateUserAccessOperation(user, previous, 'edit', draft)) {
     throw ForbiddenAccess();
   }
   const participantIds = getInstanceIds(previous);
@@ -983,7 +983,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
   // check entity access
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
-  if (!(await validateUserAccessOperation(context, user, previous, 'edit', draft))) {
+  if (!validateUserAccessOperation(user, previous, 'edit', draft)) {
     throw ForbiddenAccess();
   }
   let lock;

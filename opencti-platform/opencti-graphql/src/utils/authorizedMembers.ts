@@ -59,7 +59,7 @@ export const getAuthorizedMembers = async (
   }
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
-  if (!(await validateUserAccessOperation(context, user, entity, 'manage-access', draft))) {
+  if (!validateUserAccessOperation(user, entity, 'manage-access', draft)) {
     return []; // return empty if user doesn't have the right access_right
   }
   const entityRestrictedMembers = entity.restricted_members ?? [];

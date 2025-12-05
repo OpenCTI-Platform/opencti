@@ -864,7 +864,7 @@ const hasUserAccessToOperation = (
 };
 
 // Ensure that user can access the element (operation: edit / delete / manage-access)
-export const validateUserAccessOperation = async (context: AuthContext, user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access', draft?: BasicStoreEntityDraftWorkspace | null) => {
+export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access', draft?: BasicStoreEntityDraftWorkspace | null) => {
   // 1. Check draft authorized members permissions
   if (draft && !hasUserAccessToOperation(user, draft, operation)) {
     return false;
