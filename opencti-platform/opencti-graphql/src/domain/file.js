@@ -19,10 +19,12 @@ import { FilterMode, OrderingMode } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
-import { UnsupportedError } from '../config/errors';
+import { UnsupportedError, FunctionalError } from '../config/errors';
 import { isDraftFile } from '../database/draft-utils';
 import { askJobImport } from './connector';
 import { addWorkbenchUploadCount } from '../manager/telemetryManager';
+import { logApp } from '../config/conf';
+import { generateFileUploadErrorMessage } from './file-error-helpers';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -103,7 +105,28 @@ export const uploadPending = async (context, user, args) => {
   // the workbench before uploading the file then we fetch data from Elastic, replace old
   // workbench data and recreate a readable stream for upload.
   if (refreshEntity && !!entity) {
-    let bundle = await extractContentFrom(file);
+    let bundle;
+    try {
+      logApp.info('[FILE UPLOAD] Attempting to extract content from file for refresh', { entityId, userId: user.id });
+      bundle = await extractContentFrom(file);
+      logApp.info('[FILE UPLOAD] Successfully extracted content from file', { hasObjects: !!bundle?.objects, objectCount: bundle?.objects?.length });
+    } catch (err) {
+      // Enhanced error logging to differentiate between file access errors and content parsing errors
+      const fileData = await file.catch(() => ({ filename: 'unknown' }));
+      logApp.error('[FILE UPLOAD] Failed to extract content from uploaded file', {
+        cause: err,
+        errorMessage: err.message,
+        errorName: err.name,
+        filename: fileData.filename,
+        entityId,
+        userId: user.id
+      });
+      
+      // Use helper to generate appropriate error message
+      const { message, data } = generateFileUploadErrorMessage(err, fileData.filename);
+      throw FunctionalError(message, data);
+    }
+    
     if (bundle.objects && bundle.objects.length > 0) {
       const entityAsStix = await stixLoadById(context, user, entityId);
       if (entityAsStix) {
