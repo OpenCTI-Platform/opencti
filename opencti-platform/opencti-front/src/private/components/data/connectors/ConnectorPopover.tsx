@@ -44,6 +44,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
   const [clearing, setClearing] = useState(false);
   const [displayResetState, setDisplayResetState] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [refreshingQueueDetails, setRefreshingQueueDetails] = useState(false);
 
   const { isSensitive } = useSensitiveModifications('connector_reset');
 
@@ -80,10 +81,20 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
   const handleOpenResetState = () => {
     setAnchorEl(null);
     setDisplayResetState(true);
+    setRefreshingQueueDetails(true);
+    if (onRefreshData) {
+      onRefreshData();
+      setTimeout(() => {
+        setRefreshingQueueDetails(false);
+      }, 500);
+    } else {
+      setRefreshingQueueDetails(false);
+    }
   };
 
   const handleCloseResetState = () => {
     setDisplayResetState(false);
+    setRefreshingQueueDetails(false);
   };
 
   const submitClearWorks = () => {
@@ -110,6 +121,13 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
         MESSAGING$.notifySuccess('The connector state has been reset and messages queue has been purged');
         setResetting(false);
         setDisplayResetState(false);
+        if (onRefreshData) {
+          onRefreshData();
+        }
+      },
+      onError: (_error) => {
+        setResetting(false);
+        MESSAGING$.notifyError('Failed to reset connector state');
       },
     });
   };
@@ -236,7 +254,9 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
               <div>
                 {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
                 <br />
-                {t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
+                {refreshingQueueDetails 
+                  ? t_i18n('Loading current message count...')
+                  : t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
               </div>
             </Alert>
           </DialogContentText>
@@ -251,7 +271,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
           <Button
             onClick={submitResetState}
             color={isSensitive ? 'error' : 'secondary'}
-            disabled={resetting}
+            disabled={resetting || refreshingQueueDetails}
           >
             {t_i18n('Confirm')}
           </Button>
