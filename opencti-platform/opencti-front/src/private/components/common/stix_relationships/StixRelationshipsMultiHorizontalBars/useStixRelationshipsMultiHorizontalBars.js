@@ -118,7 +118,7 @@ export const useStixRelationshipsMultiHorizontalBars = (
         .map((k) => k[0])
     );
   }
-  
+
   const redirectionUtils =
     finalField === 'internal_id'
       ? stixRelationshipsDistribution.map((n) => ({
@@ -136,7 +136,7 @@ export const useStixRelationshipsMultiHorizontalBars = (
           }),
         }))
       : null;
-
+      
   return {
     chartData,
     redirectionUtils,
