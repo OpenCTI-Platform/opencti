@@ -2733,9 +2733,16 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
 
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validEnterpriseEdition = settings.valid_enterprise_edition;
+
+  // Preserve vulnerability name (CVE) if missing from update patch
+  // This fixes issue #13169 where CVE information is deleted when Jira connector sends updates without name field
+  if (type === ENTITY_TYPE_VULNERABILITY && isEmptyField(updatePatch.name) && isNotEmptyField(resolvedElement.name)) {
+    // Preserve existing name (CVE identifier) if not in update patch
+    updatePatch.name = resolvedElement.name;
+  }
+
   // All inputs impacted by modifications (+inner)
   const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
-
   // -- If modifications need to be done, add updated_at and modified
   if (inputs.length > 0) {
     // Update the attribute and return the result
