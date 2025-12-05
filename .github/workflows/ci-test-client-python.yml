@@ -26,6 +26,14 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
+    - name: Set up Python environment for flake8 lint
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: flake8 Lint
+      uses: py-actions/flake8@v2
+
     - name: Login to DockerHub
       uses: docker/login-action@v3
       with:
@@ -79,4 +87,3 @@ jobs:
       if: always()
       continue-on-error: true
       run: cat runner_resource_stat.log
-
