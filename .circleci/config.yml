@@ -35,7 +35,8 @@ jobs:
           branch_pattern: master
           event: fail
           template: basic_fail_1
-  linter_pycti:
+  linter_pycti: # TODO : remove when pycti release deployment is moved to github action
+  # linter pycti moved to github actions in issue/13539 
     docker:
       - image: alpine/flake8
     working_directory: ~/repo
