@@ -8,6 +8,7 @@ import {
   getUnixTime,
   differenceInMinutes,
   differenceInSeconds,
+  differenceInDays,
   endOfMonth,
   isValid,
   formatDistanceToNow,
@@ -201,12 +202,14 @@ const endOfPeriod = (date: Date, unit: 'day' | 'month'): Date => {
   }
 };
 
-const dateDifference = (date1: Date, date2: Date, unit: 'minutes' | 'seconds'): number => {
+const dateDifference = (date1: Date, date2: Date, unit: 'minutes' | 'seconds' | 'days'): number => {
   switch (unit) {
     case 'minutes':
       return differenceInMinutes(date1, date2);
     case 'seconds':
       return differenceInSeconds(date1, date2);
+    case 'days':
+      return differenceInDays(date1, date2);
     default:
       return differenceInSeconds(date1, date2);
   }
@@ -401,7 +404,10 @@ export const parseDate = (date?: DateInput): MomentLike => {
     },
     unix: () => getUnixTime(parsed),
     valueOf: () => parsed.getTime(),
-    diff: (otherDate: MomentLike | DateInput, unit: string) => dateDifference(parseToUTC(otherDate as DateInput), parsed, unit as 'minutes' | 'seconds'),
+    diff: (otherDate: MomentLike | DateInput, unit: string) => {
+      const normalizedUnit = unit.toLowerCase() as 'minutes' | 'seconds' | 'days';
+      return dateDifference(parseToUTC(otherDate as DateInput), parsed, normalizedUnit);
+    },
     subtract: (amount: number, unit: string) => parseDate(subtractDuration(parsed, amount, normalizeDurationUnit(unit))),
     add: (amount: number, unit: string) => parseDate(addDuration(parsed, amount, normalizeDurationUnit(unit))),
     endOf: (unit: string) => parseDate(endOfPeriod(parsed, unit as 'day' | 'month')),
@@ -503,6 +509,7 @@ export const dateFormat = (data: DateInput, specificFormat: string | null = null
 
 export const minutesBetweenDates = (startDate: DateInput, endDate: DateInput): number => Math.abs(dateDifference(parseToUTC(endDate), parseToUTC(startDate), 'minutes')) + 1;
 export const secondsBetweenDates = (startDate: DateInput, endDate: DateInput): number => Math.abs(dateDifference(parseToUTC(endDate), parseToUTC(startDate), 'seconds')) + 1;
+export const daysBetweenDates = (startDate: DateInput, endDate: DateInput): number => Math.abs(dateDifference(parseToUTC(endDate), parseToUTC(startDate), 'days'));
 
 export const formatSeconds = (seconds: number): string => {
   const pad = (v: number) => (v < 10 ? `0${v}` : String(v));

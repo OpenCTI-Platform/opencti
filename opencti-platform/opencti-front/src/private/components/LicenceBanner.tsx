@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
-import moment from 'moment/moment';
 import { UserContext } from '../../utils/hooks/useAuth';
-import { dateFormat, daysBetweenDates, now } from '../../utils/Time';
+import { dateFormat, daysBetweenDates, now, parseDate } from '../../utils/Time';
 import TopBanner, { TopBannerColor } from '../../components/TopBanner';
 import { useFormatter } from '../../components/i18n';
 import { RootSettings$data } from '../__generated__/RootSettings.graphql';
@@ -37,7 +36,7 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
   } if (eeSettings.license_type === LICENSE_OPTION_TRIAL) {
     const featureFlagFreeTrials = isFeatureEnable('FREE_TRIALS');
     if (featureFlagFreeTrials) {
-      const remainingDays = daysBetweenDates(now(), moment(eeSettings.license_expiration_date));
+      const remainingDays = daysBetweenDates(now(), parseDate(eeSettings.license_expiration_date).toDate());
       const bannerColor = getBannerColor(remainingDays);
       return {
         buttonText: t_i18n('Contact us'),
