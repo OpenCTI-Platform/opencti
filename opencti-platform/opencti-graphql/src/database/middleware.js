@@ -155,6 +155,7 @@ import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepare
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
+  AccessOperation,
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
@@ -239,6 +240,7 @@ import { pirExplanation } from '../modules/attributes/internalRelationship-regis
 import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2145,9 +2147,9 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     return { element: initial };
   }
   // Check user access update
-  let accessOperation = 'edit';
+  let accessOperation = AccessOperation.EDIT;
   if (updates.some((e) => e.key === authorizedMembers.name)) {
-    accessOperation = 'manage-access';
+    accessOperation = AccessOperation.MANAGE_ACCESS;
     if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
       && (!initial.restricted_members || initial.restricted_members.length === 0)
       && updates.some((e) => e.key === authorizedMembers.name && e.value?.length > 0)) {
@@ -2167,9 +2169,11 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
 
   if (updates.some((e) => e.key === 'authorized_authorities')) {
-    accessOperation = 'manage-authorities-access';
+    accessOperation = AccessOperation.MANAGE_AUTHORITIES_ACCESS;
   }
-  if (!validateUserAccessOperation(user, initial, accessOperation)) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, initial, accessOperation, draft)) {
     throw ForbiddenAccess();
   }
   // Split attributes and meta
@@ -2887,7 +2891,11 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   }
 
   // check if user has "edit" access on from and to
-  if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  const canEditFrom = validateUserAccessOperation(user, from, AccessOperation.EDIT, draft);
+  const canEditTo = validateUserAccessOperation(user, to, AccessOperation.EDIT, draft);
+  if (!canEditFrom || !canEditTo) {
     throw ForbiddenAccess();
   }
 
@@ -3106,9 +3114,16 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   }
   delete input.authorized_members; // always remove authorized_members input, even if empty
   // endregion
+
+  // validate user access to create the entity in draft
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, input, AccessOperation.EDIT, draft)) {
+    throw ForbiddenAccess();
+  }
   // validate authorized members access (when creating a new entity with authorized members)
   if (input.restricted_members?.length > 0) {
-    if (!validateUserAccessOperation(user, input, 'manage-access')) {
+    if (!validateUserAccessOperation(user, input, AccessOperation.MANAGE_ACCESS, draft)) {
       throw ForbiddenAccess();
     }
     if (schemaAttributesDefinition.getAttribute(type, authorizedMembersActivationDate.name)) {
@@ -3369,8 +3384,14 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
+  
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, element, AccessOperation.DELETE, draft)) {
+    throw ForbiddenAccess();
+  }
 
-  if (getDraftContext(context, user)) {
+  if (draftId) {
     return draftInternalDeleteElement(context, user, element);
   }
   // region confidence control
@@ -3389,9 +3410,6 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   // Prevent organization deletion if platform orga or has members
   if (element.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
     await verifyCanDeleteOrganization(context, user, element);
-  }
-  if (!validateUserAccessOperation(user, element, 'delete')) {
-    throw ForbiddenAccess();
   }
   // Check inference operation
   checkIfInferenceOperationIsValid(user, element);
@@ -3553,7 +3571,12 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
     }
   }
   const toThing = await internalLoadById(context, user, toId, opts);// check if user has "edit" access on from and to
-  if (!validateUserAccessOperation(user, fromThing, 'edit') || !validateUserAccessOperation(user, toThing, 'edit')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  const canEditFrom = validateUserAccessOperation(user, fromThing, AccessOperation.EDIT, draft);
+  const canEditTo = validateUserAccessOperation(user, toThing, AccessOperation.EDIT, draft);
+
+  if (!canEditFrom || !canEditTo) {
     throw ForbiddenAccess();
   }
   // Looks like the caller doesn't give the correct from, to currently

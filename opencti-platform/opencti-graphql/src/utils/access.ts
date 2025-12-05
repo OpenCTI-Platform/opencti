@@ -9,6 +9,7 @@ import { telemetry } from '../config/tracing';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
 import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
+import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
@@ -70,6 +71,13 @@ export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
 export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
+
+export enum AccessOperation {
+  EDIT = 'edit',
+  DELETE = 'delete',
+  MANAGE_ACCESS = 'manage-access',
+  MANAGE_AUTHORITIES_ACCESS = 'manage-authorities-access',
+}
 
 export const MEMBER_ACCESS_ALL = 'ALL';
 export const MEMBER_ACCESS_CREATOR = 'CREATOR';
@@ -844,22 +852,11 @@ export const isDirectAdministrator = (user: AuthUser, element: any) => {
   return elementAccessIds.some((a: string) => userMemberAccessIds.includes(a));
 };
 
-// ensure that user can access the element (operation: edit / delete / manage-access)
-export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access') => {
-  if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    return true;
-  }
-  if (isStixObject(element.entity_type)
-    && operation === 'manage-access'
-    && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
-  ) {
-    return false;
-  }
-  if (operation === 'manage-authorities-access'
-    && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
-  ) {
-    return false;
-  }
+const hasUserAccessToOperation = (
+  user: AuthUser,
+  element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[]; },
+  operation: AccessOperation
+) => {
   const userAccessRight = getUserAccessRight(user, element);
   if (!userAccessRight) { // user has no access
     return false;
@@ -871,6 +868,37 @@ export const validateUserAccessOperation = (user: AuthUser, element: any, operat
     return userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN;
   }
   return true;
+};
+
+// Ensure that user can access the element (operation: edit / delete / manage-access)
+export const validateUserAccessOperation = (user: AuthUser, element: any, operation: AccessOperation, draft?: BasicStoreEntityDraftWorkspace | null) => {
+  // 1. Check draft authorized members permissions
+  if (draft && !hasUserAccessToOperation(user, draft, operation)) {
+    return false;
+  }
+  
+  // 2. Internal objects management
+  if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    return true;
+  }
+
+  // 3. Specific STIX object management restrictions
+  if (isStixObject(element.entity_type)
+    && operation === 'manage-access'
+    && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
+  ) {
+    return false;
+  }
+
+  // 4. General access management restrictions
+  if (operation === 'manage-authorities-access'
+    && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
+  ) {
+    return false;
+  }
+
+  // 5. Check access to the element (entity, container, etc.)
+  return hasUserAccessToOperation(user, element, operation);
 };
 
 export const isValidMemberAccessRight = (accessRight: string) => {

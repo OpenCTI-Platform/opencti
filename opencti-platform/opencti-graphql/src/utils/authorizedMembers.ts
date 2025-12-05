@@ -11,6 +11,7 @@ import type { MemberAccess, MemberAccessInput, MemberGroupRestriction } from '..
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
+import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { findById as findOrganization } from '../modules/organization/organization-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -21,6 +22,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import {
+  AccessOperation,
   type AuthorizedMember,
   isUserHasCapabilities,
   isValidMemberAccessRight,
@@ -56,7 +58,9 @@ export const getAuthorizedMembers = async (
   if (isEmptyField(entity.restricted_members)) {
     return [];
   }
-  if (!validateUserAccessOperation(user, entity, 'manage-access')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, entity, AccessOperation.MANAGE_ACCESS, draft)) {
     return []; // return empty if user doesn't have the right access_right
   }
   const entityRestrictedMembers = entity.restricted_members ?? [];
