@@ -11,6 +11,26 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
+      dockerfile_platform:
+        description: "Dockerfile"
+        type: string
+        required: false
+        default: Dockerfile_featurebranch
+      build_context_platform:
+        description: "Build context"
+        type: string
+        required: false
+        default: opencti-platform
+      dockerfile_worker:
+        description: "Dockerfile"
+        type: string
+        required: false
+        default: Dockerfile_featurebranch
+      build_context_worker:
+        description: "Build context"
+        type: string
+        required: false
+        default: opencti-worker
     outputs:
       image-tag-version-cleaned:
         description: "Image tag after formatting"
@@ -50,9 +70,8 @@ jobs:
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
-        context: opencti-platform
-        # Using Dockerfile_featurebranch waiting for the merge of all dockerfile
-        file: opencti-platform/Dockerfile_featurebranch
+        context: ${{ inputs.build_context_platform }}
+        file: opencti-platform/${{ inputs.dockerfile_platform }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -89,8 +108,8 @@ jobs:
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
-        context: opencti-worker
-        file: opencti-worker/Dockerfile
+        context: ${{ inputs.build_context_platform }}
+        file: opencti-worker/${{ inputs.dockerfile_platform }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
