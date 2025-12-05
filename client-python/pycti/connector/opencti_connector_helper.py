@@ -2252,6 +2252,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             time.sleep(10)
             self._send_bundle(channel, bundle, **kwargs)
 
+    # Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve relationship object_marking_refs and created_by_ref instead
     def stix2_get_embedded_objects(self, item) -> Dict:
         """gets created and marking refs for a stix2 item
 
@@ -2260,6 +2261,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: returns a dict of created_by of object_marking_refs
         :rtype: Dict
         """
+
+        raise DeprecationWarning(
+            "Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve relationship object_marking_refs and created_by_ref instead",
+        )
+
         # Marking definitions
         object_marking_refs = []
         if "object_marking_refs" in item:
@@ -2297,6 +2303,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         return items
 
+    # Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve relationship source_ref and target_ref instead
     def stix2_get_relationship_objects(self, relationship) -> list:
         """get a list of relations for a stix2 relationship object
 
@@ -2305,6 +2312,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: list of relations objects
         :rtype: list
         """
+
+        raise DeprecationWarning(
+            "Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve relationship source_ref and target_ref instead",
+        )
 
         items = [relationship]
         # Get source ref
@@ -2326,6 +2337,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         return items
 
+    # Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve report object_refs instead
     def stix2_get_report_objects(self, report) -> list:
         """get a list of items for a stix2 report object
 
@@ -2334,6 +2346,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: list of items for a stix2 report object
         :rtype: list
         """
+
+        raise DeprecationWarning(
+            "Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve report object_refs instead",
+        )
 
         items = [report]
         # Add all object refs
