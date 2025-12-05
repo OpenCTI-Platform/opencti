@@ -89,6 +89,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
+  const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
 
   const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
   if (!draftWorkspace) {
@@ -217,7 +218,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
           />
-          {!isDraftReadOnly && useGranted([KNOWLEDGE_KNASKIMPORT]) && (
+          {!isDraftReadOnly && canAskImportKnowledge && (
           <Tab
             component={Link}
             to={`/dashboard/data/import/draft/${draftId}/files`}

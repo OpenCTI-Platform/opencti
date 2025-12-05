@@ -8,8 +8,10 @@ import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGr
 import useHasOnlyAccessToImportDraftTab from '../../../../utils/hooks/useHasOnlyAccessToImportDraftTab';
 
 const Root = () => {
+  const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const hasOnlyAccessToImportDraftTab = useHasOnlyAccessToImportDraftTab();
-  const restrictAccessToDraftOnly = useGranted([KNOWLEDGE_KNASKIMPORT]) || !hasOnlyAccessToImportDraftTab;
+  
+  const restrictAccessToDraftOnly = canAskImportKnowledge || !hasOnlyAccessToImportDraftTab;
   return (
     <Routes>
       <Route
