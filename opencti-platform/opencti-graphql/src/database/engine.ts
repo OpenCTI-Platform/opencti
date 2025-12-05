@@ -386,8 +386,8 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
 };
 
 // Look for the engine version with OpenSearch client
-export const searchEngineVersion = async (openSearchClient: OpenClient): Promise<{ platform: string, version: string }> => {
-  const engineToUse = openSearchClient ?? engine as OpenClient;
+export const searchEngineVersion = async (): Promise<{ platform: string, version: string }> => {
+  const engineToUse = engine as OpenClient;
   const searchInfo = await engineToUse.info()
     .then((info) => oebp(info).version)
     .catch(
@@ -450,7 +450,7 @@ export const searchEngineInit = async (): Promise<boolean> => {
   if (engineSelector === ELK_ENGINE) {
     logApp.info(`[SEARCH] Engine ${ELK_ENGINE} client selected by configuration`);
     engine = elasticSearchClient;
-    const searchVersion = await searchEngineVersion(openSearchClient);
+    const searchVersion = await searchEngineVersion();
     if (engineCheck && searchVersion.platform !== ELK_ENGINE) {
       throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
     }
@@ -459,7 +459,7 @@ export const searchEngineInit = async (): Promise<boolean> => {
   } else if (engineSelector === OPENSEARCH_ENGINE) {
     logApp.info(`[SEARCH] Engine ${OPENSEARCH_ENGINE} client selected by configuration`);
     engine = openSearchClient;
-    const searchVersion = await searchEngineVersion(openSearchClient);
+    const searchVersion = await searchEngineVersion();
     if (engineCheck && searchVersion.platform !== OPENSEARCH_ENGINE) {
       throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
     }
@@ -468,7 +468,7 @@ export const searchEngineInit = async (): Promise<boolean> => {
   } else {
     logApp.info(`[SEARCH] Engine client not specified, trying to discover it with ${OPENSEARCH_ENGINE} client`);
     engine = openSearchClient;
-    const searchVersion = await searchEngineVersion(openSearchClient);
+    const searchVersion = await searchEngineVersion();
     enginePlatform = searchVersion.platform;
     logApp.info(`[SEARCH] Engine detected to ${enginePlatform}`);
     engineVersion = searchVersion.version;
