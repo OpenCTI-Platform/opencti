@@ -234,7 +234,7 @@ class Tool:
             final_data = final_data + data
             while result["data"]["tools"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["tools"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Tools", {"after": after})
+                self.opencti.app_logger.debug("Listing Tools", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

@@ -556,7 +556,7 @@ class CaseIncident:
             final_data = final_data + data
             while result["data"]["caseIncidents"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["caseIncidents"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Case Incidents", {"after": after})
+                self.opencti.app_logger.debug("Listing Case Incidents", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

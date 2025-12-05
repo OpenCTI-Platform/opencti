@@ -315,7 +315,7 @@ class Task:
             final_data = final_data + data
             while result["data"]["tasks"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["tasks"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Tasks", {"after": after})
+                self.opencti.app_logger.debug("Listing Tasks", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

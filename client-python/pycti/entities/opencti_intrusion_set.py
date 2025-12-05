@@ -334,7 +334,7 @@ class IntrusionSet:
             final_data = final_data + data
             while result["data"]["intrusionSets"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["intrusionSets"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Intrusion-Sets", {"after": after})
+                self.opencti.app_logger.debug("Listing Intrusion-Sets", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

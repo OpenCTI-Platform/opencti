@@ -504,7 +504,7 @@ class Grouping:
             final_data = final_data + data
             while result["data"]["groupings"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["groupings"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Groupings", {"after": after})
+                self.opencti.app_logger.debug("Listing Groupings", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

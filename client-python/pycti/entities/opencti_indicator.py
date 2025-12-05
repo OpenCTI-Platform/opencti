@@ -131,7 +131,7 @@ class Indicator:
             final_data = final_data + data
             while result["data"]["indicators"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["indicators"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Indicators", {"after": after})
+                self.opencti.app_logger.debug("Listing Indicators", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
