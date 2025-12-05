@@ -11261,6 +11261,7 @@ export type IndicatorAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   valid_from?: InputMaybe<Scalars['DateTime']['input']>;
   valid_until?: InputMaybe<Scalars['DateTime']['input']>;
   x_mitre_platforms?: InputMaybe<Array<Scalars['String']['input']>>;
