@@ -2770,7 +2770,7 @@ describe('Complex filters regarding of for elastic queries', () => {
     notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id, malwareAnalysis.internal_id], 'not_eq') } });
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(0);
   });
-  it('should list entities using regarding of filter with inferred subfilter', async () => {
+  it('should list entities using regarding of filter with inferred subfilter set to false', async () => {
     const generateFilters = (withRegardingOf = true, regardingOfOperator = 'eq', isInferredSubFilterValue = false) => {
       return {
         mode: 'and',
