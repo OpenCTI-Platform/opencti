@@ -15,6 +15,7 @@ import { SettingsOrganizationLine_node$data as Organization } from './organizati
 import useAuth from '../../../utils/hooks/useAuth';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,9 +41,10 @@ const SettingsOrganizations = () => {
   });
 
   const userIsOrganizationAdmin = (me.administrated_organizations ?? []).length > 0;
+  const userHasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const paginationOptions: SettingsOrganizationsLinesPaginationQuery$variables = {
     ...paginationOptionsFromStorage,
-    filters: userIsOrganizationAdmin
+    filters: userIsOrganizationAdmin && !userHasSetAccess
       ? { mode: 'and', filters: [{ key: ['authorized_authorities'], values: [me.id] }], filterGroups: [] }
       : undefined,
   };
