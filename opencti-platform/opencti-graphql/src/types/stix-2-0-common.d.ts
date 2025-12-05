@@ -10,6 +10,8 @@ interface StixFile {
   version: string;
   mime_type: string;
   object_marking_refs: string[];
+  data?: string | undefined;
+  no_trigger_import?: boolean;
 }
 
 export interface StixObject {

@@ -40,6 +40,7 @@ interface StixFileExtension {
   mime_type: string;
   object_marking_refs: string[];
   data?: string | undefined;
+  no_trigger_import?: boolean;
 }
 
 interface StixMetric {

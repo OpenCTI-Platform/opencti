@@ -19,7 +19,7 @@ import {
   elLoadById,
   elPaginate,
   ES_DEFAULT_PAGINATION,
-  UNIMPACTED_ENTITIES_ROLE
+  UNIMPACTED_ENTITIES_ROLE, type ElFindByIdsOpts
 } from './engine';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -71,7 +71,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
 }
 
 // entities
-interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
+export interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   fromOrToId?: string | Array<string>;
   fromId?: string | Array<string>;
   fromRole?: string;
@@ -94,7 +94,7 @@ export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters
 }
 
 // relations
-interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
+export interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   relationFilter?: {
     relation: string;
     id: string;
@@ -538,9 +538,9 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
     toMap?: boolean,
     mapWithAllIds?: boolean,
     baseFields?: string[]
-  } & Record<string, string | string[] | boolean>
+  } & ElFindByIdsOpts
 ) => {
-  return await elFindByIds(context, user, ids, args) as unknown as T[];
+  return await elFindByIds<T>(context, user, ids, args);
 };
 
 // Similar to internalFindByIds but forcing toMap: true in type.
