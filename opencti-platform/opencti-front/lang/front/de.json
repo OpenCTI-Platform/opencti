@@ -1526,7 +1526,6 @@
   "entity_Stix-Meta-Objects": "Meta-Entitäten",
   "entity_stix-sighting-relationship": "Sichtungen",
   "entity_StixFile": "Datei",
-  "entity_Stixfile": "Datei",
   "entity_StreamCollection": "Live-Stream",
   "entity_Synchronizer": "OpenCTI-Stream",
   "entity_System": "System",
