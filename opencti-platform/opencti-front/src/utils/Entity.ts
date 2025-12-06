@@ -16,6 +16,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/settings/customization/entity_types';
     case 'FintelDesign':
       return '/dashboard/settings/customization/fintel_designs';
+    case 'DecayRule':
+      return '/dashboard/settings/customization/decay';
     case 'Note':
       return '/dashboard/analyses/notes';
     case 'Security-Coverage':
