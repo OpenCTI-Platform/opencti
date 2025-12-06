@@ -138,7 +138,7 @@ jobs:
         '
 
     - name: Wait for OpenCTI e2e backend instances to start
-      run: ./frontend-e2e-test/scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
+      run: ./frontend-e2e-test/scripts/ci/wait-for-url-200.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
 
     - name: Frontend e2e tests
       run: |

@@ -43,10 +43,10 @@ jobs:
     - name: Wait for OpenCTI sync instances to start
       run: |
           set -ex
-          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
-          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
-          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
-          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
+          ./scripts/ci/wait-for-url-200.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
+          ./scripts/ci/wait-for-url-200.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
+          ./scripts/ci/wait-for-url-200.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
+          ./scripts/ci/wait-for-url-200.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
 
 
     - name: Start api test
