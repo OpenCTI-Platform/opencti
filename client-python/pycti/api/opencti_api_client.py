@@ -91,9 +91,13 @@ _PROXY_CERT_LOCK = threading.Lock()
 _PROXY_SIGNAL_HANDLERS_REGISTERED = False
 
 
-def build_request_headers(token: str, custom_headers: str, app_logger):
+def build_request_headers(token: str, custom_headers: str, app_logger, provider: str):
+    pycti_user_agent = "pycti/"
+    if provider is not None:
+        pycti_user_agent += provider + "/"
+    pycti_user_agent += __version__
     headers_dict = {
-        "User-Agent": "pycti/" + __version__,
+        "User-Agent": pycti_user_agent,
         "Authorization": "Bearer " + token,
     }
     # Build and add custom headers
@@ -160,6 +164,7 @@ class OpenCTIApiClient:
         cert: Union[str, Tuple[str, str], None] = None,
         custom_headers: str = None,
         perform_health_check: bool = True,
+        provider: str = None,
     ):
         """Constructor method"""
 
@@ -184,8 +189,9 @@ class OpenCTIApiClient:
         # Define API
         self.api_token = token
         self.api_url = url + "/graphql"
+        self.provider = provider
         self.request_headers = build_request_headers(
-            token, custom_headers, self.app_logger
+            token, custom_headers, self.app_logger, provider
         )
         self.session = requests.session()
         # Define the dependencies
