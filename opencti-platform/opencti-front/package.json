@@ -148,7 +148,7 @@
     "@types/react-relay": "18.2.1",
     "@types/react-syntax-highlighter": "15.5.13",
     "@types/react-transition-group": "4.4.12",
-    "@types/relay-runtime": "19.0.3",
+    "@types/relay-runtime": "20.1.0",
     "@types/relay-test-utils": "19.0.0",
     "@vitejs/plugin-react": "5.1.1",
     "@vitest/coverage-v8": "3.2.4",
