@@ -25,6 +25,7 @@ import ItemCreators from '../../ItemCreators';
 import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 import ItemEntityType from '../../ItemEntityType';
 import { GraphLink } from '../graph.types';
+import SecurityCoverageInformation from '../../../private/components/analyses/security_coverages/SecurityCoverageInformation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -91,6 +92,13 @@ const relationshipDetailsQuery = graphql`
           }
           ... on StixCoreRelationship {
             relationship_type
+          }
+          ... on SecurityCoverage {
+            id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
           }
         }
         to {
@@ -180,6 +188,13 @@ const relationshipDetailsQuery = graphql`
           ... on StixCoreRelationship {
             relationship_type
           }
+          ... on SecurityCoverage {
+            id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
+          }
         }
         to {
           ... on BasicObject {
@@ -251,6 +266,13 @@ const relationshipDetailsQuery = graphql`
             parent_types
             entity_type
             relationship_type
+          }
+          ... on SecurityCoverage {
+            id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
           }
         }
         to {
@@ -337,6 +359,11 @@ RelationshipDetailsComponentProps
   if (!stixRelationship) {
     return <ErrorNotFound />;
   }
+
+  // Typed helper to access coverage_information without using `any`
+  type CoverageInfo = { coverage_name: string; coverage_score: number };
+  type FromWithCoverage = { coverage_information?: ReadonlyArray<CoverageInfo> | null } | null | undefined;
+  const coverageInfo = (stixRelationship.from as unknown as FromWithCoverage)?.coverage_information;
 
   const computeNotGenericDetails = () => {
     if (stixRelationship.parent_types.includes('stix-ref-relationship')) {
@@ -569,6 +596,17 @@ RelationshipDetailsComponentProps
         {t_i18n('Platform creation date')}
       </Typography>
       {fldt(stixRelationship.created_at)}
+      {stixRelationship.relationship_type === 'has-covered' && coverageInfo && (
+        <>
+          <Typography variant="h3" gutterBottom={true} className={classes.label}>
+            {t_i18n('Security coverage metrics')}
+          </Typography>
+          <SecurityCoverageInformation
+            coverage_information={coverageInfo}
+            variant="details"
+          />
+        </>
+      )}
       {computeNotGenericDetails()}
       {expandable && (
         <Button
