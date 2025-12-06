@@ -4,6 +4,8 @@ import type { AuthContext } from '../../../src/types/user';
 import { ADMIN_USER } from '../../utils/testQuery';
 import { MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
 import { findById as findDocumentById, SUPPORT_STORAGE_PATH } from '../../../src/modules/internal/document/document-domain';
+import { storeLoadById } from '../../../src/database/middleware-loader';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 
 const adminContext: AuthContext = {
   user: ADMIN_USER,
@@ -23,8 +25,9 @@ describe('File storage upload with marking', () => {
     const document = await findDocumentById(adminContext, ADMIN_USER, uploadedFileWithMarking.upload.id);
     expect(document.metaData.file_markings).toBeDefined();
     expect(document.metaData.file_markings?.length, 'One marking MARKING_TLP_CLEAR is expected on this document.').toBe(1);
+    const tlpClearMarking = await storeLoadById(adminContext, ADMIN_USER, MARKING_TLP_CLEAR, ENTITY_TYPE_MARKING_DEFINITION);
     if (document.metaData.file_markings) {
-      expect(document.metaData.file_markings[0]).toBe(MARKING_TLP_CLEAR);
+      expect(document.metaData.file_markings[0]).toBe(tlpClearMarking.internal_id);
     }
   });
 });
