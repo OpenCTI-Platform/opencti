@@ -99,6 +99,12 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             default=5,
         )
+        self.opencti_api_requests_timeout = get_config_variable(
+            "OPENCTI_REQUESTS_TIMEOUT",
+            ["opencti", "requests_timeout"],
+            config,
+            default=300,
+        )
         self.opencti_api_custom_headers = get_config_variable(
             "OPENCTI_CUSTOM_HEADERS",
             ["opencti", "custom_headers"],
@@ -179,6 +185,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             ssl_verify=self.opencti_ssl_verify,
             perform_health_check=False,  # No need to prevent worker start if API is not available yet
             custom_headers=self.opencti_api_custom_headers,
+            requests_timeout=self.opencti_api_requests_timeout,
         )
         self.worker_logger = self.api.logger_class("worker")
 
@@ -231,6 +238,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         )
 
         listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
+
         def listen_execution_pool_submit(task: Callable[[], None]):
             return listen_execution_pool.submit(task)
 
@@ -288,7 +296,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             "push",
                             push_queue,
                             pika_parameters,
-                            functools.partial(push_thread_pool_selector.submit, is_realtime),
+                            functools.partial(
+                                push_thread_pool_selector.submit, is_realtime
+                            ),
                             push_handler.handle_message,
                         )
 
