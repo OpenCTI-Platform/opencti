@@ -5604,10 +5604,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/relay-runtime@npm:*, @types/relay-runtime@npm:19.0.3":
+"@types/relay-runtime@npm:*":
   version: 19.0.3
   resolution: "@types/relay-runtime@npm:19.0.3"
   checksum: 10c0/d2af1f79059822415ac1c51c3c036d5f974dc2627d5a193cbf3d30d61bb25287e05fbbcdd0d695033637f7e79376470dff37d8685e960562d5ee17879c07e4a9
+  languageName: node
+  linkType: hard
+
+"@types/relay-runtime@npm:20.1.0":
+  version: 20.1.0
+  resolution: "@types/relay-runtime@npm:20.1.0"
+  checksum: 10c0/34bd18da234094fc982201d437ecd8b826a25e08d418ca78186df1b47a21ef4349fac56d3b78c82bd6c3e2c4add4dc89b1b80766dd4b5511e7d97639bd4b295b
   languageName: node
   linkType: hard
 
@@ -13961,7 +13968,7 @@ __metadata:
     "@types/react-relay": "npm:18.2.1"
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-transition-group": "npm:4.4.12"
-    "@types/relay-runtime": "npm:19.0.3"
+    "@types/relay-runtime": "npm:20.1.0"
     "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:5.1.1"
     "@vitest/coverage-v8": "npm:3.2.4"
