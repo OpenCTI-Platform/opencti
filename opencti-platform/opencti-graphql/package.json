@@ -172,9 +172,9 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",
-    "@graphql-codegen/cli": "6.0.2",
+    "@graphql-codegen/cli": "6.1.0",
     "@graphql-codegen/introspection": "5.0.0",
-    "@graphql-codegen/typescript-resolvers": "5.1.2",
+    "@graphql-codegen/typescript-resolvers": "5.1.4",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.5",
     "@stylistic/eslint-plugin": "5.6.1",
@@ -182,7 +182,7 @@
     "@types/bluebird": "3.5.42",
     "@types/content-type": "1.1.9",
     "@types/ejs": "3.1.5",
-    "@types/express": "5.0.5",
+    "@types/express": "5.0.6",
     "@types/graphql-upload": "17.0.0",
     "@types/luxon": "3.7.1",
     "@types/mime-types": "3.0.1",
@@ -193,7 +193,7 @@
     "@types/turndown": "5.0.6",
     "@types/xml2js": "0.4.14",
     "@vitest/coverage-v8": "3.2.4",
-    "esbuild": "0.27.0",
+    "esbuild": "0.27.1",
     "esbuild-plugin-copy": "2.1.1",
     "esbuild-plugin-import-glob": "0.1.1",
     "eslint": "9.39.1",
@@ -203,7 +203,7 @@
     "globals": "16.5.0",
     "graphql-tag": "2.12.6",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.47.0",
+    "typescript-eslint": "8.48.1",
     "vitest": "3.2.4"
   },
   "resolutions": {
