@@ -3,13 +3,9 @@ import {buildChanges} from '../../../src/database/middleware';
 import {ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE} from '../../../src/schema/stixDomainObject';
 import {ADMIN_USER, testContext} from '../../utils/testQuery';
 import {createStatus, createStatusTemplate, statusDelete, statusTemplateDelete} from '../../../src/domain/status';
-import {stixDomainObjectDelete, stixDomainObjectEditField} from '../../../src/domain/stixDomainObject';
+import {stixDomainObjectDelete} from '../../../src/domain/stixDomainObject';
 import {addMalware} from '../../../src/domain/malware';
-
-export enum StatusScopeEnum {
-  GLOBAL = 'GLOBAL',
-  REQUEST_ACCESS = 'REQUEST_ACCESS',
-}
+import {StatusScope} from '../../../src/generated/graphql';
 
 describe('buildChanges standard behavior', async () => {
 
@@ -530,51 +526,28 @@ describe('buildChanges standard behavior', async () => {
     // add status
     const createStatusInput= {
       order: 1,
+      scope: StatusScope.Global,
       template_id: statusTemplate1.id,
-      scope: StatusScopeEnum.GLOBAL
     };
     const status1 = await createStatus(testContext, ADMIN_USER,'Malware', createStatusInput);
 
-    // create 2nd status template
-    const input2=  {
-      name: 'InProgress',
-      color: '#1edfv4'
-    };
-    const statusTemplate2  = await createStatusTemplate(testContext, ADMIN_USER, input2);
-
-    // add 2nd status
-    const createStatusInput2= {
-      order: 2,
-      template_id: statusTemplate2.id,
-      scope: StatusScopeEnum.GLOBAL
-    };
-    const status2 = await createStatus(testContext, ADMIN_USER,'Malware', createStatusInput2);
-
     // create Malware
-    const malware = await addMalware(testContext, ADMIN_USER, {name: 'malware for etsting purpose'});
+    const malware = await addMalware(testContext, ADMIN_USER, {name: 'malware for testing purpose'});
 
     // update status
-    const updateStatusInput= {
-      key: 'x_opencti_workflow_id',
-      value: status1.id,
-    };
-    await stixDomainObjectEditField(testContext, ADMIN_USER, malware.id, updateStatusInput);
     const inputs = [{
       key:'x_opencti_workflow_id',
-      previous:[status1.name],
-      value:[status2.name]
+      previous:[],
+      value:[status1.id]
     }];
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
+    expect(changes).toEqual([{field:'Workflow status',previous:[],new:[status1.name]}]);
 
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{field:'Workflow status',previous:[status1.name],new:[status2.name]}]);
-
-    // delete statuses
+    // delete status
     await statusDelete(testContext, ADMIN_USER, 'Malware', status1.id);
-    await statusDelete(testContext, ADMIN_USER, 'Malware', status2.id);
 
-    // delete status templates
+    // delete status template
     await statusTemplateDelete (testContext, ADMIN_USER, statusTemplate1.id);
-    await statusTemplateDelete (testContext, ADMIN_USER, statusTemplate2.id);
 
     // delete malware
     await  stixDomainObjectDelete(testContext, ADMIN_USER, malware.id);
