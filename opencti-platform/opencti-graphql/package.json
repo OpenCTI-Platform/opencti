@@ -130,7 +130,7 @@
     "jsonpath-plus": "10.3.0",
     "jwt-decode": "4.0.0",
     "license-checker-rseidelsohn": "4.4.2",
-    "lru-cache": "11.2.2",
+    "lru-cache": "11.2.4",
     "luxon": "3.7.2",
     "marked": "17.0.1",
     "migrate": "2.1.0",
