@@ -2063,7 +2063,6 @@ const buildAttribute = (array) => {
 };
 
 export const buildChanges = async (context, user, entityType, inputs) => {
-  logApp.info('inputs', {inputs});
   const changes = [];
   for (const input of inputs) {
     const { key, previous, value, operation } = input;

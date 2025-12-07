@@ -1,6 +1,15 @@
 import {describe, expect, it} from 'vitest';
 import {buildChanges} from '../../../src/database/middleware';
 import {ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE} from '../../../src/schema/stixDomainObject';
+import {ADMIN_USER, testContext} from '../../utils/testQuery';
+import {createStatus, createStatusTemplate, statusDelete, statusTemplateDelete} from '../../../src/domain/status';
+import {stixDomainObjectDelete, stixDomainObjectEditField} from '../../../src/domain/stixDomainObject';
+import {addMalware} from '../../../src/domain/malware';
+
+export enum StatusScopeEnum {
+  GLOBAL = 'GLOBAL',
+  REQUEST_ACCESS = 'REQUEST_ACCESS',
+}
 
 describe('buildChanges standard behavior', async () => {
 
@@ -12,7 +21,7 @@ describe('buildChanges standard behavior', async () => {
         'value': ['new description']
       }
     ];
-   const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs);
+   const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
       field: 'Description',
       previous: ['description'],
@@ -27,7 +36,7 @@ describe('buildChanges standard behavior', async () => {
         'value': ['description']
       }
     ];
-    const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
       field: 'Description',
       previous: [],
@@ -42,7 +51,7 @@ describe('buildChanges standard behavior', async () => {
         'value': []
       }
     ];
-    const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
       field: 'Description',
       previous: ['description'],
@@ -51,7 +60,7 @@ describe('buildChanges standard behavior', async () => {
   });
   it('should build changes for "Malware types" added', async () => {
     const inputs = [{key:'malware_types',previous:['backdoor'],value:['backdoor', 'bootkit']}];
-    const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{field:'Malware types', previous: ['backdoor'], new: ['backdoor', 'bootkit'], added:['bootkit'],removed:[]}]);
   });
   it('should build changes for "Malware types" removed', async () => {
@@ -62,7 +71,7 @@ describe('buildChanges standard behavior', async () => {
         value: ['backdoor']
       }
     ];
-    const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{field: 'Malware types', previous: ['backdoor', 'bootkit'], new: ['backdoor'], added:[], removed:['bootkit']}]);
   });
   it('should build changes for "participant" added ', async () => {
@@ -75,7 +84,7 @@ describe('buildChanges standard behavior', async () => {
         name:'User 1',
         user_email:'user1@user1.com'}]}];
 
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Participants', previous: [], new: ['User 1'], added:['User 1'],removed:[]}]);
   });
   it('should build changes for second "participant" added ', async () => {
@@ -94,7 +103,7 @@ describe('buildChanges standard behavior', async () => {
       name:'User 1',
       }]}];
 
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field: 'Participants', previous: ['User 1'], new: ['User 1', 'User 2'], added:['User 2'],removed:[]}]);
   });
   it('should build changes for "marking" added', async () => {
@@ -138,7 +147,7 @@ describe('buildChanges standard behavior', async () => {
       }
     ];
 
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Markings',previous:[], new: ['TLP:GREEN'], added:['TLP:GREEN'],removed:[]}]);
   });
   it('should build changes for second "marking" added', async () => {
@@ -235,7 +244,7 @@ describe('buildChanges standard behavior', async () => {
       }
     ];
 
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Markings',previous:['PAP:GREEN'], new: ['PAP:GREEN', 'TLP:GREEN'], added:['TLP:GREEN'],removed:[]}]);
   });
   it('should build changes for second "marking" removed', async () => {
@@ -369,12 +378,12 @@ describe('buildChanges standard behavior', async () => {
       }
     ];
 
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Markings',previous:['PAP:GREEN', 'TLP:GREEN'], new: ['PAP:GREEN'], added:[],removed:['TLP:GREEN']}]);
   });
   it('should build changes for integer (like confidence level)', async () => {
     const inputs = [{'key':'confidence','previous':[58],'value':[52]}];
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Confidence',previous:[58], new: [52]}]);
   });
   it('should build changes for labels removed', async () => {
@@ -507,18 +516,68 @@ describe('buildChanges standard behavior', async () => {
       ]
     }
   ];
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Label',previous:['anti-sandbox', 'angie'], new: ['angie'], removed:['anti-sandbox'], added:[]}]);
   });
   it('should build changes for status replaced', async () => {
+    // create status template
+    const input1=  {
+      name: 'New',
+      color: '#1edfd1'
+    };
+    const statusTemplate1  = await createStatusTemplate(testContext, ADMIN_USER, input1);
+
+    // add status
+    const createStatusInput= {
+      order: 1,
+      template_id: statusTemplate1.id,
+      scope: StatusScopeEnum.GLOBAL
+    };
+    const status1 = await createStatus(testContext, ADMIN_USER,'Malware', createStatusInput);
+
+    // create 2nd status template
+    const input2=  {
+      name: 'InProgress',
+      color: '#1edfv4'
+    };
+    const statusTemplate2  = await createStatusTemplate(testContext, ADMIN_USER, input2);
+
+    // add 2nd status
+    const createStatusInput2= {
+      order: 2,
+      template_id: statusTemplate2.id,
+      scope: StatusScopeEnum.GLOBAL
+    };
+    const status2 = await createStatus(testContext, ADMIN_USER,'Malware', createStatusInput2);
+
+    // create Malware
+    const malware = await addMalware(testContext, ADMIN_USER, {name: 'malware for etsting purpose'});
+
+    // update status
+    const updateStatusInput= {
+      key: 'x_opencti_workflow_id',
+      value: status1.id,
+    };
+    await stixDomainObjectEditField(testContext, ADMIN_USER, malware.id, updateStatusInput);
     const inputs = [{
       key:'x_opencti_workflow_id',
-      previous:['bfb20dd2-5b04-4041-b252-541ca72b9d3a'],
-      value:['57b01980-78ea-4b19-8b10-88076940f73d']
+      previous:[status1.name],
+      value:[status2.name]
     }];
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{field:'Workflow status',previous:['New'],new:['In progress']}]);
+
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{field:'Workflow status',previous:[status1.name],new:[status2.name]}]);
+
+    // delete statuses
+    await statusDelete(testContext, ADMIN_USER, 'Malware', status1.id);
+    await statusDelete(testContext, ADMIN_USER, 'Malware', status2.id);
+
+    // delete status templates
+    await statusTemplateDelete (testContext, ADMIN_USER, statusTemplate1.id);
+    await statusTemplateDelete (testContext, ADMIN_USER, statusTemplate2.id);
+
+    // delete malware
+    await  stixDomainObjectDelete(testContext, ADMIN_USER, malware.id);
   });
 });
 
-//[{"key":"x_opencti_workflow_id","previous":["57b01980-78ea-4b19-8b10-88076940f73d"],"value":["ANALYZED"]}]
