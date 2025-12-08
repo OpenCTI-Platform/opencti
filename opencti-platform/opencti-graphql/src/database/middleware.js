@@ -2721,6 +2721,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     }
   }
 
+  // If a decay exclusion rule is already applied, we must not apply a new decay rule or a new decay exclusion rule
   if (resolvedElement.decay_exclusion_applied_rule) {
     if (basePatch.decay_applied_rule) {
       delete basePatch.decay_next_reaction_date;
