@@ -1,5 +1,4 @@
 import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
-import * as R from 'ramda';
 import { useFormatter } from '../../../../../components/i18n';
 
 export const useStixRelationshipsMultiHorizontalBars = (
@@ -9,6 +8,8 @@ export const useStixRelationshipsMultiHorizontalBars = (
   finalField
 ) => {
   const { t_i18n } = useFormatter();
+  const DEFAULT_SUBSELECTION_NUMBER = 15;
+  const subSelectionNumber = subSelection.number ?? DEFAULT_SUBSELECTION_NUMBER;
   const distributionKey =
     subSelection.perspective === 'entities'
       ? 'stixCoreObjectsDistribution'
@@ -48,20 +49,15 @@ export const useStixRelationshipsMultiHorizontalBars = (
     }
   }
 
-  const sortedEntityMapping = R.take(
-    subSelection.number ?? 15,
-    Object.entries(entitiesMapping).sort(([, a], [, b]) => b - a)
-  );
+  const sortedEntityMapping = Object.entries(entitiesMapping)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0,subSelectionNumber);
 
   const categoriesValues = {};
   for (const distrib of stixRelationshipsDistribution) {
     for (const sortedEntity of sortedEntityMapping) {
-      const entityData = R.head(
-        distrib.entity?.[distributionKey].filter(
-          (entityDistrib) =>
-            getDistributionKey(entityDistrib) === sortedEntity[0]
-        )
-      );
+      const entityData = distrib.entity?.[distributionKey]
+      .filter((entityDistrib) =>getDistributionKey(entityDistrib) === sortedEntity[0])[0];
       let value = 0;
       if (entityData) {
         value = entityData.value;
@@ -111,12 +107,10 @@ export const useStixRelationshipsMultiHorizontalBars = (
           (subSectionIdsOrder[subDistrib.label] || 0) + subDistrib.value;
       }
     }
-    subSectionIdsOrder = R.take(
-      subSelection.number ?? 15,
-      Object.entries(subSectionIdsOrder)
+    subSectionIdsOrder = Object.entries(subSectionIdsOrder)
         .sort(([, a], [, b]) => b - a)
         .map((k) => k[0])
-    );
+        .slice(0, subSelectionNumber);
   }
 
   const redirectionUtils =
