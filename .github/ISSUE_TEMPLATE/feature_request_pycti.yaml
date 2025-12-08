@@ -40,8 +40,8 @@ body:
     attributes:
       label: If the feature request is approved, would you be willing to submit a PR?
       options:
-        - Yes
-        - No
+        - "Yes"
+        - "No"
       description: "Let us know whether you would be willing to contribute a PR. Assistance can be provided if needed."
 
 ---
