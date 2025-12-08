@@ -2802,6 +2802,21 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
     }
   }
+
+  // If a decay exclusion rule is already applied, we must not apply a new decay rule or a new decay exclusion rule
+  if (resolvedElement.decay_exclusion_applied_rule) {
+    if (basePatch.decay_applied_rule) {
+      delete basePatch.decay_next_reaction_date;
+      delete basePatch.decay_base_score;
+      delete basePatch.decay_base_score_date;
+      delete basePatch.decay_applied_rule;
+      delete basePatch.decay_history;
+    }
+    if (basePatch.decay_exclusion_applied_rule) {
+      delete basePatch.decay_exclusion_applied_rule;
+    }
+  }
+
   const confidenceForUpsert = controlUpsertInputWithUserConfidence(user, basePatch, resolvedElement);
 
   const updatePatch = buildUpdatePatchForUpsert(user, resolvedElement, type, basePatch, confidenceForUpsert);

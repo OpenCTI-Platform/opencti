@@ -1,8 +1,8 @@
+import React from 'react';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { useFormatter } from 'src/components/i18n';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { insertNode } from 'src/utils/store';
-import React from 'react';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { DecayExclusionRulesLinesPaginationQuery$variables } from './__generated__/DecayExclusionRulesLinesPaginationQuery.graphql';
 import DecayExclusionRuleCreationForm from './DecayExclusionRuleCreationForm';

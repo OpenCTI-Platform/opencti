@@ -12,6 +12,8 @@ import type { DecayExclusionRuleAddInput, EditInput, Label, MarkingDefinition, Q
 import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
 import { getEntitiesListFromCache } from '../../../database/cache';
+import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
+
 const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
 
 export type ResolvedDecayExclusionRule = Record<string, any>;
@@ -53,6 +55,12 @@ export const checkDecayExclusionRules = async (
     object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map((marking: MarkingDefinition) => marking.standard_id),
     created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
     labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.value),
+    extensions: {
+      [STIX_EXT_OCTI]: {
+        main_observable_type: resolvedIndicator.x_opencti_main_observable_type,
+        creator_ids: [user.internal_id]
+      },
+    },
   } as ResolvedDecayExclusionRule;
 
   for (let i = 0; i < activeDecayExclusionRuleList.length; i += 1) {
