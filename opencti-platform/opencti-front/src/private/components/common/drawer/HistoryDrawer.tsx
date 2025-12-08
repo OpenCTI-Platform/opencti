@@ -89,8 +89,12 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                           <TableCell align="left">{row?.previous && row.previous.length > 0
                             ? row.previous.join(', ')
                             : '-'}</TableCell>
-                          <TableCell align="left">{row?.new ? row?.new : '-'}</TableCell>
-                          <TableCell align="left">{row?.added ? row?.added : '-'}</TableCell>
+                          <TableCell align="left">{row?.new && row.new.length > 0
+                            ? row.new.join(', ')
+                            : '-'}</TableCell>
+                          <TableCell align="left">{row?.added && row.added.length > 0
+                            ? row.added.join(', ')
+                            : '-'}</TableCell>
                           <TableCell align="left">{row?.removed && row.removed.length > 0
                             ? row.removed.join(', ')
                             : '-'}</TableCell>
