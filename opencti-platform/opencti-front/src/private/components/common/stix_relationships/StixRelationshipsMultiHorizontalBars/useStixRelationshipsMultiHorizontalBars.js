@@ -48,45 +48,40 @@ export const useStixRelationshipsMultiHorizontalBars = (
 
   const sortedEntityMapping = Object.entries(entitiesMapping)
     .sort(([, a], [, b]) => b - a)
-    .slice(0,subSelectionNumber);
+    .slice(0, subSelectionNumber);
 
   const categoriesValues = {};
   for (const distrib of stixRelationshipsDistribution) {
-    for (const sortedEntity of sortedEntityMapping) {
-      const entityData = distrib.entity?.[distributionKey]
-      .filter((entityDistrib) =>getDistributionKey(entityDistrib) === sortedEntity[0])[0];
-      let value = 0;
-      if (entityData) {
-        value = entityData.value;
-      }
-      if (categoriesValues[getMainRepresentative(distrib.entity)]) {
-        categoriesValues[getMainRepresentative(distrib.entity)].push(value);
-      } else {
-        categoriesValues[getMainRepresentative(distrib.entity)] = [value];
-      }
-    }
-    const sum = (
-      categoriesValues[getMainRepresentative(distrib.entity)] || []
-    ).reduce((partialSum, a) => partialSum + a, 0);
-    if (categoriesValues[getMainRepresentative(distrib.entity)]) {
-      categoriesValues[getMainRepresentative(distrib.entity)].push(
-        distrib.value - sum
-      );
-    } else {
-      categoriesValues[getMainRepresentative(distrib.entity)] = [
-        distrib.value - sum,
-      ];
-    }
-  }
-  sortedEntityMapping.push(['Others', 0]);
+    const distribMap = new Map(distrib.entity?.[distributionKey].map(entityDistrib => [
+        getDistributionKey(entityDistrib),
+        entityDistrib
+      ])
+    );
 
+    for (const sortedEntity of sortedEntityMapping) {
+      const entityData = distribMap.get(sortedEntity[0]);
+      const value = entityData?.value ?? 0;
+      const mainRepresentative = getMainRepresentative(distrib.entity);
+
+      if (categoriesValues[mainRepresentative]) {
+        categoriesValues[mainRepresentative].push(value);
+      } else {
+        categoriesValues[mainRepresentative] = [value];
+      }
+    }
+
+    const mainRepresentative = getMainRepresentative(distrib.entity);
+    const sum = (categoriesValues[mainRepresentative] || []).reduce((partialSum, a) => partialSum + a, 0);
+
+    (categoriesValues[mainRepresentative] ??= []).push(distrib.value - sum);
+  }
+  
+  sortedEntityMapping.push(['Others', 0]);
   const chartData = sortedEntityMapping
-    .map((sortedEntity, index) => {
+    .map(([name], index) => {
       return {
-        name: sortedEntity[0],
-        data: Object.entries(categoriesValues).map(
-          (category) => category[1][index]
-        ),
+        name,
+        data: Object.values(categoriesValues).map((values) => values[index]),
       };
     })
     // To avoid displaying empty categories - especially for 'Others'
