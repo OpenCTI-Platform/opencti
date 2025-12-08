@@ -1,5 +1,10 @@
 FROM node:22-alpine AS base
 
+
+##############################
+### Build builder
+##############################
+
 FROM base AS builder
 
 # For layer optimisation, start by installing resources not dependant from source code
@@ -53,10 +58,10 @@ RUN set -eux; \
     yarn build
 
 ##############################
-### Build the production image
+### Build base with python
 ##############################
 
-FROM base AS app
+FROM base AS python-build
 
 RUN apk add --no-cache tini python3 python3-dev
 RUN set -eux; \
@@ -70,6 +75,37 @@ RUN set -eux; \
 
 COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
 RUN pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt
+
+##############################
+### Build the testing image
+##############################
+
+FROM python-build AS testing
+
+WORKDIR /opt/opencti
+
+COPY --from=builder-back /opt/opencti-build/opencti-graphql/ ./
+COPY --from=builder-front /opt/opencti-build/opencti-graphql/public/ ./public/
+
+ENV PYTHONUNBUFFERED="1"
+ENV NODE_OPTIONS="--max_old_space_size=12288"
+
+RUN set -eux; \
+    install -m 0777 -d '/opt/opencti/logs'; \
+    install -m 0777 -d '/opt/opencti/telemetry'; \
+    install -m 0777 -d '/opt/opencti/.support'
+
+VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "build/back.js"]
+
+
+##############################
+### Build production image
+##############################
+
+FROM python-build AS app
 
 WORKDIR /opt/opencti
 

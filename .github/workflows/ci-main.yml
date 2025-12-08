@@ -6,21 +6,22 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  wf-build-image:
-      name: Build image
+  wf-build-image-testing:
+      name: Build image for CI
       uses: ./.github/workflows/ci-docker-build.yml
       with:
+        # If the workflow is triggered by a push on a branch, use the commit sha
+        # If the workflow is triggered by pull request action, use the merge to base branch
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-        dockerfile_platform: Dockerfile.testing
-        build_context_platform: "."
-        dockerfile_worker: Dockerfile.testing
-        build_context_worker: "."
+        dockerfile: Dockerfile_featurebranch
+        dockerfile_target: "testing"
+        client_python_release: false
       secrets: inherit
 
   wf-api-test:
       name: API test
       uses: ./.github/workflows/ci-test-api.yml
-      needs: wf-build-image
+      needs: wf-build-image-testing
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
@@ -35,7 +36,7 @@ jobs:
   wf-client-python-test:
       name: Client Python
       uses: ./.github/workflows/ci-test-client-python.yml
-      needs: wf-build-image
+      needs: wf-build-image-testing
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
@@ -45,4 +46,37 @@ jobs:
       uses: ./.github/workflows/ci-license-check.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+      secrets: inherit
+
+  wf-build-image-rolling:
+      name: Build image rolling
+      if: github.ref == 'refs/heads/master'
+      uses: ./.github/workflows/ci-docker-build.yml
+      with:
+        client_python_release: false
+        dockerfile: Dockerfile_featurebranch
+        dockerfile_target: "app"
+        image_tag: 'rolling'
+      secrets: inherit
+
+  wf-build-image-prerelease:
+      name: Build image rolling and prerelease
+      if: github.ref == 'refs/heads/release/current'
+      uses: ./.github/workflows/ci-docker-build.yml
+      with:
+        client_python_release: false
+        dockerfile_target: Dockerfile_featurebranch
+        target: "app"
+        image_tag: 'prerelease'
+      secrets: inherit
+
+  wf-build-image-localtest:
+      name: Build image rolling and prerelease
+      if: github.ref == 'refs/heads/issues/13571_handle_client_python'
+      uses: ./.github/workflows/ci-docker-build.yml
+      with:
+        client_python_release: false
+        dockerfile: Dockerfile_featurebranch
+        dockerfile_target: "app"
+        image_tag: 'test-issues-13571'
       secrets: inherit
