@@ -77,7 +77,8 @@ export const changeRule = async (ruleId, active, isInternalRelationshipsRule = f
     await wait(2000);
     const lastEventDate = new Date(parseInt(innerInfo.lastEventId.split('-').at(0), 10));
     const managerEventDate = new Date(parseInt(ruleManager.lastEventId.split('-').at(0), 10));
-    if (isInternalRelationshipsRule ||(managerEventDate >= lastEventDate)) {
+    if (isInternalRelationshipsRule // internal relationships are not in the stream
+      || (managerEventDate >= lastEventDate)) {
       stableCount += 1;
     }
   }
