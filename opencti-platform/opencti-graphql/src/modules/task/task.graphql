@@ -223,6 +223,7 @@ input TaskAddInput {
   createdBy: String
   objects: [String]
   x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
   update: Boolean
 }
 

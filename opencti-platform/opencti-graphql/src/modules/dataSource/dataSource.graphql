@@ -195,6 +195,7 @@ input DataSourceAddInput {
     dataComponents: [String]
     file: Upload
     x_opencti_workflow_id: String
+    x_opencti_modified: DateTime
 }
 
 type Mutation {

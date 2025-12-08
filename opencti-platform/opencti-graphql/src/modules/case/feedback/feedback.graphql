@@ -234,6 +234,7 @@ input FeedbackAddInput {
   created: DateTime
   modified: DateTime
   x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
   file: Upload
   clientMutationId: String
   update: Boolean

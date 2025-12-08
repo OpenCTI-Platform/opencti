@@ -195,6 +195,7 @@ input EventAddInput {
     modified: DateTime
     clientMutationId: String
     x_opencti_workflow_id: String
+    x_opencti_modified: DateTime
     update: Boolean
     file: Upload
 }
