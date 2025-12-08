@@ -14,7 +14,7 @@ import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey, C
 import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { internalFindByIds, internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
@@ -29,6 +29,7 @@ import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from './backgr
 import { objectOrganization, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { elFindByIds } from '../database/engine';
+import { isValidStixBundle, generateBundleValidationErrorMessage } from './stix-validation-helpers';
 
 export const stixDelete = async (context, user, id, opts = {}) => {
   const element = await internalLoadById(context, user, id);
@@ -55,39 +56,62 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
 };
 
 export const sendStixBundle = async (context, user, connectorId, bundle, work_id) => {
+  let jsonBundle;
   try {
-    // 01. Simple check bundle
-    const jsonBundle = JSON.parse(bundle);
-    if (jsonBundle.type !== 'bundle' || !jsonBundle.objects || jsonBundle.objects.length === 0) {
-      throw UnsupportedError('Invalid stix bundle');
-    }
-    // 02. Create work and send the bundle to ingestion
-    const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
-    if (!connector) {
-      throw UnsupportedError('Invalid connector');
-    }
-    let target_work_id = work_id;
-    if (isEmptyField(work_id)) {
-      const workName = `${connector.name} run @ ${now()}`;
-      const work = await createWork(context, user, connector, workName, connector.internal_id, { receivedTime: now() });
-      target_work_id = work.id;
-      if (jsonBundle.objects.length === 1) {
-        // Only add explicit expectation if the worker will not split anything
-        await updateExpectationsNumber(context, context.user, target_work_id, jsonBundle.objects.length);
-      }
-    }
-    const content = Buffer.from(bundle, 'utf-8').toString('base64');
-    await pushToWorkerForConnector(connectorId, {
-      type: 'bundle',
-      applicant_id: user.internal_id,
-      content,
-      work_id: target_work_id,
-      update: true
+    // 01. Simple check bundle - with enhanced error handling
+    logApp.debug('[STIX BUNDLE] Attempting to parse STIX bundle', { connectorId, bundleLength: bundle?.length });
+    jsonBundle = JSON.parse(bundle);
+    logApp.debug('[STIX BUNDLE] Successfully parsed bundle', { 
+      type: jsonBundle.type, 
+      objectCount: jsonBundle.objects?.length,
+      connectorId 
     });
-    return true;
   } catch (err) {
-    throw UnsupportedError('Invalid bundle', { cause: err });
+    logApp.error('[STIX BUNDLE] Failed to parse bundle JSON', {
+      cause: err,
+      errorMessage: err.message,
+      bundlePreview: bundle?.substring(0, 200),
+      connectorId
+    });
+    throw UnsupportedError('Invalid STIX bundle: unable to parse JSON content. The file may be corrupted or have an incompatible format.', { cause: err });
   }
+
+  // 02. Validate bundle structure using helper
+  if (!isValidStixBundle(jsonBundle)) {
+    logApp.error('[STIX BUNDLE] Bundle validation failed', {
+      type: jsonBundle?.type,
+      hasObjects: !!jsonBundle?.objects,
+      objectCount: jsonBundle?.objects?.length,
+      connectorId
+    });
+    const errorMessage = generateBundleValidationErrorMessage(jsonBundle);
+    throw UnsupportedError(errorMessage);
+  }
+
+  // 03. Create work and send the bundle to ingestion
+  const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+  if (!connector) {
+    throw UnsupportedError('Invalid connector');
+  }
+  let target_work_id = work_id;
+  if (isEmptyField(work_id)) {
+    const workName = `${connector.name} run @ ${now()}`;
+    const work = await createWork(context, user, connector, workName, connector.internal_id, { receivedTime: now() });
+    target_work_id = work.id;
+    if (jsonBundle.objects.length === 1) {
+      // Only add explicit expectation if the worker will not split anything
+      await updateExpectationsNumber(context, context.user, target_work_id, jsonBundle.objects.length);
+    }
+  }
+  const content = Buffer.from(bundle, 'utf-8').toString('base64');
+  await pushToWorkerForConnector(connectorId, {
+    type: 'bundle',
+    applicant_id: user.internal_id,
+    content,
+    work_id: target_work_id,
+    update: true
+  });
+  return true;
 };
 
 export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
