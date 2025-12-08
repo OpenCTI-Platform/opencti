@@ -39,7 +39,6 @@ export const getEnterpriseEditionActivePem = (rawPem) => {
   return isNotEmptyField(pemFromConfig) ? pemFromConfig : rawPem;
 };
 
-
 export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
   const pemFromConfig = conf.get('app:enterprise_edition_license');
   const pem = getEnterpriseEditionActivePem(rawPem);
