@@ -2,10 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {buildChanges} from '../../../src/database/middleware';
 import {ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE} from '../../../src/schema/stixDomainObject';
 import {ADMIN_USER, testContext} from '../../utils/testQuery';
-import { createStatus, createStatusTemplate, findByType, statusDelete, statusTemplateDelete } from '../../../src/domain/status';
-import {stixDomainObjectDelete, stixDomainObjectEditField} from '../../../src/domain/stixDomainObject';
-import {addMalware} from '../../../src/domain/malware';
-import {StatusScope} from '../../../src/generated/graphql';
+import {findByType} from '../../../src/domain/status';
 
 describe('buildChanges standard behavior', async () => {
 
