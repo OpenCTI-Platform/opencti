@@ -1,8 +1,8 @@
 ---
-name: Client Python Bug 
+name: Client Python bug 
 about: Report a bug on Client Python (pycti)
 title: ''
-labels: needs triage, client-python, bug
+labels: needs triage, client-python
 assignees: ''
 type: bug
 
