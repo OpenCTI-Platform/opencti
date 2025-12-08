@@ -7,20 +7,7 @@ type: bug
 body:
 - type: textarea 
   attributes:
-    label: "Description"
-- type: textarea
-    attributes:
-      label: "Environnment"
-- type: textarea
-    attributes:
-      label: "Reproducible Steps"
-- type: textarea
-    attributes:
-      label: "Expected Output"
-- type: textarea
-    attributes:
-      label: "Actual Output"
-- type: textarea
-    attributes:
-      label: "Additionnal information"
+    label: "Please describe your bug: add environmenment, reproducible steps, Expected Output, Actual Output"
+
+    
 --- 
