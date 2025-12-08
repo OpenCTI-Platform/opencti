@@ -1,5 +1,5 @@
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-// eslint-disable-next-line import/extensions
+// noinspection JSFileReferences
 import { defaultFieldResolver } from 'graphql/index.js';
 import type { GraphQLFieldConfig, GraphQLSchema } from 'graphql';
 import { AuthRequired, ForbiddenAccess, LtsRequiredActivation, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
@@ -30,6 +30,14 @@ interface AuthDirectiveArgs {
  * Type for the directive argument maps stored by type name
  */
 type TypeDirectiveArgumentMaps = Record<string, AuthDirectiveArgs>;
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+
+const TYPE_QUERY = 'Query';
+const TYPE_MUTATION = 'Mutation';
+
+const PUBLIC_PROTECT_DIRECTIVE = 'public';
+const OTP_PROTECT_DIRECTIVE = 'allowUnprotectedOTP';
+const LTS_PROTECT_DIRECTIVE = 'allowUnlicensedLTS';
 
 /**
  * Return type of authDirectiveBuilder function
@@ -59,8 +67,8 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
       [MapperKind.OBJECT_FIELD]: (fieldConfig: GraphQLFieldConfig<any, any>, _fieldName: string, typeName: string) => {
         const directive = getDirective(schema, fieldConfig, directiveName);
         const authDirective = (directive?.[0] as AuthDirectiveArgs | undefined) ?? typeDirectiveArgumentMaps[typeName];
-        if (!authDirective && (typeName === 'Query' || typeName === 'Mutation')) {
-          const publicDirective = getDirective(schema, fieldConfig, 'public')?.[0];
+        if (!authDirective && (typeName === TYPE_QUERY || typeName === TYPE_MUTATION)) {
+          const publicDirective = getDirective(schema, fieldConfig, PUBLIC_PROTECT_DIRECTIVE)?.[0];
           if (!publicDirective) {
             throw UnsupportedError('Unsecure schema: missing auth or public directive', { field: _fieldName });
           }
@@ -76,9 +84,8 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               if (!user) {
                 throw AuthRequired();
               }
-              const isProtectedMethod = info.fieldName !== 'logout'
-                && info.fieldName !== 'otpLogin' && info.fieldName !== 'otpActivation' && info.fieldName !== 'otpGeneration';
-              if (isProtectedMethod) {
+              const allowUnprotectedOTP = !!getDirective(schema, fieldConfig, OTP_PROTECT_DIRECTIVE)?.[0];
+              if (!allowUnprotectedOTP) {
                 // If the platform enforce OTP
                 if (otp_mandatory) {
                   // If user have not validated is OTP in session
@@ -97,7 +104,7 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
                 }
               }
               // LTS version must be validated
-              const allowUnlicensedLTS = !!getDirective(schema, fieldConfig, 'allowUnlicensedLTS')?.[0];
+              const allowUnlicensedLTS = !!getDirective(schema, fieldConfig, LTS_PROTECT_DIRECTIVE)?.[0];
               if (blocked_for_lts_validation && !allowUnlicensedLTS) {
                 throw LtsRequiredActivation();
               }
@@ -112,7 +119,7 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               if (shouldBypass) {
                 return resolve(source, args, context, info);
               }
-              
+
               let userCapabilities: string[] = [];
 
               const isInDraftContext = !!getDraftContext(context, user);
@@ -123,8 +130,9 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               } else {
                 userCapabilities = userBaseCapabilities;
               }
-              
-              if (typeName === 'Organization' && requiredCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(SETTINGS_SET_ACCESSES)) {
+
+              if (typeName === ENTITY_TYPE_IDENTITY_ORGANIZATION && requiredCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN)
+                  && !userCapabilities.includes(SETTINGS_SET_ACCESSES)) {
                 if (user.administrated_organizations.some(({ id }) => id === source.id)) {
                   return resolve(source, args, context, info);
                 }

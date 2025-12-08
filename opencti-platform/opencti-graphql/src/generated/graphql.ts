@@ -37825,6 +37825,10 @@ export type AllowUnlicensedLtsDirectiveArgs = { };
 
 export type AllowUnlicensedLtsDirectiveResolver<Result, Parent, ContextType = any, Args = AllowUnlicensedLtsDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
+export type AllowUnprotectedOtpDirectiveArgs = { };
+
+export type AllowUnprotectedOtpDirectiveResolver<Result, Parent, ContextType = any, Args = AllowUnprotectedOtpDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
 export type AuthDirectiveArgs = {
   and?: Maybe<Scalars['Boolean']['input']>;
   for?: Maybe<Array<Maybe<Capabilities>>>;
@@ -49014,6 +49018,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
 
 export type DirectiveResolvers<ContextType = any> = ResolversObject<{
   allowUnlicensedLTS?: AllowUnlicensedLtsDirectiveResolver<any, any, ContextType>;
+  allowUnprotectedOTP?: AllowUnprotectedOtpDirectiveResolver<any, any, ContextType>;
   auth?: AuthDirectiveResolver<any, any, ContextType>;
   constraint?: ConstraintDirectiveResolver<any, any, ContextType>;
   public?: PublicDirectiveResolver<any, any, ContextType>;
