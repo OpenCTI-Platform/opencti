@@ -2064,11 +2064,11 @@ const buildAttribute = (array) => {
   .filter((item) => item !== null && item !== undefined);
 };
 
-export const buildChanges = (entityType, inputs) => {
+export const buildChanges = async (context, user, entityType, inputs) => {
   const changes = [];
-  inputs.forEach((input) => {
+  for (const input of inputs) {
     const { key, previous, value, operation } = input;
-    if (!key) return;
+    if (!key) continue;
     const field = getKeyName(entityType, key);
     const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
     const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
@@ -2112,16 +2112,28 @@ export const buildChanges = (entityType, inputs) => {
       }
     }
     else if (isMultiple === false) {
+      const isStatusChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
+      const platformStatuses = isStatusChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
+      const resolvedValue = (array) => {
+        if (field === 'Workflow status') {
+          // we want the status name and not its internal id
+          const statusId = array[0];
+          const status = statusId ? platformStatuses.find((p) => p.id === statusId) : statusId;
+          return status ? [status.name] : null;
+        }
+        return array;
+      };
+
       changes.push({
         field,
-        previous: previousArray,
-        new: valueArray,
+        previous: resolvedValue(previousArray),
+        new: resolvedValue(valueArray),
       });
     } else {
       // This should not happen so better at least log at info level to be able to debug.
       logApp.info('Changes cannot be computed', {inputs, entityType});
     }
-  });
+  }
   return changes;
 };
 
@@ -2467,7 +2479,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
       const message = await generateUpdateMessage(context, user, updatedInstance.entity_type, updatedInputs);
-      const changes = buildChanges(updatedInstance.entity_type, updatedInputs);
+      const changes = await buildChanges(context, user, updatedInstance.entity_type, updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,

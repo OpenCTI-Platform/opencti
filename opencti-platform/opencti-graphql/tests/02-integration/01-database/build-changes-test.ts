@@ -1,10 +1,12 @@
 import {describe, expect, it} from 'vitest';
 import {buildChanges} from '../../../src/database/middleware';
 import {ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE} from '../../../src/schema/stixDomainObject';
+import {ADMIN_USER, testContext} from '../../utils/testQuery';
+import {findByType} from '../../../src/domain/status';
 
 describe('buildChanges standard behavior', async () => {
 
-  it('should build changes for simple attribute update (value replaced by other value in "description"', async () => {
+  it('should build changes for value replaced by other value in "description"', async () => {
     const inputs = [
       {
         'key': 'description',
@@ -12,14 +14,14 @@ describe('buildChanges standard behavior', async () => {
         'value': ['new description']
       }
     ];
-   const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs);
+   const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
       field: 'Description',
       previous: ['description'],
       new: ['new description']
     }]);
   });
-  it('should build changes for simple attribute update (nothing replaced by something in "description")', async () => {
+  it('should build changes for nothing replaced by something in "description"', async () => {
     const inputs = [
       {
         'key': 'description',
@@ -27,14 +29,14 @@ describe('buildChanges standard behavior', async () => {
         'value': ['description']
       }
     ];
-    const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
       field: 'Description',
       previous: [],
       new: ['description']
     }]);
   });
-  it('should build changes for simple attribute update (something replaced by nothing in "description")', async () => {
+  it('should build changes for something replaced by nothing in "description"', async () => {
     const inputs = [
       {
         'key': 'description',
@@ -42,19 +44,19 @@ describe('buildChanges standard behavior', async () => {
         'value': []
       }
     ];
-    const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
       field: 'Description',
       previous: ['description'],
       new: []
     }]);
   });
-  it('should build changes for multiple attribute update ("Malware types" added)', async () => {
+  it('should build changes for "Malware types" added', async () => {
     const inputs = [{key:'malware_types',previous:['backdoor'],value:['backdoor', 'bootkit']}];
-    const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{field:'Malware types', previous: ['backdoor'], new: ['backdoor', 'bootkit'], added:['bootkit'],removed:[]}]);
   });
-  it('should build changes for mutliple attribute update ("Malware types" removed)', async () => {
+  it('should build changes for "Malware types" removed', async () => {
     const inputs = [
       {
         key: 'malware_types',
@@ -62,10 +64,10 @@ describe('buildChanges standard behavior', async () => {
         value: ['backdoor']
       }
     ];
-    const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{field: 'Malware types', previous: ['backdoor', 'bootkit'], new: ['backdoor'], added:[], removed:['bootkit']}]);
   });
-  it('should build changes for mutliple attribute update ("participant" added )', async () => {
+  it('should build changes for "participant" added ', async () => {
     const inputs = [{
       key:'objectParticipant',
       operation:'add',
@@ -75,10 +77,10 @@ describe('buildChanges standard behavior', async () => {
         name:'User 1',
         user_email:'user1@user1.com'}]}];
 
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Participants', previous: [], new: ['User 1'], added:['User 1'],removed:[]}]);
   });
-  it('should build changes for mutliple attribute update (second "participant" added )', async () => {
+  it('should build changes for second "participant" added ', async () => {
     const inputs = [{
       key:'objectParticipant',
       operation:'add',
@@ -94,10 +96,10 @@ describe('buildChanges standard behavior', async () => {
       name:'User 1',
       }]}];
 
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field: 'Participants', previous: ['User 1'], new: ['User 1', 'User 2'], added:['User 2'],removed:[]}]);
   });
-  it('should build changes for multiple attribute update ("marking" added )', async () => {
+  it('should build changes for "marking" added', async () => {
     const inputs = [
       {
         'key': 'objectMarking',
@@ -138,10 +140,10 @@ describe('buildChanges standard behavior', async () => {
       }
     ];
 
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Markings',previous:[], new: ['TLP:GREEN'], added:['TLP:GREEN'],removed:[]}]);
   });
-  it('should build changes for mutliple attribute update (second "marking" added )', async () => {
+  it('should build changes for second "marking" added', async () => {
     const inputs = [
       {
         'key': 'objectMarking',
@@ -235,10 +237,10 @@ describe('buildChanges standard behavior', async () => {
       }
     ];
 
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Markings',previous:['PAP:GREEN'], new: ['PAP:GREEN', 'TLP:GREEN'], added:['TLP:GREEN'],removed:[]}]);
   });
-  it('should build changes for multiple attribute update (second "marking" removed )', async () => {
+  it('should build changes for second "marking" removed', async () => {
     const inputs = [
       {
         'key': 'objectMarking',
@@ -369,17 +371,15 @@ describe('buildChanges standard behavior', async () => {
       }
     ];
 
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Markings',previous:['PAP:GREEN', 'TLP:GREEN'], new: ['PAP:GREEN'], added:[],removed:['TLP:GREEN']}]);
   });
-
   it('should build changes for integer (like confidence level)', async () => {
     const inputs = [{'key':'confidence','previous':[58],'value':[52]}];
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Confidence',previous:[58], new: [52]}]);
   });
-
-  it('should build changes for remove labels', async () => {
+  it('should build changes for labels removed', async () => {
     const inputs =
   [
     {
@@ -509,8 +509,19 @@ describe('buildChanges standard behavior', async () => {
       ]
     }
   ];
-    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Label',previous:['anti-sandbox', 'angie'], new: ['angie'], removed:['anti-sandbox'], added:[]}]);
   });
-
+  it('should build changes for status replaced', async () => {
+    // we use data-initialization statuses
+    const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
+    const inputs = [{
+      key:'x_opencti_workflow_id',
+      previous:[statuses[0].id],
+      value:[statuses[1].id]
+    }];
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{field:'Workflow status',previous:[statuses[0].name],new:[statuses[1].name]}]);
+  });
 });
+
