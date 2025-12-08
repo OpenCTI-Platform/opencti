@@ -366,7 +366,6 @@ const StixRelationshipsMultiHorizontalBars = ({
       selection = dataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
       if (dataSelection.length > 1) {
-         
         subSelection = dataSelection[1];
         subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters, { isKnowledgeRelationshipWidget: true });
         if (subSelection.perspective === 'entities') {
