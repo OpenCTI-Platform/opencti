@@ -81,6 +81,7 @@ jobs:
       with:
         context: ${{ inputs.build_context_platform }}
         file: opencti-platform/${{ inputs.dockerfile }}
+        target: ${{ inputs.dockerfile_target }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -123,6 +124,7 @@ jobs:
       with:
         context: ${{ inputs.build_context_worker }}
         file: opencti-worker/${{ inputs.dockerfile }}
+        target: ${{ inputs.dockerfile_target }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}

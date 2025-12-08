@@ -65,8 +65,8 @@ jobs:
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         client_python_release: false
-        dockerfile_target: Dockerfile_featurebranch
-        target: "app"
+        dockerfile: Dockerfile_featurebranch
+        dockerfile_target: "app"
         image_tag: 'prerelease'
       secrets: inherit
 
