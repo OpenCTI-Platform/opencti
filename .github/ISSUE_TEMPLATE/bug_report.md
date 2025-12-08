@@ -1,9 +1,10 @@
 ---
-name: Bug report
+name: Bug report OCTI
 about: Create a bug report to help us improve OpenCTI
 title: ''
 labels: bug, needs triage
 assignees: ''
+type: bug
 
 ---
 
