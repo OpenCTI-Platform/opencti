@@ -3078,23 +3078,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:0.3.59":
-  version: 0.3.59
-  resolution: "@langchain/core@npm:0.3.59"
+"@langchain/core@npm:0.3.79":
+  version: 0.3.79
+  resolution: "@langchain/core@npm:0.3.79"
   dependencies:
     "@cfworker/json-schema": "npm:^4.0.2"
     ansi-styles: "npm:^5.0.0"
     camelcase: "npm:6"
     decamelize: "npm:1.2.0"
     js-tiktoken: "npm:^1.0.12"
-    langsmith: "npm:^0.3.33"
+    langsmith: "npm:^0.3.67"
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     p-retry: "npm:4"
     uuid: "npm:^10.0.0"
     zod: "npm:^3.25.32"
     zod-to-json-schema: "npm:^3.22.3"
-  checksum: 10c0/14bb426231208409bf2b93a12f80ff370194644105a66f12096ef56469e8b827e9d2ab959fb3a7accf75e952a79a27e189835da5b22a33524f7bbaeb6f4282df
+  checksum: 10c0/82176ad95fd96e12187b38248dcbe474eeccf6bb1cc15d149d268305b8dc18f6b719e2b343be3ac7295eec62f09eb69b49a3dc201b0273476749d6ee05271d62
   languageName: node
   linkType: hard
 
@@ -9731,7 +9731,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langsmith@npm:^0.3.33":
+"langsmith@npm:^0.3.67":
   version: 0.3.82
   resolution: "langsmith@npm:0.3.82"
   dependencies:
@@ -10876,7 +10876,7 @@ __metadata:
     "@graphql-tools/schema": "npm:10.0.30"
     "@graphql-tools/utils": "npm:10.11.0"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:0.3.59"
+    "@langchain/core": "npm:0.3.79"
     "@langchain/mistralai": "npm:0.2.0"
     "@langchain/openai": "npm:0.5.5"
     "@lezer/javascript": "npm:1.5.4"
