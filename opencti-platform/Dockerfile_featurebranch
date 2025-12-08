@@ -63,18 +63,19 @@ RUN set -eux; \
 
 FROM base AS python-build
 
+COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
+
 RUN apk add --no-cache tini python3 python3-dev
 RUN set -eux; \
-    apk add --no-cache gcc; \
+    apk add --no-cache gcc git; \
     rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED; \
     python3 -m ensurepip; \
     rm -rv /usr/lib/python*/ensurepip; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
     ln -sf python3 /usr/bin/python; \
-    apk del gcc
+    pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt ; \
+    apk del gcc git
 
-COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
-RUN pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt
 
 ##############################
 ### Build the testing image
