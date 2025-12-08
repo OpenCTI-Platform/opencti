@@ -125,9 +125,10 @@ export const searchBulkFragment = graphql`
 interface SearchBulkProps {
   inputValues: string[],
   dataColumns: DataTableProps['dataColumns'],
+  setNumberOfEntities: (n: number) => void,
 }
 
-const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
+const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBulkProps) => {
   const buildSearchBulkFilters = (values: string[], filters: FilterGroup) => {
     if (values.length === 0) return filters;
     return addFilter(filters, 'bulkSearchKeywords', values);
@@ -157,12 +158,17 @@ const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
 
   const queryRef = useQueryLoading<SearchBulkQuery>(searchBulkQuery, queryPaginationOptions);
 
+  const completeSetNumberOfElements = (n: number) => {
+    setNumberOfEntities(n);
+    helpers.handleSetNumberOfElements({ number: n, original: n, symbol: '' });
+  };
+
   const preloadedPaginationProps = {
     linesQuery: searchBulkQuery,
     linesFragment: searchBulkFragment,
     queryRef,
     nodePath: ['globalSearch', 'pageInfo', 'globalCount'],
-    setNumberOfElements: helpers.handleSetNumberOfElements,
+    setNumberOfElements: completeSetNumberOfElements,
   } as UsePreloadedPaginationFragment<SearchBulkQuery>;
 
   return (

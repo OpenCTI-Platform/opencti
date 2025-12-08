@@ -31,6 +31,7 @@ const SearchBulkContainer = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [values, setValues] = useState<string[]>([]);
   const [numberOfUnknownEntities, setNumberOfUnknownEntities] = useState(0);
+  const [numberOfKnownEntities, setNumberOfKnownEntities] = useState(0);
 
   const setValuesAfterDebounce = useDebounceCallback(setValues, 500); // set values with a 500ms debounce
 
@@ -143,12 +144,16 @@ const SearchBulkContainer = () => {
               value={currentTab}
               onChange={(_, value) => handleChangeTab(value)}
             >
-              <Tab label={t_i18n('Known entities')} />
+              <Tab label={`${t_i18n('Known entities')} (${numberOfKnownEntities})`} />
               <Tab label={`${t_i18n('Unknown entities')} (${numberOfUnknownEntities})`} />
             </Tabs>
           </Box>
           {currentTab === 0 && values.length > 0
-            && <SearchBulk inputValues={values} dataColumns={dataColumns} />
+            && <SearchBulk
+              inputValues={values}
+              dataColumns={dataColumns}
+              setNumberOfEntities={setNumberOfKnownEntities}
+               />
           }
           {currentTab === 0 && isEmpty(textFieldValue)
             && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY} />
