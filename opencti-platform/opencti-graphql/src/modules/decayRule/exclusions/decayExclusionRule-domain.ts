@@ -58,6 +58,7 @@ export const checkDecayExclusionRules = async (
     extensions: {
       [STIX_EXT_OCTI]: {
         main_observable_type: resolvedIndicator.x_opencti_main_observable_type,
+        creator_ids: [user.internal_id]
       },
     },
   } as ResolvedDecayExclusionRule;
