@@ -1,12 +1,11 @@
-import {assert, describe, expect, it} from 'vitest';
-import type {StixBundle, StixOpenctiExtension} from '../../../../src/types/stix-2-1-common';
-import {PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT,} from "../../../../src/modules/playbook/playbook-components";
-import {STIX_EXT_OCTI} from "../../../../src/types/stix-2-1-extensions";
-import type {StixThreatActor} from "../../../../src/types/stix-2-1-sdo";
-import type {StixObject} from "../../../../src/types/stix-2-1-common";
-import {ENTITY_TYPE_THREAT_ACTOR} from "../../../../src/schema/general";
-import {ENTITY_TYPE_CONTAINER_REPORT} from "../../../../src/schema/stixDomainObject";
-
+import { assert, describe, expect, it } from 'vitest';
+import type { StixBundle, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
+import { PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
+import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
+import type { StixThreatActor } from '../../../../src/types/stix-2-1-sdo';
+import type { StixObject } from '../../../../src/types/stix-2-1-common';
+import { ENTITY_TYPE_THREAT_ACTOR } from '../../../../src/schema/general';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
 
 describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
   const baseBundle = {
@@ -30,7 +29,7 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
         extension_type: 'property-extension'
       }
     }
-  } as unknown as StixThreatActor
+  } as unknown as StixThreatActor;
   const basePlaybookNode = {
     id: 'playbook-node-1',
     name: 'Update Knowledge Node',
@@ -43,7 +42,7 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
     executionId: '',
     playbookId: '',
     previousPlaybookNodeId: undefined,
-  }
+  };
 
   it('should remove labels by field patch', async () => {
     const bundle = {
@@ -56,11 +55,11 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
             id: 'some--id',
             type: ENTITY_TYPE_CONTAINER_REPORT,
             extension_type: 'property-extension',
-            labels_ids: ["unicorn-id","honey-badger-id","pangolin-id"]
+            labels_ids: ['unicorn-id','honey-badger-id','pangolin-id']
           } as StixOpenctiExtension
         }
       } as StixObject]
-    } as StixBundle
+    } as StixBundle;
 
     const playbookNode = {
       ...basePlaybookNode,
@@ -85,7 +84,7 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
           }
         ]
       }
-    }
+    };
 
     const result = await PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.executor({
       ...baseExecutorParams,
@@ -96,15 +95,15 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
     });
 
     const updatedActor = result.bundle.objects.find(o => o.id === threatObjectId) as StixThreatActor;
-    const objectExtensions = result.bundle.objects[0].extensions[STIX_EXT_OCTI]
+    const objectExtensions = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
     if (!objectExtensions.opencti_upsert_operations || !objectExtensions.opencti_upsert_operations[0]) {
-      assert.fail("Field patch missing");
+      assert.fail('Field patch missing');
     }
     expect(objectExtensions.opencti_upsert_operations[0].operation).toBe('remove');
     expect(objectExtensions.opencti_upsert_operations[0].key).toBe('objectLabel');
     expect(objectExtensions.opencti_upsert_operations[0].value[0]).toBe('unicorn-id');
     expect(objectExtensions.opencti_upsert_operations[0].value[1]).toBe('honey-badger-id');
-    expect(updatedActor.labels).toEqual(['pangolin'])
+    expect(updatedActor.labels).toEqual(['pangolin']);
   });
 
   it('should update 2 attributes in successive playbook nodes using field patches (confidence & marking definitions)', async () => {
@@ -114,7 +113,7 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
         ...baseBundleObject,
         confidence: '15'
       } as StixObject]
-    } as StixBundle
+    } as StixBundle;
 
     const playbookNode1 = {
       ...basePlaybookNode,
@@ -134,7 +133,7 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
           }
         ]
       }
-    }
+    };
 
     const playbookNode2 = {
       ...basePlaybookNode,
@@ -154,7 +153,7 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
           }
         ]
       }
-    }
+    };
 
     const result1 = await PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.executor({
       ...baseExecutorParams,
@@ -171,9 +170,9 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
       bundle: result1.bundle
     });
 
-    const objectExtensions = result2.bundle.objects[0].extensions[STIX_EXT_OCTI]
+    const objectExtensions = result2.bundle.objects[0].extensions[STIX_EXT_OCTI];
     if (!objectExtensions.opencti_upsert_operations || !objectExtensions.opencti_upsert_operations[0]) {
-      assert.fail("Field patch missing");
+      assert.fail('Field patch missing');
     }
     expect(objectExtensions.opencti_upsert_operations[0].operation).toBe('replace');
     expect(objectExtensions.opencti_upsert_operations[0].key).toBe('confidence');
