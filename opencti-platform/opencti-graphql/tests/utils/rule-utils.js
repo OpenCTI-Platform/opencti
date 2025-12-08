@@ -58,6 +58,7 @@ export const changeRule = async (ruleId, active) => {
     // Handle works
     const workIds = ruleActivationTask.map((task) => task.work_id).filter((workId) => isNotEmptyField(workId));
     const works = await internalFindByIds(testContext, SYSTEM_USER, workIds, { indices: [READ_INDEX_HISTORY] });
+    logApp.info('----------works---------------------', works);
     works.forEach((w) => {
       if (w.errors.length > 0) {
         logApp.info('[RULE TEST] Change rule works failure', { active, errors: w.errors });
@@ -71,7 +72,9 @@ export const changeRule = async (ruleId, active) => {
   }
   // Wait all events to be consumed
   let stableCount = 1;
+  logApp.info('------------------------initial stableCount', stableCount);
   while (stableCount < 3) {
+    logApp.info('------------------------stableCount', stableCount);
     const innerInfo = await fetchStreamInfo();
     const ruleManager = await internalLoadById(testContext, SYSTEM_USER, 'rule_engine_settings');
     await wait(2000);

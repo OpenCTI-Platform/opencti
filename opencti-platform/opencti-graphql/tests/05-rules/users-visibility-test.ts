@@ -7,7 +7,6 @@ import { wait } from '../../src/database/utils';
 import { RELATION_PARTICIPATE_TO } from '../../src/schema/internalRelationship';
 import { adminQueryWithSuccess } from '../utils/testQueryHelper';
 import type { BasicStoreBase } from '../../src/types/store';
-import AttributionUseRule from '../../src/rules/attribution-use/AttributionUseRule';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -177,8 +176,7 @@ describe('Users visibility according to their direct organizations', () => {
     userOInternalId = users.find((u) => u.data?.userAdd.name === 'userO')?.data?.userAdd.id;
 
     // activate ParticipateToPartsRule
-    // await activateRule(ParticipateToPartsRule.id);
-    await activateRule(AttributionUseRule.id);
+    await activateRule(ParticipateToPartsRule.id);
     await wait(TEN_SECONDS); // let some time to rule manager to create the inferred relationships
     const afterEnableRelations = await getInferences(RELATION_PARTICIPATE_TO);
     expect(afterEnableRelations).toBe('test');
