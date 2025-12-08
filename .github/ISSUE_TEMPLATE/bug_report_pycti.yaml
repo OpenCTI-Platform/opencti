@@ -7,20 +7,20 @@ type: bug
 body:
 - type: textarea 
   attributes:
-    label: Description
+    label: "Description"
 - type: textarea
     attributes:
-      label: Environnment
+      label: "Environnment"
 - type: textarea
     attributes:
-      label: Reproducible Steps
+      label: "Reproducible Steps"
 - type: textarea
     attributes:
-      label: Expected Output
+      label: "Expected Output"
 - type: textarea
     attributes:
-      label: Actual Output
+      label: "Actual Output"
 - type: textarea
     attributes:
-      label: Additionnal information
+      label: "Additionnal information"
 --- 
