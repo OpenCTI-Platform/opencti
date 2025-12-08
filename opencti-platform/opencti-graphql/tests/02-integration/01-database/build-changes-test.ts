@@ -2,8 +2,8 @@ import {describe, expect, it} from 'vitest';
 import {buildChanges} from '../../../src/database/middleware';
 import {ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE} from '../../../src/schema/stixDomainObject';
 import {ADMIN_USER, testContext} from '../../utils/testQuery';
-import {createStatus, createStatusTemplate, statusDelete, statusTemplateDelete} from '../../../src/domain/status';
-import {stixDomainObjectDelete} from '../../../src/domain/stixDomainObject';
+import { createStatus, createStatusTemplate, findByType, statusDelete, statusTemplateDelete } from '../../../src/domain/status';
+import {stixDomainObjectDelete, stixDomainObjectEditField} from '../../../src/domain/stixDomainObject';
 import {addMalware} from '../../../src/domain/malware';
 import {StatusScope} from '../../../src/generated/graphql';
 
@@ -516,41 +516,15 @@ describe('buildChanges standard behavior', async () => {
     expect(changes).toEqual([{field:'Label',previous:['anti-sandbox', 'angie'], new: ['angie'], removed:['anti-sandbox'], added:[]}]);
   });
   it('should build changes for status replaced', async () => {
-    // create status template
-    const input1=  {
-      name: 'New',
-      color: '#1edfd1'
-    };
-    const statusTemplate1  = await createStatusTemplate(testContext, ADMIN_USER, input1);
-
-    // add status
-    const createStatusInput= {
-      order: 1,
-      scope: StatusScope.Global,
-      template_id: statusTemplate1.id,
-    };
-    const status1 = await createStatus(testContext, ADMIN_USER,'Malware', createStatusInput);
-
-    // create Malware
-    const malware = await addMalware(testContext, ADMIN_USER, {name: 'malware for testing purpose'});
-
-    // update status
+    // we use data-initialization statuses
+    const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
     const inputs = [{
       key:'x_opencti_workflow_id',
-      previous:[],
-      value:[status1.id]
+      previous:[statuses[0].id],
+      value:[statuses[1].id]
     }];
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
-    expect(changes).toEqual([{field:'Workflow status',previous:[],new:[status1.name]}]);
-
-    // delete status
-    await statusDelete(testContext, ADMIN_USER, 'Malware', status1.id);
-
-    // delete status template
-    await statusTemplateDelete (testContext, ADMIN_USER, statusTemplate1.id);
-
-    // delete malware
-    await  stixDomainObjectDelete(testContext, ADMIN_USER, malware.id);
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{field:'Workflow status',previous:[statuses[0].name],new:[statuses[1].name]}]);
   });
 });
 
