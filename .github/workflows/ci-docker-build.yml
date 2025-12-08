@@ -58,7 +58,10 @@ jobs:
 
     - name: Use client-python from same branch
       if: ${{ inputs.client_python_release == false }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i opencti-platform/requirements.txt
+      run: |
+        pwd
+        ls -larth
+        sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-platform/requirements.txt
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -101,7 +104,7 @@ jobs:
 
     - name: Use client-python from same branch
       if: ${{ inputs.client_python_release == false }}
-      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i opencti-worker/requirements.txt
+      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-worker/requirements.txt
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
