@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { getOrganizationIdByName, ONE_MINUTE, queryAsAdmin, TEN_SECONDS } from '../utils/testQuery';
 import { activateRule, disableRule, getInferences } from '../utils/rule-utils';
@@ -99,7 +99,7 @@ describe('Users visibility according to their direct organizations', () => {
   let orgaBInternalId: string;
   let orgaABInternalId: string;
 
-  beforeAll(async () => {
+  it('should create the context with users linked to organizations via direct and infered relationships', async () => {
     // ------ Create the context with users and organizations -------
     // userA participate-to orgaA, userB participate-to orgaB
     // orgaA and orgaB part of orgaAB
@@ -189,9 +189,9 @@ describe('Users visibility according to their direct organizations', () => {
       organizationIds?: string[],
     ) => {
       const values = [{
-          key: 'relationship_type',
-          values: [RELATION_PARTICIPATE_TO]
-        }];
+        key: 'relationship_type',
+        values: [RELATION_PARTICIPATE_TO]
+      }];
       if (isInferredSubFilterValue) {
         values.push({
           key: 'is_inferred',
@@ -264,7 +264,7 @@ describe('Users visibility according to their direct organizations', () => {
     });
   });
 
-  afterAll(async () => {
+  it('should delete the created context of users and organizations', async () => {
     // deactivate ParticipateToPartsRule rule
     await disableRule(ParticipateToPartsRule.id);
     // Check inferences have been deleted
