@@ -20,24 +20,21 @@ export const useStixRelationshipsMultiHorizontalBars = (
   );
 
   const getDistributionKey = (distribution) => {
-    let distributionKey;
-    if (finalSubDistributionField === 'internal_id') {
-      distributionKey = getMainRepresentative(
-        distribution.entity,
-        t_i18n('Restricted')
-      );
-    } else if (distribution.entity) {
-      distributionKey = distribution.entity.representative
-        ? getMainRepresentative(distribution.entity, t_i18n('Restricted'))
-        : distribution.entity.name
-          ? distribution.entity.name
-          : distribution.entity.label
-            ? distribution.entity.label
-            : distribution.label;
-    } else {
-      distributionKey = distribution.label;
+    if(finalSubDistributionField === 'internal_id'){
+      return getMainRepresentative(distribution.entity, t_i18n('Restricted'));
     }
-    return distributionKey;
+
+    if(!distribution.entity) {
+      return distribution.label;
+    }
+
+    if(distribution.entity.representative) {
+      return getMainRepresentative(distribution.entity, t_i18n('Restricted'));
+    }
+
+    return distribution.entity.name
+      || distribution.entity.label
+      || distribution.label;
   };
 
   const entitiesMapping = {};
