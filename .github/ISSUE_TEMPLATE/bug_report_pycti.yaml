@@ -34,9 +34,9 @@ body:
       description: "What did you expect to happen?"
       placeholder: "Describe the expected behavior."
   - type: attachments
-     id: media
-     attributes:
-       label: Supporting Media
-       description: "Upload screenshots, videos, error logs, or other files that help illustrate the issue."
+    id: media
+    attributes:
+      label: Supporting Media
+      description: "Upload screenshots, videos, or log files."
 
 ---
