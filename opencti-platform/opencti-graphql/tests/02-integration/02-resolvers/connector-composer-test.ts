@@ -2,7 +2,7 @@ import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
-import { adminQueryWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { adminQueryWithError, awaitUntilCondition, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
@@ -17,7 +17,7 @@ const TEST_COMPOSER_PUBLIC_KEY = '-----BEGIN RSA PUBLIC KEY-----\nMIICCgKCAgEAk8
 // Test configuration
 // The goal is to achieve a 1:1 behavior match between XTMComposerMock and XTMComposer.
 // This enables authentic integration testing (assuming the XTM Composer is available in the CI) without the need to rewrite the test suite.
-const FORCE_POLLING = true; // Set to true for faster tests, false for realistic XTM Composer behavior
+const FORCE_POLLING = false; // Set to true for faster tests, false for realistic XTM Composer behavior
 
 // Mutations
 const REGISTER_CONNECTORS_MANAGER_MUTATION = gql`
@@ -251,7 +251,9 @@ describe('Connector Composer and Managed Connectors', () => {
             });
             createdConnectorIds.delete(connectorId);
           }
-        } catch (error: any) { /* empty */ }
+        } catch (error: any) { 
+          console.warn(error);
+         }
       }, Promise.resolve());
     });
 
@@ -563,8 +565,8 @@ describe('Connector Composer and Managed Connectors', () => {
           variables: { input: managerInput }
         });
       } catch (error) {
-        // Manager might already exist if running full test suite, that's OK
-      }
+          console.warn(error);      
+        }
 
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
@@ -650,7 +652,17 @@ describe('Connector Composer and Managed Connectors', () => {
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
-        await wait(2000); // Wait a bit longer for configuration change detection
+        await awaitUntilCondition(async () => {
+          
+          const logsResult = await queryAsAdminWithSuccess({
+              query: CONNECTOR_LOGS_QUERY,
+              variables: { id: logLevelConnectorId }
+            });
+          
+          const logs = logsResult.data?.connector.manager_connector_logs || [];
+          const logStrings = logs.join('\n');
+          return logStrings.includes('[XTM-Composer] Connector redeployed successfully'); // Wait for configuration change detection
+        }, 400, 5);
       }
 
       // Query the connector logs to verify the redeploy happened
@@ -700,7 +712,19 @@ describe('Connector Composer and Managed Connectors', () => {
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
-        await wait(2000);
+        await awaitUntilCondition(async () => {
+          
+          const logsResult = await queryAsAdminWithSuccess({
+              query: CONNECTOR_LOGS_QUERY,
+              variables: { id: logLevelConnectorId }
+            });
+          
+          const logs = logsResult.data?.connector.manager_connector_logs || [];
+          const logStrings = logs.join('\n');
+          console.log('---------', logStrings);
+          const redeployCount = (logStrings.match(/Connector redeployed successfully/g) || []).length;
+          return redeployCount === 2; // Wait for configuration change detection
+        }, 400, 5);
       }
 
       // Query logs again
