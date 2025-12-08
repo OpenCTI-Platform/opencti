@@ -460,7 +460,6 @@ const createApp = async (app, schema) => {
         return passport.authenticate(
           provider, 
           { additionalParams: { RelayState: referer }}, 
-          {},
           (err) => {
             setCookieError(res, err?.message);
             next(err);
