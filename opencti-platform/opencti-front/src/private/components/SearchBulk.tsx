@@ -4,7 +4,7 @@ import { SearchBulkQuery, SearchBulkQuery$variables } from './__generated__/Sear
 import { SearchBulkQuery_data$data } from './__generated__/SearchBulkQuery_data.graphql';
 import DataTable from '../../components/dataGrid/DataTable';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filtersUtils';
-import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { NumberOfElements, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
@@ -158,9 +158,9 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBul
 
   const queryRef = useQueryLoading<SearchBulkQuery>(searchBulkQuery, queryPaginationOptions);
 
-  const completeSetNumberOfElements = (n: number) => {
-    setNumberOfEntities(n);
-    helpers.handleSetNumberOfElements({ number: n, original: n, symbol: '' });
+  const completeSetNumberOfElements = (n: NumberOfElements) => {
+    setNumberOfEntities(n.number ?? 0);
+    helpers.handleSetNumberOfElements(n);
   };
 
   const preloadedPaginationProps = {
