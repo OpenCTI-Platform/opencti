@@ -226,6 +226,7 @@ input OrganizationAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
