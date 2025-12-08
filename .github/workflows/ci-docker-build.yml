@@ -129,7 +129,6 @@ jobs:
       with:
         context: ${{ inputs.build_context_worker }}
         file: opencti-worker/${{ inputs.dockerfile_worker }}
-        target: ${{ inputs.dockerfile_target }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
