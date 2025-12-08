@@ -13,7 +13,8 @@ jobs:
         # If the workflow is triggered by a push on a branch, use the commit sha
         # If the workflow is triggered by pull request action, use the merge to base branch
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-        dockerfile: Dockerfile_featurebranch
+        dockerfile_platform: Dockerfile_featurebranch
+        dockerfile_worker: Dockerfile
         dockerfile_target: "testing"
         client_python_release: false
       secrets: inherit
@@ -54,7 +55,8 @@ jobs:
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         client_python_release: false
-        dockerfile: Dockerfile_featurebranch
+        dockerfile_platform: Dockerfile_featurebranch
+        dockerfile_worker: Dockerfile
         dockerfile_target: "app"
         image_tag: 'rolling'
       secrets: inherit
@@ -65,7 +67,8 @@ jobs:
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         client_python_release: false
-        dockerfile: Dockerfile_featurebranch
+        dockerfile_platform: Dockerfile_featurebranch
+        dockerfile_worker: Dockerfile
         dockerfile_target: "app"
         image_tag: 'prerelease'
       secrets: inherit
@@ -76,7 +79,8 @@ jobs:
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         client_python_release: false
-        dockerfile: Dockerfile_featurebranch
+        dockerfile_platform: Dockerfile_featurebranch
+        dockerfile_worker: Dockerfile
         dockerfile_target: "app"
         image_tag: 'test-issues-13571'
       secrets: inherit

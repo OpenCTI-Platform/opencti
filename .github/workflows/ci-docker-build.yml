@@ -11,11 +11,16 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
-      dockerfile:
+      dockerfile_platform:
         description: "Dockerfile name"
         type: string
         required: false
         default: Dockerfile_featurebranch
+      dockerfile_worker:
+        description: "Dockerfile name"
+        type: string
+        required: false
+        default: Dockerfile
       build_context_platform:
         description: "Build context"
         type: string
@@ -80,7 +85,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.build_context_platform }}
-        file: opencti-platform/${{ inputs.dockerfile }}
+        file: opencti-platform/${{ inputs.dockerfile_platform }}
         target: ${{ inputs.dockerfile_target }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
@@ -123,7 +128,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.build_context_worker }}
-        file: opencti-worker/${{ inputs.dockerfile }}
+        file: opencti-worker/${{ inputs.dockerfile_worker }}
         target: ${{ inputs.dockerfile_target }}
         push: true
         tags: ${{ steps.meta.outputs.tags }}
