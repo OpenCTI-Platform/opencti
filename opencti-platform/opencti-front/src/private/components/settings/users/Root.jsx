@@ -12,7 +12,6 @@ import { useTheme } from '@mui/styles';
 import ConvertUser from './ConvertUser';
 import UserDeletionDialog from './UserDeletionDialog';
 import UserEmailSend from './UserEmailSend';
-import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -119,7 +118,6 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {data ? (
         <div style={{ paddingRight: 200 }}>
-          <AccessesMenu />
           <Breadcrumbs elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },

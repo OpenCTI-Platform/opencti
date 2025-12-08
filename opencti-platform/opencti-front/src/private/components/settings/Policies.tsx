@@ -23,7 +23,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import DialogTitle from '@mui/material/DialogTitle';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
-import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
 import SwitchField from '../../../components/fields/SwitchField';
@@ -192,7 +191,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
       }}
       data-testid="policies-settings-page"
     >
-      <AccessesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
         <Grid item xs={12}>

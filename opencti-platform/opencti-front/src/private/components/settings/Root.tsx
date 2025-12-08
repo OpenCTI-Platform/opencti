@@ -19,6 +19,7 @@ import useGranted, {
   SETTINGS_SETSTATUSTEMPLATES,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
+import AccessesMenu from '@components/settings/AccessesMenu';
 
 const Security = lazy(() => import('../../../utils/Security'));
 const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
@@ -97,6 +98,7 @@ const Root = () => {
 
   return (
     <div data-testid="settings-page">
+      <AccessesMenu />
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route

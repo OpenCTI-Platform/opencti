@@ -5,7 +5,6 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import AccessesMenu from '@components/settings/AccessesMenu';
 import { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -59,7 +58,6 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {organization ? (
         <>
-          <AccessesMenu />
           <Breadcrumbs elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
