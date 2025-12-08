@@ -17,10 +17,12 @@ import forge from 'node-forge';
 import { isNotEmptyField } from '../../database/utils';
 import { now, utcDate } from '../../utils/format';
 import { OPENCTI_CA } from '../../enterprise-edition/opencti_ca';
-import conf from '../../config/conf';
+import conf, { PLATFORM_VERSION } from '../../config/conf';
 
 const GLOBAL_LICENSE_OPTION = 'global';
 export const LICENSE_OPTION_TRIAL = 'trial';
+export const LICENSE_OPTION_LTS = 'lts';
+export const IS_LTS_PLATFORM = PLATFORM_VERSION.includes('lts');
 
 // https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
 // 62944 - Filigran
@@ -46,11 +48,12 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
       const clientCrt = forge.pki.certificateFromPem(pem);
       const license_valid_cert = OPENCTI_CA.verify(clientCrt);
       const license_type = getExtensionValue(clientCrt, LICENSE_OPTION_TYPE);
+      const valid_type = IS_LTS_PLATFORM ? license_type === LICENSE_OPTION_LTS : true;
       const license_creator = getExtensionValue(clientCrt, LICENSE_OPTION_CREATOR);
       const valid_product = getExtensionValue(clientCrt, LICENSE_OPTION_PRODUCT) === 'opencti';
       const license_customer = clientCrt.subject.getField('O').value;
       const license_platform = clientCrt.subject.getField('OU').value;
-      const license_platform_match = valid_product && (license_platform === GLOBAL_LICENSE_OPTION || platformInstanceId === license_platform);
+      const license_platform_match = valid_product && valid_type && (license_platform === GLOBAL_LICENSE_OPTION || platformInstanceId === license_platform);
       const license_global = license_platform === GLOBAL_LICENSE_OPTION;
       const license_expired = new Date() > clientCrt.validity.notAfter || new Date() < clientCrt.validity.notBefore;
       const license_start_date = clientCrt.validity.notBefore;

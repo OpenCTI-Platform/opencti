@@ -85,7 +85,7 @@ const Incidents: FunctionComponent = () => {
           resolvePath={(data: IncidentsLines_data$data) => data.incidents?.edges?.map((n) => n?.node)}
           dataColumns={dataColumns}
           lineFragment={incidentLineFragment}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           exportContext={{ entity_type: 'Incident' }}
           availableEntityTypes={['Incident']}
           createButton={(

@@ -8,7 +8,7 @@ export interface FormFieldAttribute {
   name: string;
   label: string; // Display label for the field
   description?: string;
-  type: string; // Field type: text, select, openvocab, etc.
+  type: string; // Field type: text, select, open vocabulary, etc.
   required: boolean;
   isMandatory?: boolean; // Whether this field is for a mandatory attribute
   width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)

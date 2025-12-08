@@ -9,7 +9,7 @@ import { DraftEntities_node$data } from '@components/drafts/__generated__/DraftE
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, addFilter } from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -166,9 +166,9 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     filters,
     searchTerm,
   } = viewStorage;
-  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters, excludedEntitiesType);
-  const relevantDraftOperationFilter = { key: 'draft_change.draft_operation', values: ['create', 'update', 'delete'], operator: 'eq', mode: 'or' };
-  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, relevantDraftOperationFilter] };
+  const filtersWithType = useBuildEntityTypeBasedFilterContext(entitiesType, filters, excludedEntitiesType);
+  // add filter to keep only relevant draft operations
+  const contextFilters = addFilter(filtersWithType, 'draft_change.draft_operation', ['create', 'update', 'delete']);
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -281,7 +281,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           resolvePath={(data: DraftEntitiesLines_data$data) => data.draftWorkspaceEntities?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={toolbarFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           getComputeLink={getRedirectionLink}
           lineFragment={draftEntitiesLineFragment}

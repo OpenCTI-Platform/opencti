@@ -202,7 +202,7 @@ const Indicators = () => {
           resolvePath={(data: IndicatorsLines_data$data) => data.indicators?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           lineFragment={indicatorLineFragment}
           preloadedPaginationProps={preloadedPaginationOptions}
           exportContext={{ entity_type: 'Indicator' }}

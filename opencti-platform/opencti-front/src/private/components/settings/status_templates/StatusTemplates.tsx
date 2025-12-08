@@ -144,7 +144,7 @@ const StatusTemplates = () => {
           resolvePath={(data) => data.statusTemplates?.edges?.map(({ node }: { node: StatusTemplatesLine_node$data }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           lineFragment={StatusTemplatesLineFragment}
           disableNavigation
           disableLineSelection

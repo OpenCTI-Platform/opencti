@@ -61,6 +61,8 @@ import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-
 import { createOnTheFlyUser } from '../modules/user/user-domain';
 import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import type { Work } from '../types/work';
+import { AxiosError } from 'axios';
+import { URL } from 'node:url';
 
 // Sanitize name for K8s/Docker
 const sanitizeContainerName = (label: string): string => {
@@ -308,7 +310,6 @@ export const registerConnector = async (
   connectorData: RegisterConnectorInput,
   opts: RegisterOptions = {}
 ) => {
-  // eslint-disable-next-line camelcase
   const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
   const { auto = null, auto_update = null, enrichment_resolution = null } = connectorData;
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
@@ -530,7 +531,17 @@ export const testSync = async (context: AuthContext, user: AuthUser, sync: Mutat
   return testSyncUtils(context, user, sync);
 };
 
+export const computeStreamRemoteUrl = (inputUri: string) => {
+  const inputAsURL = new URL(inputUri);
+  if (inputAsURL.protocol !== 'http:' && inputAsURL.protocol !== 'https:') {
+    throw FunctionalError('Stream URL format is not correct');
+  }
+  const sanitizeUri = `${inputAsURL.origin}${inputAsURL.pathname}`;
+  return `${sanitizeUri.endsWith('/') ? sanitizeUri.slice(0, -1) : sanitizeUri}/graphql`;
+};
+
 export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, input:SynchronizerFetchInput) => {
+  const { token, uri, ssl_verify } = input;
   try {
     const query = `
     query SyncCreationStreamCollectionQuery {
@@ -546,15 +557,20 @@ export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, i
       }
     }
   `;
-    const { token, uri, ssl_verify } = input;
+
     const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
     const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ssl_verify ?? false, responseType: 'json' };
     const httpClient = getHttpClient(httpClientOptions);
-    const remoteUri = `${uri.endsWith('/') ? uri.slice(0, -1) : uri}/graphql`;
+    const remoteUri = computeStreamRemoteUrl(uri);
     const { data } = await httpClient.post(remoteUri, { query });
     return data.data.streamCollections.edges.map((e: any) => e.node);
   } catch (e) {
-    throw ValidationError('Error getting the streams from remote OpenCTI', 'uri', { cause: e });
+    let errorMessage = '';
+    if (e instanceof AxiosError) {
+      logApp.error('[OPENCTI-MODULE] Issue when trying to call OpenCTI remote stream', { httpStatus: e.status, message: e.message, streamURI: uri });
+      errorMessage = e.message;
+    }
+    throw ValidationError('Error getting the streams from remote OpenCTI', 'uri', {cause: errorMessage});
   }
 };
 export const registerSync = async (context: AuthContext, user: AuthUser, syncData: SynchronizerAddInput) => {

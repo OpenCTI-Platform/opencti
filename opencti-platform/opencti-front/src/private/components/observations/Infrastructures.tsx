@@ -174,7 +174,7 @@ const Infrastructures = () => {
           resolvePath={(data: InfrastructuresLines_data$data) => data.infrastructures?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY_INFRASTRUCTURES}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           lineFragment={infrastructureFragment}
           preloadedPaginationProps={preloadedPaginationOptions}
           exportContext={{ entity_type: 'Infrastructure' }}

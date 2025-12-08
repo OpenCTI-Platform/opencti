@@ -180,7 +180,7 @@ const MarkingDefinitions = () => {
           resolvePath={(data: MarkingDefinitionsLines_data$data) => data.markingDefinitions?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           lineFragment={markingDefinitionLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
           icon={(data) => {

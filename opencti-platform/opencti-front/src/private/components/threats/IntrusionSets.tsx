@@ -161,7 +161,7 @@ const IntrusionSets = () => {
             resolvePath={(data: IntrusionSetsCards_data$data) => data.intrusionSets?.edges?.map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={IntrusionSetCardFragment}
             exportContext={{ entity_type: 'Intrusion-Set' }}

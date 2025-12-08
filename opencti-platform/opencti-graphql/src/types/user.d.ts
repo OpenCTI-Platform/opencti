@@ -68,4 +68,5 @@ interface AuthContext {
   user_otp_validated?: boolean
   user_with_session?: boolean
   req?: Express.Request
+  blocked_for_lts_validation?: boolean
 }

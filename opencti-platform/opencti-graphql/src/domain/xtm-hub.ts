@@ -22,6 +22,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   status: XtmHubRegistrationStatus
 }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  await checkHubIfBackendIsReachable(context, user, settings);
   if (!settings.xtm_hub_token) {
     return { status: XtmHubRegistrationStatus.Unregistered };
   }
@@ -48,9 +49,6 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   if (isConnectivityActive) {
     attributeUpdates.push({ key: 'xtm_hub_last_connectivity_check', value: [new Date()] });
   }
-
-  const { isReachable } = await xtmHubClient.isBackendReachable();
-  attributeUpdates.push({ key: 'xtm_hub_backend_is_reachable', value: [isReachable] });
 
   if (attributeUpdates.length === 0) {
     return { status: newRegistrationStatus };
@@ -136,6 +134,25 @@ const resetRegistration = async (context: AuthContext, user: AuthUser, settings:
     ENTITY_TYPE_SETTINGS,
     attributeUpdates
   );
+
+  const updatedSettings = await getSettings(context);
+  await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
+};
+
+const checkHubIfBackendIsReachable = async (context: AuthContext, user: AuthUser, settings: BasicStoreSettings) => {
+  const { isReachable } = await xtmHubClient.isBackendReachable();
+
+  await updateAttribute(
+    context,
+    user,
+    settings.id,
+    ENTITY_TYPE_SETTINGS,
+    [{ key: 'xtm_hub_backend_is_reachable', value: [isReachable] }]
+  );
+
+  if (!isReachable) {
+    logApp.warn('[XTMH] Backend is unreachable');
+  }
 
   const updatedSettings = await getSettings(context);
   await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);

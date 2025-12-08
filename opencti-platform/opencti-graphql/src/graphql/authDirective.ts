@@ -2,7 +2,7 @@ import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 // eslint-disable-next-line import/extensions
 import { defaultFieldResolver } from 'graphql/index.js';
 import type { GraphQLFieldConfig, GraphQLSchema } from 'graphql';
-import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
+import { AuthRequired, ForbiddenAccess, LtsRequiredActivation, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
 import { Capabilities } from '../generated/graphql';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import type { AuthContext } from '../types/user';
@@ -69,10 +69,11 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
             const { resolve = defaultFieldResolver } = fieldConfig;
             fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
               // Get user from the session
-              const { user, otp_mandatory, user_otp_validated } = context;
+              const { user, otp_mandatory, user_otp_validated, blocked_for_lts_validation } = context;
+              // User must be authenticated.
               if (!user) {
                 throw AuthRequired();
-              } // User must be authenticated.
+              }
               const isProtectedMethod = info.fieldName !== 'logout'
                 && info.fieldName !== 'otpLogin' && info.fieldName !== 'otpActivation' && info.fieldName !== 'otpGeneration';
               if (isProtectedMethod) {
@@ -92,6 +93,11 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
                   // If user self activate OTP, session must be validated
                   throw OtpRequired();
                 }
+              }
+              // LTS version must be validated
+              const allowUnlicensedLTS = !!getDirective(schema, fieldConfig, 'allowUnlicensedLTS')?.[0];
+              if (blocked_for_lts_validation && !allowUnlicensedLTS) {
+                throw LtsRequiredActivation();
               }
               // Start checking capabilities
               if (requiredCapabilities.length === 0) {

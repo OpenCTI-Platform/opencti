@@ -312,7 +312,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
             dataColumns={dataColumns}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
-            toolbarFilters={filters}
+            contextFilters={filters}
             lineFragment={pirAnalysesContainerFragment}
             entityTypes={['Container']}
             searchContextFinal={{ entityTypes: ['Container'] }}

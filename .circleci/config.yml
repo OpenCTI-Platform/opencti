@@ -35,7 +35,8 @@ jobs:
           branch_pattern: master
           event: fail
           template: basic_fail_1
-  linter_pycti:
+  linter_pycti: # TODO : remove when pycti release deployment is moved to github action
+  # linter pycti moved to github actions in issue/13539 
     docker:
       - image: alpine/flake8
     working_directory: ~/repo
@@ -868,7 +869,6 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "SHA256:huG64qM1OJQCRwOB50xF4k+RZ7l4+rUuIetpM+Sf1MA"
-      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_PRE_RELEASE -n customer-prerelease rollout restart deployment -l app=opencti
       - run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh

@@ -54,7 +54,6 @@ jobs:
         docker run --network runner-docker-network \
           --name api-tests \
           -p 4010:4100 \
-          -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
@@ -63,17 +62,13 @@ jobs:
           -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4100/graphql \
           -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4100/graphql \
           -e PYTHONUNBUFFERED=1  \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          filigran/platform:${{ github.sha }} \
           sh -c 'set -ex
-            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-            apk add build-base git libffi-dev cargo
-            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
-            cd /home/workspace/opencti-platform/opencti-graphql
-            npm install -g corepack
-            cp /home/workspace/opencti-platform/.yarnrc.yml .
-            yarn install
-            yarn build
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration  --coverage
+            mkdir -p ../../opencti-connectors/stream/backup-files/src
+            wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
+            mkdir -p ../../opencti-connectors/external-import/restore-files/src
+            wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration --coverage
         '
 
     - name: Upload backend test result
@@ -87,6 +82,7 @@ jobs:
 
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      if: always()
       continue-on-error: true
       run: |
           echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
@@ -132,8 +128,6 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v6
-      with:
-        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
@@ -161,26 +155,17 @@ jobs:
         docker run --network runner-docker-network \
           --name api-tests \
           -p 4010:4100 \
-          -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex;
-            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
-            apk add build-base git libffi-dev cargo;
-            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
-            cd /home/workspace/opencti-platform/opencti-graphql
-            npm install -g corepack
-            cp /home/workspace/opencti-platform/.yarnrc.yml .
-            yarn install
-            yarn build
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
+          filigran/platform:${{ github.sha }} \
+          sh -c 'NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
         '
 
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      if: always()
       continue-on-error: true
       run: |
           echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
@@ -205,12 +190,16 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v6
-      with:
-        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Set up Docker Compose for backends
       run: |
@@ -224,27 +213,17 @@ jobs:
         docker run --network runner-docker-network \
           --name unit-and-other-tests \
           -p 4010:4100 \
-          -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://unit-and-other-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex;
-            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
-            apk add build-base git libffi-dev cargo;
-            cd /home/workspace/opencti-platform/opencti-graphql
-            npm install -g corepack
-            cp /home/workspace/opencti-platform/.yarnrc.yml .
-            yarn install
-            yarn build
-            yarn check-ts
-            yarn lint
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit --coverage
+          filigran/platform:${{ github.sha }} \
+          sh -c 'NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit --coverage
         '
 
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      if: always()
       continue-on-error: true
       run: |
           echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio

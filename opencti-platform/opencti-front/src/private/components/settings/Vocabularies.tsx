@@ -166,7 +166,7 @@ const Vocabularies = () => {
           resolvePath={(data) => data.vocabularies?.edges?.map(({ node }: { node: useVocabularyCategory_Vocabularynode$data }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           lineFragment={vocabFragment}
           disableNavigation
           taskScope={'SETTINGS'}

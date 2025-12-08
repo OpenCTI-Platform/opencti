@@ -154,8 +154,8 @@ const RestrictedEntities = () => {
     helpers,
   } = usePaginationLocalStorage<RestrictedEntitiesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
-  const toolbarFilters = addFilter(contextFilters, 'authorized_members.id', [], 'not_nil');
+  const filtersWithEntityType = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
+  const contextFilters = addFilter(filtersWithEntityType, 'authorized_members.id', [], 'not_nil');
 
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -229,7 +229,7 @@ const RestrictedEntities = () => {
             initialValues={initialValues}
             lineFragment={managementDefinitionLineFragment}
             preloadedPaginationProps={preloadedPaginationProps}
-            toolbarFilters={toolbarFilters}
+            contextFilters={contextFilters}
             entityTypes={['Stix-Core-Object']}
             searchContextFinal={{ entityTypes: ['Stix-Core-Object'] }}
             removeAuthMembersEnabled={true}

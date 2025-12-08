@@ -201,7 +201,7 @@ const Pirs = () => {
           resolvePath={(data: Pirs_PirsFragment$data) => data.pirs?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={{
             linesQuery: pirsListQuery,
             linesFragment: pirsFragment,

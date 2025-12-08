@@ -245,7 +245,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
           }}
           storageKey={localStorageKey}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={{
             linesQuery: sourcesFlaggedListQuery,
             linesFragment: sourcesFlaggedFragment,

@@ -143,7 +143,7 @@ const ImportWorkbenchesContent = () => {
 
   const queryRef = useQueryLoading<ImportWorkbenchesContentQuery>(importWorkbenchesContentQuery, queryPaginationOptions);
 
-  const toolbarFilters = {
+  const contextFilters = {
     mode: 'and',
     filters: [
       {
@@ -219,7 +219,7 @@ const ImportWorkbenchesContent = () => {
           resolvePath={(data: ImportWorkbenchesContentLines_data$data) => data.pendingFiles?.edges?.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={toolbarFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={workbenchLineFragment}
           entityTypes={['InternalFile']}
