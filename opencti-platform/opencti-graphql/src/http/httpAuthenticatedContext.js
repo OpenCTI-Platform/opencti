@@ -12,6 +12,7 @@ import { batchGlobalStatusesByType, batchRequestAccessStatusesByType } from '../
 import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
 import { batchIsSubAttackPattern } from '../domain/attackPattern';
 import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -60,6 +61,8 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
         executeContext.user_otp_validated = req.session?.user.otp_validated ?? false;
       }
       executeContext.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+      const licenseInfo = getEnterpriseEditionInfo(settings);
+      executeContext.blocked_for_lts_validation = IS_LTS_PLATFORM && !licenseInfo.license_validated;
     }
   } catch (error) {
     logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });
