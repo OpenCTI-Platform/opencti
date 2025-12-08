@@ -57,11 +57,12 @@ RUN set -eux; \
     mkdir -p ../opencti-graphql/public; \
     yarn build
 
+
 ##############################
-### Build base with python
+### Build the testing image
 ##############################
 
-FROM base AS python-build
+FROM builderd AS testing
 
 COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
 
@@ -75,13 +76,6 @@ RUN set -eux; \
     ln -sf python3 /usr/bin/python; \
     pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt ; \
     apk del gcc git
-
-
-##############################
-### Build the testing image
-##############################
-
-FROM python-build AS testing
 
 WORKDIR /opt/opencti
 
@@ -106,7 +100,20 @@ CMD ["node", "build/back.js"]
 ### Build production image
 ##############################
 
-FROM python-build AS app
+FROM base AS app
+
+COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
+
+RUN apk add --no-cache tini python3 python3-dev
+RUN set -eux; \
+    apk add --no-cache gcc git; \
+    rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED; \
+    python3 -m ensurepip; \
+    rm -rv /usr/lib/python*/ensurepip; \
+    pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
+    ln -sf python3 /usr/bin/python; \
+    pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt ; \
+    apk del gcc git
 
 WORKDIR /opt/opencti
 
