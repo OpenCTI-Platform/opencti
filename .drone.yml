@@ -312,7 +312,7 @@ services:
   - name: redis
     image: redis:8.4.0
   - name: elastic
-    image: elasticsearch:8.19.8
+    image: elasticsearch:9.2.2
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
