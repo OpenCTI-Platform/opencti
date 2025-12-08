@@ -38,7 +38,7 @@ const RULE_MUTATION = gql`
   }
 `;
 
-export const changeRule = async (ruleId, active) => {
+export const changeRule = async (ruleId, active, isInternalRelationshipsRule = false) => {
   const start = new Date().getTime();
   // Change the status
   await queryAsAdmin({ query: RULE_MUTATION, variables: { id: ruleId, enable: active } });
@@ -58,7 +58,6 @@ export const changeRule = async (ruleId, active) => {
     // Handle works
     const workIds = ruleActivationTask.map((task) => task.work_id).filter((workId) => isNotEmptyField(workId));
     const works = await internalFindByIds(testContext, SYSTEM_USER, workIds, { indices: [READ_INDEX_HISTORY] });
-    logApp.info('----------works---------------------', works);
     works.forEach((w) => {
       if (w.errors.length > 0) {
         logApp.info('[RULE TEST] Change rule works failure', { active, errors: w.errors });
@@ -72,15 +71,13 @@ export const changeRule = async (ruleId, active) => {
   }
   // Wait all events to be consumed
   let stableCount = 1;
-  logApp.info('------------------------initial stableCount', stableCount);
   while (stableCount < 3) {
-    logApp.info('------------------------stableCount', stableCount);
     const innerInfo = await fetchStreamInfo();
     const ruleManager = await internalLoadById(testContext, SYSTEM_USER, 'rule_engine_settings');
     await wait(2000);
     const lastEventDate = new Date(parseInt(innerInfo.lastEventId.split('-').at(0), 10));
     const managerEventDate = new Date(parseInt(ruleManager.lastEventId.split('-').at(0), 10));
-    if (managerEventDate >= lastEventDate) {
+    if (isInternalRelationshipsRule ||(managerEventDate >= lastEventDate)) {
       stableCount += 1;
     }
   }
@@ -88,5 +85,5 @@ export const changeRule = async (ruleId, active) => {
   logApp.info(`[TEST] Rule ${ruleId} ${active ? 'activated' : 'disabled'} in ${stop} ms`);
 };
 
-export const activateRule = async (ruleId) => changeRule(ruleId, true);
-export const disableRule = (ruleId) => changeRule(ruleId, false);
+export const activateRule = async (ruleId, isInternalRelationshipsRule = false) => changeRule(ruleId, true, isInternalRelationshipsRule);
+export const disableRule = (ruleId, isInternalRelationshipsRule = false) => changeRule(ruleId, false, isInternalRelationshipsRule);

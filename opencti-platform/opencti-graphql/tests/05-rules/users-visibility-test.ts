@@ -176,14 +176,14 @@ describe('Users visibility according to their direct organizations', () => {
     userOInternalId = users.find((u) => u.data?.userAdd.name === 'userO')?.data?.userAdd.id;
 
     // activate ParticipateToPartsRule
-    await activateRule(ParticipateToPartsRule.id);
+    await activateRule(ParticipateToPartsRule.id, true);
     await wait(TEN_SECONDS); // let some time to rule manager to create the inferred relationships
     const afterEnableRelations = await getInferences(RELATION_PARTICIPATE_TO);
     expect(afterEnableRelations).toBe('test');
 
     // delete created context
     // deactivate ParticipateToPartsRule rule
-    await disableRule(ParticipateToPartsRule.id);
+    await disableRule(ParticipateToPartsRule.id, true);
     // Check inferences have been deleted
     const afterDisableRelations = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreBase[];
     expect(afterDisableRelations.length).toBe(0);
