@@ -86,14 +86,13 @@ export interface DataTableProps {
   resolvePath: (data: any) => any
   storageKey: string
   initialValues: LocalStorage
-  toolbarFilters?: FilterGroup
+  contextFilters?: FilterGroup
   handleCopy?: () => void
   lineFragment?: GraphQLTaggedNode
   dataQueryArgs: any
   data?: unknown
   availableFilterKeys?: string[] | undefined;
   redirectionModeEnabled?: boolean
-  additionalFilters?: FilterGroup
   additionalFilterKeys?: string[]
   entityTypes?: string[]
   settingsMessagesBannerHeight?: number
@@ -172,7 +171,7 @@ export interface DataTableDisplayFiltersProps {
 }
 
 export interface DataTableFiltersProps {
-  additionalFilters?: DataTableProps['additionalFilters'];
+  contextFilters?: DataTableProps['contextFilters'];
   availableFilterKeys?: string[] | undefined;
   availableRelationFilterTypes?: Record<string, string[]> | undefined
   availableEntityTypes?: string[]

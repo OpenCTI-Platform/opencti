@@ -176,7 +176,7 @@ const PlaybookActionValueField = ({
       return (
         <OpenVocabField
           name={formValueName}
-          type={'case_severity_ov'}
+          type={['case_severity_ov', 'incident_severity_ov']}
           label={t_i18n('Severity')}
           onChange={(_, severity) => {
             setFieldValue(

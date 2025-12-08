@@ -155,7 +155,7 @@ const DataComponents: FunctionComponent = () => {
           preloadedPaginationProps={preloadedPaginationOptions}
           initialValues={initialValues}
           storageKey={LOCAL_STORAGE_KEY_DATA_COMPONENTS}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           resolvePath={(data: DataComponentsLines_data$data) => data.dataComponents?.edges?.map((n) => n?.node)}
           lineFragment={dataComponentFragment}
           exportContext={{ entity_type: 'Data-Component' }}

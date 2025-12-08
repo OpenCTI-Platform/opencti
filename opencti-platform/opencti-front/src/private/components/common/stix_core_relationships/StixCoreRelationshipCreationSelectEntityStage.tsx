@@ -194,7 +194,7 @@ StixCoreRelationshipCreationSelectEntityStageProps
               storageKey={storageKey}
               lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
               initialValues={initialValues}
-              toolbarFilters={contextFilters}
+              contextFilters={contextFilters}
               preloadedPaginationProps={preloadedPaginationProps}
               entityTypes={virtualEntityTypes}
               availableEntityTypes={virtualEntityTypes}

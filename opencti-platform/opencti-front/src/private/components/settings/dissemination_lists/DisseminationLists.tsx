@@ -172,7 +172,7 @@ const DisseminationLists = () => {
                 resolvePath={(data) => data.disseminationLists?.edges?.map(({ node }: { node: DisseminationListsLine_node$data }) => node)}
                 storageKey={LOCAL_STORAGE_KEY}
                 initialValues={initialValues}
-                toolbarFilters={contextFilters}
+                contextFilters={contextFilters}
                 lineFragment={disseminationListsLineFragment}
                 disableLineSelection
                 disableNavigation

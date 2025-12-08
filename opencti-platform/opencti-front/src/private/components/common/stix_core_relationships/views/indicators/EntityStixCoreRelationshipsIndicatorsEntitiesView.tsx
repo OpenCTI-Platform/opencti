@@ -257,8 +257,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
         resolvePath={(data: EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data) => (data.indicators?.edges ?? []).map((n) => n?.node)}
         storageKey={localStorageKey}
         initialValues={initialValues}
-        toolbarFilters={contextFilters}
-        additionalFilters={contextFilters}
+        contextFilters={contextFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
         exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}

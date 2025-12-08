@@ -57,7 +57,7 @@ export const DataTableDisplayFilters = ({
 };
 
 const DataTableFilters = ({
-  additionalFilters,
+  contextFilters,
   availableFilterKeys,
   searchContextFinal,
   availableEntityTypes,
@@ -96,8 +96,8 @@ const DataTableFilters = ({
   const hasToggleGroup = additionalHeaderButtons || redirectionModeEnabled || !exportDisabled;
 
   const exportFilterGroups = [];
-  if (isFilterGroupNotEmpty(additionalFilters)) {
-    exportFilterGroups.push(additionalFilters);
+  if (isFilterGroupNotEmpty(contextFilters)) {
+    exportFilterGroups.push(contextFilters);
   }
   if (isFilterGroupNotEmpty(paginationOptions.filters)) {
     exportFilterGroups.push(paginationOptions.filters);

@@ -9,7 +9,7 @@ import {
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, addFilter } from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -221,9 +221,9 @@ const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isRea
     filters,
   } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
-  const relevantDraftOperationFilter = { key: 'draft_change.draft_operation', values: ['create', 'update', 'delete'], operator: 'eq', mode: 'or' };
-  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, relevantDraftOperationFilter] };
+  const filtersWithType = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
+  // add filter to keep only relevant draft operations
+  const contextFilters = addFilter(filtersWithType, 'draft_change.draft_operation', ['create', 'update', 'delete']);
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -294,7 +294,7 @@ const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isRea
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
         getComputeLink={getRedirectionLink}
-        toolbarFilters={toolbarFilters}
+        contextFilters={contextFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={draftRelationshipsLineFragment}
         entityTypes={['stix-core-relationship']}

@@ -226,7 +226,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
           resolvePath={(data) => data.organization?.members?.edges?.map(({ node }: { node: SettingsOrganizationUsersLine_node$data }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           disableLineSelection={isOnlyAdminOrganization}
           lineFragment={settingsOrganizationUsersLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}

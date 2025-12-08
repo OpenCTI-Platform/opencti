@@ -200,7 +200,7 @@ const Playbooks: FunctionComponent = () => {
               resolvePath={(data: PlaybooksLines_data$data) => data.playbooks?.edges?.map((m) => m?.node)}
               storageKey={LOCAL_STORAGE_KEY_PLAYBOOKS}
               initialValues={initialValues}
-              toolbarFilters={contextFilters}
+              contextFilters={contextFilters}
               preloadedPaginationProps={preloadedPaginationProps}
               lineFragment={playbookFragment}
               entityTypes={['Playbook']}

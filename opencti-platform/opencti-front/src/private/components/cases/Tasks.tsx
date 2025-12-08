@@ -135,7 +135,7 @@ const Tasks = () => {
           resolvePath={(data: TasksLines_data$data) => data.tasks?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY_TASKS}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={TaskFragment}
           exportContext={{ entity_type: 'Task' }}

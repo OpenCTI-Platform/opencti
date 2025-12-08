@@ -135,7 +135,7 @@ const SecurityPlatforms = () => {
         resolvePath={(data: SecurityPlatformsLines_data$data) => data.securityPlatforms?.edges?.map((n) => n?.node)}
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
-        toolbarFilters={contextFilters}
+        contextFilters={contextFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={securityPlatformFragment}
         exportContext={{ entity_type: 'SecurityPlatform' }}

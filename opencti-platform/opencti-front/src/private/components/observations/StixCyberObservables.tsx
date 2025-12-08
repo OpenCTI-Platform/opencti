@@ -141,7 +141,7 @@ const StixCyberObservables: FunctionComponent = () => {
             resolvePath={(data: StixCyberObservablesLines_data$data) => data.stixCyberObservables?.edges?.map?.((n) => n?.node)}
             dataColumns={dataColumns}
             lineFragment={stixCyberObservableLineFragment}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             handleCopy={handleCopy}
             exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
             availableEntityTypes={['Stix-Cyber-Observable']}

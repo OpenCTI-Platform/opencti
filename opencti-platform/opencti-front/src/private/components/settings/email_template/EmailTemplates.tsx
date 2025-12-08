@@ -167,7 +167,7 @@ const EmailTemplates = () => {
               resolvePath={(data) => data.emailTemplates?.edges?.map(({ node }: { node: EmailTemplatesLine_node$data }) => node)}
               storageKey={LOCAL_STORAGE_KEY}
               initialValues={initialValues}
-              toolbarFilters={contextFilters}
+              contextFilters={contextFilters}
               lineFragment={emailTemplatesLineFragment}
               disableLineSelection
               preloadedPaginationProps={preloadedPaginationProps}

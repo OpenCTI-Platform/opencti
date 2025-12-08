@@ -5,7 +5,7 @@ import { DraftSightingsLinesPaginationQuery, DraftSightingsLinesPaginationQuery$
 import { DraftSightingsLines_data$data } from '@components/drafts/__generated__/DraftSightingsLines_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, addFilter } from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -309,9 +309,9 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
     filters,
   } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', filters);
-  const relevantDraftOperationFilter = { key: 'draft_change.draft_operation', values: ['create', 'update', 'delete'], operator: 'eq', mode: 'or' };
-  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, relevantDraftOperationFilter] };
+  const filtersWithType = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', filters);
+  // add filter to keep only relevant draft operations
+  const contextFilters = addFilter(filtersWithType, 'draft_change.draft_operation', ['create', 'update', 'delete']);
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -393,7 +393,7 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
         resolvePath={(data: DraftSightingsLines_data$data) => data.draftWorkspaceSightingRelationships?.edges?.map((n) => n?.node)}
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
-        toolbarFilters={toolbarFilters}
+        contextFilters={contextFilters}
         getComputeLink={getRedirectionLink}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={draftSightingsLineFragment}

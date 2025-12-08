@@ -426,7 +426,7 @@ const Notifications: FunctionComponent = () => {
         }}
         taskScope={'USER_NOTIFICATION'}
         lineFragment={notificationsLineFragment}
-        toolbarFilters={contextFilters}
+        contextFilters={contextFilters}
         exportContext={{ entity_type: 'Notification' }}
         availableEntityTypes={['Notification']}
         actions={renderActions}
