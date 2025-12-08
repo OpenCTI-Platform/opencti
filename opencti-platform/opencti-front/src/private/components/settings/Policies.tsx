@@ -43,20 +43,6 @@ import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { FieldOption } from '../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 20,
-    borderRadius: 4,
-  },
-}));
-
 const PoliciesFragment = graphql`
   fragment Policies on Settings {
     id
@@ -145,8 +131,12 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
 
   const [commitField] = useApiMutation(policiesFieldPatch);
 
-  const classes = useStyles();
   const theme = useTheme<Theme>();
+  const paperStyle = {
+    marginTop: theme.spacing(1),
+    padding: 20,
+    borderRadius: 4,
+  };
 
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
@@ -187,7 +177,13 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   };
   const authProviders = settings.platform_providers;
   return (
-    <div className={classes.container} data-testid="policies-settings-page">
+    <div
+      style={{
+        margin: 0,
+        padding: '0 200px 50px 0',
+      }}
+      data-testid="policies-settings-page"
+    >
       <AccessesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
@@ -211,7 +207,11 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         </>
                       )}
                       component={({ disabled, style }) => (
-                        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined" style={style}>
+                        <Paper
+                          className={'paper-for-grid'}
+                          variant="outlined"
+                          style={{ ...paperStyle, ...style }}
+                        >
                           <Alert severity="info" variant="outlined">
                             {t_i18n('When you set a platform organization you enable the organization sharing and segregation feature.')}
                             <br/>
@@ -286,13 +286,12 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Users visibility')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <Paper style={paperStyle} variant="outlined">
                       <Field
                         component={SwitchField}
                         type="checkbox"
                         name="view_all_users"
                         label={t_i18n('Allow users to view users of other organizations')}
-                        containerstyle={{ marginTop: 20 }}
                         onChange={(name: string, value: string) => handleSubmitField(name, value)}
                       />
                     </Paper>
@@ -302,7 +301,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Local password policies')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+                    <Paper style={paperStyle} className={'paper-for-grid'} variant="outlined">
                       <Field
                         component={TextField}
                         type="number"
@@ -427,9 +426,13 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Authentication strategies')}
                     </Typography>
-                    <Paper style={{
-                      marginTop: 10,
-                    }} classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined"
+                    <Paper
+                      style={{
+                        ...paperStyle,
+                          marginTop: 10,
+                      }}
+                      className={'paper-for-grid'}
+                      variant="outlined"
                     >
                       <List style={{ marginTop: -20 }}>
                         {authProviders.map((provider) => (
@@ -466,7 +469,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Login messages')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <Paper style={paperStyle} variant="outlined">
                       <Field
                         component={MarkdownField}
                         name="platform_login_message"
@@ -502,7 +505,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Platform Banner Configuration')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <Paper style={paperStyle} variant="outlined">
                       <Field
                         component={SelectField}
                         variant="standard"
