@@ -2,6 +2,7 @@
 name: Client Python bug 
 title: "' ' "
 labels: needs triage, client-python
+description: Report a bug in the Python client.
 assignees: " '' "
 type: bug
 body:
