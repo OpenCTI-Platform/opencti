@@ -163,16 +163,16 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                               <TableCell component="th" scope="row">
                                 {row?.field}
                               </TableCell>
-                              <TableCell align="left">{row?.previous ? JSON.stringify(row?.previous): '-'}</TableCell>
-                              <TableCell align="left">{row?.new ? JSON.stringify(row?.new): '-'}</TableCell>
-                              <TableCell align="left">{row?.added ? JSON.stringify(row?.added): '-'}</TableCell>
-                              <TableCell align="left">{row?.removed ? JSON.stringify(row?.removed): '-'}</TableCell>
+                              <TableCell align="left">{row?.previous ? row?.previous: '-'}</TableCell>
+                              <TableCell align="left">{row?.new ? row?.new : '-'}</TableCell>
+                              <TableCell align="left">{row?.added ? row?.added : '-'}</TableCell>
+                              <TableCell align="left">{row?.removed ? row?.removed : '-'}</TableCell>
                             </TableRow>
                           ))
                             ): (
                               <TableRow>
-                                <TableCell align="center" colSpan={3}>
-                                  No changes
+                                <TableCell align="center" colSpan={5}>
+                                  {t_i18n('No detail available for this event')}
                                 </TableCell>
                               </TableRow>
                             )}

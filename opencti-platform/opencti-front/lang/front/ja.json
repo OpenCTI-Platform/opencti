@@ -2614,6 +2614,7 @@
   "No description": "説明なし",
   "No description of this targeting": "この標的についての説明はありません",
   "No description of this usage": "この使用方法についての説明はありません",
+  "No detail available for this event": "このイベントの詳細は不明",
   "No direct instance trigger": "直接インスタンストリガーなし",
   "No draft for the moment": "今のところドラフトなし",
   "No enrichment connector available for Security Coverage": "セキュリティ・カバレージのエンリッチメント コネクタは利用できない",
