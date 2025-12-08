@@ -1,16 +1,16 @@
 import React, { FunctionComponent } from 'react';
-import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
-import { useFormatter } from 'src/components/i18n';
+import { useNavigate} from 'react-router-dom';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
-import Alert from 'src/components/Alert';
-import Security from 'src/utils/Security';
-import { SETTINGS_SETCUSTOMIZATION } from 'src/utils/hooks/useGranted';
-import { useNavigate} from 'react-router-dom';
-import { resolveLink } from 'src/utils/Entity';
+import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
+import { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
+import { useFormatter } from '../../../../components/i18n';
+import { resolveLink } from '../../../../utils/Entity';
+import Alert from '../../../../components/Alert';
+import Security from '../../../../utils/Security';
 
 interface DecayExclusionDialogContentProps {
   indicator: IndicatorDetails_indicator$data,
