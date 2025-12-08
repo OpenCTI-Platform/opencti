@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import type { AttributeDefinition, } from '../../schema/attribute-definition';
+import { xOpenctiModified } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -40,6 +41,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const stixCyberObservableAttributes: Array<AttributeDefinition> = [
+  xOpenctiModified,
   { name: 'x_opencti_description', label: 'Observable description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
 ];

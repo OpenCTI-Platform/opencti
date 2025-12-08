@@ -404,6 +404,7 @@ class Language:
         name = kwargs.get("name", None)
         aliases = kwargs.get("aliases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        x_opencti_modified = kwargs.get("x_opencti_modified", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -435,6 +436,7 @@ class Language:
                         "name": name,
                         "aliases": aliases,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
+                        "x_opencti_modified": x_opencti_modified,
                         "update": update,
                     }
                 },
@@ -463,6 +465,10 @@ class Language:
             if "x_opencti_granted_refs" not in stix_object:
                 stix_object["x_opencti_granted_refs"] = (
                     self.opencti.get_attribute_in_extension("granted_refs", stix_object)
+                )
+            if "x_opencti_modified" not in stix_object:
+                stix_object["x_opencti_modified"] = (
+                    self.opencti.get_attribute_in_extension("modified", stix_object)
                 )
 
             return self.opencti.language.create(
@@ -495,6 +501,11 @@ class Language:
                 x_opencti_stix_ids=(
                     stix_object["x_opencti_stix_ids"]
                     if "x_opencti_stix_ids" in stix_object
+                    else None
+                ),
+                x_opencti_modified=(
+                    stix_object["x_opencti_modified"]
+                    if "x_opencti_modified" in stix_object
                     else None
                 ),
                 update=update,

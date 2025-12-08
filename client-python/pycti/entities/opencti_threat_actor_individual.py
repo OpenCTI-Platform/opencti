@@ -365,6 +365,7 @@ class ThreatActorIndividual:
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
+        x_opencti_modified = kwargs.get("x_opencti_modified", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -410,6 +411,7 @@ class ThreatActorIndividual:
                         "personal_motivations": personal_motivations,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "x_opencti_workflow_id": x_opencti_workflow_id,
+                        "x_opencti_modified": x_opencti_modified,
                         "update": update,
                     }
                 },
@@ -446,6 +448,10 @@ class ThreatActorIndividual:
             if "x_opencti_workflow_id" not in stix_object:
                 stix_object["x_opencti_workflow_id"] = (
                     self.opencti.get_attribute_in_extension("workflow_id", stix_object)
+                )
+            if "x_opencti_modified" not in stix_object:
+                stix_object["x_opencti_modified"] = (
+                    self.opencti.get_attribute_in_extension("modified", stix_object)
                 )
 
             return self.create(
@@ -530,6 +536,11 @@ class ThreatActorIndividual:
                 x_opencti_workflow_id=(
                     stix_object["x_opencti_workflow_id"]
                     if "x_opencti_workflow_id" in stix_object
+                    else None
+                ),
+                x_opencti_modified=(
+                    stix_object["x_opencti_modified"]
+                    if "x_opencti_modified" in stix_object
                     else None
                 ),
                 update=update,
