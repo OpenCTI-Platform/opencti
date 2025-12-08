@@ -163,10 +163,14 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                               <TableCell component="th" scope="row">
                                 {row?.field}
                               </TableCell>
-                              <TableCell align="left">{row?.previous ? row?.previous: '-'}</TableCell>
+                              <TableCell align="left">{row?.previous && row.previous.length > 0
+                                ? row.previous.join(', ')
+                                : '-'}</TableCell>
                               <TableCell align="left">{row?.new ? row?.new : '-'}</TableCell>
                               <TableCell align="left">{row?.added ? row?.added : '-'}</TableCell>
-                              <TableCell align="left">{row?.removed ? row?.removed : '-'}</TableCell>
+                              <TableCell align="left">{row?.removed && row.removed.length > 0
+                                ? row.removed.join(', ')
+                                : '-'}</TableCell>
                             </TableRow>
                           ))
                             ): (
