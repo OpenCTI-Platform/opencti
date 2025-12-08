@@ -1,14 +1,42 @@
 ---
-name: Client Python bug 
-title: "' ' "
-labels: needs triage, client-python
+name: Client Python bug
 description: Report a bug in the Python client.
-assignees: " '' "
-type: bug
+title: "[BUG] <short summary>"
+labels:
+  - needs triage
+  - client-python
+assignees: []
 body:
-- type: textarea 
-  attributes:
-    label: "Please describe your bug: add environmenment, reproducible steps, Expected Output, Actual Output"
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: "Describe your environment: OCTI version, Python version, client version, etc."
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Reproducible Steps
+      description: "List the steps needed to reproduce the issue."
+      placeholder: |
+        1. Do X  
+        2. Call Y  
+        3. Observe Z
+  - type: textarea
+    id: actual-outcome
+    attributes:
+      label: Actual Outcome
+      description: "What actually happens?"
+      placeholder: "Describe the incorrect behavior or error message."
+  - type: textarea
+    id: expected-outcome
+    attributes:
+      label: Expected Outcome
+      description: "What did you expect to happen?"
+      placeholder: "Describe the expected behavior."
+  - type: attachments
+     id: media
+     attributes:
+       label: Supporting Media
+       description: "Upload screenshots, videos, error logs, or other files that help illustrate the issue."
 
-    
---- 
+---
