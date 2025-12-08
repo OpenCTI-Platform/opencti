@@ -483,6 +483,7 @@ class User:
                     "monochrome_labels": monochrome_labels,
                     "groups": groups,
                     "user_confidence_level": user_confidence_level,
+                    "user_service_account": user_service_account,
                 }
             },
         )
