@@ -2110,14 +2110,14 @@ export const buildChanges = async (context, user, entityType, inputs) => {
       }
     }
     else if (isMultiple === false) {
-      const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
-      const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
+      const isStatusChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
+      const platformStatuses = isStatusChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
       const resolvedValue = (array) => {
         if (field === 'Workflow status') {
           // we want the status name and not its internal id
-          const workflowId = array[0];
-          const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-          return workflowStatus ? [workflowStatus.name] : null;
+          const statusId = array[0];
+          const status = statusId ? platformStatuses.find((p) => p.id === statusId) : statusId;
+          return status ? [status.name] : null;
         }
         return array;
       };
