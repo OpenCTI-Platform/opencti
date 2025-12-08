@@ -178,6 +178,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     type: instance.entity_type,
     created_at: convertToStixDate(instance.created_at),
     updated_at: convertToStixDate(instance.updated_at),
+    modified: instance.x_opencti_modified ? convertToStixDate(instance.x_opencti_modified) : undefined,
     aliases: instance.x_opencti_aliases ?? [],
     files: (instance.x_opencti_files ?? []).map((file: StoreFileWithRefs) => (isNotEmptyField(file.data)
       ? {

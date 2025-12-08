@@ -71,6 +71,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -239,6 +240,7 @@ input IndicatorAddInput {
   clientMutationId: String
   update: Boolean
   createObservables: Boolean
+  x_opencti_modified: DateTime
   x_opencti_workflow_id: String
   file: Upload
   basedOn: [String!]

@@ -16,6 +16,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -246,6 +247,7 @@ input CaseRfiAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified: DateTime
   x_opencti_workflow_id: String
   file: Upload
   clientMutationId: String

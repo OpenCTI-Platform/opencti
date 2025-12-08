@@ -96,11 +96,11 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
   if (!INTERNAL_USERS[user.id] && !user.no_creators) {
     updatePatch.creator_id = [user.id];
   }
-  // Handle "modified" upsert
+  // Handle "x_opencti_modified" upsert
   // Only upsert modified if after the existing one
-  if (isNotEmptyField(updatePatch.modified)) {
-    const { date: alignedModified } = computeExtendedDateValues(updatePatch.modified, resolvedElement.modified, ALIGN_NEWEST);
-    updatePatch.modified = alignedModified;
+  if (isNotEmptyField(updatePatch.x_opencti_modified)) {
+    const { date: alignedModified } = computeExtendedDateValues(updatePatch.x_opencti_modified, resolvedElement.x_opencti_modified, ALIGN_NEWEST);
+    updatePatch.x_opencti_modified = alignedModified;
   }
   // Upsert observed data count and times extensions
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {

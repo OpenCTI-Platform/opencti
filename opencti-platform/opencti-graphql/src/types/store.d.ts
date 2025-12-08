@@ -172,7 +172,7 @@ interface StoreConnection {
 }
 
 interface StoreRawRule {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   inferred: any;
   explanation: string[];
 }
@@ -231,6 +231,8 @@ interface StoreRawRelation extends StoreProxyRelation {
   stop_time: Date;
   created: Date;
   modified: Date;
+  // custom:
+  x_opencti_modified: Date;
   // boolean
   revoked: boolean;
   x_opencti_negative: boolean;
@@ -413,6 +415,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   last_observed: Date;
   // custom
   x_opencti_first_seen_active: Date;
+  x_opencti_modified: Date;
   // boolean
   revoked: boolean;
   is_family: boolean;
@@ -578,6 +581,8 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   expiration_date: Date;
   publication_date: Date;
   created: Date;
+  // custom
+  x_opencti_modified: Date;
   // boolean
   defanged: boolean;
   is_multipart: boolean;
