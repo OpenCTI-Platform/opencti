@@ -27099,6 +27099,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   request_access_enabled: Scalars['Boolean']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+  view_all_users?: Maybe<Scalars['Boolean']['output']>;
   xtm_hub_backend_is_reachable?: Maybe<Scalars['Boolean']['output']>;
   xtm_hub_last_connectivity_check?: Maybe<Scalars['DateTime']['output']>;
   xtm_hub_registration_date?: Maybe<Scalars['DateTime']['output']>;
@@ -45401,6 +45402,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   request_access_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  view_all_users?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   xtm_hub_backend_is_reachable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   xtm_hub_last_connectivity_check?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   xtm_hub_registration_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

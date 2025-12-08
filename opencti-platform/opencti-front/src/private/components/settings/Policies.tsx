@@ -81,6 +81,7 @@ const PoliciesFragment = graphql`
       name
     }
     otp_mandatory
+    view_all_users
   }
 `;
 
@@ -105,6 +106,7 @@ export const policiesFieldPatch = graphql`
 const policiesValidation = () => Yup.object().shape({
   platform_organization: Yup.object().nullable(),
   otp_mandatory: Yup.boolean(),
+  view_all_users: Yup.boolean(),
   password_policy_min_length: Yup.number(),
   password_policy_max_length: Yup.number(),
   password_policy_min_symbols: Yup.number(),
@@ -181,7 +183,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     platform_banner_text: settings.platform_banner_text,
     otp_mandatory: settings.otp_mandatory,
     default_group_for_ingestion_users: null,
-
+    view_all_users: settings.view_all_users ?? false,
   };
   const authProviders = settings.platform_providers;
   return (
@@ -277,7 +279,24 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       )}
                     />
                   </Grid>
+
                   <GroupSetDefaultGroupForIngestionUsers/>
+
+                  <Grid item xs={6}>
+                    <Typography variant="h4" gutterBottom={true}>
+                      {t_i18n('Users visibility')}
+                    </Typography>
+                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="view_all_users"
+                        label={t_i18n('Allow users to view users of other organizations')}
+                        containerstyle={{ marginTop: 20 }}
+                        onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                      />
+                    </Paper>
+                  </Grid>
 
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
@@ -436,8 +455,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         name="otp_mandatory"
                         label={t_i18n('Enforce two-factor authentication')}
                         containerstyle={{ marginTop: 20 }}
-                        onChange={(name: string, value: string) => handleSubmitField(name, value)
-                        }
+                        onChange={(name: string, value: string) => handleSubmitField(name, value)}
                         tooltip={t_i18n(
                           'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
                         )}

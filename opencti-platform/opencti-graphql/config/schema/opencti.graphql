@@ -1527,6 +1527,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   playground_enabled: Boolean!
   request_access_enabled: Boolean!
   metrics_definition: [MetricDefinition!]
+  view_all_users: Boolean
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
   # XTM Hub
