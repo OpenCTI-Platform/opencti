@@ -62,7 +62,7 @@ RUN set -eux; \
 ### Build the testing image
 ##############################
 
-FROM builderd AS testing
+FROM builder AS testing
 
 COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
 
