@@ -11,8 +11,8 @@ import { csvMapperMockCities } from './ingestionManager/csv-mapper-cities';
 import { addIngestionCsv, findById as findIngestionCsvById } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { createCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-utils';
-import { readCsvFromFileStream } from '../../utils/testQueryHelper';
-import { wait } from '../../../src/database/utils';
+import { awaitUntilCondition, readCsvFromFileStream } from '../../utils/testQueryHelper';
+import { connectorIdFromIngestId, queueDetails } from '../../../src/domain/connector';
 
 describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
@@ -292,7 +292,15 @@ describe('Verify csv ingestion', () => {
     expect(ingestionCsv.id).toBeDefined();
     expect(ingestionCsv.internal_id).toBeDefined();
 
-    await wait(60000); // Wait 1 minute for worker to discover the new queue
+    await awaitUntilCondition(async () => {
+      try {
+        const queryResult = await queueDetails(connectorIdFromIngestId(ingestionCsv.id));
+        return queryResult?.messages_number >= 0;
+      } catch {
+        return false;
+      }
+    }, 10000, 6); // Wait for the queue result to exist - max 1 minute
+    
     csvMapperParsed = parseCsvMapper(mapperCreated);
 
     csvLines = await readCsvFromFileStream('./tests/02-integration/04-manager/ingestionManager', 'csv-file-cities.csv');

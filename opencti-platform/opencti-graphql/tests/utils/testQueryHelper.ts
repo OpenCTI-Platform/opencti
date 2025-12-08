@@ -162,7 +162,7 @@ export const readCsvFromFileStream = async (filePath: string, fileName: string) 
 
   const csvLines: string[] = [];
   // Need an async interator to prevent blocking
-  // eslint-disable-next-line no-restricted-syntax
+   
   for await (const line of rl) {
     csvLines.push(line);
   }
@@ -263,7 +263,6 @@ export const awaitUntilCondition = async (
 ) => {
   let isConditionOk = await conditionPromise();
   let loopCurrent = 0;
-
   while (!isConditionOk === expectToBeTrue && loopCurrent < loopCount) {
     await new Promise(resolve => setTimeout(resolve, sleepTimeBetweenLoop));
     isConditionOk = await conditionPromise();
