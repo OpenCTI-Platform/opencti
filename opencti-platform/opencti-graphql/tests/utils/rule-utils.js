@@ -67,7 +67,7 @@ export const changeRule = async (ruleId, active, isInternalRelationshipsRule = f
     });
     const doneWorks = works.filter((t) => t.status !== 'complete').length === 0;
     // Final status
-    ruleActivated = doneProvision && doneWorks;
+    ruleActivated = doneProvision && isInternalRelationshipsRule ? true : doneProvision && doneWorks;
     await wait(1000);
   }
   // Wait all events to be consumed
