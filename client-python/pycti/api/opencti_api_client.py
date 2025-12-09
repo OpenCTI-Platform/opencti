@@ -9,6 +9,7 @@ import shutil
 import signal
 import tempfile
 import threading
+import re
 from typing import Dict, Tuple, Union
 
 import magic
@@ -92,10 +93,14 @@ _PROXY_SIGNAL_HANDLERS_REGISTERED = False
 
 
 def build_request_headers(token: str, custom_headers: str, app_logger, provider: str):
-    pycti_user_agent = "pycti/"
+    pycti_user_agent = "pycti/" + __version__
     if provider is not None:
-        pycti_user_agent += provider + "/"
-    pycti_user_agent += __version__
+        provider_pattern_checker = re.compile(r"^[A-Za-z]+\/\d+(?:\.\d+){0,2}$")
+        if not provider_pattern_checker.match(provider):
+            raise ValueError(
+                "Provider format is incorrect: format has to be {provider}/{provider_version}, e.g. client/4.5, company_name/1.4.6..."
+            )
+        pycti_user_agent += " " + provider
     headers_dict = {
         "User-Agent": pycti_user_agent,
         "Authorization": "Bearer " + token,
