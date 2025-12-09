@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql, usePreloadedQuery } from 'react-relay';
-import * as R from 'ramda';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
@@ -190,13 +189,13 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             const roleCapability = roleCapabilities.find(
               (r) => r.name === capability.name,
             );
-            const matchingCapabilities = R.filter(
+            const matchingCapabilities = roleCapabilities.filter(
               (r) => capability.name !== r.name
-                && R.includes(capability.name, r.name)
+                && r.name.includes(capability.name)
                 && capability.name !== 'BYPASS',
-              roleCapabilities,
             );
-            const isDisabled = matchingCapabilities.length > 0;
+            const draftCapaMatchingMainCapa = (role.capabilities ?? []).filter((r) => r?.name.includes(capability.name));
+            const isDisabled = isCapabilitiesInDraft ? matchingCapabilities.length > 0 || draftCapaMatchingMainCapa.length > 0 : matchingCapabilities.length > 0;
             const isChecked = isDisabled || roleCapability !== undefined;
             return (
               <ListItem
