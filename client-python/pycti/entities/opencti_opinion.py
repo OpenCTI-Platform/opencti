@@ -308,7 +308,7 @@ class Opinion:
             final_data = final_data + data
             while result["data"]["opinions"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["opinions"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Opinions", {"after": after})
+                self.opencti.app_logger.debug("Listing Opinions", {"after": after})
                 result = self.opencti.query(
                     query,
                     {

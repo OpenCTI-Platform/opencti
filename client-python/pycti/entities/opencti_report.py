@@ -560,7 +560,7 @@ class Report:
             final_data = final_data + data
             while result["data"]["reports"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["reports"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Reports", {"after": after})
+                self.opencti.app_logger.debug("Listing Reports", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
