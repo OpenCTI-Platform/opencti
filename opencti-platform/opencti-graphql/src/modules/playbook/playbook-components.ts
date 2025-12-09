@@ -55,7 +55,7 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { internalFindByIds, fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
@@ -94,9 +94,8 @@ import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorize
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { applyOperationFieldPatch } from './playbook-utils';
+import { applyOperationFieldPatch, convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
-import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, type StixSecurityCoverage, type StoreEntitySecurityCoverage } from '../securityCoverage/securityCoverage-types';
 
@@ -368,7 +367,7 @@ const extendsBundleElementsWithExtensions = (bundle: StixBundle): StixBundle => 
   });
   return newBundle;
 };
-const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = {
+export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = {
   id: 'PLAYBOOK_CONNECTOR_COMPONENT',
   name: 'Enrich through connector',
   description: 'Use a registered platform connector for enrichment',
@@ -412,17 +411,40 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
       await pushToConnector(playbookNode.configuration.connector, message);
     }
   },
-  executor: async ({ bundle }) => {
+  executor: async ({ bundle, previousStepBundle }) => {
     // Add extensions if needed
     // This is needed as the rest of playbook expecting STIX2.1 format with extensions
     const stixBundle = extendsBundleElementsWithExtensions(bundle);
-    // TODO Could be reactivated after improvement of enrichment connectors
-    // if (previousStepBundle) {
-    //   const diffOperations = jsonpatch.compare(previousStepBundle.objects, bundle.objects);
-    //   if (diffOperations.length === 0) {
-    //     return { output_port: 'unmodified', bundle };
-    //   }
-    // }
+    if (previousStepBundle) {
+      // TODO Could be reactivated after improvement of enrichment connectors
+      //   const diffOperations = jsonpatch.compare(previousStepBundle.objects, bundle.objects);
+      //   if (diffOperations.length === 0) {
+      //     return { output_port: 'unmodified', bundle };
+      //   }
+
+      // Check if new bundle objects has the same object ids of previous bundle objects
+      const enrichedObjects = stixBundle.objects.map(newObj => {
+        // bundle A : { id: 'indicator-a-id', name: 'IndicatorA', label: ['label A]' }
+        // bundle B (new bundle from enrichment): { id: 'indicator-a-id', name: 'IndicatorA', label: ['label B'], description: 'Hello world'
+        // finalBundle: { id: 'indicator-a-id', name: 'Indicator A', label: ['label A, label B'], description 'Hello world'
+        
+        const prevObj = previousStepBundle.objects.find(o => o.id === newObj.id);
+        if (prevObj) {
+          return R.mergeDeepRight<StixObject, StixObject>(prevObj, newObj);
+        }
+        return newObj;
+      });
+
+      // Check if new bundle contains objects of previous bundle and add them if not in it
+      previousStepBundle.objects.forEach(prevObj => {
+        const existsInCurrent = stixBundle.objects.some(o => o.id === prevObj.id);
+        if (!existsInCurrent) {
+          enrichedObjects.push(prevObj);
+        }
+      });
+      stixBundle.objects = enrichedObjects;
+      return { output_port: 'out', bundle: stixBundle };
+    }
     return { output_port: 'out', bundle: stixBundle };
   }
 };
