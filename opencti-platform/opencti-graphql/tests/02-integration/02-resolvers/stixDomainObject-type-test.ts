@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
 interface EntityConfig {
   key: string;
@@ -326,7 +327,7 @@ describe('STIX Domain Object Type Confusion Security Tests', () => {
       }
     `;
 
-    const result = await queryAsAdmin({
+    const result = await queryAsAdminWithSuccess({
       query: createQuery,
       variables: { input: config.input },
     });
@@ -370,21 +371,14 @@ describe('STIX Domain Object Type Confusion Security Tests', () => {
   // Create only the report entity (used as wrong-type test entity for all endpoints)
   beforeAll(async () => {    
     const reportConfig = entityConfig[0]; // report is first in config
-    try {
-      testEntities.report = await createTestEntity(reportConfig);
-    } catch (error: any) {
-      throw error;
-    }
+    testEntities.report = await createTestEntity(reportConfig);
   });
 
   // Clean up test entity after tests
   afterAll(async () => {    
     const reportConfig = entityConfig[0]; // report is first in config
     if (testEntities.report) {
-      try {
-        await deleteTestEntity(reportConfig, testEntities.report as string);
-      } catch (error: any) {
-      }
+      await deleteTestEntity(reportConfig, testEntities.report as string);
     }
   });
 
