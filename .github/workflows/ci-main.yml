@@ -53,11 +53,11 @@ jobs:
       name: Build image to deploy
       if: ${{ github.ref == 'refs/heads/master' ||  github.ref == 'refs/heads/release/current' || github.ref == 'refs/heads/issues/13571_handle_client_python' }}
       uses: ./.github/workflows/ci-docker-build.yml
-      needs: wf-build-image-testing
+      needs: [wf-api-test, wf-frontend-test, wf-client-python-test]
       with:
         client_python_release: false
         dockerfile_platform: Dockerfile_featurebranch
         dockerfile_worker: Dockerfile
         dockerfile_target: "app"
-        image_tag: "debug"
+        image_tag: ${{ github.ref == 'refs/heads/master' && 'rolling-new' || github.ref == 'refs/heads/master' && 'prerelease-new' || github.ref == 'refs/heads/master' && 'test-issues-13571' }}
       secrets: inherit
