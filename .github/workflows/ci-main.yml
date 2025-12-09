@@ -51,7 +51,7 @@ jobs:
 
   wf-build-image-to-deploy:
       name: Build image to deploy
-      if: ${{ github.ref == 'refs/heads/master' ||  github.ref == ''refs/heads/release/current' || github.ref == 'refs/heads/issues/13571_handle_client_python'}}
+      if: ${{ github.ref == 'refs/heads/master' ||  github.ref == ''refs/heads/release/current' || github.ref == 'refs/heads/issues/13571_handle_client_python' }}
       uses: ./.github/workflows/ci-docker-build.yml
       needs: wf-build-image-testing
       with:
