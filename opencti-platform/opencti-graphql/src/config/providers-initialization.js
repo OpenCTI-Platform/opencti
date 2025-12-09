@@ -306,21 +306,21 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           }
           // endregion
           const openIdScope = R.uniq(openIdScopes).join(' ');
-          const options = { logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true,
+          const {groups_management, organizations_management, ...options} = { logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true,
             params: { scope: openIdScope, ...(mappedConfig.audience && { audience: mappedConfig.audience })
           } };
           const debugCallback = (message, meta) => logApp.info(message, meta);
           const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
             logApp.info('[OPENID] Successfully logged', { userinfo });
             addUserLoginCount();
-            const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
-            logApp.info('[OPENID] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
+            const isGroupMapping = (isNotEmptyField(groups_management) && isNotEmptyField(groups_management?.groups_mapping));
+            logApp.info('[OPENID] Groups management configuration', { groupsManagement: groups_management });
             // region groups mapping
             const computeGroupsMapping = () => {
-              const readUserinfo = mappedConfig.groups_management?.read_userinfo || false;
-              const token = mappedConfig.groups_management?.token_reference || 'access_token';
-              const groupsPath = mappedConfig.groups_management?.groups_path || ['groups'];
-              const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
+              const readUserinfo = groups_management?.read_userinfo || false;
+              const token = groups_management?.token_reference || 'access_token';
+              const groupsPath = groups_management?.groups_path || ['groups'];
+              const groupsMapping = groups_management?.groups_mapping || [];
               const decodedUser = jwtDecode(tokenset[token]);
               if (!readUserinfo) {
                 logApp.info(`[OPENID] Groups mapping on decoded ${token}`, { decoded: decodedUser });
@@ -337,13 +337,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const groupsToAssociate = R.uniq(mappedGroups);
             // endregion
             // region organizations mapping
-            const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(mappedConfig.organizations_management);
+            const isOrgaMapping = isNotEmptyField(mappedConfig.organizations_default) || isNotEmptyField(organizations_management);
             const computeOrganizationsMapping = () => {
               const orgaDefault = mappedConfig.organizations_default ?? [];
-              const readUserinfo = mappedConfig.organizations_management?.read_userinfo || false;
-              const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
-              const token = mappedConfig.organizations_management?.token_reference || 'access_token';
-              const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
+              const readUserinfo = organizations_management?.read_userinfo || false;
+              const orgasMapping = organizations_management?.organizations_mapping || [];
+              const token = organizations_management?.token_reference || 'access_token';
+              const orgaPath = organizations_management?.organizations_path || ['organizations'];
               const decodedUser = jwtDecode(tokenset[token]);
               const availableOrgas = R.flatten(orgaPath.map((path) => {
                 const userClaims = (readUserinfo) ? userinfo : decodedUser;
