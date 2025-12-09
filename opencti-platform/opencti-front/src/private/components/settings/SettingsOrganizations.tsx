@@ -9,7 +9,6 @@ import {
   SettingsOrganizationsLinesPaginationQuery$variables,
 } from './organizations/__generated__/SettingsOrganizationsLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import AccessesMenu from './AccessesMenu';
 import { useFormatter } from '../../../components/i18n';
 import { SettingsOrganizationLine_node$data as Organization } from './organizations/__generated__/SettingsOrganizationLine_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -83,7 +82,6 @@ const SettingsOrganizations = () => {
   return (
     <div className={classes.container} data-testid="orga-settings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Organizations'), current: true }]} />
-      <AccessesMenu />
       <ListLines
         sortBy={viewStorage.sortBy}
         orderAsc={viewStorage.orderAsc}
