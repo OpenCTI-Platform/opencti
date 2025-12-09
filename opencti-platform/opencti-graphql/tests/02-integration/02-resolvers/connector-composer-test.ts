@@ -380,12 +380,12 @@ describe('Connector Composer and Managed Connectors', () => {
         await xtmComposer.runOrchestrationCycle();
       } else {
         await awaitUntilCondition(async () => {
-            const connectorResult = await queryAsAdminWithSuccess({
-              query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-              variables: { id: deploymentConnectorId }
-            });
-            return connectorResult.data?.connector.manager_current_status === 'started'; // Wait connector to be started
-          }, 400, 5);
+          const connectorResult = await queryAsAdminWithSuccess({
+            query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
+            variables: { id: deploymentConnectorId }
+          });
+          return connectorResult.data?.connector.manager_current_status === 'started'; // Wait connector to be started
+        }, 300, 5);
       }
 
       const connectorResult = await queryAsAdminWithSuccess({
@@ -439,7 +439,13 @@ describe('Connector Composer and Managed Connectors', () => {
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
-        await wait(1500);
+        await awaitUntilCondition(async () => {
+          const connectorResult = await queryAsAdminWithSuccess({
+            query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
+            variables: { id: deploymentConnectorId }
+          });
+          return connectorResult.data?.connector.manager_current_status === 'started';
+        }, 300, 5);        
       }
 
       const connectorResult = await queryAsAdminWithSuccess({
@@ -469,7 +475,13 @@ describe('Connector Composer and Managed Connectors', () => {
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
-        await wait(1500);
+        await awaitUntilCondition(async () => {
+          const connectorResult = await queryAsAdminWithSuccess({
+            query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
+            variables: { id: deploymentConnectorId }
+          });
+          return connectorResult.data?.connector.manager_current_status === 'stopped';
+        }, 300, 5);   
       }
 
       const connectorResult = await queryAsAdminWithSuccess({
@@ -496,7 +508,13 @@ describe('Connector Composer and Managed Connectors', () => {
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
-        await wait(1500);
+        await awaitUntilCondition(async () => {
+          const connectorResult = await queryAsAdminWithSuccess({
+            query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
+            variables: { id: deploymentConnectorId }
+          });
+          return connectorResult.data?.connector.manager_current_status === 'stopped';
+        }, 300, 5);
       }
 
       let connectorResult = await queryAsAdminWithSuccess({
@@ -521,7 +539,13 @@ describe('Connector Composer and Managed Connectors', () => {
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
-        await wait(1500);
+        await awaitUntilCondition(async () => {
+          const connectorResult = await queryAsAdminWithSuccess({
+            query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
+            variables: { id: deploymentConnectorId }
+          });
+          return connectorResult.data?.connector.manager_current_status === 'started';
+        }, 300, 5); 
       }
 
       // Verify status
@@ -582,14 +606,7 @@ describe('Connector Composer and Managed Connectors', () => {
         variables: { input: { id: logLevelConnectorId, status: 'starting' } }
       });
 
-      // Wait for XTM Composer to deploy
-      if (FORCE_POLLING) {
-        await xtmComposer.runOrchestrationCycle();
-      } else {
-        await wait(1500);
-      }
-
-      // Get current configuration to preserve other settings
+            // Get current configuration to preserve other settings
       const GET_CONNECTOR_QUERY = gql`
         query GetConnector($id: String!) {
           connector(id: $id) {
@@ -602,6 +619,19 @@ describe('Connector Composer and Managed Connectors', () => {
           }
         }
       `;
+
+      // Wait for XTM Composer to deploy
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await awaitUntilCondition(async () => {
+            const connectorResult = await queryAsAdminWithSuccess({
+              query: GET_CONNECTOR_QUERY,
+              variables: { id: logLevelConnectorId }
+            });
+            return connectorResult.data?.connector.manager_current_status === 'started';
+          }, 300, 5);
+      }
 
       const connectorResult = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY,
@@ -770,7 +800,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Count occurrences of redeploys - should only have the two from configuration changes
       const allLogStrings = logs3.join('\n');
       const redeployCount = (allLogStrings.match(/Connector redeployed successfully/g) || []).length;
-      const deployCount = (logStrings.match(/Connector deployed successfully/g) || []).length;
+      const deployCount = (allLogStrings.match(/Connector deployed successfully/g) || []).length;
       expect(redeployCount).toBe(2); // Only the two previous configuration changes
       expect(deployCount).toBe(2); // Only the first and last configuration changes
     });
@@ -791,7 +821,13 @@ describe('Connector Composer and Managed Connectors', () => {
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
-        await wait(1500);
+        await awaitUntilCondition(async () => {
+          const deleteResult = await queryAsAdminWithSuccess({
+            query: DELETE_CONNECTOR_MUTATION,
+            variables: { id: deploymentConnectorId }
+          });
+          return deleteResult.data?.deleteConnector === deploymentConnectorId;
+        }, 300, 5);
       }
 
       // Now delete the connector
