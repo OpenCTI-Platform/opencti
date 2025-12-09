@@ -156,7 +156,7 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
   if (capabilitiesBaseList && capabilitiesBaseList.edges) {
     return (
       <List dense={true}>
-        {isSensitive && (
+        {isSensitive && !isCapabilitiesInDraft && (
           <ListItem
             key="sensitive"
             divider={true}
