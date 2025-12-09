@@ -2266,22 +2266,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             "Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve relationship object_marking_refs and created_by_ref instead",
         )
 
-        # Marking definitions
-        object_marking_refs = []
-        if "object_marking_refs" in item:
-            for object_marking_ref in item["object_marking_refs"]:
-                if object_marking_ref in self.cache_index:
-                    object_marking_refs.append(self.cache_index[object_marking_ref])
-        # Created by ref
-        created_by_ref = None
-        if "created_by_ref" in item and item["created_by_ref"] in self.cache_index:
-            created_by_ref = self.cache_index[item["created_by_ref"]]
-
-        return {
-            "object_marking_refs": object_marking_refs,
-            "created_by_ref": created_by_ref,
-        }
-
     def stix2_get_entity_objects(self, entity) -> list:
         """process a stix2 entity
 
@@ -2317,26 +2301,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             "Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve relationship source_ref and target_ref instead",
         )
 
-        items = [relationship]
-        # Get source ref
-        if relationship["source_ref"] in self.cache_index:
-            items.append(self.cache_index[relationship["source_ref"]])
-
-        # Get target ref
-        if relationship["target_ref"] in self.cache_index:
-            items.append(self.cache_index[relationship["target_ref"]])
-
-        # Get embedded objects
-        embedded_objects = self.stix2_get_embedded_objects(relationship)
-        # Add created by ref
-        if embedded_objects["created_by"] is not None:
-            items.append(embedded_objects["created_by"])
-        # Add marking definitions
-        if len(embedded_objects["object_marking_refs"]) > 0:
-            items = items + embedded_objects["object_marking_refs"]
-
-        return items
-
     # Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve report object_refs instead
     def stix2_get_report_objects(self, report) -> list:
         """get a list of items for a stix2 report object
@@ -2350,17 +2314,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         raise DeprecationWarning(
             "Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve report object_refs instead",
         )
-
-        items = [report]
-        # Add all object refs
-        for object_ref in report["object_refs"]:
-            items.append(self.cache_index[object_ref])
-        for item in items:
-            if item["type"] == "relationship":
-                items = items + self.stix2_get_relationship_objects(item)
-            else:
-                items = items + self.stix2_get_entity_objects(item)
-        return items
 
     @staticmethod
     def stix2_deduplicate_objects(items) -> list:
