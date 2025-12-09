@@ -63,6 +63,11 @@ export const getCapabilitiesName = (capabilities: readonly { name: string }[]) =
   return (capabilities ?? []).map((capability) => capability?.name);
 };
 
+export const isBypassUser = (me: { id: string; capabilities: readonly { name: string }[] }) => {
+  const userCapabilities = getCapabilitiesName(me.capabilities);
+  return userCapabilities.includes(BYPASS);
+};
+
 const useGranted = (capabilities: string[], matchAll = false): boolean => {
   const { me } = useAuth();
   const { isFeatureEnable } = useHelper();
@@ -76,7 +81,7 @@ const useGranted = (capabilities: string[], matchAll = false): boolean => {
   let userCapabilities: string[] = [];
   const userBaseCapabilities = getCapabilitiesName(me.capabilities);
   
-  if (userBaseCapabilities.includes(BYPASS)) {
+  if (isBypassUser(me)) {
     return true;
   }
 

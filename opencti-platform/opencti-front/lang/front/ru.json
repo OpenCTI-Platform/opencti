@@ -4480,6 +4480,7 @@
   "You do not have any access to support packages of this OpenCTI instance.": "У вас нет доступа к пакетам поддержки этого экземпляра OpenCTI.",
   "You do not have any access to the knowledge of this OpenCTI instance.": "Вы не имеете никакого доступа к знаниям этого экземпляра OpenCTI.",
   "You do not have permission to view form intakes.": "У вас нет разрешения на просмотр форм приема.",
+  "You do not have the access rights to approve a draft": "У вас нет прав доступа для утверждения черновика",
   "You exceeded the characters limit. Please input less than 256 characters.": "Вы превысили лимит символов. Пожалуйста, введите менее 256 символов.",
   "You have canceled the registration process": "Вы отменили процесс регистрации",
   "You have canceled the unregistration process": "Вы отменили процесс снятия с регистрации",

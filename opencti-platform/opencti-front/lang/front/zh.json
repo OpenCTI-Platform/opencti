@@ -4480,6 +4480,7 @@
   "You do not have any access to support packages of this OpenCTI instance.": "您没有访问此 OpenCTI 实例支持包的权限。",
   "You do not have any access to the knowledge of this OpenCTI instance.": "您无权访问此OpenCTI实例的知识数据。",
   "You do not have permission to view form intakes.": "您无权查看表格接收。",
+  "You do not have the access rights to approve a draft": "您没有批准草稿的访问权限",
   "You exceeded the characters limit. Please input less than 256 characters.": "您超出了字符数限制。请输入少于 256 个字符。",
   "You have canceled the registration process": "您已取消注册过程",
   "You have canceled the unregistration process": "您已取消取消注册程序",

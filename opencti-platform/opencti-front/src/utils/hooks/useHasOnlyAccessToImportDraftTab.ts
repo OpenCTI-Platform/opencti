@@ -11,10 +11,10 @@ const useHasOnlyAccessToImportDraftTab = (): boolean => {
   
   const { isFeatureEnable } = useHelper();
   const isCapabilitiesInDraftEnabled = isFeatureEnable('CAPABILITIES_IN_DRAFT');
-  if (isCapabilitiesInDraftEnabled || hasImportCapability) {
+  if (!isCapabilitiesInDraftEnabled || hasImportCapability) {
     return false;
-  } 
-  return userCapabilitiesInDraft.includes(KNOWLEDGE);
+  }
+  return userCapabilitiesInDraft.some((capability) => capability.includes(KNOWLEDGE));
 };
 
 export default useHasOnlyAccessToImportDraftTab;

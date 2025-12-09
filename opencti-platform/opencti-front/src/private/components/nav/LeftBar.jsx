@@ -224,8 +224,9 @@ const LeftBar = () => {
     settings: { filigran_chatbot_ai_cgu_status },
   } = useAuth();
   const navigate = useNavigate();
+  const hasOnlyAccessToImportDraftTab = useHasOnlyAccessToImportDraftTab();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
-  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]) || useHasOnlyAccessToImportDraftTab();
+  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]) || hasOnlyAccessToImportDraftTab;
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
