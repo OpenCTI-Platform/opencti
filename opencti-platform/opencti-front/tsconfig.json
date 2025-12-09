@@ -21,6 +21,7 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
+      "@common/*": ["src/components/common/*"],
       "@components/*": ["src/private/components/*"],
       "src": ["src/*"]
     },
