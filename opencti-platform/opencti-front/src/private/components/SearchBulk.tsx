@@ -4,7 +4,7 @@ import { SearchBulkQuery, SearchBulkQuery$variables } from './__generated__/Sear
 import { SearchBulkQuery_data$data } from './__generated__/SearchBulkQuery_data.graphql';
 import DataTable from '../../components/dataGrid/DataTable';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filtersUtils';
-import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { NumberOfElements, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
@@ -125,9 +125,10 @@ export const searchBulkFragment = graphql`
 interface SearchBulkProps {
   inputValues: string[],
   dataColumns: DataTableProps['dataColumns'],
+  setNumberOfEntities: (n: number) => void,
 }
 
-const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
+const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBulkProps) => {
   const buildSearchBulkFilters = (values: string[], filters: FilterGroup) => {
     if (values.length === 0) return filters;
     return addFilter(filters, 'bulkSearchKeywords', values);
@@ -157,12 +158,17 @@ const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
 
   const queryRef = useQueryLoading<SearchBulkQuery>(searchBulkQuery, queryPaginationOptions);
 
+  const completeSetNumberOfElements = (n: NumberOfElements) => {
+    setNumberOfEntities(n.number ?? 0);
+    helpers.handleSetNumberOfElements(n);
+  };
+
   const preloadedPaginationProps = {
     linesQuery: searchBulkQuery,
     linesFragment: searchBulkFragment,
     queryRef,
     nodePath: ['globalSearch', 'pageInfo', 'globalCount'],
-    setNumberOfElements: helpers.handleSetNumberOfElements,
+    setNumberOfElements: completeSetNumberOfElements,
   } as UsePreloadedPaginationFragment<SearchBulkQuery>;
 
   return (
