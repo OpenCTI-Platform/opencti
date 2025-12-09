@@ -224,45 +224,16 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, 
     }
   }
   
-  // Optimize: use concrete type directly if not abstract
-  const isConcreteType = allowedTypes.length === 1 && !allowedTypes[0].startsWith('Abstract-');
-  const loadType = isConcreteType ? allowedTypes[0] : ABSTRACT_STIX_DOMAIN_OBJECT;
-  
   const stixDomainObject = await storeLoadById(
     context,
     user,
     stixDomainObjectId,
-    loadType,
+    allowedTypes,
     { includeDeletedInDraft: true }
   );
   
   if (!stixDomainObject) {
-    throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.', { stixDomainObjectId });
-  }
-  
-  // Verify type matches expected types
-  // For abstract types, check if entity_type is in parent_types
-  const isValidType = allowedTypes.some(allowedType => {
-    if (allowedType === stixDomainObject.entity_type) {
-      return true; // Exact match
-    }
-    // Check if allowedType is an abstract parent of the actual entity
-    if (isAbstract(allowedType) && stixDomainObject.parent_types) {
-      return stixDomainObject.parent_types.includes(allowedType);
-    }
-    return false;
-  });
-  
-  if (!isValidType) {
-    throw FunctionalError(
-      `Cannot delete the object, type mismatch: expected ${allowedTypes.join(', ')}, found ${stixDomainObject.entity_type}.`,
-      { 
-        expectedTypes: allowedTypes, 
-        actualType: stixDomainObject.entity_type,
-        parentTypes: stixDomainObject.parent_types,
-        objectId: stixDomainObjectId 
-      }
-    );
+    throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.', {id: stixDomainObjectId, types: stixDomainObjectType});
   }
   
   await deleteElementById(context, user, stixDomainObjectId, stixDomainObject.entity_type);
@@ -270,18 +241,23 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, 
   return stixDomainObjectId;
 };
 
-export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsIds) => {
-  // Optimization: Load all entities in a single query to get their actual types
-  const entities = await storeLoadByIds(context, user, stixDomainObjectsIds);
-  
-  // Delete each entity with its correct specific type
-  // Relations cannot be created in parallel, so we iterate
-  for (const entity of entities) {
-    if (entity) {
-      await stixDomainObjectDelete(context, user, entity.id, entity.entity_type);
-    }
+/**
+ * To use only for abstract deletion, if type is know please use stixDomainObjectDelete.
+ */
+const stixDomainObjectDeleteUnchecked = async (context, user, stixDomainObjectId) => {
+  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, { includeDeletedInDraft: true });
+  if (!stixDomainObject) {
+    throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.', {id: stixDomainObjectId});
   }
-  
+  await deleteElementById(context, user, stixDomainObjectId, stixDomainObject.entity_type);
+  await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, stixDomainObject, user);
+  return stixDomainObjectId;
+};
+
+export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsIds) => {
+  for (let i = 0; i < stixDomainObjectsIds.length; i += 1) {
+    await stixDomainObjectDeleteUnchecked(context, user, stixDomainObjectsIds[i]);
+  }
   return stixDomainObjectsIds;
 };
 
