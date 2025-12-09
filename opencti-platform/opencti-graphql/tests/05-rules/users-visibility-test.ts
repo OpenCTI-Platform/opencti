@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { FIVE_MINUTES, getOrganizationIdByName, queryAsAdmin, TEN_SECONDS } from '../utils/testQuery';
-import { activateRule, disableRule, getInferences } from '../utils/rule-utils';
+import { FIVE_MINUTES, getOrganizationIdByName, queryAsAdmin, testContext } from '../utils/testQuery';
+import { getInferences } from '../utils/rule-utils';
 import ParticipateToPartsRule from '../../src/rules/participate-to-parts/ParticipateToPartsRule';
-import { wait } from '../../src/database/utils';
 import { RELATION_PARTICIPATE_TO } from '../../src/schema/internalRelationship';
 import { adminQueryWithSuccess } from '../utils/testQueryHelper';
-import type { BasicStoreBase } from '../../src/types/store';
+import type { BasicStoreBase, BasicStoreRelation } from '../../src/types/store';
+import { createRuleContent } from '../../src/rules/rules-utils';
+import { createInferredRelation } from '../../src/database/middleware';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -175,12 +176,15 @@ describe('Users visibility according to their direct organizations', () => {
     userABInternalId = users.find((u) => u.data?.userAdd.name === 'userAB')?.data?.userAdd.id;
     userOInternalId = users.find((u) => u.data?.userAdd.name === 'userO')?.data?.userAdd.id;
 
-    // activate ParticipateToPartsRule
-    await activateRule(ParticipateToPartsRule.id, true);
-    await wait(TEN_SECONDS); // let some time to the rule manager to create the inferred relationships
-    const afterEnableRelations = await getInferences(RELATION_PARTICIPATE_TO);
-    expect(afterEnableRelations).toBe('test');
-  }, FIVE_MINUTES);
+    // create the 2 inferred participate-to relationships
+    let inferredParticipateToRelationships = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreRelation[];
+    expect(inferredParticipateToRelationships.length).toBe(0);
+    const input = { fromId: userAInternalId, toId: organizationABId, relationship_type: RELATION_PARTICIPATE_TO };
+    const ruleContent = createRuleContent(ParticipateToPartsRule.id, [], [], {});
+    await createInferredRelation(testContext, input, ruleContent);
+    inferredParticipateToRelationships = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreRelation[];
+    expect(inferredParticipateToRelationships.length).toBe(2);
+  });
 
   describe('should regardingOf filter works with is_inferred subfilter', async () => {
     const generateRegardingOfFiltersWithParticipateTo = (
@@ -265,8 +269,8 @@ describe('Users visibility according to their direct organizations', () => {
   });
 
   it('should delete the created context of users and organizations', async () => {
-    // deactivate ParticipateToPartsRule rule
-    await disableRule(ParticipateToPartsRule.id, true);
+    // remove the inferred relationships
+    // TODO
     // Check inferences have been deleted
     const afterDisableRelations = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreBase[];
     expect(afterDisableRelations.length).toBe(0);
