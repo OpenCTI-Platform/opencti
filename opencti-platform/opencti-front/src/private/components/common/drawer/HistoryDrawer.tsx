@@ -86,16 +86,24 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                           <TableCell component="th" scope="row">
                             {row?.field}
                           </TableCell>
-                          <TableCell align="left">{row?.previous ? JSON.stringify(row?.previous): '-'}</TableCell>
-                          <TableCell align="left">{row?.new ? JSON.stringify(row?.new): '-'}</TableCell>
-                          <TableCell align="left">{row?.added ? JSON.stringify(row?.added): '-'}</TableCell>
-                          <TableCell align="left">{row?.removed ? JSON.stringify(row?.removed): '-'}</TableCell>
+                          <TableCell align="left">{row?.previous && row.previous.length > 0
+                            ? row.previous.join(', ')
+                            : '-'}</TableCell>
+                          <TableCell align="left">{row?.new && row.new.length > 0
+                            ? row.new.join(', ')
+                            : '-'}</TableCell>
+                          <TableCell align="left">{row?.added && row.added.length > 0
+                            ? row.added.join(', ')
+                            : '-'}</TableCell>
+                          <TableCell align="left">{row?.removed && row.removed.length > 0
+                            ? row.removed.join(', ')
+                            : '-'}</TableCell>
                         </TableRow>
                       ))
                         ) : (
                           <TableRow>
                             <TableCell align="center" colSpan={5}>
-                              {t_i18n('No changes')}
+                              {t_i18n('No detail available for this event')}
                             </TableCell>
                           </TableRow>
                         )}
