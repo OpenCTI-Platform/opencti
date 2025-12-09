@@ -10,6 +10,7 @@ import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
+import CardTitle from '@common/card/CardTitle';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -22,7 +23,6 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import ThreatActorIndividualLocation from './ThreatActorIndividualLocation';
 import ThreatActorIndividualDetailsChips from './ThreatActorIndividualDetailsChips';
-import CardLabel from '../../../../components/CardLabel';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -173,13 +173,13 @@ ThreatActorIndividualDetailsProps
               relType='impersonates'
             />
             <ThreatActorIndividualLocation threatActorIndividual={data} />
-            <CardLabel style={{ marginTop: 20 }}>
+            <CardTitle style={{ marginTop: 20 }}>
               {t_i18n('First seen')}
-            </CardLabel>
+            </CardTitle>
             {fldt(data.first_seen)}
-            <CardLabel style={{ marginTop: 20 }}>
+            <CardTitle style={{ marginTop: 20 }}>
               {t_i18n('Last seen')}
-            </CardLabel>
+            </CardTitle>
             {fldt(data.last_seen)}
           </Grid>
         </Grid>
@@ -233,9 +233,9 @@ ThreatActorIndividualDetailsProps
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <CardLabel style={{ marginTop: 20 }}>
+            <CardTitle style={{ marginTop: 20 }}>
               {t_i18n('Roles')}
-            </CardLabel>
+            </CardTitle>
             <FieldOrEmpty source={data.roles}>
               {data.roles && (
                 <List>
@@ -260,9 +260,9 @@ ThreatActorIndividualDetailsProps
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <CardLabel style={{ marginTop: 20 }}>
+            <CardTitle style={{ marginTop: 20 }}>
               {t_i18n('Goals')}
-            </CardLabel>
+            </CardTitle>
             <FieldOrEmpty source={data.goals}>
               {data.goals && (
                 <List>
@@ -281,9 +281,9 @@ ThreatActorIndividualDetailsProps
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <CardLabel style={{ marginTop: 20 }}>
+            <CardTitle style={{ marginTop: 20 }}>
               {t_i18n('Secondary motivations')}
-            </CardLabel>
+            </CardTitle>
             <FieldOrEmpty source={data.secondary_motivations}>
               {data.secondary_motivations && (
                 <List>
@@ -312,9 +312,9 @@ ThreatActorIndividualDetailsProps
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
-            <CardLabel style={{ marginTop: 20 }}>
+            <CardTitle style={{ marginTop: 20 }}>
               {t_i18n('Personal motivations')}
-            </CardLabel>
+            </CardTitle>
             <FieldOrEmpty source={data.personal_motivations}>
               {data.personal_motivations && (
                 <List>
