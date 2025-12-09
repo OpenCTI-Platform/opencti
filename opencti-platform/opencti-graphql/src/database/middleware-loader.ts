@@ -438,8 +438,12 @@ export const fullEntitiesThroughRelationsFromList = async <T extends BasicStoreE
   return fullEntitiesListThroughRelations(context, user, rel);
 };
 
-export const pageEntitiesConnection = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args: EntityOptions<T> = {}): Promise<BasicConnection<T>> => {
+export const pageEntitiesConnection = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  entityTypes: Array<string>,
+  args: EntityOptions<T> = {},
+): Promise<BasicConnection<T>> => {
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
   const first = args.first ?? ES_DEFAULT_PAGINATION;
@@ -462,7 +466,8 @@ export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity
   relationType: string,
   entityType: string | string[],
   reverse_relation: boolean,
-  args: EntityOptions<T> = {},
+  args: EntityOptions<T> = {}
+,
 ): Promise<BasicConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {

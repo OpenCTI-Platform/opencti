@@ -17,14 +17,23 @@ import {
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
-import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
-  internalFindByIds,
-  internalLoadById,
+  createEntity,
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  loadEntity,
+  patchAttribute,
+  updateAttribute,
+  updatedInputsToData
+} from '../database/middleware';
+import {
   fullEntitiesList,
   fullEntitiesThoughAggregationConnection,
-  fullRelationsList,
   fullEntitiesThroughRelationsToList,
+  fullRelationsList,
+  internalFindByIds,
+  internalLoadById,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById,
@@ -51,6 +60,7 @@ import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import {
   applyOrganizationRestriction,
+  AUTOMATION_AUTMANAGE,
   BYPASS,
   CAPABILITIES_IN_DRAFT_NAMES,
   executionContext,
@@ -63,6 +73,7 @@ import {
   isUserHasCapability,
   REDACTED_USER,
   SETTINGS_SET_ACCESSES,
+  SETTINGS_SETCUSTOMIZATION,
   SYSTEM_USER,
   VIRTUAL_ORGANIZATION_ADMIN,
 } from '../utils/access';
@@ -88,6 +99,7 @@ import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTempla
 import { doYield } from '../utils/eventloop-utils';
 import { sanitizeUser } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
+import { ADMIN_USER, testContext } from '../../tests/utils/testQuery';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -199,46 +211,68 @@ export const findById = async (context, user, userId) => {
   return buildCompleteUser(context, withoutPassword);
 };
 
-const buildUserOrganizationRestrictedFilters = (user, filters) => {
+const buildRegardingOfDirectParticipateToFilters = (ids, filters) => {
+  return {
+    mode: 'and',
+    filters: [
+      {
+        key: 'regardingOf',
+        operator: 'eq',
+        values: [
+          {
+            key: 'relationship_type',
+            values: ['participate-to'],
+          },
+          {
+            key: 'id',
+            values: ids,
+          },
+          {
+            key: 'is_inferred',
+            values: ['false'],
+          },
+        ],
+      },
+    ],
+    filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
+  };
+};
+
+// build user organization restriction filters
+// for the list of users in Settings
+const buildUserOrganizationRestrictedFiltersForSettings = (user, filters) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // If user is not a set access administrator, user can only see directly attached organization users
     const organizationIds = user.administrated_organizations.map((organization) => organization.id);
-    return {
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'relationship_type',
-              values: ['participate-to'],
-            },
-            {
-              key: 'id',
-              values: organizationIds,
-            },
-            {
-              key: 'is_inferred',
-              values: ['false'],
-            },
-          ],
-          mode: 'or',
-        },
-      ],
-      filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
-    };
+    return buildRegardingOfDirectParticipateToFilters(organizationIds, filters);
   }
   return filters;
 };
 
+// build user organization restriction filters
+// for the list of users in Knowledge
+const buildUserOrganizationRestrictedFiltersForKnowledge = async (context, user, inputFilters) => {
+  const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(capa));
+  if (userCanViewAllUsers) {
+    return inputFilters;
+  }
+  const platformSettings = await loadEntity(testContext, ADMIN_USER, [ENTITY_TYPE_SETTINGS]);
+  if (!platformSettings.platform_organization || platformSettings.view_all_users) {
+    return inputFilters;
+  }
+  const userFilters = buildRegardingOfDirectParticipateToFilters([user.id], undefined);
+  const userDirectOrganizations = await pageEntitiesConnection(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { filters: userFilters });
+  const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
+  return buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, inputFilters);
+};
+
 export const findAllUser = async (context, user, args) => {
-  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
+  const filters = buildUserOrganizationRestrictedFiltersForSettings(user, args.filters);
   return fullEntitiesList(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
 
 export const findUserPaginated = async (context, user, args) => {
-  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
+  const filters = buildUserOrganizationRestrictedFiltersForSettings(user, args.filters);
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
 
