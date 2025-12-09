@@ -174,7 +174,7 @@ class OpenCTIApiClient:
         custom_headers: str = None,
         perform_health_check: bool = True,
         requests_timeout: int = 300,
-        provider: str = None
+        provider: str = None,
     ):
         """Constructor method"""
 
