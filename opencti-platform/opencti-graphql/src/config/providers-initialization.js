@@ -306,7 +306,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           }
           // endregion
           const openIdScope = R.uniq(openIdScopes).join(' ');
-          const options = { logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true, params: { scope: openIdScope } };
+          const options = { logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true,
+            params: { scope: openIdScope, ...(mappedConfig.audience && { audience: mappedConfig.audience })
+          } };
           const debugCallback = (message, meta) => logApp.info(message, meta);
           const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
             logApp.info('[OPENID] Successfully logged', { userinfo });
