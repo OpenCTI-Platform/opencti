@@ -4,12 +4,11 @@ import { compose } from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
+import Card from '@common/card/Card';
 import { TEN_SECONDS } from '../../../../../utils/Time';
 import inject18n from '../../../../../components/i18n';
 import WorkbenchFileLine from './WorkbenchFileLine';
@@ -34,6 +33,7 @@ const WorkbenchFileViewerBase = ({
   connectors,
   relay,
   t,
+  classes,
 }) => {
   const { id, pendingFiles } = entity;
   const { edges } = pendingFiles;
@@ -57,31 +57,22 @@ const WorkbenchFileViewerBase = ({
   return (
     <Grid item xs={6}>
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Analyst workbenches')}
-        </Typography>
-        {!draftContext && (
-          <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 28 }} />}>
-            <IconButton
-              color="primary"
-              aria-label="Add"
-              onClick={() => setOpenCreate(true)}
-              sx={{ marginTop: -1.5 }}
-              size="small"
-              variant="tertiary"
-            >
-              <Add fontSize="small" />
-            </IconButton>
-          </Security>
-        )}
-        <WorkbenchFileCreator
-          handleCloseCreate={() => setOpenCreate(false)}
-          openCreate={openCreate}
-          onCompleted={onCreateWorkbenchCompleted}
-          entity={entity}
-        />
-        <div className="clearfix" />
-        <Paper className="paper-for-grid" variant="outlined">
+        <Card
+          title={t('Analyst workbenches')}
+          action={(
+            <Security needs={[KNOWLEDGE_KNASKIMPORT]} hasAccess={!draftContext}>
+              <IconButton
+                color="primary"
+                aria-label="Add"
+                onClick={() => setOpenCreate(true)}
+                classes={{ root: classes.createButton }}
+                size="small"
+              >
+                <Add fontSize="small" />
+              </IconButton>
+            </Security>
+          )}
+        >
           {edges.length ? (
             <List>
               {edges.map((file) => (
@@ -109,7 +100,13 @@ const WorkbenchFileViewerBase = ({
               </span>
             </div>
           )}
-        </Paper>
+        </Card>
+        <WorkbenchFileCreator
+          handleCloseCreate={() => setOpenCreate(false)}
+          openCreate={openCreate}
+          onCompleted={onCreateWorkbenchCompleted}
+          entity={entity}
+        />
       </div>
     </Grid>
   );

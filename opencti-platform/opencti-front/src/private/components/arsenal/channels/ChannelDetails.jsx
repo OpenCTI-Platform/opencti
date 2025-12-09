@@ -3,10 +3,10 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
+import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -32,35 +32,30 @@ class ChannelDetailsComponent extends Component {
   render() {
     const { t, classes, channel } = this.props;
     return (
-      <>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
-          <Grid container={true} spacing={3}>
-            <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Description')}
-              </Typography>
-              <ExpandableMarkdown source={channel.description} limit={400} />
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Channel types')}
-              </Typography>
-              <FieldOrEmpty source={channel.channel_types}>
-                {channel.chanel_types?.map((channelType) => (
-                  <Chip
-                    key={channelType}
-                    classes={{ root: classes.chip }}
-                    label={channelType}
-                  />
-                ))}
-              </FieldOrEmpty>
-            </Grid>
+      <Card title={t('Details')}>
+        <Grid container={true} spacing={3}>
+          <Grid item xs={6}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Description')}
+            </Typography>
+            <ExpandableMarkdown source={channel.description} limit={400} />
           </Grid>
-        </Paper>
-      </>
+          <Grid item xs={6}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Channel types')}
+            </Typography>
+            <FieldOrEmpty source={channel.channel_types}>
+              {channel.chanel_types?.map((channelType) => (
+                <Chip
+                  key={channelType}
+                  classes={{ root: classes.chip }}
+                  label={channelType}
+                />
+              ))}
+            </FieldOrEmpty>
+          </Grid>
+        </Grid>
+      </Card>
     );
   }
 }

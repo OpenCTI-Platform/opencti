@@ -7,6 +7,7 @@ import { fileUri } from '../../../../relay/environment';
 import CityOrange from '../../../../static/images/leaflet/city_orange.png';
 import { usePublicSettings } from '../../../../public/PublicSettingsProvider';
 import allCountries from '../../../../static/geo/countries.json';
+import Card from '@common/card/Card';
 
 const colors = [
   '#fff59d',
@@ -29,7 +30,7 @@ const pointerIcon = new L.Icon({
   iconSize: [25, 25],
 });
 
-const LocationMiniMapTargets = ({ center, zoom, cities, countries }) => {
+const LocationMiniMapTargets = ({ center, zoom, cities, countries, title = undefined }) => {
   const theme = useTheme();
 
   const { settings: privateSettings } = useContext(UserContext);
@@ -63,27 +64,29 @@ const LocationMiniMapTargets = ({ center, zoom, cities, countries }) => {
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <MapContainer
+      <Card noPadding title={title}>
+        <MapContainer
         // introducing uniqueness in component rendering
         // it is a bug workaround that prevents the component from rendering
         //
         // to be removed when bug is fixed
         // more info on the bug and its fix: https://github.com/PaulLeCam/react-leaflet/pull/1073
-        key={new Date().getTime()}
-        center={center}
-        zoom={zoom}
-        attributionControl={false}
-        zoomControl={false}
-      >
-        <TileLayer url={tileServer} />
-        <GeoJSON data={allCountries} style={getStyle} />
-        {locatedCities.map((city) => {
-          const position = [city.latitude, city.longitude];
-          return (
-            <Marker key={city.id} position={position} icon={pointerIcon} />
-          );
-        })}
-      </MapContainer>
+          key={new Date().getTime()}
+          center={center}
+          zoom={zoom}
+          attributionControl={false}
+          zoomControl={false}
+        >
+          <TileLayer url={tileServer} />
+          <GeoJSON data={allCountries} style={getStyle} />
+          {locatedCities.map((city) => {
+            const position = [city.latitude, city.longitude];
+            return (
+              <Marker key={city.id} position={position} icon={pointerIcon} />
+            );
+          })}
+        </MapContainer>
+      </Card>
     </div>
   );
 };

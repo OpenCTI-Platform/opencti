@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -23,9 +22,10 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import CardNumber from '../../../../components/common/card/CardNumber';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(
@@ -51,51 +51,61 @@ const auditsNumberNumberQuery = graphql`
 `;
 
 const AuditsNumber = ({
-  variant,
-  height,
   startDate,
   endDate,
   dataSelection,
   parameters = {},
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const renderContent = () => {
-    if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return <WidgetAccessDenied />;
-    }
-    const selection = dataSelection[0];
-    const types = ['History', 'Activity'];
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'timestamp';
-    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { removeTypeAll: true, startDate, endDate, dateAttribute });
-    return (
-      <QueryRenderer
-        query={auditsNumberNumberQuery}
-        variables={{ types, filters, startDate, endDate: dayAgo() }}
-        render={({ props }) => {
-          if (props && props.auditsNumber) {
-            const { total, count } = props.auditsNumber;
-            return <WidgetNumber total={total} value={count} />;
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
-  };
+
+  const title = parameters.title ?? t_i18n('Entities number');
+  const translatedTitle = translateEntityType(parameters.title);
+  const isTitleEntityType = title !== translatedTitle;
+
+  if (!isGrantedToSettings || !isEnterpriseEdition) {
+    return <WidgetAccessDenied />;
+  }
+
+  const selection = dataSelection[0];
+  const types = ['History', 'Activity'];
+  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+    ? selection.date_attribute
+    : 'timestamp';
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    { removeTypeAll: true, startDate, endDate, dateAttribute },
+  );
+
   return (
-    <WidgetContainer
-      height={height}
-      title={parameters.title ?? t_i18n('Entities number')}
-      variant={variant}
-    >
-      {renderContent()}
-    </WidgetContainer>
+    <QueryRenderer
+      query={auditsNumberNumberQuery}
+      variables={{ types, filters, startDate, endDate: dayAgo() }}
+      render={({ props }) => {
+        if (props && props.auditsNumber) {
+          const { total, count } = props.auditsNumber;
+          return (
+            <CardNumber
+              entityType={isTitleEntityType ? title : undefined}
+              label={translatedTitle}
+              value={total}
+              diffLabel={t_i18n('24 hours')}
+              diffValue={total - count}
+            />
+          );
+        }
+        if (props) {
+          return (
+            <WidgetContainer title={title}>
+              <WidgetNoData />
+            </WidgetContainer>
+          );
+        }
+        return <Loader variant={LoaderVariant.inElement} />;
+      }}
+    />
   );
 };
 

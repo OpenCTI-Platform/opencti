@@ -4,13 +4,11 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { InformationOutline } from 'mdi-material-ui';
 import * as R from 'ramda';
-import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
@@ -30,21 +28,17 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 import type { Theme } from '../../../../components/Theme';
 import MarkingIcon from '../../../../utils/MarkingIcon';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
   },
   gridContainer: {
     marginBottom: 20,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
   },
 }));
 
@@ -152,10 +146,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         classes={{ container: classes.gridContainer }}
       >
         <Grid item xs={6}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Basic information')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+          <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={3}>
               <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -188,13 +179,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 />
               </Grid>
             </Grid>
-          </Paper>
+          </Card>
         </Grid>
         <Grid item xs={6}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Permissions')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+          <Card title={t_i18n('Permissions')}>
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -283,14 +271,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 />
               </Grid>
             </Grid>
-          </Paper>
+          </Card>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-            {t_i18n('Markings')}
-          </Typography>
-          <div className="clearfix" />
-          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+          <Card title={t_i18n('Markings')}>
             <Grid container={true} spacing={3}>
               <Grid item xs={4}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -457,7 +441,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </FieldOrEmpty>
               </Grid>
             </Grid>
-          </Paper>
+          </Card>
         </Grid>
         <Triggers recipientId={group.id} filterKey="authorized_members.id" />
         <GroupUsers groupId={group.id} />

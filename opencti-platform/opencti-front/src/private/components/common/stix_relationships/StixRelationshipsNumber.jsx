@@ -1,4 +1,3 @@
-import React from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -6,8 +5,9 @@ import { dayAgo } from '../../../../utils/Time';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
+import CardNumber from '../../../../components/common/card/CardNumber';
 
 const stixRelationshipsNumberNumberQuery = graphql`
   query StixRelationshipsNumberNumberSeriesQuery(
@@ -57,52 +57,58 @@ const stixRelationshipsNumberNumberQuery = graphql`
 `;
 
 const StixRelationshipsNumber = ({
-  variant,
-  height,
   startDate,
   endDate,
   dataSelection,
   parameters = {},
 }) => {
   const { t_i18n } = useFormatter();
-  const renderContent = () => {
-    const selection = dataSelection[0];
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute, isKnowledgeRelationshipWidget: true });
-    return (
-      <QueryRenderer
-        query={stixRelationshipsNumberNumberQuery}
-        variables={{
-          filters,
-          startDate,
-          dateAttribute,
-          endDate: dayAgo(),
-          dynamicFrom: selection.dynamicFrom,
-          dynamicTo: selection.dynamicTo,
-        }}
-        render={({ props }) => {
-          if (props && props.stixRelationshipsNumber) {
-            const { total, count } = props.stixRelationshipsNumber;
-            return <WidgetNumber total={total} value={count} />;
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
-  };
+  const { translateEntityType } = useEntityTranslation();
+
+  const title = parameters.title ?? t_i18n('Entities number');
+  const translatedTitle = translateEntityType(parameters.title);
+  const isTitleEntityType = title !== translatedTitle;
+
+  const selection = dataSelection[0];
+  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+    ? selection.date_attribute
+    : 'created_at';
+  const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute, isKnowledgeRelationshipWidget: true });
+
   return (
-    <WidgetContainer
-      height={height}
-      title={parameters.title ?? t_i18n('Entities number')}
-      variant={variant}
-    >
-      {renderContent()}
-    </WidgetContainer>
+    <QueryRenderer
+      query={stixRelationshipsNumberNumberQuery}
+      variables={{
+        filters,
+        startDate,
+        dateAttribute,
+        endDate: dayAgo(),
+        dynamicFrom: selection.dynamicFrom,
+        dynamicTo: selection.dynamicTo,
+      }}
+      render={({ props }) => {
+        if (props && props.stixRelationshipsNumber) {
+          const { total, count } = props.stixRelationshipsNumber;
+          return (
+            <CardNumber
+              entityType={isTitleEntityType ? title : undefined}
+              label={translatedTitle}
+              value={total}
+              diffLabel={t_i18n('24 hours')}
+              diffValue={total - count}
+            />
+          );
+        }
+        if (props) {
+          return (
+            <WidgetContainer title={title}>
+              <WidgetNoData />
+            </WidgetContainer>
+          );
+        }
+        return <Loader variant={LoaderVariant.inElement} />;
+      }}
+    />
   );
 };
 

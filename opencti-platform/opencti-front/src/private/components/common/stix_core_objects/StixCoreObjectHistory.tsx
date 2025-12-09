@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -13,7 +12,6 @@ import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { Theme } from '../../../../components/Theme';
-import { Box } from '@mui/material';
 
 type StixCoreObjectHistoryProps = {
   stixCoreObjectId: string;
@@ -119,73 +117,43 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           item
           xs={withoutRelations ? 12 : 6}
         >
-          <Typography
-            variant="h4"
-            gutterBottom
-            style={{ float: 'left' }}
-          >
-            {t_i18n('Entity')}
-          </Typography>
-          <Box sx={{
-            marginTop: '-10px',
-            float: 'right',
-          }}
-          >
-            <SearchInput
-              variant="thin"
-              onSubmit={handleSearchEntity}
-              keyword={entitySearchTerm}
-            />
-          </Box>
-          <div className="clearfix" />
-          {objectsQueryRef
-            && (
-              <React.Suspense
-                fallback={<Loader variant={LoaderVariant.inElement} />}
-              >
-                <StixCoreObjectHistoryLines
-                  queryRef={objectsQueryRef}
-                  isRelationLog={false}
-                  paginationOptions={objectsPaginationOptions}
-                />
-              </React.Suspense>
-            )
-          }
+          {objectsQueryRef && (
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <StixCoreObjectHistoryLines
+                title={t_i18n('Entity')}
+                queryRef={objectsQueryRef}
+                isRelationLog={false}
+                paginationOptions={objectsPaginationOptions}
+                action={(
+                  <SearchInput
+                    variant="thin"
+                    onSubmit={handleSearchEntity}
+                    keyword={entitySearchTerm}
+                  />
+                )}
+              />
+            </React.Suspense>
+          )}
         </Grid>
         {!withoutRelations && (
           <Grid item xs={6}>
-            <Typography
-              variant="h4"
-              gutterBottom
-              style={{ float: 'left' }}
-            >
-              {t_i18n('Relations of the entity')}
-            </Typography>
-            <Box sx={{
-              marginTop: '-10px',
-              float: 'right',
-            }}
-            >
-              <SearchInput
-                variant="thin"
-                onSubmit={handleSearchRelations}
-                keyword={relationsSearchTerm}
-              />
-            </Box>
-            <div className="clearfix" />
-            {relationsQueryRef
-              && (
-                <React.Suspense
-                  fallback={<Loader variant={LoaderVariant.inElement} />}
-                >
-                  <StixCoreObjectHistoryLines
-                    queryRef={relationsQueryRef}
-                    isRelationLog={true}
-                    paginationOptions={relationsPaginationOptions}
-                  />
-                </React.Suspense>
-              )
-            }
+            {relationsQueryRef && (
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                <StixCoreObjectHistoryLines
+                  title={t_i18n('Relations of the entity')}
+                  queryRef={relationsQueryRef}
+                  isRelationLog={true}
+                  paginationOptions={relationsPaginationOptions}
+                  action={(
+                    <SearchInput
+                      variant="thin"
+                      onSubmit={handleSearchRelations}
+                      keyword={relationsSearchTerm}
+                    />
+                  )}
+                />
+              </React.Suspense>
+            )}
           </Grid>
         )}
       </Grid>

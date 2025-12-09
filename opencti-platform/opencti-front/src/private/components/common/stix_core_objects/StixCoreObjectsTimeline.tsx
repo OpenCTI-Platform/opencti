@@ -65,7 +65,7 @@ const stixCoreObjectsTimelineQuery = graphql`
 `;
 
 interface StixCoreObjectsTimelineProps {
-  variant: string;
+  variant?: string;
   height?: number;
   startDate: string | null;
   endDate: string | null;

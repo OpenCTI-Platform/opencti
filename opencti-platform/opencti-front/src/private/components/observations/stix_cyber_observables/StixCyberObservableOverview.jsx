@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { InformationOutline } from 'mdi-material-ui';
@@ -31,6 +30,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import Card from '@common/card/Card';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -123,10 +123,7 @@ class StixCyberObservableOverview extends Component {
     );
     return (
       <>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Basic information')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+        <Card title={t('Basic information')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -237,7 +234,7 @@ class StixCyberObservableOverview extends Component {
               </div>
             </Grid>
           </Grid>
-        </Paper>
+        </Card>
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}
           open={this.state.openStixIds}

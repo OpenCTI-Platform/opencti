@@ -12,7 +12,6 @@ const DashboardRawViz = ({ widget }: DashboardRawVizProps) => {
       return (
         <WidgetText
           parameters={widget.parameters}
-          variant="inLine"
         />
       );
     default:

@@ -5,13 +5,13 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { makeStyles } from '@mui/styles';
+import CardTitle from '@common/card/CardTitle';
 import { useFormatter } from '../../../../components/i18n';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import { isEmptyField } from '../../../../utils/utils';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import type { Theme } from '../../../../components/Theme';
-import CardLabel from '../../../../components/CardLabel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -85,12 +85,12 @@ const InfoTooltip = ({ text }: { text: string }) => (
 const DetailGrid = ({ title, tooltip, children, extra }: DetailValue) => (
   <Grid item xs={3} sx={{ mt: -1 }}>
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <CardLabel action={(
+      <CardTitle action={(
         <InfoTooltip text={tooltip} />
       )}
       >
         {title}
-      </CardLabel>
+      </CardTitle>
       {extra}
     </Box>
     {children}

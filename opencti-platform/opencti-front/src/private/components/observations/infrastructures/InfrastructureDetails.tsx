@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
@@ -12,20 +11,15 @@ import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
 import type { Theme } from '../../../../components/Theme';
 import { InfrastructureDetails_infrastructure$data, InfrastructureDetails_infrastructure$key } from './__generated__/InfrastructureDetails_infrastructure.graphql';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
   chip: {
     fontSize: 12,
     lineHeight: '12px',
     backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text?.primary,
     textTransform: 'uppercase',
     borderRadius: 4,
     margin: '0 5px 5px 0',
@@ -94,10 +88,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
   ];
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Details')}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+      <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -149,7 +140,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
           startDate={undefined}
           endDate={undefined}
         />
-      </Paper>
+      </Card>
     </div>
   );
 };

@@ -1,11 +1,8 @@
-import React from 'react';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
+import Card from '@common/card/Card';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -14,17 +11,6 @@ import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    height: '100%',
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 4,
-  },
-}));
 
 const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   query EntityStixCoreRelationshipsHorizontalBarsDistributionQuery(
@@ -85,11 +71,9 @@ const EntityStixCoreRelationshipsHorizontalBars = (
     dateAttribute,
     seriesName,
     title,
-    variant,
   },
 ) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const theme = useTheme();
   const navigate = useNavigate();
 
@@ -201,30 +185,9 @@ const EntityStixCoreRelationshipsHorizontalBars = (
   };
 
   return (
-    <div style={{ height: '100%' }}>
-      <Typography
-        variant={variant === 'inEntity' ? 'h3' : 'h4'}
-        gutterBottom={true}
-        style={{
-          margin:
-
-            variant === 'inEntity'
-              ? 0
-              : variant !== 'inLine'
-                ? '0 0 10px 0'
-                : '-10px 0 10px -7px',
-        }}
-      >
-        {title || t_i18n('StixDomainObjects distribution')}
-      </Typography>
-      {variant === 'inLine' || variant === 'inEntity' ? (
-        renderContent()
-      ) : (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      )}
-    </div>
+    <Card title={title || t_i18n('StixDomainObjects distribution')}>
+      {renderContent()}
+    </Card>
   );
 };
 

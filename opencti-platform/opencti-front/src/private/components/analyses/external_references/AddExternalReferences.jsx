@@ -48,12 +48,6 @@ const AddExternalReferences = ({
         size="small"
         aria-label="Add"
         onClick={handleOpen}
-        style={{
-          float: 'left',
-          marginLeft: 4,
-          marginTop: -6,
-          marginBottom: 10,
-        }}
       >
         <Add />
       </IconButton>

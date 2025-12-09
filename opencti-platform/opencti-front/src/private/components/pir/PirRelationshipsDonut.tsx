@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
 import { graphql } from 'react-relay';
 import { PirRelationshipsDonutDistributionQuery$data } from './__generated__/PirRelationshipsDonutDistributionQuery.graphql';
 import WidgetDonut from '../../../components/dashboard/WidgetDonut';
@@ -22,8 +21,7 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import WidgetContainer from '../../../components/dashboard/WidgetContainer';
 import { QueryRenderer } from '../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../utils/filters/filtersUtils';
-import type { PirWidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
-import { useFormatter } from '../../../components/i18n';
+import type { PirWidgetDataSelection } from '../../../utils/widget/widget';
 
 export const pirRelationshipsDonutsDistributionQuery = graphql`
   query PirRelationshipsDonutDistributionQuery(
@@ -85,47 +83,26 @@ export const pirRelationshipsDonutsDistributionQuery = graphql`
 `;
 
 interface PirRelationshipsDonutProps {
-  title?: string;
-  variant: string;
-  height?: number;
-  field?: string;
-  startDate: string | null;
-  endDate: string | null;
-  dataSelection: PirWidgetDataSelection[];
-  parameters?: WidgetParameters;
-  withExportPopover?: boolean;
-  isReadOnly?: boolean;
-  withoutTitle?: boolean;
+  pirId: string;
 }
 
-const PirRelationshipsDonut = ({
-  title,
-  variant,
-  height,
-  field,
-  startDate,
-  endDate,
-  dataSelection,
-  parameters = {},
-  withExportPopover = false,
-  isReadOnly = false,
-  withoutTitle = false,
-}: PirRelationshipsDonutProps) => {
-  const { t_i18n } = useFormatter();
+const PirRelationshipsDonut = ({ pirId }: PirRelationshipsDonutProps) => {
   const renderContent = () => {
-    let selection;
-    let filtersAndOptions;
-    if (dataSelection) {
-      selection = dataSelection[0];
-      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
-    }
-    const finalField = selection?.attribute || field || 'entity_type';
+    const selection: PirWidgetDataSelection = {
+      attribute: 'pir_explanation.dependencies.author_id',
+      isTo: false,
+      relationship_type: 'in-pir',
+      pirId,
+    };
+    const filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters); ;
+
+    const finalField = selection?.attribute || 'entity_type';
     const variables = {
       ...selection,
       field: finalField,
       operation: 'count',
-      startDate,
-      endDate,
+      startDate: null,
+      endDate: null,
       dateAttribute: selection?.date_attribute ?? 'created_at',
       limit: selection?.number ?? 10,
       filters: filtersAndOptions?.filters,
@@ -133,6 +110,7 @@ const PirRelationshipsDonut = ({
       dynamicFrom: selection?.dynamicFrom,
       dynamicTo: selection?.dynamicTo,
     };
+
     return (
       <QueryRenderer
         query={pirRelationshipsDonutsDistributionQuery}
@@ -148,8 +126,8 @@ const PirRelationshipsDonut = ({
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 data={props.pirRelationshipsDistribution as any[]}
                 groupBy={finalField}
-                withExport={withExportPopover}
-                readonly={isReadOnly}
+                withExport={false}
+                readonly={false}
               />
             );
           }
@@ -161,12 +139,11 @@ const PirRelationshipsDonut = ({
       />
     );
   };
+
   return (
     <WidgetContainer
-      height={height}
-      title={parameters.title ?? title ?? t_i18n('PIR Relationships distribution')}
-      variant={variant}
-      withoutTitle={withoutTitle}
+      height={250}
+      variant="inLine"
     >
       {renderContent()}
     </WidgetContainer>

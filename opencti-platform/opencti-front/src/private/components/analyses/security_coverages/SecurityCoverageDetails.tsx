@@ -2,7 +2,6 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -26,19 +25,7 @@ import { fileUri } from '../../../../relay/environment';
 import obasDark from '../../../../static/images/xtm/obas_dark.png';
 import obasLight from '../../../../static/images/xtm/obas_light.png';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-    position: 'relative',
-    display: 'flex',
-    flexFlow: 'column',
-  },
-}));
+import Card from '../../../../components/common/card/Card';
 
 const securityCoverageDetailsFragment = graphql`
   fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage {
@@ -72,7 +59,6 @@ interface SecurityCoverageDetailsProps {
 const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> = ({
   securityCoverage,
 }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
@@ -81,10 +67,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
 
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Entity details')}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+      <Card title={t_i18n('Entity details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h3" gutterBottom={true}>
@@ -173,7 +156,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <SecurityCoverageVulnerabilities securityCoverage={data} />
           </Grid>
         </Grid>
-      </Paper>
+      </Card>
 
       {isNotEmptyField(data.external_uri) && (
         <ExternalLinkPopover

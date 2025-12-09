@@ -1,8 +1,10 @@
 import { Page } from '@playwright/test';
 import PirTabsPage from './pirTabs.pageModel';
 import DataTablePage from './DataTable.pageModel';
+import CardPage from './card.pageModel';
 
 export default class PirDetailsPageModel {
+  card = new CardPage(this.page);
   tabs = new PirTabsPage(this.page);
   dataTable = new DataTablePage(this.page);
 
@@ -27,27 +29,21 @@ export default class PirDetailsPageModel {
   }
 
   getEntityTypeCount(label: string) {
-    return this.page.getByTestId(`pir-overview-count-${label}`);
+    return this.page.getByTestId(`card-number-${label}`);
   }
 
   getTopAuthorEntities(author: string) {
-    return this.page
-      .getByRole('heading', { name: 'Top authors of threat entities' })
-      .locator('../..')
-      .getByText(author);
+    return this.card
+      .getTextInCard('Top authors of threat entities', author);
   }
 
   getTopAuthorRelationships(author: string) {
-    return this.page
-      .getByRole('heading', { name: 'Top authors of relationships from threats' })
-      .locator('../..')
-      .getByText(author);
+    return this.card
+      .getTextInCard('Top authors of relationships from threats', author);
   }
 
   getNewsFeedItem(news: string) {
-    return this.page
-      .getByRole('heading', { name: 'News feed' })
-      .locator('../..')
-      .getByText(news);
+    return this.card
+      .getTextInCard('News feed', news);
   }
 }

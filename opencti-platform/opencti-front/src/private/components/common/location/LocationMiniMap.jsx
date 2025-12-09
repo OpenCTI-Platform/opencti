@@ -2,9 +2,6 @@ import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, flatten, propOr, pluck, uniq, pipe } from 'ramda';
 import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import countries from '../../../../static/geo/countries.json';
@@ -16,14 +13,7 @@ import MarkerDark from '../../../../static/images/leaflet/marker_dark.png';
 import CityLight from '../../../../static/images/leaflet/city_light.png';
 import MarkerLight from '../../../../static/images/leaflet/marker_light.png';
 import { isValidLatitude, isValidLongitude, validateCoordinates } from '../../../../utils/position.utils';
-
-const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 8,
-  },
-});
+import Card from '@common/card/Card';
 
 const cityIcon = (dark = true) => new L.Icon({
   iconUrl: dark ? fileUri(CityDark) : fileUri(CityLight),
@@ -58,7 +48,7 @@ const LocationMiniMap = (props) => {
     }
     return { fillOpacity: 0, color: 'none' };
   };
-  const { t, center, zoom, classes, theme, city, position } = props;
+  const { t, center, zoom, theme, city, position } = props;
 
   // Validate center coordinates to prevent crashes
   const validatedCenter = validateCoordinates(center);
@@ -76,10 +66,10 @@ const LocationMiniMap = (props) => {
   }
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true} style={{ marginBottom: 10 }}>
-        {`${t('Mini map')} (lat. ${validatedCenter[0]}, long. ${validatedCenter[1]})`}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+      <Card
+        noPadding
+        title={`${t('Mini map')} (lat. ${validatedCenter[0]}, long. ${validatedCenter[1]})`}
+      >
         <MapContainer
           center={validatedCenter}
           zoom={zoom}
@@ -105,7 +95,7 @@ const LocationMiniMap = (props) => {
             />
           )}
         </MapContainer>
-      </Paper>
+      </Card>
     </div>
   );
 };
@@ -114,7 +104,6 @@ LocationMiniMap.propTypes = {
   countries: PropTypes.array,
   city: PropTypes.object,
   zoom: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fd: PropTypes.func,
   navigate: PropTypes.func,
@@ -123,5 +112,4 @@ LocationMiniMap.propTypes = {
 export default compose(
   inject18n,
   withTheme,
-  withStyles(styles),
 )(LocationMiniMap);

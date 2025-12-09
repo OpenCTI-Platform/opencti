@@ -32,16 +32,12 @@ import TaskScope from '../../../../components/TaskScope';
 import { deserializeFilterGroupForFrontend, isFilterFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFromOldFormat';
 import { deleteNode } from '../../../../utils/store';
+import Card from '@common/card/Card';
+import { Stack } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-    position: 'relative',
-  },
   progress: {
     borderRadius: 4,
     height: 10,
@@ -212,11 +208,7 @@ const TasksList = ({ data, options }) => {
   return (
     <div>
       {tasks.length === 0 && (
-        <Paper
-          classes={{ root: classes.paper }}
-          variant="outlined"
-          style={{ marginBottom: 20 }}
-        >
+        <Card>
           <div
             style={{
               display: 'table',
@@ -224,257 +216,241 @@ const TasksList = ({ data, options }) => {
               width: '100%',
             }}
           >
-            <span
+            <div
               style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
+                display: 'table',
+                height: '100%',
+                width: '100%',
               }}
             >
               {t_i18n('No task')}
-            </span>
+            </div>
           </div>
-        </Paper>
+        </Card>
       )}
-      {tasks.map((taskEdge) => {
-        const task = taskEdge.node;
-        let status = '';
-        if (task.completed) {
-          status = 'complete';
-        } else if (task.task_processed_number > 0) {
-          status = 'provisioning';
-        } else {
-          status = 'wait';
-        }
-        if (task.work) {
-          if (task.work.status === 'wait' || task.work.status === 'progress') {
-            status = 'processing';
-          }
-        }
-        let filters = null;
-        let listIds = '';
-        if (task.task_filters) {
-          filters = isFilterFormatCorrect(task.task_filters)
-            ? deserializeFilterGroupForFrontend(task.task_filters)
-            : convertFiltersFromOldFormat(task.task_filters);
-        } else if (task.task_ids) {
-          listIds = truncate(R.join(', ', task.task_ids), 60);
-        }
-        const lastTaskExecutionDate = task.work ? task.work.completed_time : task.last_execution_date;
-        const taskWorkProcessedNumber = task.work?.tracking?.import_processed_number ?? 0;
-        const taskWorkExpectedNumber = task.work?.tracking?.import_expected_number ?? 0;
-        const progressNumberDisplay = task.work ? ` ${taskWorkProcessedNumber}/${taskWorkExpectedNumber}` : '';
-        const provisioningNumberDisplay = task.work && (task.work.status === 'wait' || task.work.status === 'progress')
-          ? ` (Provisioning: ${task.task_processed_number}/${task.task_expected_number})`
-          : '';
-        const progressFullText = `${t_i18n('Progress')}${progressNumberDisplay}${provisioningNumberDisplay}`;
-        let progressValue = 0;
-        if (task.work) {
-          if (task.work.status === 'complete') {
-            progressValue = 100;
-          } else if (task.work.status === 'wait') {
-            progressValue = 0;
-          } else if (taskWorkExpectedNumber) {
-            progressValue = Math.round((100 * (taskWorkProcessedNumber)) / (taskWorkExpectedNumber));
+      <Stack spacing={2}>
+        {tasks.map((taskEdge) => {
+          const task = taskEdge.node;
+          let status = '';
+          if (task.completed) {
+            status = 'complete';
+          } else if (task.task_processed_number > 0) {
+            status = 'provisioning';
           } else {
-            progressValue = 0;
+            status = 'wait';
           }
-        } else {
-          progressValue = 100;
-        }
-        const taskErrors = [...task.errors, ...(task.work?.errors ?? [])];
-        return (
-          <Paper
-            key={task.id}
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ marginBottom: 20 }}
-          >
-            <Grid container={true} spacing={3}>
-              <Grid item xs={5}>
-                <Grid container={true} spacing={1}>
-                  {task.description && (
+          if (task.work) {
+            if (task.work.status === 'wait' || task.work.status === 'progress') {
+              status = 'processing';
+            }
+          }
+          let filters = null;
+          let listIds = '';
+          if (task.task_filters) {
+            filters = isFilterFormatCorrect(task.task_filters)
+              ? deserializeFilterGroupForFrontend(task.task_filters)
+              : convertFiltersFromOldFormat(task.task_filters);
+          } else if (task.task_ids) {
+            listIds = truncate(R.join(', ', task.task_ids), 60);
+          }
+          const lastTaskExecutionDate = task.work ? task.work.completed_time : task.last_execution_date;
+          const taskWorkProcessedNumber = task.work?.tracking?.import_processed_number ?? 0;
+          const taskWorkExpectedNumber = task.work?.tracking?.import_expected_number ?? 0;
+          const progressNumberDisplay = task.work ? ` ${taskWorkProcessedNumber}/${taskWorkExpectedNumber}` : '';
+          const provisioningNumberDisplay = task.work && (task.work.status === 'wait' || task.work.status === 'progress')
+            ? ` (Provisioning: ${task.task_processed_number}/${task.task_expected_number})`
+            : '';
+          const progressFullText = `${t_i18n('Progress')}${progressNumberDisplay}${provisioningNumberDisplay}`;
+          let progressValue = 0;
+          if (task.work) {
+            if (task.work.status === 'complete') {
+              progressValue = 100;
+            } else if (task.work.status === 'wait') {
+              progressValue = 0;
+            } else if (taskWorkExpectedNumber) {
+              progressValue = Math.round((100 * (taskWorkProcessedNumber)) / (taskWorkExpectedNumber));
+            } else {
+              progressValue = 0;
+            }
+          } else {
+            progressValue = 100;
+          }
+          const taskErrors = [...task.errors, ...(task.work?.errors ?? [])];
+          return (
+            <Card key={task.id}>
+              <Grid container={true} spacing={3}>
+                <Grid item xs={5}>
+                  <Grid container={true} spacing={1}>
+                    {task.description && (
+                      <Grid item xs={12}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {`${t_i18n('Description')}: ${task.description}`}
+                        </Typography>
+                      </Grid>
+                    )}
                     <Grid item xs={12}>
                       <Typography variant="h3" gutterBottom={true}>
-                        {`${t_i18n('Description')}: ${task.description}`}
+                        {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
                       </Typography>
-                    </Grid>
-                  )}
-                  <Grid item xs={12}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
-                    </Typography>
-                    {task.task_search && (
-                      <span>
-                        <Chip
-                          classes={{ root: classes.filter }}
-                          label={(
-                            <div>
-                              <strong>{t_i18n('Search')}</strong>:{' '}
-                              {task.task_search}
-                            </div>
-                          )}
-                        />
-                        <Chip
-                          classes={{ root: classes.operator }}
-                          label={t_i18n('AND')}
-                        />
-                      </span>
-                    )}
-                    {task.type !== 'RULE'
-                      && (isFilterGroupNotEmpty(filters)
-                        ? (
-                            <TasksFilterValueContainer
-                              filters={filters}
-                              entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
-                            />
-                          )
-                        : (
-                            <Chip
-                              classes={{ root: classes.filter }}
-                              label={(
-                                <div>
-                                  <strong>{t_i18n('List of entities')}</strong>:{' '}
-                                  {listIds}
-                                </div>
-                              )}
-                            />
-                          )
-                      )
-                    }
-                    {task.type === 'RULE' && (
-                      <Chip
-                        classes={{ root: classes.filter }}
-                        label={<div>{t_i18n('All rule targets')}</div>}
-                      />
-                    )}
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Actions')}
-                    </Typography>
-                    {task.type === 'RULE' && (
-                      <Chip
-                        classes={{ root: classes.operator }}
-                        label={<div>{t_i18n('APPLY RULE')}</div>}
-                      />
-                    )}
-                    {task.actions
-                      && R.map(
-                        (action) => (
-                          <div key={task.actions.indexOf(action)}>
-                            <Chip
-                              classes={{ root: classes.operator }}
-                              label={action.type}
-                            />
-                            {action.context && (
+                      {task.task_search && (
+                        <span>
+                          <Chip
+                            classes={{ root: classes.filter }}
+                            label={(
+                              <div>
+                                <strong>{t_i18n('Search')}</strong>:{' '}
+                                {task.task_search}
+                              </div>
+                            )}
+                          />
+                          <Chip
+                            classes={{ root: classes.operator }}
+                            label={t_i18n('AND')}
+                          />
+                        </span>
+                      )}
+                      {task.type !== 'RULE'
+                        && (isFilterGroupNotEmpty(filters)
+                          ? (
+                              <TasksFilterValueContainer
+                                filters={filters}
+                                entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
+                              />
+                            )
+                          : (
                               <Chip
                                 classes={{ root: classes.filter }}
                                 label={(
                                   <div>
-                                    {action.context.field && (
-                                      <span>
-                                        <strong>
-                                          {t_i18n(action.context.field)}
-                                        </strong>
-                                        :{' '}
-                                      </span>
-                                    )}
-                                    {truncate(
-                                      R.join(
-                                        ', ',
-                                        action.context.values || [],
-                                      ),
-                                      80,
-                                    )}
+                                    <strong>{t_i18n('List of entities')}</strong>:{' '}
+                                    {listIds}
                                   </div>
                                 )}
                               />
-                            )}
-                          </div>
-                        ),
-                        task.actions,
+                            )
+                        )
+                      }
+                      {task.type === 'RULE' && (
+                        <Chip
+                          classes={{ root: classes.filter }}
+                          label={<div>{t_i18n('All rule targets')}</div>}
+                        />
                       )}
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Actions')}
+                      </Typography>
+                      {task.type === 'RULE' && (
+                        <Chip
+                          classes={{ root: classes.operator }}
+                          label={<div>{t_i18n('APPLY RULE')}</div>}
+                        />
+                      )}
+                      {task.actions
+                        && R.map(
+                          (action) => (
+                            <div key={task.actions.indexOf(action)}>
+                              <Chip
+                                classes={{ root: classes.operator }}
+                                label={action.type}
+                              />
+                              {action.context && (
+                                <Chip
+                                  classes={{ root: classes.filter }}
+                                  label={(
+                                    <div>
+                                      {action.context.field && (
+                                        <span>
+                                          <strong>
+                                            {t_i18n(action.context.field)}
+                                          </strong>
+                                          :{' '}
+                                        </span>
+                                      )}
+                                      {truncate(
+                                        R.join(
+                                          ', ',
+                                          action.context.values || [],
+                                        ),
+                                        80,
+                                      )}
+                                    </div>
+                                  )}
+                                />
+                              )}
+                            </div>
+                          ),
+                          task.actions,
+                        )}
+                    </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
-              <Grid item xs={7}>
-                <Grid container={true} spacing={3}>
-                  <Grid item xs={2}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Initiator')}
-                    </Typography>
-                    <Tooltip title={task.initiator?.name}>
-                      {truncate(task.initiator?.name, 15)}
-                    </Tooltip>
+                <Grid item xs={7}>
+                  <Grid container={true} spacing={3}>
+                    <Grid item xs={2}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Initiator')}
+                      </Typography>
+                      <Tooltip title={task.initiator?.name}>
+                        {truncate(task.initiator?.name, 15)}
+                      </Tooltip>
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Task start time')}
+                      </Typography>
+                      {nsdt(task.created_at)}
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {task.completed
+                          ? t_i18n('Task end time')
+                          : t_i18n('Task last execution time')}
+                      </Typography>
+                      {nsdt(lastTaskExecutionDate)}
+                    </Grid>
+                    {(task.scope ?? task.type)
+                      && (
+                        <Grid item xs={2}>
+                          <Typography variant="h3" gutterBottom={true}>
+                            {t_i18n('Scope')}
+                          </Typography>
+                          <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
+                        </Grid>
+                      )
+                    }
+                    <Grid item xs={2}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Status')}
+                      </Typography>
+                      <TaskStatus status={status} label={t_i18n(status)} />
+                    </Grid>
+                    <Grid item xs={10}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {progressFullText}
+                      </Typography>
+                      <LinearProgress
+                        classes={{ root: classes.progress }}
+                        variant="determinate"
+                        value={progressValue}
+                      />
+                    </Grid>
                   </Grid>
-                  <Grid item xs={2}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Task start time')}
-                    </Typography>
-                    {nsdt(task.created_at)}
-                  </Grid>
-                  <Grid item xs={2}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {task.completed
-                        ? t_i18n('Task end time')
-                        : t_i18n('Task last execution time')}
-                    </Typography>
-                    {nsdt(lastTaskExecutionDate)}
-                  </Grid>
-                  {(task.scope ?? task.type)
-                    && (
-                      <Grid item xs={2}>
-                        <Typography variant="h3" gutterBottom={true}>
-                          {t_i18n('Scope')}
-                        </Typography>
-                        <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
-                      </Grid>
-                    )
-                  }
-                  <Grid item xs={2}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Status')}
-                    </Typography>
-                    <TaskStatus status={status} label={t_i18n(status)} />
-                  </Grid>
-                  <Grid item xs={10}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {progressFullText}
-                    </Typography>
-                    <LinearProgress
-                      classes={{ root: classes.progress }}
-                      variant="determinate"
-                      value={progressValue}
-                    />
-                  </Grid>
+                  <br />
                 </Grid>
-                <br />
-              </Grid>
-              <Button
-                style={{ position: 'absolute', right: 10, top: 10 }}
-                variant={taskErrors.length > 0 ? 'primary' : 'secondary'}
-                color="error"
-                disabled={taskErrors.length === 0}
-                onClick={() => handleOpenErrors(taskErrors)}
-                size="small"
-              >
-                {taskErrors.length} {t_i18n('errors')}
-              </Button>
-              {task.scope // if task.scope exists = it is list task or a query task
-                ? (
-                    <Button
-                      style={{ position: 'absolute', right: 10, bottom: 10 }}
-                      variant="secondary"
-                      onClick={() => handleDeleteTask(task.id)}
-                      size="small"
-                    >
-                      <Delete fontSize="small" />
-                  &nbsp;&nbsp;{t_i18n('Delete')}
-                    </Button>
-                  )
-                : (
-                    <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                <Button
+                  style={{ position: 'absolute', right: 10, top: 10 }}
+                  variant={taskErrors.length > 0 ? 'contained' : 'outlined'}
+                  color="error"
+                  disabled={taskErrors.length === 0}
+                  onClick={() => handleOpenErrors(taskErrors)}
+                  size="small"
+                >
+                  {taskErrors.length} {t_i18n('errors')}
+                </Button>
+                {task.scope // if task.scope exists = it is list task or a query task
+                  ? (
                       <Button
                         style={{ position: 'absolute', right: 10, bottom: 10 }}
                         variant="secondary"
@@ -484,13 +460,26 @@ const TasksList = ({ data, options }) => {
                         <Delete fontSize="small" />
                     &nbsp;&nbsp;{t_i18n('Delete')}
                       </Button>
-                    </Security>
-                  )
-              }
-            </Grid>
-          </Paper>
-        );
-      })}
+                    )
+                  : (
+                      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                        <Button
+                          style={{ position: 'absolute', right: 10, bottom: 10 }}
+                          variant="outlined"
+                          onClick={() => handleDeleteTask(task.id)}
+                          size="small"
+                        >
+                          <Delete fontSize="small" />
+                      &nbsp;&nbsp;{t_i18n('Delete')}
+                        </Button>
+                      </Security>
+                    )
+                }
+              </Grid>
+            </Card>
+          );
+        })}
+      </Stack>
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={displayMessages}

@@ -1,12 +1,12 @@
 import Button from '@common/button/Button';
 import React, { FunctionComponent, useEffect, useState } from 'react';
+import CardTitle from '@common/card/CardTitle';
 import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import AddPersonaThreatActorIndividual from './AddPersonasThreatActorIndividual';
 import AddIndividualsThreatActorIndividual from './AddIndividualsThreatActorIndividual';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import CardLabel from '../../../../components/CardLabel';
 
 type SupportedTypes = 'known-as' | 'impersonates';
 type SupportedFields = 'observable_value' | 'name';
@@ -67,7 +67,7 @@ const ThreatActorIndividualDetailsChips: FunctionComponent<
 
   return (
     <div style={{ marginBottom: '20px' }}>
-      <CardLabel action={(
+      <CardTitle action={(
         <Security
           needs={[KNOWLEDGE_KNUPDATE]}
         >
@@ -76,7 +76,7 @@ const ThreatActorIndividualDetailsChips: FunctionComponent<
       )}
       >
         {title}
-      </CardLabel>
+      </CardTitle>
       <div className="clearfix" />
       <FieldOrEmpty source={nodes}>
         {

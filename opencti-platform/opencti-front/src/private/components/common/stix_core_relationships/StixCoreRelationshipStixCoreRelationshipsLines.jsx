@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -21,13 +19,9 @@ import { resolveLink } from '../../../../utils/Entity';
 import StixCoreRelationshipCreationFromRelation from './StixCoreRelationshipCreationFromRelation';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Card from '../../../../components/common/card/Card';
 
 const styles = (theme) => ({
-  paper: {
-    margin: '-5px 0 0 0',
-    padding: '10px 0 10px 0',
-    borderRadius: 4,
-  },
   list: {
     padding: 0,
   },
@@ -52,22 +46,22 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
     const { t, classes, entityId, data, paginationOptions } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Linked entities')}
-        </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
+        <Card
+          title={t('Linked entities')}
+          action={(
+            <Security
+              needs={[KNOWLEDGE_KNUPDATE]}
+              placeholder={<div style={{ height: 29 }} />}
+            >
+              <StixCoreRelationshipCreationFromRelation
+                entityId={entityId}
+                paddingRight={true}
+                variant="inLine"
+                paginationOptions={paginationOptions}
+              />
+            </Security>
+          )}
         >
-          <StixCoreRelationshipCreationFromRelation
-            entityId={entityId}
-            paddingRight={true}
-            variant="inLine"
-            paginationOptions={paginationOptions}
-          />
-        </Security>
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           <List classes={{ root: classes.list }}>
             {data.stixCoreRelationships.edges.map(
               (stixCoreRelationshipEdge) => {
@@ -132,7 +126,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
               },
             )}
           </List>
-        </Paper>
+        </Card>
       </div>
     );
   }

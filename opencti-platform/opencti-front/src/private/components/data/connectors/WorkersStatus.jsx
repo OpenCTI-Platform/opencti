@@ -5,19 +5,40 @@ import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import withTheme from '@mui/styles/withTheme';
-import Paper from '@mui/material/Paper';
+import Card from '@common/card/Card';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
+import { useTheme } from '@mui/material';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const MetricCard = ({ title, value, paperStyle, numberStyle }) => (
-  <Paper variant="outlined" style={paperStyle} className="paper-for-grid">
-    <Typography variant="h5">{title}</Typography>
-    <div style={numberStyle}>{value}</div>
-  </Paper>
-);
+const MetricCard = ({ title, value }) => {
+  const theme = useTheme();
+
+  const paperStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexDirection: 'column',
+    height: '100%',
+  };
+
+  const numberStyle = {
+    color: theme.palette.primary.main,
+    fontSize: 32,
+    lineHeight: '60px',
+    verticalAlign: 'middle',
+  };
+
+  return (
+    <Card>
+      <div style={paperStyle}>
+        <Typography variant="h5">{title}</Typography>
+        <div style={numberStyle}>{value}</div>
+      </div>
+    </Card>
+  );
+};
 
 class WorkersStatusComponent extends Component {
   constructor(props) {
@@ -47,7 +68,7 @@ class WorkersStatusComponent extends Component {
   };
 
   render() {
-    const { t, n, data, theme } = this.props;
+    const { t, n, data } = this.props;
     const { consumers, overview } = data?.rabbitMQMetrics || {};
     const { docs, search, indexing } = data?.elasticSearchMetrics || {};
 
@@ -65,69 +86,42 @@ class WorkersStatusComponent extends Component {
       writeOperations = (currentWriteOperations - this.lastWriteOperations) / 5;
     }
 
-    const paperStyle = {
-      display: 'flex',
-      padding: theme.spacing(2),
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      flexDirection: 'column',
-      height: '100%',
-    };
-    const numberStyle = {
-      color: theme.palette.primary.main,
-      fontSize: 32,
-      lineHeight: '60px',
-      verticalAlign: 'middle',
-    };
-
     return (
       <Grid container={true} spacing={3}>
         <Grid item xs={2}>
           <MetricCard
             title={t('Connected workers')}
             value={this.safeValue(consumers, n)}
-            paperStyle={paperStyle}
-            numberStyle={numberStyle}
           />
         </Grid>
         <Grid item xs={2}>
           <MetricCard
             title={t('Queued bundles')}
             value={this.safeValue(overview ? pathOr(0, ['queue_totals', 'messages'], overview) : null, n)}
-            paperStyle={paperStyle}
-            numberStyle={numberStyle}
           />
         </Grid>
         <Grid item xs={2}>
           <MetricCard
             title={t('Bundles processed')}
             value={this.safeValue(overview ? pathOr(0, ['message_stats', 'ack_details', 'rate'], overview) : null, n, '/s')}
-            paperStyle={paperStyle}
-            numberStyle={numberStyle}
           />
         </Grid>
         <Grid item xs={2}>
           <MetricCard
             title={t('Read operations')}
             value={this.safeValue(readOperations, n, '/s')}
-            paperStyle={paperStyle}
-            numberStyle={numberStyle}
           />
         </Grid>
         <Grid item xs={2}>
           <MetricCard
             title={t('Write operations')}
             value={this.safeValue(writeOperations, n, '/s')}
-            paperStyle={paperStyle}
-            numberStyle={numberStyle}
           />
         </Grid>
         <Grid item xs={2}>
           <MetricCard
             title={t('Total number of documents')}
             value={this.safeValue(docs?.count, n)}
-            paperStyle={paperStyle}
-            numberStyle={numberStyle}
           />
         </Grid>
       </Grid>
@@ -137,7 +131,6 @@ class WorkersStatusComponent extends Component {
 
 WorkersStatusComponent.propTypes = {
   classes: PropTypes.object,
-  t: PropTypes.func,
   n: PropTypes.func,
   nsdt: PropTypes.func,
   data: PropTypes.object,
@@ -192,4 +185,4 @@ const WorkersStatus = createRefetchContainer(
   workersStatusQuery,
 );
 
-export default compose(inject18n, withTheme)(WorkersStatus);
+export default compose(inject18n)(WorkersStatus);

@@ -3,10 +3,8 @@ import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@common/button/IconButton';
-import Paper from '@mui/material/Paper';
+import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Form, Formik } from 'formik';
 import React, { FunctionComponent, MutableRefObject, useState } from 'react';
@@ -28,24 +26,11 @@ import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.gra
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { FieldOption } from '../../../../utils/field';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    margin: '-5px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-    overflowY: 'inherit',
-  },
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
-  applyButton: {
-    float: 'right',
-    marginTop: -15,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -139,33 +124,6 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   const { count: _, ...tasksFilters } = paginationOptions;
   return (
     <div style={{ height: '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{ float: 'left', paddingBottom: 11 }}
-      >
-        {t_i18n('Tasks')}
-      </Typography>
-      <Tooltip title={t_i18n('Add a task to this container')}>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={handleOpen}
-          classes={{ root: classes.createButton }}
-        >
-          <AddOutlined fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title={t_i18n('Apply a new case template')}>
-        <IconButton
-          color="primary"
-          aria-label="Apply"
-          onClick={() => setOpenCaseTemplate(true)}
-          classes={{ root: classes.applyButton }}
-        >
-          <ContentPasteGoOutlined fontSize="small" />
-        </IconButton>
-      </Tooltip>
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={openCaseTemplate}
@@ -245,8 +203,33 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           defaultMarkings={defaultMarkings}
         />
       </Drawer>
-      <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+      <Card
+        title={t_i18n('Tasks')}
+        action={(
+          <div>
+            <Tooltip title={t_i18n('Add a task to this container')}>
+              <IconButton
+                color="primary"
+                aria-label="Add"
+                onClick={handleOpen}
+                size="small"
+              >
+                <AddOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t_i18n('Apply a new case template')}>
+              <IconButton
+                color="primary"
+                aria-label="Apply"
+                onClick={() => setOpenCaseTemplate(true)}
+                size="small"
+              >
+                <ContentPasteGoOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </div>
+        )}
+      >
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -266,7 +249,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             enableReferences={enableReferences}
           />
         </ListLines>
-      </Paper>
+      </Card>
     </div>
   );
 };

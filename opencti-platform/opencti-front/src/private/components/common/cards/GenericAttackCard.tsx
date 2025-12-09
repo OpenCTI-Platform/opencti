@@ -1,6 +1,5 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent, MouseEvent } from 'react';
 import * as R from 'ramda';
-import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import { Link } from 'react-router-dom';
 import CardHeader from '@mui/material/CardHeader';
@@ -10,8 +9,8 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import Skeleton from '@mui/material/Skeleton';
-import { getFileUri } from '../../../../utils/utils';
-import ItemIcon from '../../../../components/ItemIcon';
+import { Stack } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
 import { emptyFilled } from '../../../../utils/String';
@@ -20,21 +19,11 @@ import { addBookmark, deleteBookMark } from '../stix_domain_objects/StixDomainOb
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  card: {
-    width: '100%',
-    height: 330,
-    borderRadius: 4,
-  },
-  cardDummy: {
-    width: '100%',
-    height: 330,
-    color: theme.palette.grey?.[700],
-    borderRadius: 4,
-  },
+const useStyles = makeStyles<Theme>(() => ({
   area: {
     width: '100%',
     height: '100%',
@@ -46,12 +35,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   content: {
     width: '100%',
-    paddingTop: 0,
+    padding: 0,
   },
   contentDummy: {
     width: '100%',
     height: 200,
     marginTop: 20,
+    padding: 0,
   },
   description: {
     marginTop: 5,
@@ -129,7 +119,9 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   bookmarksIds,
 }) => {
   const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { t_i18n, fld } = useFormatter();
+
   const relatedIntrusionSets = R.uniq((cardData.relatedIntrusionSets?.edges ?? [])
     .map((n) => n?.node?.from?.name))
     .join(', ');
@@ -142,7 +134,8 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   const targetedSectors = R.uniq((cardData.targetedSectors?.edges ?? [])
     .map((n) => n?.node?.to?.name))
     .join(', ');
-  const handleBookmarksIds = (e: React.MouseEvent<HTMLElement>) => {
+
+  const handleBookmarksIds = (e: MouseEvent<HTMLElement>) => {
     e.preventDefault();
     if (bookmarksIds?.includes(cardData.id)) {
       deleteBookMark(cardData.id, entityType);
@@ -150,35 +143,38 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
       addBookmark(cardData.id, entityType);
     }
   };
+
+  const Info = (props: { title: string; value: string }) => (
+    <Stack direction="row" gap={1} alignItems="center">
+      <Typography
+        variant="h4"
+        sx={{ margin: 0, color: theme.palette.text.secondary }}
+      >
+        {props.title}:
+      </Typography>
+      <Typography variant="body2">
+        {props.value}
+      </Typography>
+    </Stack>
+  );
+
   return (
-    <Card classes={{ root: classes.card }} variant="outlined">
+    <Card>
       <CardActionArea
         classes={{ root: classes.area }}
         component={Link}
         to={cardLink}
       >
         <CardHeader
+          sx={{ padding: 0 }}
           classes={{ root: classes.header, title: classes.title }}
-          avatar={
-            cardData.avatar ? (
-              <img
-                style={{ height: 37, maxWidth: 100, borderRadius: 4 }}
-                src={getFileUri(cardData.avatar.id)}
-                alt={cardData.avatar.name}
-              />
-            ) : (
-              <ItemIcon type={entityType} />
-            )
-          }
           title={renderCardTitle(cardData)}
           subheader={fld(cardData.modified)}
           action={(
             <IconButton
               size="small"
               onClick={handleBookmarksIds}
-              color={
-                bookmarksIds?.includes(cardData.id) ? 'secondary' : 'primary'
-              }
+              color={bookmarksIds?.includes(cardData.id) ? 'secondary' : 'primary'}
             >
               <StarBorderOutlined />
             </IconButton>
@@ -196,45 +192,29 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
             />
           </div>
           <div className={classes.extras}>
-            <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
-              <Typography variant="h4">{t_i18n('Known as')}</Typography>
-              <Typography variant="body2">
-                {emptyFilled((cardData.aliases || []).join(', '))}
-              </Typography>
-            </div>
+            <Info
+              title={t_i18n('Known as')}
+              value={emptyFilled((cardData.aliases || []).join(', '))}
+            />
             {entityType === 'Malware' ? (
-              <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
-                <Typography variant="h4">
-                  {t_i18n('Correlated intrusion sets')}
-                </Typography>
-                <Typography variant="body2">
-                  {emptyFilled(relatedIntrusionSets)}
-                </Typography>
-              </div>
+              <Info
+                title={t_i18n('Correlated intrusion sets')}
+                value={emptyFilled(relatedIntrusionSets)}
+              />
             ) : (
-              <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
-                <Typography variant="h4">{t_i18n('Used malware')}</Typography>
-                <Typography variant="body2">
-                  {emptyFilled(usedMalware)}
-                </Typography>
-              </div>
+              <Info
+                title={t_i18n('Used malware')}
+                value={emptyFilled(usedMalware)}
+              />
             )}
-            <div className="clearfix" />
-          </div>
-          <div className={classes.extras}>
-            <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
-              <Typography variant="h4">{t_i18n('Targeted countries')}</Typography>
-              <Typography variant="body2">
-                {emptyFilled(targetedCountries)}
-              </Typography>
-            </div>
-            <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
-              <Typography variant="h4">{t_i18n('Targeted sectors')}</Typography>
-              <Typography variant="body2">
-                {emptyFilled(targetedSectors)}
-              </Typography>
-            </div>
-            <div className="clearfix" />
+            <Info
+              title={t_i18n('Targeted countries')}
+              value={emptyFilled(targetedCountries)}
+            />
+            <Info
+              title={t_i18n('Targeted sectors')}
+              value={emptyFilled(targetedSectors)}
+            />
           </div>
           <div className={classes.objectLabel}>
             <StixCoreObjectLabels
@@ -251,9 +231,10 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
 export const GenericAttackCardDummy = () => {
   const classes = useStyles();
   return (
-    <Card classes={{ root: classes.cardDummy }} variant="outlined">
+    <Card>
       <CardActionArea classes={{ root: classes.area }}>
         <CardHeader
+          sx={{ padding: 0 }}
           classes={{ root: classes.header }}
           avatar={(
             <Skeleton

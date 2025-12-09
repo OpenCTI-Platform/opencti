@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import Paper from '@mui/material/Paper';
-import Button from '@common/button/Button';
-import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-
 import DialogActions from '@mui/material/DialogActions';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
 import Transition from '../../../components/Transition';
+import Card from '../../../components/common/card/Card';
 
 const ProfileLocalStorage: React.FC = () => {
   const { t_i18n } = useFormatter();
@@ -19,24 +17,10 @@ const ProfileLocalStorage: React.FC = () => {
 
   return (
     <>
-      <Paper
-        variant="outlined"
-        sx={{
-          marginBottom: 3,
-          padding: '20px',
-          borderRadius: '4px',
-        }}
-      >
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-        >
-          {t_i18n('Local settings')}
-        </Typography>
+      <Card title={t_i18n('Local settings')}>
         <Alert
           severity="info"
           variant="outlined"
-          style={{ margin: '10px 0 0 0' }}
         >
           {t_i18n('Your local storage contains the latest filters and searches used in most views of the platform. Clearing local storage might help to load a page crashing because of some filtering, searching or sorting issue.')}
         </Alert>
@@ -47,7 +31,7 @@ const ProfileLocalStorage: React.FC = () => {
             {t_i18n('Clear local storage')}
           </Button>
         </div>
-      </Paper>
+      </Card>
 
       {/* Confirmation dialog */}
       <Dialog

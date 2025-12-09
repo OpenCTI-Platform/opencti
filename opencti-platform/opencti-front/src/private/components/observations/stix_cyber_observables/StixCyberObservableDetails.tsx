@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid2';
 import { GetAppOutlined } from '@mui/icons-material';
@@ -9,7 +8,6 @@ import Divider from '@mui/material/Divider';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/styles';
 import StixCyberObservableNestedEntities from './StixCyberObservableNestedEntities';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -24,9 +22,9 @@ import { StixCyberObservable_stixCyberObservable$data } from '@components/observ
 import {
   StixCyberObservableDetails_stixCyberObservable$key,
 } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservableDetails_stixCyberObservable.graphql';
-import { Theme } from '../../../../components/Theme';
 import { PopoverProps } from '@mui/material/Popover';
 import useAttributeValueToReadableValue from '../../../../utils/hooks/useAttributeValueToReadableValue';
+import Card from '../../../../components/common/card/Card';
 
 const stixCyberObservableDetailsFragment = graphql`
   fragment StixCyberObservableDetails_stixCyberObservable on StixCyberObservable {
@@ -380,7 +378,6 @@ interface StixCyberObservableDetailsProps {
 }
 
 const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) => {
-  const theme = useTheme<Theme>();
   const stixCyberObservable = useFragment<StixCyberObservableDetails_stixCyberObservable$key>(stixCyberObservableDetailsFragment, data);
 
   const { t_i18n } = useFormatter();
@@ -423,13 +420,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
 
   return (
     <div style={{ height: '100%' }} className="break">
-      <Typography variant="h4" gutterBottom={true}>{t_i18n('Details')}</Typography>
-
-      <Paper
-        sx={{ padding: '15px', marginTop: theme.spacing(1) }}
-        className="paper-for-grid"
-        variant="outlined"
-      >
+      <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
           {file && (
             <Grid size={6}>
@@ -538,7 +529,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
             />
           )}
         </Box>
-      </Paper>
+      </Card>
     </div>
   );
 };

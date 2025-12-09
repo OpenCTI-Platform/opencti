@@ -3,11 +3,11 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
+import Card from '@common/card/Card';
 import RelatedContainers from '../../common/containers/related_containers/RelatedContainers';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import inject18n from '../../../../components/i18n';
@@ -15,14 +15,6 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-    position: 'relative',
-    display: 'flex',
-    flexFlow: 'column',
-  },
   chip: {
     fontSize: 12,
     lineHeight: '12px',
@@ -110,10 +102,7 @@ const GroupingDetailsComponent = (props) => {
 
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true}>
-        {t('Entity details')}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+      <Card title={t('Entity details')}>
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
           <Grid item xs={6} ref={ref}>
             <Typography variant="h3" gutterBottom={true}>
@@ -149,7 +138,7 @@ const GroupingDetailsComponent = (props) => {
           containerId={grouping.id}
           entityType={grouping.entity_type}
         />
-      </Paper>
+      </Card>
     </div>
   );
 };

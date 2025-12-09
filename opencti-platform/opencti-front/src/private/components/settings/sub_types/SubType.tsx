@@ -1,6 +1,5 @@
 import Typography from '@mui/material/Typography';
-import React, { CSSProperties, Suspense, useMemo } from 'react';
-import Paper from '@mui/material/Paper';
+import React, { Suspense, useMemo } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import EntitySettingCustomOverview from '@components/settings/sub_types/entity_setting/EntitySettingCustomOverview';
@@ -23,6 +22,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import Card from '../../../../components/common/card/Card';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -91,13 +91,6 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isEnterpriseEdition && subType.settings?.availableSettings.includes('request_access_workflow');
 
-  const paperStyle: CSSProperties = {
-    marginTop: theme.spacing(1),
-    padding: theme.spacing(2),
-    borderRadius: theme.spacing(0.5),
-    position: 'relative',
-  };
-
   return (
     <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
       <Breadcrumbs elements={[
@@ -116,29 +109,15 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
       <Grid container spacing={3}>
         <Grid item xs={hasTemplates ? 6 : 12}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Configuration')}
-          </Typography>
-          <Paper
-            style={paperStyle}
-            variant="outlined"
-            className="paper-for-grid"
-          >
+          <Card title={t_i18n('Configuration')}>
             <EntitySettingSettings entitySettingsData={subType.settings} />
-          </Paper>
+          </Card>
         </Grid>
 
         {hasTemplates && <FintelTemplatesGrid data={subType.settings} />}
 
         <Grid item xs={12}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Workflow')}
-          </Typography>
-          <Paper
-            style={paperStyle}
-            variant="outlined"
-            className="paper-for-grid"
-          >
+          <Card title={t_i18n('Workflow')}>
             <div style={{ display: 'flex', marginTop: theme.spacing(1) }}>
               <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
                 {subType.settings?.availableSettings.includes('workflow_configuration')
@@ -164,33 +143,27 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 </>
               )}
             </div>
-          </Paper>
+          </Card>
         </Grid>
 
         {subType.settings?.availableSettings.includes('attributes_configuration') && (
           <Grid item xs={12}>
-            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-              {t_i18n('Attributes')}
-            </Typography>
-            <div style={{ float: 'right', marginTop: -12 }}>
-              <SearchInput
-                variant="thin"
-                onSubmit={helpers.handleSearch}
-                keyword={searchTerm}
-              />
-            </div>
-            <div className="clearfix" />
-            <Paper
-              style={paperStyle}
-              variant="outlined"
-              className="paper-for-grid"
+            <Card
+              title={t_i18n('Attributes')}
+              titleSx={{ alignItems: 'end' }}
+              action={(
+                <SearchInput
+                  variant="thin"
+                  onSubmit={helpers.handleSearch}
+                  keyword={searchTerm}
+                />
+              )}
             >
               <EntitySettingAttributes
                 entitySettingsData={subType.settings}
                 searchTerm={searchTerm}
-              >
-              </EntitySettingAttributes>
-            </Paper>
+              />
+            </Card>
           </Grid>
         )}
 

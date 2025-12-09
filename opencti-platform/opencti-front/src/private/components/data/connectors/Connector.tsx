@@ -2,7 +2,6 @@ import React, { FunctionComponent, useCallback, useEffect, useState } from 'reac
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import Chip from '@mui/material/Chip';
@@ -13,7 +12,7 @@ import { useTheme } from '@mui/styles';
 import { Link } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Alert from '@mui/material/Alert';
@@ -50,6 +49,7 @@ import { Connector_connector$data } from './__generated__/Connector_connector.gr
 import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/ConnectorUpdateTriggerMutation.graphql';
 import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateStatusMutation.graphql';
 import { ConnectorWorksQuery$data, ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
+import Card from '../../../../components/common/card/Card';
 
 // Type extension for organization node with authorized_authorities
 interface OrganizationNodeWithAuthorities {
@@ -134,7 +134,7 @@ const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ 
   };
 
   return (
-    <>
+    <Stack spacing={3}>
       <QueryRenderer
         key="connector-works-in-progress"
         query={connectorWorksQuery}
@@ -160,7 +160,7 @@ const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ 
           return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
-    </>
+    </Stack>
   );
 };
 
@@ -269,18 +269,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     <>
       <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Basic information')}
-          </Typography>
-          <Paper
-            style={{
-              marginTop: theme.spacing(1),
-              padding: '15px',
-              borderRadius: 4,
-            }}
-            className="paper-for-grid"
-            variant="outlined"
-          >
+          <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -294,7 +283,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     margin: '0 10px 10px 0',
                     borderRadius: 4,
                     backgroundColor: theme.palette.background.accent,
-                    color: theme.palette.text?.primary,
                   }}
                   label={connector.connector_type}
                 />
@@ -336,7 +324,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       margin: '0 10px 10px 0',
                       borderRadius: 4,
                       backgroundColor: theme.palette.background.accent,
-                      color: theme.palette.text?.primary,
                     }}
                     label={scope}
                   />
@@ -519,21 +506,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </>
               </Security>
             </Grid>
-          </Paper>
+          </Card>
         </Grid>
         <Grid item xs={6}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Details')}
-          </Typography>
-          <Paper
-            style={{
-              marginTop: theme.spacing(1),
-              padding: '15px',
-              borderRadius: 4,
-            }}
-            className="paper-for-grid"
-            variant="outlined"
-          >
+          <Card title={t_i18n('Details')}>
             <Grid container={true} spacing={3}>
               {connector.connector_info?.buffering && (
                 <Grid item xs={12}>
@@ -686,7 +662,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </Grid>
               )}
             </Grid>
-          </Paper>
+          </Card>
         </Grid>
       </Grid>
     </>

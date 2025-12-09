@@ -8,7 +8,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
 import handleWidgetExportJson from '../../../../utils/widget/widgetExportHandler';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
@@ -18,25 +17,14 @@ import Transition from '../../../../components/Transition';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  container: {
-    margin: 0,
-    position: 'absolute',
-    top: 0,
-    right: 0,
-  },
-});
-
 const WorkspaceWidgetPopover = ({
   onUpdate,
   onDuplicate,
   widget,
   onDelete,
   workspace,
+  skipTitle = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
@@ -53,7 +41,14 @@ const WorkspaceWidgetPopover = ({
     handleWidgetExportJson(workspace.id, widget);
   };
   return (
-    <div className={classes.container}>
+    <div style={{
+      margin: 0,
+      position: 'absolute',
+      top: skipTitle ? 0 : 27,
+      right: 0,
+      zIndex: 999,
+    }}
+    >
       <IconButton
         onClick={(event) => {
           event.stopPropagation();

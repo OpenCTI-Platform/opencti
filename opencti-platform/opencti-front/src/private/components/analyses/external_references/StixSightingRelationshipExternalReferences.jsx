@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -13,13 +11,9 @@ import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixSightingRelationshipExternalReferencesLines, { stixSightingRelationshipExternalReferencesLinesQuery } from './StixSightingRelationshipExternalReferencesLines';
+import Card from '@common/card/Card';
 
 const styles = (theme) => ({
-  paper: {
-    margin: '-4px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-  },
   avatar: {
     width: 24,
     height: 24,
@@ -54,15 +48,7 @@ class StixSightingRelationshipExternalReferences extends Component {
           }
           return (
             <div style={{ height: '100%' }}>
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ float: 'left', marginBottom: 15 }}
-              >
-                {t('External references')}
-              </Typography>
-              <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+              <Card title={t('External references')}>
                 <List>
                   {Array.from(Array(5), (e, i) => (
                     <ListItem
@@ -97,7 +83,7 @@ class StixSightingRelationshipExternalReferences extends Component {
                     </ListItem>
                   ))}
                 </List>
-              </Paper>
+              </Card>
             </div>
           );
         }}

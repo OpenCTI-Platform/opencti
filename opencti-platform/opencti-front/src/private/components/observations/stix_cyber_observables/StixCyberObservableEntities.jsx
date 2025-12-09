@@ -2,13 +2,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
+import Card from '@common/card/Card';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableEntitiesLines, { stixCyberObservableEntitiesLinesQuery } from './StixCyberObservableEntitiesLines';
@@ -210,34 +209,31 @@ class StixCyberObservableEntities extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Relations')}
-        </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
+        <Card
+          title={t('Relations')}
+          action={(
+            <div>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCoreRelationshipCreationFromEntity
+                  paginationOptions={paginationOptions}
+                  handleReverseRelation={this.handleReverseRelation.bind(this)}
+                  entityId={entityId}
+                  variant="inLine"
+                  isRelationReversed={relationReversed}
+                  targetStixDomainObjectTypes={['Stix-Domain-Object']}
+                  targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
+                  defaultStartTime={defaultStartTime}
+                  defaultStopTime={defaultStopTime}
+                />
+              </Security>
+              <SearchInput
+                variant="thin"
+                onSubmit={this.handleSearch.bind(this)}
+                keyword={searchTerm}
+              />
+            </div>
+          )}
         >
-          <StixCoreRelationshipCreationFromEntity
-            paginationOptions={paginationOptions}
-            handleReverseRelation={this.handleReverseRelation.bind(this)}
-            entityId={entityId}
-            variant="inLine"
-            isRelationReversed={relationReversed}
-            targetStixDomainObjectTypes={['Stix-Domain-Object']}
-            targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-          />
-        </Security>
-        <div style={{ float: 'right', marginTop: -10 }}>
-          <SearchInput
-            variant="thin"
-            onSubmit={this.handleSearch.bind(this)}
-            keyword={searchTerm}
-          />
-        </div>
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
           <List style={{ marginTop: -10 }}>
             <ListItem
               classes={{ root: classes.itemHead }}
@@ -284,7 +280,7 @@ class StixCyberObservableEntities extends Component {
               )}
             />
           </List>
-        </Paper>
+        </Card>
       </div>
     );
   }

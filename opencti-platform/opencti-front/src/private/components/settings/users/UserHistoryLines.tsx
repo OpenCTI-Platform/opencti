@@ -1,27 +1,14 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import { interval } from 'rxjs';
 import { UserHistoryLinesQuery, UserHistoryLinesQuery$variables } from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
 import { UserHistoryLines_data$key } from '@components/settings/users/__generated__/UserHistoryLines_data.graphql';
-import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import UserHistoryLine from './UserHistoryLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import type { Theme } from '../../../../components/Theme';
 
 const interval$ = interval(FIVE_SECONDS);
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1.5),
-    padding: '10px 20px 10px 20px',
-    borderRadius: 4,
-  },
-}));
 
 export const userHistoryLinesQuery = graphql`
   query UserHistoryLinesQuery(
@@ -85,7 +72,6 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
   queryArgs,
   refetch,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { data } = usePreloadedPaginationFragment<
     UserHistoryLinesQuery,
@@ -108,12 +94,7 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
   }, [queryArgs]);
 
   return (
-    <Paper
-      classes={{ root: classes.paper }}
-      variant="outlined"
-      style={{ marginTop: 0 }}
-      className="paper-for-grid"
-    >
+    <>
       {audits.length > 0 ? (
         audits.map((auditEdge) => {
           const audit = auditEdge?.node;
@@ -136,7 +117,7 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
           </span>
         </div>
       )}
-    </Paper>
+    </>
   );
 };
 

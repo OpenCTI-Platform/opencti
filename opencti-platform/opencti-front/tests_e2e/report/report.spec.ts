@@ -178,13 +178,13 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ pa
   const updateDate = reportDetailsPage.getTextForHeading('Modification date', now);
   await expect(updateDate).toBeVisible();
 
-  const historyDescription = reportDetailsPage.getTextForHeading('Most recent history', `admin creates a Report ${reportName}`);
+  const historyDescription = reportDetailsPage.getTextForCard('Most recent history', `admin creates a Report ${reportName}`);
   await expect(historyDescription).toBeVisible();
-  const historyDate = reportDetailsPage.getTextForHeading('Most recent history', format(new Date(), 'MMM d, yyyy'));
+  const historyDate = reportDetailsPage.getTextForCard('Most recent history', format(new Date(), 'MMM d, yyyy'));
   await expect(historyDate).toBeVisible();
 
   await reportDetailsPage.tabs.goToDataTab();
-  const file = reportDetailsPage.getTextForHeading('UPLOADED FILES', 'report.test.md');
+  const file = reportDetailsPage.getTextForCard('UPLOADED FILES', 'report.test.md');
   await expect(file).toBeVisible();
 
   // ---------
@@ -377,7 +377,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
 
   await expect(reportDetailsPage.overview.getLabel('threat')).toBeVisible();
 
-  const externalReference = reportDetailsPage.getTextForHeading('EXTERNAL REFERENCES', 'external ref (report.test.pdf)');
+  const externalReference = reportDetailsPage.getTextForCard('EXTERNAL REFERENCES', 'external ref (report.test.pdf)');
   await expect(externalReference).toBeVisible();
 
   // ---------

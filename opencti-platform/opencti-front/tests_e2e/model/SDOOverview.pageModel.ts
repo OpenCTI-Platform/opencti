@@ -12,7 +12,7 @@ export default class SDOOverview {
 
   getLabel(label: string) {
     return this.page
-      .getByRole('heading', { name: 'Labels' })
+      .getByText('Labels')
       .locator('..')
       .locator('..')
       .getByLabel(label);

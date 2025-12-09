@@ -13,20 +13,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { CSSProperties, Suspense } from 'react';
+import { CSSProperties, Suspense } from 'react';
 import Grid from '@mui/material/Grid2';
-import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PirOverviewCountsQuery } from './__generated__/PirOverviewCountsQuery.graphql';
 import { PirOverviewCountsFragment$key } from './__generated__/PirOverviewCountsFragment.graphql';
-import Paper from '../../../../components/Paper';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
-import NumberDifference from '../../../../components/NumberDifference';
 import type { Theme } from '../../../../components/Theme';
-import ItemIcon from '../../../../components/ItemIcon';
+import CardTitle from '../../../../components/common/card/CardTitle';
+import CardNumber from '../../../../components/common/card/CardNumber';
 
 const PirOverviewCountsDummy = () => {
   const theme = useTheme<Theme>();
@@ -72,42 +70,17 @@ interface PirOverviewCountProps {
 }
 
 const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => {
-  const theme = useTheme<Theme>();
-  const { t_i18n, n } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   return (
     <Grid key={label} size={{ xs: 3 }}>
-      <Paper style={{ padding: theme.spacing(1.5), paddingTop: theme.spacing(1) }}>
-        <div style={{ display: 'flex', alignItems: 'start' }}>
-          <Typography
-            color={theme.palette.text?.secondary}
-            sx={{ marginTop: 0.5, textTransform: 'uppercase', flex: 1 }}
-            variant="body2"
-            gutterBottom
-          >
-            {t_i18n(`entity_${label}`)}
-          </Typography>
-          <ItemIcon type={label} size="large" />
-        </div>
-
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          gap: theme.spacing(1),
-        }}
-        >
-          <div
-            data-testid={`pir-overview-count-${label}`}
-            style={{ fontSize: 40, lineHeight: 1 }}
-          >
-            {n(value)}
-          </div>
-          <NumberDifference
-            value={value24h}
-            description={t_i18n('24 hours')}
-          />
-        </div>
-      </Paper>
+      <CardNumber
+        label={t_i18n(`entity_${label}`)}
+        entityType={label}
+        value={value}
+        diffLabel={t_i18n('24 hours')}
+        diffValue={value24h}
+      />
     </Grid>
   );
 };
@@ -191,9 +164,9 @@ const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
 
   return (
     <Grid size={{ xs: 12 }}>
-      <Typography variant="h4">
+      <CardTitle>
         {t_i18n('Number of threats')}
-      </Typography>
+      </CardTitle>
       <Grid container spacing={3}>
         <Suspense fallback={<PirOverviewCountsDummy />}>
           {countsQueryRef && counts24hQueryRef && (

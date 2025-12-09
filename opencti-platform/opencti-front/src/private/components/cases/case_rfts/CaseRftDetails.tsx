@@ -1,6 +1,5 @@
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
@@ -12,23 +11,15 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import type { Theme } from '../../../../components/Theme';
 import { CaseRftDetails_case$key } from './__generated__/CaseRftDetails_case.graphql';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-    position: 'relative',
-    display: 'flex',
-    flexFlow: 'column',
-  },
   chip: {
     fontSize: 12,
     lineHeight: '12px',
     backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text?.primary,
     textTransform: 'uppercase',
     borderRadius: 4,
     margin: '0 5px 5px 0',
@@ -89,10 +80,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
 
   return (
     <div style={{ height: '100%' }} data-testid="case-rft-details-page">
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Details')}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+      <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -149,7 +137,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
           containerId={data.id}
           entityType={data.entity_type}
         />
-      </Paper>
+      </Card>
     </div>
   );
 };

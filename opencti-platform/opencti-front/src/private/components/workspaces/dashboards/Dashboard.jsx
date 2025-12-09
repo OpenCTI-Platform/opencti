@@ -2,9 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
 import RGL, { WidthProvider } from 'react-grid-layout';
-import Paper from '@mui/material/Paper';
 import { v4 as uuid } from 'uuid';
-import { useTheme } from '@mui/material/styles';
 import DashboardRawViz from './DashboardRawViz';
 import DashboardRelationshipsViz from './DashboardRelationshipsViz';
 import DashboardAuditsViz from './DashboardAuditsViz';
@@ -63,7 +61,6 @@ const DashboardComponent = ({ data, noToolbar }) => {
 
   const workspace = useFragment(dashboardFragment, data);
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
-  const theme = useTheme();
 
   const [deleting, setDeleting] = useState(false);
   const [idToResize, setIdToResize] = useState();
@@ -264,15 +261,6 @@ const DashboardComponent = ({ data, noToolbar }) => {
     }
   };
 
-  const paperStyle = {
-    height: '100%',
-    margin: 0,
-    padding: theme.spacing(2),
-    borderRadius: 4,
-    display: 'relative',
-    overflow: 'hidden',
-  };
-
   return (
     <div
       id="container"
@@ -313,11 +301,10 @@ const DashboardComponent = ({ data, noToolbar }) => {
         {widgetsArray.map((widget) => {
           if (!widgetsLayouts[widget.id]) return null;
           return (
-            <Paper
+            <div
               key={widget.id}
               data-grid={widgetsLayouts[widget.id]}
-              style={paperStyle}
-              variant="outlined"
+              style={{ display: 'relative' }}
             >
               {userCanEdit && !noToolbar && (
                 <WorkspaceWidgetPopover
@@ -327,6 +314,7 @@ const DashboardComponent = ({ data, noToolbar }) => {
                   onUpdate={handleUpdateWidget}
                   onDuplicate={handleDuplicateWidget}
                   onDelete={() => handleDeleteWidget(widget.id)}
+                  skipTitle={widget.type === 'number'}
                 />
               )}
               <ErrorBoundary>
@@ -359,7 +347,7 @@ const DashboardComponent = ({ data, noToolbar }) => {
                   </>
                 )}
               </ErrorBoundary>
-            </Paper>
+            </div>
           );
         })}
       </ReactGridLayout>

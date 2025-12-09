@@ -13,12 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
 import { graphql } from 'react-relay';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
 import Chart from '../charts/Chart';
@@ -29,18 +24,9 @@ import { simpleNumberFormat } from '../../../../utils/Number';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
-import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    height: '100%',
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 4,
-  },
-}));
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 
 const auditsHorizontalBarsDistributionQuery = graphql`
   query AuditsHorizontalBarsDistributionQuery(
@@ -114,7 +100,6 @@ const AuditsHorizontalBars = ({
   withExportPopover = false,
   isReadOnly = false,
 }) => {
-  const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -187,59 +172,21 @@ const AuditsHorizontalBars = ({
             );
           }
           if (props) {
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  {t_i18n(NO_DATA_WIDGET_MESSAGE)}
-                </span>
-              </div>
-            );
+            return <WidgetNoData />;
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <Loader variant={LoaderVariant.inElement} />;
         }}
       />
     );
   };
   return (
-    <div style={{ height: height || '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {parameters.title || t_i18n('Distribution of history')}
-      </Typography>
-      {variant === 'inLine' ? (
-        renderContent()
-      ) : (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          {renderContent()}
-        </Paper>
-      )}
-    </div>
+    <WidgetContainer
+      height={height}
+      title={parameters.title || t_i18n('Distribution of history')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
   );
 };
 

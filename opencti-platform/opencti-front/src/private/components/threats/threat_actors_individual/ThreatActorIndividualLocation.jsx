@@ -12,6 +12,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { AutoFix } from 'mdi-material-ui';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
+import CardTitle from '@common/card/CardTitle';
 import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
@@ -21,7 +22,6 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { addLocationsThreatActorMutationRelationDelete } from './AddLocationsThreatActorIndividualLines';
 import AddLocationsThreatActorIndividual from './AddLocationsThreatActorIndividual';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import CardLabel from '../../../../components/CardLabel';
 
 class ThreatActorIndividualLocationsComponent extends Component {
   removeLocation(locationEdge) {
@@ -48,8 +48,8 @@ class ThreatActorIndividualLocationsComponent extends Component {
     const { t, threatActorIndividual } = this.props;
     return (
       <>
-        <CardLabel
-          style={{ marginTop: 20 }}
+        <CardTitle
+          sx={{ marginTop: '20px' }}
           action={(
             <Security
               needs={[KNOWLEDGE_KNUPDATE]}
@@ -61,7 +61,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
           )}
         >
           {t('Located at')}
-        </CardLabel>
+        </CardTitle>
         <div className="clearfix" />
         <FieldOrEmpty source={threatActorIndividual.locations.edges}>
           <List style={{ marginTop: -10 }}>

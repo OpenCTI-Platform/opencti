@@ -2,10 +2,7 @@ import React, { FunctionComponent, useEffect } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
-import makeStyles from '@mui/styles/makeStyles';
 import FileLine from './FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -14,18 +11,9 @@ import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import UploadImport from '../../../../components/UploadImport';
+import Card from '../../../../components/common/card/Card';
 
 const interval$ = interval(TEN_SECONDS);
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  paper: {
-    padding: '10px 15px 10px 15px',
-    borderRadius: 4,
-    marginTop: 2,
-  },
-}));
 
 interface FileImportViewerComponentProps {
   entity: FileImportViewer_entity$data;
@@ -48,7 +36,6 @@ const FileImportViewerComponent: FunctionComponent<
   isArtifact,
   directDownload,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const { id, importFiles } = entity;
@@ -63,57 +50,55 @@ const FileImportViewerComponent: FunctionComponent<
   }, []);
   return (
     <Grid item xs={6}>
-      <>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t_i18n('Uploaded files')}
-        </Typography>
-        <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 25 }} />}>
-          <div style={{ float: 'left', marginTop: -15 }}>
+      <Card
+        title={t_i18n('Uploaded files')}
+        action={(
+          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
             <UploadImport
               entityId={id}
+              size="small"
+              fontSize="small"
               onSuccess={() => relay.refetch({ id })}
             />
+          </Security>
+        )}
+      >
+        {importFiles?.edges?.length ? (
+          <List>
+            {importFiles?.edges?.map((file) => {
+              return (
+                file?.node && (
+                  <FileLine
+                    key={file?.node.id}
+                    dense={true}
+                    disableImport={disableImport}
+                    file={file?.node}
+                    connectors={
+                      connectors
+                      && connectors[file?.node?.metaData?.mimetype ?? 0]
+                    }
+                    handleOpenImport={handleOpenImport}
+                    isArtifact={isArtifact}
+                    directDownload={directDownload}
+                  />
+                )
+              );
+            })}
+          </List>
+        ) : (
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t_i18n('No file for the moment')}
+            </span>
           </div>
-        </Security>
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
-          {importFiles?.edges?.length ? (
-            <List>
-              {importFiles?.edges?.map((file) => {
-                return (
-                  file?.node && (
-                    <FileLine
-                      key={file?.node.id}
-                      dense={true}
-                      disableImport={disableImport}
-                      file={file?.node}
-                      connectors={
-                        connectors
-                        && connectors[file?.node?.metaData?.mimetype ?? 0]
-                      }
-                      handleOpenImport={handleOpenImport}
-                      isArtifact={isArtifact}
-                      directDownload={directDownload}
-                    />
-                  )
-                );
-              })}
-            </List>
-          ) : (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                {t_i18n('No file for the moment')}
-              </span>
-            </div>
-          )}
-        </Paper>
-      </>
+        )}
+      </Card>
     </Grid>
   );
 };

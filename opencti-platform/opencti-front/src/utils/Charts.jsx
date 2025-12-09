@@ -75,7 +75,7 @@ export const lineChartOptions = (
 ) => ({
   chart: {
     type: 'line',
-    background: theme.palette.background.paper,
+    background: theme.palette.background.secondary,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     width: '100%',
@@ -169,7 +169,7 @@ export const areaChartOptions = (
 ) => ({
   chart: {
     type: 'area',
-    background: theme.palette.background.paper,
+    background: theme.palette.background.secondary,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -279,7 +279,7 @@ export const verticalBarsChartOptions = (
 ) => ({
   chart: {
     type: 'bar',
-    background: theme.palette.background.paper,
+    background: theme.palette.background.secondary,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -390,7 +390,7 @@ export const horizontalBarsChartOptions = (
   events: ['xAxisLabelClick'],
   chart: {
     type: 'bar',
-    background: theme.palette.background.paper,
+    background: theme.palette.background.secondary,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked,
@@ -583,7 +583,7 @@ export const radarChartOptions = (
   xFormatter = null,
   chartColors = [],
   legend = false,
-  background = theme.palette.background.paper,
+  background = theme.palette.background.secondary,
   size = undefined,
   handleClick = undefined,
 ) => ({
@@ -669,7 +669,7 @@ export const radarChartOptions = (
           theme.palette.mode === 'dark'
             ? 'rgba(255, 255, 255, .1)'
             : 'rgba(0, 0, 0, .1)',
-        fill: { colors: [theme.palette.background.paper] },
+        fill: { colors: [theme.palette.background.secondary] },
       },
     },
   },
@@ -702,7 +702,7 @@ export const polarAreaChartOptions = (
   return {
     chart: {
       type: 'polarArea',
-      background: theme.palette.background.paper,
+      background: theme.palette.background.secondary,
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -818,7 +818,7 @@ export const donutChartOptions = (
   return {
     chart: {
       type: 'donut',
-      background: withBackground ? theme.palette.background.paper : 'transparent',
+      background: withBackground ? theme.palette.background.secondary : 'transparent',
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -843,7 +843,7 @@ export const donutChartOptions = (
     stroke: {
       curve: 'smooth',
       width: 3,
-      colors: [theme.palette.background.paper],
+      colors: [theme.palette.background.secondary],
     },
     tooltip: {
       enabled: displayTooltip,
@@ -876,7 +876,7 @@ export const donutChartOptions = (
           value: {
             show: displayValue,
           },
-          background: theme.palette.background.paper,
+          background: theme.palette.background.secondary,
           size: `${size}%`,
         },
       },
@@ -900,7 +900,7 @@ export const treeMapOptions = (
   return {
     chart: {
       type: 'treemap',
-      background: theme.palette.background.paper,
+      background: theme.palette.background.secondary,
       toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
       width: '100%',
@@ -931,7 +931,7 @@ export const treeMapOptions = (
     stroke: {
       curve: 'smooth',
       width: 3,
-      colors: [theme.palette.background.paper],
+      colors: [theme.palette.background.secondary],
     },
     legend: {
       show: true,
@@ -982,7 +982,7 @@ export const heatMapOptions = (
 ) => ({
   chart: {
     type: 'heatmap',
-    background: theme.palette.background.paper,
+    background: theme.palette.background.secondary,
     toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
@@ -994,7 +994,7 @@ export const heatMapOptions = (
     enabled: false,
   },
   stroke: {
-    colors: [theme.palette.background.paper],
+    colors: [theme.palette.background.secondary],
     width: 1,
   },
   states: {

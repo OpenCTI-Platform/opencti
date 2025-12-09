@@ -22,7 +22,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import * as Yup from 'yup';
 import Box from '@mui/material/Box';
-import { Switch } from '@mui/material';
+import { Stack, Switch } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { ExperienceFieldPatchMutation$data } from '@components/settings/__generated__/ExperienceFieldPatchMutation.graphql';
 import getEEWarningMessage from '@components/settings/EEActivation';
@@ -41,6 +41,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import useAuth from '../../../utils/hooks/useAuth';
+import Card from '../../../components/common/card/Card';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -178,93 +179,41 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
       <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
         {isEnterpriseEditionActivated ? (
           <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-              {t_i18n('Enterprise Edition')}
-            </Typography>
-            {!isEnterpriseEditionByConfig && isGrantedToParameters && (
-              <div style={{ float: 'right', marginTop: theme.spacing(-2.6), position: 'relative' }}>
-                <DangerZoneBlock
-                  type="ce_ee_toggle"
-                  sx={{
-                    root: { border: 'none', padding: 0, margin: 0 },
-                    title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
-                  }}
-                >
-                  {({ disabled }) => (
-                    <>
-                      <Button
-                        size="small"
-                        intent="destructive"
-                        variant="secondary"
-                        onClick={() => setOpenEEChanges(true)}
-                        disabled={disabled}
-                        style={{
-                          color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
-                          borderColor: theme.palette.dangerZone.main,
-                        }}
-                      >
-                        {t_i18n('Disable Enterprise Edition')}
-                      </Button>
-                      <Dialog
-                        slotProps={{ paper: { elevation: 1 } }}
-                        open={openEEChanges}
-                        keepMounted
-                        slots={{ transition: Transition }}
-                        onClose={() => setOpenEEChanges(false)}
-                      >
-                        <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
-                        <DialogContent>
-                          <Alert
-                            severity="warning"
-                            variant="outlined"
-                            color="dangerZone"
-                            style={{ borderColor: theme.palette.dangerZone.main }}
-                          >
-                            {t_i18n(getEEWarningMessage(isLtsPlatform))}
-                            <br /><br />
-                            <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
-                          </Alert>
-                        </DialogContent>
-                        <DialogActions>
-                          <Button
-                            variant="secondary"
-                            onClick={() => {
-                              setOpenEEChanges(false);
-                            }}
-                          >
-                            {t_i18n('Cancel')}
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              setOpenEEChanges(false);
-                              handleSubmitField('enterprise_license', '');
-                            }}
-                          >
-                            {t_i18n('Validate')}
-                          </Button>
-                        </DialogActions>
-                      </Dialog>
-                    </>
+            <Card
+              title={t_i18n('Enterprise Edition')}
+              titleSx={{ alignItems: 'end' }}
+              action={(
+                <Stack direction="row" gap={1}>
+                  {!isEnterpriseEditionByConfig && isGrantedToParameters && (
+                    <DangerZoneBlock
+                      type="ce_ee_toggle"
+                      sx={{
+                        root: { position: 'relative', border: 'none', padding: 0, paddingTop: 0, margin: 0 },
+                        title: { position: 'absolute', zIndex: 2, left: 4, top: 5, fontSize: 8 },
+                      }}
+                    >
+                      {({ disabled }) => (
+                        <Button
+                          size="small"
+                          intent="destructive"
+                          variant="secondary"
+                          onClick={() => setOpenEEChanges(true)}
+                          disabled={disabled}
+                          style={{
+                            color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
+                            borderColor: theme.palette.dangerZone.main,
+                          }}
+                        >
+                          {t_i18n('Disable Enterprise Edition')}
+                        </Button>
+                      )}
+                    </DangerZoneBlock>
                   )}
-                </DangerZoneBlock>
-              </div>
-            )}
-            {!isEnterpriseEditionByConfig && isGrantedToParameters && (
-              <div style={{
-                float: 'right',
-                marginRight: theme.spacing(1),
-                marginTop: theme.spacing(-2),
-                position: 'relative',
-              }}
-              >
-                <EnterpriseEditionButton inLine={true} title={t_i18n('Update license')} />
-              </div>
-            )}
-            <div className="clearfix" />
-            <Paper
-              classes={{ root: classes.paper }}
-              variant="outlined"
-              className="paper-for-grid"
+                  {!isEnterpriseEditionByConfig && isGrantedToParameters && (
+                    <EnterpriseEditionButton inLine title={t_i18n('Update license')} />
+                  )}
+                </Stack>
+              )}
             >
               <List style={{ marginTop: -20 }}>
                 <ListItem divider={true}>
@@ -373,7 +322,46 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   </Box>
                 </ListItem>
               </List>
-            </Paper>
+            </Card>
+            <Dialog
+              slotProps={{ paper: { elevation: 1 } }}
+              open={openEEChanges}
+              keepMounted
+              slots={{ transition: Transition }}
+              onClose={() => setOpenEEChanges(false)}
+            >
+              <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
+              <DialogContent>
+                <Alert
+                  severity="warning"
+                  variant="outlined"
+                  color="dangerZone"
+                  style={{ borderColor: theme.palette.dangerZone.main }}
+                >
+                  {t_i18n(getEEWarningMessage(isLtsPlatform))}
+                  <br /><br />
+                  <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
+                </Alert>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => {
+                    setOpenEEChanges(false);
+                  }}
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={() => {
+                    setOpenEEChanges(false);
+                    handleSubmitField('enterprise_license', '');
+                  }}
+                >
+                  {t_i18n('Validate')}
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Grid>
         ) : (
           <Grid item xs={6}>

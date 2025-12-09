@@ -6,7 +6,6 @@ import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { ArrowRightAlt, EditOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
@@ -47,6 +46,7 @@ import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsVi
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import Card from '../../../../components/common/card/Card';
 
 const styles = (theme) => ({
   container: {
@@ -239,6 +239,7 @@ class StixCoreRelationshipContainer extends Component {
       : '';
     const expandable = stixCoreRelationship.x_opencti_inferences
       && stixCoreRelationship.x_opencti_inferences.length > 1;
+
     return (
       <div className={classes.container}>
         <Grid
@@ -247,29 +248,25 @@ class StixCoreRelationshipContainer extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true} sx={{ float: 'left' }}>
-              {t('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip />)}
-            </Typography>
-            {!stixCoreRelationship.is_inferred && (
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <IconButton
-                  onClick={this.handleOpenEdition.bind(this)}
-                  sx={{ margin: '-15px 0px 0px -2px', float: 'left' }}
-                >
-                  <EditOutlined fontSize="small" />
-                </IconButton>
-                <StixCoreRelationshipEdition
-                  open={this.state.openEdit}
-                  stixCoreRelationshipId={stixCoreRelationship.id}
-                  handleClose={this.handleCloseEdition.bind(this)}
-                  handleDelete={this.handleOpenDelete.bind(this)}
-                />
-              </Security>
-            )}
-            <Paper
-              classes={{ root: classes.paperRelationships }}
-              variant="outlined"
-              className="paper-for-grid"
+            <Card
+              title={<>{t('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip />)}</>}
+              action={!stixCoreRelationship.is_inferred && (
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <IconButton
+                    color="primary"
+                    onClick={this.handleOpenEdition.bind(this)}
+                    size="small"
+                  >
+                    <EditOutlined fontSize="small" />
+                  </IconButton>
+                  <StixCoreRelationshipEdition
+                    open={this.state.openEdit}
+                    stixCoreRelationshipId={stixCoreRelationship.id}
+                    handleClose={this.handleCloseEdition.bind(this)}
+                    handleDelete={this.handleOpenDelete.bind(this)}
+                  />
+                </Security>
+              )}
             >
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
                 <div
@@ -444,13 +441,10 @@ class StixCoreRelationshipContainer extends Component {
                   </Grid>
                 </Grid>
               </div>
-            </Paper>
+            </Card>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Details')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+            <Card title={t('Details')}>
               <Grid container={true} spacing={3}>
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -528,7 +522,7 @@ class StixCoreRelationshipContainer extends Component {
                   />
                 </Grid>
               </Grid>
-            </Paper>
+            </Card>
           </Grid>
           {stixCoreRelationship.x_opencti_inferences == null && (
             <>

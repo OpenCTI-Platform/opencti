@@ -1,24 +1,12 @@
-import makeStyles from '@mui/styles/makeStyles';
-import Typography from '@mui/material/Typography';
 import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
 import { useFormatter } from '../../../../components/i18n';
 import PictureLine from './PictureLine';
 import { PictureManagementViewer_entity$data, PictureManagementViewer_entity$key } from './__generated__/PictureManagementViewer_entity.graphql';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  paper: {
-    padding: '10px 15px 10px 15px',
-    borderRadius: 4,
-    marginTop: 2,
-  },
-}));
+import Card from '../../../../components/common/card/Card';
 
 export const pictureManagementViewerFragment = graphql`
   fragment PictureManagementViewer_entity on StixDomainObject {
@@ -43,7 +31,6 @@ interface PictureManagementViewerProps {
 const PictureManagementViewer: FunctionComponent<
   PictureManagementViewerProps
 > = ({ entity }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const data: PictureManagementViewer_entity$data = useFragment(
@@ -74,11 +61,7 @@ const PictureManagementViewer: FunctionComponent<
   return (
     <Grid item xs={6}>
       <div style={{ height: '100%' }} className="break">
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t_i18n('Pictures Management')}
-        </Typography>
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Card title={t_i18n('Pictures Management')}>
           {images && images.length > 0 ? (
             <>
               <ColumnsLinesTitles
@@ -111,7 +94,7 @@ const PictureManagementViewer: FunctionComponent<
               </span>
             </div>
           )}
-        </Paper>
+        </Card>
       </div>
     </Grid>
   );

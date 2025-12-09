@@ -1,8 +1,5 @@
 import React, { FunctionComponent, useContext } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerStixObjectsOrStixRelationshipsLines, { ContainerStixObjectsOrStixRelationshipsLinesQuery } from './ContainerStixObjectsOrStixRelationshipsLines';
@@ -14,17 +11,7 @@ import { ContainerStixObjectsOrStixRelationships_container$data } from './__gene
 import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
 import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { ContainerStixObjectOrStixRelationshipLineDummy } from './ContainerStixObjectOrStixRelationshipLine';
-import { Stack } from '@mui/material';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  paper: {
-    margin: '-5px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-  },
-}));
+import Card from '../../../../components/common/card/Card';
 
 interface ContainerStixObjectsOrStixRelationshipsComponentProps {
   title?: string;
@@ -39,7 +26,6 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
   ContainerStixObjectsOrStixRelationshipsComponentProps
 > = ({ container, isSupportParticipation = false, types, title, variant, enableReferences }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const { me } = useContext(UserContext);
   const security = [KNOWLEDGE_KNUPDATE];
@@ -124,16 +110,10 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
   };
   return (
     <div style={{ height: '100%' }}>
-      <Stack direction="row" alignItems="center" gap={1} sx={{ marginBottom: '8px' }}>
-        <Typography
-          variant="h4"
-          gutterBottom={true}
-          sx={{ margin: 0 }}
-        >
-          {title ?? t_i18n('Related entities')}
-        </Typography>
-        {
-          container && (
+      {variant !== 'noPaper' ? (
+        <Card
+          title={title ?? t_i18n('Related entities')}
+          action={container && (
             <Security needs={security}>
               <ContainerAddStixCoreObjects
                 containerId={container.id}
@@ -149,14 +129,10 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
                 enableReferences={enableReferences}
               />
             </Security>
-          )
-        }
-      </Stack>
-      <div className="clearfix" />
-      {variant !== 'noPaper' ? (
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+          )}
+        >
           {renderContent()}
-        </Paper>
+        </Card>
       ) : (
         renderContent()
       )}

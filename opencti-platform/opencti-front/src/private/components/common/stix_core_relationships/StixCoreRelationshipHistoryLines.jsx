@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { graphql, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
-import { useFormatter } from 'src/components/i18n';
-import { FIVE_SECONDS } from 'src/utils/Time';
-import { useTheme } from '@mui/styles';
-import useInterval from 'src/utils/hooks/useInterval';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
-import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
-import StixCoreRelationshipHistoryLine from '@components/common/stix_core_relationships/StixCoreRelationshipHistoryLine';
 import List from '@mui/material/List';
+import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
+import StixCoreRelationshipHistoryLine from '@components/common/stix_core_relationships/StixCoreRelationshipHistoryLine';
+import { useFormatter } from '../../../../components/i18n';
+import useInterval from '../../../../utils/hooks/useInterval';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import Card from '../../../../components/common/card/Card';
 
 export const stixCoreRelationshipHistoryLinesQuery = graphql`
   query StixCoreRelationshipHistoryLinesQuery(
@@ -48,7 +47,6 @@ const StixCoreRelationshipHistoryLinesFragment = graphql`
 
 const StixCoreRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationOptions }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
   const queryData = usePreloadedQuery(stixCoreRelationshipHistoryLinesQuery, queryRef);
@@ -70,16 +68,9 @@ const StixCoreRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationO
     setOpen(false);
     setSelectedLog(undefined);
   };
+
   return (
-    <Paper
-      style={{
-        height: '100%',
-        marginTop: theme.spacing(1),
-        borderRadius: 4,
-      }}
-      className="paper-for-grid"
-      variant="outlined"
-    >
+    <Card title={t_i18n('Most recent history')}>
       {logs.length > 0 ? (
         <List>
           {logs.map((logEdge) => {
@@ -147,7 +138,7 @@ const StixCoreRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationO
           </span>
         </div>
       )}
-    </Paper>
+    </Card>
   );
 };
 

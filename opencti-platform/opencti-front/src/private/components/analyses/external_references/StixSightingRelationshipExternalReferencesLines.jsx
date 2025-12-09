@@ -4,8 +4,6 @@ import * as R from 'ramda';
 import { createPaginationContainer, graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -38,16 +36,11 @@ import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
+import Card from '@common/card/Card';
 
 const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
-  paper: {
-    margin: '-4px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-    position: 'relative',
-  },
   avatar: {
     width: 24,
     height: 24,
@@ -180,19 +173,17 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
     const expandable = externalReferencesEdges.length > 7;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('External references')}
-        </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]} placeholder={<div style={{ height: 29 }} />}>
-          <AddExternalReferences
-            stixCoreObjectOrStixCoreRelationshipId={stixSightingRelationshipId}
-            stixCoreObjectOrStixCoreRelationshipReferences={
-              data.stixSightingRelationship.externalReferences.edges
-            }
-          />
-        </Security>
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+        <Card
+          title={t('External references')}
+          action={(
+            <Security needs={[KNOWLEDGE_KNUPDATE]} placeholder={<div style={{ height: 29 }} />}>
+              <AddExternalReferences
+                stixCoreObjectOrStixCoreRelationshipId={stixSightingRelationshipId}
+                stixCoreObjectOrStixCoreRelationshipReferences={data.stixSightingRelationship.externalReferences.edges}
+              />
+            </Security>
+          )}
+        >
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
@@ -386,7 +377,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
               )}
             </IconButton>
           )}
-        </Paper>
+        </Card>
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayDialog}

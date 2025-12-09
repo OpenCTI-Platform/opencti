@@ -71,7 +71,7 @@ export default class DashboardWidgetsPageModel {
   }
 
   getWidgetNumberValue(name: string, value: string) {
-    return this.page.getByRole('heading', { name }).locator('..').getByText(value);
+    return this.page.getByText(name).locator('../..').getByText(value);
   }
 
   // region Premade widgets

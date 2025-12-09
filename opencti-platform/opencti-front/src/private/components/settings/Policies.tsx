@@ -4,8 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/styles';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import List from '@mui/material/List';
@@ -43,6 +41,7 @@ import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { FieldOption } from '../../../utils/field';
 import useHelper from '../../../utils/hooks/useHelper';
+import Card from '../../../components/common/card/Card';
 
 const PoliciesFragment = graphql`
   fragment Policies on Settings {
@@ -116,6 +115,7 @@ interface PoliciesComponentProps {
 const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   queryRef,
 }) => {
+  const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
   const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] = useState<boolean>(false);
 
@@ -131,13 +131,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   );
 
   const [commitField] = useApiMutation(policiesFieldPatch);
-
-  const theme = useTheme<Theme>();
-  const paperStyle = {
-    marginTop: theme.spacing(1),
-    padding: 20,
-    borderRadius: 4,
-  };
 
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
@@ -206,16 +199,12 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   <Grid item xs={6}>
                     <DangerZoneBlock
                       type="platform_organization"
-                      title={(
-                        <>
-                          {t_i18n('Platform main organization')} <EEChip />
-                        </>
-                      )}
-                      component={({ disabled, style }) => (
-                        <Paper
-                          className="paper-for-grid"
-                          variant="outlined"
-                          style={{ ...paperStyle, ...style }}
+                      title={<>{t_i18n('Platform main organization')} <EEChip /></>}
+                      displayTitle={false}
+                      component={({ disabled, style, title }) => (
+                        <Card
+                          title={title}
+                          sx={style}
                         >
                           <Alert severity="info" variant="outlined">
                             {t_i18n('When you set a platform organization you enable the organization sharing and segregation feature.')}
@@ -280,20 +269,17 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                               </Button>
                             </DialogActions>
                           </Dialog>
-                        </Paper>
+                        </Card>
                       )}
                     />
                   </Grid>
 
                   <GroupSetDefaultGroupForIngestionUsers />
 
-                  {isUsersVisibilityFeatureEnable && (
-                    <Grid item xs={6}>
-                      <Grid item xs={12} style={{ marginTop: 2 }}>
-                        <Typography variant="h4" gutterBottom={true}>
-                          {t_i18n('Users visibility')}
-                        </Typography>
-                        <Paper style={paperStyle} variant="outlined">
+                  <Grid item xs={6} container={true} gap={2}>
+                    {isUsersVisibilityFeatureEnable && (
+                      <Grid item xs={12}>
+                        <Card title={t_i18n('Users visibility')}>
                           <Field
                             component={SwitchField}
                             type="checkbox"
@@ -301,143 +287,12 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             label={t_i18n('Allow users to view users of other organizations')}
                             onChange={(name: string, value: string) => handleSubmitField(name, value)}
                           />
-                        </Paper>
+                        </Card>
                       </Grid>
+                    )}
 
-                      <Grid item xs={12}>
-                        <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
-                          {t_i18n('Local password policies')}
-                        </Typography>
-                        <Paper style={paperStyle} className="paper-for-grid" variant="outlined">
-                          <Field
-                            component={TextField}
-                            type="number"
-                            variant="standard"
-                            name="password_policy_min_length"
-                            label={t_i18n(
-                              'Number of chars must be greater or equals to',
-                            )}
-                            fullWidth={true}
-                            onSubmit={(name: string, value: string) => {
-                              return handleSubmitField(
-                                name,
-                                value !== '' ? value : '0',
-                              );
-                            }}
-                          />
-                          <Field
-                            component={TextField}
-                            type="number"
-                            variant="standard"
-                            style={{ marginTop: 20 }}
-                            name="password_policy_max_length"
-                            label={`${t_i18n(
-                              'Number of chars must be lower or equals to',
-                            )} (${t_i18n('0 equals no maximum')})`}
-                            fullWidth={true}
-                            onSubmit={(name: string, value: string) => {
-                              return handleSubmitField(
-                                name,
-                                value !== '' ? value : '0',
-                              );
-                            }}
-                          />
-                          <Field
-                            component={TextField}
-                            type="number"
-                            variant="standard"
-                            style={{ marginTop: 20 }}
-                            name="password_policy_min_symbols"
-                            label={t_i18n(
-                              'Number of symbols must be greater or equals to',
-                            )}
-                            fullWidth={true}
-                            onSubmit={(name: string, value: string) => {
-                              return handleSubmitField(
-                                name,
-                                value !== '' ? value : '0',
-                              );
-                            }}
-                          />
-                          <Field
-                            component={TextField}
-                            type="number"
-                            variant="standard"
-                            style={{ marginTop: 20 }}
-                            name="password_policy_min_numbers"
-                            label={t_i18n(
-                              'Number of digits must be greater or equals to',
-                            )}
-                            fullWidth={true}
-                            onSubmit={(name: string, value: string) => {
-                              return handleSubmitField(
-                                name,
-                                value !== '' ? value : '0',
-                              );
-                            }}
-                          />
-                          <Field
-                            component={TextField}
-                            type="number"
-                            variant="standard"
-                            style={{ marginTop: 20 }}
-                            name="password_policy_min_words"
-                            label={t_i18n(
-                              'Number of words (split on hyphen, space) must be greater or equals to',
-                            )}
-                            fullWidth={true}
-                            onSubmit={(name: string, value: string) => {
-                              return handleSubmitField(
-                                name,
-                                value !== '' ? value : '0',
-                              );
-                            }}
-                          />
-                          <Field
-                            component={TextField}
-                            type="number"
-                            variant="standard"
-                            style={{ marginTop: 20 }}
-                            name="password_policy_min_lowercase"
-                            label={t_i18n(
-                              'Number of lowercase chars must be greater or equals to',
-                            )}
-                            fullWidth={true}
-                            onSubmit={(name: string, value: string) => {
-                              return handleSubmitField(
-                                name,
-                                value !== '' ? value : '0',
-                              );
-                            }}
-                          />
-                          <Field
-                            component={TextField}
-                            type="number"
-                            variant="standard"
-                            style={{ marginTop: 20 }}
-                            name="password_policy_min_uppercase"
-                            label={t_i18n(
-                              'Number of uppercase chars must be greater or equals to',
-                            )}
-                            fullWidth={true}
-                            onSubmit={(name: string, value: string) => {
-                              return handleSubmitField(
-                                name,
-                                value !== '' ? value : '0',
-                              );
-                            }}
-                          />
-                        </Paper>
-                      </Grid>
-                    </Grid>
-                  )}
-
-                  {!isUsersVisibilityFeatureEnable && (
-                    <Grid item xs={6}>
-                      <Typography variant="h4" gutterBottom={true} style={{ marginTop: 2 }}>
-                        {t_i18n('Local password policies')}
-                      </Typography>
-                      <Paper style={paperStyle} className="paper-for-grid" variant="outlined">
+                    <Grid>
+                      <Card title={t_i18n('Local password policies')}>
                         <Field
                           component={TextField}
                           type="number"
@@ -556,22 +411,12 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             );
                           }}
                         />
-                      </Paper>
+                      </Card>
                     </Grid>
-                  )}
+                  </Grid>
 
                   <Grid item xs={6}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      {t_i18n('Authentication strategies')}
-                    </Typography>
-                    <Paper
-                      style={{
-                        ...paperStyle,
-                        marginTop: 10,
-                      }}
-                      className="paper-for-grid"
-                      variant="outlined"
-                    >
+                    <Card title={t_i18n('Authentication strategies')}>
                       <List style={{ marginTop: -20 }}>
                         {authProviders.map((provider) => (
                           <ListItem key={provider.strategy} divider={true}>
@@ -601,13 +446,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                           'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
                         )}
                       />
-                    </Paper>
+                    </Card>
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      {t_i18n('Login messages')}
-                    </Typography>
-                    <Paper style={paperStyle} variant="outlined">
+                    <Card title={t_i18n('Login messages')}>
                       <Field
                         component={MarkdownField}
                         name="platform_login_message"
@@ -637,13 +479,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         onSubmit={handleSubmitField}
                         variant="standard"
                       />
-                    </Paper>
+                    </Card>
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      {t_i18n('Platform Banner Configuration')}
-                    </Typography>
-                    <Paper style={paperStyle} variant="outlined">
+                    <Card title={t_i18n('Platform Banner Configuration')}>
                       <Field
                         component={SelectField}
                         variant="standard"
@@ -670,7 +509,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         fullWidth={true}
                         onSubmit={handleSubmitField}
                       />
-                    </Paper>
+                    </Card>
                   </Grid>
                 </Grid>
               </Form>

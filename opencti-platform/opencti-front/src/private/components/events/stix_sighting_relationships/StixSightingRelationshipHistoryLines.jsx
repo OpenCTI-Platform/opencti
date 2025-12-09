@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { graphql, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import StixCoreObjectHistoryLine from '../../common/stix_core_objects/StixCoreObjectHistoryLine';
-import { useTheme } from '@mui/styles';
 import { useFormatter } from 'src/components/i18n';
 import useInterval from 'src/utils/hooks/useInterval';
 import { FIVE_SECONDS } from 'src/utils/Time';
@@ -11,6 +9,7 @@ import IconButton from '@common/button/IconButton';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
 import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
+import Card from '@common/card/Card';
 
 export const stixCoreObjectHistoryLinesQuery = graphql`
   query StixSightingRelationshipHistoryLinesQuery(
@@ -46,7 +45,6 @@ const StixSightingRelationshipHistoryFragment = graphql`
 `;
 
 const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationOptions }) => {
-  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState(undefined);
@@ -68,15 +66,7 @@ const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginat
   };
 
   return (
-    <Paper
-      style={{
-        marginTop: theme.spacing(1),
-        padding: '0 15px',
-        borderRadius: 4,
-      }}
-      className="paper-for-grid"
-      variant="outlined"
-    >
+    <Card title={t_i18n('Most recent history')}>
       {logs.length > 0 ? (
         logs.map((logEdge) => {
           const log = logEdge.node;
@@ -134,7 +124,7 @@ const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginat
           </span>
         </div>
       )}
-    </Paper>
+    </Card>
   );
 };
 
