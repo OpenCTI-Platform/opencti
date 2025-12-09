@@ -5,6 +5,7 @@ import { SYSTEM_USER } from '../../../src/utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { findById } from '../../../src/domain/user';
 import type { AuthUser } from '../../../src/types/user';
+import { v4 as uuid } from 'uuid';
 
 describe('initializeAdminUser configurations verifications', () => {
   let initialEmail: string;
@@ -27,9 +28,10 @@ describe('initializeAdminUser configurations verifications', () => {
 
   it('should well configured admin be initialized', async () => {
     // GIVEN configuration
+    const newToken = uuid();
     conf.set('app:admin:email', 'cecilia.payne@filigran.io');
     conf.set('app:admin:password', 'IDiscoveredUniverseMatter');
-    conf.set('app:admin:token', 'aaaaaaaa-1111-2222-3333-999999999999');
+    conf.set('app:admin:token', newToken);
 
     await initializeAdminUser({});
 
