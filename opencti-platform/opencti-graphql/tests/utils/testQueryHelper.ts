@@ -262,7 +262,6 @@ export const awaitUntilCondition = async (
   expectToBeTrue = true,
 ) => {
   let isConditionOk = await conditionPromise();
-  console.log(isConditionOk);
   let loopCurrent = 0;
   while (!isConditionOk === expectToBeTrue && loopCurrent < loopCount) {
     await new Promise(resolve => setTimeout(resolve, sleepTimeBetweenLoop));
