@@ -126,13 +126,6 @@ const DecayExclusionRules = () => {
       isSortable: true,
       percentWidth: 50,
     },
-    // decay_exclusion_filters: {
-    //   id: 'decay_exclusion_observable_types',
-    //   label: 'obs',
-    //   isSortable: false,
-    //   percentWidth: 40,
-    //   // render: (node) => (<div>{node.decay_exclusion_filters.join(', ')}</div>),
-    // },
     created_at: {
       label: t_i18n('Creation date'),
       percentWidth: 25,
