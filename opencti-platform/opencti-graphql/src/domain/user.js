@@ -28,12 +28,12 @@ import {
   updatedInputsToData
 } from '../database/middleware';
 import {
-  internalFindByIds,
-  internalLoadById,
   fullEntitiesList,
   fullEntitiesThoughAggregationConnection,
-  fullRelationsList,
   fullEntitiesThroughRelationsToList,
+  fullRelationsList,
+  internalFindByIds,
+  internalLoadById,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById,
@@ -72,7 +72,8 @@ import {
   isOnlyOrgaAdmin,
   isUserHasCapability,
   REDACTED_USER,
-  SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SET_ACCESSES,
+  SETTINGS_SETCUSTOMIZATION,
   SYSTEM_USER,
   VIRTUAL_ORGANIZATION_ADMIN,
 } from '../utils/access';
@@ -98,7 +99,7 @@ import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTempla
 import { doYield } from '../utils/eventloop-utils';
 import { sanitizeUser } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
-import { ADMIN_USER, testContext } from "../../tests/utils/testQuery";
+import { ADMIN_USER, testContext } from '../../tests/utils/testQuery';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -210,7 +211,7 @@ export const findById = async (context, user, userId) => {
   return buildCompleteUser(context, withoutPassword);
 };
 
-const buildDirectOrganizationFilters = (organizationIds, filters) => {
+const buildRegardingOfDirectParticipateToFilters = (ids, filters) => {
   return {
     mode: 'and',
     filters: [
@@ -224,19 +225,18 @@ const buildDirectOrganizationFilters = (organizationIds, filters) => {
           },
           {
             key: 'id',
-            values: organizationIds,
+            values: ids,
           },
           {
             key: 'is_inferred',
             values: ['false'],
           },
         ],
-        mode: 'or',
       },
     ],
     filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
   };
-}
+};
 
 // build user organization restriction filters
 // for the list of users in Settings
@@ -244,23 +244,26 @@ const buildUserOrganizationRestrictedFiltersForSettings = (user, filters) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     // If user is not a set access administrator, user can only see directly attached organization users
     const organizationIds = user.administrated_organizations.map((organization) => organization.id);
-    return buildDirectOrganizationFilters(organizationIds, filters);
+    return buildRegardingOfDirectParticipateToFilters(organizationIds, filters);
   }
   return filters;
 };
 
 // build user organization restriction filters
 // for the list of users in Knowledge
-const buildUserOrganizationRestrictedFiltersForKnowledge = async (context, user, filters) => {
+const buildUserOrganizationRestrictedFiltersForKnowledge = async (context, user, inputFilters) => {
   const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(capa));
   if (userCanViewAllUsers) {
-    return filters;
+    return inputFilters;
   }
   const platformSettings = await loadEntity(testContext, ADMIN_USER, [ENTITY_TYPE_SETTINGS]);
-  if (isOrgaSharingActivated || platformSettings.view_all_users) {
-    return filters;
+  if (!platformSettings.platform_organization || platformSettings.view_all_users) {
+    return inputFilters;
   }
-  // TODO orga restriction
+  const userFilters = buildRegardingOfDirectParticipateToFilters([user.id], undefined);
+  const userDirectOrganizations = await pageEntitiesConnection(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { filters: userFilters });
+  const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
+  return buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, inputFilters);
 };
 
 export const findAllUser = async (context, user, args) => {
