@@ -5,6 +5,10 @@ import useGranted, { SETTINGS, BYPASS  } from './useGranted';
 vi.mock('./useAuth', () => ({ default: vi.fn() }));
 
 import useAuth from './useAuth';
+// TODO remove when FF is deleted (CAPABILITIES_IN_DRAFT)
+vi.mock('./useHelper', () => ({ default: vi.fn() }));
+import useHelper from './useHelper';
+
 import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
 
 type MeUser = {
@@ -26,6 +30,8 @@ describe('useGranted', () => {
 
   const mockAuthMe = (me: MeUser) => {
     (useAuth as Mock).mockReturnValue({ me });
+    // TODO remove when FF is deleted (CAPABILITIES_IN_DRAFT)
+    (useHelper as Mock).mockReturnValue({ isFeatureEnable: (feature: string) => feature === 'CAPABILITIES_IN_DRAFT'  });
   };
 
   it('should throws if SETTINGS capability is used', () => {
