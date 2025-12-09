@@ -232,7 +232,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
         </div>
         
         <div style={{ padding: '0 12px' }}>
-          <Tooltip title={(!canDeleteKnowledge || !currentAccessRight.canEdit) ? t_i18n("You don't have the access rights to approve a draft") : ''}>
+          <Tooltip title={(!canDeleteKnowledge || !currentAccessRight.canEdit) ? t_i18n('You do not have the access rights to approve a draft') : ''}>
             <span>
               <Button
                 variant="contained"
