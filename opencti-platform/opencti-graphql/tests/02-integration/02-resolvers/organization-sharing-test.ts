@@ -8,15 +8,20 @@ import {
   getOrganizationIdByName,
   PLATFORM_ORGANIZATION,
   PYTHON_PATH,
-  TEN_SECONDS,
   TEST_ORGANIZATION,
   testContext,
   USER_EDITOR
 } from '../../utils/testQuery';
-import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import {
+adminQueryWithSuccess,
+awaitUntilCondition,
+enableCEAndUnSetOrganization,
+enableEEAndSetOrganization,
+queryAsUserIsExpectedError,
+queryAsUserWithSuccess
+} from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import { wait } from '../../../src/database/utils';
 
 const ORGANIZATION_SHARING_QUERY = gql`
   mutation StixCoreObjectSharingGroupAddMutation(
@@ -115,9 +120,15 @@ describe('Organization sharing standard behavior for container', () => {
       variables: { id: reportInternalId, organizationId }
     });
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
-    await wait(TEN_SECONDS * 2); // let some time for task manager & worker to handle organization sharing
   });
   it('should Editor user access all objects', async () => {
+    await awaitUntilCondition(async () => {   
+      const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+        query: REPORT_STIX_DOMAIN_ENTITIES,
+        variables: { id: reportInternalId },
+      });
+      return queryResult.data.report !== null && queryResult.data.report.objects.edges.length === 8;
+    }); // wait for task manager & worker to handle organization sharing
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: REPORT_STIX_DOMAIN_ENTITIES,
       variables: { id: reportInternalId },
