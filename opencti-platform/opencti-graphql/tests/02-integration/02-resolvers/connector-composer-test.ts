@@ -17,7 +17,7 @@ const TEST_COMPOSER_PUBLIC_KEY = '-----BEGIN RSA PUBLIC KEY-----\nMIICCgKCAgEAk8
 // Test configuration
 // The goal is to achieve a 1:1 behavior match between XTMComposerMock and XTMComposer.
 // This enables authentic integration testing (assuming the XTM Composer is available in the CI) without the need to rewrite the test suite.
-const FORCE_POLLING = false; // Set to true for faster tests, false for realistic XTM Composer behavior
+const FORCE_POLLING = true; // Set to true for faster tests, false for realistic XTM Composer behavior
 
 // Mutations
 const REGISTER_CONNECTORS_MANAGER_MUTATION = gql`
@@ -818,23 +818,14 @@ describe('Connector Composer and Managed Connectors', () => {
       });
 
       // Wait for XTM Composer to stop the connector
-      if (FORCE_POLLING) {
-        await xtmComposer.runOrchestrationCycle();
-      } else {
-        await awaitUntilCondition(async () => {
-          const deleteResult = await queryAsAdminWithSuccess({
-            query: DELETE_CONNECTOR_MUTATION,
-            variables: { id: deploymentConnectorId }
-          });
-          return deleteResult.data?.deleteConnector === deploymentConnectorId;
-        }, 300, 5);
-      }
-
-      // Now delete the connector
-      const deleteResult = await queryAsAdminWithSuccess({
-        query: DELETE_CONNECTOR_MUTATION,
-        variables: { id: deploymentConnectorId }
-      });
+      let deleteResult: any = null;
+      await awaitUntilCondition(async () => {
+        deleteResult = await queryAsAdminWithSuccess({
+          query: DELETE_CONNECTOR_MUTATION,
+          variables: { id: deploymentConnectorId }
+        });
+        return deleteResult.data?.deleteConnector === deploymentConnectorId;
+      }, 300, 5);
 
       expect(deleteResult.data).toBeDefined();
       expect(deleteResult.data?.deleteConnector).toEqual(deploymentConnectorId);
@@ -1000,6 +991,11 @@ describe('Connector Composer and Managed Connectors', () => {
           variables: { input: { id, status: 'starting' } }
         }))
       );
+
+      // Wait for XTM Composer to process all connectors
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      }
 
       await Promise.all(
         connectorIds.map(async (id) => {
