@@ -232,7 +232,7 @@ interface StoreRawRelation extends StoreProxyRelation {
   created: Date;
   modified: Date;
   // custom:
-  x_opencti_modified: Date;
+  x_opencti_modified_at: Date;
   // boolean
   revoked: boolean;
   x_opencti_negative: boolean;
@@ -415,7 +415,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   last_observed: Date;
   // custom
   x_opencti_first_seen_active: Date;
-  x_opencti_modified: Date;
+  x_opencti_modified_at: Date;
   // boolean
   revoked: boolean;
   is_family: boolean;
@@ -582,7 +582,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   publication_date: Date;
   created: Date;
   // custom
-  x_opencti_modified: Date;
+  x_opencti_modified_at: Date;
   // boolean
   defanged: boolean;
   is_multipart: boolean;

@@ -76,7 +76,7 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_log_sources',
   'x_opencti_firstname',
   'x_opencti_lastname',
-  'x_opencti_modified',
+  'x_opencti_modified_at',
   // CVSS 3
   'x_opencti_cvss_base_severity',
   'x_opencti_cvss_attack_vector',

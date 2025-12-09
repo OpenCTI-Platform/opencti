@@ -12,7 +12,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     spec_version: String!
     created_at: DateTime!
     updated_at: DateTime!
-    x_opencti_modified: DateTime
+    x_opencti_modified_at: DateTime
     refreshed_at: DateTime
     draftVersion: DraftVersion
     # inferences
@@ -267,7 +267,7 @@ input GroupingAddInput {
     modified: DateTime
     clientMutationId: String
     x_opencti_workflow_id: String
-    x_opencti_modified: DateTime
+    x_opencti_modified_at: DateTime
     update: Boolean
     file: Upload
     authorized_members: [MemberAccessInput!]

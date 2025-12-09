@@ -12,7 +12,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     spec_version: String!
     created_at: DateTime!
     updated_at: DateTime!
-    x_opencti_modified: DateTime
+    x_opencti_modified_at: DateTime
     refreshed_at: DateTime
     draftVersion: DraftVersion
     # inferences
@@ -193,7 +193,7 @@ input DataComponentAddInput {
     dataSource: String
     file: Upload
     x_opencti_workflow_id: String
-    x_opencti_modified: DateTime
+    x_opencti_modified_at: DateTime
 }
 
 type Mutation {
