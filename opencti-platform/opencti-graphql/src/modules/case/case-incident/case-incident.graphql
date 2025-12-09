@@ -11,6 +11,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -242,6 +243,7 @@ input CaseIncidentAddInput {
   modified: DateTime
   response_types: [String!]
   caseTemplates: [String!]
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
   clientMutationId: String

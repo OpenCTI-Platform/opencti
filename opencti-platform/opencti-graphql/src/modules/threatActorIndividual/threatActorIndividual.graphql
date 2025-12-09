@@ -21,6 +21,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -226,6 +227,7 @@ input ThreatActorIndividualAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
 }

@@ -108,6 +108,7 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
     x_opencti_id: instance.id,
     spec_version: '2.0',
     x_opencti_type: instance.entity_type,
+    x_opencti_modified_at: convertToStixDate(instance.x_opencti_modified_at),
     type: convertTypeToStix2Type(instance.entity_type),
     x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
     x_opencti_workflow_id: instance.x_opencti_workflow_id,
