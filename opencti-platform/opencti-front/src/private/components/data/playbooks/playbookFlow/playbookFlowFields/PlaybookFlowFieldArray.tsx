@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { MenuItem, Tooltip, TooltipProps } from '@mui/material';
-import { Field, useFormikContext } from 'formik';
+import { Field } from 'formik';
 import AutocompleteField from '../../../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import useEntityTranslation from '../../../../../../utils/hooks/useEntityTranslation';
@@ -38,14 +38,10 @@ const PlaybookFlowFieldArray = ({
   multiple = false,
 }: PlaybookFlowFieldArrayProps) => {
   const { translateEntityType } = useEntityTranslation();
-  const { setFieldValue } = useFormikContext();
+  const fieldOptions = options.map(o => o.const);
 
-  const setOneOfValue = (value: Option) => {
-    setFieldValue(name, value.const);
-  };
-
-  const setMultipleValue = (values: Option[]) => {
-    setFieldValue(name, values.map((o) => (o.const)));
+  const findOption = (value: string) => {
+    return options.find(o => o.const === value);
   };
 
   return (
@@ -59,32 +55,28 @@ const PlaybookFlowFieldArray = ({
         label,
       }}
       name={name}
-      options={options}
-      onInternalChange={(_: string, option: Option | Option[]) => {
-        if (Array.isArray(option)) {
-          setMultipleValue(option);
-        } else {
-          setOneOfValue(option);
-        }
+      options={fieldOptions}
+      isOptionEqualToValue={(o: string, val: string) => o === val}
+      renderOption={(props: TooltipProps, value: string) => {
+        const option = findOption(value);
+        if (!option) return null;
+        return (
+          <Tooltip
+            {...props}
+            key={option.const}
+            title={option.title}
+            placement="bottom-start"
+          >
+            <MenuItem value={option.const}>
+              {/* value might be an entity type, we try to translate it */}
+              {translateEntityType(option.title)}
+            </MenuItem>
+          </Tooltip>
+        );
       }}
-      isOptionEqualToValue={(option: Option, value: string) => {
-        return option.const === value;
-      }}
-      renderOption={(props: TooltipProps, value: Option) => (
-        <Tooltip
-          {...props}
-          key={value.const}
-          title={value.title}
-          placement="bottom-start"
-        >
-          <MenuItem value={value.const}>
-            {/* value might be an entity type, we try to translate it */}
-            {translateEntityType(value.title)}
-          </MenuItem>
-        </Tooltip>
-      )}
-      getOptionLabel={(option: Option) => {
-        return translateEntityType(option.title ?? option);
+      getOptionLabel={(val: string) => {
+        const option = findOption(val);
+        return option ? translateEntityType(option.title) : '';
       }}
     />
   );
