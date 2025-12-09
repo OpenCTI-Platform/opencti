@@ -42,6 +42,44 @@ declare module '@mui/material/Alert' {
   }
 }
 
+declare module '@mui/material/styles' {
+  interface Palette {
+    border?: {
+      main?: string;
+      primary?: string;
+    };
+    gradient?: {
+      main: string;
+      light: string;
+      dark: string;
+    };
+    ai?: {
+      main: string;
+      contrastText: string;
+      light?: string;
+      dark?: string;
+    };
+  }
+
+  interface PaletteOptions {
+    border?: {
+      main?: string;
+      primary?: string;
+    };
+    gradient?: {
+      main?: string;
+      light?: string;
+      dark?: string;
+    };
+    ai?: {
+      main?: string;
+      contrastText?: string;
+      light?: string;
+      dark?: string;
+    };
+  }
+}
+
 interface ExtendedColor extends PaletteColorOptions {
   main: string;
   dark: string;
@@ -67,6 +105,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
     primary: string;
     secondary: string;
     pagination: string;
+    main?: string;
     lightBackground?: string;
     paper?: string;
   };
