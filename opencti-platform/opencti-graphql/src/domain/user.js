@@ -201,7 +201,7 @@ export const findById = async (context, user, userId) => {
 
 const buildUserOrganizationRestrictedFilters = (user, filters) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    // If user is not a set access administrator, user can only see attached organization users
+    // If user is not a set access administrator, user can only see directly attached organization users
     const organizationIds = user.administrated_organizations.map((organization) => organization.id);
     return {
       mode: 'and',
@@ -217,6 +217,10 @@ const buildUserOrganizationRestrictedFilters = (user, filters) => {
             {
               key: 'id',
               values: organizationIds,
+            },
+            {
+              key: 'is_inferred',
+              values: ['false'],
             },
           ],
           mode: 'or',
