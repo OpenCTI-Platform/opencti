@@ -8,7 +8,7 @@ import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
-import { enableCustomCatalogs } from '../../../src/modules/catalog/catalog-domain';
+import { resetCatalogs } from '../../../src/modules/catalog/catalog-domain';
 
 const TEST_COMPOSER_ID = uuidv4();
 const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
@@ -164,8 +164,8 @@ describe('Connector Composer and Managed Connectors', () => {
     const testCatalogPath = path.join(__dirname, '../../utils/opencti-manifest.json');
     process.env.APP__CUSTOM_CATALOGS = JSON.stringify([testCatalogPath]);
 
-    // Enable custom catalogs to ensure test catalog is loaded
-    enableCustomCatalogs();
+    // Reset catalogs to ensure test catalog is loaded
+    resetCatalogs();
 
     // Validate that we're using the test catalog
     catalogHelper.validateTestCatalog();
