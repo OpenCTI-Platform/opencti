@@ -1,9 +1,9 @@
 import { isStixMatchFilterGroup } from '../../../utils/filtering/filtering-stix/stix-filtering';
 import { now } from '../../../utils/format';
-import { FunctionalError, UnsupportedError } from '../../../config/errors';
+import { FunctionalError } from '../../../config/errors';
 import {deleteElementById, updateAttribute} from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
-import { BUS_TOPICS, isFeatureEnabled } from '../../../config/conf';
+import { BUS_TOPICS } from '../../../config/conf';
 import { pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ABSTRACT_INTERNAL_OBJECT, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../../../schema/general';
@@ -14,30 +14,16 @@ import { createInternalObject } from '../../../domain/internalObject';
 import { getEntitiesListFromCache } from '../../../database/cache';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 
-const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
-
 export type ResolvedDecayExclusionRule = Record<string, any>;
 
-export interface DecayExclusionRuleModel {
-  id: string;
-  name: string;
-  description: string;
-  created_at: Date;
-  decay_exclusion_filters: string;
-  active: boolean;
-}
-
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
-  if (!isDecayExclusionRuleEnabled) throw UnsupportedError('Feature not yet available');
   return storeLoadById<BasicStoreEntityDecayExclusionRule>(context, user, id, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
 };
 export const findDecayExclusionRulePaginated = (context: AuthContext, user: AuthUser, args: QueryDecayExclusionRulesArgs) => {
-  if (!isDecayExclusionRuleEnabled) throw UnsupportedError('Feature not yet available');
   return pageEntitiesConnection<BasicStoreEntityDecayExclusionRule>(context, user, [ENTITY_TYPE_DECAY_EXCLUSION_RULE], args);
 };
 
 export const getActiveDecayExclusionRules = async (context: AuthContext, user: AuthUser) => {
-  if (!isDecayExclusionRuleEnabled) return [];
   const decayExclusionRuleList = await getEntitiesListFromCache<BasicStoreEntityDecayExclusionRule>(context, user, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
   return decayExclusionRuleList.filter((rule) => rule.active);
 };
@@ -48,8 +34,6 @@ export const checkDecayExclusionRules = async (
   resolvedIndicator: ResolvedDecayExclusionRule,
   activeDecayExclusionRuleList: BasicStoreEntityDecayExclusionRule[]
 ): Promise<BasicStoreEntityDecayExclusionRule | null> => {
-  if (!isDecayExclusionRuleEnabled) return null;
-
   const formattedIndicator = {
     ...resolvedIndicator,
     object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map((marking: MarkingDefinition) => marking.standard_id),
@@ -73,13 +57,11 @@ export const checkDecayExclusionRules = async (
 };
 
 export const addDecayExclusionRule = (context: AuthContext, user: AuthUser, input: DecayExclusionRuleAddInput) => {
-  if (!isDecayExclusionRuleEnabled) throw UnsupportedError('Feature not yet available');
   const defaultOps = { created_at: now() };
   const decayExclusionRuleInput = { ...input, ...defaultOps };
   return createInternalObject<StoreEntityDecayExclusionRule>(context, user, decayExclusionRuleInput, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
 };
 export const fieldPatchDecayExclusionRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
-  if (!isDecayExclusionRuleEnabled) throw UnsupportedError('Feature not yet available');
   const decayExclusionRule = await findById(context, user, id);
 
   if (!decayExclusionRule) {
@@ -98,7 +80,6 @@ export const fieldPatchDecayExclusionRule = async (context: AuthContext, user: A
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 export const deleteDecayExclusionRule = async (context: AuthContext, user: AuthUser, id: string) => {
-  if (!isDecayExclusionRuleEnabled) throw UnsupportedError('Feature not yet available');
   const decayExclusionRule = await findById(context, user, id);
 
   if (!decayExclusionRule) {

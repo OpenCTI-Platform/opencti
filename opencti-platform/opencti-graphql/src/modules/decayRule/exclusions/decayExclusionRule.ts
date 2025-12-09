@@ -3,7 +3,6 @@ import { ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StixDecayExclusionRule, type Sto
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
 import convertDecayExclusionRuleToStix from './decayExclusionRule-converter';
-import { isFeatureEnabled } from '../../../config/conf';
 
 const DECAY_EXCLUSION_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayExclusionRule, StixDecayExclusionRule> = {
   type: {
@@ -30,8 +29,4 @@ const DECAY_EXCLUSION_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayExclusio
   converter_2_1: convertDecayExclusionRuleToStix
 };
 
-const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
-
-if (isDecayExclusionRuleEnabled) {
-  registerDefinition(DECAY_EXCLUSION_RULE_DEFINITION);
-}
+registerDefinition(DECAY_EXCLUSION_RULE_DEFINITION);
