@@ -241,6 +241,7 @@ import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
+import {findById} from '../domain/user';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2059,9 +2060,17 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
 
-const buildAttribute = (array) => {
-  return array.map((item) => (typeof item === 'object' ? (item && extractEntityRepresentativeName(item, 250)): item))
-  .filter((item) => item !== null && item !== undefined);
+const buildAttribute = async (context, user, key, array) => {
+  const results = await Promise.all(array.map(async (item) => {
+    if (typeof item === 'object') {
+      return item && extractEntityRepresentativeName(item, 250);
+    } else if (typeof item === 'string' && key === creatorsAttribute.name) {
+      const creator = await findById(context, user, item);
+      return item && extractEntityRepresentativeName(creator, 250);
+    }
+    return item;
+  }));
+  return results.filter((item) => item !== null && item !== undefined);
 };
 
 export const buildChanges = async (context, user, entityType, inputs) => {
@@ -2081,8 +2090,8 @@ export const buildChanges = async (context, user, entityType, inputs) => {
 
     const previousArrayFull = Array.isArray(previous) ? previous : [previous];
     const valueArrayFull = Array.isArray(value) ? value : [value];
-    const previousArray = buildAttribute(previousArrayFull);
-    const valueArray = buildAttribute(valueArrayFull);
+    const previousArray = await buildAttribute(context, user, key, previousArrayFull);
+    const valueArray = await buildAttribute(context, user,key, valueArrayFull);
 
     if (isMultiple) {
       let added  = [];
