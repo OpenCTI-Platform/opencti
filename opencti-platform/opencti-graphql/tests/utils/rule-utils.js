@@ -58,6 +58,7 @@ export const changeRule = async (ruleId, active, isInternalRelationshipsRule = f
     // Handle works
     const workIds = ruleActivationTask.map((task) => task.work_id).filter((workId) => isNotEmptyField(workId));
     const works = await internalFindByIds(testContext, SYSTEM_USER, workIds, { indices: [READ_INDEX_HISTORY] });
+    logApp.info('--------------works', works);
     works.forEach((w) => {
       if (w.errors.length > 0) {
         logApp.info('[RULE TEST] Change rule works failure', { active, errors: w.errors });
@@ -71,15 +72,18 @@ export const changeRule = async (ruleId, active, isInternalRelationshipsRule = f
   }
   // Wait all events to be consumed
   let stableCount = 1;
-  while (stableCount < 3) {
-    const innerInfo = await fetchStreamInfo();
-    const ruleManager = await internalLoadById(testContext, SYSTEM_USER, 'rule_engine_settings');
-    await wait(2000);
-    const lastEventDate = new Date(parseInt(innerInfo.lastEventId.split('-').at(0), 10));
-    const managerEventDate = new Date(parseInt(ruleManager.lastEventId.split('-').at(0), 10));
-    if (isInternalRelationshipsRule // internal relationships are not in the stream
-      || (managerEventDate >= lastEventDate)) {
-      stableCount += 1;
+  if (isInternalRelationshipsRule) {
+    await wait(4000);
+  } else {
+    while (stableCount < 3) {
+      const innerInfo = await fetchStreamInfo();
+      const ruleManager = await internalLoadById(testContext, SYSTEM_USER, 'rule_engine_settings');
+      await wait(2000);
+      const lastEventDate = new Date(parseInt(innerInfo.lastEventId.split('-').at(0), 10));
+      const managerEventDate = new Date(parseInt(ruleManager.lastEventId.split('-').at(0), 10));
+      if (managerEventDate >= lastEventDate) {
+        stableCount += 1;
+      }
     }
   }
   const stop = new Date().getTime() - start;
