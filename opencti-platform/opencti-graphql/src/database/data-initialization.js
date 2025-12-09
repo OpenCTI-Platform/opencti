@@ -413,6 +413,7 @@ export const initializeData = async (context, withMarkings = true) => {
     platform_email: 'admin@opencti.io',
     platform_theme: 'dark',
     platform_language: 'auto',
+    view_all_users: false,
   });
   await initCreateEntitySettings(context, SYSTEM_USER);
   await initManagerConfigurations(context, SYSTEM_USER);
