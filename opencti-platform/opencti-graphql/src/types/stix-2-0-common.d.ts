@@ -22,7 +22,7 @@ export interface StixObject {
   // custom
   x_opencti_workflow_id?: string;
   x_opencti_files: Array<StixFile>;
-  x_opencti_modified_at: StixDate;
+  x_opencti_modified_at?: StixDate;
 }
 
 // --- STIX Core Objects
