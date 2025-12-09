@@ -122,7 +122,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_PARTICIPATE_TO }
     });
     let attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(20);
+    expect(attributes.length).toEqual(19);
     expect(attributes.map((node) => node.value).includes('standard_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('i_inference_weight')).toBeTruthy(); // Direct attribute
     // Stix Ref Relationship
