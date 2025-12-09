@@ -610,7 +610,7 @@ class OpenCTIApiClient:
             verify=self.ssl_verify,
             cert=self.cert,
             proxies=self.proxies,
-            timeout=300,
+            timeout=self.session_requests_timeout,
         )
         if binary:
             if serialize:
