@@ -1,4 +1,5 @@
 import useAuth from './useAuth';
+import useHelper from './useHelper';
 
 export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 export const BYPASS = 'BYPASS';
@@ -64,6 +65,8 @@ export const getCapabilitiesName = (capabilities: readonly { name: string }[]) =
 
 const useGranted = (capabilities: string[], matchAll = false): boolean => {
   const { me } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const isCapabilitiesInDraftEnabled = isFeatureEnable('CAPABILITIES_IN_DRAFT');
 
   // Prevent use of the old SETTINGS capability for future uses
   if (capabilities.includes(SETTINGS)) {
@@ -78,7 +81,7 @@ const useGranted = (capabilities: string[], matchAll = false): boolean => {
   }
 
   // If the user is in draft mode, add capabilities in draft to the base capabilities 
-  if (me.draftContext) {
+  if (isCapabilitiesInDraftEnabled && me.draftContext) {
     const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
     userCapabilities = Array.from(new Set([...userBaseCapabilities, ...userCapabilitiesInDraft]));
   } else {
