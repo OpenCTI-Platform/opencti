@@ -419,7 +419,7 @@ class Event:
         stop_time = kwargs.get("stop_time", None)
         event_types = kwargs.get("event_types", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
-        x_opencti_modified = kwargs.get("x_opencti_modified", None)
+        x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -455,7 +455,7 @@ class Event:
                         "stop_time": stop_time,
                         "event_types": event_types,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "x_opencti_modified": x_opencti_modified,
+                        "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
                     }
                 },
@@ -487,9 +487,9 @@ class Event:
                 stix_object["x_opencti_granted_refs"] = (
                     self.opencti.get_attribute_in_extension("granted_refs", stix_object)
                 )
-            if "x_opencti_modified" not in stix_object:
-                stix_object["x_opencti_modified"] = (
-                    self.opencti.get_attribute_in_extension("modified", stix_object)
+            if "x_opencti_modified_at" not in stix_object:
+                stix_object["x_opencti_modified_at"] = (
+                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
 
             return self.opencti.event.create(
@@ -538,9 +538,9 @@ class Event:
                     if "x_opencti_stix_ids" in stix_object
                     else None
                 ),
-                x_opencti_modified=(
-                    stix_object["x_opencti_modified"]
-                    if "x_opencti_modified" in stix_object
+                x_opencti_modified_at=(
+                    stix_object["x_opencti_modified_at"]
+                    if "x_opencti_modified_at" in stix_object
                     else None
                 ),
                 update=update,

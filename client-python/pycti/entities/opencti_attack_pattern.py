@@ -440,7 +440,7 @@ class AttackPattern:
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
-        x_opencti_modified = kwargs.get("x_opencti_modified", None)
+        x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -480,7 +480,7 @@ class AttackPattern:
                         "killChainPhases": kill_chain_phases,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "x_opencti_workflow_id": x_opencti_workflow_id,
-                        "x_opencti_modified": x_opencti_modified,
+                        "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
                     }
                 },
@@ -563,9 +563,9 @@ class AttackPattern:
                 stix_object["x_opencti_workflow_id"] = (
                     self.opencti.get_attribute_in_extension("workflow_id", stix_object)
                 )
-            if "x_opencti_modified" not in stix_object:
-                stix_object["x_opencti_modified"] = (
-                    self.opencti.get_attribute_in_extension("modified", stix_object)
+            if "x_opencti_modified_at" not in stix_object:
+                stix_object["x_opencti_modified_at"] = (
+                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
 
             return self.create(
@@ -640,9 +640,9 @@ class AttackPattern:
                     if "x_opencti_workflow_id" in stix_object
                     else None
                 ),
-                x_opencti_modified=(
-                    stix_object["x_opencti_modified"]
-                    if "x_opencti_modified" in stix_object
+                x_opencti_modified_at=(
+                    stix_object["x_opencti_modified_at"]
+                    if "x_opencti_modified_at" in stix_object
                     else None
                 ),
                 update=update,

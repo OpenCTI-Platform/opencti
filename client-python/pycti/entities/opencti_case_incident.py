@@ -716,7 +716,7 @@ class CaseIncident:
         granted_refs = kwargs.get("objectOrganization", None)
         response_types = kwargs.get("response_types", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
-        x_opencti_modified = kwargs.get("x_opencti_modified", None)
+        x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -757,7 +757,7 @@ class CaseIncident:
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "response_types": response_types,
                         "x_opencti_workflow_id": x_opencti_workflow_id,
-                        "x_opencti_modified": x_opencti_modified,
+                        "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
                     }
                 },
@@ -904,9 +904,9 @@ class CaseIncident:
                         "participant_ids", stix_object
                     )
                 )
-            if "x_opencti_modified" not in stix_object:
-                stix_object["x_opencti_modified"] = (
-                    self.opencti.get_attribute_in_extension("modified", stix_object)
+            if "x_opencti_modified_at" not in stix_object:
+                stix_object["x_opencti_modified_at"] = (
+                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
             return self.create(
                 stix_id=stix_object["id"],
@@ -977,9 +977,9 @@ class CaseIncident:
                     if "x_opencti_workflow_id" in stix_object
                     else None
                 ),
-                x_opencti_modified=(
-                    stix_object["x_opencti_modified"]
-                    if "x_opencti_modified" in stix_object
+                x_opencti_modified_at=(
+                    stix_object["x_opencti_modified_at"]
+                    if "x_opencti_modified_at" in stix_object
                     else None
                 ),
                 update=update,
