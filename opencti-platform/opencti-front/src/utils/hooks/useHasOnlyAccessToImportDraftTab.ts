@@ -14,7 +14,7 @@ const useHasOnlyAccessToImportDraftTab = (): boolean => {
   if (isCapabilitiesInDraftEnabled || hasImportCapability) {
     return false;
   } 
-  return userCapabilitiesInDraft.includes(KNOWLEDGE);
+  return userCapabilitiesInDraft.some((capability) => capability.includes(KNOWLEDGE));
 };
 
 export default useHasOnlyAccessToImportDraftTab;
