@@ -32,7 +32,6 @@ const buildCatalogMap = (): Record<string, CatalogType> => {
     // Validate each contract
     for (let contractIndex = 0; contractIndex < catalog.contracts.length; contractIndex += 1) {
       const contract = catalog.contracts[contractIndex];
-      console.log('Loading contract ' + contract.container_image + ' in ' + catalog.name);
       if (contract.manager_supported) {
         if (!contract.config_schema) {
           logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
