@@ -163,7 +163,7 @@ const DecayExclusionRules = () => {
           resolvePath={(data) => data.decayExclusionRules?.edges?.map(({ node }: { node: DecayExclusionRules_node$data }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           lineFragment={decayExclusionRulesLineFragment}
           disableLineSelection
           disableNavigation

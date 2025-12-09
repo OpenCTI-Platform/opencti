@@ -225,7 +225,7 @@ const RestrictedDrafts = () => {
             resolvePath={(data: RestrictedDraftsLines_data$data) => (data.draftWorkspacesRestricted?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={RestrictedDraftLineFragment}
             removeAuthMembersEnabled

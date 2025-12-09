@@ -179,8 +179,7 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBul
           resolvePath={(data: SearchBulkQuery_data$data) => data.globalSearch?.edges?.map((n) => n?.node)}
           storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={queryFilters}
-          additionalFilters={queryFilters}
+          contextFilters={queryFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           exportContext={{ entity_type: 'Stix-Core-Object' }}
           lineFragment={searchBulkLineFragment}
