@@ -13,7 +13,7 @@ RUN set -eux; \
     npm install -g node-gyp; \
     npm install -g corepack
 
-COPY .yarnrc.yml /opt/opencti-build/
+COPY .yarnrc.yml /opt/opencti/
 
 
 ##############################
@@ -26,7 +26,7 @@ FROM builder AS builder-back
 ARG TAG_VERSION
 ENV TAG_VERSION="${TAG_VERSION}"
 
-WORKDIR /opt/opencti-build/opencti-graphql
+WORKDIR /opt/opencti/opencti-graphql
 
 # Copy sources necessary for install (preserve cache if no dependency changes)
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/patch ./
@@ -43,7 +43,7 @@ RUN yarn build:prod
 ##############################
 
 FROM builder AS builder-front
-WORKDIR /opt/opencti-build/opencti-front
+WORKDIR /opt/opencti/opencti-front
 
 # Copy sources necessary for install (preserve cache if no dependency changes)
 COPY opencti-front/package.json opencti-front/yarn.lock ./
@@ -79,8 +79,8 @@ RUN set -eux; \
 
 WORKDIR /opt/opencti
 
-COPY --from=builder-back /opt/opencti-build/opencti-graphql/ ./
-COPY --from=builder-front /opt/opencti-build/opencti-graphql/public/ ./public/
+COPY --from=builder-back /opt/opencti/opencti-graphql/ ./
+COPY --from=builder-front /opt/opencti/opencti-graphql/public/ ./public/
 
 ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"
@@ -117,9 +117,9 @@ RUN set -eux; \
 
 WORKDIR /opt/opencti
 
-COPY --from=builder-back /opt/opencti-build/opencti-graphql/build/ ./build/
-COPY --from=builder-back /opt/opencti-build/opencti-graphql/static/ ./static/
-COPY --from=builder-front /opt/opencti-build/opencti-graphql/public/ ./public/
+COPY --from=builder-back /opt/opencti/opencti-graphql/build/ ./build/
+COPY --from=builder-back /opt/opencti/opencti-graphql/static/ ./static/
+COPY --from=builder-front /opt/opencti/opencti-graphql/public/ ./public/
 COPY opencti-graphql/src/python/ ./src/python/
 COPY opencti-graphql/config/ ./config/
 
