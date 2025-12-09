@@ -2064,8 +2064,8 @@ const buildAttribute = async (context, user, key, array) => {
     if (typeof item === 'object') {
       return item && extractEntityRepresentativeName(item, 250);
     } else if (typeof item === 'string' && key === creatorsAttribute.name) {
-      const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER);
-      const creator = users.find((u) => u.id === item);
+      const users = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_USER);
+      const creator = users.get(item);
       return item && extractEntityRepresentativeName(creator, 250);
     }
     return item;
