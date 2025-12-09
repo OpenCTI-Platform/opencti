@@ -21,6 +21,7 @@ const ignoredAttributes = [
   'x_opencti_score',
   'updated_at',
   'refreshed_at',
+  'x_opencti_modified',
   'observable_value',
   'indicators',
   'importFiles',
@@ -55,6 +56,7 @@ const ignoredAttributesInFeeds = [
   'x_opencti_stix_ids',
   'x_opencti_files',
   'x_opencti_graph_data',
+  'x_opencti_modified',
   'spec_version',
   'extensions',
   'importFiles',
@@ -76,6 +78,7 @@ const ignoredAttributesInDashboards = [
   'modified',
   'updated_at',
   'refreshed_at',
+  'x_opencti_modified',
   'internal_id',
   'standard_id',
   'published',
@@ -110,6 +113,7 @@ const dateAttributes = [
   'published',
   'start_time',
   'stop_time',
+  'x_opencti_modified',
 ];
 
 const numberAttributes = [

@@ -10295,6 +10295,8 @@ input LanguageAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
   update: Boolean
 }
 
@@ -10407,6 +10409,7 @@ input EventAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
   update: Boolean
   file: Upload
 }
@@ -10531,6 +10534,7 @@ input GroupingAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
   update: Boolean
   file: Upload
   authorized_members: [MemberAccessInput!]
@@ -10922,6 +10926,7 @@ input DataComponentAddInput {
   dataSource: String
   file: Upload
   x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
 }
 
 type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11032,6 +11037,7 @@ input DataSourceAddInput {
   dataComponents: [String]
   file: Upload
   x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
 }
 
 enum VocabularyCategory {
@@ -11380,6 +11386,7 @@ input TaskAddInput {
   createdBy: String
   objects: [String]
   x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
   update: Boolean
 }
 
@@ -12079,6 +12086,7 @@ input FeedbackAddInput {
   created: DateTime
   modified: DateTime
   x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
   file: Upload
   clientMutationId: String
   update: Boolean
@@ -12364,6 +12372,7 @@ input MalwareAnalysisAddInput {
   objectLabel: [String]
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
   update: Boolean
   file: Upload
 }
@@ -12602,6 +12611,7 @@ input ThreatActorIndividualAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified: DateTime
   update: Boolean
   file: Upload
 }
@@ -13428,6 +13438,7 @@ input OrganizationAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean

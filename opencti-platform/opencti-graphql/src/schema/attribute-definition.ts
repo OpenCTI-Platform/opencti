@@ -503,14 +503,14 @@ export const modified: AttributeDefinition = {
   isFilterable: false, // use updated_at filter
 };
 export const xOpenctiModified: AttributeDefinition = {
-    name: 'x_opencti_modified',
-    label: 'Last update',
-    type: 'date',
-    mandatoryType: 'no',
-    editDefault: false,
-    multiple: false,
-    upsert: true,
-    isFilterable: true,
+  name: 'x_opencti_modified',
+  label: 'Last update',
+  type: 'date',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: true,
+  isFilterable: false,
 };
 
 export const createdAt: AttributeDefinition = {
