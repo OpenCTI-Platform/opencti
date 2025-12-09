@@ -73,9 +73,8 @@ Once authorized members are activated for these entities, data segregation by or
 ### Specific case of Authorized Members on Organization in the context of Organization segregation.
 
 In the context of Organization segregation, sometimes, as a Platform Organization, you do not want users to see all the organizations that exist in your database. This is the reason, since the 6.7.X, the Authorized Members on Organizations have been introduced:
-- A user with Can View will be able to see the organization in the knowledge list. As a result, if the organization is in the Author field of an entity, or in the shared organization that the entity is shared with, the user will see the organization.
+- A user with Can View will be able to see the organization in the knowledge list & security view. As a result, if the organization is in the Author field of an entity, or in the shared organization that the entity is shared with, the user will see the organization.
 - A user with Can Edit will be able to edit the organization (and see the organization).
-- A user with Can Use will be able to assign the organization as a user, but not be able to edit the organization. In essence, the organization will be able to be listed, to be selected in any list, but not editable.
 - A user with Can Manage will be able to manage access restrictions on this organization.
 
 Authorized Members of the organization will allow you to control who can see & manage the list of organizations present in your platform.
