@@ -2455,9 +2455,9 @@ describe('Complex filters combinations for elastic queries', () => {
 
 describe('Complex filters regarding of for elastic queries', () => {
   it('should list entities using basic regarding of filter', async () => {
-    const generateFilters = (withRegardingOf = true, regardingOfOperator = 'eq') => {
+    const generateFilters = (withRegardingOf = true, regardingOfOperator = 'eq', mainMode = 'and') => {
       return {
-        mode: 'and',
+        mode: mainMode,
         filters: [
           {
             key: 'entity_type',
@@ -2494,6 +2494,9 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
     expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
     expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    const eqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq', 'or') } });
+    console.log('What is the test result', eqOrQueryResult);
+    expect(eqOrQueryResult.data.globalSearch.edges.length).toEqual(2);
     const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq') } });
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
     expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
