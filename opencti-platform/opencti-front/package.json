@@ -151,7 +151,7 @@
     "@types/relay-runtime": "20.1.0",
     "@types/relay-test-utils": "19.0.0",
     "@vitejs/plugin-react": "5.1.1",
-    "@vitest/coverage-v8": "3.2.4",
+    "@vitest/coverage-v8": "4.0.15",
     "babel-plugin-relay": "20.1.1",
     "chokidar": "5.0.0",
     "compression": "1.8.1",
@@ -176,7 +176,7 @@
     "vite": "7.2.6",
     "vite-plugin-relay": "2.1.0",
     "vite-plugin-static-copy": "3.1.4",
-    "vitest": "3.2.4"
+    "vitest": "4.0.15"
   },
   "packageManager": "yarn@4.12.0+sha512.f45ab632439a67f8bc759bf32ead036a1f413287b9042726b7cc4818b7b49e14e9423ba49b18f9e06ea4941c1ad062385b1d8760a8d5091a1a31e5f6219afca8",
   "engines": {
