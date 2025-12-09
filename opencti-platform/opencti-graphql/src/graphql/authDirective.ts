@@ -8,6 +8,7 @@ import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import type { AuthContext } from '../types/user';
 import { BYPASS, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
+import { isFeatureEnabled } from '../config/conf';
 
 /**
  * Type representing a capability string value from the Capabilities enum
@@ -44,6 +45,7 @@ interface AuthDirectiveBuilder {
 
 export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilder => {
   const typeDirectiveArgumentMaps: TypeDirectiveArgumentMaps = {};
+  const isCapabilitiesInDraftEnabled = isFeatureEnabled('CAPABILITIES_IN_DRAFT');
   return {
     authDirectiveTransformer: (schema: GraphQLSchema) => mapSchema(schema, {
       [MapperKind.TYPE]: (type) => {
@@ -115,7 +117,7 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
 
               const isInDraftContext = !!getDraftContext(context, user);
               // If the user is in draft mode, add capabilities in draft to the base capabilities
-              if (isInDraftContext) {
+              if (isCapabilitiesInDraftEnabled && isInDraftContext) {
                 const userCapabilitiesInDraft = user.capabilitiesInDraft?.map((c) => c.name) ?? [];
                 userCapabilities = Array.from(new Set([...userBaseCapabilities, ...userCapabilitiesInDraft]));
               } else {
