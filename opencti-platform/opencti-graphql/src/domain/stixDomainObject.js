@@ -32,7 +32,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS, isAbstract } from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';

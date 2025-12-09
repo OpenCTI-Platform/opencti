@@ -26,7 +26,7 @@ import { investigationAddFromContainer } from '../modules/workspace/investigatio
 import { getAuthorizedMembers } from '../utils/authorizedMembers';
 import { getUserAccessRight } from '../utils/access';
 import { distributionEntities } from '../database/middleware';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_CONTAINER } from '../schema/general';
+import { ENTITY_TYPE_CONTAINER } from '../schema/general';
 
 const containerResolvers = {
   Query: {
@@ -84,7 +84,7 @@ const containerResolvers = {
   // },
   Mutation: {
     containerEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id, ABSTRACT_STIX_DOMAIN_OBJECT),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

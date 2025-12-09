@@ -6,6 +6,7 @@ import { fileToReadStream } from '../../../src/database/file-storage';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { addTool } from '../../../src/domain/tool';
 import { addMalware } from '../../../src/domain/malware';
+import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query stixDomainObjects(
@@ -384,7 +385,7 @@ describe('StixDomainObject resolver standard behavior', () => {
       variables: { id: stixDomainObjectInternalId },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainObjectStixId } });
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: stixDomainObjectStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.stixDomainObject).toBeNull();
   });
@@ -404,8 +405,7 @@ describe('StixDomainObject resolver standard behavior', () => {
       variables: { id: [newTool.id, newMalware.id] },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainObjectStixId } });
-    expect(queryResult).not.toBeNull();
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: stixDomainObjectStixId } });
     expect(queryResult.data.stixDomainObject).toBeNull();
   });
 });
