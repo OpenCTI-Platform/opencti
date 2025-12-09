@@ -128,16 +128,6 @@ const CONNECTOR_LOGS_QUERY = gql`
     }
 `;
 
-const ipinfoProperties = {
-  CONNECTOR_LISTEN_PROTOCOL_API_PORT: 0,
-  CONNECTOR_LISTEN_PROTOCOL_API_SSL: false
-};
-
-const ipinfoListProperties = [
-  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_PORT', value: '0' },
-  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_SSL', value: 'false' }
-];
-
 const CONNECTOR_WITH_HEALTH_QUERY = gql`
   query GetConnectorWithHealth($id: String!) {
     connector(id: $id) {
@@ -152,6 +142,26 @@ const CONNECTOR_WITH_HEALTH_QUERY = gql`
     }
   }
 `;
+
+const GET_CONNECTOR_QUERY_CURRENT_STATUS = gql`
+  query GetConnector($id: String!) {
+    connector(id: $id) {
+      id
+      manager_current_status
+    }
+  }
+`; // Verify the connector is now started
+
+// Variables
+const ipinfoProperties = {
+  CONNECTOR_LISTEN_PROTOCOL_API_PORT: 0,
+  CONNECTOR_LISTEN_PROTOCOL_API_SSL: false
+};
+
+const ipinfoListProperties = [
+  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_PORT', value: '0' },
+  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_SSL', value: 'false' }
+];
 
 describe('Connector Composer and Managed Connectors', () => {
   // Track all created resources
@@ -369,21 +379,17 @@ describe('Connector Composer and Managed Connectors', () => {
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
-        await wait(1500); // Wait for at least one polling cycle
+        await awaitUntilCondition(async () => {
+            const connectorResult = await queryAsAdminWithSuccess({
+              query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
+              variables: { id: deploymentConnectorId }
+            });
+            return connectorResult.data?.connector.manager_current_status === 'started'; // Wait connector to be started
+          }, 400, 5);
       }
 
-      // Verify the connector is now started
-      const GET_CONNECTOR_QUERY = gql`
-        query GetConnector($id: String!) {
-          connector(id: $id) {
-            id
-            manager_current_status
-          }
-        }
-      `;
-
       const connectorResult = await queryAsAdminWithSuccess({
-        query: GET_CONNECTOR_QUERY,
+        query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
         variables: { id: deploymentConnectorId }
       });
 
@@ -402,18 +408,24 @@ describe('Connector Composer and Managed Connectors', () => {
         variables: { input: stopInput }
       });
 
-      // Wait for XTM Composer to detect and stop
-      if (FORCE_POLLING) {
-        await xtmComposer.runOrchestrationCycle();
-      } else {
-        await wait(1500);
-      }
-
       // Request start through platform
       const startRequestInput = {
         id: deploymentConnectorId,
         status: 'starting'
       };
+      
+      // Wait for XTM Composer to be starting
+      if (FORCE_POLLING) {
+        await xtmComposer.runOrchestrationCycle();
+      } else {
+        await awaitUntilCondition(async () => {
+            const startResult = await queryAsAdminWithSuccess({
+              query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
+              variables: { input: startRequestInput }
+            });
+            return startResult.data?.updateConnectorRequestedStatus.manager_requested_status === 'starting';
+          }, 400, 5);      
+        }
 
       const startResult = await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
@@ -430,18 +442,8 @@ describe('Connector Composer and Managed Connectors', () => {
         await wait(1500);
       }
 
-      // Verify status
-      const GET_CONNECTOR_QUERY = gql`
-        query GetConnector($id: String!) {
-          connector(id: $id) {
-            id
-            manager_current_status
-          }
-        }
-      `;
-
       const connectorResult = await queryAsAdminWithSuccess({
-        query: GET_CONNECTOR_QUERY,
+        query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
         variables: { id: deploymentConnectorId }
       });
 
@@ -470,18 +472,8 @@ describe('Connector Composer and Managed Connectors', () => {
         await wait(1500);
       }
 
-      // Verify status
-      const GET_CONNECTOR_QUERY = gql`
-        query GetConnector($id: String!) {
-          connector(id: $id) {
-            id
-            manager_current_status
-          }
-        }
-      `;
-
       const connectorResult = await queryAsAdminWithSuccess({
-        query: GET_CONNECTOR_QUERY,
+        query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
         variables: { id: deploymentConnectorId }
       });
 
@@ -507,18 +499,8 @@ describe('Connector Composer and Managed Connectors', () => {
         await wait(1500);
       }
 
-      // Verify stopped
-      const GET_CONNECTOR_QUERY = gql`
-        query GetConnector($id: String!) {
-          connector(id: $id) {
-            id
-            manager_current_status
-          }
-        }
-      `;
-
       let connectorResult = await queryAsAdminWithSuccess({
-        query: GET_CONNECTOR_QUERY,
+        query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
         variables: { id: deploymentConnectorId }
       });
 
@@ -544,7 +526,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       // Verify status
       connectorResult = await queryAsAdminWithSuccess({
-        query: GET_CONNECTOR_QUERY,
+        query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
         variables: { id: deploymentConnectorId }
       });
 
@@ -721,7 +703,6 @@ describe('Connector Composer and Managed Connectors', () => {
           
           const logs = logsResult.data?.connector.manager_connector_logs || [];
           const logStrings = logs.join('\n');
-          console.log('---------', logStrings);
           const redeployCount = (logStrings.match(/Connector redeployed successfully/g) || []).length;
           return redeployCount === 2; // Wait for configuration change detection
         }, 400, 5);
@@ -764,7 +745,18 @@ describe('Connector Composer and Managed Connectors', () => {
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
-        await wait(2000);
+       await awaitUntilCondition(async () => {
+          
+          const logsResult = await queryAsAdminWithSuccess({
+              query: CONNECTOR_LOGS_QUERY,
+              variables: { id: logLevelConnectorId }
+            });
+          
+          const logs = logsResult.data?.connector.manager_connector_logs || [];
+          const logStrings = logs.join('\n');
+          const deployCount = (logStrings.match(/Connector deployed successfully/g) || []).length;
+          return deployCount === 2; // Wait for configuration change detection
+        }, 400, 5);
       }
 
       // Query logs one more time
@@ -778,7 +770,9 @@ describe('Connector Composer and Managed Connectors', () => {
       // Count occurrences of redeploys - should only have the two from configuration changes
       const allLogStrings = logs3.join('\n');
       const redeployCount = (allLogStrings.match(/Connector redeployed successfully/g) || []).length;
+      const deployCount = (logStrings.match(/Connector deployed successfully/g) || []).length;
       expect(redeployCount).toBe(2); // Only the two previous configuration changes
+      expect(deployCount).toBe(2); // Only the first and last configuration changes
     });
 
     it('should delete a managed connector deployment', async () => {
@@ -971,30 +965,21 @@ describe('Connector Composer and Managed Connectors', () => {
         }))
       );
 
-      // Wait for XTM Composer to process all connectors
-      if (FORCE_POLLING) {
-        await xtmComposer.runOrchestrationCycle();
-      } else {
-        await wait(2000); // Wait a bit longer for multiple connectors
-      }
-
-      // Verify all connectors are started
-      const GET_CONNECTOR_QUERY = gql`
-        query GetConnector($id: String!) {
-          connector(id: $id) {
-            id
-            manager_current_status
-          }
-        }
-      `;
-
       await Promise.all(
         connectorIds.map(async (id) => {
-          const connectorResult = await queryAsAdminWithSuccess({
-            query: GET_CONNECTOR_QUERY,
+          await awaitUntilCondition(async () => {
+            const connectorResult = await queryAsAdminWithSuccess({
+              query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
+              variables: { id }
+            });
+            return connectorResult.data?.connector.manager_current_status === 'started'; // Wait for each connector to start
+          }, 400, 5);
+
+          const finalResult = await queryAsAdminWithSuccess({
+            query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
             variables: { id }
           });
-          expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
+          expect(finalResult.data?.connector.manager_current_status).toEqual('started');
         })
       );
     });
