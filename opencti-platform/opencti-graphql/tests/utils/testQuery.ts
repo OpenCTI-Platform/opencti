@@ -532,6 +532,10 @@ export const participantQuery = async (request: any) => {
   return executeInternalQuery(USER_PARTICIPATE.client, print(request.query), request.variables);
 };
 
+export const userQuery = async (userClient: AxiosInstance, request: any) => {
+  return executeInternalQuery(userClient, print(request.query), request.variables);
+};
+
 // region role management
 const ROLE_CREATION_MUTATION = `
   mutation roleCreation($name: String!, $description: String) {

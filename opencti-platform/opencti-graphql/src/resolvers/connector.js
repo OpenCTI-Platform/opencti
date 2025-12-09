@@ -69,6 +69,7 @@ import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
 import { ConnectorPriorityGroup } from '../generated/graphql';
+import { loadCreator } from '../database/members';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -125,11 +126,11 @@ const connectorResolvers = {
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
-    user: (work, _, context) => context.batch.creatorBatchLoader.load(work.user_id),
+    user: (work, _, context) => loadCreator(context, context.user, work.user_id),
     tracking: (work) => computeWorkStatus(work),
   },
   Synchronizer: {
-    user: (sync, _, context) => context.batch.creatorBatchLoader.load(sync.user_id),
+    user: (sync, _, context) => loadCreator(context, context.user, sync.user_id),
     queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id),
     toConfigurationExport: (synchronizer) => synchronizerExport(synchronizer),
   },

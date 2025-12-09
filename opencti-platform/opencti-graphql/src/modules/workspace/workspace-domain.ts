@@ -94,9 +94,12 @@ export const getCurrentUserAccessRight = async (
 };
 
 export const getOwnerId = (workspace: BasicStoreEntityWorkspace) => {
-  return Array.isArray(workspace.creator_id) && workspace.creator_id.length > 0
-    ? workspace.creator_id.at(0)
-    : workspace.creator_id;
+  if (Array.isArray(workspace.creator_id)) {
+    return workspace.creator_id.length > 0
+      ? workspace.creator_id[0]
+      : undefined;
+  }
+  return workspace.creator_id;
 };
 
 export const objects = async (

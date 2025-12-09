@@ -346,8 +346,12 @@ export const fullEntitiesThoughAggregationConnection = async (context: AuthConte
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 
-export const fullEntitiesList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string> | null,
-  args: EntityOptions<T> = {}): Promise<Array<T>> => {
+export const fullEntitiesList = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  entityTypes: Array<string> | null,
+  args: EntityOptions<T> = {},
+): Promise<Array<T>> => {
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
   const paginateArgs = buildEntityFilters(entityTypes, args);
@@ -439,8 +443,12 @@ export const fullEntitiesThroughRelationsFromList = async <T extends BasicStoreE
   return fullEntitiesListThroughRelations(context, user, rel);
 };
 
-export const pageEntitiesConnection = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args: EntityOptions<T> = {}): Promise<BasicConnection<T>> => {
+export const pageEntitiesConnection = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  entityTypes: Array<string>,
+  args: EntityOptions<T> = {},
+): Promise<BasicConnection<T>> => {
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
   const first = args.first ?? ES_DEFAULT_PAGINATION;

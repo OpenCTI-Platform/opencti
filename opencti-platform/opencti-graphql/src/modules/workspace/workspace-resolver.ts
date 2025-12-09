@@ -24,6 +24,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { toStixReportBundle } from './investigation-domain';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
+import { loadCreator } from '../../database/members';
 
 const workspaceResolvers: Resolvers = {
   Query: {
@@ -33,7 +34,7 @@ const workspaceResolvers: Resolvers = {
   Workspace: {
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
-    owner: (workspace, _, context) => context.batch.creatorBatchLoader.load(getOwnerId(workspace)),
+    owner: (workspace, _, context) => loadCreator(context, context.user, getOwnerId(workspace)),
     objects: (workspace, args, context) => {
       return objects(context, context.user, workspace, args) as any;
     },
