@@ -15,6 +15,7 @@ import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEdi
 import { RoleEdition_role$key } from './__generated__/RoleEdition_role.graphql';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import { RootRoleEditionQuery$data } from './__generated__/RootRoleEditionQuery.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const RoleEditionFragment = graphql`
   fragment RoleEdition_role on Role {
@@ -43,6 +44,8 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isCapabilitiesInDraftEnabled = isFeatureEnable('CAPABILITIES_IN_DRAFT');
   const [currentTab, setCurrentTab] = useState(0);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(roleEditionCapabilitiesLinesSearch);
   const role = useFragment<RoleEdition_role$key>(RoleEditionFragment, roleRef);
@@ -70,15 +73,17 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
           <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
             <Tab label={t_i18n('Overview')} />
             <Tab label={t_i18n('Capabilities')} />
-            <Tab
-              disabled={!isEnterpriseEdition}
-              label={
-                <Box>
-                  {t_i18n('Capabilities in Draft')}
-                  <EEChip clickable={false} />
-                </Box>
-              }
-            />
+            {isCapabilitiesInDraftEnabled &&
+              <Tab
+                disabled={!isEnterpriseEdition}
+                label={
+                  <Box>
+                    {t_i18n('Capabilities in Draft')}
+                    <EEChip clickable={false} />
+                  </Box>
+                }
+              />
+            }
           </Tabs>
         </Box>
         {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}

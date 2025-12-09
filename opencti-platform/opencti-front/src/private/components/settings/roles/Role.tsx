@@ -20,6 +20,7 @@ import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import type { Theme } from '../../../../components/Theme';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -70,6 +71,8 @@ const Role = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isCapabilitiesInDraftEnabled = isFeatureEnable('CAPABILITIES_IN_DRAFT');
 
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
@@ -147,23 +150,25 @@ const Role = ({
               </Grid>
             </Paper>
           </Grid>
-          <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('Capabilities in Draft')}
-              <EEChip feature={t_i18n('Capabilities in Draft')} />
-            </Typography>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
-              <Grid container={true} spacing={3}>
-                <Grid item xs={12} style={{ paddingTop: 10 }}>
-                  {queryRef && (
-                    <React.Suspense>
-                      <CapabilitiesList queryRef={queryRef} role={role} isCapabilitiesInDraft />
-                    </React.Suspense>
-                  )}
+          {isCapabilitiesInDraftEnabled &&
+            <Grid item xs={6}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t_i18n('Capabilities in Draft')}
+                <EEChip feature={t_i18n('Capabilities in Draft')} />
+              </Typography>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
+                <Grid container={true} spacing={3}>
+                  <Grid item xs={12} style={{ paddingTop: 10 }}>
+                    {queryRef && (
+                      <React.Suspense>
+                        <CapabilitiesList queryRef={queryRef} role={role} isCapabilitiesInDraft />
+                      </React.Suspense>
+                    )}
+                  </Grid>
                 </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
+              </Paper>
+            </Grid>
+          }
         </Grid>
       </Grid>
     </div>
