@@ -17,8 +17,14 @@ export const buildIntegrationTestConfig = (include: string[]) => defineConfig({
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
     },
-    maxWorkers: 1,
-    isolate: false,
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
+    // Configuration when vite will be updated to 4.X
+    // maxWorkers: 1,
+    // isolate: false,
     sequence: {
       shuffle: false,
       sequencer: class Sequencer extends BaseSequencer {
