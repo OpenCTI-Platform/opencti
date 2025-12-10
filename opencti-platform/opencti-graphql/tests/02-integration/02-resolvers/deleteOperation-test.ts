@@ -1,10 +1,11 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, editorQuery, PYTHON_PATH, queryAsAdmin, TEST_ORGANIZATION, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
-import { awaitUntilCondition, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { MARKING_TLP_AMBER_STRICT, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { execChildPython } from '../../../src/python/pythonBridge';
+import { wait } from '../../../src/database/utils';
 
 const CREATE_REPORT_QUERY = gql`
     mutation ReportAdd($input: ReportAddInput!) {
@@ -249,13 +250,7 @@ describe('Delete operation resolver testing', () => {
     deleteOperationId = getAllDeletedOperations.data?.deleteOperations.edges[0].node.id;
 
     // Restore the report (wait for report deletion lock to expire before restoring)
-    await awaitUntilCondition(async () => {
-        const deleteOperationResult = await queryAsAdminWithSuccess({ 
-          query: READ_DELETE_OPERATION_QUERY, 
-          variables: { id: deleteOperationId }
-        });
-        return deleteOperationResult.data?.deleteOperation !== null;
-    }, 500, 11);
+    await wait(5010);
 
     await queryAsAdmin({ query: DELETE_RESTORE_MUTATION, variables: { id: deleteOperationId }, });
 
