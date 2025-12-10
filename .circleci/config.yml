@@ -137,6 +137,16 @@ jobs:
             - opencti_docker
             - opencti_musl
 
+  wait_for_connector_release:
+    working_directory: ~/opencti
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          command: ./scripts/ci/wait-for-url-200.sh https://raw.githubusercontent.com/OpenCTI-Platform/connectors/refs/tags/${CIRCLE_TAG}/manifest.json 900 30
+
+
   build_platform:
     working_directory: ~/opencti
     docker:
@@ -935,6 +945,12 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - wait_for_connector_release:
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
       - build_platform:
           filters:
             tags:
@@ -944,6 +960,7 @@ workflows:
           requires:
             - build_frontend
             - build_pycti
+            - wait_for_connector_release
       - build_platform_rolling:
           filters:
             branches:
@@ -966,6 +983,7 @@ workflows:
               ignore: /.*/
           requires:
             - build_frontend
+            - wait_for_connector_release
       - build_platform_musl_rolling:
           filters:
             branches:
@@ -1055,6 +1073,7 @@ workflows:
       - docker_build_platform:
           requires:
             - build_frontend
+            - wait_for_connector_release
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
@@ -1063,6 +1082,7 @@ workflows:
       - docker_build_worker:
           requires:
             - build_frontend
+            - wait_for_connector_release
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
@@ -1071,6 +1091,7 @@ workflows:
       - docker_build_platform_fips:
           requires:
             - build_frontend
+            - wait_for_connector_release
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
@@ -1079,6 +1100,7 @@ workflows:
       - docker_build_worker_fips:
           requires:
             - build_frontend
+            - wait_for_connector_release
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/

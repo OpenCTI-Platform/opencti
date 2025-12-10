@@ -53,7 +53,7 @@ jobs:
 
 
     - name: Wait for OpenCTI e2e backend instances to start
-      run: ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4600/health?health_access_key=cihealthkey 300 10
+      run: ./scripts/ci/wait-for-url-200.sh http://localhost:4600/health?health_access_key=cihealthkey 300 10
 
     - name: Test Client Python ${{ matrix.python-version }}
       run: |
