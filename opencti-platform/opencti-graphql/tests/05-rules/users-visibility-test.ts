@@ -217,15 +217,19 @@ describe('Users visibility according to their direct organizations', () => {
   });
 
   describe('should regardingOf filter works with is_inferred subfilter', async () => {
-    const generateRegardingOfFiltersWithParticipateTo = (
+    const generateRegardingOfFilters = (
       regardingOfOperator: 'eq' | 'not_eq',
+      relationshipType?: string,
       isInferredSubFilterValue?: 'true' | 'false',
       organizationIds?: string[],
     ) => {
-      const values = [{
-        key: RELATION_TYPE_SUBFILTER,
-        values: [RELATION_PARTICIPATE_TO]
-      }];
+      const values = [];
+      if (relationshipType) {
+        values.push({
+          key: RELATION_TYPE_SUBFILTER,
+          values: [relationshipType]
+        });
+      }
       if (isInferredSubFilterValue) {
         values.push({
           key: RELATION_INFERRED_SUBFILTER,
@@ -256,45 +260,77 @@ describe('Users visibility according to their direct organizations', () => {
     };
 
     it('regardingOf filter with not_eq operator and inferred subfilter should throw an error', async () => {
-      const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('not_eq', 'false') } });
+      const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('not_eq', RELATION_PARTICIPATE_TO, 'false') } });
       expect(queryResult.errors?.[0].message).toEqual('regardingOf filter with inferred subfilter only supports eq operator');
     });
 
     it('regardingOf filter with no inferred subfilter and participate-to relationship type should fetch users participating in an organization', async () => {
       // 'eq' regardingOf with no inferred subfilter
-      const eqQueryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq') } });
+      const eqQueryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO) } });
       expect(eqQueryResult.data?.users.edges.length).toEqual(3); // all the users participating in an organization
       expect(eqQueryResult.data?.users.edges.map((e: any) => e.node.name).includes('userA')).toBeTruthy();
       expect(eqQueryResult.data?.users.edges.map((e: any) => e.node.name).includes('userO')).toBeFalsy();
 
       // 'not_eq' regardingOf with no inferred subfilter
-      const noteqQueryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('not_eq') } });
+      const noteqQueryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('not_eq', RELATION_PARTICIPATE_TO) } });
       expect(noteqQueryResult.data?.users.edges.length).toEqual(1); // userO is in no organization
       expect(noteqQueryResult.data?.users.edges[0].node.name).toEqual('userO');
     });
 
     it('regardingOf filter with inferred subfilter set to false should fetch entities directly related to provided ids with provided relationship type', async () => {
-      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', 'false') } });
+      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false') } });
       expect(queryResult.data?.users.edges.length).toEqual(3); // the users participating directly in an organization
 
-      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', 'false', [orgaAInternalId]) } });
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaAInternalId]) } });
       expect(queryResult.data?.users.edges.length).toEqual(1); // the users participating directly in organizationA
       expect(queryResult.data?.users.edges[0].node.name).toEqual('userA');
+
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaAInternalId, orgaABInternalId]) } });
+      expect(queryResult.data?.users.edges.length).toEqual(2); // the users participating directly in organizationA or organizationAB
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userA')).toBeTruthy();
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userAB')).toBeTruthy();
     });
 
     it('regardingOf filter with inferred subfilter set to true should fetch entities having an inferred rel to provided ids with provided relationship type', async () => {
-      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', 'true') } });
+      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'true') } });
       expect(queryResult.data?.users.edges.length).toEqual(2); // the users involved in an inferred participate-to relationship
       expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userA')).toBeTruthy();
       expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userB')).toBeTruthy();
 
-      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', 'true', [orgaAInternalId]) } });
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'true', [orgaAInternalId]) } });
       expect(queryResult.data?.users.edges.length).toEqual(0); // the users involved in an inferred participate-to relationship with orgaA
 
-      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', 'true', [orgaABInternalId]) } });
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'true', [orgaABInternalId]) } });
       expect(queryResult.data?.users.edges.length).toEqual(2); // the users involved in an inferred participate-to relationship with orgaAB
       expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userA')).toBeTruthy();
       expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userB')).toBeTruthy();
+
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'true', [orgaABInternalId]) } });
+      expect(queryResult.data?.users.edges.length).toEqual(2); // the users involved in an inferred participate-to relationship with orgaAB
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userA')).toBeTruthy();
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userB')).toBeTruthy();
+    });
+
+    it('regardingOf filter with inferred subfilter set to (false)/true and with NO RELATIONSHIP TYPE should fetch entities (not) having an inferred rel with the provided ids', async () => {
+      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', undefined, 'true') } });
+      expect(queryResult.errors?.[0].message).toEqual('Id or dynamic or relationship type are needed for this filtering key');
+
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', undefined, 'true', [orgaAInternalId]) } });
+      expect(queryResult.data?.users.edges.length).toEqual(0); // no users have an inferred relationship with orgaA
+
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', undefined, 'true', [orgaAInternalId, orgaABInternalId]) } });
+      expect(queryResult.data?.users.edges.length).toEqual(2); // users having an inferred relationship with orgaA or orgaAB
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userA')).toBeTruthy();
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userB')).toBeTruthy();
+
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', undefined, 'false', [orgaAInternalId]) } });
+      expect(queryResult.data?.users.edges.length).toEqual(1); // users having a direct relationship with orgaA
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userA')).toBeTruthy();
+
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', undefined, 'false', [orgaAInternalId, orgaABInternalId]) } });
+      expect(queryResult.data?.users.edges.length).toEqual(2); // users having a direct relationship with orgaA or orgaAB
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userA')).toBeTruthy();
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userAB')).toBeTruthy();
     });
   });
 });
