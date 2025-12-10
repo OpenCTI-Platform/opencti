@@ -7,7 +7,7 @@ import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
+import { buildPaginationFromEdges, extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
 import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
@@ -20,6 +20,13 @@ import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import type { UpdateEvent } from '../types/event';
+import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { type Creator, type FilterGroup, FilterMode, FilterOperator, type Participant } from '../generated/graphql';
+import { fullEntitiesList, pageEntitiesConnection } from '../database/middleware-loader';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { addFilter, isFilterGroupNotEmpty } from './filtering/filtering-utils';
+import { MEMBERS_ENTITY_TYPES } from '../domain/user';
+import { ES_DEFAULT_PAGINATION } from '../database/engine';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -1040,14 +1047,9 @@ export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity
   context: AuthContext,
   user: AuthUser,
   args: ListArgs = {},
-  membersFetchFunction: (
-    context: AuthContext,
-    user: AuthUser,
-    entityTypes: Array<string>,
-    args?: EntityOptions<T>,
-  ) => Promise<BasicConnection<T>> | Promise<Array<T>>,
   isResultConnection = false,
 ) => {
+  const membersFetchFunction = isResultConnection ? pageEntitiesConnection : fullEntitiesList;
   const { entityTypes = null, filters = undefined } = args;
   if (entityTypes && entityTypes.some((t) => !MEMBERS_ENTITY_TYPES.includes(t))) {
     throw FunctionalError('Members types can only be User, Organization and Group', { entityTypes });
@@ -1072,12 +1074,12 @@ export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity
     );
     const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
     const userDirectOrganizationsFilters = buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, filters);
-    // fetch the users that are in the user direct organizations
+    // list the users that are in the user direct organizations
     const usersWithinUserOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userDirectOrganizationsFilters });
-    // fetch the users in no organizations
+    // list the users in no organizations
     const userNoOrganizationFilters = addFilter(filters, RELATION_PARTICIPATE_TO, [], 'nil');
     const usersWithNoOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userNoOrganizationFilters });
-    // fetch organizations and groups
+    // list organizations and groups
     const typesWithoutUser = types.filter((t) => t !== ENTITY_TYPE_USER);
     let groupsAndOrganizations: BasicConnection<T> | T[] = [];
     if (typesWithoutUser.length > 0) {
@@ -1085,9 +1087,17 @@ export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity
     }
     // concat users, organizations and groups (cant be done in one query for now because 'or' global mode not working with regardingOf filter)
     if (isResultConnection) {
-      // TODO concat connections
+      const typedUsersWithinUserOrga = usersWithinUserOrga as BasicConnection<T>;
+      const typedUsersWithNoOrga = usersWithNoOrga as BasicConnection<T>;
+      const typedGroupsAndOrganizations = groupsAndOrganizations as BasicConnection<T>;
+      const concatedMembersNodes = [...typedUsersWithinUserOrga.edges, ...typedUsersWithNoOrga.edges, ...typedGroupsAndOrganizations.edges];
+      const totalCount = typedUsersWithinUserOrga.pageInfo.globalCount + typedUsersWithNoOrga.pageInfo.globalCount + typedGroupsAndOrganizations.pageInfo.globalCount;
+      return buildPaginationFromEdges(args.first ?? ES_DEFAULT_PAGINATION, args.after, concatedMembersNodes, totalCount);
     } else {
-      return [usersWithinUserOrga, usersWithNoOrga, groupsAndOrganizations].flat() as T[];
+      const typedUsersWithinUserOrga = usersWithinUserOrga as T[];
+      const typedUsersWithNoOrga = usersWithNoOrga as T[];
+      const typedGroupsAndOrganizations = groupsAndOrganizations as T[];
+      return [...typedUsersWithinUserOrga, ...typedUsersWithNoOrga, ...typedGroupsAndOrganizations];
     }
   } else { // case 3. no users to fetch, so no special restriction user visibility
     return membersFetchFunction(context, user, types, args);
