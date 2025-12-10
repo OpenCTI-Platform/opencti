@@ -555,7 +555,6 @@ const PlaybookAddComponentsContent = ({
     Object.entries(configurationSchema?.properties ?? {}).forEach(([k, v]) => {
       defaultConfig[k] = v.default;
     });
-    console.log(currentConfig);
     const initialValues = currentConfig
       ? {
         name: selectedNode?.data?.component?.id === selectedComponent.id ? selectedNode?.data?.name : selectedComponent.name,
