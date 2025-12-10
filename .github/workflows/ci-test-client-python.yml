@@ -7,6 +7,10 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
+      image_tag:
+        description: "Image Tag"
+        type: string
+        default: ${{ github.sha }}
 
 jobs:
   client-python-test:
@@ -47,7 +51,7 @@ jobs:
       run: |
          set -ex
          cd scripts/ci
-         export TAG=${{ github.sha }}
+         export TAG=${{ inputs.image_tag }}
          docker network create runner-docker-network
          docker compose --profile "backend" --profile "ci-test-pycti" up -d
 
