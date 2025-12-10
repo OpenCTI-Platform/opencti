@@ -1,14 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { getOrganizationIdByName, queryAsAdmin, testContext } from '../utils/testQuery';
-import { getInferences } from '../utils/rule-utils';
-import ParticipateToPartsRule from '../../src/rules/participate-to-parts/ParticipateToPartsRule';
-import { RELATION_PARTICIPATE_TO } from '../../src/schema/internalRelationship';
-import { adminQueryWithSuccess } from '../utils/testQueryHelper';
-import type { BasicStoreBase, BasicStoreRelation } from '../../src/types/store';
-import { createRuleContent } from '../../src/rules/rules-utils';
-import { createInferredRelation, deleteInferredRuleElement } from '../../src/database/middleware';
-import { ID_SUBFILTER, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from '../../src/utils/filtering/filtering-constants';
+import { getOrganizationIdByName, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { getInferences } from '../../utils/rule-utils';
+import ParticipateToPartsRule from '../../../src/rules/participate-to-parts/ParticipateToPartsRule';
+import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
+import { adminQueryWithSuccess } from '../../utils/testQueryHelper';
+import type { BasicStoreBase, BasicStoreRelation } from '../../../src/types/store';
+import { createRuleContent } from '../../../src/rules/rules-utils';
+import { createInferredRelation, deleteInferredRuleElement } from '../../../src/database/middleware';
+import { ID_SUBFILTER, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from '../../../src/utils/filtering/filtering-constants';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
