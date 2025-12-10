@@ -119,6 +119,8 @@ describe('Create and Update Validation', () => {
     const dataComponent = { name: 'entity name', stix_id: dataComponentStixId }; // Missed description
     const queryResult = await queryAsAdminWithSuccess({ query: CREATE_DATA_COMPONENT_QUERY, variables: { input: dataComponent } });
     expect(queryResult.data?.dataComponentAdd.id).toBeDefined();
+    // Delete the entity to avoid interfering with subsequent tests
+    await queryAsAdmin({ query: DELETE_DATA_COMPONENT_QUERY, variables: { id: dataComponentStixId } });
   });
 
   it('should validate schema at update', async () => {
