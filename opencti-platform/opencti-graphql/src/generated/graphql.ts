@@ -27177,6 +27177,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_email?: Maybe<Scalars['String']['output']>;
   platform_email_configurable: Scalars['Boolean']['output'];
   platform_enterprise_edition: PlatformEe;
+  platform_export_timeout?: Maybe<Scalars['Int']['output']>;
   platform_favicon?: Maybe<Scalars['String']['output']>;
   platform_feature_flags?: Maybe<Array<Module>>;
   platform_language?: Maybe<Scalars['String']['output']>;
@@ -45588,6 +45589,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_email_configurable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_enterprise_edition?: Resolver<ResolversTypes['PlatformEE'], ParentType, ContextType>;
+  platform_export_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_feature_flags?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
