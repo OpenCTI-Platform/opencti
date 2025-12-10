@@ -15,12 +15,12 @@ import {
   elIndexGetAlias,
   elLoadById,
   elPaginate,
-  elRebuildRelation,
   elReindexElements,
   ES_INDEX_PATTERN_SUFFIX,
   ES_MAX_PAGINATION,
   searchEngineInit
 } from '../../../src/database/engine';
+import { elRebuildRelation } from '../../../src/database/engine/engine-data-converter';
 import {
   DEPRECATED_INDICES,
   ES_INDEX_PREFIX,
