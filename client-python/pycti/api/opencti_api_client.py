@@ -95,11 +95,6 @@ _PROXY_SIGNAL_HANDLERS_REGISTERED = False
 def build_request_headers(token: str, custom_headers: str, app_logger, provider: str):
     pycti_user_agent = "pycti/" + __version__
     if provider is not None:
-        provider_pattern_checker = re.compile(r"^[A-Za-z]+\/\d+(?:\.\d+){0,2}$")
-        if not provider_pattern_checker.match(provider):
-            raise ValueError(
-                "Provider format is incorrect: format has to be {provider}/{provider_version}, e.g. client/4.5, company_name/1.4.6..."
-            )
         pycti_user_agent += " " + provider
     headers_dict = {
         "User-Agent": pycti_user_agent,
@@ -199,6 +194,12 @@ class OpenCTIApiClient:
         # Define API
         self.api_token = token
         self.api_url = url + "/graphql"
+        if provider is not None:
+            provider_pattern_checker = re.compile(r"^[A-Za-z]+\/\d+(?:\.\d+){0,2}$")
+            if not provider_pattern_checker.match(provider):
+                raise ValueError(
+                    "Provider format is incorrect: format has to be {provider}/{provider_version}, e.g. client/4.5, company_name/1.4.6..."
+                )
         self.provider = provider
         self.request_headers = build_request_headers(
             token, custom_headers, self.app_logger, provider
