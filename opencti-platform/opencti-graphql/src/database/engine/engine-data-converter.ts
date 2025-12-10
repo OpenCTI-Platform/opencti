@@ -1,13 +1,13 @@
-import type { BasicStoreBase, BasicStoreRelation, StoreConnection } from "../../types/store";
-import { isNotEmptyField } from "../utils";
-import { BASE_TYPE_RELATION, isAbstract, REL_INDEX_PREFIX, RULE_PREFIX } from "../../schema/general";
-import * as R from "ramda";
-import { isSingleRelationsRef } from "../../schema/stixEmbeddedRelationship";
-import { isStixRefUnidirectionalRelationship } from "../../schema/stixRefRelationship";
-import { asyncMap } from "../../utils/data-processing";
-import { DatabaseError } from "../../config/errors";
-import { convertTypeToStixType } from "../stix-2-1-converter";
-import { doYield } from "../../utils/eventloop-utils";
+import type { BasicStoreBase, BasicStoreRelation, StoreConnection } from '../../types/store';
+import { isNotEmptyField } from '../utils';
+import { BASE_TYPE_RELATION, isAbstract, REL_INDEX_PREFIX, RULE_PREFIX } from '../../schema/general';
+import * as R from 'ramda';
+import { isSingleRelationsRef } from '../../schema/stixEmbeddedRelationship';
+import { isStixRefUnidirectionalRelationship } from '../../schema/stixRefRelationship';
+import { asyncMap } from '../../utils/data-processing';
+import { DatabaseError } from '../../config/errors';
+import { convertTypeToStixType } from '../stix-2-1-converter';
+import { doYield } from '../../utils/eventloop-utils';
 
 // Convert elastic data to BasicStoreBase format
 

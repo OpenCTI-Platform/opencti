@@ -237,7 +237,7 @@ import type {
   StoreRelation
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
-import {elConvertHits, elConvertHitsToMap} from "./engine/engine-data-converter";
+import {elConvertHits, elConvertHitsToMap} from './engine/engine-data-converter';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
