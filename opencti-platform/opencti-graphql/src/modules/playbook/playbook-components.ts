@@ -96,7 +96,7 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types'
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
 import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
-import { ENTITY_TYPE_SECURITY_COVERAGE, type StixSecurityCoverage, type StoreEntitySecurityCoverage } from '../securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, type StixSecurityCoverage, type StoreEntitySecurityCoverage } from '../securityCoverage/securityCoverage-types';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -642,18 +642,19 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
     schema: async () => PLAYBOOK_SECURITY_COVERAGE_COMPONENT_SCHEMA,
     executor: async ({ dataInstanceId, playbookNode, bundle }) => {
         const { all, auto_enrichment_disable, periodicity, duration, type_affinity, platforms_affinity } = playbookNode.configuration;
-        const baseData = extractBundleBaseElement(dataInstanceId, bundle);
+        const baseData = extractBundleBaseElement(dataInstanceId, bundle) as StixDomainObject;
         if( SECURITY_COVERAGE_COMPATIBLE_TYPES.includes(baseData.type) ) {
             const name = extractStixRepresentative(baseData);
             const securityCoverageData: Record<string, unknown> = {
                 name,
                 created: now(),
-                objectCovered: { standard_id: baseData.id },
                 auto_enrichment_disable: auto_enrichment_disable,
                 periodicity: periodicity,
                 duration: duration,
                 type_affinity: type_affinity,
                 platforms_affinity: platforms_affinity,
+                [INPUT_COVERED]: { standard_id: baseData.id },
+                [INPUT_LABELS]: (baseData.labels ?? []).map((l) => ({ value: l})),
             };
             const standardId = generateStandardId(ENTITY_TYPE_SECURITY_COVERAGE, securityCoverageData);
             const storeSecurityCoverage = {
@@ -668,17 +669,18 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
         }
         if( all ) {
             for (let index = 0; index < bundle.objects.length; index += 1) {
-                const element = bundle.objects[index];
+                const element = bundle.objects[index] as StixDomainObject;
                 if (SECURITY_COVERAGE_COMPATIBLE_TYPES.includes(element.type)) {
                     const name = extractStixRepresentative(element);
                     const securityCoverageData: Record<string, unknown> = {
                         name,
                         created: now(),
-                        objectCovered: { standard_id: element.id },
                         auto_enrichment_disable: auto_enrichment_disable,
                         periodicity: periodicity,
                         duration: duration,
                         type_affinity: type_affinity,
+                        [INPUT_COVERED]: { standard_id: element.id },
+                        [INPUT_LABELS]: (element.labels ?? []).map((l) => ({ value: l})),
                     };
                     const standardId = generateStandardId(ENTITY_TYPE_SECURITY_COVERAGE, securityCoverageData);
                     const storeContainer = {

@@ -457,6 +457,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 
   // Use entity name from preselected entity or fallback to provided name
   const defaultName = preSelectedEntity?.representative?.main || preSelectedEntity?.name || preSelectedEntityName || inputValue || '';
+  const defaultLabels = (preSelectedEntity?.objectLabel ?? []).map((label) => ({value: label.id, label: label.value}));
 
   const initialValues = useDefaultValues<SecurityCoverageFormValues>(
     'Security-Coverage',
@@ -468,7 +469,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       objectMarking: defaultMarkingDefinitions ?? [],
       confidence: defaultConfidence,
       auto_enrichment_disable: mode === 'manual',
-      objectLabel: [],
+      objectLabel: defaultLabels,
       coverage_information: [],
       periodicity: 'P1D',
       duration: 'P30D',
