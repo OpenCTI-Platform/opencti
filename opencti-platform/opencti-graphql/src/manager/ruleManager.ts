@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { buildCreateEvent, createStreamProcessor, EVENT_CURRENT_VERSION, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor } from '../database/stream/stream-handler';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
@@ -29,6 +29,7 @@ import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/acces
 import { isModuleActivated } from '../database/cluster-module';
 import { elList } from '../database/engine';
 import { isStixObject } from '../schema/stixCoreObject';
+import { buildCreateEvent, EVENT_CURRENT_VERSION, LIVE_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -296,8 +297,8 @@ const initRuleManager = () => {
       const { lastEventId } = ruleManager;
       logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId ?? 'start'}`);
       // Start the stream listening
-      const opts = { withInternal: true, streamName: REDIS_STREAM_NAME };
-      streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler, opts);
+      const opts = { withInternal: true, streamName: LIVE_STREAM_NAME };
+      streamProcessor = createStreamProcessor('Rule manager', ruleStreamHandler, opts);
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
