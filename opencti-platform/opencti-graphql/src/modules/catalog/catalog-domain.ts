@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import crypto from 'crypto';
@@ -10,22 +9,29 @@ import { idGenFromData } from '../../schema/identifier';
 import filigranCatalog from '../../__generated__/opencti-manifest.json';
 import conf, { logApp } from '../../config/conf';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
+import { readFile } from 'node:fs/promises';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
 const ajv = new Ajv({ coerceTypes: true });
 addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
 
 // Cache of catalog to read on disk and parse only once
-let catalogMap: Record<string, CatalogType>;
+let catalogMap: Record<string, CatalogType> | undefined;
 // cache for contracts by image map
 let contractsByImageCache: Map<string, CatalogContract> | undefined;
 
 // Build catalog map from files
-const buildCatalogMap = (): Record<string, CatalogType> => {
+const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
   const newCatalogMap: Record<string, CatalogType> = {};
   const catalogs = [];
   catalogs.push(JSON.stringify(filigranCatalog));
-  catalogs.push(...CUSTOM_CATALOGS.map((custom) => fs.readFileSync(custom, { encoding: 'utf8', flag: 'r' })));
+  // Add custom catalogs
+  for (let index = 0; index < CUSTOM_CATALOGS.length; index += 1) {
+      const customCatalog = CUSTOM_CATALOGS[index];
+      const catalog = await readFile(customCatalog, { encoding: 'utf8', flag: 'r' });
+      catalogs.push(catalog);
+  }
+  // Prepare catalogs map
   for (let index = 0; index < catalogs.length; index += 1) {
     const catalogRaw = catalogs[index];
     const catalog = JSON.parse(catalogRaw) as CatalogDefinition;
@@ -91,13 +97,13 @@ const buildCatalogMap = (): Record<string, CatalogType> => {
 
 // Enable custom catalogs - clears cache and enables live catalog loading
 export const resetCatalogs = () => {
-  catalogMap = undefined as any;
+  catalogMap = undefined;
 };
 
-const getCatalogs = (): Record<string, CatalogType> => {
+const getCatalogs = async (): Promise<Record<string, CatalogType>> => {
   // Normal mode: use cached catalog map or build it
   if (!catalogMap) {
-    catalogMap = buildCatalogMap();
+    catalogMap = await buildCatalogMap();
   }
   return catalogMap;
 };
@@ -402,9 +408,9 @@ export const computeConnectorTargetContract = (
   return contractConfigurations;
 };
 
-export const getSupportedContractsByImage = () => {
+export const getSupportedContractsByImage = async () => {
   if (!contractsByImageCache) {
-    const catalogDefinitions = getCatalogs();
+    const catalogDefinitions = await getCatalogs();
     const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
     contractsByImageCache = new Map(contracts.map((contract) => [contract.container_image, contract]));
   }
@@ -412,18 +418,18 @@ export const getSupportedContractsByImage = () => {
   return contractsByImageCache;
 };
 
-export const findById = (_context: AuthContext, _user: AuthUser, catalogId: string) => {
-  const catalogDefinitions = getCatalogs();
+export const findById = async (_context: AuthContext, _user: AuthUser, catalogId: string) => {
+  const catalogDefinitions = await getCatalogs();
   return catalogDefinitions[catalogId].graphql;
 };
 
-export const findCatalog = (_context: AuthContext, _user: AuthUser) => {
-  const catalogDefinitions = getCatalogs();
+export const findCatalog = async (_context: AuthContext, _user: AuthUser) => {
+  const catalogDefinitions = await getCatalogs();
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
 };
 
-export const findContractBySlug = (_context: AuthContext, _user: AuthUser, contractSlug: string) => {
-  const catalogDefinitions = getCatalogs();
+export const findContractBySlug = async (_context: AuthContext, _user: AuthUser, contractSlug: string) => {
+  const catalogDefinitions = await getCatalogs();
   if (!catalogDefinitions) {
     return null;
   }
