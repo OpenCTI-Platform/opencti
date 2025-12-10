@@ -23,8 +23,8 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 export const groupsSearchQuery = graphql`
-  query GroupsSearchQuery($search: String) {
-    groups(search: $search) {
+  query GroupsSearchQuery($search: String, $groupsOrderBy: GroupsOrdering, $groupsOrderMode: OrderingMode) {
+    groups(search: $search, orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
       edges {
         node {
           id

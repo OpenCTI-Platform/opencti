@@ -14,6 +14,7 @@ import {
   modified,
   revoked,
   xOpenctiAliases,
+  xOpenctiModifiedAt,
   xOpenctiReliability
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
@@ -47,6 +48,7 @@ import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   created,
   modified,
+  xOpenctiModifiedAt,
   lang,
   confidence,
   revoked,

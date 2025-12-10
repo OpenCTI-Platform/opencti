@@ -1579,6 +1579,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   playground_enabled: Boolean!
   request_access_enabled: Boolean!
   metrics_definition: [MetricDefinition!]
+  view_all_users: Boolean
   editContext: [EditUserContext!]
   xtm_hub_token: String
   xtm_hub_registration_user_id: String
@@ -2448,6 +2449,7 @@ interface StixObject {
   created_at: DateTime!
   updated_at: DateTime!
   refreshed_at: DateTime
+  x_opencti_modified_at: DateTime
   draftVersion: DraftVersion
   creators: [Creator!]
   x_opencti_inferences: [Inference]
@@ -2524,6 +2526,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -2547,6 +2550,7 @@ input MarkingDefinitionAddInput {
   x_opencti_color: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2594,6 +2598,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -2613,6 +2618,7 @@ input LabelAddInput {
   color: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2652,6 +2658,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -2686,6 +2693,7 @@ input ExternalReferenceAddInput {
   external_id: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2723,6 +2731,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -2743,6 +2752,7 @@ input KillChainPhaseAddInput {
   x_opencti_order: Int!
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -2811,6 +2821,7 @@ interface StixCoreObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -2911,6 +2922,7 @@ interface StixDomainObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -2976,6 +2988,7 @@ input StixDomainObjectAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   update: Boolean
 }
 
@@ -3013,6 +3026,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3092,6 +3106,7 @@ input AttackPatternAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -3163,6 +3178,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3235,6 +3251,7 @@ input CampaignAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -3278,6 +3295,7 @@ interface Container {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -3354,6 +3372,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3430,6 +3449,7 @@ input NoteAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -3496,6 +3516,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3567,6 +3588,7 @@ input ObservedDataAddInput {
   objects: [String]!
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -3609,6 +3631,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3681,9 +3704,10 @@ input OpinionAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
-  update: Boolean
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
+  update: Boolean
   file: Upload
 }
 
@@ -3703,6 +3727,7 @@ input OpinionUserAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   update: Boolean
   clientMutationId: String
 }
@@ -3744,6 +3769,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3828,6 +3854,7 @@ input ReportAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -3869,6 +3896,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -3938,6 +3966,7 @@ input CourseOfActionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -3983,6 +4012,7 @@ interface Identity {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -4048,6 +4078,7 @@ input IdentityAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   created: DateTime
@@ -4088,6 +4119,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4165,6 +4197,7 @@ input IndividualAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -4205,6 +4238,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4278,6 +4312,7 @@ input SectorAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -4317,6 +4352,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4393,6 +4429,7 @@ input SystemAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -4438,6 +4475,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4510,6 +4548,7 @@ input InfrastructureAddInput {
   killChainPhases: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -4552,6 +4591,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4632,6 +4672,7 @@ input IntrusionSetAddInput {
   x_opencti_workflow_id: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   clientMutationId: String
   update: Boolean
   file: Upload
@@ -4672,6 +4713,7 @@ interface Location {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -4740,6 +4782,7 @@ input LocationAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   update: Boolean
 }
@@ -4778,6 +4821,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4852,6 +4896,7 @@ input PositionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -4893,6 +4938,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -4965,6 +5011,7 @@ input CityAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -5003,6 +5050,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5073,6 +5121,7 @@ input CountryAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -5111,6 +5160,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5183,6 +5233,7 @@ input RegionAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -5233,6 +5284,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5316,6 +5368,7 @@ input MalwareAddInput {
   samples: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -5359,6 +5412,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5439,6 +5493,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5526,6 +5581,7 @@ input ThreatActorGroupAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -5565,6 +5621,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5635,6 +5692,7 @@ input ToolAddInput {
   killChainPhases: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -5678,6 +5736,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5839,6 +5898,7 @@ input VulnerabilityAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -5886,6 +5946,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -5965,6 +6026,7 @@ input IncidentAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -6004,6 +6066,7 @@ interface StixCyberObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -6050,6 +6113,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6107,6 +6171,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6168,6 +6233,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6221,6 +6287,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6276,6 +6343,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6341,6 +6409,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6421,6 +6490,7 @@ interface HashedObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
@@ -6468,6 +6538,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6533,6 +6604,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6607,6 +6679,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6714,6 +6787,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6770,6 +6844,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6824,6 +6899,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6877,6 +6953,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -6930,6 +7007,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7006,6 +7084,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7101,6 +7180,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7177,6 +7257,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7230,6 +7311,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7310,6 +7392,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7367,6 +7450,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7424,6 +7508,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7477,6 +7562,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7530,6 +7616,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7583,6 +7670,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7636,6 +7724,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7689,6 +7778,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7746,6 +7836,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7799,6 +7890,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7852,6 +7944,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7905,6 +7998,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -7964,6 +8058,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -8026,6 +8121,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -8081,6 +8177,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -8341,6 +8438,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8411,6 +8509,7 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   coverage_information: [SecurityCoverageExpectation!]
   clientMutationId: String
   update: Boolean
@@ -8457,6 +8556,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -8519,6 +8619,7 @@ input StixSightingRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
 }
 
 enum StixRefRelationshipsOrdering {
@@ -9637,7 +9738,7 @@ type Mutation {
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   incidentAdd(input: IncidentAddInput!): Incident
   incidentEdit(id: ID!): IncidentEditMutations
-  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, Credential: CredentialAddInput, TrackingNumber: TrackingNumberAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, Persona: PersonaAddInput, SSHKey: SSHKeyAddInput): StixCyberObservable
+  stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, x_opencti_modified_at: DateTime, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, Credential: CredentialAddInput, TrackingNumber: TrackingNumberAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput, Persona: PersonaAddInput, SSHKey: SSHKeyAddInput): StixCyberObservable
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(input: StixCyberObservablesExportAskInput!): [File!]
   stixCyberObservablesExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean
@@ -9945,6 +10046,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10035,6 +10137,7 @@ input ChannelAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -10084,6 +10187,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10170,6 +10274,8 @@ input LanguageAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
 }
 
@@ -10185,6 +10291,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10281,6 +10388,7 @@ input EventAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
 }
@@ -10297,6 +10405,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10404,6 +10513,7 @@ input GroupingAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
   authorized_members: [MemberAccessInput!]
@@ -10421,6 +10531,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10516,6 +10627,7 @@ input NarrativeAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
 }
 
@@ -10700,6 +10812,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10792,6 +10905,7 @@ input DataComponentAddInput {
   dataSource: String
   file: Upload
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
 }
 
 type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -10806,6 +10920,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -10901,6 +11016,7 @@ input DataSourceAddInput {
   dataComponents: [String]
   file: Upload
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
 }
 
 enum VocabularyCategory {
@@ -10980,6 +11096,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11040,6 +11157,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11134,6 +11252,7 @@ input AdministrativeAreaAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
 }
@@ -11150,6 +11269,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11245,6 +11365,7 @@ input TaskAddInput {
   createdBy: String
   objects: [String]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
 }
 
@@ -11299,6 +11420,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11429,6 +11551,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11543,6 +11666,7 @@ input CaseIncidentAddInput {
   modified: DateTime
   response_types: [String!]
   caseTemplates: [String!]
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
   clientMutationId: String
@@ -11567,6 +11691,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11679,6 +11804,7 @@ input CaseRfiAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
   clientMutationId: String
@@ -11701,6 +11827,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11813,6 +11940,7 @@ input CaseRftAddInput {
   modified: DateTime
   file: Upload
   clientMutationId: String
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   update: Boolean
   takedown_types: [String!]
@@ -11832,6 +11960,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -11936,6 +12065,7 @@ input FeedbackAddInput {
   created: DateTime
   modified: DateTime
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   file: Upload
   clientMutationId: String
   update: Boolean
@@ -12105,6 +12235,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   x_opencti_inferences: [Inference]
   draftVersion: DraftVersion
@@ -12220,6 +12351,7 @@ input MalwareAnalysisAddInput {
   objectLabel: [String]
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
 }
@@ -12322,6 +12454,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -12457,6 +12590,7 @@ input ThreatActorIndividualAddInput {
   modified: DateTime
   clientMutationId: String
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
 }
@@ -13006,6 +13140,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -13104,6 +13239,7 @@ input IndicatorAddInput {
   clientMutationId: String
   update: Boolean
   createObservables: Boolean
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
   basedOn: [String!]
@@ -13214,6 +13350,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -13325,6 +13462,7 @@ input OrganizationAddInput {
   externalReferences: [String]
   created: DateTime
   modified: DateTime
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   clientMutationId: String
   update: Boolean
@@ -14363,6 +14501,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
@@ -14450,6 +14589,7 @@ input SecurityPlatformAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   externalReferences: [String]
   update: Boolean
 }
@@ -14471,6 +14611,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   draftVersion: DraftVersion
   refreshed_at: DateTime
   x_opencti_inferences: [Inference]
@@ -14526,6 +14667,9 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   coverage_information: [CoverageResult!]
   external_uri: String
   periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String!]
   auto_enrichment_disable: Boolean
   objectCovered: StixDomainObject
   toStixBundle: String
@@ -14569,11 +14713,15 @@ input SecurityCoverageAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   external_uri: String
   externalReferences: [String]
   update: Boolean
   auto_enrichment_disable: Boolean!
   periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String]
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime

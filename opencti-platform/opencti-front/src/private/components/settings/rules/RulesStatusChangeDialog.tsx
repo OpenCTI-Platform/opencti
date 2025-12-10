@@ -96,7 +96,7 @@ const RulesStatusChangeDialog = ({
           {t_i18n('Cancel')}
         </Button>
         <Button onClick={submit} color="secondary" disabled={processing}>
-          {t_i18n('Enable')}
+          {status === 'enable' ? t_i18n('Enable') : t_i18n('Disable')}
         </Button>
       </DialogActions>
     </Dialog>

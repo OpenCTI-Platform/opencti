@@ -14,6 +14,9 @@ const convertSecurityCoverageToStix = (instance: StoreEntitySecurityCoverage): S
     coverage: (instance.coverage_information ?? [])
       .map((c) => ({ name: c.coverage_name, score: c.coverage_score })),
     periodicity: instance.periodicity,
+    type_affinity: instance.type_affinity,
+    platforms_affinity: instance.platforms_affinity,
+    duration: instance.duration,
     covered_ref: instance[INPUT_COVERED].standard_id,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

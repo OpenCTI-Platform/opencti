@@ -5,6 +5,7 @@ import datetime
 import io
 import json
 import os
+import re
 import shutil
 import signal
 import tempfile
@@ -91,9 +92,12 @@ _PROXY_CERT_LOCK = threading.Lock()
 _PROXY_SIGNAL_HANDLERS_REGISTERED = False
 
 
-def build_request_headers(token: str, custom_headers: str, app_logger):
+def build_request_headers(token: str, custom_headers: str, app_logger, provider: str):
+    pycti_user_agent = "pycti/" + __version__
+    if provider is not None:
+        pycti_user_agent += " " + provider
     headers_dict = {
-        "User-Agent": "pycti/" + __version__,
+        "User-Agent": pycti_user_agent,
         "Authorization": "Bearer " + token,
     }
     # Build and add custom headers
@@ -146,6 +150,10 @@ class OpenCTIApiClient:
     :type custom_headers: str, optional must in the format header01:value;header02:value
     :param perform_health_check: if client init must check the api access
     :type perform_health_check: bool, optional
+    :param requests_timeout: define the timeout for API requests in seconds
+    :type requests_timeout: int, optional
+    :param provider: define client provider, and is used to specify it in requests user agent header
+    :type provider: string, optional
     """
 
     def __init__(
@@ -160,6 +168,8 @@ class OpenCTIApiClient:
         cert: Union[str, Tuple[str, str], None] = None,
         custom_headers: str = None,
         perform_health_check: bool = True,
+        requests_timeout: int = 300,
+        provider: str = None,
     ):
         """Constructor method"""
 
@@ -184,10 +194,18 @@ class OpenCTIApiClient:
         # Define API
         self.api_token = token
         self.api_url = url + "/graphql"
+        if provider is not None:
+            provider_pattern_checker = re.compile(r"^[A-Za-z]+\/\d+(?:\.\d+){0,2}$")
+            if not provider_pattern_checker.match(provider):
+                raise ValueError(
+                    "Provider format is incorrect: format has to be {provider}/{provider_version}, e.g. client/4.5, company_name/1.4.6..."
+                )
+        self.provider = provider
         self.request_headers = build_request_headers(
-            token, custom_headers, self.app_logger
+            token, custom_headers, self.app_logger, provider
         )
         self.session = requests.session()
+        self.session_requests_timeout = requests_timeout
         # Define the dependencies
         self.work = OpenCTIApiWork(self)
         self.notification = OpenCTIApiNotification(self)
@@ -551,7 +569,7 @@ class OpenCTIApiClient:
                 verify=self.ssl_verify,
                 cert=self.cert,
                 proxies=self.proxies,
-                timeout=300,
+                timeout=self.session_requests_timeout,
             )
         # If no
         else:
@@ -562,7 +580,7 @@ class OpenCTIApiClient:
                 verify=self.ssl_verify,
                 cert=self.cert,
                 proxies=self.proxies,
-                timeout=300,
+                timeout=self.session_requests_timeout,
             )
         # Build response
         if r.status_code == 200:
@@ -606,7 +624,7 @@ class OpenCTIApiClient:
             verify=self.ssl_verify,
             cert=self.cert,
             proxies=self.proxies,
-            timeout=300,
+            timeout=self.session_requests_timeout,
         )
         if binary:
             if serialize:

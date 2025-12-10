@@ -1,5 +1,4 @@
-/* eslint-disable camelcase */
-import { URL } from 'node:url';
+ import { URL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import express from 'express';
@@ -53,17 +52,18 @@ export const sanitizeReferer = (refererToSanitize) => {
 };
 
 const extractRefererPathFromReq = (req) => {
-  if (isNotEmptyField(req.headers.referer)) {
-    try {
-      const refererUrl = new URL(req.headers.referer);
-      // Keep only the pathname to prevent OPEN REDIRECT CWE-601
-      return refererUrl.pathname;
-    } catch {
-      // prevent any invalid referer
-      logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
-    }
+  if (isEmptyField(req.headers.referer)) {
+    return undefined;
   }
-  return undefined;
+  
+  try {
+    const refererUrl = new URL(req.headers.referer);
+    // Keep only the pathname and search to prevent OPEN REDIRECT CWE-601
+    return refererUrl.pathname + refererUrl.search;
+  } catch {
+    // prevent any invalid referer
+    logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
+  }
 };
 
 const publishFileDownload = async (executeContext, auth, file) => {
@@ -454,17 +454,30 @@ const createApp = async (app, schema) => {
       const { provider } = req.params;
       const strategy = passport._strategy(provider);
       const referer = extractRefererPathFromReq(req);
+
       if (strategy._saml) {
         // For SAML, no session is required, referer will be send back through RelayState
-        req.query.RelayState = referer;
-      } else {
-        // For openid / oauth, session is required so we can use it
-        req.session.referer = referer;
-      }
-      passport.authenticate(provider, {}, (err) => {
-        setCookieError(res, err?.message);
-        next(err);
-      })(req, res, next);
+        return passport.authenticate(
+          provider, 
+          { additionalParams: { RelayState: referer }}, 
+          (err) => {
+            setCookieError(res, err?.message);
+            next(err);
+          }
+        )(req, res, next);
+      } 
+
+      // For openid / oauth, session is required so we can use it
+      req.session.referer = referer;
+      return passport.authenticate(
+        provider, 
+        {}, 
+        (err) => {
+          setCookieError(res, err?.message);
+          next(err);
+        }
+      )(req, res, next);
+
     } catch (e) {
       setCookieError(res, e.message);
       logApp.error('Error auth provider', { cause: e });
@@ -477,6 +490,7 @@ const createApp = async (app, schema) => {
   const urlencodedParser = AUTH_PAYLOAD_BODY_SIZE ? bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE }) : bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
     const { provider } = req.params;
+
     const callbackLogin = () => new Promise((accept, reject) => {
       passport.authenticate(provider, {}, (err, user) => {
         if (err || !user) {
@@ -486,6 +500,7 @@ const createApp = async (app, schema) => {
         }
       })(req, res, next);
     });
+
     try {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();

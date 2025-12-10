@@ -392,6 +392,7 @@ class CourseOfAction:
         x_mitre_id = kwargs.get("x_mitre_id", None)
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
+        x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -427,6 +428,7 @@ class CourseOfAction:
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "x_mitre_id": x_mitre_id,
                         "x_opencti_workflow_id": x_opencti_workflow_id,
+                        "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
                     }
                 },
@@ -489,6 +491,10 @@ class CourseOfAction:
                 stix_object["x_opencti_workflow_id"] = (
                     self.opencti.get_attribute_in_extension("workflow_id", stix_object)
                 )
+            if "x_opencti_modified_at" not in stix_object:
+                stix_object["x_opencti_modified_at"] = (
+                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -536,6 +542,11 @@ class CourseOfAction:
                 x_opencti_workflow_id=(
                     stix_object["x_opencti_workflow_id"]
                     if "x_opencti_workflow_id" in stix_object
+                    else None
+                ),
+                x_opencti_modified_at=(
+                    stix_object["x_opencti_modified_at"]
+                    if "x_opencti_modified_at" in stix_object
                     else None
                 ),
                 update=update,

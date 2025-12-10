@@ -60,6 +60,7 @@ interface StixOpenctiExtension {
   type: string
   created_at: StixDate
   updated_at: StixDate
+  modified_at: StixDate
   is_inferred: boolean
   workflow_id: string | undefined
   assignee_ids: string[]

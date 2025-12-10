@@ -126,7 +126,11 @@ const UserEditionGroupsComponent = ({ user }) => {
   return (
     <QueryRenderer
       query={groupsSearchQuery}
-      variables={{ search: '' }}
+      variables={{
+        search: '',
+        groupsOrderBy: 'name',
+        groupsOrderMode: 'asc',
+      }}
       render={({ props }) => {
         if (props) {
           // Done
