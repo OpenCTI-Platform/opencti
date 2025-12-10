@@ -196,9 +196,9 @@ const securityCoverageValidation = (t: (value: string) => string, isAutomated: b
     return Yup.object().shape({
       ...baseShape,
       periodicity: Yup.string().required(t('This field is required')),
-      duration: Yup.string().nullable(),
-      type_affinity: Yup.string().nullable(),
-      platforms_affinity: Yup.array(),
+      duration: Yup.string().required(t('This field is required')),
+      type_affinity: Yup.string().required(t('This field is required')),
+      platforms_affinity: Yup.array().min(1, t('At least one platform affinity is required')),
     });
   }
 
