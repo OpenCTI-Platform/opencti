@@ -250,7 +250,10 @@ describe('Delete operation resolver testing', () => {
 
     // Restore the report (wait for report deletion lock to expire before restoring)
     await awaitUntilCondition(async () => {
-        const deleteOperationResult = await queryAsAdmin({ query: DELETE_RESTORE_MUTATION, variables: { id: deleteOperationId }, });
+        const deleteOperationResult = await queryAsAdminWithSuccess({ 
+          query: READ_DELETE_OPERATION_QUERY, 
+          variables: { id: deleteOperationId }
+        });
         return deleteOperationResult.data?.deleteOperation !== null;
     }, 500, 11);
 
