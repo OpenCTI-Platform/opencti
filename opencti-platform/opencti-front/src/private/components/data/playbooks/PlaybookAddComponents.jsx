@@ -54,6 +54,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TimePickerField from '../../../../components/TimePickerField';
 import { parse } from '../../../../utils/Time';
+import PeriodicityField from '../../../../components/fields/PeriodicityField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -554,6 +555,7 @@ const PlaybookAddComponentsContent = ({
     Object.entries(configurationSchema?.properties ?? {}).forEach(([k, v]) => {
       defaultConfig[k] = v.default;
     });
+    console.log(currentConfig);
     const initialValues = currentConfig
       ? {
         name: selectedNode?.data?.component?.id === selectedComponent.id ? selectedNode?.data?.name : selectedComponent.name,
@@ -622,6 +624,54 @@ const PlaybookAddComponentsContent = ({
                       />
                     );
                   }
+                    if( k === 'periodicity' || k === 'duration') {
+                      return (
+                        <PeriodicityField
+                          key={k}
+                          name={k}
+                          label={t_i18n(v.$ref)}
+                          style={fieldSpacingContainerStyle}
+                        />
+                        );
+                    }
+                    if( k === 'type_affinity') {
+                        return (
+                          <Field
+                            key={k}
+                            component={SelectField}
+                            variant="standard"
+                            name="type_affinity"
+                            label={t_i18n('Type affinity')}
+                            fullWidth={true}
+                            containerstyle={{ width: '100%', marginTop: 20 }}
+                          >
+                            <MenuItem key='ENDPOINT' value='ENDPOINT'>
+                              {t_i18n('Endpoint')}
+                            </MenuItem>
+                            <MenuItem key='CLOUD' value='CLOUD'>
+                              {t_i18n('Cloud')}
+                            </MenuItem>
+                            <MenuItem key='WEB' value='WEB'>
+                              {t_i18n('Web')}
+                            </MenuItem>
+                            <MenuItem key='TABLE-TOP' value='TABLE-TOP'>
+                              {t_i18n('Table-top')}
+                            </MenuItem>
+                          </Field>
+                        );
+                    }
+                    if( k === 'platforms_affinity') {
+                      return (
+                        <OpenVocabField
+                          key={k}
+                          name={k}
+                          type={'platforms_ov'}
+                          label={t_i18n(v.$ref)}
+                          containerStyle={fieldSpacingContainerStyle}
+                          multiple={true}
+                        />
+                        );
+                    }
                   if (k === 'organizations') {
                     return (
                       <ObjectOrganizationField

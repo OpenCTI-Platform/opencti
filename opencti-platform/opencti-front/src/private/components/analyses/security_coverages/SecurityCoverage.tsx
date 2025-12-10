@@ -88,6 +88,10 @@ const securityCoverageFragment = graphql`
         entity_type
       }
     }
+    periodicity
+    duration
+    type_affinity
+    platforms_affinity
     coverage_last_result
     coverage_valid_from
     coverage_valid_to

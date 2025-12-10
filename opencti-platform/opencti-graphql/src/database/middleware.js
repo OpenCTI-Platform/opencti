@@ -238,7 +238,7 @@ import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
 import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
-import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import {ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED} from '../modules/securityCoverage/securityCoverage-types';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -1446,7 +1446,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       const groupedAddOperations = R.groupBy((s) => s.relationType, addOperations);
       const operations = Object.entries(groupedAddOperations)
         .map(([key, vals]) => {
-          // eslint-disable-next-line camelcase
+           
           const { _index, entity_type } = R.head(vals);
           const ids = vals.map((v) => v.data.internal_id);
           return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
@@ -1517,8 +1517,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
     }
   }
-
-  // eslint-disable-next-line no-use-before-define
+   
   const data = await updateAttributeRaw(context, user, targetEntity, updateAttributes);
   const { impactedInputs } = data;
   // region Update elasticsearch
@@ -2431,7 +2430,14 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       // If entity is currently covered
       const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
       if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
-        const securityCoverage = await internalLoadById(context, user, data.updatedInstance[RELATION_COVERED]);
+        const { element: securityCoverage }  = await updateAttribute(
+            context,
+            user,
+            data.updatedInstance[RELATION_COVERED],
+            ENTITY_TYPE_SECURITY_COVERAGE,
+            [{ key: 'modified', value: [now()] }],
+            { noEnrich: true }
+        );
         await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage);
       }
       // endregion
@@ -2503,7 +2509,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
   // Continue update
   const data = await updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
-  if (data.event) {
+  if (!opts.noEnrich && data.event) {
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
@@ -2964,7 +2970,14 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       const isVuln = relationshipType === RELATION_TARGETS && dataRel.element.to.entity_type === ENTITY_TYPE_VULNERABILITY;
       const isAttackPattern = relationshipType === RELATION_USES && dataRel.element.to.entity_type === ENTITY_TYPE_ATTACK_PATTERN;
       if (isVuln || isAttackPattern) {
-        const securityCoverage = await internalLoadById(context, user, dataRel.element.from[RELATION_COVERED]);
+        const { element: securityCoverage } = await updateAttribute(
+          context,
+          user,
+          dataRel.element.from[RELATION_COVERED],
+          ENTITY_TYPE_SECURITY_COVERAGE,
+          [{ key: 'modified', value: [now()] }],
+          { noEnrich: true }
+        );
         await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage);
       }
     }
@@ -2989,7 +3002,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
     fromRule: ruleContent.field,
     bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
   };
-  // eslint-disable-next-line camelcase
+   
   const { fromId, toId, relationship_type } = input;
   // In some cases, we can try to create with the same from and to, ignore
   if (fromId === toId) {
