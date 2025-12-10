@@ -424,13 +424,16 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
 
       // Check if new bundle objects has the same object ids of previous bundle objects
       const enrichedObjects = stixBundle.objects.map(newObj => {
-        // bundle A : { id: 'indicator-a-id', name: 'IndicatorA', label: ['label A]' }
-        // bundle B (new bundle from enrichment): { id: 'indicator-a-id', name: 'IndicatorA', label: ['label B'], description: 'Hello world'
-        // finalBundle: { id: 'indicator-a-id', name: 'Indicator A', label: ['label A, label B'], description 'Hello world'
-        
         const prevObj = previousStepBundle.objects.find(o => o.id === newObj.id);
         if (prevObj) {
-          return R.mergeDeepRight<StixObject, StixObject>(prevObj, newObj);
+          const resolveDuplicate = (a: any, b: any) => {
+            if (Array.isArray(a) && Array.isArray(b)) {
+              return R.uniq([...a, ...b]);
+            }
+            return b;
+          };
+          // Merge both objects if same ids
+          return R.mergeDeepWith<StixObject, StixObject>(resolveDuplicate, prevObj, newObj);
         }
         return newObj;
       });

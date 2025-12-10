@@ -1,8 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import type { StixBundle, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import type { StixObject } from '../../../../src/types/stix-2-1-common';
-import { PLAYBOOK_CONNECTOR_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
+import {describe, expect, it} from 'vitest';
+import type {StixBundle, StixObject, StixOpenctiExtension} from '../../../../src/types/stix-2-1-common';
+import {STIX_EXT_OCTI} from '../../../../src/types/stix-2-1-extensions';
+import {PLAYBOOK_CONNECTOR_COMPONENT} from '../../../../src/modules/playbook/playbook-components';
 
 describe('PLAYBOOK_ENRICH_CONNECTOR_COMPONENT', () => {
   const baseBundle: StixBundle = {
@@ -176,4 +175,48 @@ describe('PLAYBOOK_ENRICH_CONNECTOR_COMPONENT', () => {
       const addedExt = added.extensions![STIX_EXT_OCTI] as StixOpenctiExtension;
       expect(addedExt.labels_ids).toEqual(['label-prev-only']);
     });
+
+  it('should merge previousStepBundle objects and new bundle objects with same id', async () => {
+    const previousStepBundle = {
+      ...baseBundle,
+      objects: [{
+        ...baseBundleObject,
+        labels: ['label-id-1'],
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: 'some--id',
+            type: 'sco',
+            extension_type: 'property-extension',
+            labels_ids: ['label-id-1']
+          } as StixOpenctiExtension
+        }
+      } as StixObject]
+    } as StixBundle;
+
+    const bundle = {
+      ...baseBundle,
+      objects: [{
+        ...baseBundleObject,
+        labels: ['label-id-2'],
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: 'some--id',
+            type: 'sco',
+            extension_type: 'property-extension',
+            labels_ids: ['label-id-2'],
+          } as StixOpenctiExtension
+        }
+      } as StixObject]
+    } as StixBundle;
+
+    const result = await PLAYBOOK_CONNECTOR_COMPONENT.executor({
+      dataInstanceId: '',
+      ...baseExecutorParams,
+      previousStepBundle,
+      bundle,
+      playbookNode: dummyPlaybookNode
+    });
+    const extensions = result.bundle.objects.map((object) => object.extensions[STIX_EXT_OCTI]);
+    expect(extensions).toHaveLength(1);
+    expect(extensions[0].labels_ids).toEqual(['label-id-1', 'label-id-2']);  });
 });
