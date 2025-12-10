@@ -2638,7 +2638,6 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
   const typeParameter = filter.values.find((i) => i.key === RELATION_TYPE_SUBFILTER);
   const dynamicParameter = filter.values.find((i) => i.key === RELATION_DYNAMIC_SUBFILTER);
   const inferredParameter = filter.values.find((i) => i.key === RELATION_INFERRED_SUBFILTER);
-  // const inferredParameter = filter.values.find((i) => i.key === RELATION_INFERRED_SUBFILTER);
   // Check parameters
   if (!idParameter && !dynamicParameter && !typeParameter) {
     throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });

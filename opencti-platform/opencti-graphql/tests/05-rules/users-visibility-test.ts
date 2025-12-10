@@ -1,13 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { FIVE_MINUTES, getOrganizationIdByName, queryAsAdmin, testContext } from '../utils/testQuery';
+import { getOrganizationIdByName, queryAsAdmin, testContext } from '../utils/testQuery';
 import { getInferences } from '../utils/rule-utils';
 import ParticipateToPartsRule from '../../src/rules/participate-to-parts/ParticipateToPartsRule';
 import { RELATION_PARTICIPATE_TO } from '../../src/schema/internalRelationship';
 import { adminQueryWithSuccess } from '../utils/testQueryHelper';
 import type { BasicStoreBase, BasicStoreRelation } from '../../src/types/store';
 import { createRuleContent } from '../../src/rules/rules-utils';
-import {createInferredRelation, deleteInferredRuleElement} from '../../src/database/middleware';
+import { createInferredRelation, deleteInferredRuleElement } from '../../src/database/middleware';
+import { ID_SUBFILTER, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from '../../src/utils/filtering/filtering-constants';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -100,7 +101,7 @@ describe('Users visibility according to their direct organizations', () => {
   let orgaBInternalId: string;
   let orgaABInternalId: string;
 
-  it('should create the context with users linked to organizations via direct and inferred relationships', async () => {
+  beforeAll(async () => {
     // ------ Create the context with users and organizations -------
     // userA participate-to orgaA, userB participate-to orgaB
     // orgaA and orgaB part of orgaAB
@@ -176,35 +177,64 @@ describe('Users visibility according to their direct organizations', () => {
     userABInternalId = users.find((u) => u.data?.userAdd.name === 'userAB')?.data?.userAdd.id;
     userOInternalId = users.find((u) => u.data?.userAdd.name === 'userO')?.data?.userAdd.id;
 
-    // create the 2 inferred participate-to relationships
+    // 03. Create the 2 inferred participate-to relationships
+    // check there is no participate-to relationships before the creation
     let inferredParticipateToRelationships = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreRelation[];
     expect(inferredParticipateToRelationships.length).toBe(0);
-    const input = { fromId: userAInternalId, toId: organizationABId, relationship_type: RELATION_PARTICIPATE_TO };
+
+    // create the inferred relationships
+    const inputA = { fromId: userAInternalId, toId: organizationABId, relationship_type: RELATION_PARTICIPATE_TO };
+    const inputB = { fromId: userBInternalId, toId: organizationABId, relationship_type: RELATION_PARTICIPATE_TO };
     const ruleContent = createRuleContent(ParticipateToPartsRule.id, [], [], {});
-    await createInferredRelation(testContext, input, ruleContent);
+    await Promise.all(([inputA, inputB].map((input) => createInferredRelation(testContext, input, ruleContent))));
+
+    // check the inferred relationships have been created
     inferredParticipateToRelationships = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreRelation[];
     expect(inferredParticipateToRelationships.length).toBe(2);
+  });
+
+  afterAll(async () => {
+    // Remove the inferred relationships
+    const inferredRelationships = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreRelation[];
+    await Promise.all(inferredRelationships.map((rel) => deleteInferredRuleElement(ParticipateToPartsRule.id, rel, [])));
+    // Check inferences have been deleted
+    const afterDisableRelations = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreBase[];
+    expect(afterDisableRelations.length).toBe(0);
+    // Delete the users
+    await Promise.all([userAInternalId, userBInternalId, userABInternalId, userOInternalId].map((userId) => queryAsAdmin({
+      query: DELETE_USER_QUERY,
+      variables: { id: userId },
+    })));
+    const userQueryResult = await adminQueryWithSuccess({ query: READ_USER_QUERY, variables: { id: userAInternalId } });
+    expect(userQueryResult.data.user).toBeNull();
+    // Delete the organizations
+    await Promise.all([orgaAInternalId, orgaBInternalId, orgaABInternalId].map((orgaId) => queryAsAdmin({
+      query: DELETE_ORGANIZATION_QUERY,
+      variables: { id: orgaId },
+    })));
+    const orgaQueryResult = await adminQueryWithSuccess({ query: READ_ORGANIZATION_QUERY, variables: { id: orgaAInternalId } });
+    expect(orgaQueryResult.data.organization).toBeNull();
   });
 
   describe('should regardingOf filter works with is_inferred subfilter', async () => {
     const generateRegardingOfFiltersWithParticipateTo = (
       regardingOfOperator: 'eq' | 'not_eq',
-      isInferredSubFilterValue?: boolean,
+      isInferredSubFilterValue?: 'true' | 'false',
       organizationIds?: string[],
     ) => {
       const values = [{
-        key: 'relationship_type',
+        key: RELATION_TYPE_SUBFILTER,
         values: [RELATION_PARTICIPATE_TO]
       }];
       if (isInferredSubFilterValue) {
         values.push({
-          key: 'is_inferred',
-          values: [isInferredSubFilterValue ? 'true' : 'false']
+          key: RELATION_INFERRED_SUBFILTER,
+          values: [isInferredSubFilterValue]
         });
       };
       if (organizationIds) {
         values.push({
-          key: 'id',
+          key: ID_SUBFILTER,
           values: organizationIds,
         });
       };
@@ -226,7 +256,7 @@ describe('Users visibility according to their direct organizations', () => {
     };
 
     it('regardingOf filter with not_eq operator and inferred subfilter should throw an error', async () => {
-      const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('not_eq', false) } });
+      const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('not_eq', 'false') } });
       expect(queryResult.errors?.[0].message).toEqual('regardingOf filter with inferred subfilter only supports eq operator');
     });
 
@@ -244,52 +274,27 @@ describe('Users visibility according to their direct organizations', () => {
     });
 
     it('regardingOf filter with inferred subfilter set to false should fetch entities directly related to provided ids with provided relationship type', async () => {
-      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', false) } });
+      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', 'false') } });
       expect(queryResult.data?.users.edges.length).toEqual(3); // the users participating directly in an organization
 
-      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', false, [orgaAInternalId]) } });
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', 'false', [orgaAInternalId]) } });
       expect(queryResult.data?.users.edges.length).toEqual(1); // the users participating directly in organizationA
       expect(queryResult.data?.users.edges[0].node.name).toEqual('userA');
     });
 
     it('regardingOf filter with inferred subfilter set to true should fetch entities having an inferred rel to provided ids with provided relationship type', async () => {
-      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', true) } });
+      let queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', 'true') } });
       expect(queryResult.data?.users.edges.length).toEqual(2); // the users involved in an inferred participate-to relationship
-      expect(queryResult.data?.users.edges[0].node.name).toEqual('userA');
-      expect(queryResult.data?.users.edges[0].node.name).toEqual('userB');
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userA')).toBeTruthy();
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userB')).toBeTruthy();
 
-      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', true, [orgaAInternalId]) } });
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', 'true', [orgaAInternalId]) } });
       expect(queryResult.data?.users.edges.length).toEqual(0); // the users involved in an inferred participate-to relationship with orgaA
 
-      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', true, [orgaABInternalId]) } });
+      queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFiltersWithParticipateTo('eq', 'true', [orgaABInternalId]) } });
       expect(queryResult.data?.users.edges.length).toEqual(2); // the users involved in an inferred participate-to relationship with orgaAB
-      expect(queryResult.data?.users.edges[0].node.name).toEqual('userA');
-      expect(queryResult.data?.users.edges[0].node.name).toEqual('userB');
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userA')).toBeTruthy();
+      expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userB')).toBeTruthy();
     });
   });
-
-  it('should delete the created context of users and organizations', async () => {
-    // remove the inferred relationships
-    const inferred = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreRelation[];
-      await Promise.all(inferred.map((rel) => deleteInferredRuleElement(ParticipateToPartsRule.id, rel, []))
-      );
-
-      // Check inferences have been deleted
-    const afterDisableRelations = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreBase[];
-    expect(afterDisableRelations.length).toBe(0);
-    // Delete the users
-    await Promise.all([userAInternalId, userBInternalId, userABInternalId, userOInternalId].map((userId) => queryAsAdmin({
-      query: DELETE_USER_QUERY,
-      variables: { id: userId },
-    })));
-    const userQueryResult = await adminQueryWithSuccess({ query: READ_USER_QUERY, variables: { id: userAInternalId } });
-    expect(userQueryResult.data.user).toBeNull();
-    // Delete the organizations
-    await Promise.all([orgaAInternalId, orgaBInternalId, orgaABInternalId].map((orgaId) => queryAsAdmin({
-      query: DELETE_ORGANIZATION_QUERY,
-      variables: { id: orgaId },
-    })));
-    const orgaQueryResult = await adminQueryWithSuccess({ query: READ_ORGANIZATION_QUERY, variables: { id: orgaAInternalId } });
-    expect(orgaQueryResult.data.organization).toBeNull();
-  }, FIVE_MINUTES);
 });
