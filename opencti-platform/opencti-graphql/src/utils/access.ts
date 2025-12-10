@@ -1009,43 +1009,89 @@ interface ListArgs {
   [key: string]: any;
 }
 
-export const applyOrganizationRestriction = async (
+export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup) => {
+  return {
+    mode: FilterMode.And,
+    filters: [
+      {
+        key: ['regardingOf'],
+        operator: FilterOperator.Eq,
+        values: [
+          {
+            key: 'relationship_type',
+            values: ['participate-to'],
+          },
+          {
+            key: 'id',
+            values: ids,
+          },
+          {
+            key: 'is_inferred',
+            values: ['false'],
+          },
+        ],
+      },
+    ],
+    filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
+  };
+};
+
+export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity>(
   context: AuthContext,
   user: AuthUser,
-  args: ListArgs,
+  args: ListArgs = {},
+  membersFetchFunction: (
+    context: AuthContext,
+    user: AuthUser,
+    entityTypes: Array<string>,
+    args?: EntityOptions<T>,
+  ) => Promise<BasicConnection<T>> | Promise<Array<T>>,
+  isResultConnection = false,
 ) => {
-  const { filters: argsFilters } = args;
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
-
-  if (!userInPlatformOrg) {
-    const userOrgIds = (user.organizations || []).map((org) => org.id);
-    const membersFilters = {
-      key: ['participate-to'],
-      values: userOrgIds,
-      operator: 'eq',
-    };
-    const userTypeFilters = {
-      key: ['entity_type'],
-      values: [ENTITY_TYPE_USER],
-      operator: 'not_eq',
-    };
-    const userMembersFilter = {
-      mode: FilterMode.Or,
-      filters: [membersFilters, userTypeFilters],
-      filterGroups: [],
-    };
-    const filters = {
-      mode: FilterMode.And,
-      filters: [],
-      filterGroups: argsFilters ? [argsFilters, userMembersFilter] : [userMembersFilter],
-    };
-    return {
-      ...args,
-      filters,
-    };
+  const { entityTypes = null, filters = undefined } = args;
+  if (entityTypes && entityTypes.some((t) => !MEMBERS_ENTITY_TYPES.includes(t))) {
+    throw FunctionalError('Members types can only be User, Organization and Group', { entityTypes });
   }
-  return args;
+  const types = entityTypes || MEMBERS_ENTITY_TYPES;
+  if (types.includes(ENTITY_TYPE_USER)) { // add organization restriction for users if necessary
+    const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
+    const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+    // case 1. no orga restriction on user visibility
+    if (userCanViewAllUsers || !platformSettings.platform_organization || platformSettings.view_all_users) {
+      return membersFetchFunction(context, user, types, args);
+    }
+
+    // case 2. add orga restriction on user visibility
+    // fetch organizations directly linked to the user to construct the filter
+    const userDirectOrganizations = await pageEntitiesConnection(
+      context,
+      user,
+      [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+      { filters: buildRegardingOfDirectParticipateToFilters([user.id], undefined) },
+    );
+    const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
+    const userDirectOrganizationsFilters = buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, filters);
+    // fetch the users that are in the user direct organizations
+    const usersWithinUserOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userDirectOrganizationsFilters });
+    // fetch the users in no organizations
+    const userNoOrganizationFilters = addFilter(filters, RELATION_PARTICIPATE_TO, [], 'nil');
+    const usersWithNoOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userNoOrganizationFilters });
+    // fetch organizations and groups
+    const typesWithoutUser = types.filter((t) => t !== ENTITY_TYPE_USER);
+    let groupsAndOrganizations: BasicConnection<T> | T[] = [];
+    if (typesWithoutUser.length > 0) {
+      groupsAndOrganizations = await membersFetchFunction(context, user, typesWithoutUser, args);
+    }
+    // concat users, organizations and groups (cant be done in one query for now because 'or' global mode not working with regardingOf filter)
+    if (isResultConnection) {
+      // TODO concat connections
+    } else {
+      return [usersWithinUserOrga, usersWithNoOrga, groupsAndOrganizations].flat() as T[];
+    }
+  } else { // case 3. no users to fetch, so no special restriction user visibility
+    return membersFetchFunction(context, user, types, args);
+  }
 };
 
 export const CAPABILITIES_IN_DRAFT_NAMES = [
