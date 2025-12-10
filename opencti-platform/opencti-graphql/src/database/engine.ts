@@ -1,9 +1,9 @@
- 
+
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
- 
+
 import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
@@ -674,7 +674,7 @@ export const buildDataRestrictions = async (
   opts: { includeAuthorities?: boolean | null } | null | undefined = {}
 ): Promise<{ must: any[], must_not: any[] }> => {
   const must: any[] = [];
-   
+
   const must_not: any[] = [];
   // If internal users of the system, we cancel rights checking
   if (INTERNAL_USERS[user.id]) {
@@ -2235,7 +2235,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
           nestedShould.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
         }
       } else { // nested key !== internal_id
-         
+
         if (nestedOperator === FilterOperator.Within) {
           nestedShould.push({
             range: {
@@ -2788,7 +2788,7 @@ const buildSubQueryForFilterGroup = (
   return null;
 };
 const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityType: string) => {
-   
+
   const elements = await elPaginate<BasicStoreEntity>(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     types: [entityType],
     first: MAX_RUNTIME_RESOLUTION_SIZE,
@@ -3042,7 +3042,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   } : convertedFilters;
   // Handle filters
   if (isFilterGroupNotEmpty(completeFilters)) {
-     
+
     const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
     const filtersSubQuery = buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
@@ -3203,7 +3203,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     const globalCount = data.hits.total.value;
     const elements = await elConvertHits<T>(data.hits.hits);
     // If filters contains an "in regards of" filter a post-security filtering is needed
-     
+
     const regardingOfFilter = elements.length === 0 ? undefined : await buildRegardingOfFilter<T>(context, user, elements, filters);
     const filteredElements = regardingOfFilter ? await asyncFilter(elements, regardingOfFilter) : elements;
     const filterCount = elements.length - filteredElements.length;
@@ -3442,6 +3442,17 @@ const adaptFilterToSourceReliabilityFilterKey = async (context: AuthContext, use
   return { newFilter, newFilterGroup };
 };
 
+const adaptFilterToFromToTypesFilterKeys = (filter: Filter) => {
+  const filterKey = filter.key[0];
+  const side = filterKey === RELATION_FROM_TYPES_FILTER ? 'from' : 'to';
+  const nested = [
+    { key: 'types', operator: filter.operator, values: filter.values },
+    { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+  ];
+  const newFilter = { key: ['connections'], nested, mode: filter.mode, values: [] };
+  return { newFilter };
+};
+
 // fromOrToId and elementWithTargetTypes filters
 // are composed of a condition on fromId/fromType and a condition on toId/toType of a relationship
 const adaptFilterToFromOrToFilterKeys = (filter: Filter) => {
@@ -3511,7 +3522,76 @@ const adaptFilterToFromOrToFilterKeys = (filter: Filter) => {
       filterGroups: [],
     };
   }
-  return { newFilter: undefined, newFilterGroup };
+  return { newFilterGroup };
+};
+
+const adaptFilterToFromToIdsFilterKeys = async (context: AuthContext, user: AuthUser, filter: Filter) => {
+  const filterKey = filter.key[0];
+  const isDynamic = filterKey === RELATION_DYNAMIC_FROM_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER;
+  const dynamicIds = [];
+  if (isDynamic) {
+    const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
+    const targetEntities = await elPaginate(context, user, computedIndices, {
+      connectionFormat: false,
+      first: ES_MAX_PAGINATION,
+      bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
+      baseData: true,
+      filters: addFilter(filter.values[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
+    }) as BasicStoreBase[];
+    if (targetEntities.length > 0) {
+      const relatedIds = targetEntities.map((n) => n.id);
+      dynamicIds.push(...relatedIds);
+    }
+  };
+
+  const side = filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER ? 'from' : 'to';
+  const nested = [
+    { key: 'internal_id', operator: filter.operator, values: isDynamic ? dynamicIds : filter.values },
+    { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+  ];
+  const newFilter = { key: ['connections'], nested, mode: filter.mode, values: [] };
+  return { newFilter };
+};
+
+const adaptFilterToFromToRoleFilterKeys = (filter: Filter) => {
+  const filterKey = filter.key[0];
+  const side = filterKey === RELATION_FROM_ROLE_FILTER ? 'from' : 'to';
+  // Retro compatibility for buildAggregationRelationFilter that use fromRole depending on isTo attribute
+  const values = filter.values.map((r) => (!r.endsWith('_from') && !r.endsWith('_to') ? `${r}_${side}` : r));
+  const nested = [{ key: 'role', operator: filter.operator, values }];
+  const newFilter = { key: ['connections'], nested, mode: filter.mode, values: [] };
+  return { newFilter };
+};
+
+const adaptFilterToAliasFilterKey = (filter: Filter) => {
+  const newFilterGroup = {
+    mode: filter.operator === 'nil' || (filter.operator?.startsWith('not_') && filter.operator !== 'not_nil')
+      ? FilterMode.And
+      : FilterMode.Or,
+    filters: [
+      { ...filter, key: [ATTRIBUTE_ALIASES] },
+      { ...filter, key: [ATTRIBUTE_ALIASES_OPENCTI] },
+    ],
+    filterGroups: [],
+  };
+  return { newFilterGroup };
+};
+
+const adaptFilterToIsInferredFilterKey = (filter: Filter) => {
+  // an entity/relationship is inferred <=> a field i_rule_XX is defined, indicating the inferred rule that created the element (ex: i_rule_location_targets)
+  let newFilter;
+  let newFilterGroup;
+  if (filter.values.length === 1) {
+    const value = filter.values[0];
+    newFilter = adaptFilterValueToIsInferredFilter(value, filter.operator);
+  } else {
+    newFilterGroup = {
+      mode: filter.mode ?? FilterMode.And,
+      filters: filter.values.map((v) => adaptFilterValueToIsInferredFilter(v, filter.operator)) as Filter[],
+      filterGroups: [],
+    };
+  }
+  return { newFilter, newFilterGroup };
 };
 
 const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, filterKey: string, filter: Filter) => {
@@ -3534,6 +3614,44 @@ const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, 
     ]
   };
   return { newFilter, newFilterGroup: undefined };
+};
+
+const adaptFilterToServiceAccountFilterKey = (filter: Filter) => {
+  const { operator, mode, values } = filter;
+  let newFilter;
+  let newFilterGroup;
+  if (values.includes('false') && values.includes('true') && mode === FilterMode.And) {
+    if (operator === FilterOperator.Eq) {
+      newFilter = filter; // nothing to modify
+    } else if (operator === FilterOperator.NotEq) {
+      newFilterGroup = {
+        mode: FilterMode.And,
+        filters: [{
+          key: [USER_SERVICE_ACCOUNT_FILTER],
+          values: [],
+          operator: FilterOperator.NotNil,
+        },
+          filter],
+        filterGroups: [],
+      };
+    }
+  } else if ((values.includes('false') && operator === FilterOperator.Eq)
+    || (values.includes('true') && operator === FilterOperator.NotEq)) {
+    // if user_service_account = false, return also users with with null user_service_account
+    newFilterGroup = {
+      mode: FilterMode.Or,
+      filters: [{
+        key: [USER_SERVICE_ACCOUNT_FILTER],
+        values: [],
+        operator: FilterOperator.Nil,
+      },
+        filter],
+      filterGroups: [],
+    };
+  } else {
+    newFilter = filter; // nothing to modify
+  }
+  return { newFilter, newFilterGroup };
 };
 
 const adaptFilterForMetricsFilterKeys = async (filter: Filter) => {
@@ -3561,7 +3679,6 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
   // at this point arrayKey === ['computed_reliability']
 
   let newFilterGroup: FilterGroup | undefined;
-  let newFilter: Filter | undefined;
 
   const { newFilter: sourceReliabilityFilter, newFilterGroup: sourceReliabilityFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(
     context,
@@ -3635,7 +3752,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
     };
   }
 
-  return { newFilter, newFilterGroup };
+  return { newFilterGroup };
 };
 /**
  * Complete the filter if needed for several special filter keys
@@ -3706,10 +3823,7 @@ const completeSpecialFilterKeys = async (
       }
       if (filterKey === COMPUTED_RELIABILITY_FILTER) {
         // filter by computed reliability (reliability, or reliability of author if no reliability)
-        const { newFilter, newFilterGroup } = await adaptFilterToComputedReliabilityFilterKey(context, user, filter);
-        if (newFilter) {
-          finalFilters.push(newFilter);
-        }
+        const { newFilterGroup } = await adaptFilterToComputedReliabilityFilterKey(context, user, filter);
         if (newFilterGroup) {
           finalFilterGroups.push(newFilterGroup);
         }
@@ -3734,37 +3848,12 @@ const completeSpecialFilterKeys = async (
       if (filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER
           || filterKey === RELATION_TO_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER
           || filterKey === RELATION_TO_SIGHTING_FILTER) {
-        const isDynamic = filterKey === RELATION_DYNAMIC_FROM_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER;
-        const dynamicIds = [];
-        if (isDynamic) {
-          const computedIndices = computeQueryIndices([], [ABSTRACT_STIX_OBJECT]);
-          const targetEntities = await elPaginate(context, user, computedIndices, {
-            connectionFormat: false,
-            first: ES_MAX_PAGINATION,
-            bypassSizeLimit: true, // ensure that max runtime prevent on ES_MAX_PAGINATION
-            baseData: true,
-            filters: addFilter(filter.values[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
-          }) as BasicStoreBase[];
-          if (targetEntities.length > 0) {
-            const relatedIds = targetEntities.map((n) => n.id);
-            dynamicIds.push(...relatedIds);
-          }
-        }
-
-        const side = filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER ? 'from' : 'to';
-        const nested = [
-          { key: 'internal_id', operator: filter.operator, values: isDynamic ? dynamicIds : filter.values },
-          { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
-        ];
-        finalFilters.push({ key: ['connections'], nested, mode: filter.mode, values: [] });
+        const { newFilter } = await adaptFilterToFromToIdsFilterKeys(context, user, filter);
+        finalFilters.push(newFilter);
       }
       if (filterKey === RELATION_FROM_TYPES_FILTER || filterKey === RELATION_TO_TYPES_FILTER) {
-        const side = filterKey === RELATION_FROM_TYPES_FILTER ? 'from' : 'to';
-        const nested = [
-          { key: 'types', operator: filter.operator, values: filter.values },
-          { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
-        ];
-        finalFilters.push({ key: ['connections'], nested, mode: filter.mode, values: [] });
+        const { newFilter } = adaptFilterToFromToTypesFilterKeys(filter);
+        finalFilters.push(newFilter);
       }
       if (filterKey === INSTANCE_RELATION_TYPES_FILTER) {
         const { newFilterGroup } = adaptFilterToFromOrToFilterKeys(filter);
@@ -3773,39 +3862,24 @@ const completeSpecialFilterKeys = async (
         }
       }
       if (filterKey === RELATION_FROM_ROLE_FILTER || filterKey === RELATION_TO_ROLE_FILTER) {
-        const side = filterKey === RELATION_FROM_ROLE_FILTER ? 'from' : 'to';
-        // Retro compatibility for buildAggregationRelationFilter that use fromRole depending on isTo attribute
-        const values = filter.values.map((r) => (!r.endsWith('_from') && !r.endsWith('_to') ? `${r}_${side}` : r));
-        const nested = [{ key: 'role', operator: filter.operator, values }];
-        finalFilters.push({ key: ['connections'], nested, mode: filter.mode, values: [] });
+        const { newFilter } = adaptFilterToFromToRoleFilterKeys(filter);
+        finalFilters.push(newFilter);
       }
       if (filterKey === 'authorized_members.id' || filterKey === 'restricted_members.id') {
         const nested = [{ key: 'id', operator: filter.operator, values: filter.values }];
         finalFilters.push({ key: [authorizedMembers.name], nested, mode: filter.mode, values: [] });
       }
       if (filterKey === ALIAS_FILTER) {
-        finalFilterGroups.push({
-          mode: filter.operator === 'nil' || (filter.operator?.startsWith('not_') && filter.operator !== 'not_nil')
-            ? FilterMode.And
-            : FilterMode.Or,
-          filters: [
-            { ...filter, key: [ATTRIBUTE_ALIASES] },
-            { ...filter, key: [ATTRIBUTE_ALIASES_OPENCTI] },
-          ],
-          filterGroups: [],
-        });
+        const { newFilterGroup } = adaptFilterToAliasFilterKey(filter);
+        finalFilterGroups.push(newFilterGroup);
       }
       if (filterKey === IS_INFERRED_FILTER) {
-        // an entity/relationship is inferred <=> a field i_rule_XX is defined, indicating the inferred rule that created the element (ex: i_rule_location_targets)
-        if (filter.values.length === 1) {
-          const value = filter.values[0];
-          finalFilters.push(adaptFilterValueToIsInferredFilter(value, filter.operator));
-        } else {
-          finalFilterGroups.push({
-            mode: filter.mode ?? FilterMode.And,
-            filters: filter.values.map((v) => adaptFilterValueToIsInferredFilter(v, filter.operator)) as Filter[],
-            filterGroups: [],
-          });
+        const { newFilter, newFilterGroup } = adaptFilterToIsInferredFilterKey(filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
+          finalFilterGroups.push(newFilterGroup);
         }
       }
       if (filterKey.startsWith(PIR_SCORE_FILTER_PREFIX) || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)) {
@@ -3813,39 +3887,12 @@ const completeSpecialFilterKeys = async (
         finalFilters.push(newFilter);
       }
       if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
-        const { operator, mode, values } = filter;
-        if (values.includes('false') && values.includes('true') && mode === FilterMode.And) {
-          if (operator === FilterOperator.Eq) {
-            finalFilters.push(filter); // nothing to modify
-          } else if (operator === FilterOperator.NotEq) {
-            const newFilterGroup = {
-              mode: FilterMode.And,
-              filters: [{
-                key: [USER_SERVICE_ACCOUNT_FILTER],
-                values: [],
-                operator: FilterOperator.NotNil,
-              },
-              filter],
-              filterGroups: [],
-            };
-            finalFilterGroups.push(newFilterGroup);
-          }
-        } else if ((values.includes('false') && operator === FilterOperator.Eq)
-            || (values.includes('true') && operator === FilterOperator.NotEq)) {
-          // if user_service_account = false, return also users with with null user_service_account
-          const newFilterGroup = {
-            mode: FilterMode.Or,
-            filters: [{
-              key: [USER_SERVICE_ACCOUNT_FILTER],
-              values: [],
-              operator: FilterOperator.Nil,
-            },
-            filter],
-            filterGroups: [],
-          };
+        const { newFilter, newFilterGroup } = adaptFilterToServiceAccountFilterKey(filter);
+        if (newFilter) {
+          finalFilters.push(newFilter);
+        }
+        if (newFilterGroup) {
           finalFilterGroups.push(newFilterGroup);
-        } else {
-          finalFilters.push(filter); // nothing to modify
         }
       }
 
@@ -4388,7 +4435,7 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
       return (element: (T & { regardingOfTypes?: string })) => {
         const accepted = targetValidatedIds.has(element.id);
         if (accepted) {
-           
+
           element.regardingOfTypes = sideIdManualInferred.get(element.id);
         }
         return accepted;
