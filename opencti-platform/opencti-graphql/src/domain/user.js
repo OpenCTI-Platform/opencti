@@ -245,11 +245,11 @@ export const findParticipants = (context, user, args) => {
 };
 
 export const findMembersPaginated = async (context, user, args) => {
-  return fetchMembersWithOrgaRestriction(context, user, args, pageEntitiesConnection, true);
+  return fetchMembersWithOrgaRestriction(context, user, args, true);
 };
 
 export const findAllMembers = async (context, user, args) => {
-  return fetchMembersWithOrgaRestriction(context, user, args, fullEntitiesList);
+  return fetchMembersWithOrgaRestriction(context, user, args);
 };
 
 export const findUserWithCapabilities = async (context, user, capabilities) => {
