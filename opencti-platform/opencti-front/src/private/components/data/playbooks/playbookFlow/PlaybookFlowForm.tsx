@@ -39,6 +39,11 @@ import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import type { PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
 import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import PeriodicityField from '../../../../../components/fields/PeriodicityField';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import SelectField from '../../../../../components/fields/SelectField';
+import MenuItem from '@mui/material/MenuItem';
+import OpenVocabField from '@components/common/form/OpenVocabField';
 
 export type PlaybookFlowFormData = 
   // Component: update knowledge
@@ -198,6 +203,54 @@ const PlaybookFlowForm = ({
                   }
                   if (propName === 'authorized_members') {
                     return <PlaybookFlowFieldAuthorizedMembers key={propName} />;
+                  }
+                  if (propName === 'periodicity' || propName === 'duration') {
+                    return (
+                      <PeriodicityField
+                        key={propName}
+                        name={propName}
+                        label={t_i18n(property.$ref)}
+                        style={fieldSpacingContainerStyle}
+                      />
+                    );
+                  }
+                  if (propName === 'type_affinity') {
+                    return (
+                      <Field
+                        key={propName}
+                        component={SelectField}
+                        variant="standard"
+                        name="type_affinity"
+                        label={t_i18n('Type affinity')}
+                        fullWidth={true}
+                        containerstyle={{ width: '100%', marginTop: 20 }}
+                      >
+                        <MenuItem key='ENDPOINT' value='ENDPOINT'>
+                          {t_i18n('Endpoint')}
+                        </MenuItem>
+                        <MenuItem key='CLOUD' value='CLOUD'>
+                          {t_i18n('Cloud')}
+                        </MenuItem>
+                        <MenuItem key='WEB' value='WEB'>
+                          {t_i18n('Web')}
+                        </MenuItem>
+                        <MenuItem key='TABLE-TOP' value='TABLE-TOP'>
+                          {t_i18n('Table-top')}
+                        </MenuItem>
+                      </Field>
+                    );
+                  }
+                  if (propName === 'platforms_affinity') {
+                    return (
+                      <OpenVocabField
+                        key={propName}
+                        name={propName}
+                        type={'platforms_ov'}
+                        label={t_i18n(property.$ref)}
+                        containerStyle={fieldSpacingContainerStyle}
+                        multiple={true}
+                      />
+                    );
                   }
                   if (propName === 'organizations') {
                     return <PlaybookFlowFieldOrganizations key={propName} />;
