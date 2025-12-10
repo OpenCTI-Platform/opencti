@@ -208,7 +208,7 @@ jobs:
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
 
-    - name: Start unit and other tests
+    - name: Start unit  and linter
       run: |
         docker run --network runner-docker-network \
           --name unit-and-other-tests \
@@ -218,7 +218,10 @@ jobs:
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
-          sh -c 'NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit --coverage
+          sh -c 'NODE_OPTIONS=--max_old_space_size=8192 
+            yarn check-ts
+            yarn lint
+            yarn test:ci-unit --coverage
         '
 
     # Output all logs used during the job

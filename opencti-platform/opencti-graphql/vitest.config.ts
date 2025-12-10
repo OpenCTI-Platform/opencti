@@ -15,7 +15,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
     },
-    maxWorkers: 10,
+    maxWorkers: 5,
   },
 });
 
