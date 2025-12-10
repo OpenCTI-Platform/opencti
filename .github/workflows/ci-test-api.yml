@@ -63,7 +63,7 @@ jobs:
           -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4100/graphql \
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
-          sh -c 'set -ex
+          sh -c 'set -eux
             mkdir -p ../../opencti-connectors/stream/backup-files/src
             wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
             mkdir -p ../../opencti-connectors/external-import/restore-files/src
@@ -160,7 +160,8 @@ jobs:
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
-          sh -c 'NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
+          sh -c 'set -eux
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
         '
 
     # Output all logs used during the job
@@ -218,10 +219,10 @@ jobs:
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
-          sh -c 'NODE_OPTIONS=--max_old_space_size=8192 
+          sh -c 'set -eux
             yarn check-ts
             yarn lint
-            yarn test:ci-unit --coverage
+            NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '
 
     # Output all logs used during the job
