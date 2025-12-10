@@ -14587,6 +14587,9 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   coverage_information: [CoverageResult!]
   external_uri: String
   periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String!]
   auto_enrichment_disable: Boolean
   objectCovered: StixDomainObject
   toStixBundle: String
@@ -14636,6 +14639,9 @@ input SecurityCoverageAddInput {
   update: Boolean
   auto_enrichment_disable: Boolean!
   periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String]
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime

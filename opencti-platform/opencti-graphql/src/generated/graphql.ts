@@ -26611,6 +26611,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   creators?: Maybe<Array<Creator>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
+  duration?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
@@ -26641,6 +26642,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   pendingFiles?: Maybe<FileConnection>;
   periodicity?: Maybe<Scalars['String']['output']>;
   pirInformation?: Maybe<PirInformation>;
+  platforms_affinity?: Maybe<Array<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -26655,6 +26657,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   toStixBundle?: Maybe<Scalars['String']['output']>;
+  type_affinity?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -26825,6 +26828,7 @@ export type SecurityCoverageAddInput = {
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  duration?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   external_uri?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
@@ -26833,8 +26837,10 @@ export type SecurityCoverageAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   periodicity?: InputMaybe<Scalars['String']['input']>;
+  platforms_affinity?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
+  type_affinity?: InputMaybe<Scalars['String']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -45406,6 +45412,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
+  duration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityCoverageExportFilesArgs>>;
@@ -45436,6 +45443,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityCoveragePendingFilesArgs>>;
   periodicity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<SecurityCoveragePirInformationArgs, 'pirId'>>;
+  platforms_affinity?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SecurityCoverageReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -45450,6 +45458,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityCoverageStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SecurityCoverageToStixArgs>>;
   toStixBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type_affinity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;

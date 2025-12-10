@@ -33,6 +33,9 @@ import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../..
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
 import SwitchField from '../../../../components/fields/SwitchField';
+import OpenVocabField from '@components/common/form/OpenVocabField';
+import SelectField from '../../../../components/fields/SelectField';
+import MenuItem from '@mui/material/MenuItem';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -193,6 +196,9 @@ const securityCoverageValidation = (t: (value: string) => string, isAutomated: b
     return Yup.object().shape({
       ...baseShape,
       periodicity: Yup.string().required(t('This field is required')),
+      duration: Yup.string().nullable(),
+      type_affinity: Yup.string().nullable(),
+      platforms_affinity: Yup.array(),
     });
   }
 
@@ -233,6 +239,9 @@ interface SecurityCoverageFormValues {
   objectLabel: { value: string; label: string }[];
   coverage_information: { coverage_name: string; coverage_score: number | string }[];
   periodicity?: string;
+  duration?: string;
+  type_affinity: 'ENDPOINT' | 'CLOUD' | 'WEB' | 'TABLE-TOP',
+  platforms_affinity: string[];
 }
 
 // Query for fetching a single entity when preselected
@@ -414,6 +423,9 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         })),
       } : {}),
       periodicity: values.periodicity,
+      duration: values.duration,
+      type_affinity: values.type_affinity,
+      platforms_affinity: values.platforms_affinity,
       external_uri: values.external_uri,
       auto_enrichment_disable: values.auto_enrichment_disable,
       createdBy: values.createdBy?.value,
@@ -459,6 +471,9 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       objectLabel: [],
       coverage_information: [],
       periodicity: 'P1D',
+      duration: 'P30D',
+      type_affinity: 'ENDPOINT',
+      platforms_affinity: ['windows','linux','macos'],
     },
   );
 
@@ -689,10 +704,50 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
             />
             <PeriodicityField
               name="periodicity"
-              label={t_i18n('Coverage validity period')}
+              label={mode === 'automated' ? t_i18n('Coverage recurrence (every x)') : t_i18n('Coverage validity period')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
+            {mode === 'automated' && (
+              <>
+                <PeriodicityField
+                  name="duration"
+                  label={t_i18n('Duration')}
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                />
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="type_affinity"
+                  onChange={(name: string, value: string) => setFieldValue(name, value)}
+                  label={t_i18n('Type affinity')}
+                  fullWidth={true}
+                  containerstyle={{ width: '100%', marginTop: 20 }}
+                >
+                  <MenuItem key='ENDPOINT' value='ENDPOINT'>
+                    {t_i18n('Endpoint')}
+                  </MenuItem>
+                  <MenuItem key='CLOUD' value='CLOUD'>
+                    {t_i18n('Cloud')}
+                  </MenuItem>
+                  <MenuItem key='WEB' value='WEB'>
+                    {t_i18n('Web')}
+                  </MenuItem>
+                  <MenuItem key='TABLE-TOP' value='TABLE-TOP'>
+                    {t_i18n('Table-top')}
+                  </MenuItem>
+                </Field>
+                <OpenVocabField
+                  label={t_i18n('Platform(s) affinity')}
+                  type="platforms_ov"
+                  name="platforms_affinity"
+                  onChange={(name, value) => setFieldValue(name, value)}
+                  containerStyle={fieldSpacingContainerStyle}
+                  multiple={true}
+                />
+              </>
+              )}
             <Field
               component={SwitchField}
               type="checkbox"
