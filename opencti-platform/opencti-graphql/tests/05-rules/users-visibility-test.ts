@@ -7,7 +7,7 @@ import { RELATION_PARTICIPATE_TO } from '../../src/schema/internalRelationship';
 import { adminQueryWithSuccess } from '../utils/testQueryHelper';
 import type { BasicStoreBase, BasicStoreRelation } from '../../src/types/store';
 import { createRuleContent } from '../../src/rules/rules-utils';
-import { createInferredRelation } from '../../src/database/middleware';
+import {createInferredRelation, deleteInferredRuleElement} from '../../src/database/middleware';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -270,8 +270,11 @@ describe('Users visibility according to their direct organizations', () => {
 
   it('should delete the created context of users and organizations', async () => {
     // remove the inferred relationships
-    // TODO
-    // Check inferences have been deleted
+    const inferred = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreRelation[];
+      await Promise.all(inferred.map((rel) => deleteInferredRuleElement(ParticipateToPartsRule.id, rel, []))
+      );
+
+      // Check inferences have been deleted
     const afterDisableRelations = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreBase[];
     expect(afterDisableRelations.length).toBe(0);
     // Delete the users
