@@ -2252,69 +2252,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             time.sleep(10)
             self._send_bundle(channel, bundle, **kwargs)
 
-    # Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve relationship object_marking_refs and created_by_ref instead
-    def stix2_get_embedded_objects(self, item) -> Dict:
-        """gets created and marking refs for a stix2 item
-
-        :param item: valid stix2 item
-        :type item:
-        :return: returns a dict of created_by of object_marking_refs
-        :rtype: Dict
-        """
-
-        raise DeprecationWarning(
-            "Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve relationship object_marking_refs and created_by_ref instead",
-        )
-
-    def stix2_get_entity_objects(self, entity) -> list:
-        """process a stix2 entity
-
-        :param entity: valid stix2 entity
-        :type entity:
-        :return: entity objects as list
-        :rtype: list
-        """
-
-        items = [entity]
-        # Get embedded objects
-        embedded_objects = self.stix2_get_embedded_objects(entity)
-        # Add created by ref
-        if embedded_objects["created_by_ref"] is not None:
-            items.append(embedded_objects["created_by_ref"])
-        # Add marking definitions
-        if len(embedded_objects["object_marking_refs"]) > 0:
-            items = items + embedded_objects["object_marking_refs"]
-
-        return items
-
-    # Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve relationship source_ref and target_ref instead
-    def stix2_get_relationship_objects(self, relationship) -> list:
-        """get a list of relations for a stix2 relationship object
-
-        :param relationship: valid stix2 relationship
-        :type relationship:
-        :return: list of relations objects
-        :rtype: list
-        """
-
-        raise DeprecationWarning(
-            "Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve relationship source_ref and target_ref instead",
-        )
-
-    # Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve report object_refs instead
-    def stix2_get_report_objects(self, report) -> list:
-        """get a list of items for a stix2 report object
-
-        :param report: valid stix2 report object
-        :type report:
-        :return: list of items for a stix2 report object
-        :rtype: list
-        """
-
-        raise DeprecationWarning(
-            "Deprecated and no longer working, use opencti_stix_object_or_sitx_relationship to resolve report object_refs instead",
-        )
-
     @staticmethod
     def stix2_deduplicate_objects(items) -> list:
         """deduplicate stix2 items
