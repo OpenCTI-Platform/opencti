@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
+import { iAliasedIds, internalId, standardId, xOpenctiStixIds } from './attribute-definition';
 
 // General
 export const STIX_TYPE_RELATION = 'relationship';
@@ -16,6 +17,8 @@ export const INTERNAL_IDS_ALIASES = 'i_aliases_ids';
 export const IDS_STIX = 'x_opencti_stix_ids';
 export const BASE_TYPE_RELATION = 'RELATION';
 export const BASE_TYPE_ENTITY = 'ENTITY';
+
+export const IDS_ATTRIBUTES = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
 
 // Inputs
 export const INPUT_GRANTED_REFS = 'objectOrganization'; // granted_refs
