@@ -13,14 +13,14 @@ from opentelemetry.exporter.prometheus import PrometheusMetricReader
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from prometheus_client import start_http_server
-from pycti import OpenCTIApiClient
+from pycti import OpenCTIApiClient, __version__
 from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
 )
 
-from message_queue_consumer import MessageQueueConsumer
 from listen_handler import ListenHandler
+from message_queue_consumer import MessageQueueConsumer
 from push_handler import PushHandler
 from thread_pool_selector import ThreadPoolSelector
 
@@ -186,6 +186,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             perform_health_check=False,  # No need to prevent worker start if API is not available yet
             custom_headers=self.opencti_api_custom_headers,
             requests_timeout=self.opencti_api_requests_timeout,
+            provider="worker/" + __version__,
         )
         self.worker_logger = self.api.logger_class("worker")
 
