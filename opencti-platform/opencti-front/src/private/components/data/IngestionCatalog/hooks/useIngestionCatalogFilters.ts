@@ -64,7 +64,7 @@ const useIngestionCatalogFilters = ({ catalogs, searchParams }: UseIngestionCata
           if (matchesFilterCriteria(parsedContract)) {
             filteredContracts.push(parsedContract);
           }
-        } catch (_e) {
+        } catch (_error) {
           MESSAGING$.notifyError(t_i18n('Failed to parse a contract'));
         }
       }

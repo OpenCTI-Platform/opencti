@@ -396,7 +396,7 @@ export const usePaginationLocalStorage = <U>(
     },
     handleAddProperty: (field: string, value: unknown) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-expect-error
       if (!R.equals(viewStorage[field], value)) {
         const newValue = {
           ...viewStorage,

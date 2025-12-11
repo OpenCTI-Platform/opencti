@@ -2233,7 +2233,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
           nestedShould.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
         }
       } else { // nested key !== internal_id
-        // eslint-disable-next-line no-lonely-if
+        // oxlint-disable-next-line no-lonely-if
         if (nestedOperator === FilterOperator.Within) {
           nestedShould.push({
             range: {
@@ -4365,7 +4365,7 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
       return (element: (T & { regardingOfTypes?: string })) => {
         const accepted = targetValidatedIds.has(element.id);
         if (accepted) {
-          // eslint-disable-next-line no-param-reassign
+          // oxlint-disable-next-line no-param-reassign
           element.regardingOfTypes = sideIdManualInferred.get(element.id);
         }
         return accepted;

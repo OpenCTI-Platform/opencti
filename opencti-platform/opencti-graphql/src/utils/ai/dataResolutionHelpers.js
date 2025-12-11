@@ -228,10 +228,10 @@ export const getContainerKnowledge = async (context, user, id) => {
     const from = indexedEntities[n.fromId];
     const to = indexedEntities[n.toId];
     if (isNotEmptyField(from) && isNotEmptyField(to)) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       const startTime = n.start_time === FROM_START_STR ? 'unknown date' : n.start_time;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       const stopTime = n.stop_time === UNTIL_END_STR ? 'unknown date' : n.stop_time;
       return `

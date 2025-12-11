@@ -16,7 +16,7 @@ export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLog
 };
 
 export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAuditsArgs) => {
-  // eslint-disable-next-line no-nested-ternary
+  // oxlint-disable-next-line no-nested-ternary
   let types = args.types ? args.types : isUserHasCapability(user, SETTINGS_SECURITYACTIVITY) ? [ENTITY_TYPE_ACTIVITY] : [ENTITY_TYPE_HISTORY];
   if (!isUserHasCapability(user, KNOWLEDGE)) {
     types = types.filter((t) => t !== ENTITY_TYPE_HISTORY);

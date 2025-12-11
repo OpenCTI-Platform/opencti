@@ -78,7 +78,7 @@ export const isValidStixBundle = (bundle) => {
   try {
     const data = JSON.parse(bundle);
     return !!(data.objects && data.objects.length > 0);
-  } catch (_e) {
+  } catch (_error) {
     return false;
   }
 };

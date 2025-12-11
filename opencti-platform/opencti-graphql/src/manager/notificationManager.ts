@@ -510,7 +510,7 @@ export const buildTargetEvents = async (
               targets.push({ user: notificationUser, type: translatedType, message });
             }
         } else { // useSideEventMatching = true: Case side events for instance triggers
-          // eslint-disable-next-line no-lonely-if
+          // oxlint-disable-next-line no-lonely-if
           if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible
             const listenedInstanceIdsMap = await resolveFiltersMapForUser(userContext, user, finalFilters);
             // eslint-disable-next-line max-len

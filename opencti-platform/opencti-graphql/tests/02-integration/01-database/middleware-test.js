@@ -321,7 +321,7 @@ describe('Relations listing', () => {
     expect(stixRelations.edges.length).toEqual(2);
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       const toThing = await elLoadById(testContext, ADMIN_USER, stixRelation.toId);
       expect(toThing.entity_type).toEqual('Attack-Pattern');
       expect(stixRelation.fromId).toEqual(malware.internal_id);

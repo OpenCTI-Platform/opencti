@@ -155,7 +155,7 @@ export const STATIC_NOTIFIER_UI = 'f4ee7b33-006a-4b0d-b57d-411ad288653d';
 export const STATIC_NOTIFIER_EMAIL = '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822';
 
 export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   {
     id: STATIC_NOTIFIER_UI,
@@ -165,7 +165,7 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
     description: 'Publish notification to the user interface',
     notifier_connector_id: NOTIFIER_CONNECTOR_UI,
   },
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   {
     id: STATIC_NOTIFIER_EMAIL,

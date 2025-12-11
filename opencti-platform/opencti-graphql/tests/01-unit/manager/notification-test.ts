@@ -5,7 +5,7 @@ import NotificationTool from '../../../src/utils/NotificationTool';
 
 const digest = (period: 'hour' | 'day' | 'week' | 'month', triggerTime = ''): ResolvedDigest => {
   return {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     trigger: {
       internal_id: '',

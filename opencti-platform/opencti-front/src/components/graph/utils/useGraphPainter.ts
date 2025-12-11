@@ -28,7 +28,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const colors = {
     selected: theme.palette.secondary.main ?? DEFAULT_COLOR,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // @ts-expect-error
     inferred: theme.palette.warning?.main ?? DEFAULT_COLOR,
     numbersBackground: theme.palette.background.default ?? DEFAULT_COLOR,
     text: theme.palette.text?.secondary ?? DEFAULT_COLOR,

@@ -43,7 +43,7 @@ const playbookResolvers: Resolvers = {
     playbook: (_, { id }, context) => findById(context, context.user, id),
     playbooks: (_, args, context) => findPlaybookPaginated(context, context.user, args),
     playbooksForEntity: (_, { id }, context) => findPlaybooksForEntity(context, context.user, id),
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     playbookComponents: (_, __, context) => availableComponents(context),
   },
@@ -55,7 +55,7 @@ const playbookResolvers: Resolvers = {
   },
   PlaybookComponent: {
     configuration_schema: async (current) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const configurationSchema = await current.schema();
       return JSON.stringify(configurationSchema ?? '{}');

@@ -75,7 +75,7 @@ export const findUserSessions = async (userId) => {
 export const killSession = async (id) => {
   const { store } = applicationSession;
   return new Promise((accept) => {
-    // eslint-disable-next-line no-void
+    // oxlint-disable-next-line no-void
     void store.destroy(id, (_, data) => {
       accept(data);
     });

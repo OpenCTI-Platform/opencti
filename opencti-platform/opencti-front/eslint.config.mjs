@@ -7,6 +7,7 @@ import importPlugin from 'eslint-plugin-import';
 import importNewlines from 'eslint-plugin-import-newlines';
 import customRules from 'eslint-plugin-custom-rules';
 import stylistic from '@stylistic/eslint-plugin';
+import oxlint from 'eslint-plugin-oxlint';
 
 export default defineConfig([
   {
@@ -161,4 +162,7 @@ export default defineConfig([
       'react/react-in-jsx-scope': 'off',
     },
   },
+
+  // Oxlint rules
+  ...oxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
 ]);

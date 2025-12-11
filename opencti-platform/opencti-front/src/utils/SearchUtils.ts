@@ -21,7 +21,7 @@ export const decodeSearchKeyword = (searchKeyword: string) => {
   let searchTerm = '';
   try {
     searchTerm = decodeURIComponent(searchKeyword || '');
-  } catch (_e) {
+  } catch (_error) {
     // Do nothing
   }
   return searchTerm;

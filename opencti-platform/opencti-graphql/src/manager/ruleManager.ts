@@ -78,7 +78,7 @@ const isAttributesImpactDependencies = (rule: RuleDefinition, operations: Operat
     .map((a) => a.name);
   const operationAttributes = R.uniq(operations.map((o) => {
     const parts = o.path.substring(1).split('/');
-    // eslint-disable-next-line no-restricted-globals
+    // oxlint-disable-next-line no-restricted-globals
     return parts.filter((p) => isNaN(Number(p))).join('.');
   }));
   return operationAttributes.filter((f) => rulesAttributes.includes(f)).length > 0;

@@ -28,7 +28,7 @@ const useBuildAttributesOutcome = () => {
       let result;
       try {
         result = getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '');
-      } catch (_e) {
+      } catch (_error) {
         result = '';
       }
       const readableAttribute = buildReadableAttribute(result, col);

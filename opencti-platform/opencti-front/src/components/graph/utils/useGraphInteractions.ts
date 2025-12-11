@@ -249,14 +249,14 @@ const useGraphInteractions = () => {
     if (selectedDraggedNode) {
       selectedNodes.forEach((n) => {
         if (n.id !== node.id) {
-          n.x += translate.x; // eslint-disable-line no-param-reassign
-          n.y += translate.y; // eslint-disable-line no-param-reassign
-          n.z += translate.z ?? 0; // eslint-disable-line no-param-reassign
+          n.x += translate.x; // oxlint-disable-line no-param-reassign
+          n.y += translate.y; // oxlint-disable-line no-param-reassign
+          n.z += translate.z ?? 0; // oxlint-disable-line no-param-reassign
           // During node drag, the lib force-graph set fx and fy equal to x and y.
           // so we are doing the same thing for all selected nodes.
-          n.fx = n.x; // eslint-disable-line no-param-reassign
-          n.fy = n.y; // eslint-disable-line no-param-reassign
-          n.fz = n.z; // eslint-disable-line no-param-reassign
+          n.fx = n.x; // oxlint-disable-line no-param-reassign
+          n.fy = n.y; // oxlint-disable-line no-param-reassign
+          n.fz = n.z; // oxlint-disable-line no-param-reassign
         }
       });
     }
@@ -270,15 +270,15 @@ const useGraphInteractions = () => {
    */
   const fixPositionsOnDragEnd = (node: GraphNode) => {
     const selectedDraggedNode = selectedNodes.find((n) => n.id === node.id);
-    node.fx = node.x; // eslint-disable-line no-param-reassign
-    node.fy = node.y; // eslint-disable-line no-param-reassign
-    node.fz = node.z; // eslint-disable-line no-param-reassign
+    node.fx = node.x; // oxlint-disable-line no-param-reassign
+    node.fy = node.y; // oxlint-disable-line no-param-reassign
+    node.fz = node.z; // oxlint-disable-line no-param-reassign
     if (selectedDraggedNode) {
       selectedNodes.forEach((n) => {
         if (n.id !== node.id) {
-          n.fx = n.x; // eslint-disable-line no-param-reassign
-          n.fy = n.y; // eslint-disable-line no-param-reassign
-          n.fz = n.z; // eslint-disable-line no-param-reassign
+          n.fx = n.x; // oxlint-disable-line no-param-reassign
+          n.fy = n.y; // oxlint-disable-line no-param-reassign
+          n.fz = n.z; // oxlint-disable-line no-param-reassign
         }
       });
     }

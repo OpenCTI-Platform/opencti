@@ -24,7 +24,7 @@ const chartDataURI = async (chartOptions: ApexOptions) => {
   const dataURI = await chart.dataURI();
   document.body.removeChild(canvas);
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error
   return dataURI.imgURI;
 };
 

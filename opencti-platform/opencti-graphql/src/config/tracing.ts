@@ -2,7 +2,7 @@ import { SEMATTRS_ENDUSER_ID } from '@opentelemetry/semantic-conventions';
 import { MeterProvider, MetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { ValueType } from '@opentelemetry/api-metrics';
 import type { Counter, Histogram } from '@opentelemetry/api-metrics/build/src/types/Metric';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// oxlint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import nodeMetrics from 'opentelemetry-node-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';

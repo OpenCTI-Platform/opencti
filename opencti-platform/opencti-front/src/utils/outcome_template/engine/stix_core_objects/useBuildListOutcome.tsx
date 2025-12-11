@@ -62,7 +62,7 @@ const useBuildListOutcome = () => {
                 let property;
                 try {
                   property = getObjectPropertyWithoutEmptyValues(n, col.attribute ?? '');
-                } catch (_e) {
+                } catch (_error) {
                   property = '';
                 }
                 const readableAttribute = buildReadableAttribute(property, col, true);

@@ -598,7 +598,7 @@ export const formSubmit = async (
           const fieldValue = values.mainEntityGroups[index][field.name];
           // Convert the field value to the correct type
           const convertedValue = convertFieldType(fieldValue, field);
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
           mainEntity[field.attributeMapping.attributeName] = convertedValue;
         }
@@ -619,7 +619,7 @@ export const formSubmit = async (
           mainEntity.name = observableValue;
           mainEntity.x_opencti_main_observable_type = observableType;
         } else {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
           mainEntity[schema.mainEntityParseFieldMapping] = values.mainEntityParsed[index];
         }
@@ -633,7 +633,7 @@ export const formSubmit = async (
             if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
               // Convert the field value to the correct type
               const convertedValue = convertFieldType(fieldValue, field);
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
               mainEntity[field.attributeMapping.attributeName] = convertedValue;
             }
@@ -659,7 +659,7 @@ export const formSubmit = async (
         const fieldValue = values[field.name];
         // Convert the field value to the correct type
         const convertedValue = convertFieldType(fieldValue, field);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         mainEntity[field.attributeMapping.attributeName] = convertedValue;
       }
@@ -704,7 +704,7 @@ export const formSubmit = async (
                 const fieldValue = values[`additional_${additionalEntity.id}_groups`][index2][field.name];
                 // Convert the field value to the correct type
                 const convertedValue = convertFieldType(fieldValue, field);
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error
                 newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
               }
@@ -732,7 +732,7 @@ export const formSubmit = async (
                 newAdditionalEntity.name = observableValue;
                 newAdditionalEntity.x_opencti_main_observable_type = observableType;
               } else {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error
                 newAdditionalEntity[additionalEntity.parseFieldMapping] = values[`additional_${additionalEntity.id}_parsed`][index2];
               }
@@ -745,7 +745,7 @@ export const formSubmit = async (
                   if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                     // Convert the field value to the correct type
                     const convertedValue = convertFieldType(fieldValue, field);
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
                     newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
                   }
@@ -791,7 +791,7 @@ export const formSubmit = async (
                 if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                   // Convert the field value to the correct type
                   const convertedValue = convertFieldType(fieldValue, field);
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
                   // @ts-expect-error
                   newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
                 }

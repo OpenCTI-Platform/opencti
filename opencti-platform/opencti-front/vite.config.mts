@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import * as path from 'node:path';
 import relay from 'vite-plugin-relay';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import oxlintPlugin from 'vite-plugin-oxlint'
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
 const depsToOptimize = [
@@ -231,6 +232,10 @@ export default defineConfig({
           .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`)
       }
     },
+    oxlintPlugin({
+      path: 'src',
+      params: '--deny-warnings --quiet'
+    }),
     react(),
     relay
   ],
