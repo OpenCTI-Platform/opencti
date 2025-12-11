@@ -1,6 +1,5 @@
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-// noinspection JSFileReferences
-import { defaultFieldResolver } from 'graphql/index.js';
+import { defaultFieldResolver } from 'graphql';
 import type { GraphQLFieldConfig, GraphQLSchema } from 'graphql';
 import { AuthRequired, ForbiddenAccess, LtsRequiredActivation, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
 import { Capabilities } from '../generated/graphql';
