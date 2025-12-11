@@ -1,7 +1,7 @@
 import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StoreObject, StoreRelation } from '../../types/store';
-import type { ActivityStreamEvent, BaseEvent, CreateEventOpts, EventOpts, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEventOpts } from '../../types/event';
+import type { ActivityStreamEvent, BaseEvent, Change, CreateEventOpts, EventOpts, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEventOpts } from '../../types/event';
 import { isStixExportableInStreamData } from '../../schema/stixCoreObject';
 import { generateCreateMessage, generateDeleteMessage, generateRestoreMessage } from '../generate-message';
 import {
@@ -60,10 +60,18 @@ export const storeMergeEvent = async (
     throw DatabaseError('Error in store merge event', { cause: e });
   }
 };
-export const storeUpdateEvent = async (context: AuthContext, user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
+export const storeUpdateEvent = async (
+  context: AuthContext,
+  user: AuthUser,
+  previous: StoreObject,
+  instance: StoreObject,
+  message: string,
+  changes: Change[],
+  opts: UpdateEventOpts = {}
+) => {
   try {
     if (isStixExportableInStreamData(instance)) {
-      const event = buildUpdateEvent(user, previous, instance, message, opts);
+      const event = buildUpdateEvent(user, previous, instance, message, changes, opts);
       await pushToStream(context, user, event, opts);
       return event;
     }

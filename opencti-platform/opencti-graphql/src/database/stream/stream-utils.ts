@@ -8,16 +8,17 @@ import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TY
 import { UnsupportedError } from '../../config/errors';
 import { INTERNAL_EXPORTABLE_TYPES } from '../../schema/stixCoreObject';
 import type {
-  ActivityStreamEvent,
-  BaseEvent,
-  DeleteEvent,
-  EventOpts,
-  MergeEvent,
-  SseEvent,
-  StreamDataEvent,
-  StreamNotifEvent,
-  UpdateEvent,
-  UpdateEventOpts
+ActivityStreamEvent,
+BaseEvent,
+Change,
+DeleteEvent,
+EventOpts,
+MergeEvent,
+SseEvent,
+StreamDataEvent,
+StreamNotifEvent,
+UpdateEvent,
+UpdateEventOpts
 } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
@@ -98,7 +99,14 @@ export const buildMergeEvent = async (user: AuthUser, previous: StoreObject, ins
   };
 };
 // Update
-export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObject, stix: StixCoreObject, message: string, opts: UpdateEventOpts = {}): UpdateEvent => {
+export const buildStixUpdateEvent = (
+  user: AuthUser,
+  previousStix: StixCoreObject,
+  stix: StixCoreObject,
+  message: string,
+  changes: Change[],
+  opts: UpdateEventOpts = {}
+): UpdateEvent => {
   // Build and send the event
   const patch = jsonpatch.compare(previousStix, stix);
   const previousPatch = jsonpatch.compare(stix, previousStix);
@@ -123,15 +131,16 @@ export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObjec
       patch,
       reverse_patch: previousPatch,
       related_restrictions: opts.related_restrictions,
-      pir_ids: opts.pir_ids
+      pir_ids: opts.pir_ids,
+      changes
     }
   };
 };
-export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts): UpdateEvent => {
+export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, changes: Change[], opts: UpdateEventOpts): UpdateEvent => {
   // Build and send the event
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
-  return buildStixUpdateEvent(user, previousStix, stix, message, opts);
+  return buildStixUpdateEvent(user, previousStix, stix, message, changes, opts);
 };
 // Create
 export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): StreamDataEvent => {
