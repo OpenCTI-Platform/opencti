@@ -1714,8 +1714,7 @@ export const userRenewToken = async (context, user, userId) => {
  */
 const validateUser = (user, settings) => {
   // Check organization consistency
-  const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
-  if (!hasSetAccessCapability && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
+  if (!isBypassUser(user) && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
     throw AuthenticationFailure('You can\'t login without an organization');
   }
   // Check account expiration date
