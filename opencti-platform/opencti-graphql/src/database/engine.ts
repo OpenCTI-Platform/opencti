@@ -4232,7 +4232,7 @@ export const elAggregationsList = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
-  aggregations: { field:string, name: string }[],
+  aggregations: { field: string, name: string }[],
   opts: AggregationsListOpts = {}
 ): Promise<{ name: string, values: any }[]> => {
   const { types = [], resolveToRepresentative = true, postResolveFilter } = opts;

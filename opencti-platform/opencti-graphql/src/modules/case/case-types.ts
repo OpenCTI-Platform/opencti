@@ -23,6 +23,6 @@ export interface StixCase extends StixDomainObject {
   description: string,
   object_refs: Array<string>,
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
 }

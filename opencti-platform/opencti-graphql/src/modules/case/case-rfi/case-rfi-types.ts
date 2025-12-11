@@ -40,7 +40,7 @@ export interface StixCaseRfi extends StixDomainObject {
   severity: string,
   priority: string,
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
 }
 

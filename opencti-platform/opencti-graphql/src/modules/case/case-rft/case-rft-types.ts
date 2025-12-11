@@ -38,7 +38,7 @@ export interface StixCaseRft extends StixDomainObject {
   severity: string,
   priority: string,
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
 }
 

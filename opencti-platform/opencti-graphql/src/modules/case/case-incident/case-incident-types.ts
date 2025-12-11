@@ -37,7 +37,7 @@ export interface StixCaseIncident extends StixDomainObject {
   object_refs: Array<string>,
   response_types: string,
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
 }
 

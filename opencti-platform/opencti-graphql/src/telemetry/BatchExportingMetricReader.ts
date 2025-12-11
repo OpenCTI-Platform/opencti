@@ -32,7 +32,7 @@ export class BatchExportingMetricReader extends MetricReader {
 
   private readonly _exportTimeout: number;
 
-  private _collectCallback:(() => void) | undefined;
+  private _collectCallback: (() => void) | undefined;
 
   constructor(options: BatchExportingMetricReaderOptions) {
     super({

@@ -64,7 +64,7 @@ type ExecutorFn = {
   nextStep: PlaybookExecutionStep<object>,
   previousStepBundle: StixBundle | null
   bundle: StixBundle
-  event?:StreamDataEvent,
+  event?: StreamDataEvent,
   externalCallback?: {
     externalStartDate: Date
   }

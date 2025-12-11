@@ -57,7 +57,7 @@ export interface CsvMapperRepresentationAttributeResolved {
   key: string
   column?: AttributeColumn
   based_on?: AttributeBasedOn
-  default_values?: { id:string, name:string }[]
+  default_values?: { id: string, name: string }[]
   ref?: AttributeRef
 }
 export interface CsvMapperRepresentationResolved {
@@ -95,7 +95,7 @@ export interface StixCsvMapper extends StixObject {
   separator: string
   representations: string
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
 }
 

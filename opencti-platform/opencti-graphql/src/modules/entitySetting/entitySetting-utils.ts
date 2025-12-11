@@ -37,7 +37,7 @@ export interface EntitySettingSchemaAttribute {
   editDefault: boolean
   upsert: boolean
   label?: string
-  defaultValues?: { id: string, name:string }[]
+  defaultValues?: { id: string, name: string }[]
   scale?: string
 }
 

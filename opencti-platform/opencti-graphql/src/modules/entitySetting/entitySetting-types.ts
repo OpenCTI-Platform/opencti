@@ -78,6 +78,6 @@ export interface StixEntitySetting extends StixObject {
   templates?: Array<FintelTemplate>;
   request_access_workflow?: RequestAccessFlow
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
 }

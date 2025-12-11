@@ -27,6 +27,6 @@ export interface StixSupportPackage extends StixObject {
   package_upload_dir: string
   nodes_count: number
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
 }

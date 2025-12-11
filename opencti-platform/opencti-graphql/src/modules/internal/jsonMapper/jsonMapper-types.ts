@@ -49,7 +49,7 @@ export interface JsonMapperRepresentationAttribute {
 export interface JsonMapperRepresentationAttributeResolved {
   key: string
   mode: 'simple' | 'complex' | 'base'
-  default_values?: { id:string, name:string }[]
+  default_values?: { id: string, name: string }[]
   ref?: AttributeRef
 }
 
@@ -118,6 +118,6 @@ export interface StixJsonMapper extends StixObject {
   name: string
   representations: string
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
 }

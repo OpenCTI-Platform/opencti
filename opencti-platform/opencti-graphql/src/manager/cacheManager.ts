@@ -105,7 +105,7 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
     // IDs from list of PIRs to listen.
     const playbookInPirFilterIds = configurations
       .map((config) => config.inPirFilters)
-      .map((f) => (f ?? []).map((i:{ value:string }) => i.value))
+      .map((f) => (f ?? []).map((i:{ value: string }) => i.value))
       .flat();
     filteringIds.push(...playbookFilterIds, ...playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {

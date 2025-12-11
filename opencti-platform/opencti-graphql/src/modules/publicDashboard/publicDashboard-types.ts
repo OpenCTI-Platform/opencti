@@ -110,7 +110,7 @@ export interface StixPublicDashboard extends StixDomainObject {
   allowed_markings_ids: Array<string>;
   allowed_markings: Array<StoreMarkingDefinition>;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   };
 }
 // endregion

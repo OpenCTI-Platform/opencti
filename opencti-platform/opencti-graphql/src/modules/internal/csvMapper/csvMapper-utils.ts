@@ -22,7 +22,7 @@ export interface CsvMapperSchemaAttribute {
   mandatoryType: MandatoryType
   editDefault: boolean
   multiple: boolean
-  defaultValues?: { id: string, name:string }[]
+  defaultValues?: { id: string, name: string }[]
   label: string
   mappings?: CsvMapperSchemaAttribute[]
 }

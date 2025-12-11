@@ -42,7 +42,7 @@ export interface StixFintelDesign extends StixObject {
   gradiantToColor: string;
   textColor: string;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   };
 }
 // endregion

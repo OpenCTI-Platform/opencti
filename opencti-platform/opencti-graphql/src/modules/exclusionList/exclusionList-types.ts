@@ -31,6 +31,6 @@ export interface StixExclusionList extends StixObject {
   file_id: string
   enabled: boolean
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
 }

@@ -22,16 +22,16 @@ export interface StixIndicatorExtension extends StixOpenctiExtension {
 export interface StixIndicator extends StixDomainObject {
   name: string; // optional
   description: string; // optional
-  indicator_types : Array<string>; // optional
-  pattern : string;
-  pattern_type : string;
-  pattern_version : string; // optional
-  valid_from : StixDate;
-  valid_until : StixDate; // optional
+  indicator_types: Array<string>; // optional
+  pattern: string;
+  pattern_type: string;
+  pattern_version: string; // optional
+  valid_from: StixDate;
+  valid_until: StixDate; // optional
   kill_chain_phases: Array<StixKillChainPhase>; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixIndicatorExtension;
-    [STIX_EXT_MITRE] : StixMitreExtension
+    [STIX_EXT_MITRE]: StixMitreExtension
   };
 }
 

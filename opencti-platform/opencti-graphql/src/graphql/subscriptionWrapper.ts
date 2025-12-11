@@ -60,7 +60,7 @@ export const subscribeToInstanceEvents = async (
   opts: {
     preFn?: () => void,
     cleanFn?: () => void,
-    notifySelf? : boolean,
+    notifySelf?: boolean,
     type?: string | string[],
   } = {}
 ): Promise<AsyncIterable<any>> => {

@@ -49,7 +49,7 @@ interface StixMetric {
 }
 
 interface StixOpenctiExtension {
-  extension_type : 'property-extension' | 'new-sdo' | 'new-sro'
+  extension_type: 'property-extension' | 'new-sdo' | 'new-sro'
   id: v4 | undefined
   files: Array<StixFileExtension>
   aliases: Array<string>
@@ -75,7 +75,7 @@ interface StixOpenctiExtension {
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {
-  extension_type : 'new-sdo';
+  extension_type: 'new-sdo';
 }
 
 interface StixObject {
@@ -85,7 +85,7 @@ interface StixObject {
   object_marking_refs?: Array<StixId>; // optional
   // TODO Implement granular_markings
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtension;
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
   };
 }
 
@@ -122,7 +122,7 @@ interface StixRelationshipObject extends StixObject {
 
 // SCO
 interface CyberObjectExtension {
-  extension_type? : 'property-extension';
+  extension_type?: 'property-extension';
   labels?: Array<string>;
   description?: string;
   score?: number;
