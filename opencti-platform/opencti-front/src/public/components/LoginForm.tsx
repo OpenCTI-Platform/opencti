@@ -10,6 +10,7 @@ import Button from '@common/button/Button';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../components/i18n';
 import useApiMutation from '../../utils/hooks/useApiMutation';
+import { Button } from '@mui/material';
 
 const loginMutation = graphql`
   mutation LoginFormMutation($input: UserLoginInput!) {
@@ -99,7 +100,7 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, e
               style={{ marginTop: theme.spacing(3) }}
             >
               {t_i18n('Sign in')}
-            </Button>
+            </Button>             
           </Form>
         )}
       </Formik>
