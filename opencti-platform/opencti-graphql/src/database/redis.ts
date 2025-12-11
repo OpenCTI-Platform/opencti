@@ -4,27 +4,11 @@ import { Redlock } from '@sesamecare-oss/redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, wait, waitInSec } from './utils';
-import { INTERNAL_EXPORTABLE_TYPES, isStixExportableInStreamData } from '../schema/stixCoreObject';
-import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { mergeDeepRightAll, now, utcDate } from '../utils/format';
-import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
-import type { AuthContext, AuthUser } from '../types/user';
-import type {
-  ActivityStreamEvent,
-  BaseEvent,
-  Change,
-  CreateEventOpts,
-  DataEvent,
-  DeleteEvent,
-  EventOpts,
-  MergeEvent,
-  SseEvent,
-  StreamDataEvent,
-  UpdateEvent,
-  UpdateEventOpts,
-} from '../types/event';
-import type { StixCoreObject, StixObject } from '../types/stix-2-1-common';
+import { isNotEmptyField } from './utils';
+import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
+import { mergeDeepRightAll, now } from '../utils/format';
+import type { BasicStoreCommon } from '../types/store';
+import type { AuthUser } from '../types/user';
 import type { EditContext } from '../generated/graphql';
 import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../types/clusterConfig';
@@ -243,7 +227,6 @@ const keysFromList = async (listId: string, expirationTime?: number) => {
   }
   const instances = await getClientBase().zrange(listId, 0, -1);
   if (instances && instances.length > 0) {
-    // eslint-disable-next-line newline-per-chained-call
     const fetchKey = (key: string) => getClientBase().multi().ttl(key).get(key).exec();
     const instancesConfig = await Promise.all(instances.map((i) => fetchKey(i)
       .then((results) => {
@@ -418,7 +401,6 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   const queue = () => {
     timeout = setTimeout(
       () => {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         extension = extend();
       },
       lock.expiration - Date.now() - 2 * automaticExtensionThreshold,
