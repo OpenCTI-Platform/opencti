@@ -3860,6 +3860,7 @@ input ReportAddInput {
   update: Boolean
   file: Upload
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 enum CoursesOfActionOrdering {
@@ -13243,6 +13244,7 @@ input IndicatorAddInput {
   x_opencti_workflow_id: String
   file: Upload
   basedOn: [String!]
+  upsertOperations: [EditInput!]
 }
 
 type DecayRule implements InternalObject & BasicObject {
