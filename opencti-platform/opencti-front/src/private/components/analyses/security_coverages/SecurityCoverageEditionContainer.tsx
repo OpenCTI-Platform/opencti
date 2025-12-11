@@ -22,10 +22,10 @@ export const securityCoverageEditionContainerQuery = graphql`
 `;
 
 interface SecurityCoverageEditionContainerProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<SecurityCoverageEditionContainerQuery>
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  handleClose: () => void;
+  queryRef: PreloadedQuery<SecurityCoverageEditionContainerQuery>;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 const SecurityCoverageEditionContainer: FunctionComponent<SecurityCoverageEditionContainerProps> = ({

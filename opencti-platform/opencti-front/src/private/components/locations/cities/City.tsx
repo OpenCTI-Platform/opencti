@@ -78,7 +78,7 @@ const cityFragment = graphql`
 const City = ({
   cityData,
 }: {
-  cityData: City_city$key
+  cityData: City_city$key;
 }) => {
   useInitCreateRelationshipContext();
 

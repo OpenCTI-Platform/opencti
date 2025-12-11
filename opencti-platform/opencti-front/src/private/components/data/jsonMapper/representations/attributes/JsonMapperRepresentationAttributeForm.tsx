@@ -31,9 +31,9 @@ export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormD
 
 interface JsonMapperRepresentationAttributeFormProps
   extends FieldProps<RepresentationAttributeForm> {
-  schemaAttribute: SchemaAttribute
-  label: string
-  handleErrors: (key: string, value: string | null) => void
+  schemaAttribute: SchemaAttribute;
+  label: string;
+  handleErrors: (key: string, value: string | null) => void;
 }
 
 const JsonMapperRepresentationAttributeForm: FunctionComponent<

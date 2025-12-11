@@ -25,9 +25,9 @@ const csvMapperTestQuery = graphql`
 `;
 
 interface CsvMapperTestDialogProps {
-  open: boolean
-  onClose: () => void
-  configuration: string
+  open: boolean;
+  onClose: () => void;
+  configuration: string;
 }
 
 const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({

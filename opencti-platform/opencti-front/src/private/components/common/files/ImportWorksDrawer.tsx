@@ -143,9 +143,9 @@ const FileWorksComponent = ({
   queryRef,
   refetch,
 }: {
-  isWorkbench: boolean
-  queryRef: PreloadedQuery<ImportWorksDrawerQuery>
-  refetch: () => void
+  isWorkbench: boolean;
+  queryRef: PreloadedQuery<ImportWorksDrawerQuery>;
+  refetch: () => void;
 }) => {
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
@@ -291,7 +291,7 @@ const FileWorksComponent = ({
           isLocalStorageEnabled={false}
           globalCount={works.length}
           variant={DataTableVariant.inline}
-          actions={(work: { id: string, draft_context?: string, status: string }) => (
+          actions={(work: { id: string; draft_context?: string; status: string }) => (
             <div style={{ marginLeft: work?.draft_context && !draftContext ? -45 : 0 }}>
               {work?.draft_context && !draftContext && (
                 <Tooltip title={t_i18n('Navigate to draft')}>
@@ -364,9 +364,9 @@ const ImportWorksDrawer = ({
   onClose,
   file,
 }: {
-  open: DrawerProps['open']
-  onClose: () => void
-  file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data
+  open: DrawerProps['open'];
+  onClose: () => void;
+  file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data;
 }) => {
   const { t_i18n } = useFormatter();
   const [openLaunchImport, setOpenLaunchImport] = useState(false);

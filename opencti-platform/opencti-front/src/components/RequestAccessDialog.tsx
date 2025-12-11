@@ -27,21 +27,21 @@ const requestAccessDialogMutation = graphql`
 `;
 
 interface RequestAccessDialogProps {
-  open: boolean
-  onClose: () => void
-  entitiesIds: string[]
+  open: boolean;
+  onClose: () => void;
+  entitiesIds: string[];
 }
 
 interface OrganizationForm {
-  value: string
-  label: string
+  value: string;
+  label: string;
 }
 
 interface RequestAccessFormAddInput {
-  organizations: OrganizationForm
-  request_access_entities: string[]
-  request_access_reason: string
-  request_access_type: 'organization_sharing'
+  organizations: OrganizationForm;
+  request_access_entities: string[];
+  request_access_reason: string;
+  request_access_type: 'organization_sharing';
 }
 
 const requestAccessValidation = (t: (v: string) => string) => Yup.object().shape({

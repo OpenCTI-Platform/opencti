@@ -32,14 +32,14 @@ import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 
 interface StixCoreRelationshipCreationSelectEntityStageProps {
-  handleNextStep: () => void
-  storageKey: string
-  data: StixCoreRelationshipCreationSelectEntityStage_stixCoreObject$key
-  targetEntities: TargetEntity[]
-  setTargetEntities: React.Dispatch<React.SetStateAction<TargetEntity[]>>
-  virtualEntityTypes: string[]
-  handleClose: () => void
-  setSearchPaginationOptions: (p: PaginationOptions) => void
+  handleNextStep: () => void;
+  storageKey: string;
+  data: StixCoreRelationshipCreationSelectEntityStage_stixCoreObject$key;
+  targetEntities: TargetEntity[];
+  setTargetEntities: React.Dispatch<React.SetStateAction<TargetEntity[]>>;
+  virtualEntityTypes: string[];
+  handleClose: () => void;
+  setSearchPaginationOptions: (p: PaginationOptions) => void;
 }
 
 const fragment = graphql`

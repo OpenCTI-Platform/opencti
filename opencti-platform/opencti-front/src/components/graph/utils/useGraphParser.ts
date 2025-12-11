@@ -8,48 +8,48 @@ import GRAPH_IMAGES from './graphImages';
 import { itemColor } from '../../../utils/Colors';
 
 export interface ObjectToParse {
-  id: string
-  entity_type: string
-  relationship_type: string
-  parent_types: string[]
-  types?: string[] | null | undefined
-  is_inferred: boolean
-  observable_value?: string
-  observableName?: string
-  x_opencti_color?: string
-  x_opencti_additional_names?: string[]
+  id: string;
+  entity_type: string;
+  relationship_type: string;
+  parent_types: string[];
+  types?: string[] | null | undefined;
+  is_inferred: boolean;
+  observable_value?: string;
+  observableName?: string;
+  x_opencti_color?: string;
+  x_opencti_additional_names?: string[];
   hashes?: {
-    algorithm: string
-    hash: string
-  }[]
-  color?: string
-  numberOfConnectedElement?: number
+    algorithm: string;
+    hash: string;
+  }[];
+  color?: string;
+  numberOfConnectedElement?: number;
   createdBy: {
-    id: string
-    name: string
-  }
-  created: string
-  start_time: string
-  stop_time: string
-  first_seen: string
-  last_seen: string
+    id: string;
+    name: string;
+  };
+  created: string;
+  start_time: string;
+  stop_time: string;
+  first_seen: string;
+  last_seen: string;
   from?: {
-    id: string
-    relationship_type?: string
-    entity_type?: string
-  }
+    id: string;
+    relationship_type?: string;
+    entity_type?: string;
+  };
   to?: {
-    id: string
-    relationship_type?: string
-    entity_type?: string
-  }
+    id: string;
+    relationship_type?: string;
+    entity_type?: string;
+  };
   objectMarking: {
-    id: string
-    definition: string
-  }[]
+    id: string;
+    definition: string;
+  }[];
   // Other containers associated to this object.
   // Used for correlation graphs.
-  linkedContainers?: ObjectToParse[]
+  linkedContainers?: ObjectToParse[];
 }
 
 const useGraphParser = () => {

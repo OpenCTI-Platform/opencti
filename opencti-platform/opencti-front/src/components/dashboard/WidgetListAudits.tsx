@@ -14,7 +14,7 @@ import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 
 interface WidgetListAuditsProps {
-  data: NonNullable<AuditsListComponentQuery$data['audits']>['edges']
+  data: NonNullable<AuditsListComponentQuery$data['audits']>['edges'];
 }
 
 const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {

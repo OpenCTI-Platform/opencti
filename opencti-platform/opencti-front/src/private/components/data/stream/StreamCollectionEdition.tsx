@@ -35,10 +35,10 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface StreamCollectionCreationForm {
-  restricted_members: FieldOption[] | null
-  stream_public: boolean | null
-  name: string | null
-  description: string | null
+  restricted_members: FieldOption[] | null;
+  stream_public: boolean | null;
+  name: string | null;
+  description: string | null;
 }
 
 export const streamCollectionMutationFieldPatch = graphql`

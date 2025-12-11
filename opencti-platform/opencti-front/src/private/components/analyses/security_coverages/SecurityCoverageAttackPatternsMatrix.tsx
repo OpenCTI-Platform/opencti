@@ -5,10 +5,10 @@ import { SecurityCoverageAttackPatternsMatrix_securityCoverage$data } from './__
 import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 interface SecurityCoverageAttackPatternsMatrixProps {
-  securityCoverage: SecurityCoverageAttackPatternsMatrix_securityCoverage$data
-  searchTerm: string
-  selectedKillChain: string
-  relay: RelayRefetchProp
+  securityCoverage: SecurityCoverageAttackPatternsMatrix_securityCoverage$data;
+  searchTerm: string;
+  selectedKillChain: string;
+  relay: RelayRefetchProp;
 }
 
 const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityCoverageAttackPatternsMatrixProps> = ({
@@ -24,7 +24,7 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
     .filter((node) => node !== null && node !== undefined)
     .map((node) => node.to)) as unknown as Parameters<typeof AttackPatternsMatrix>[0]['attackPatterns'];
 
-  const attackPatternsCoverageMap = new Map<string, ReadonlyArray<{ readonly coverage_name: string, readonly coverage_score: number }>>();
+  const attackPatternsCoverageMap = new Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>();
   (securityCoverage.attackPatterns?.edges ?? []).forEach((edge) => {
     const { node } = edge;
     if (node && node.to?.id) {

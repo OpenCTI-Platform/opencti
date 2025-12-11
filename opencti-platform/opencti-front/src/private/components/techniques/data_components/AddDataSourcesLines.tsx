@@ -49,8 +49,8 @@ const addDataSourcesLinesFragment = graphql`
 `;
 
 interface AddDataSourcesLinesContainerProps {
-  dataComponentId: string
-  queryRef: PreloadedQuery<AddDataSourcesLinesQuery>
+  dataComponentId: string;
+  queryRef: PreloadedQuery<AddDataSourcesLinesQuery>;
 }
 
 const AddDataSourcesLines: FunctionComponent<
@@ -68,9 +68,9 @@ const AddDataSourcesLines: FunctionComponent<
   const [commit] = useApiMutation(addDataSourcesLinesMutationAdd);
 
   const addDataSource = (dataSource: {
-    readonly description?: string | null
-    readonly id: string
-    readonly name: string
+    readonly description?: string | null;
+    readonly id: string;
+    readonly name: string;
   }) => commit({
     variables: {
       id: dataComponentId,

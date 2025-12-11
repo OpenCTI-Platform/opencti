@@ -59,8 +59,8 @@ const detailsRedisFragment = graphql`
 `;
 
 interface PirOverviewDetailsProps {
-  data: PirOverviewDetailsFragment$key
-  dataStream: PirOverviewDetailsRedisFragment$key
+  data: PirOverviewDetailsFragment$key;
+  dataStream: PirOverviewDetailsRedisFragment$key;
 }
 
 const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {

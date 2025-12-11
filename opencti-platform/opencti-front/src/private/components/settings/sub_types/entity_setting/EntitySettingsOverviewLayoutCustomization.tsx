@@ -45,7 +45,7 @@ type NonNullableFields<T> = {
 export type EntitySettingsOverviewLayoutCustomizationData = NonNullableFields<Pick<EntitySettingSettings_entitySetting$data, 'id' | 'overview_layout_customization'>>;
 
 interface EntitySettingsOverviewLayoutCustomizationProps {
-  entitySettingsData: EntitySettingsOverviewLayoutCustomizationData
+  entitySettingsData: EntitySettingsOverviewLayoutCustomizationData;
 }
 
 const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverviewLayoutCustomizationProps> = ({

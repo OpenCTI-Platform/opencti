@@ -119,22 +119,22 @@ const toolEditionOverviewFragment = graphql`
 `;
 
 interface ToolEditionOverviewProps {
-  toolRef: ToolEditionOverview_tool$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  toolRef: ToolEditionOverview_tool$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface ToolEditionFormValues {
-  name?: string
-  description?: string
-  tool_version?: string
-  createdBy?: FieldOption
-  killChainPhases?: FieldOption[]
-  objectMarking?: FieldOption[]
-  x_opencti_workflow_id?: FieldOption
-  references: FieldOption[]
-  message?: string
+  name?: string;
+  description?: string;
+  tool_version?: string;
+  createdBy?: FieldOption;
+  killChainPhases?: FieldOption[];
+  objectMarking?: FieldOption[];
+  x_opencti_workflow_id?: FieldOption;
+  references: FieldOption[];
+  message?: string;
 }
 
 const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({

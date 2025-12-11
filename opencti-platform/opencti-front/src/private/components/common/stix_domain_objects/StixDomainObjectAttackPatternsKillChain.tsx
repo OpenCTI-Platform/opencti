@@ -85,24 +85,24 @@ const stixDomainObjectAttackPatternsKillChainOverlapQuery = graphql`
 `;
 
 interface StixDomainObjectAttackPatternsKillChainProps {
-  data: StixDomainObjectAttackPatternsKillChainContainer_data$data
-  stixDomainObjectId: string
-  handleSearch: (value: string) => void
-  helpers: UseLocalStorageHelpers
-  filters?: FilterGroup
-  handleChangeView: (value: string) => void
-  searchTerm: string
-  currentView?: string
-  paginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables
-  openExports?: boolean
-  handleToggleExports?: () => void
-  exportContext: { entity_type: string }
-  availableFilterKeys: string[]
-  defaultStartTime?: string
-  defaultStopTime?: string
-  storageKey: string
-  killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixQuery>
-  entityType: string
+  data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
+  stixDomainObjectId: string;
+  handleSearch: (value: string) => void;
+  helpers: UseLocalStorageHelpers;
+  filters?: FilterGroup;
+  handleChangeView: (value: string) => void;
+  searchTerm: string;
+  currentView?: string;
+  paginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
+  openExports?: boolean;
+  handleToggleExports?: () => void;
+  exportContext: { entity_type: string };
+  availableFilterKeys: string[];
+  defaultStartTime?: string;
+  defaultStopTime?: string;
+  storageKey: string;
+  killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
+  entityType: string;
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({

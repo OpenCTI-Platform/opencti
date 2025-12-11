@@ -12,9 +12,9 @@ import useHelper from './useHelper';
 import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
 
 type MeUser = {
-  capabilities: RootMe_data$data['capabilities']
-  capabilitiesInDraft?: RootMe_data$data['capabilitiesInDraft']
-  draftContext?: Partial<DraftContext>
+  capabilities: RootMe_data$data['capabilities'];
+  capabilitiesInDraft?: RootMe_data$data['capabilitiesInDraft'];
+  draftContext?: Partial<DraftContext>;
 };
 
 describe('useGranted', () => {

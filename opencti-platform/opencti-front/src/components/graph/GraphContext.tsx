@@ -16,36 +16,36 @@ type GraphRef3D = graph3d.ForceGraphMethods<graph3d.NodeObject<GraphNode>, graph
 
 interface GraphContextValue {
   // --- DOM references
-  graphRef2D: MutableRefObject<GraphRef2D | undefined>
-  graphRef3D: MutableRefObject<GraphRef3D | undefined>
+  graphRef2D: MutableRefObject<GraphRef2D | undefined>;
+  graphRef3D: MutableRefObject<GraphRef3D | undefined>;
   // --- data of the graph pass as props
-  graphData: LibGraphProps['graphData']
-  setGraphData: Setter<LibGraphProps['graphData']>
+  graphData: LibGraphProps['graphData'];
+  setGraphData: Setter<LibGraphProps['graphData']>;
   // --- data of the graph pass as props
-  rawObjects: ObjectToParse[]
-  setRawObjects: Setter<ObjectToParse[]>
-  rawPositions: OctiGraphPositions
-  setRawPositions: Setter<OctiGraphPositions>
+  rawObjects: ObjectToParse[];
+  setRawObjects: Setter<ObjectToParse[]>;
+  rawPositions: OctiGraphPositions;
+  setRawPositions: Setter<OctiGraphPositions>;
   // --- graph state (config saved in URL and local storage)
-  graphState: GraphState
-  setGraphState: Setter<GraphState>
+  graphState: GraphState;
+  setGraphState: Setter<GraphState>;
   // --- utils data derived from raw data.
-  stixCoreObjectTypes: string[]
-  markingDefinitions: { id: string, definition: string }[]
-  creators: { id: string, name: string }[]
-  timeRange: GraphTimeRange
+  stixCoreObjectTypes: string[];
+  markingDefinitions: { id: string; definition: string }[];
+  creators: { id: string; name: string }[];
+  timeRange: GraphTimeRange;
   // --- misc
-  context?: string
+  context?: string;
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
 
 interface GraphProviderProps {
-  children: ReactNode
-  objects: ObjectToParse[]
-  localStorageKey?: string
-  context?: string
-  positions?: OctiGraphPositions
+  children: ReactNode;
+  objects: ObjectToParse[];
+  localStorageKey?: string;
+  context?: string;
+  positions?: OctiGraphPositions;
 }
 
 export const GraphProvider = ({

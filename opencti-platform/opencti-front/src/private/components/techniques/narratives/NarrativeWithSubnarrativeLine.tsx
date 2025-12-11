@@ -16,9 +16,9 @@ import { emptyFilled } from '../../../../utils/String';
 import { narrativeLineFragment } from './NarrativeLine';
 
 interface NarrativeWithSubnarrativeLineProps {
-  isSubNarrative?: boolean
-  subNarratives?: SubNarrativeNode[]
-  node: SubNarrativeNode | NarrativeLine_node$key
+  isSubNarrative?: boolean;
+  subNarratives?: SubNarrativeNode[];
+  node: SubNarrativeNode | NarrativeLine_node$key;
 }
 
 const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrativeLineProps> = ({ node, isSubNarrative }) => {

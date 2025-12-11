@@ -113,7 +113,7 @@ const RootDataComponent = () => {
                         <DataComponentEdition dataComponentId={dataComponent.id} />
                       </Security>
                     )}
-                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                         <DataComponentDeletion id={dataComponent.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>

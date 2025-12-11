@@ -96,9 +96,9 @@ export const CampaignCardFragment = graphql`
 `;
 
 interface CampaignCardProps {
-  node: CampaignCard_node$key
-  onLabelClick: HandleAddFilter
-  bookmarksIds?: string[]
+  node: CampaignCard_node$key;
+  onLabelClick: HandleAddFilter;
+  bookmarksIds?: string[];
 }
 
 const CampaignCard: FunctionComponent<CampaignCardProps> = ({

@@ -36,10 +36,10 @@ const ingestionTaxiiPopoverResetStateMutation = graphql`
 `;
 
 interface IngestionTaxiiPopoverProps {
-  ingestionTaxiiId: string
-  running?: boolean | null
-  paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables | null | undefined
-  setStateValue: Dispatch<string>
+  ingestionTaxiiId: string;
+  running?: boolean | null;
+  paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables | null | undefined;
+  setStateValue: Dispatch<string>;
 }
 
 const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({

@@ -75,7 +75,7 @@ const notSpecifiedLevel = {
 const defaultScale: ScaleConfig = { ...admiraltyScale };
 
 export const customScaleName = 'Custom';
-export const allScales: { name: string, scale: ScaleConfig, json: string }[] = [
+export const allScales: { name: string; scale: ScaleConfig; json: string }[] = [
   { name: 'Admiralty', scale: clone(admiraltyScale), json: JSON.stringify(admiraltyScale) },
   { name: 'Objective', scale: clone(objectiveScale), json: JSON.stringify(objectiveScale) },
   { name: 'Standard', scale: clone(standardScale), json: JSON.stringify(standardScale) },
@@ -119,7 +119,7 @@ const useScale = (
 export const buildScaleFilters = (
   entityType: string | null,
   attributeName: string,
-): { label: string, value: string, color: string }[] => {
+): { label: string; value: string; color: string }[] => {
   const scale = useScale(entityType, attributeName);
   const minLevel = { label: scale.min.label, value: scale.min.value.toString(), color: scale.min.color };
   const tickLevels = scale.ticks.map((tick) => (

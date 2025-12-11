@@ -42,7 +42,7 @@ export const alertingPopoverDeletionMutation = graphql`
   }
 `;
 
-const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$data, paginationOptions?: AlertingPaginationQuery$variables }) => {
+const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$data; paginationOptions?: AlertingPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [queryRef, loadQuery] = useQueryLoader<AlertEditionQuery>(alertEditionQuery);

@@ -74,8 +74,8 @@ const securityCoverageKillChainPhasesFragment = graphql`
 `;
 
 interface SecurityCoverageAttackPatternsProps {
-  data: SecurityCoverageAttackPatternsFragment$key
-  dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key
+  data: SecurityCoverageAttackPatternsFragment$key;
+  dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
 }
 
 const SecurityCoverageAttackPatterns = ({

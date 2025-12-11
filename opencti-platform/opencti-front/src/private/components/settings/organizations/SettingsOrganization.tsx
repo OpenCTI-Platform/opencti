@@ -119,7 +119,7 @@ const settingsOrganizationFragment = graphql`
 const SettingsOrganization = ({
   organizationData,
 }: {
-  organizationData: SettingsOrganization_organization$key
+  organizationData: SettingsOrganization_organization$key;
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

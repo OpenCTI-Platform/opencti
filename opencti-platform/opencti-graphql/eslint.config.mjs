@@ -74,27 +74,7 @@ export default defineConfig([
     },
 
     rules: {
-      // '@stylistic/semi-spacing': 'off',
-      // '@stylistic/curly-spacing': 'off',
-      // '@stylistic/key-spacing': 'off',
-      // '@stylistic/comma-style': 'off',
-      // '@stylistic/eol-last': 'off',
-      // '@stylistic/no-mixed-operators': 'off',
-      // '@stylistic/type-annotation-spacing': 'off',
-      // '@stylistic/type-generic-spacing': 'off',
-      // '@stylistic/no-trailing-spaces': 'off',
-      // '@stylistic/indent': 'off',
-      // '@stylistic/lines-between-class-members': 'off',
-      // '@stylistic/no-extra-parens': 'off',
-      // '@stylistic/operator-linebreak': 'off',
-      // '@stylistic/comma-dangle': 'off',
-      // '@stylistic/indent-binary-ops': 'off',
-      // '@stylistic/spaced-comment': 'off',
-      // '@stylistic/max-statements-per-line': 'off',
       '@stylistic/multiline-ternary': 'off',
-
-      // =========
-
       '@stylistic/brace-style': ['error', '1tbs'],
       '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/space-before-blocks': 'error',

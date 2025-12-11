@@ -72,21 +72,21 @@ const liveTriggerValidation = (t: (message: string) => string) => Yup.object().s
 export const instanceTriggerDescription = 'When subscribing to an object, it notifies you about modifications of this object, containers (reports, groupings, etc.) about this object as well as creation and deletion of relationships related to this object.';
 
 interface TriggerLiveAddInput {
-  name: string
-  description: string
-  event_types: { value: TriggerEventType, label: string }[]
-  notifiers: { value: string, label: string }[]
-  recipients: string[]
+  name: string;
+  description: string;
+  event_types: { value: TriggerEventType; label: string }[];
+  notifiers: { value: string; label: string }[];
+  recipients: string[];
 }
 
 interface TriggerLiveCreationProps {
-  contextual?: boolean
-  open?: boolean
-  handleClose?: () => void
-  inputValue?: string
-  recipientId?: string
-  paginationOptions?: TriggersLinesPaginationQuery$variables
-  creationCallback?: (data: TriggerLiveCreationKnowledgeMutation$data) => void
+  contextual?: boolean;
+  open?: boolean;
+  handleClose?: () => void;
+  inputValue?: string;
+  recipientId?: string;
+  paginationOptions?: TriggersLinesPaginationQuery$variables;
+  creationCallback?: (data: TriggerLiveCreationKnowledgeMutation$data) => void;
 }
 
 const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
@@ -107,14 +107,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const [filters, helpers] = useFiltersState();
   const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
-  const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
+  const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
   ];
   const instanceEventTypesOptions: {
-    value: TriggerEventType
-    label: string
+    value: TriggerEventType;
+    label: string;
   }[] = [
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
@@ -128,7 +128,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const onChangeInstanceTrigger = (
     setFieldValue: (
       key: string,
-      value: { value: string, label: string }[],
+      value: { value: string; label: string }[],
     ) => void,
   ) => {
     const newInstanceTriggerValue = !instance_trigger;
@@ -214,7 +214,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           }
           renderOption={(
             props: React.HTMLAttributes<HTMLLIElement>,
-            option: { value: TriggerEventType, label: string },
+            option: { value: TriggerEventType; label: string },
           ) => (
             <MenuItem value={option.value} {...props}>
               <Checkbox

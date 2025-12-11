@@ -16,7 +16,7 @@ export const externalReferenceEditionQuery = graphql`
 `;
 
 interface ExternalReferenceEditionProps {
-  externalReferenceId: string
+  externalReferenceId: string;
 }
 
 const ExternalReferenceEdition: FunctionComponent<
@@ -45,7 +45,7 @@ const ExternalReferenceEdition: FunctionComponent<
       render={({
         props,
       }: {
-        props: ExternalReferenceEditionContainerQuery$data
+        props: ExternalReferenceEditionContainerQuery$data;
       }) => {
         if (props && props.externalReference) {
           return (

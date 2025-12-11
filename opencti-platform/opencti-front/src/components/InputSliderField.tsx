@@ -7,22 +7,22 @@ import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
 
 interface InputSliderFieldProps {
-  label: string
-  variant?: string
-  onSubmit?: (name: string, value: string | number | number[]) => void
-  onFocus?: (name: string, value: string) => void
+  label: string;
+  variant?: string;
+  onSubmit?: (name: string, value: string | number | number[]) => void;
+  onFocus?: (name: string, value: string) => void;
   editContext?:
     | readonly ({
-      readonly focusOn: string | null
-      readonly name: string
+      readonly focusOn: string | null;
+      readonly name: string;
     } | null)[]
-    | null
-  containerStyle?: Record<string, string | number>
-  entityType: string
-  attributeName: string
-  disabled?: boolean
-  maxLimit?: number
-  helperText?: string
+    | null;
+  containerStyle?: Record<string, string | number>;
+  entityType: string;
+  attributeName: string;
+  disabled?: boolean;
+  maxLimit?: number;
+  helperText?: string;
 }
 
 const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = ({

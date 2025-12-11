@@ -22,8 +22,8 @@ const savedFilterButtonEditMutation = graphql`
 `;
 
 type SavedFilterButtonProps = {
-  currentSavedFilter?: SavedFiltersSelectionData
-  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void
+  currentSavedFilter?: SavedFiltersSelectionData;
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
 const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilterButtonProps) => {

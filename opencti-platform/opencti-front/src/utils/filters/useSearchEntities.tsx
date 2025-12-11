@@ -273,13 +273,13 @@ const useSearchEntities = ({
   searchScope,
   setInputValues,
 }: {
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
-  searchContext: FilterSearchContext
-  searchScope: Record<string, string[]>
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  searchContext: FilterSearchContext;
+  searchScope: Record<string, string[]>;
   setInputValues: (
-    value: { key: string, values: string[], operator?: string }[],
-  ) => void
+    value: { key: string; values: string[]; operator?: string }[],
+  ) => void;
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t_i18n } = useFormatter();
@@ -336,8 +336,8 @@ const useSearchEntities = ({
 
   const searchEntities = (
     filterKey: string,
-    cacheEntities: Record<string, { label: string, value: string | null, type: string }[]>,
-    setCacheEntities: Dispatch<Record<string, { label: string, value: string | null, type: string }[]>>,
+    cacheEntities: Record<string, { label: string; value: string | null; type: string }[]>,
+    setCacheEntities: Dispatch<Record<string, { label: string; value: string | null; type: string }[]>>,
     event: BaseSyntheticEvent,
     isSubKey?: boolean,
   ) => {
@@ -905,7 +905,7 @@ const useSearchEntities = ({
           );
           break;
         case 'relationship_type': {
-          let relationshipsTypes: { label: string, value: string, type: string }[] = [];
+          let relationshipsTypes: { label: string; value: string; type: string }[] = [];
           if (availableRelationshipTypes && !isSubKey) { // if available RelationshipTypes is specified, we display only the specified relationship types
             relationshipsTypes = availableRelationshipTypes
               .map((n) => ({

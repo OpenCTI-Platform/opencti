@@ -37,7 +37,7 @@ export const pictureManagementViewerFragment = graphql`
 `;
 
 interface PictureManagementViewerProps {
-  entity: PictureManagementViewer_entity$key
+  entity: PictureManagementViewer_entity$key;
 }
 
 const PictureManagementViewer: FunctionComponent<

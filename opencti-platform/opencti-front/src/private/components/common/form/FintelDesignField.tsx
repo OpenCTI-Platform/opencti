@@ -35,25 +35,25 @@ const fintelDesignFieldQuery = graphql`
 `;
 
 export interface FintelDesign {
-  file_id: string | null | undefined
-  gradiantFromColor: string | null | undefined
-  gradiantToColor: string | null | undefined
-  textColor: string | null | undefined
+  file_id: string | null | undefined;
+  gradiantFromColor: string | null | undefined;
+  gradiantToColor: string | null | undefined;
+  textColor: string | null | undefined;
 }
 
 export type FintelDesignFieldOption = {
-  label: string
-  value: FintelDesign
+  label: string;
+  value: FintelDesign;
 };
 
 interface FintelDesignFieldComponentProps {
-  label?: string
-  name: string
-  style?: React.CSSProperties
-  helperText?: string
-  onChange?: (name: string, value: FieldOption[]) => void
-  required?: boolean
-  queryRef: PreloadedQuery<FintelDesignFieldQuery>
+  label?: string;
+  name: string;
+  style?: React.CSSProperties;
+  helperText?: string;
+  onChange?: (name: string, value: FieldOption[]) => void;
+  required?: boolean;
+  queryRef: PreloadedQuery<FintelDesignFieldQuery>;
 }
 
 const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentProps> = ({

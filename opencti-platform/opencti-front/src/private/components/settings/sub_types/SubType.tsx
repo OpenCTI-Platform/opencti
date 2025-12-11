@@ -57,7 +57,7 @@ export const subTypeQuery = graphql`
 `;
 
 interface SubTypeProps {
-  queryRef: PreloadedQuery<SubTypeQuery>
+  queryRef: PreloadedQuery<SubTypeQuery>;
 }
 
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {

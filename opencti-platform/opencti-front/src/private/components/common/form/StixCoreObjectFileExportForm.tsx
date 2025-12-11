@@ -38,44 +38,44 @@ import FintelDesignField, { FintelDesignFieldOption } from './FintelDesignField'
 
 export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
   fileMarkings: {
-    id: string
-    name: string
-  }[]
+    id: string;
+    name: string;
+  }[];
 };
 
 export type ConnectorOption = FieldOption & {
-  connectorScope: readonly string[]
+  connectorScope: readonly string[];
 };
 
 export interface StixCoreObjectFileExportFormInputs {
-  connector: ConnectorOption | null
-  format: string
-  type: string | null
-  fileToExport: FileOption | null
-  template: FieldOption | null
-  exportFileName: string | null
-  contentMaxMarkings: FieldOption[]
-  fileMarkings: FieldOption[]
-  fintelDesign: FintelDesignFieldOption | null
+  connector: ConnectorOption | null;
+  format: string;
+  type: string | null;
+  fileToExport: FileOption | null;
+  template: FieldOption | null;
+  exportFileName: string | null;
+  contentMaxMarkings: FieldOption[];
+  fileMarkings: FieldOption[];
+  fintelDesign: FintelDesignFieldOption | null;
 }
 
 export interface StixCoreObjectFileExportFormProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmit: FormikConfig<StixCoreObjectFileExportFormInputs>['onSubmit']
-  connectors: ConnectorOption[]
-  templates?: FieldOption[]
-  fileOptions?: FileOption[]
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: FormikConfig<StixCoreObjectFileExportFormInputs>['onSubmit'];
+  connectors: ConnectorOption[];
+  templates?: FieldOption[];
+  fileOptions?: FileOption[];
   defaultValues?: {
-    connector: string
-    format: string
-    template?: string
-    fileToExport?: string
-    fintelDesign?: FintelDesignFieldOption
-  }
-  scoName?: string
-  handleOpenAskAi: () => void
-  instanceType?: string | null | undefined
+    connector: string;
+    format: string;
+    template?: string;
+    fileToExport?: string;
+    fintelDesign?: FintelDesignFieldOption;
+  };
+  scoName?: string;
+  handleOpenAskAi: () => void;
+  instanceType?: string | null | undefined;
 }
 
 export const renderIcon = (key: string) => {

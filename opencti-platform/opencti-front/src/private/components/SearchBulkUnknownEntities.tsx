@@ -24,9 +24,9 @@ const searchBulkUnknownEntitiesQuery = graphql`
 `;
 
 interface SearchBulkUnknownEntitiesContentProps {
-  queryRef: PreloadedQuery<SearchBulkUnknownEntitiesQuery>
-  setNumberOfEntities: (n: number) => void
-  isDisplayed: boolean
+  queryRef: PreloadedQuery<SearchBulkUnknownEntitiesQuery>;
+  setNumberOfEntities: (n: number) => void;
+  isDisplayed: boolean;
 }
 
 const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesContentProps) => {
@@ -70,9 +70,9 @@ const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDis
 };
 
 interface SearchBulkUnknownEntitiesProps {
-  values: string[]
-  setNumberOfEntities: (n: number) => void
-  isDisplayed: boolean
+  values: string[];
+  setNumberOfEntities: (n: number) => void;
+  isDisplayed: boolean;
 }
 
 const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesProps) => {

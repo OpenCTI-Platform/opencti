@@ -130,18 +130,18 @@ const feedbackMutationRelationDelete = graphql`
 `;
 
 interface FeedbackEditionOverviewProps {
-  feedbackRef: FeedbackEditionOverview_case$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  feedbackRef: FeedbackEditionOverview_case$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface FeedbackEditionFormValues {
-  message?: string
-  references?: FieldOption[]
-  createdBy?: FieldOption
-  x_opencti_workflow_id: FieldOption
-  objectMarking?: FieldOption[]
+  message?: string;
+  references?: FieldOption[];
+  createdBy?: FieldOption;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
 }
 
 const FEEDBACK_TYPE = 'Feedback';

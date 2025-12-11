@@ -34,7 +34,7 @@ const userFragment = graphql`
 `;
 
 interface UserHistoryTabProps {
-  data: UserHistoryTab_user$key
+  data: UserHistoryTab_user$key;
 }
 
 const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({

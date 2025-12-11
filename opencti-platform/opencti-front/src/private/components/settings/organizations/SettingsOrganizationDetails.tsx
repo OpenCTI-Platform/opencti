@@ -31,7 +31,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface SettingsOrganizationDetailsProps {
-  settingsOrganization: SettingsOrganization_organization$data
+  settingsOrganization: SettingsOrganization_organization$data;
 }
 
 const SettingsOrganizationDetails: FunctionComponent<

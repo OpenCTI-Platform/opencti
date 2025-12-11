@@ -18,8 +18,8 @@ export const reportKnowledgeCorrelationQuery = graphql`
 `;
 
 interface ReportKnowledgeCorrelationProps {
-  data: NonNullable<ReportKnowledgeCorrelationQuery$data['report']>
-  id: string
+  data: NonNullable<ReportKnowledgeCorrelationQuery$data['report']>;
+  id: string;
 }
 
 const ReportKnowledgeCorrelation = ({

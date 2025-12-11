@@ -24,12 +24,12 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 
 interface LaunchImportDialogProps {
-  file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data
-  open: boolean
-  onClose: () => void
-  onSuccess?: () => void
-  isDraftContext?: boolean
-  queryRef: PreloadedQuery<ImportWorksDrawerQuery>
+  file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data;
+  open: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+  isDraftContext?: boolean;
+  queryRef: PreloadedQuery<ImportWorksDrawerQuery>;
 }
 
 type ConnectorType = NonNullable<ImportWorksDrawerQuery$data['connectorsForImport']>[number];
@@ -70,13 +70,13 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
 
   const onSubmitImport = (
     values: {
-      connector_id: string
-      configuration: string
-      objectMarking: FieldOption[]
-      validation_mode: string
-      authorizedMembers?: AuthorizedMembersFieldValue
+      connector_id: string;
+      configuration: string;
+      objectMarking: FieldOption[];
+      validation_mode: string;
+      authorizedMembers?: AuthorizedMembersFieldValue;
     },
-    { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void, resetForm: () => void },
+    { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void; resetForm: () => void },
   ) => {
     const { connector_id, configuration, objectMarking, validation_mode, authorizedMembers } = values;
     let config = configuration;

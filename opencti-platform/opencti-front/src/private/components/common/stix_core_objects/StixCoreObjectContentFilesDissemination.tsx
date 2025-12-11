@@ -20,17 +20,17 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 
 interface StixCoreObjectContentFilesDisseminationProps {
-  entityId: string
-  fileId: string
-  fileName: string
-  fileType: string
-  onClose: () => void
+  entityId: string;
+  fileId: string;
+  fileName: string;
+  fileType: string;
+  onClose: () => void;
 }
 
 interface DisseminationInput {
-  disseminationListId: string
-  emailObject: string
-  emailBody: string
+  disseminationListId: string;
+  emailObject: string;
+  emailBody: string;
 }
 
 export const DisseminationListSendInputMutation = graphql`

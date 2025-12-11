@@ -25,8 +25,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface VocabularyPopoverProps {
-  vocab: useVocabularyCategory_Vocabularynode$data
-  paginationOptions: VocabulariesLinesPaginationQuery$variables
+  vocab: useVocabularyCategory_Vocabularynode$data;
+  paginationOptions: VocabulariesLinesPaginationQuery$variables;
 }
 
 const VocabularyPopoverDeletionMutation = graphql`

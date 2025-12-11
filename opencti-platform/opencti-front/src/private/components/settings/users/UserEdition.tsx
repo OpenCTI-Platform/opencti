@@ -101,9 +101,9 @@ const UserEditionFragment = graphql`
 `;
 
 interface UserEditionDrawerProps {
-  handleClose?: () => void
-  userRef: RootUserEditionQuery$data['user']
-  open?: boolean
+  handleClose?: () => void;
+  userRef: RootUserEditionQuery$data['user'];
+  open?: boolean;
 }
 
 const UpdateUserControlledDial = (props: DrawerControlledDialProps) => (
@@ -180,9 +180,9 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
 };
 
 interface UserEditionProps {
-  userEditionData?: RootUserEditionQuery$data
-  handleClose?: () => void
-  open?: boolean
+  userEditionData?: RootUserEditionQuery$data;
+  handleClose?: () => void;
+  open?: boolean;
 }
 
 const UserEdition: FunctionComponent<UserEditionProps> = ({

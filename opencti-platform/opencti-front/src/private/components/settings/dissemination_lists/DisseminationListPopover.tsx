@@ -21,8 +21,8 @@ export const disseminationListPopoverDeletionMutation = graphql`
 `;
 
 interface DisseminationListPopoverProps {
-  data: DisseminationListsLine_node$data
-  paginationOptions?: DisseminationListsLinesPaginationQuery$variables
+  data: DisseminationListsLine_node$data;
+  paginationOptions?: DisseminationListsLinesPaginationQuery$variables;
 }
 
 const DisseminationListPopover: FunctionComponent<DisseminationListPopoverProps> = ({

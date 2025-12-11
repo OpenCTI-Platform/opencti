@@ -64,15 +64,15 @@ const itemsFromGroup = (values: string[]) => {
 };
 
 interface EntitySettingHidden {
-  id: string
-  target_type: string
-  hidden: boolean
-  group: string
+  id: string;
+  target_type: string;
+  hidden: boolean;
+  group: string;
 }
 
 interface HiddenTypesFieldProps {
-  initialValues?: string[]
-  handleChange?: (newValues: string[]) => void
+  initialValues?: string[];
+  handleChange?: (newValues: string[]) => void;
 }
 
 const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({

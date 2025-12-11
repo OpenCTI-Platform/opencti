@@ -62,8 +62,8 @@ const publicStixCoreObjectsWordCloudQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsWordCloudComponentProps {
-  queryRef: PreloadedQuery<PublicStixCoreObjectsWordCloudQuery>
-  dataSelection: Widget['dataSelection']
+  queryRef: PreloadedQuery<PublicStixCoreObjectsWordCloudQuery>;
+  dataSelection: Widget['dataSelection'];
 }
 
 const PublicStixCoreObjectsWordCloudComponent = ({

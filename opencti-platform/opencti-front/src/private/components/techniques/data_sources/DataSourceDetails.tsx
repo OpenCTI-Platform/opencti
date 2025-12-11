@@ -28,7 +28,7 @@ const DataSourceDetailsFragment = graphql`
 `;
 
 interface DataSourceDetailsProps {
-  dataSource: DataSourceDetails_dataSource$key
+  dataSource: DataSourceDetails_dataSource$key;
 }
 
 const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({

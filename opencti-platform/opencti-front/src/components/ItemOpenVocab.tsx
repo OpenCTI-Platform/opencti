@@ -49,11 +49,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface ItemOpenVocabProps {
-  type: string
-  value?: string | null
-  small?: boolean
-  hideEmpty?: boolean
-  displayMode?: 'chip' | 'span'
+  type: string;
+  value?: string | null;
+  small?: boolean;
+  hideEmpty?: boolean;
+  displayMode?: 'chip' | 'span';
 }
 
 const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({

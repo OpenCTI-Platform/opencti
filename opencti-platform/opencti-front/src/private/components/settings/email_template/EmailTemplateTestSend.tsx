@@ -15,7 +15,7 @@ const emailTemplateTestSendMutation = graphql`
 `;
 
 interface EmailTemplateTestSendProps {
-  templateId: string
+  templateId: string;
 }
 
 const EmailTemplateTestSend = ({ templateId }: EmailTemplateTestSendProps) => {

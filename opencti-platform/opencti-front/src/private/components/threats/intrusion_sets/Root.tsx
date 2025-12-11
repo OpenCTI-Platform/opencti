@@ -92,8 +92,8 @@ const intrusionSetQuery = graphql`
 `;
 
 type RootIntrusionSetProps = {
-  intrusionSetId: string
-  queryRef: PreloadedQuery<RootIntrusionSetQuery>
+  intrusionSetId: string;
+  queryRef: PreloadedQuery<RootIntrusionSetQuery>;
 };
 
 const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) => {
@@ -167,7 +167,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <IntrusionSetDeletion id={intrusionSet.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

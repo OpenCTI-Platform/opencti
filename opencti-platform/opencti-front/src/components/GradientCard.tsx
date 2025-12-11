@@ -30,7 +30,7 @@ const useGradient = (gradientVariant: GradientVariant) => {
   return { startColor, endColor };
 };
 
-const createGradientStyles = ({ startColor, endColor, reverse = false }: { startColor?: string, endColor?: string, reverse?: boolean }) => {
+const createGradientStyles = ({ startColor, endColor, reverse = false }: { startColor?: string; endColor?: string; reverse?: boolean }) => {
   const color1 = reverse ? endColor : startColor;
   const color2 = reverse ? startColor : endColor;
   const gradient = `linear-gradient(99.95deg, ${color1} 0%, ${color2} 100%)`;
@@ -52,8 +52,8 @@ const createGradientStyles = ({ startColor, endColor, reverse = false }: { start
 };
 
 interface GradientCardProps extends Omit<BoxProps, 'children'> {
-  gradientVariant?: GradientVariant
-  children?: React.ReactNode
+  gradientVariant?: GradientVariant;
+  children?: React.ReactNode;
 }
 
 const GradientCardRoot = ({
@@ -108,7 +108,7 @@ const GradientCardRoot = ({
 *
 ** */
 interface GradientTextProps extends TypographyProps {
-  gradientVariant?: GradientVariant
+  gradientVariant?: GradientVariant;
 }
 
 const GradientText = ({ gradientVariant = 'default', sx, ...props }: GradientTextProps) => {
@@ -133,9 +133,9 @@ const GradientText = ({ gradientVariant = 'default', sx, ...props }: GradientTex
 *
 ** */
 interface GradientIconProps {
-  icon: OverridableComponent<SvgIconTypeMap> | React.ComponentType<SvgIconProps>
-  size?: 'small' | 'medium' | 'large'
-  sx?: object
+  icon: OverridableComponent<SvgIconTypeMap> | React.ComponentType<SvgIconProps>;
+  size?: 'small' | 'medium' | 'large';
+  sx?: object;
 }
 
 const GradientIcon = ({ icon: IconComponent, sx }: GradientIconProps) => {

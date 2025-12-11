@@ -126,7 +126,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
             <CaseIncidentEdition caseId={caseData.id} />
           </Security>
         )}
-        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <CaseIncidentDeletion id={caseData.id} isOpen={isOpen} handleClose={onClose} />
           </Security>

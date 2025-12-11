@@ -13,7 +13,7 @@ const editorFragment = graphql`
 `;
 
 interface FintelTemplateContentEditorProps {
-  data: FintelTemplateContentEditor_template$key
+  data: FintelTemplateContentEditor_template$key;
 }
 
 const FintelTemplateContentEditor = ({

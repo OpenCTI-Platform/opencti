@@ -102,48 +102,48 @@ export const ingestionCsvCreationUsersQuery = graphql`
 `;
 
 interface IngestionCsvCreationProps {
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined
-  handleClose?: () => void
-  ingestionCsvData?: IngestionCsvEditionFragment_ingestionCsv$data | null
-  triggerButton?: boolean
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
+  handleClose?: () => void;
+  ingestionCsvData?: IngestionCsvEditionFragment_ingestionCsv$data | null;
+  triggerButton?: boolean;
   drawerSettings?: {
-    title: string
-    button: string
-  }
+    title: string;
+    button: string;
+  };
 }
 
 interface IngestionCsvCreationContainerProps extends IngestionCsvCreationProps {
-  queryRef?: PreloadedQuery<IngestionCsvEditionContainerQuery>
-  open?: boolean
+  queryRef?: PreloadedQuery<IngestionCsvEditionContainerQuery>;
+  open?: boolean;
 
 }
 
 export interface IngestionCsvAddInput extends BasicUserHandlingValues {
-  name: string
-  message?: string | null
-  references?: ExternalReferencesValues
-  description?: string | null
-  scheduling_period?: string | null
-  uri: string
-  csv_mapper_type?: boolean
-  csv_mapper?: CsvMapperAddInput
-  csv_mapper_id?: string | FieldOption
-  authentication_type: IngestionAuthType | string
-  authentication_value?: string | null
-  ingestion_running?: boolean | null
-  user_id: string | FieldOption
-  automatic_user?: boolean
-  confidence_level?: string
-  username?: string
-  password?: string
-  cert?: string
-  key?: string
-  ca?: string
-  markings: FieldOption[]
+  name: string;
+  message?: string | null;
+  references?: ExternalReferencesValues;
+  description?: string | null;
+  scheduling_period?: string | null;
+  uri: string;
+  csv_mapper_type?: boolean;
+  csv_mapper?: CsvMapperAddInput;
+  csv_mapper_id?: string | FieldOption;
+  authentication_type: IngestionAuthType | string;
+  authentication_value?: string | null;
+  ingestion_running?: boolean | null;
+  user_id: string | FieldOption;
+  automatic_user?: boolean;
+  confidence_level?: string;
+  username?: string;
+  password?: string;
+  cert?: string;
+  key?: string;
+  ca?: string;
+  markings: FieldOption[];
 }
 
 const resolveHasUserChoiceCsvMapper = (option: FieldOption & {
-  representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[]
+  representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[];
 }) => {
   return option.representations.some(
     (representation) => representation.attributes.some(
@@ -184,14 +184,14 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   };
   const onCsvMapperSelection = async (
     option: FieldOption & {
-      representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[]
+      representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[];
     },
     {
       setFieldValue,
       values,
     }: {
-      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>)
-      values: IngestionCsvAddInput
+      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>);
+      values: IngestionCsvAddInput;
     },
   ) => {
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option);

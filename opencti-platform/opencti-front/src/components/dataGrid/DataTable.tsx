@@ -21,15 +21,15 @@ import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
 type DataTableInternalFiltersProps = Pick<DataTableProps,
   | 'contextFilters'
   | 'entityTypes'> & {
-    hideSearch?: boolean
-    hideFilters?: boolean
-    availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
-    availableEntityTypes?: string[]
-    availableRelationshipTypes?: string[]
-    searchContextFinal?: FilterSearchContext
-    additionalHeaderButtons?: ReactNode[]
-    currentView?: string
-    exportContext?: { entity_type: string, entity_id?: string }
+    hideSearch?: boolean;
+    hideFilters?: boolean;
+    availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes'];
+    availableEntityTypes?: string[];
+    availableRelationshipTypes?: string[];
+    searchContextFinal?: FilterSearchContext;
+    additionalHeaderButtons?: ReactNode[];
+    currentView?: string;
+    exportContext?: { entity_type: string; entity_id?: string };
   };
 
 const DataTableInternalFilters = ({
@@ -115,9 +115,9 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
   | 'markAsReadEnabled'
   | 'entityTypes'
 > & {
-  taskScope?: string
-  globalSearch?: string
-  displayEditButtons?: boolean
+  taskScope?: string;
+  globalSearch?: string;
+  displayEditButtons?: boolean;
 };
 
 const DataTableInternalToolbar = ({
@@ -198,11 +198,11 @@ type OCTIDataTableProps = Pick<DataTableProps,
   | 'selectOnLineClick'
   | 'createButton'
   | 'entityTypes'> & {
-    lineFragment: GraphQLTaggedNode
-    preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>
-    exportContext?: { entity_type: string, entity_id?: string }
-    globalSearch?: string
-    createButton?: ReactNode
+    lineFragment: GraphQLTaggedNode;
+    preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>;
+    exportContext?: { entity_type: string; entity_id?: string };
+    globalSearch?: string;
+    createButton?: ReactNode;
   } & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
 
 const DataTable = (props: OCTIDataTableProps) => {

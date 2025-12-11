@@ -23,10 +23,10 @@ export const reportKnowledgeGraphQuery = graphql`
 `;
 
 interface ReportKnowledgeGraphProps {
-  data: NonNullable<ReportKnowledgeGraphQuery$data['report']>
-  id: string
-  mode: string
-  enableReferences: boolean
+  data: NonNullable<ReportKnowledgeGraphQuery$data['report']>;
+  id: string;
+  mode: string;
+  enableReferences: boolean;
 }
 
 const ReportKnowledgeGraph = ({

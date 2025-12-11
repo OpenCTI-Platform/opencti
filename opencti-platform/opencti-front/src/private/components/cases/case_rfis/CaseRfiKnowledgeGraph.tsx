@@ -23,10 +23,10 @@ export const caseRfiKnowledgeGraphQuery = graphql`
 `;
 
 interface CaseRfiKnowledgeGraphProps {
-  data: NonNullable<CaseRfiKnowledgeGraphQuery$data['caseRfi']>
-  id: string
-  mode: string
-  enableReferences: boolean
+  data: NonNullable<CaseRfiKnowledgeGraphQuery$data['caseRfi']>;
+  id: string;
+  mode: string;
+  enableReferences: boolean;
 }
 
 const CaseRfiKnowledgeGraph = ({

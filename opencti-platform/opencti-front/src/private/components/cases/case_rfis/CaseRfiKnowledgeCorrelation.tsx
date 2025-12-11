@@ -18,8 +18,8 @@ export const caseRfiKnowledgeCorrelationQuery = graphql`
 `;
 
 interface CaseRfiKnowledgeCorrelationProps {
-  data: NonNullable<CaseRfiKnowledgeCorrelationQuery$data['caseRfi']>
-  id: string
+  data: NonNullable<CaseRfiKnowledgeCorrelationQuery$data['caseRfi']>;
+  id: string;
 }
 
 const CaseRfiKnowledgeCorrelation = ({

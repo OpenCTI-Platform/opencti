@@ -76,8 +76,8 @@ const groupMutationRelationDelete = graphql`
 `;
 
 interface GroupEditionOverviewComponentProps {
-  group: GroupEditionOverview_group$data
-  context?: readonly (GenericContext | null)[] | null
+  group: GroupEditionOverview_group$data;
+  context?: readonly (GenericContext | null)[] | null;
 
 }
 const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {

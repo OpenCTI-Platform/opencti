@@ -11,10 +11,10 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 const nbOfRowsToLoad = 50;
 
 interface IngestionCsvLinesProps {
-  queryRef: PreloadedQuery<IngestionCsvLinesPaginationQuery>
-  dataColumns: DataColumns
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  queryRef: PreloadedQuery<IngestionCsvLinesPaginationQuery>;
+  dataColumns: DataColumns;
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 export const ingestionCsvLinesQuery = graphql`

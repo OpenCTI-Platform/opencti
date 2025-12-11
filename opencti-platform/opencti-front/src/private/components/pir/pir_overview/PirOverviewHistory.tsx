@@ -73,8 +73,8 @@ const pirHistoryFragment = graphql`
 `;
 
 interface PirOverviewHistoryProps {
-  dataHistory: PirOverviewHistoryFragment$key
-  dataPir: PirOverviewHistoryPirFragment$key
+  dataHistory: PirOverviewHistoryFragment$key;
+  dataPir: PirOverviewHistoryPirFragment$key;
 }
 
 const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) => {

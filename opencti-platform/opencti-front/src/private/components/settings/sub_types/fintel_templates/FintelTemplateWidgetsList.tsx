@@ -8,15 +8,15 @@ import type { Widget } from '../../../../../utils/widget/widget';
 import { SELF_ID } from '../../../../../utils/filters/filtersUtils';
 
 export interface FintelTemplateWidget {
-  variable_name: string
-  widget: Widget
+  variable_name: string;
+  widget: Widget;
 }
 
 interface FintelTemplateWidgetsListProps {
-  widgets: FintelTemplateWidget[]
-  onCreateWidget: () => void
-  onDeleteWidget: (w: FintelTemplateWidget) => void
-  onUpdateWidget: (w: FintelTemplateWidget) => void
+  widgets: FintelTemplateWidget[];
+  onCreateWidget: () => void;
+  onDeleteWidget: (w: FintelTemplateWidget) => void;
+  onUpdateWidget: (w: FintelTemplateWidget) => void;
 }
 
 const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProps> = ({

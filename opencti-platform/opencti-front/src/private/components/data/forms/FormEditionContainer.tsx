@@ -14,9 +14,9 @@ export const formEditionContainerQuery = graphql`
 `;
 
 interface FormEditionContainerProps {
-  queryRef: PreloadedQuery<FormEditionContainerQuery>
-  open: boolean
-  handleClose?: () => void
+  queryRef: PreloadedQuery<FormEditionContainerQuery>;
+  open: boolean;
+  handleClose?: () => void;
 }
 
 const FormEditionContainer: FunctionComponent<FormEditionContainerProps> = ({

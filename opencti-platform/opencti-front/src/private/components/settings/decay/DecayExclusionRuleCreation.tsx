@@ -8,7 +8,7 @@ import { DecayExclusionRulesLinesPaginationQuery$variables } from './__generated
 import DecayExclusionRuleCreationForm from './DecayExclusionRuleCreationForm';
 
 type DecayExclusionRuleCreationProps = {
-  paginationOptions: DecayExclusionRulesLinesPaginationQuery$variables
+  paginationOptions: DecayExclusionRulesLinesPaginationQuery$variables;
 };
 
 const CreateDecayExclusionRuleControlledDial = (props: DrawerControlledDialProps) => (

@@ -36,27 +36,27 @@ export const vocabularyQuery = graphql`
 `;
 
 interface VocabFieldOption extends FieldOption {
-  description?: string
-  category: string
+  description?: string;
+  category: string;
 }
 
 type VocabFieldValue = VocabFieldOption | VocabFieldOption[];
 
 interface OpenVocabFieldComponentProps {
-  queryRef: PreloadedQuery<OpenVocabFieldQuery>
-  type: string | string[]
-  name: string
-  label: string
-  required?: boolean
-  variant?: string
-  containerStyle?: Record<string, string | number>
-  editContext?: unknown
-  disabled?: boolean
-  multiple?: boolean
-  disabledOptions?: string[]
-  onFocus?: (name: string, value: VocabFieldOption) => void
-  onChange?: (name: string, value: string | string[]) => void
-  onSubmit?: (name: string, value: string | string[]) => void
+  queryRef: PreloadedQuery<OpenVocabFieldQuery>;
+  type: string | string[];
+  name: string;
+  label: string;
+  required?: boolean;
+  variant?: string;
+  containerStyle?: Record<string, string | number>;
+  editContext?: unknown;
+  disabled?: boolean;
+  multiple?: boolean;
+  disabledOptions?: string[];
+  onFocus?: (name: string, value: VocabFieldOption) => void;
+  onChange?: (name: string, value: string | string[]) => void;
+  onSubmit?: (name: string, value: string | string[]) => void;
 }
 
 const OpenVocabFieldComponent = ({

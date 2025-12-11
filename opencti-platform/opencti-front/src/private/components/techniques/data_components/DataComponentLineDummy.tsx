@@ -36,7 +36,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const DataComponentLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

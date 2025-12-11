@@ -27,12 +27,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface NotifierFieldProps {
-  label?: string
-  name: string
-  style?: { marginTop: number }
-  helpertext?: string
-  onChange: (name: string, value: FieldOption[]) => void
-  required?: boolean
+  label?: string;
+  name: string;
+  style?: { marginTop: number };
+  helpertext?: string;
+  onChange: (name: string, value: FieldOption[]) => void;
+  required?: boolean;
 }
 
 export const NotifierFieldQuery = graphql`

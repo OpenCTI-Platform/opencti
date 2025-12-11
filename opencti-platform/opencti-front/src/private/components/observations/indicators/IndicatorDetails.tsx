@@ -51,7 +51,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface IndicatorDetailsComponentProps {
-  indicator: IndicatorDetails_indicator$data
+  indicator: IndicatorDetails_indicator$data;
 }
 
 const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProps> = ({

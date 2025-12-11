@@ -53,28 +53,28 @@ const organizationMutation = graphql`
 const ORGANIZATION_TYPE = 'Organization';
 
 interface OrganizationAddInput {
-  name: string
-  description: string
-  confidence: number | null
-  x_opencti_reliability: string | undefined
-  x_opencti_organization_type: string | undefined
-  x_opencti_score: string | undefined
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | null
+  name: string;
+  description: string;
+  confidence: number | null;
+  x_opencti_reliability: string | undefined;
+  x_opencti_organization_type: string | undefined;
+  x_opencti_score: string | undefined;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | null;
 }
 
 interface OrganizationFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: FieldOption
-  defaultMarkingDefinitions?: FieldOption[]
-  inputValue?: string
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
+  inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> = ({
@@ -351,7 +351,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
 };
 
 const OrganizationCreation = ({ paginationOptions }: {
-  paginationOptions: OrganizationsLinesPaginationQuery$variables
+  paginationOptions: OrganizationsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

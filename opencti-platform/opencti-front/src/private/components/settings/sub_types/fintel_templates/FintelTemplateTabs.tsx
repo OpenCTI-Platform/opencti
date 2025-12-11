@@ -16,12 +16,12 @@ const tabsFragment = graphql`
 `;
 
 interface ChildrenProps {
-  index: number
+  index: number;
 }
 
 interface FintelTemplateTabsProps {
-  data: FintelTemplateTabs_template$key
-  children: (props: ChildrenProps) => ReactNode
+  data: FintelTemplateTabs_template$key;
+  children: (props: ChildrenProps) => ReactNode;
 }
 
 const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {

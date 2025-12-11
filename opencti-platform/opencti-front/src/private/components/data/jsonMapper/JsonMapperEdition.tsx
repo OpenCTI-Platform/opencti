@@ -24,8 +24,8 @@ const jsonMapperEditionPatch = graphql`
 `;
 
 interface JsonMapperEditionProps {
-  jsonMapper: JsonMapperEditionContainerFragment_jsonMapper$data
-  onClose?: () => void
+  jsonMapper: JsonMapperEditionContainerFragment_jsonMapper$data;
+  onClose?: () => void;
 }
 
 const JsonMapperEdition: FunctionComponent<JsonMapperEditionProps> = ({

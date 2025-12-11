@@ -3,9 +3,9 @@ import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Dialog
 import { useFormatter } from '../../../../../components/i18n';
 
 interface Props {
-  open: boolean
-  onConfirm: () => void
-  onCancel: () => void
+  open: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
 const XtmHubDialogConnectivityLostAuthorizedRegister: React.FC<Props> = ({ open, onCancel, onConfirm }) => {

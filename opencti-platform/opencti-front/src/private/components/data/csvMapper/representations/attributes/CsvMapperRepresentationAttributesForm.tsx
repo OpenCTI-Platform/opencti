@@ -40,19 +40,19 @@ export const CsvMapperRepresentationAttributesFormFragment = graphql`
 `;
 
 export interface SchemaAttribute {
-  type: string
-  name: string
-  label: string | null | undefined
-  mandatory: boolean
-  defaultValues: { readonly id: string, readonly name: string }[] | null
-  multiple: boolean
-  editDefault: boolean
+  type: string;
+  name: string;
+  label: string | null | undefined;
+  mandatory: boolean;
+  defaultValues: { readonly id: string; readonly name: string }[] | null;
+  multiple: boolean;
+  editDefault: boolean;
 }
 
 interface CsvMapperRepresentationAttributesFormProps {
-  handleErrors: (key: string, value: string | null) => void
-  representation: CsvMapperRepresentationFormData
-  representationName: string
+  handleErrors: (key: string, value: string | null) => void;
+  representation: CsvMapperRepresentationFormData;
+  representationName: string;
 }
 
 const CsvMapperRepresentationAttributesForm: FunctionComponent<

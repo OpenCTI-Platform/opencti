@@ -236,11 +236,11 @@ const EntityStixSightingRelationshipLineFragment = graphql`
 `;
 
 interface EntityStixSightingRelationshipLineProps {
-  dataColumns: DataColumns
-  node: EntityStixSightingRelationshipLine_node$key
-  onLabelClick: HandleAddFilter
-  isTo: boolean
-  paginationOptions?: EntityStixSightingRelationshipsLinesPaginationQuery$variables
+  dataColumns: DataColumns;
+  node: EntityStixSightingRelationshipLine_node$key;
+  onLabelClick: HandleAddFilter;
+  isTo: boolean;
+  paginationOptions?: EntityStixSightingRelationshipsLinesPaginationQuery$variables;
 }
 
 export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSightingRelationshipLineProps> = (
@@ -361,7 +361,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
 export const EntityStixSightingRelationshipLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

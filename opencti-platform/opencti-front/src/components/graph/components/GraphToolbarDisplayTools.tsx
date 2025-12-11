@@ -7,7 +7,7 @@ import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 
 export interface GraphToolbarDisplayToolsProps {
-  onUnfixNodes: () => void
+  onUnfixNodes: () => void;
 }
 
 const GraphToolbarDisplayTools = ({

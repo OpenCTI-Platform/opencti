@@ -8,11 +8,11 @@ import useDraftContext from '../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 
 interface CreateEntityControlledDialProps extends DrawerControlledDialProps {
-  entityType: string
-  color?: 'primary' | 'inherit' | 'secondary' | 'success' | 'error' | 'info' | 'warning'
-  size?: 'small' | 'medium' | 'large'
-  variant?: 'text' | 'contained' | 'outlined'
-  style?: React.CSSProperties
+  entityType: string;
+  color?: 'primary' | 'inherit' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
+  size?: 'small' | 'medium' | 'large';
+  variant?: 'text' | 'contained' | 'outlined';
+  style?: React.CSSProperties;
 }
 
 const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialProps> = ({

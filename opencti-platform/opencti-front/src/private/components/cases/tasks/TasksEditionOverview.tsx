@@ -118,22 +118,22 @@ const tasksMutationRelationDelete = graphql`
 `;
 
 interface TasksEditionOverviewProps {
-  taskRef: TasksEditionOverview_task$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
-  tasksPaginationOptions?: { filters: FilterGroup }
+  taskRef: TasksEditionOverview_task$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
+  tasksPaginationOptions?: { filters: FilterGroup };
 }
 
 interface TasksEditionFormValues {
-  name: string
-  description: string | null
-  due_date: Date | null
-  message?: string
-  objectMarking?: FieldOption[]
-  objectAssignee?: FieldOption[]
-  objectParticipant?: FieldOption[]
-  x_opencti_workflow_id: FieldOption
+  name: string;
+  description: string | null;
+  due_date: Date | null;
+  message?: string;
+  objectMarking?: FieldOption[];
+  objectAssignee?: FieldOption[];
+  objectParticipant?: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
 }
 
 const TASK_TYPE = 'Task';

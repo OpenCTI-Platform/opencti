@@ -60,8 +60,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface SearchIndexedFileLineComponentProps {
-  node: SearchIndexedFileLine_node$data
-  dataColumns: DataColumns
+  node: SearchIndexedFileLine_node$data;
+  dataColumns: DataColumns;
 }
 
 const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineComponentProps> = ({
@@ -155,7 +155,7 @@ export const SearchIndexedFileLine = createFragmentContainer(SearchIndexedFileLi
 export const SearchIndexedFileLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

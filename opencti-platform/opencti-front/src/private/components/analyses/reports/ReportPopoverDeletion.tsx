@@ -38,10 +38,10 @@ const reportPopoverDeletionMutation = graphql`
 `;
 
 interface ReportPopoverDeletionProps {
-  reportId: string
-  displayDelete: boolean
-  handleClose: () => void
-  handleCloseDelete: () => void
+  reportId: string;
+  displayDelete: boolean;
+  handleClose: () => void;
+  handleCloseDelete: () => void;
 }
 
 const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({

@@ -44,9 +44,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface OrganizationLineProps {
-  node: OrganizationLine_node$key
-  dataColumns: DataColumns
-  onLabelClick: HandleAddFilter
+  node: OrganizationLine_node$key;
+  dataColumns: DataColumns;
+  onLabelClick: HandleAddFilter;
 }
 
 const organizationLineFragment = graphql`
@@ -143,7 +143,7 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
 export const OrganizationLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

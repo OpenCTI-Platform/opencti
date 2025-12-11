@@ -3,10 +3,10 @@ import React from 'react';
 import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect';
 
 interface EntitySelectFieldProps extends FieldProps<EntityOption | null> {
-  label: string
-  types: string[]
-  onChange?: (val: EntityOption | EntityOption[] | null) => void
-  multiple?: boolean
+  label: string;
+  types: string[];
+  onChange?: (val: EntityOption | EntityOption[] | null) => void;
+  multiple?: boolean;
 }
 
 const EntitySelectField = ({

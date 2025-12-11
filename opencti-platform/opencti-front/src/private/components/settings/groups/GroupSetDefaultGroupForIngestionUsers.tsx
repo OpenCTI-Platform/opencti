@@ -46,13 +46,13 @@ export const groupSetDefaultGroupForIngestionUsersQuery = graphql`
   }
 `;
 interface GroupSetDefaultGroupForIngestionUsersComponentProps {
-  queryRef: PreloadedQuery<GroupSetDefaultGroupForIngestionUsersQuery>
+  queryRef: PreloadedQuery<GroupSetDefaultGroupForIngestionUsersQuery>;
 }
 const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDefaultGroupForIngestionUsersComponentProps) => {
   const { t_i18n } = useFormatter();
   const [commitFieldPatch] = useApiMutation(groupSetDefaultGroupForIngestionUsersMutationFieldPatch);
   const [currentGroupForAutoIntegrationAssignation, setCurrentGroupForAutoIntegrationAssignation] = useState<
-    { id: string | undefined, name: string | undefined }>({ id: undefined, name: undefined });
+    { id: string | undefined; name: string | undefined }>({ id: undefined, name: undefined });
   const { setFieldValue } = useFormikContext();
   const { groups } = usePreloadedQuery(groupSetDefaultGroupForIngestionUsersQuery, queryRef);
 
@@ -66,7 +66,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
     }
   }, []);
 
-  const handleChange = (name: string, value: { label: string, value: string }) => {
+  const handleChange = (name: string, value: { label: string; value: string }) => {
     // Remove key from pre-selected group
     if (currentGroupForAutoIntegrationAssignation.id) {
       commitFieldPatch({

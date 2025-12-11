@@ -14,16 +14,16 @@ import useHelper from '../utils/hooks/useHelper';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 
 type FullError = {
-  message?: string
+  message?: string;
   extensions?: {
-    code?: string
+    code?: string;
     data?: {
-      http_status?: number
-      genre?: string
-      entityIds?: string[]
-    }
-    stacktrace?: string[]
-  }
+      http_status?: number;
+      genre?: string;
+      entityIds?: string[];
+    };
+    stacktrace?: string[];
+  };
 };
 
 const Message = () => {
@@ -52,7 +52,7 @@ const Message = () => {
     const subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
         if (messages && messages.length > 0 && messages[0]) {
-          const firstMessage = messages[0] as { text: string | ReactElement, type: string, fullError: FullError | null };
+          const firstMessage = messages[0] as { text: string | ReactElement; type: string; fullError: FullError | null };
           const textPart = firstMessage.text;
           const translatedText = (typeof textPart === 'string' || textPart instanceof String)
             ? t_i18n(textPart)

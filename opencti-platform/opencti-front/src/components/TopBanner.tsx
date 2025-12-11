@@ -18,10 +18,10 @@ const TOPBANNER_COLORS = {
 export type TopBannerColor = keyof typeof TOPBANNER_COLORS;
 
 interface TopBannerProps {
-  bannerText: React.ReactNode
-  bannerColor?: TopBannerColor
-  buttonText: React.ReactNode
-  onButtonClick: () => void
+  bannerText: React.ReactNode;
+  bannerColor?: TopBannerColor;
+  buttonText: React.ReactNode;
+  onButtonClick: () => void;
 }
 
 const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onButtonClick }: TopBannerProps) => {

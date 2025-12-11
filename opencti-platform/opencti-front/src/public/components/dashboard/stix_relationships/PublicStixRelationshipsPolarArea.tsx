@@ -70,8 +70,8 @@ const publicStixRelationshipsPolarAreaQuery = graphql`
 `;
 
 interface PublicStixRelationshipsPolarAreaComponentProps {
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsPolarAreaQuery>
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsPolarAreaQuery>;
 }
 
 const PublicStixRelationshipsPolarAreaComponent = ({

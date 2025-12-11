@@ -61,29 +61,29 @@ const IncidentMutation = graphql`
 `;
 
 interface IncidentAddInput {
-  name: string
-  description: string
-  confidence: number | undefined
-  incident_type: string
-  severity: string
-  source: string
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  objectAssignee: FieldOption[]
-  objectParticipant: FieldOption[]
-  externalReferences: FieldOption[]
-  file: File | undefined
+  name: string;
+  description: string;
+  confidence: number | undefined;
+  incident_type: string;
+  severity: string;
+  source: string;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  objectAssignee: FieldOption[];
+  objectParticipant: FieldOption[];
+  externalReferences: FieldOption[];
+  file: File | undefined;
 }
 
 interface IncidentCreationProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: FieldOption
-  defaultMarkingDefinitions?: FieldOption[]
-  defaultConfidence?: number
-  inputValue?: string
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
+  defaultConfidence?: number;
+  inputValue?: string;
 }
 
 const INCIDENT_TYPE = 'Incident';
@@ -302,7 +302,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
 const IncidentCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: IncidentsLinesQuery$variables
+  paginationOptions: IncidentsLinesQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');

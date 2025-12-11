@@ -159,20 +159,20 @@ const caseIncidentMutationRelationDelete = graphql`
 `;
 
 interface CaseIncidentEditionOverviewProps {
-  caseRef: CaseIncidentEditionOverview_case$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  caseRef: CaseIncidentEditionOverview_case$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface CaseIncidentEditionFormValues {
-  message?: string
-  createdBy?: FieldOption
-  objectMarking?: FieldOption[]
-  objectAssignee?: FieldOption[]
-  objectParticipant?: FieldOption[]
-  x_opencti_workflow_id: FieldOption
-  references: ExternalReferencesValues | undefined
+  message?: string;
+  createdBy?: FieldOption;
+  objectMarking?: FieldOption[];
+  objectAssignee?: FieldOption[];
+  objectParticipant?: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
+  references: ExternalReferencesValues | undefined;
 }
 
 const CASE_INCIDENT_TYPE = 'Case-Incident';

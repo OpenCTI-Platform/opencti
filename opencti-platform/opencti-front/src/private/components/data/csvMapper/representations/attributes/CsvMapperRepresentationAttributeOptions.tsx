@@ -9,9 +9,9 @@ import CsvMapperRepresentationAttributeOption from './CsvMapperRepresentationAtt
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface CsvMapperRepresentationAttributeOptionsProps {
-  schemaAttribute: SchemaAttribute
-  attributeName: string
-  form: FormikProps<CsvMapperFormData>
+  schemaAttribute: SchemaAttribute;
+  attributeName: string;
+  form: FormikProps<CsvMapperFormData>;
 }
 
 const CsvMapperRepresentationAttributeOptions: FunctionComponent<CsvMapperRepresentationAttributeOptionsProps> = ({ schemaAttribute, attributeName, form }) => {

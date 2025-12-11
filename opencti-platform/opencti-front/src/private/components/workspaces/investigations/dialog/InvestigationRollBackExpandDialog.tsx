@@ -9,9 +9,9 @@ import { useInvestigationState } from '../utils/useInvestigationState';
 import { useFormatter } from '../../../../../components/i18n';
 
 type InvestigationRollBackExpandDialogProps = {
-  closeDialog: () => void
-  handleRollBackToPreExpansionState: () => void
-  isOpen: boolean
+  closeDialog: () => void;
+  handleRollBackToPreExpansionState: () => void;
+  isOpen: boolean;
 };
 
 const InvestigationRollBackExpandDialog = ({

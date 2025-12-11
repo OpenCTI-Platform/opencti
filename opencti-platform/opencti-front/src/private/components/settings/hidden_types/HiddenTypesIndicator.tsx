@@ -40,8 +40,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface HiddenTypesIndicatorComponentProps {
-  platformHiddenTargetType: string
-  queryRef: PreloadedQuery<HiddenTypesIndicatorQuery>
+  platformHiddenTargetType: string;
+  queryRef: PreloadedQuery<HiddenTypesIndicatorQuery>;
 }
 
 const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorComponentProps> = ({
@@ -94,7 +94,7 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
 };
 
 interface HiddenTypesIndicatorProps {
-  platformHiddenTargetType: string
+  platformHiddenTargetType: string;
 }
 
 const HiddenTypesIndicator: FunctionComponent<HiddenTypesIndicatorProps> = ({

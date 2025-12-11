@@ -50,26 +50,26 @@ const dataComponentMutation = graphql`
 `;
 
 interface DataComponentAddInput {
-  name: string
-  description: string
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: FieldOption[]
-  confidence: number | null
-  file: File | null
+  name: string;
+  description: string;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
+  confidence: number | null;
+  file: File | null;
 }
 
 interface DataComponentFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  inputValue?: string
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  defaultConfidence?: number
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  inputValue?: string;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultConfidence?: number;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 const DATA_COMPONENT_TYPE = 'Data-Component';
@@ -311,10 +311,10 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
 };
 
 const DataComponentCreation: FunctionComponent<{
-  contextual?: boolean
-  display?: boolean
-  inputValue?: string
-  paginationOptions: DataComponentsLinesPaginationQuery$variables
+  contextual?: boolean;
+  display?: boolean;
+  inputValue?: string;
+  paginationOptions: DataComponentsLinesPaginationQuery$variables;
 }> = ({
   contextual,
   display,

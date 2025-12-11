@@ -1,18 +1,18 @@
 import React, { ReactNode, createContext, useMemo, useState, useContext, useEffect } from 'react';
 
 interface CreateRelationshipContextStateType {
-  relationshipTypes?: string[]
-  stixCoreObjectTypes?: string[]
-  connectionKey?: string
-  reversed?: boolean
-  handleReverseRelation?: () => void
-  paginationOptions?: unknown
-  onCreate?: () => void
+  relationshipTypes?: string[];
+  stixCoreObjectTypes?: string[];
+  connectionKey?: string;
+  reversed?: boolean;
+  handleReverseRelation?: () => void;
+  paginationOptions?: unknown;
+  onCreate?: () => void;
 }
 
 export interface CreateRelationshipContextType {
-  state: CreateRelationshipContextStateType
-  setState: (state: CreateRelationshipContextStateType) => void
+  state: CreateRelationshipContextStateType;
+  setState: (state: CreateRelationshipContextStateType) => void;
 }
 
 const defaultContext: CreateRelationshipContextType = {

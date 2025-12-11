@@ -10,8 +10,8 @@ import { useFormatter } from './i18n';
 import { FieldOption } from '../utils/field';
 
 type CheckboxesFieldProps = FieldProps<FieldOption[]> & {
-  label: string
-  items: FieldOption[]
+  label: string;
+  items: FieldOption[];
 };
 
 const CheckboxesField = ({

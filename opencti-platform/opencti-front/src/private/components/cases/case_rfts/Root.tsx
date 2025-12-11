@@ -116,7 +116,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             <CaseRftEdition caseId={caseData.id} />
           </Security>
         )}
-        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <CaseRftDeletion id={caseData.id} isOpen={isOpen} handleClose={onClose} />
           </Security>

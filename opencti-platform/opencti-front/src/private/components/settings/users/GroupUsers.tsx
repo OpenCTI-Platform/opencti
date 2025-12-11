@@ -26,7 +26,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface GroupUsersProps {
-  groupId: string
+  groupId: string;
 }
 
 export const initialStaticPaginationForGroupUsers = {

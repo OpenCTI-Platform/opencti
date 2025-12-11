@@ -30,7 +30,7 @@ export const fintelTemplateQuery = graphql`
 `;
 
 interface FintelTemplateProps {
-  queryRef: PreloadedQuery<FintelTemplateQuery>
+  queryRef: PreloadedQuery<FintelTemplateQuery>;
 }
 
 const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
@@ -70,7 +70,7 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
 };
 
 const FintelTemplate = () => {
-  const { templateId, subTypeId } = useParams<{ templateId?: string, subTypeId?: string }>();
+  const { templateId, subTypeId } = useParams<{ templateId?: string; subTypeId?: string }>();
   if (!templateId || !subTypeId) return <ErrorNotFound />;
 
   const templateRef = useQueryLoading<FintelTemplateQuery>(

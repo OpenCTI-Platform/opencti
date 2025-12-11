@@ -15,19 +15,19 @@ import { DataColumns } from '../../../../components/list_lines';
 const nbOfRowsToLoad = 50;
 
 interface EntitiesStixDomainObjectsLinesProps {
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
-  dataColumns: DataColumns
-  paginationOptions: EntitiesStixDomainObjectsLinesPaginationQuery$variables
-  queryRef: PreloadedQuery<EntitiesStixDomainObjectsLinesPaginationQuery>
-  selectedElements: Record<string, EntitiesStixDomainObjectLine_node$data>
-  deSelectedElements: Record<string, EntitiesStixDomainObjectLine_node$data>
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  dataColumns: DataColumns;
+  paginationOptions: EntitiesStixDomainObjectsLinesPaginationQuery$variables;
+  queryRef: PreloadedQuery<EntitiesStixDomainObjectsLinesPaginationQuery>;
+  selectedElements: Record<string, EntitiesStixDomainObjectLine_node$data>;
+  deSelectedElements: Record<string, EntitiesStixDomainObjectLine_node$data>;
   onToggleEntity: (
     entity: EntitiesStixDomainObjectLine_node$data,
     event: React.SyntheticEvent,
-  ) => void
-  selectAll: boolean
-  onLabelClick?: HandleAddFilter
-  redirectionMode?: string
+  ) => void;
+  selectAll: boolean;
+  onLabelClick?: HandleAddFilter;
+  redirectionMode?: string;
 }
 
 export const entitiesStixDomainObjectsLinesQuery = graphql`

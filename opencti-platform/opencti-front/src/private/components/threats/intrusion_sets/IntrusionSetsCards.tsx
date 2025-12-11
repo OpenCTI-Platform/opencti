@@ -71,9 +71,9 @@ export const intrusionSetsCardsFragment = graphql`
 `;
 
 interface IntrusionSetsCardsProps {
-  queryRef: PreloadedQuery<IntrusionSetsCardsPaginationQuery>
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
-  onLabelClick: HandleAddFilter
+  queryRef: PreloadedQuery<IntrusionSetsCardsPaginationQuery>;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  onLabelClick: HandleAddFilter;
 }
 
 const IntrusionSetsCards: FunctionComponent<IntrusionSetsCardsProps> = ({

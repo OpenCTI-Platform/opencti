@@ -63,62 +63,62 @@ const ingestionJsonCreationMutation = graphql`
 `;
 
 interface IngestionJsonCreationContainerProps {
-  queryRef?: PreloadedQuery<IngestionJsonEditionContainerQuery>
-  handleClose: () => void
-  open: boolean
-  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined
-  isDuplicated: boolean
+  queryRef?: PreloadedQuery<IngestionJsonEditionContainerQuery>;
+  handleClose: () => void;
+  open: boolean;
+  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined;
+  isDuplicated: boolean;
 }
 
 export interface IngestionJsonHeader {
-  name: string
-  value: string
+  name: string;
+  value: string;
 }
 
 export interface IngestionJsonAttributes {
-  type: string
-  from: string
-  to: string
-  data_operation: string
-  state_operation: string
-  default: string
-  exposed: string
+  type: string;
+  from: string;
+  to: string;
+  data_operation: string;
+  state_operation: string;
+  default: string;
+  exposed: string;
 }
 
 export interface IngestionJsonAddInput {
-  name: string
-  uri: string
-  verb: string
-  body: string | null | undefined
-  pagination_with_sub_page: boolean
-  pagination_with_sub_page_query_verb: string | null | undefined
-  pagination_with_sub_page_attribute_path: string | null | undefined
-  headers: IngestionJsonHeader[]
-  query_attributes: IngestionJsonAttributes[]
-  description?: string | null
-  scheduling_period?: string | null
-  json_mapper_id: string | FieldOption
-  authentication_type: IngestionAuthType | string
-  authentication_value?: string | null
-  ingestion_running?: boolean | null
-  user_id: string | FieldOption
-  username?: string
-  password?: string
-  cert?: string
-  key?: string
-  ca?: string
-  markings: FieldOption[]
+  name: string;
+  uri: string;
+  verb: string;
+  body: string | null | undefined;
+  pagination_with_sub_page: boolean;
+  pagination_with_sub_page_query_verb: string | null | undefined;
+  pagination_with_sub_page_attribute_path: string | null | undefined;
+  headers: IngestionJsonHeader[];
+  query_attributes: IngestionJsonAttributes[];
+  description?: string | null;
+  scheduling_period?: string | null;
+  json_mapper_id: string | FieldOption;
+  authentication_type: IngestionAuthType | string;
+  authentication_value?: string | null;
+  ingestion_running?: boolean | null;
+  user_id: string | FieldOption;
+  username?: string;
+  password?: string;
+  cert?: string;
+  key?: string;
+  ca?: string;
+  markings: FieldOption[];
 }
 
 interface IngestionJsonCreationProps {
-  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined
-  isDuplicated: boolean
-  handleClose: () => void
-  ingestionJson?: IngestionJsonEditionFragment_ingestionJson$key | null
+  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined;
+  isDuplicated: boolean;
+  handleClose: () => void;
+  ingestionJson?: IngestionJsonEditionFragment_ingestionJson$key | null;
 }
 
 const resolveHasUserChoiceJsonMapper = (option: FieldOption & {
-  representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[]
+  representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[];
 }) => {
   return option.representations.some(
     (representation) => representation.attributes.some(
@@ -151,14 +151,14 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
   };
   const onJsonMapperSelection = async (
     option: FieldOption & {
-      representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[]
+      representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[];
     },
     {
       setFieldValue,
       values,
     }: {
-      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>)
-      values: IngestionJsonAddInput
+      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>);
+      values: IngestionJsonAddInput;
     },
   ) => {
     const hasUserChoiceJsonMapperRepresentations = resolveHasUserChoiceJsonMapper(option);

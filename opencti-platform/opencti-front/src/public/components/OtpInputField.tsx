@@ -28,9 +28,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface OtpInputFieldProps {
-  value: string
-  onChange: (data: string) => void
-  isDisabled: boolean
+  value: string;
+  onChange: (data: string) => void;
+  isDisabled: boolean;
 }
 
 const OtpInputField: FunctionComponent<OtpInputFieldProps> = ({

@@ -27,7 +27,7 @@ const Taxii = () => {
     location,
     LOCAL_STORAGE_KEY,
   );
-  const [taxiiState, setTaxiiState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [taxiiState, setTaxiiState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',

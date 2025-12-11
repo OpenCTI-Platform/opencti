@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 
 type UseForceUpdateType = {
-  forceUpdate: string
+  forceUpdate: string;
 };
 
 export const ForceUpdateEvent = 'ForceUpdateEvent';

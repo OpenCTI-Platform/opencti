@@ -15,17 +15,17 @@ import { ThreatActorIndividualLine_node$data } from './__generated__/ThreatActor
 const nbOfRowsToLoad = 50;
 
 interface ThreatActorsIndividualLinesProps {
-  dataColumns: DataColumns
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
-  selectedElements: Record<string, ThreatActorIndividualLine_node$data>
-  deSelectedElements: Record<string, ThreatActorIndividualLine_node$data>
+  dataColumns: DataColumns;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  selectedElements: Record<string, ThreatActorIndividualLine_node$data>;
+  deSelectedElements: Record<string, ThreatActorIndividualLine_node$data>;
   onToggleEntity: (
     entity: ThreatActorIndividualLine_node$data,
     event: React.SyntheticEvent,
-  ) => void
-  selectAll: boolean
-  paginationOptions: ThreatActorsIndividualLinesPaginationQuery$variables
-  queryRef: PreloadedQuery<ThreatActorsIndividualLinesPaginationQuery>
+  ) => void;
+  selectAll: boolean;
+  paginationOptions: ThreatActorsIndividualLinesPaginationQuery$variables;
+  queryRef: PreloadedQuery<ThreatActorsIndividualLinesPaginationQuery>;
 }
 
 export const threatActorsIndividualLinesQuery = graphql`

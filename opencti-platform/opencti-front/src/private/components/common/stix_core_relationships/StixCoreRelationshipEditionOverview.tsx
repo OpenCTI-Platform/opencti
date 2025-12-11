@@ -188,29 +188,29 @@ export const stixCoreRelationshipEditionOverviewQuery = graphql`
 `;
 
 export interface StixCoreRelationshipEditionOverviewProps {
-  handleClose: () => void
-  handleDelete?: () => void
-  queryRef: PreloadedQuery<StixCoreRelationshipEditionOverviewQuery>
-  stixCoreRelationship: StixCoreRelationshipEditionOverview_stixCoreRelationship$data
-  noStoreUpdate: boolean
-  isCoverage?: boolean
+  handleClose: () => void;
+  handleDelete?: () => void;
+  queryRef: PreloadedQuery<StixCoreRelationshipEditionOverviewQuery>;
+  stixCoreRelationship: StixCoreRelationshipEditionOverview_stixCoreRelationship$data;
+  noStoreUpdate: boolean;
+  isCoverage?: boolean;
 }
 
 interface StixCoreRelationshipAddInput {
-  confidence: number | null
-  start_time: null | Date
-  stop_time: null | Date
-  description: string | null
-  killChainPhases: FieldOption[]
-  x_opencti_workflow_id: FieldOption
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  message?: string
-  references?: FieldOption[]
+  confidence: number | null;
+  start_time: null | Date;
+  stop_time: null | Date;
+  description: string | null;
+  killChainPhases: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  message?: string;
+  references?: FieldOption[];
   coverage_information?: readonly {
-    readonly coverage_name: string
-    readonly coverage_score: number
-  }[] | undefined
+    readonly coverage_name: string;
+    readonly coverage_score: number;
+  }[] | undefined;
 }
 
 const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<

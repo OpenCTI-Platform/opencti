@@ -27,15 +27,15 @@ import useFiltersState from '../../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 interface AlertLiveEditionProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<AlertEditionQuery>
-  paginationOptions?: AlertingPaginationQuery$variables
+  handleClose: () => void;
+  queryRef: PreloadedQuery<AlertEditionQuery>;
+  paginationOptions?: AlertingPaginationQuery$variables;
 }
 
 interface AlertLiveFormValues {
-  name?: string
-  notifiers: { value: string, label: string }[]
-  recipients: { value: string, label: string }[]
+  name?: string;
+  notifiers: { value: string; label: string }[];
+  recipients: { value: string; label: string }[];
 }
 
 const alertLiveEditionFragment = graphql`

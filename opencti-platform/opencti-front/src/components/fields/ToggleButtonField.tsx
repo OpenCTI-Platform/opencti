@@ -5,12 +5,12 @@ import FormControl from '@mui/material/FormControl';
 import { useFormatter } from '../i18n';
 
 interface ToggleButtonFieldProps extends FieldProps<boolean> {
-  items: Item[]
+  items: Item[];
 }
 
 interface Item {
-  value: boolean
-  content: ReactNode
+  value: boolean;
+  content: ReactNode;
 }
 
 const ToggleButtonField = ({

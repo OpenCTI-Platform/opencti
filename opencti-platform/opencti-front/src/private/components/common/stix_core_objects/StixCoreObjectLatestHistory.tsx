@@ -17,7 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 type StixCoreObjectLatestHistoryProps = {
-  stixCoreObjectId: string
+  stixCoreObjectId: string;
 };
 
 const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestHistoryProps) => {

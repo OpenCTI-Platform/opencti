@@ -167,13 +167,13 @@ export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: Widget
 };
 
 type MetricConf = {
-  attribute: string
-  name: string
+  attribute: string;
+  name: string;
 };
 
 export type MetricsColumn = {
-  readonly entity_type: string
-  readonly metrics: readonly MetricConf[] | null | undefined
+  readonly entity_type: string;
+  readonly metrics: readonly MetricConf[] | null | undefined;
 };
 
 export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, metrics?: readonly MetricsColumn[]): WidgetColumn[] => {

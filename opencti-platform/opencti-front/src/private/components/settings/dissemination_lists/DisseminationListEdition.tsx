@@ -18,15 +18,15 @@ export const disseminationListMutationFieldPatch = graphql`
 `;
 
 interface DisseminationListEditionComponentProps {
-  data: DisseminationListsLine_node$data
-  isOpen: boolean
-  onClose: () => void
+  data: DisseminationListsLine_node$data;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export interface DisseminationListEditionFormData {
-  name: string
-  emails: string
-  description: string
+  name: string;
+  emails: string;
+  description: string;
 }
 
 const DisseminationListEdition: FunctionComponent<DisseminationListEditionComponentProps> = ({

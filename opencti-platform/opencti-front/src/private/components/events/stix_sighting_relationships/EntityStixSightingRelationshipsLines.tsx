@@ -83,13 +83,13 @@ export const EntityStixSightingRelationshipsLinesFragment = graphql`
 `;
 
 interface EntityStixSightingRelationshipsLinesProps {
-  paginationOptions?: EntityStixSightingRelationshipsLinesPaginationQuery$variables
-  dataColumns: DataColumns
-  queryRef: PreloadedQuery<EntityStixSightingRelationshipsLinesPaginationQuery>
-  entityLink: string
-  isTo: boolean
-  onLabelClick: HandleAddFilter
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  paginationOptions?: EntityStixSightingRelationshipsLinesPaginationQuery$variables;
+  dataColumns: DataColumns;
+  queryRef: PreloadedQuery<EntityStixSightingRelationshipsLinesPaginationQuery>;
+  entityLink: string;
+  isTo: boolean;
+  onLabelClick: HandleAddFilter;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 const EntityStixSightingRelationshipsLines: FunctionComponent<EntityStixSightingRelationshipsLinesProps> = ({

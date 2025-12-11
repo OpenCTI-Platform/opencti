@@ -57,10 +57,10 @@ export const caseTemplateFieldPatch = graphql`
 `;
 
 interface CaseTemplateEditionProps {
-  caseTemplate: CaseTemplateLine_node$data
-  paginationOptions: CaseTemplateTasksLines_DataQuery$variables
-  openPanel: boolean
-  setOpenPanel: (status: boolean) => void
+  caseTemplate: CaseTemplateLine_node$data;
+  paginationOptions: CaseTemplateTasksLines_DataQuery$variables;
+  openPanel: boolean;
+  setOpenPanel: (status: boolean) => void;
 }
 
 const caseTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({

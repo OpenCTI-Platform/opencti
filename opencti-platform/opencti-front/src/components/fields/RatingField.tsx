@@ -10,9 +10,9 @@ import InputLabel from '@mui/material/InputLabel';
 
 type CustomIcon = {
   [index: string]: {
-    icon: React.ReactElement
-    label: string
-  }
+    icon: React.ReactElement;
+    label: string;
+  };
 };
 export const customIcons = (fontSize: number): CustomIcon => ({
   1: {
@@ -59,13 +59,13 @@ const StyledRating = styled(Rating)(({ theme }) => ({
 }));
 
 interface RatingProps {
-  label?: string
-  rating?: number | null
-  readOnly?: boolean
-  style?: Record<string, unknown>
-  size: 'tiny' | 'small' | 'large'
-  handleOnChange?: (value: number | null) => void
-  required?: boolean
+  label?: string;
+  rating?: number | null;
+  readOnly?: boolean;
+  style?: Record<string, unknown>;
+  size: 'tiny' | 'small' | 'large';
+  handleOnChange?: (value: number | null) => void;
+  required?: boolean;
 }
 
 const RatingField: FunctionComponent<RatingProps> = ({

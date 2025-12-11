@@ -22,9 +22,9 @@ export const exclusionListPopoverDeletionMutation = graphql`
 `;
 
 interface ExclusionListPopoverProps {
-  data: ExclusionListsLine_node$data
-  paginationOptions?: ExclusionListsLinesPaginationQuery$variables
-  refetchStatus: () => void
+  data: ExclusionListsLine_node$data;
+  paginationOptions?: ExclusionListsLinesPaginationQuery$variables;
+  refetchStatus: () => void;
 }
 
 const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({

@@ -18,7 +18,7 @@ import { useFormatter } from '../../../../../../../components/i18n';
 import { PlaybookUpdateAction } from './playbookAction-types';
 
 interface ActionAlertsProps {
-  action: PlaybookUpdateAction
+  action: PlaybookUpdateAction;
 }
 
 const PlaybookActionAlerts = ({ action }: ActionAlertsProps) => {

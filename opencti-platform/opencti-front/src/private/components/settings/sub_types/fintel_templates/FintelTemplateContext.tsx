@@ -1,14 +1,14 @@
 import React, { createContext, Dispatch, ReactNode, useContext, useState } from 'react';
 
 interface FintelTemplateContextProps {
-  editorValue: string | null
-  setEditorValue: Dispatch<React.SetStateAction<string | null>>
+  editorValue: string | null;
+  setEditorValue: Dispatch<React.SetStateAction<string | null>>;
 }
 
 const FintelTemplateContext = createContext<FintelTemplateContextProps | undefined>(undefined);
 
 interface FintelTemplateProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export const FintelTemplateProvider = ({ children }: FintelTemplateProviderProps) => {

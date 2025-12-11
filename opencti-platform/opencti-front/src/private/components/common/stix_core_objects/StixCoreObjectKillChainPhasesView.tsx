@@ -23,13 +23,13 @@ const useStyles = makeStyles(() => ({
 
 interface StixCoreObjectKillChainPhasesViewProps {
   killChainPhases: ReadonlyArray<{
-    entity_type: string
-    id: string
-    kill_chain_name: string
-    phase_name: string
-    x_opencti_order?: number | null
-  }>
-  firstLine?: boolean
+    entity_type: string;
+    id: string;
+    kill_chain_name: string;
+    phase_name: string;
+    x_opencti_order?: number | null;
+  }>;
+  firstLine?: boolean;
 }
 
 const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillChainPhasesViewProps> = ({ killChainPhases, firstLine }) => {

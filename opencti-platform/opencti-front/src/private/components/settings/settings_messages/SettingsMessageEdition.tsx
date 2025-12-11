@@ -8,10 +8,10 @@ const SettingsMessageEdition = ({
   handleClose,
   open,
 }: {
-  settingsId: string
-  message: SettingsMessagesLine_settingsMessage$data
-  handleClose: () => void
-  open?: boolean
+  settingsId: string;
+  message: SettingsMessagesLine_settingsMessage$data;
+  handleClose: () => void;
+  open?: boolean;
 }) => {
   return (
     <SettingsMessageForm

@@ -8,7 +8,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 const URL = 'https://docs.opencti.io/latest/deployment/integration-manager/';
 
 type ConnectorDeploymentBannerProps = {
-  hasActiveManagers: boolean
+  hasActiveManagers: boolean;
 };
 
 const ConnectorDeploymentBanner: FunctionComponent<ConnectorDeploymentBannerProps> = ({ hasActiveManagers }) => {

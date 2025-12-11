@@ -66,8 +66,8 @@ const organizationFragment = graphql`
 `;
 
 interface OrganizationProps {
-  organizationData: Organization_organization$key
-  viewAs: string
+  organizationData: Organization_organization$key;
+  viewAs: string;
 }
 
 const Organization: React.FC<OrganizationProps> = ({

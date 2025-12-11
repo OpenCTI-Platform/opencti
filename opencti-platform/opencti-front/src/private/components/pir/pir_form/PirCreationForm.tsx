@@ -27,8 +27,8 @@ import { PirCreationFormGeneralSettingsRedisStreamQuery } from './__generated__/
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface PirCreationFormProps {
-  onCancel: () => void
-  onSubmit: (data: PirCreationFormData) => void
+  onCancel: () => void;
+  onSubmit: (data: PirCreationFormData) => void;
 }
 
 const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {

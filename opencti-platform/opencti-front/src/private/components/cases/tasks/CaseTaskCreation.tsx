@@ -44,20 +44,20 @@ const caseTaskAddMutation = graphql`
 
 const TASK_TYPE = 'Task';
 interface FormikCaseTaskAddInput {
-  name: string
-  due_date?: Date | null
-  description?: string
-  objectAssignee?: FieldOption[]
-  objectParticipant: FieldOption[]
-  objectLabel?: FieldOption[]
-  objectMarking: FieldOption[]
+  name: string;
+  due_date?: Date | null;
+  description?: string;
+  objectAssignee?: FieldOption[];
+  objectParticipant: FieldOption[];
+  objectLabel?: FieldOption[];
+  objectMarking: FieldOption[];
 }
 
 interface CaseTaskCreationProps {
-  caseId: string
-  onClose: () => void
-  paginationOptions: CaseTasksLinesQuery$variables
-  defaultMarkings?: { value: string, label: string }[]
+  caseId: string;
+  onClose: () => void;
+  paginationOptions: CaseTasksLinesQuery$variables;
+  defaultMarkings?: { value: string; label: string }[];
 }
 
 const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({

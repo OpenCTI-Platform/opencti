@@ -4,7 +4,7 @@ import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMa
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface CsvMapperRepresentationAttributeSelectedConfigurationsProps {
-  configuration?: CsvMapperRepresentationAttributeFormData
+  configuration?: CsvMapperRepresentationAttributeFormData;
 }
 
 const flexStyle = { display: 'flex', alignItems: 'end', gap: '4px' };

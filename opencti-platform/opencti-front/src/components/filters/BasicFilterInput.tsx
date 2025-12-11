@@ -3,12 +3,12 @@ import TextField from '@mui/material/TextField';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface BasicFilterInputProps {
-  filter?: Filter
-  filterKey: string
-  helpers?: handleFilterHelpers
-  filterValues: string[]
-  label: string
-  type?: string
+  filter?: Filter;
+  filterKey: string;
+  helpers?: handleFilterHelpers;
+  filterValues: string[];
+  label: string;
+  type?: string;
 }
 
 const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({

@@ -35,8 +35,8 @@ const csvMapperExportQuery = graphql`
 `;
 
 interface CsvMapperPopoverProps {
-  csvMapperId: string
-  paginationOptions: csvMappers_MappersQuery$variables
+  csvMapperId: string;
+  paginationOptions: csvMappers_MappersQuery$variables;
 }
 
 const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({

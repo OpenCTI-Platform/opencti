@@ -31,20 +31,20 @@ export const decayRuleEditionMutation = graphql`
 `;
 
 interface DecayRuleEditionFormData {
-  name: string
-  description: string
-  order: number
-  active: boolean
-  decay_lifetime: number
-  decay_pound: number
-  decay_points: number[]
-  decay_revoke_score: number
-  decay_observable_types: string[]
+  name: string;
+  description: string;
+  order: number;
+  active: boolean;
+  decay_lifetime: number;
+  decay_pound: number;
+  decay_points: number[];
+  decay_revoke_score: number;
+  decay_observable_types: string[];
 }
 
 interface DecayRuleEditionFormProps {
-  decayRuleId: string
-  initialValues: DecayRuleEditionFormData
+  decayRuleId: string;
+  initialValues: DecayRuleEditionFormData;
 }
 const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   decayRuleId,
@@ -227,7 +227,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   );
 };
 interface DecayRuleEditionProps {
-  decayRule: DecayRule_decayRule$data
+  decayRule: DecayRule_decayRule$data;
 }
 
 const DecayRuleEdition: FunctionComponent<DecayRuleEditionProps> = ({

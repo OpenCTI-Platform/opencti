@@ -10,9 +10,9 @@ import Drawer from '../drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 
 interface StixCoreObjectFormSelectorProps {
-  data: StixCoreObjectFormsFormsQuery$data
-  open: boolean
-  handleClose: () => void
+  data: StixCoreObjectFormsFormsQuery$data;
+  open: boolean;
+  handleClose: () => void;
 }
 
 const StixCoreObjectFormSelector: FunctionComponent<StixCoreObjectFormSelectorProps> = ({ data, open, handleClose }) => {

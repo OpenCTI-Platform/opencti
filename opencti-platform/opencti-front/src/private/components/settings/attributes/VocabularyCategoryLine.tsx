@@ -37,8 +37,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface VocabularyCategoryLineProps {
-  node: VocabularyDefinition
-  dataColumns: DataColumns
+  node: VocabularyDefinition;
+  dataColumns: DataColumns;
 }
 
 export const VocabularyCategoryLine: FunctionComponent<
@@ -80,7 +80,7 @@ export const VocabularyCategoryLine: FunctionComponent<
 export const VocabularyCategoryLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

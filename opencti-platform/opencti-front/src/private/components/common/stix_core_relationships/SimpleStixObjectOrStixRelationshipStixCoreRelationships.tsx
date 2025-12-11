@@ -39,9 +39,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface SimpleStixObjectOrStixRelationshipStixCoreRelationshipsProps {
-  stixObjectOrStixRelationshipId: string
-  stixObjectOrStixRelationshipLink: string
-  relationshipType?: string
+  stixObjectOrStixRelationshipId: string;
+  stixObjectOrStixRelationshipLink: string;
+  relationshipType?: string;
 }
 
 const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({

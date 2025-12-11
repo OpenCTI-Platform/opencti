@@ -65,11 +65,11 @@ const SettingsMessageForm = ({
   creation = false,
   open,
 }: {
-  settingsId: string
-  message?: SettingsMessagesLine_settingsMessage$data
-  handleClose: () => void
-  creation?: boolean
-  open?: boolean
+  settingsId: string;
+  message?: SettingsMessagesLine_settingsMessage$data;
+  handleClose: () => void;
+  creation?: boolean;
+  open?: boolean;
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();

@@ -30,8 +30,8 @@ import stopEvent from '../../../../utils/domEvent';
 import canDeleteConnector from './utils/canDeleteConnector';
 
 interface ConnectorPopoverProps {
-  connector: Connector_connector$data
-  onRefreshData?: () => void
+  connector: Connector_connector$data;
+  onRefreshData?: () => void;
 }
 
 const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) => {

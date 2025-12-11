@@ -29,12 +29,12 @@ import { SearchIndexedFileLine, SearchIndexedFileLineDummy } from './SearchIndex
 const nbOfRowsToLoad = 50;
 
 interface SearchIndexedFilesLinesProps {
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
-  dataColumns: DataColumns
-  paginationOptions: SearchIndexedFilesLinesPaginationQuery$variables
-  queryRef: PreloadedQuery<SearchIndexedFilesLinesPaginationQuery>
-  onLabelClick?: HandleAddFilter
-  redirectionMode?: string
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  dataColumns: DataColumns;
+  paginationOptions: SearchIndexedFilesLinesPaginationQuery$variables;
+  queryRef: PreloadedQuery<SearchIndexedFilesLinesPaginationQuery>;
+  onLabelClick?: HandleAddFilter;
+  redirectionMode?: string;
 }
 
 export const searchIndexedFilesLinesQuery = graphql`

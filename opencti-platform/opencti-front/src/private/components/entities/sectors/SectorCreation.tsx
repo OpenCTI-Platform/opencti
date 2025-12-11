@@ -72,25 +72,25 @@ const sectorMutation = graphql`
 const SECTOR_TYPE = 'Sector';
 
 interface SectorAddInput {
-  name: string
-  description: string
-  confidence: number | null
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | null
+  name: string;
+  description: string;
+  confidence: number | null;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | null;
 }
 
 interface SectorFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: FieldOption
-  defaultMarkingDefinitions?: FieldOption[]
-  inputValue?: string
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
+  inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
@@ -329,7 +329,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
 const SectorCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: SectorsLinesPaginationQuery$variables
+  paginationOptions: SectorsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

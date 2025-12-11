@@ -12,11 +12,11 @@ import { commitMutation, defaultCommitMutation } from '../relay/environment';
 
 interface ItemParticipantsProps {
   participants: {
-    readonly entity_type: string
-    readonly id: string
-    readonly name: string
-  }[]
-  stixDomainObjectId: string
+    readonly entity_type: string;
+    readonly id: string;
+    readonly name: string;
+  }[];
+  stixDomainObjectId: string;
 }
 
 const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants, stixDomainObjectId }) => {

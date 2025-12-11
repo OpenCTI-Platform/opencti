@@ -72,7 +72,7 @@ const fragmentData = graphql`
 `;
 
 interface RulesHeaderProps {
-  data: RulesHeader_data$key
+  data: RulesHeader_data$key;
 }
 
 const RulesHeader = ({ data }: RulesHeaderProps) => {

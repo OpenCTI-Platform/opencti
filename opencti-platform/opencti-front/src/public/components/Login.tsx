@@ -119,8 +119,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface LoginProps {
-  type: string
-  settings: LoginRootPublicQuery$data['publicSettings']
+  type: string;
+  settings: LoginRootPublicQuery$data['publicSettings'];
 }
 
 const FLASH_COOKIE = 'opencti_flash';
@@ -164,8 +164,8 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
 
   const renderExternalAuth = (
     authButtons?: Array<{
-      provider?: string | null
-      name: string
+      provider?: string | null;
+      name: string;
     }>,
   ) => (
     <div style={{ marginTop: 10, marginBottom: 20 }}>

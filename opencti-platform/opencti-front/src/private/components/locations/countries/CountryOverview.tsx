@@ -39,7 +39,7 @@ export const countryOverviewFragment = graphql`
 `;
 
 interface CountryOverviewProps {
-  countryRef: CountryOverview_country$key
+  countryRef: CountryOverview_country$key;
 }
 
 const CountryOverviewComponent: FunctionComponent<CountryOverviewProps> = ({

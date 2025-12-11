@@ -64,9 +64,9 @@ const entitySettingAttributeLineFragment = graphql`
 `;
 
 interface EntitySettingAttributeLineProps {
-  node?: EntitySettingAttributeLine_attribute$key
-  dataColumns?: DataColumns
-  entitySetting: EntitySettingAttributes_entitySetting$data
+  node?: EntitySettingAttributeLine_attribute$key;
+  dataColumns?: DataColumns;
+  entitySetting: EntitySettingAttributes_entitySetting$data;
 }
 
 const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLineProps> = ({ node = null, dataColumns, entitySetting }) => {
@@ -150,7 +150,7 @@ export default EntitySettingAttributeLine;
 export const EntitySettingAttributeLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

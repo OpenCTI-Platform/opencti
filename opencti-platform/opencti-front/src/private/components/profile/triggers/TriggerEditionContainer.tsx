@@ -22,9 +22,9 @@ export const triggerActivityEditionQuery = graphql`
 `;
 
 interface TriggerEditionContainerProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<TriggerEditionContainerKnowledgeQuery>
-  paginationOptions?: TriggersLinesPaginationQuery$variables
+  handleClose: () => void;
+  queryRef: PreloadedQuery<TriggerEditionContainerKnowledgeQuery>;
+  paginationOptions?: TriggersLinesPaginationQuery$variables;
 }
 
 const TriggerEditionContainer: FunctionComponent<TriggerEditionContainerProps> = ({ handleClose, queryRef, paginationOptions }) => {

@@ -60,29 +60,29 @@ const observedDataCreationMutation = graphql`
 const OBSERVED_DATA_TYPE = 'Observed-Data';
 
 interface ObservedDataAddInput {
-  objects: { value: string }[]
-  first_observed: Date | null
-  last_observed: Date | null
-  number_observed: number
-  confidence: number | undefined
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  objects: { value: string }[];
+  first_observed: Date | null;
+  last_observed: Date | null;
+  number_observed: number;
+  confidence: number | undefined;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface ObservedDataFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string, name: string } | null,
-  ) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  defaultConfidence?: number
+    response: { id: string; name: string } | null,
+  ) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultConfidence?: number;
 }
 
 export const ObservedDataCreationForm: FunctionComponent<
@@ -275,7 +275,7 @@ export const ObservedDataCreationForm: FunctionComponent<
 const ObservedDataCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: ObservedDatasLinesPaginationQuery$variables
+  paginationOptions: ObservedDatasLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(

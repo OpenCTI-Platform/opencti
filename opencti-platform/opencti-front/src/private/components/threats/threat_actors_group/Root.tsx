@@ -83,8 +83,8 @@ const ThreatActorGroupQuery = graphql`
 const THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES = ['related-to', 'part-of'];
 
 type RootThreatActorGroupProps = {
-  threatActorGroupId: string
-  queryRef: PreloadedQuery<RootThreatActorGroupQuery>
+  threatActorGroupId: string;
+  queryRef: PreloadedQuery<RootThreatActorGroupQuery>;
 };
 
 const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorGroupProps) => {
@@ -159,7 +159,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ThreatActorGroupDeletion id={threatActorGroup.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

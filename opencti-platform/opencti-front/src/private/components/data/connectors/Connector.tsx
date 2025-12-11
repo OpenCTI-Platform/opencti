@@ -53,9 +53,9 @@ import { ConnectorWorksQuery$data, ConnectorWorksQuery$variables } from './__gen
 
 // Type extension for organization node with authorized_authorities
 interface OrganizationNodeWithAuthorities {
-  id: string
-  name: string
-  authorized_authorities?: ReadonlyArray<string>
+  id: string;
+  name: string;
+  authorized_authorities?: ReadonlyArray<string>;
 }
 
 const interval$ = interval(FIVE_SECONDS);
@@ -104,7 +104,7 @@ const updateRequestedStatus = graphql`
 
 // Component for ConnectorWorks sections
 interface ConnectorWorksSectionProps {
-  connectorId: string
+  connectorId: string;
 }
 
 const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ connectorId }) => {
@@ -167,8 +167,8 @@ const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ 
 ConnectorWorksSection.displayName = 'ConnectorWorksSection';
 
 interface ConnectorComponentProps {
-  connector: Connector_connector$data
-  relay: RelayRefetchProp
+  connector: Connector_connector$data;
+  relay: RelayRefetchProp;
 }
 
 const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connector, relay }) => {

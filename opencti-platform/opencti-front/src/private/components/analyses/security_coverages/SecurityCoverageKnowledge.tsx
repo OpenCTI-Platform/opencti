@@ -17,7 +17,7 @@ const securityCoverageKnowledgeFragment = graphql`
 const SecurityCoverageKnowledgeComponent = ({
   securityCoverageData,
 }: {
-  securityCoverageData: SecurityCoverageKnowledge_securityCoverage$key
+  securityCoverageData: SecurityCoverageKnowledge_securityCoverage$key;
 }) => {
   const securityCoverage = useFragment(
     securityCoverageKnowledgeFragment,

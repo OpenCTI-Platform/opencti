@@ -28,15 +28,15 @@ export const decayExclusionRuleEditionFieldPatch = graphql`
 `;
 
 type DecayExclusionRuleEditionProps = {
-  data: DecayExclusionRules_node$data
-  isOpen: boolean
-  onClose: () => void
+  data: DecayExclusionRules_node$data;
+  isOpen: boolean;
+  onClose: () => void;
 };
 
 type DecayExclusionRuleEditionFormData = {
-  name: string
-  description: string | null
-  decay_exclusion_filters: FilterGroup | null
+  name: string;
+  description: string | null;
+  decay_exclusion_filters: FilterGroup | null;
 };
 
 const decayExclusionRuleEditionValidator = (t: (value: string) => string) => {

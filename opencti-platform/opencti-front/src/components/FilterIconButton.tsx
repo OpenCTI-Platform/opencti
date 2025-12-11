@@ -10,31 +10,31 @@ import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQue
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 
 export interface FilterIconButtonProps {
-  availableFilterKeys?: string[]
-  filters?: FilterGroup | null
-  handleRemoveFilter?: (key: string, op?: string) => void
-  handleSwitchGlobalMode?: () => void
-  handleSwitchLocalMode?: (filter: Filter) => void
-  styleNumber?: number
-  chipColor?: ChipOwnProps['color']
-  dataColumns?: DataColumns
-  disabledPossible?: boolean
-  redirection?: boolean
-  helpers?: handleFilterHelpers
-  availableRelationFilterTypes?: Record<string, string[]>
-  entityTypes?: string[]
-  filtersRestrictions?: FiltersRestrictions
-  searchContext?: FilterSearchContext
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
-  fintelTemplatesContext?: boolean
-  hasSavedFilters?: boolean
+  availableFilterKeys?: string[];
+  filters?: FilterGroup | null;
+  handleRemoveFilter?: (key: string, op?: string) => void;
+  handleSwitchGlobalMode?: () => void;
+  handleSwitchLocalMode?: (filter: Filter) => void;
+  styleNumber?: number;
+  chipColor?: ChipOwnProps['color'];
+  dataColumns?: DataColumns;
+  disabledPossible?: boolean;
+  redirection?: boolean;
+  helpers?: handleFilterHelpers;
+  availableRelationFilterTypes?: Record<string, string[]>;
+  entityTypes?: string[];
+  filtersRestrictions?: FiltersRestrictions;
+  searchContext?: FilterSearchContext;
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  fintelTemplatesContext?: boolean;
+  hasSavedFilters?: boolean;
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
-  filters: FilterGroup
-  hasRenderedRef: boolean
-  setHasRenderedRef: (value: boolean) => void
+  filters: FilterGroup;
+  hasRenderedRef: boolean;
+  setHasRenderedRef: (value: boolean) => void;
 }
 const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButtonIfFiltersProps> = ({
   filters,
@@ -97,7 +97,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
 };
 
 interface EmptyFilterProps {
-  setHasRenderedRef: (value: boolean) => void
+  setHasRenderedRef: (value: boolean) => void;
 }
 
 const EmptyFilter: FunctionComponent<EmptyFilterProps> = ({ setHasRenderedRef }) => {

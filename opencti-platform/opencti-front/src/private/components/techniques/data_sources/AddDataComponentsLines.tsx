@@ -78,8 +78,8 @@ export const addDataComponentsLinesFragment = graphql`
 `;
 
 interface AddDataComponentsLinesContainerProps {
-  dataSource: DataSourceDataComponents_dataSource$data
-  queryRef: PreloadedQuery<AddDataComponentsLinesToDataSourceQuery>
+  dataSource: DataSourceDataComponents_dataSource$data;
+  queryRef: PreloadedQuery<AddDataComponentsLinesToDataSourceQuery>;
 }
 
 const AddDataComponentsLines: FunctionComponent<

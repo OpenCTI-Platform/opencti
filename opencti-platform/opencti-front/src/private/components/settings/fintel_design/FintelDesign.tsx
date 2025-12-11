@@ -47,7 +47,7 @@ const fintelDesignComponentFragment = graphql`
 `;
 
 interface FintelDesignComponentProps {
-  queryRef: PreloadedQuery<FintelDesignQuery>
+  queryRef: PreloadedQuery<FintelDesignQuery>;
 }
 
 const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({

@@ -9,10 +9,10 @@ import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../../components/i18n';
 
 type WorkspaceWidgetConfigProps = {
-  handleImportWidget: (widgetFile: File) => void
-  widget?: Widget
-  onComplete: (value: Widget, variableName?: string) => void
-  closeMenu?: () => void
+  handleImportWidget: (widgetFile: File) => void;
+  widget?: Widget;
+  onComplete: (value: Widget, variableName?: string) => void;
+  closeMenu?: () => void;
 };
 
 const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidget }: WorkspaceWidgetConfigProps) => {

@@ -22,9 +22,9 @@ import { useFormatter } from '../../../../../components/i18n';
 import { PlaybookComponents, PlaybookNode } from '../types/playbook-types';
 
 interface PlaybookSelectComponentProps {
-  components: PlaybookComponents
-  selectedNode: PlaybookNode | null
-  onSelect: (componentId: string) => void
+  components: PlaybookComponents;
+  selectedNode: PlaybookNode | null;
+  onSelect: (componentId: string) => void;
 }
 
 const PlaybookFlowSelectComponent = ({

@@ -3,19 +3,19 @@ import { stixFilters, useAvailableFilterKeysForEntityTypes } from './filters/fil
 import useSchema from './hooks/useSchema';
 
 export interface Connector {
-  name: string
-  active: boolean
-  auto: boolean
-  only_contextual: boolean
-  connector_trigger_filters: string
-  connector_type: string
-  connector_scope: ReadonlyArray<string>
-  connector_state: string
+  name: string;
+  active: boolean;
+  auto: boolean;
+  only_contextual: boolean;
+  connector_trigger_filters: string;
+  connector_type: string;
+  connector_scope: ReadonlyArray<string>;
+  connector_state: string;
 }
 
 interface ConnectorStatus {
-  status: boolean | null
-  label: string
+  status: boolean | null;
+  label: string;
 }
 
 export const connectorsWithTrigger = ['INTERNAL_ENRICHMENT', 'INTERNAL_IMPORT_FILE'];

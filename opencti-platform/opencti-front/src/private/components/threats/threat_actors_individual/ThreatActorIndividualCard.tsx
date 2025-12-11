@@ -124,9 +124,9 @@ export const ThreatActorIndividualCardFragment = graphql`
   }
 `;
 interface ThreatActorIndividualCardProps {
-  node: ThreatActorIndividualCard_node$key
-  onLabelClick: HandleAddFilter
-  bookmarksIds?: string[]
+  node: ThreatActorIndividualCard_node$key;
+  onLabelClick: HandleAddFilter;
+  bookmarksIds?: string[];
 }
 const ThreatActorIndividualCard: FunctionComponent<
   ThreatActorIndividualCardProps

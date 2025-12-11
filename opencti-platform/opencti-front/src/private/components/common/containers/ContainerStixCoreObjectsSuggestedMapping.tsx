@@ -46,12 +46,12 @@ export const containerStixCoreObjectsSuggestedMappingQuery = graphql`
 `;
 
 interface ContainerStixCoreObjectsSuggestedMappingProps {
-  container: ContainerMappingContent_container$data
-  suggestedMappingCount: Record<string, number>
-  suggestedEntities: NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>
-  height: number
-  askingSuggestion: boolean
-  handleRemoveSuggestedMappingLine: (entity: NonNullable<ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']>) => void
+  container: ContainerMappingContent_container$data;
+  suggestedMappingCount: Record<string, number>;
+  suggestedEntities: NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>;
+  height: number;
+  askingSuggestion: boolean;
+  handleRemoveSuggestedMappingLine: (entity: NonNullable<ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']>) => void;
 }
 
 const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<

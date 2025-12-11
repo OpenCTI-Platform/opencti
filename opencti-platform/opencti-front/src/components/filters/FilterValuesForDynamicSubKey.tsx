@@ -29,9 +29,9 @@ export const filterValuesForDynamicSubKeyQuery = graphql`
 `;
 
 interface FilterValuesForDynamicSubKeyContainerProps {
-  queryRef: PreloadedQuery<FilterValuesForDynamicSubKeyQuery>
-  filterValue: FilterGroup
-  chipColor?: ChipOwnProps['color']
+  queryRef: PreloadedQuery<FilterValuesForDynamicSubKeyQuery>;
+  filterValue: FilterGroup;
+  chipColor?: ChipOwnProps['color'];
 }
 
 const FilterValuesForDynamicSubKeyContainer = ({
@@ -81,8 +81,8 @@ const FilterValuesForDynamicSubKeyContainer = ({
 };
 
 interface FilterValuesForDynamicSubKeyProps {
-  filterValue: FilterGroup
-  chipColor?: ChipOwnProps['color']
+  filterValue: FilterGroup;
+  chipColor?: ChipOwnProps['color'];
 }
 
 const FilterValuesForDynamicSubKey = ({

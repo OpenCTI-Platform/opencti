@@ -36,13 +36,13 @@ const draftPopoverDeleteMutation = graphql`
 `;
 
 interface DraftPopoverProps {
-  draftId: string
-  draftLocked: boolean
-  paginationOptions: DraftsLinesPaginationQuery$variables
+  draftId: string;
+  draftLocked: boolean;
+  paginationOptions: DraftsLinesPaginationQuery$variables;
   updater?: (
     store: RecordSourceSelectorProxy<DraftContextBannerMutation$data>,
-  ) => void
-  currentUserAccessRight?: string
+  ) => void;
+  currentUserAccessRight?: string;
 }
 
 const DraftPopover: React.FC<DraftPopoverProps> = ({

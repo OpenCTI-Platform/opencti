@@ -13,9 +13,9 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 export interface DisseminationListCreationFormData {
-  name: string
-  emails: string
-  description: string
+  name: string;
+  emails: string;
+  description: string;
 }
 
 const disseminationListCreationMutation = graphql`
@@ -36,7 +36,7 @@ const CreateDisseminationListControlledDial = (
 );
 
 interface DisseminationListCreationProps {
-  paginationOptions: DisseminationListsLinesPaginationQuery$variables
+  paginationOptions: DisseminationListsLinesPaginationQuery$variables;
 }
 
 const DisseminationListCreation: FunctionComponent<DisseminationListCreationProps> = ({

@@ -30,7 +30,7 @@ const IncidentKnowledgeFragment = graphql`
 const IncidentKnowledge = ({
   incidentData,
 }: {
-  incidentData: IncidentKnowledge_incident$key
+  incidentData: IncidentKnowledge_incident$key;
 }) => {
   const incident = useFragment<IncidentKnowledge_incident$key>(
     IncidentKnowledgeFragment,

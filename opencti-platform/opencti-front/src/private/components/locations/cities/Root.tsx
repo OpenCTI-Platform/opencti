@@ -147,7 +147,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <CityDeletion id={city.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

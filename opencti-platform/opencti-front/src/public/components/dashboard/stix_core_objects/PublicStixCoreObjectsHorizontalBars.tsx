@@ -71,9 +71,9 @@ const publicStixCoreObjectsHorizontalBarsQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsHorizontalBarsComponentProps {
-  parameters: Widget['parameters']
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixCoreObjectsHorizontalBarsQuery>
+  parameters: Widget['parameters'];
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixCoreObjectsHorizontalBarsQuery>;
 }
 
 const PublicStixCoreObjectsHorizontalBarsComponent = ({

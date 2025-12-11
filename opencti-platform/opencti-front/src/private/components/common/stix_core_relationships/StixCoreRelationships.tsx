@@ -23,15 +23,15 @@ import { DataTableProps, DataTableVariant } from '../../../../components/dataGri
 import type { Theme } from '../../../../components/Theme';
 
 interface StixCoreRelationshipsProps {
-  storageKey: string
-  entityId: string
-  currentView?: string
-  viewButtons: ReactElement[]
-  targetTypes: string[]
-  direction: 'fromEntity' | 'toEntity' | 'all'
-  relationshipTypes: string[]
-  defaultStartTime?: string
-  defaultStopTime?: string
+  storageKey: string;
+  entityId: string;
+  currentView?: string;
+  viewButtons: ReactElement[];
+  targetTypes: string[];
+  direction: 'fromEntity' | 'toEntity' | 'all';
+  relationshipTypes: string[];
+  defaultStartTime?: string;
+  defaultStopTime?: string;
 }
 
 export const stixCoreRelationshipsFragment = graphql`

@@ -79,7 +79,7 @@ export const entitySettingPatch = graphql`
 `;
 
 interface EntitySettingSettingsProps {
-  entitySettingsData: EntitySettingSettings_entitySetting$key
+  entitySettingsData: EntitySettingSettings_entitySetting$key;
 }
 
 const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProps) => {

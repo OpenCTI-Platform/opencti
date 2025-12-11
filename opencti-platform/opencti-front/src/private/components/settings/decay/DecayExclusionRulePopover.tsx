@@ -20,8 +20,8 @@ const decayExclusionRulePopoverDeleteMutation = graphql`
 `;
 
 type DecayExclusionRulePopoverProps = {
-  data: DecayExclusionRules_node$data
-  paginationOptions: DecayExclusionRulesLinesPaginationQuery$variables
+  data: DecayExclusionRules_node$data;
+  paginationOptions: DecayExclusionRulesLinesPaginationQuery$variables;
 };
 
 const DecayExclusionRulePopover = ({ data, paginationOptions }: DecayExclusionRulePopoverProps) => {

@@ -40,7 +40,7 @@ const DataComponentDataSourceFragment = graphql`
 `;
 
 interface DataComponentDataSourcesProps {
-  dataComponent: DataComponentDataSources_dataComponent$key
+  dataComponent: DataComponentDataSources_dataComponent$key;
 }
 
 const DataComponentDataSource: FunctionComponent<

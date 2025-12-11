@@ -22,11 +22,11 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
 
 interface StixDomainObjectAttackPatternsKillChainLinesProps {
-  data: StixDomainObjectAttackPatternsKillChainContainer_data$data
-  paginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables
-  onDelete: () => void
-  searchTerm: string
-  coursesOfAction?: boolean
+  data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
+  paginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
+  onDelete: () => void;
+  searchTerm: string;
+  coursesOfAction?: boolean;
 }
 
 const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomainObjectAttackPatternsKillChainLinesProps> = ({
@@ -58,17 +58,17 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
   type AttackPatternNode = NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data['attackPatterns']>['edges'][number]['node'];
   type NonNullableCoursesOfAction = NonNullable<NonNullable<NonNullable<AttackPatternNode['coursesOfAction']>['edges']>[number]>;
   interface FormattedAttackPattern extends AttackPatternNode {
-    killChainPhase: NonNullable<AttackPatternNode['killChainPhases']>[number]
-    kill_chain_name: string
-    subattackPatterns_text: string
+    killChainPhase: NonNullable<AttackPatternNode['killChainPhases']>[number];
+    kill_chain_name: string;
+    subattackPatterns_text: string;
   }
 
   interface KillChainPhaseElement {
-    id: string
-    phase_name: string
-    kill_chain_name: string
-    x_opencti_order: number
-    attackPatterns: FormattedAttackPattern[]
+    id: string;
+    phase_name: string;
+    kill_chain_name: string;
+    x_opencti_order: number;
+    attackPatterns: FormattedAttackPattern[];
   }
 
   // Extract all kill chain phases

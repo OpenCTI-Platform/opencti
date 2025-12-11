@@ -9,8 +9,8 @@ import { RootSettings$data } from '../../../__generated__/RootSettings.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
 type GroupWithNullConfidenceLevelAlertContentProps = {
-  alert: RootSettings$data['platform_critical_alerts'][0]
-  closeHandler: () => void
+  alert: RootSettings$data['platform_critical_alerts'][0];
+  closeHandler: () => void;
 };
 
 const GroupWithNullConfidenceLevelAlertContent: React.FC<GroupWithNullConfidenceLevelAlertContentProps> = ({ alert, closeHandler }) => {

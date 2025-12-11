@@ -16,8 +16,8 @@ import { useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
 
 type StepContainerProps = {
-  perspective?: WidgetPerspective | null
-  children: React.ReactNode
+  perspective?: WidgetPerspective | null;
+  children: React.ReactNode;
 };
 
 const StepContainer = ({ perspective, children }: StepContainerProps) => {

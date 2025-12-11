@@ -64,7 +64,7 @@ const DataComponentFragment = graphql`
 `;
 
 interface DataComponentProps {
-  dataComponentData: DataComponent_dataComponent$key
+  dataComponentData: DataComponent_dataComponent$key;
 }
 
 const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {

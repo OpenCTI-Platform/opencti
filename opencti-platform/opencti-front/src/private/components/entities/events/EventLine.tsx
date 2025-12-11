@@ -42,8 +42,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface EventLineProps {
-  node: EventLine_node$key
-  dataColumns: DataColumns
+  node: EventLine_node$key;
+  dataColumns: DataColumns;
 }
 
 const eventLineFragment = graphql`
@@ -133,7 +133,7 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
 export const EventLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

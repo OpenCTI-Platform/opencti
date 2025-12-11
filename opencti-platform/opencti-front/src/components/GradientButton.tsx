@@ -10,8 +10,8 @@ export enum GradientVariant {
 }
 
 interface GradientButtonProps extends ButtonProps {
-  gradientVariant?: GradientVariant
-  target?: string
+  gradientVariant?: GradientVariant;
+  target?: string;
 }
 
 const GradientButton = ({
@@ -47,8 +47,8 @@ const GradientButton = ({
   };
 
   const bgGradientStyle = (opts?: {
-    active?: boolean
-    hover?: boolean
+    active?: boolean;
+    hover?: boolean;
   }) => {
     const { active = false, hover = false } = opts ?? {};
     let shadowY = 0;

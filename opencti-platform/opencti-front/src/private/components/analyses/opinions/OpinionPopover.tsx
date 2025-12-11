@@ -32,25 +32,25 @@ const OpinionPopoverDeletionMutation = graphql`
 `;
 
 interface CreatedBy {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 interface ObjectMarking {
-  readonly definition: string | null | undefined
-  readonly definition_type: string | null | undefined
+  readonly definition: string | null | undefined;
+  readonly definition_type: string | null | undefined;
 }
 
 interface OpinionPopoverProps {
-  variant: string
-  onDelete: () => void
+  variant: string;
+  onDelete: () => void;
   opinion: {
-    id: string
-    opinion: string
-    explanation: string | null | undefined
-    createdBy: CreatedBy | null | undefined
-    objectMarking: readonly ObjectMarking[] | null | undefined // Mark as readonly
-  }
+    id: string;
+    opinion: string;
+    explanation: string | null | undefined;
+    createdBy: CreatedBy | null | undefined;
+    objectMarking: readonly ObjectMarking[] | null | undefined; // Mark as readonly
+  };
 }
 
 const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, variant = 'overview', onDelete }) => {

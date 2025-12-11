@@ -81,15 +81,15 @@ const notifierValidation = (t: (n: string) => string) => Yup.object().shape({
 });
 
 interface NotifierEditionComponentProps {
-  queryRef: PreloadedQuery<NotifierEditionQuery>
-  onClose: () => void
+  queryRef: PreloadedQuery<NotifierEditionQuery>;
+  onClose: () => void;
 }
 
 interface NotifierEditionValues {
-  name: string
-  description?: string | null
-  restricted_members?: FieldOption[] | null
-  notifier_connector_id?: FieldOption
+  name: string;
+  description?: string | null;
+  restricted_members?: FieldOption[] | null;
+  notifier_connector_id?: FieldOption;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

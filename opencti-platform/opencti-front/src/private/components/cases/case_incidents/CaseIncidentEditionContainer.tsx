@@ -9,10 +9,10 @@ import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncid
 import CaseIncidentEditionOverview from './CaseIncidentEditionOverview';
 
 interface CaseIncidentEditionContainerProps {
-  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 export const caseIncidentEditionQuery = graphql`

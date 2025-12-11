@@ -6,7 +6,7 @@ import { itemColor } from '../../../../../utils/Colors';
 
 const ENTITY_TYPES = ['Administrative-Area', 'City', 'Data-Source', 'Malware', 'System'];
 
-const fakeSDO = (overwrites?: { refreshed_at?: Date, pir_score?: number }) => {
+const fakeSDO = (overwrites?: { refreshed_at?: Date; pir_score?: number }) => {
   const { refreshed_at, pir_score } = overwrites ?? {};
   const updated_at = faker.date.recent({ days: 30 });
   return {

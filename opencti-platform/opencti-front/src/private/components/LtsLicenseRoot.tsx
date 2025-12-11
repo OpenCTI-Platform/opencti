@@ -74,7 +74,7 @@ const queryRef = loadQuery<LtsLicenseRootQuery>(
 );
 
 interface LicenseProps {
-  settings: LtsLicenseRootQuery$data['settings']
+  settings: LtsLicenseRootQuery$data['settings'];
 }
 
 const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {

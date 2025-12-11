@@ -119,9 +119,9 @@ export const draftEntitiesLinesFragment = graphql`
 const LOCAL_STORAGE_KEY = 'draft_entities';
 
 interface DraftEntitiesProps {
-  entitiesType?: string
-  excludedEntitiesType?: string
-  isReadOnly: boolean
+  entitiesType?: string;
+  excludedEntitiesType?: string;
+  isReadOnly: boolean;
 }
 
 const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({

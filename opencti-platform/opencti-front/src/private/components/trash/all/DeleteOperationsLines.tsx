@@ -12,17 +12,17 @@ import { DeleteOperationLine_node$data } from './__generated__/DeleteOperationLi
 const nbOfRowsToLoad = 50;
 
 interface DeleteOperationsLinesProps {
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
-  dataColumns: DataColumns
-  paginationOptions: DeleteOperationsLinesPaginationQuery$variables
-  queryRef: PreloadedQuery<DeleteOperationsLinesPaginationQuery>
-  selectedElements: Record<string, DeleteOperationLine_node$data>
-  deSelectedElements: Record<string, DeleteOperationLine_node$data>
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  dataColumns: DataColumns;
+  paginationOptions: DeleteOperationsLinesPaginationQuery$variables;
+  queryRef: PreloadedQuery<DeleteOperationsLinesPaginationQuery>;
+  selectedElements: Record<string, DeleteOperationLine_node$data>;
+  deSelectedElements: Record<string, DeleteOperationLine_node$data>;
   onToggleEntity: (
     entity: DeleteOperationLine_node$data,
     event: React.SyntheticEvent,
-  ) => void
-  selectAll: boolean
+  ) => void;
+  selectAll: boolean;
 }
 
 export const deleteOperationsLinesQuery = graphql`

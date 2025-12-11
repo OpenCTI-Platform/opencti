@@ -20,13 +20,13 @@ export const filterValuesContentQuery = graphql`
     }
 `;
 interface FilterValuesContentProps {
-  redirection?: boolean
-  isFilterTooltip?: boolean
-  filterKey: string
-  id: string | null
-  value?: string | null
-  filterDefinition?: FilterDefinition
-  filterOperator?: string
+  redirection?: boolean;
+  isFilterTooltip?: boolean;
+  filterKey: string;
+  id: string | null;
+  value?: string | null;
+  filterDefinition?: FilterDefinition;
+  filterOperator?: string;
 }
 
 const FilterValuesContent: FunctionComponent<

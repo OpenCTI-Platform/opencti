@@ -79,35 +79,35 @@ const indicatorMutation = graphql`
 const INDICATOR_TYPE = 'Indicator';
 
 interface IndicatorAddInput {
-  name: string
-  confidence: number | undefined
-  indicator_types: string[]
-  pattern: string
-  pattern_type: string
-  x_opencti_main_observable_type: string
-  createObservables: boolean
-  x_mitre_platforms: string[]
-  valid_from: Date | null
-  valid_until: Date | null
-  description: string
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  killChainPhases: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  x_opencti_detection: boolean
-  x_opencti_score: number | undefined
-  file: File | undefined
+  name: string;
+  confidence: number | undefined;
+  indicator_types: string[];
+  pattern: string;
+  pattern_type: string;
+  x_opencti_main_observable_type: string;
+  createObservables: boolean;
+  x_mitre_platforms: string[];
+  valid_from: Date | null;
+  valid_until: Date | null;
+  description: string;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  killChainPhases: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  x_opencti_detection: boolean;
+  x_opencti_score: number | undefined;
+  file: File | undefined;
 }
 
 interface IndicatorFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  defaultConfidence?: number
-  inputValue?: string
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
@@ -412,9 +412,9 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
 };
 
 interface IndicatorCreationProps {
-  paginationOptions: IndicatorsLinesPaginationQuery$variables
-  contextual?: boolean
-  display?: boolean
+  paginationOptions: IndicatorsLinesPaginationQuery$variables;
+  contextual?: boolean;
+  display?: boolean;
 }
 
 const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {

@@ -92,8 +92,8 @@ const organizationQuery = graphql`
 `;
 
 type RootOrganizationProps = {
-  organizationId: string
-  queryRef: PreloadedQuery<RootOrganizationQuery>
+  organizationId: string;
+  queryRef: PreloadedQuery<RootOrganizationQuery>;
 };
 
 const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) => {
@@ -197,7 +197,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <OrganizationDeletion id={organization.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

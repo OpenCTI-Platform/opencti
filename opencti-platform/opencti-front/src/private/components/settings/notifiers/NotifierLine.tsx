@@ -47,9 +47,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface NotifierLineProps {
-  node: NotifierLine_node$key | NotifierLine_node$data
-  dataColumns: DataColumns
-  paginationOptions: NotifiersLinesPaginationQuery$variables
+  node: NotifierLine_node$key | NotifierLine_node$data;
+  dataColumns: DataColumns;
+  paginationOptions: NotifiersLinesPaginationQuery$variables;
 }
 
 const NotifierLineFragment = graphql`

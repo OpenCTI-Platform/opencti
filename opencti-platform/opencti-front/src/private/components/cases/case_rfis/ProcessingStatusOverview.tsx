@@ -12,13 +12,13 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface CaseRfiRequestAccessOverviewProps {
-  data: CaseRfi_caseRfi$data
+  data: CaseRfi_caseRfi$data;
 }
 
 // see requestAccess-domain.ts in backend.
 export interface RequestAccessActionStatus {
-  rfiStatusId: string
-  actionStatus: string
+  rfiStatusId: string;
+  actionStatus: string;
 }
 
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {

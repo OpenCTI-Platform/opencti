@@ -29,12 +29,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ItemEntityTypeProps {
-  entityType: string
-  inList?: boolean
-  showIcon?: boolean
-  isRestricted?: boolean
-  style?: React.CSSProperties
-  size?: 'small' | 'medium' | 'large'
+  entityType: string;
+  inList?: boolean;
+  showIcon?: boolean;
+  isRestricted?: boolean;
+  style?: React.CSSProperties;
+  size?: 'small' | 'medium' | 'large';
 }
 
 const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({

@@ -65,17 +65,17 @@ const incidentEditionDetailsFragment = graphql`
 `;
 
 interface IncidentEditionDetailsProps {
-  incidentRef: IncidentEditionDetails_incident$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  incidentRef: IncidentEditionDetails_incident$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface IncidentEditionDetailsFormValues {
-  message?: string
-  references?: FieldOption[]
-  first_seen?: FieldOption
-  last_seen?: FieldOption
+  message?: string;
+  references?: FieldOption[];
+  first_seen?: FieldOption;
+  last_seen?: FieldOption;
 }
 const IncidentEditionDetails: FunctionComponent<
   IncidentEditionDetailsProps

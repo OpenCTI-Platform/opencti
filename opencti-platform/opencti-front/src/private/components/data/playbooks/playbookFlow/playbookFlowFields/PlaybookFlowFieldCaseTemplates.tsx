@@ -18,8 +18,8 @@ import CaseTemplateField from '../../../../common/form/CaseTemplateField';
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 
 interface CaseTemplateForm {
-  container_type: string
-  caseTemplates: unknown[]
+  container_type: string;
+  caseTemplates: unknown[];
 }
 
 const CASES = ['Case-Incident', 'Case-Rfi', 'Case-Rft'];

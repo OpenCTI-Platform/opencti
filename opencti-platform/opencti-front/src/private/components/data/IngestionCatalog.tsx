@@ -29,54 +29,54 @@ import { MESSAGING$ } from '../../../relay/environment';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 interface IngestionCatalogComponentProps {
-  catalogsData: IngestionConnectorsCatalogsQuery['response']
-  deploymentData: IngestionConnectorsQuery['response']
-  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasActiveManagers: boolean, deploymentCount: number) => void
+  catalogsData: IngestionConnectorsCatalogsQuery['response'];
+  deploymentData: IngestionConnectorsQuery['response'];
+  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasActiveManagers: boolean, deploymentCount: number) => void;
 }
 
 type IngestionTypeMap = {
-  string: string
-  integer: number
-  dict: object
-  array: string[]
-  boolean: boolean
+  string: string;
+  integer: number;
+  dict: object;
+  array: string[];
+  boolean: boolean;
 };
 
 export type IngestionTypedProperty<K extends keyof IngestionTypeMap = keyof IngestionTypeMap> = {
-  type: K
-  default: IngestionTypeMap[K]
-  description: string
-  format?: string
+  type: K;
+  default: IngestionTypeMap[K];
+  description: string;
+  format?: string;
 };
 
 export interface IngestionConnector {
-  title: string
-  slug: string
-  description: string
-  short_description: string
-  logo: string
-  use_cases: string[]
-  verified: boolean
-  last_verified_date: string
-  playbook_supported: boolean
-  max_confidence_level: number
-  support_version: string
-  subscription_link: string
-  source_code: string
-  manager_supported: boolean
-  container_version: string
-  container_image: string
-  container_type: IngestionConnectorType
+  title: string;
+  slug: string;
+  description: string;
+  short_description: string;
+  logo: string;
+  use_cases: string[];
+  verified: boolean;
+  last_verified_date: string;
+  playbook_supported: boolean;
+  max_confidence_level: number;
+  support_version: string;
+  subscription_link: string;
+  source_code: string;
+  manager_supported: boolean;
+  container_version: string;
+  container_image: string;
+  container_type: IngestionConnectorType;
   config_schema: {
-    $schema: string
-    $id: string
-    type: string
+    $schema: string;
+    $id: string;
+    type: string;
     properties: {
-      [key: string]: IngestionTypedProperty
-    }
-    required: string[]
-    additionalProperties: boolean
-  }
+      [key: string]: IngestionTypedProperty;
+    };
+    required: string[];
+    additionalProperties: boolean;
+  };
 }
 
 const BrowseMoreButton = () => {

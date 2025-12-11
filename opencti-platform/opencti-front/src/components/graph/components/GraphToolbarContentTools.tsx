@@ -19,13 +19,13 @@ import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './Gra
 import ContainerAddStixCoreObjectsInLine from '../../../private/components/common/containers/ContainerAddStixCoreObjectsInLine';
 
 export interface GraphToolbarContentToolsProps {
-  stixCoreObjectRefetchQuery?: GraphQLTaggedNode
-  relationshipRefetchQuery?: GraphQLTaggedNode
-  onAddRelation?: (rel: ObjectToParse, onCompleted: () => void) => void
-  entity?: GraphEntity
-  enableReferences?: boolean
-  onDeleteRelation?: GraphToolbarDeleteConfirmProps['onDeleteRelation']
-  onRemove?: GraphToolbarDeleteConfirmProps['onRemove']
+  stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
+  relationshipRefetchQuery?: GraphQLTaggedNode;
+  onAddRelation?: (rel: ObjectToParse, onCompleted: () => void) => void;
+  entity?: GraphEntity;
+  enableReferences?: boolean;
+  onDeleteRelation?: GraphToolbarDeleteConfirmProps['onDeleteRelation'];
+  onRemove?: GraphToolbarDeleteConfirmProps['onRemove'];
 }
 
 const GraphToolbarContentTools = ({

@@ -88,19 +88,19 @@ export const liveActivityTriggerValidation = (t: (message: string) => string) =>
 });
 
 interface TriggerActivityLiveAddInput {
-  name: string
-  description: string
-  notifiers: FieldOption[]
-  recipients: FieldOption[]
+  name: string;
+  description: string;
+  notifiers: FieldOption[];
+  recipients: FieldOption[];
 }
 
 interface TriggerLiveCreationProps {
-  contextual?: boolean
-  open?: boolean
-  handleClose?: () => void
-  inputValue?: string
-  paginationOptions?: TriggersLinesPaginationQuery$variables
-  creationCallback?: (data: AlertLiveCreationActivityMutation$data) => void
+  contextual?: boolean;
+  open?: boolean;
+  handleClose?: () => void;
+  inputValue?: string;
+  paginationOptions?: TriggersLinesPaginationQuery$variables;
+  creationCallback?: (data: AlertLiveCreationActivityMutation$data) => void;
 }
 
 const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({

@@ -11,10 +11,10 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 const nbOfRowsToLoad = 50;
 
 interface EventsLinesProps {
-  queryRef: PreloadedQuery<EventsLinesPaginationQuery>
-  dataColumns: DataColumns
-  paginationOptions?: EventsLinesPaginationQuery$variables
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  queryRef: PreloadedQuery<EventsLinesPaginationQuery>;
+  dataColumns: DataColumns;
+  paginationOptions?: EventsLinesPaginationQuery$variables;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 export const eventsLinesQuery = graphql`

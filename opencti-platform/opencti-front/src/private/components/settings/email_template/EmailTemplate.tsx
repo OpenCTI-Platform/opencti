@@ -24,7 +24,7 @@ export const emailTemplateQuery = graphql`
 `;
 
 interface EmailTemplateProps {
-  queryRef: PreloadedQuery<EmailTemplateQuery>
+  queryRef: PreloadedQuery<EmailTemplateQuery>;
 }
 
 const EmailTemplateComponent = ({ queryRef }: EmailTemplateProps) => {

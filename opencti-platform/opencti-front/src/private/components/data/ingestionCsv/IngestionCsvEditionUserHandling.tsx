@@ -49,14 +49,14 @@ export const ingestionCsvEditionUserHandlingPatch = graphql`
 `;
 
 export interface EditionCsvAddAutoUserInput {
-  user_name: string
-  confidence_level: number
+  user_name: string;
+  confidence_level: number;
 }
 
 interface IngestionCsvEditionUserHandlingProps {
-  feedName: string
-  ingestionCsvDataId: string
-  onAutoUserCreated: () => void
+  feedName: string;
+  ingestionCsvDataId: string;
+  onAutoUserCreated: () => void;
 }
 const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUserHandlingProps> = ({ feedName, ingestionCsvDataId, onAutoUserCreated }) => {
   const { t_i18n } = useFormatter();

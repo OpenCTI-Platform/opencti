@@ -289,7 +289,7 @@ const entityDetailsQuery = graphql`
 `;
 
 interface EntityDetailsComponentProps {
-  queryRef: PreloadedQuery<EntityDetailsQuery>
+  queryRef: PreloadedQuery<EntityDetailsQuery>;
 }
 
 const EntityDetailsComponent: FunctionComponent<
@@ -543,8 +543,8 @@ const EntityDetailsComponent: FunctionComponent<
 };
 
 interface EntityDetailsProps {
-  entity: GraphNode
-  queryRef: PreloadedQuery<EntityDetailsQuery>
+  entity: GraphNode;
+  queryRef: PreloadedQuery<EntityDetailsQuery>;
 }
 
 const EntityDetails: FunctionComponent<

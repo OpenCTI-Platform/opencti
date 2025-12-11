@@ -112,7 +112,7 @@ export const importFilesContentQuery = graphql`
 const LOCAL_STORAGE_KEY = 'importFiles';
 
 interface ImportFilesContentProps {
-  inDraftOverview?: boolean
+  inDraftOverview?: boolean;
 }
 
 const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
@@ -189,7 +189,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
       isSortable: true,
       percentWidth: 20,
       render: ({ lastModified }: ImportFilesContentFileLine_file$data, { fd }: {
-        fd: (date: Date) => string
+        fd: (date: Date) => string;
       }) => fd(lastModified),
     },
   };

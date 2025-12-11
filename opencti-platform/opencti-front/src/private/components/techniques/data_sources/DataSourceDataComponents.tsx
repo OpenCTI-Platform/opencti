@@ -17,7 +17,7 @@ import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSo
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const DataSourceDataComponentsComponent: FunctionComponent<{
-  dataSource: DataSourceDataComponents_dataSource$data
+  dataSource: DataSourceDataComponents_dataSource$data;
 }> = ({ dataSource }) => {
   const { t_i18n } = useFormatter();
 

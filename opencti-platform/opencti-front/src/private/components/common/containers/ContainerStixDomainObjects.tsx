@@ -58,8 +58,8 @@ const ContainerStixDomainObjectsFragment = graphql`
 `;
 
 const ContainerStixDomainObjects = ({ container, enableReferences }: {
-  container: ContainerStixDomainObjects_container$key
-  enableReferences?: boolean
+  container: ContainerStixDomainObjects_container$key;
+  enableReferences?: boolean;
 }) => {
   const { t_i18n } = useFormatter();
 

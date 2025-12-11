@@ -44,10 +44,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface IngestionCsvLineProps {
-  node: IngestionCsvLine_node$key
-  dataColumns: DataColumns
-  onLabelClick: HandleAddFilter
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables
+  node: IngestionCsvLine_node$key;
+  dataColumns: DataColumns;
+  onLabelClick: HandleAddFilter;
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables;
 }
 
 const ingestionCsvLineFragment = graphql`
@@ -62,9 +62,9 @@ const ingestionCsvLineFragment = graphql`
 `;
 
 interface CellProps {
-  width: number | string | undefined
-  children: ReactNode
-  withTooltip?: boolean
+  width: number | string | undefined;
+  children: ReactNode;
+  withTooltip?: boolean;
 }
 const Cell = ({ width, children, withTooltip = true }: CellProps) => {
   const classes = useStyles();

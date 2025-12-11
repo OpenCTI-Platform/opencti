@@ -20,13 +20,13 @@ import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widge
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 interface DashboardRelationshipsVizProps {
-  widget: Widget
-  isReadonly: boolean
+  widget: Widget;
+  isReadonly: boolean;
   config: {
-    relativeDate: string | undefined
-    startDate: string
-    endDate: string
-  }
+    relativeDate: string | undefined;
+    startDate: string;
+    endDate: string;
+  };
 }
 
 const DashboardRelationshipsViz = ({

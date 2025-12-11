@@ -9,9 +9,9 @@ import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface DraftBlockProps {
-  title?: string
-  body?: ReactNode
-  sx?: Record<string, React.CSSProperties>
+  title?: string;
+  body?: ReactNode;
+  sx?: Record<string, React.CSSProperties>;
 }
 
 const DraftBlock: FunctionComponent<DraftBlockProps> = ({ title, body, sx }) => {

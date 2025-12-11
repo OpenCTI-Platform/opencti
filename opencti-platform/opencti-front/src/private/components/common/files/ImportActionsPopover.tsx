@@ -27,9 +27,9 @@ export const importActionsPopoverDeleteMutation = graphql`
 `;
 
 interface ImportActionsPopoverProps {
-  file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data
-  paginationOptions: ImportWorkbenchesContentQuery$variables | ImportFilesContentQuery$variables
-  paginationKey: 'Pagination_global_pendingFiles' | 'Pagination_global_importFiles'
+  file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data;
+  paginationOptions: ImportWorkbenchesContentQuery$variables | ImportFilesContentQuery$variables;
+  paginationKey: 'Pagination_global_pendingFiles' | 'Pagination_global_importFiles';
 }
 
 const ImportActionsPopover = ({

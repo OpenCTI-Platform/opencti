@@ -5,8 +5,8 @@ import { scatterChartOptions, ScatterChartOptionsArgs } from '../../utils/apexCh
 import type { Theme } from '../Theme';
 
 interface WidgetScatterProps {
-  series: ApexAxisChartSeries
-  options?: Omit<ScatterChartOptionsArgs, 'theme'>
+  series: ApexAxisChartSeries;
+  options?: Omit<ScatterChartOptionsArgs, 'theme'>;
 }
 
 const WidgetScatter = ({

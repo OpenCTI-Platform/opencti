@@ -7,15 +7,15 @@ import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
 
 interface AssociatedEntityFieldProps {
-  name: string
-  label: string
-  onChange?: (name: string, value: AssociatedEntityOption) => void
+  name: string;
+  label: string;
+  onChange?: (name: string, value: AssociatedEntityOption) => void;
 }
 
 export interface AssociatedEntityOption {
-  label: string
-  value: string
-  type: string
+  label: string;
+  value: string;
+  type: string;
 }
 
 export const associatedEntityFieldQuery = graphql`

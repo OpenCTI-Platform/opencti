@@ -41,10 +41,10 @@ const TaskPopover = ({
   paginationOptions,
   variant,
 }: {
-  id: string
-  objectId?: string
-  paginationOptions?: CaseTasksLinesQuery$variables
-  variant?: string
+  id: string;
+  objectId?: string;
+  paginationOptions?: CaseTasksLinesQuery$variables;
+  variant?: string;
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

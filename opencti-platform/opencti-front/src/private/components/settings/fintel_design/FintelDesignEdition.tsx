@@ -17,8 +17,8 @@ const fintelDesignEditionFocus = graphql`
 `;
 
 interface FintelDesignEditionProps {
-  fintelDesignId: string
-  overviewData: FintelDesignEditionOverview_fintelDesign$key
+  fintelDesignId: string;
+  overviewData: FintelDesignEditionOverview_fintelDesign$key;
 }
 
 const FintelDesignEdition: FunctionComponent<FintelDesignEditionProps> = ({

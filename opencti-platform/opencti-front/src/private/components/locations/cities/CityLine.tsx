@@ -41,8 +41,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CityLineComponentProps {
-  dataColumns: DataColumns
-  node: CityLine_node$key
+  dataColumns: DataColumns;
+  node: CityLine_node$key;
 }
 
 const cityFragment = graphql`
@@ -122,7 +122,7 @@ export const CityLine: FunctionComponent<CityLineComponentProps> = ({
 export const CityLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

@@ -33,11 +33,11 @@ const externalReferenceEditionQuery = graphql`
 `;
 
 interface ExternalReferencePopoverProps {
-  id: string
-  objectId?: string
-  handleRemove: (() => void) | undefined
-  isExternalReferenceAttachment?: boolean
-  variant?: string
+  id: string;
+  objectId?: string;
+  handleRemove: (() => void) | undefined;
+  isExternalReferenceAttachment?: boolean;
+  variant?: string;
 }
 
 const ExternalReferencePopover: FunctionComponent<
@@ -133,7 +133,7 @@ const ExternalReferencePopover: FunctionComponent<
         render={({
           props,
         }: {
-          props: ExternalReferencePopoverEditionQuery$data
+          props: ExternalReferencePopoverEditionQuery$data;
         }) => {
           if (props && props.externalReference) {
             return (

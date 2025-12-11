@@ -43,27 +43,27 @@ const renderIcon = (mimeType: string) => {
 };
 
 export interface ContentFile {
-  id: string
-  lastModified: string
-  name: string
+  id: string;
+  lastModified: string;
+  name: string;
   metaData: {
-    mimetype: string | null | undefined
-  } | null | undefined
+    mimetype: string | null | undefined;
+  } | null | undefined;
   objectMarking?: readonly {
-    readonly id: string
-    readonly definition?: string | null
-    readonly x_opencti_color?: string | null
-  }[]
+    readonly id: string;
+    readonly definition?: string | null;
+    readonly x_opencti_color?: string | null;
+  }[];
 }
 
 interface StixCoreObjectContentFilesListProps {
-  files: ContentFile[]
-  stixCoreObjectId: string
-  stixCoreObjectName: string
-  stixCoreObjectType: string
-  currentFileId: string
-  handleSelectFile: (fileId: string) => void
-  onFileChange: (fileName?: string, isDeleted?: boolean) => void
+  files: ContentFile[];
+  stixCoreObjectId: string;
+  stixCoreObjectName: string;
+  stixCoreObjectType: string;
+  currentFileId: string;
+  handleSelectFile: (fileId: string) => void;
+  onFileChange: (fileName?: string, isDeleted?: boolean) => void;
 }
 
 const StixCoreObjectContentFilesList = ({

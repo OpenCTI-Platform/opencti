@@ -1,7 +1,7 @@
 import React from 'react';
 
 type DataTableEmptyStateProps = {
-  message: string
+  message: string;
 };
 
 const DataTableEmptyState = ({ message }: DataTableEmptyStateProps) => {

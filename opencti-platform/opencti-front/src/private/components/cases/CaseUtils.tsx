@@ -1,6 +1,6 @@
 import { graphql, ConnectionHandler, Variables } from 'react-relay';
 
-export const generateConnectionId = ({ recordId, key, params }: { recordId?: string, key: string, params?: Variables }) => ConnectionHandler.getConnectionID(recordId ?? 'root', key, params ?? {});
+export const generateConnectionId = ({ recordId, key, params }: { recordId?: string; key: string; params?: Variables }) => ConnectionHandler.getConnectionID(recordId ?? 'root', key, params ?? {});
 
 export const CaseTaskFragment = graphql`
   fragment CaseUtilsTasksLine_data on Task {

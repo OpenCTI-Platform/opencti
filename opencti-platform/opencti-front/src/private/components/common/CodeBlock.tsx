@@ -5,9 +5,9 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../components/Theme';
 
 interface CodeBlockProps {
-  code: string
-  language: string
-  customHeight?: string
+  code: string;
+  language: string;
+  customHeight?: string;
 }
 
 const CodeBlock: FunctionComponent<CodeBlockProps> = ({ language, code, customHeight = '400px' }) => {

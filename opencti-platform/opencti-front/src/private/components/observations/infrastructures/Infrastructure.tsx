@@ -75,7 +75,7 @@ const infrastructureFragment = graphql`
 const Infrastructure = ({
   data,
 }: {
-  data: Infrastructure_infrastructure$key
+  data: Infrastructure_infrastructure$key;
 }) => {
   useInitCreateRelationshipContext();
 

@@ -20,15 +20,15 @@ import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import useEntityTranslation from '../../../../../../utils/hooks/useEntityTranslation';
 
 interface Option {
-  const: string
-  title: string
+  const: string;
+  title: string;
 }
 
 export interface PlaybookFlowFieldArrayProps {
-  name: string
-  label: string
-  options: Option[]
-  multiple?: boolean
+  name: string;
+  label: string;
+  options: Option[];
+  multiple?: boolean;
 }
 
 const PlaybookFlowFieldArray = ({

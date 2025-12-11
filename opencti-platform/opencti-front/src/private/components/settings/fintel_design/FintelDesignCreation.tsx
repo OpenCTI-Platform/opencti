@@ -40,18 +40,18 @@ const CreateFintelDesignControlledDial = (
 );
 
 interface FintelDesignCreationFormData {
-  name: string
-  description: string
+  name: string;
+  description: string;
 }
 
 interface FintelDesignCreationFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string, name: string } | null | undefined,
-  ) => void
-  onReset?: () => void
-  onCompleted?: () => void
+    response: { id: string; name: string } | null | undefined,
+  ) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
 }
 
 const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps> = ({
@@ -158,7 +158,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
 };
 
 interface FintelDesignCreationProps {
-  paginationOptions: FintelDesignsLinesPaginationQuery$variables
+  paginationOptions: FintelDesignsLinesPaginationQuery$variables;
 }
 
 const FintelDesignCreation: FunctionComponent<FintelDesignCreationProps> = ({

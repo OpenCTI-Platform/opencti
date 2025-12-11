@@ -50,10 +50,10 @@ const ingestionCsvPopoverExportQuery = graphql`
   }
 `;
 interface IngestionCsvPopoverProps {
-  ingestionCsvId: string
-  running?: boolean | null
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined
-  setStateHash: Dispatch<string>
+  ingestionCsvId: string;
+  running?: boolean | null;
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
+  setStateHash: Dispatch<string>;
 }
 
 const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({

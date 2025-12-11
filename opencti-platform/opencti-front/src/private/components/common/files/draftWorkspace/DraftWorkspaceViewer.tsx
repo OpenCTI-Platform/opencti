@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import Paper from '../../../../../components/Paper';
 
 interface DraftWorkspaceViewerProps {
-  entityId: string
+  entityId: string;
 }
 
 const DraftWorkspaceViewer = ({ entityId }: DraftWorkspaceViewerProps) => {

@@ -84,18 +84,18 @@ mutation SecurityPlatformEditionOverviewRelationDeleteMutation(
 type SecurityPlatformGenericData = SecurityPlatformEditionOverview_securityPlatform$data & GenericData;
 
 interface SecurityPlatformEditionOverviewProps {
-  securityPlatform: SecurityPlatformGenericData
-  enableReferences: boolean
-  context: SecurityPlatformEditionContainer_securityPlatform$data['editContext']
-  handleClose: () => void
+  securityPlatform: SecurityPlatformGenericData;
+  enableReferences: boolean;
+  context: SecurityPlatformEditionContainer_securityPlatform$data['editContext'];
+  handleClose: () => void;
 }
 
 interface SecurityPlatformEditionFormData {
-  message?: string
-  createdBy?: FieldOption
-  objectMarking?: FieldOption[]
-  x_opencti_workflow_id: FieldOption
-  references: ExternalReferencesValues | undefined
+  message?: string;
+  createdBy?: FieldOption;
+  objectMarking?: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
+  references: ExternalReferencesValues | undefined;
 }
 
 const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEditionOverviewProps> = ({

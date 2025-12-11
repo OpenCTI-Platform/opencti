@@ -9,12 +9,12 @@ import { CsvMappersImportQuery$data } from '@components/data/__generated__/CsvMa
 import { useFormatter } from '../../../../components/i18n';
 
 interface CsvMapperCreationProps {
-  paginationOptions: csvMappers_MappersQuery$variables
-  editionQueryRef?: PreloadedQuery<CsvMapperEditionContainerQuery>
-  importedFileData?: CsvMappersImportQuery$data['csvMapperAddInputFromImport']
-  isDuplicated?: boolean
-  onClose?: () => void
-  open: boolean
+  paginationOptions: csvMappers_MappersQuery$variables;
+  editionQueryRef?: PreloadedQuery<CsvMapperEditionContainerQuery>;
+  importedFileData?: CsvMappersImportQuery$data['csvMapperAddInputFromImport'];
+  isDuplicated?: boolean;
+  onClose?: () => void;
+  open: boolean;
 }
 
 const CsvMapperCreationContainer: FunctionComponent<CsvMapperCreationProps> = ({

@@ -85,26 +85,26 @@ const attackPatternMutation = graphql`
 const ATTACK_PATTERN_TYPE = 'Attack-Pattern';
 
 interface AttackPatternAddInput {
-  name: string
-  description: string
-  x_mitre_id: string
-  confidence: number | undefined
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  killChainPhases: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  x_mitre_id: string;
+  confidence: number | undefined;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  killChainPhases: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface AttackPatternFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  defaultConfidence?: number
-  inputValue?: string
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps> = ({
@@ -289,10 +289,10 @@ const AttackPatternCreation = ({
   inputValue,
   paginationOptions,
 }: {
-  contextual?: boolean
-  display?: boolean
-  inputValue?: string
-  paginationOptions: AttackPatternsLinesPaginationQuery$variables
+  contextual?: boolean;
+  display?: boolean;
+  inputValue?: string;
+  paginationOptions: AttackPatternsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);

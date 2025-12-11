@@ -152,7 +152,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <RegionDeletion id={region.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

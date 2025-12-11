@@ -6,9 +6,9 @@ import Alert from '@mui/material/Alert';
 import { FieldProps } from 'formik';
 
 interface CsvMapperRepresentationAttributeOptionProps extends FieldProps<string> {
-  placeholder: string
-  info?: string
-  tooltip?: string
+  placeholder: string;
+  info?: string;
+  tooltip?: string;
 }
 
 const CsvMapperRepresentationAttributeOption = ({

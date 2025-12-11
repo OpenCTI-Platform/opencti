@@ -55,10 +55,10 @@ export const statusEditFragment = graphql`
 type StatusEditForm = StatusForm & { order: NonNullable<StatusForm['order']> };
 
 interface StatusEditionProps {
-  subTypeId: string
-  handleClose: () => void
-  open: boolean
-  queryRef: PreloadedQuery<SubTypeWorkflowStatusEditQuery>
+  subTypeId: string;
+  handleClose: () => void;
+  open: boolean;
+  queryRef: PreloadedQuery<SubTypeWorkflowStatusEditQuery>;
 }
 
 const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({

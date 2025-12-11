@@ -24,11 +24,11 @@ import Transition from '../../../../../components/Transition';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface PlaybookFlowDeleteNodeProps {
-  action: string | null
-  setAction: (val: null) => void
-  selectedNode: unknown
-  setSelectedNode: (val: null) => void
-  deleteNode: () => void
+  action: string | null;
+  setAction: (val: null) => void;
+  selectedNode: unknown;
+  setSelectedNode: (val: null) => void;
+  deleteNode: () => void;
 }
 
 const PlaybookFlowDeleteNode = ({

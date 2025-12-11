@@ -82,8 +82,8 @@ const individualQuery = graphql`
 `;
 
 type RootIndividualProps = {
-  individualId: string
-  queryRef: PreloadedQuery<RootIndividualQuery>
+  individualId: string;
+  queryRef: PreloadedQuery<RootIndividualQuery>;
 };
 
 const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
@@ -186,7 +186,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <IndividualDeletion id={individual.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

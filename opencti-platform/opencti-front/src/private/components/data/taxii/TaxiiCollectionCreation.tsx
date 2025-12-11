@@ -26,16 +26,16 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 interface TaxiiCollectionCreationProps {
-  paginationOptions: PaginationOptions
+  paginationOptions: PaginationOptions;
 }
 
 interface TaxiiCollectionCreationForm {
-  authorized_members: FieldOption[]
-  description: string
-  include_inferences?: boolean
-  name: string
-  taxii_public?: boolean
-  score_to_confidence?: boolean
+  authorized_members: FieldOption[];
+  description: string;
+  include_inferences?: boolean;
+  name: string;
+  taxii_public?: boolean;
+  score_to_confidence?: boolean;
 }
 
 // Deprecated - https://mui.com/system/styles/basics/

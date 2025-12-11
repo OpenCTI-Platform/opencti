@@ -16,7 +16,7 @@ query SecurityPlatformEditionContainerQuery($id: String!) {
 `;
 
 interface SecurityPlatformEditionProps {
-  securityPlatformId: string
+  securityPlatformId: string;
 }
 
 const SecurityPlatformEdition: FunctionComponent<SecurityPlatformEditionProps> = ({

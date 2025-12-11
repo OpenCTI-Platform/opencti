@@ -1,12 +1,12 @@
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 
 interface JsonMapperContextProps {
-  dynamicMappingColumn: string | null
-  setDynamicMappingColumn: (index: string) => void
+  dynamicMappingColumn: string | null;
+  setDynamicMappingColumn: (index: string) => void;
 }
 
 interface JsonMapperProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 const JsonMapperContext = createContext<JsonMapperContextProps | undefined>(undefined);

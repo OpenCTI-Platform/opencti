@@ -26,8 +26,8 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 interface CaseIncidentProps {
-  caseIncidentData: CaseUtils_case$key
-  enableReferences: boolean
+  caseIncidentData: CaseUtils_case$key;
+  enableReferences: boolean;
 }
 
 const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableReferences }) => {

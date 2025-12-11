@@ -20,10 +20,10 @@ export const organizationEditionQuery = graphql`
 `;
 
 interface OrganizationEditionContainerProps {
-  queryRef: PreloadedQuery<OrganizationEditionContainerQuery>
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  queryRef: PreloadedQuery<OrganizationEditionContainerQuery>;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 const OrganizationEditionContainer = ({

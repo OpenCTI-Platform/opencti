@@ -17,20 +17,20 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface StixDomainObjectAttackPatternsKillChainProps {
-  helpers: UseLocalStorageHelpers
-  queryRef: PreloadedQuery<StixDomainObjectAttackPatternsKillChainQuery>
-  queryPaginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables
-  stixDomainObjectId: string
-  filters?: FilterGroup
-  searchTerm?: string
-  view?: string
-  defaultStartTime?: string
-  defaultStopTime?: string
-  disableExport: boolean
-  openExports?: boolean
-  availableFilterKeys: string[]
-  storageKey: string
-  entityType: string
+  helpers: UseLocalStorageHelpers;
+  queryRef: PreloadedQuery<StixDomainObjectAttackPatternsKillChainQuery>;
+  queryPaginationOptions: StixDomainObjectAttackPatternsKillChainQuery$variables;
+  stixDomainObjectId: string;
+  filters?: FilterGroup;
+  searchTerm?: string;
+  view?: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
+  disableExport: boolean;
+  openExports?: boolean;
+  availableFilterKeys: string[];
+  storageKey: string;
+  entityType: string;
 }
 
 export const stixDomainObjectAttackPatternsKillChainContainerLineFragment = graphql`

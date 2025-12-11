@@ -96,7 +96,7 @@ const groupMutationFieldPatch = graphql`
 const GroupEditionMarkingsComponent = ({
   group,
 }: {
-  group: GroupEditionMarkings_group$data
+  group: GroupEditionMarkings_group$data;
 }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
@@ -120,7 +120,7 @@ const GroupEditionMarkingsComponent = ({
     markingDefinitionId: string,
     groupMarkingDefinition:
       | {
-        id?: string
+        id?: string;
       }
       | undefined,
     event: React.ChangeEvent<HTMLInputElement>,
@@ -212,7 +212,7 @@ const GroupEditionMarkingsComponent = ({
         render={({
           props,
         }: {
-          props: MarkingDefinitionsQuerySearchQuery$data
+          props: MarkingDefinitionsQuerySearchQuery$data;
         }) => {
           if (props) {
             const markingDefinitions = (

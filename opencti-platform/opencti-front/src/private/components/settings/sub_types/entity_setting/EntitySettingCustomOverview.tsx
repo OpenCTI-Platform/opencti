@@ -20,7 +20,7 @@ import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../../components/Theme';
 
 interface EntitySettingCustomOverviewProps {
-  entitySettingsData: EntitySettingsOverviewLayoutCustomization_entitySetting$key
+  entitySettingsData: EntitySettingsOverviewLayoutCustomization_entitySetting$key;
 }
 
 const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = ({ entitySettingsData }) => {

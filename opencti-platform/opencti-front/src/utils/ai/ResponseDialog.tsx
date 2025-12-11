@@ -23,20 +23,20 @@ import useAI from '../hooks/useAI';
 
 // region types
 interface ResponseDialogProps {
-  id: string
-  isOpen: boolean
-  isDisabled: boolean
-  handleClose: () => void
-  handleAccept: (content: string) => void
-  handleFollowUp: () => void
-  content: string
-  setContent: (content: string) => void
-  format: 'text' | 'html' | 'markdown' | 'json'
-  isAcceptable?: boolean
+  id: string;
+  isOpen: boolean;
+  isDisabled: boolean;
+  handleClose: () => void;
+  handleAccept: (content: string) => void;
+  handleFollowUp: () => void;
+  content: string;
+  setContent: (content: string) => void;
+  format: 'text' | 'html' | 'markdown' | 'json';
+  isAcceptable?: boolean;
   followUpActions: {
-    key: string
-    label: string
-  }[]
+    key: string;
+    label: string;
+  }[];
 }
 
 const subscription = graphql`

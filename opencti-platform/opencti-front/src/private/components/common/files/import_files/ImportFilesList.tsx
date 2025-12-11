@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 
 interface ImportFilesListProps {
-  connectorsForImport: ImportFilesContextQuery$data['connectorsForImport']
+  connectorsForImport: ImportFilesContextQuery$data['connectorsForImport'];
 }
 
 const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }) => {

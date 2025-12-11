@@ -7,10 +7,10 @@ import { useFormatter } from 'src/components/i18n';
 import type { Theme } from '../../../../../../../components/Theme';
 
 interface NodeContainerProps {
-  children: ReactNode
-  height?: number
-  link: string
-  position: Position
+  children: ReactNode;
+  height?: number;
+  link: string;
+  position: Position;
 }
 
 const NodeContainer: FunctionComponent<NodeContainerProps> = ({

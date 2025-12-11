@@ -21,7 +21,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
 interface CaseIncidentsProps {
-  inputValue?: string
+  inputValue?: string;
 }
 
 const caseIncidentFragment = graphql`

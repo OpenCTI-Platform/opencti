@@ -78,8 +78,8 @@ const vulnerabilityQuery = graphql`
 `;
 
 type RootVulnerabilityProps = {
-  vulnerabilityId: string
-  queryRef: PreloadedQuery<RootVulnerabilityQuery>
+  vulnerabilityId: string;
+  queryRef: PreloadedQuery<RootVulnerabilityQuery>;
 };
 
 const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps) => {
@@ -153,7 +153,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <VulnerabilityDeletion id={vulnerability.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

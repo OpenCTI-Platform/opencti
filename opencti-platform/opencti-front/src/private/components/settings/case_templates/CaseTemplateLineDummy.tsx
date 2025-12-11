@@ -36,7 +36,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CaseTemplateLineDummyProps {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }
 
 const CaseTemplateLineDummy: FunctionComponent<CaseTemplateLineDummyProps> = ({ dataColumns }) => {

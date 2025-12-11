@@ -14,19 +14,19 @@ import type { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/fields/SwitchField';
 
 export interface FintelTemplateFormInputs {
-  name: string
-  description: string | null
-  published: boolean
+  name: string;
+  description: string | null;
+  published: boolean;
 }
 
 export type FintelTemplateFormInputKeys = keyof FintelTemplateFormInputs;
 
 interface FintelTemplateFormProps {
-  onClose: () => void
-  onSubmit: FormikConfig<FintelTemplateFormInputs>['onSubmit']
-  onSubmitField: (field: FintelTemplateFormInputKeys, value: unknown) => void
-  defaultValues?: FintelTemplateFormInputs
-  isEdition?: boolean
+  onClose: () => void;
+  onSubmit: FormikConfig<FintelTemplateFormInputs>['onSubmit'];
+  onSubmitField: (field: FintelTemplateFormInputKeys, value: unknown) => void;
+  defaultValues?: FintelTemplateFormInputs;
+  isEdition?: boolean;
 }
 
 const FintelTemplateForm = ({

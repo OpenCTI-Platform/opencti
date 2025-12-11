@@ -26,15 +26,15 @@ const fintelDesignFormFileUploadMutation = graphql`
 `;
 
 interface FintelDesignFormProps {
-  onFileUploaded: () => void
-  fintelDesign: FintelDesign_fintelDesign$data
+  onFileUploaded: () => void;
+  fintelDesign: FintelDesign_fintelDesign$data;
 }
 
 export type FintelDesignFormValues = {
-  file?: File | null
-  gradiantFromColor?: string | null | undefined
-  gradiantToColor?: string | null | undefined
-  textColor?: string | null | undefined
+  file?: File | null;
+  gradiantFromColor?: string | null | undefined;
+  gradiantToColor?: string | null | undefined;
+  textColor?: string | null | undefined;
 };
 
 const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onFileUploaded, fintelDesign }) => {

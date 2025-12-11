@@ -41,9 +41,9 @@ export const workspaceShareListQuery = graphql`
 `;
 
 interface WorkspaceShareListProps {
-  queryRef: PreloadedQuery<WorkspaceShareListQuery>
-  onDelete: (id: string) => void
-  onToggleEnabled: (id: string, enabled: boolean) => void
+  queryRef: PreloadedQuery<WorkspaceShareListQuery>;
+  onDelete: (id: string) => void;
+  onToggleEnabled: (id: string, enabled: boolean) => void;
 }
 
 const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceShareListProps) => {

@@ -16,7 +16,7 @@ const CreateEmailTemplateControlledDial = (
 );
 
 interface EmailTemplateCreationProps {
-  paginationOptions: EmailTemplatesLinesPaginationQuery$variables
+  paginationOptions: EmailTemplatesLinesPaginationQuery$variables;
 }
 
 const EmailTemplateCreation: FunctionComponent<EmailTemplateCreationProps> = ({

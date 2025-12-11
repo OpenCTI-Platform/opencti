@@ -3,10 +3,10 @@ import Box from '@mui/material/Box';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 
 type ChipWrapperProps = {
-  useCase: string
-  isVisible: boolean
-  canShrink?: boolean
-  chipRef: (el: HTMLDivElement | null) => void
+  useCase: string;
+  isVisible: boolean;
+  canShrink?: boolean;
+  chipRef: (el: HTMLDivElement | null) => void;
 };
 
 const ChipWrapper = ({ useCase, isVisible, canShrink, chipRef }: ChipWrapperProps) => (

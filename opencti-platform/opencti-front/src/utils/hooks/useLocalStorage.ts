@@ -22,32 +22,32 @@ import useBus from './useBus';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from '../filters/filtersHelpers-types';
 
 export interface NumberOfElements {
-  number?: number
-  symbol?: string
-  original?: number
+  number?: number;
+  symbol?: string;
+  original?: number;
 }
 
 export interface UseLocalStorageHelpers extends handleFilterHelpers {
-  handleSearch: (value: string) => void
-  handleRemoveFilter: (key: string, op?: string, id?: string) => void
-  handleSort: (field: string, order: boolean) => void
-  handleAddFilter: HandleAddFilter
-  handleRemoveRepresentationFilter: (id: string, value: FilterValue) => void
-  handleAddRepresentationFilter: (id: string, value: FilterValue) => void
-  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void
-  handleAddSingleValueFilter: (id: string, value?: FilterValue) => void
-  handleReplaceFilterValues: (id: string, values: FilterValue[]) => void
-  handleSwitchFilter: HandleAddFilter
-  handleToggleExports: () => void
-  handleSetNumberOfElements: (value: NumberOfElements) => void
-  handleToggleTypes: (type: string) => void
-  handleClearTypes: () => void
-  handleAddProperty: (field: string, value: unknown) => void
-  handleChangeView: (value: string) => void
-  handleClearAllFilters: () => void
-  handleSetFilters: (filters: FilterGroup) => void
-  handleChangeSavedFilters: (savedFilters: SavedFiltersSelectionData) => void
-  handleRemoveSavedFilters: () => void
+  handleSearch: (value: string) => void;
+  handleRemoveFilter: (key: string, op?: string, id?: string) => void;
+  handleSort: (field: string, order: boolean) => void;
+  handleAddFilter: HandleAddFilter;
+  handleRemoveRepresentationFilter: (id: string, value: FilterValue) => void;
+  handleAddRepresentationFilter: (id: string, value: FilterValue) => void;
+  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
+  handleAddSingleValueFilter: (id: string, value?: FilterValue) => void;
+  handleReplaceFilterValues: (id: string, values: FilterValue[]) => void;
+  handleSwitchFilter: HandleAddFilter;
+  handleToggleExports: () => void;
+  handleSetNumberOfElements: (value: NumberOfElements) => void;
+  handleToggleTypes: (type: string) => void;
+  handleClearTypes: () => void;
+  handleAddProperty: (field: string, value: unknown) => void;
+  handleChangeView: (value: string) => void;
+  handleClearAllFilters: () => void;
+  handleSetFilters: (filters: FilterGroup) => void;
+  handleChangeSavedFilters: (savedFilters: SavedFiltersSelectionData) => void;
+  handleRemoveSavedFilters: () => void;
 }
 
 const localStorageToPaginationOptions = (
@@ -247,10 +247,10 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
 };
 
 export type PaginationLocalStorage<U = Record<string, unknown>> = {
-  viewStorage: LocalStorage
-  helpers: UseLocalStorageHelpers
-  paginationOptions: U
-  localStorageKey: string
+  viewStorage: LocalStorage;
+  helpers: UseLocalStorageHelpers;
+  paginationOptions: U;
+  localStorageKey: string;
 };
 
 export const usePaginationLocalStorage = <U>(
@@ -682,7 +682,7 @@ export const usePaginationLocalStorage = <U>(
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
     },
-    handleSetNumberOfElements: (nbElements: { number?: number, symbol?: string, original?: number }) => {
+    handleSetNumberOfElements: (nbElements: { number?: number; symbol?: string; original?: number }) => {
       if (!R.equals(nbElements, viewStorage.numberOfElements)) {
         const { number, symbol, original } = nbElements;
         const newValue = {

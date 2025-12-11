@@ -41,13 +41,13 @@ import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
 
 // region types
 interface StixCoreObjectAskAiProps {
-  instanceId: string
-  instanceName: string
-  instanceType: string
-  instanceMarkings?: string[]
-  type: 'container' | 'threat' | 'victim' | 'unsupported'
-  optionsOpen: boolean
-  handleCloseOptions: () => void
+  instanceId: string;
+  instanceName: string;
+  instanceType: string;
+  instanceMarkings?: string[];
+  type: 'container' | 'threat' | 'victim' | 'unsupported';
+  optionsOpen: boolean;
+  handleCloseOptions: () => void;
 }
 
 const isContainerWithContent = (type: string) => ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(type);
@@ -99,7 +99,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const [newFileName, setNewFileName] = useState<string | null>(null);
   const [tone, setTone] = useState<'tactical' | 'operational' | 'strategic'>('tactical');
   const [paragraphs, setParagraphs] = useState(10);
-  const [files, setFiles] = useState<{ label: string, value: string }[]>([]);
+  const [files, setFiles] = useState<{ label: string; value: string }[]>([]);
   const [disableResponse, setDisableResponse] = useState(false);
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);

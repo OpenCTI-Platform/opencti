@@ -8,12 +8,12 @@ import useFiltersState from '../../utils/filters/useFiltersState';
 import FilterIconButton from '../FilterIconButton';
 
 interface BasicFilterInputProps {
-  filter?: Filter
-  filterKey: string
-  childKey?: string
-  helpers?: handleFilterHelpers
-  filterValues: FilterGroup
-  disabled?: boolean
+  filter?: Filter;
+  filterKey: string;
+  childKey?: string;
+  helpers?: handleFilterHelpers;
+  filterValues: FilterGroup;
+  disabled?: boolean;
 }
 
 const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({

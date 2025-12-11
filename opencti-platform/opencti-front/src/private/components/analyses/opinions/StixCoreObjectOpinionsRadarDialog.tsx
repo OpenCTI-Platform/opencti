@@ -44,24 +44,24 @@ export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
 `;
 
 interface StixCoreObjectOpinionsRadarDialogProps {
-  queryRef: PreloadedQuery<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>
-  stixCoreObjectId: string
-  fetchQuery: () => void
-  fetchDistributionQuery: () => void
-  opinionOptions: { label: string, value: number }[]
+  queryRef: PreloadedQuery<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>;
+  stixCoreObjectId: string;
+  fetchQuery: () => void;
+  fetchDistributionQuery: () => void;
+  opinionOptions: { label: string; value: number }[];
 }
 
 interface OpinionAddInput {
-  id?: string
-  opinion: string
-  explanation: string
-  confidence: number
+  id?: string;
+  opinion: string;
+  explanation: string;
+  confidence: number;
 }
 interface OpinionAddSubmit {
-  opinion: string
-  explanation: string
-  confidence: number
-  objects?: string[]
+  opinion: string;
+  explanation: string;
+  confidence: number;
+  objects?: string[];
 }
 
 const OPINION_TYPE = 'Opinion';

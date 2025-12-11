@@ -64,20 +64,20 @@ export const JsonMapperRepresentationAttributesFormFragment = graphql`
 `;
 
 export interface SchemaAttribute {
-  type: string
-  name: string
-  label: string | null | undefined
-  mandatory: boolean
-  defaultValues: { readonly id: string, readonly name: string }[] | null
-  multiple: boolean
-  editDefault: boolean
+  type: string;
+  name: string;
+  label: string | null | undefined;
+  mandatory: boolean;
+  defaultValues: { readonly id: string; readonly name: string }[] | null;
+  multiple: boolean;
+  editDefault: boolean;
 }
 
 interface JsonMapperRepresentationAttributesFormProps {
-  handleErrors: (key: string, value: string | null) => void
-  representation: JsonMapperRepresentationFormData
-  representationType: string
-  representationName: string
+  handleErrors: (key: string, value: string | null) => void;
+  representation: JsonMapperRepresentationFormData;
+  representationType: string;
+  representationName: string;
 }
 
 const JsonMapperRepresentationAttributesForm: FunctionComponent<

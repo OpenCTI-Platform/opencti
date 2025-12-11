@@ -118,12 +118,12 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
 }));
 
 interface AIInsightProps {
-  id: string
-  tabs?: Array<'activity' | 'containers' | 'forecast' | 'history'>
-  defaultTab?: 'activity' | 'containers' | 'forecast' | 'history'
-  floating?: boolean
-  onlyIcon?: boolean
-  isContainer?: boolean
+  id: string;
+  tabs?: Array<'activity' | 'containers' | 'forecast' | 'history'>;
+  defaultTab?: 'activity' | 'containers' | 'forecast' | 'history';
+  floating?: boolean;
+  onlyIcon?: boolean;
+  isContainer?: boolean;
 }
 
 const AIInsights = ({

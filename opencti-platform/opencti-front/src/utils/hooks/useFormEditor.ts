@@ -8,44 +8,44 @@ import useApiMutation from './useApiMutation';
 import { FieldOption } from '../field';
 
 export interface GenericData {
-  id: string
-  entity_type?: string
-  confidence?: number
+  id: string;
+  entity_type?: string;
+  confidence?: number;
   readonly objectMarking: {
     readonly edges: ReadonlyArray<{
       readonly node: {
-        readonly definition: string | null
-        readonly definition_type: string | null
-        readonly id: string
-      }
-    }>
-  } | null
+        readonly definition: string | null;
+        readonly definition_type: string | null;
+        readonly id: string;
+      };
+    }>;
+  } | null;
   readonly objectAssignee?: {
     readonly edges: ReadonlyArray<{
       readonly node: {
-        readonly entity_type: string
-        readonly id: string
-        readonly name: string
-      }
-    }>
-  } | null
+        readonly entity_type: string;
+        readonly id: string;
+        readonly name: string;
+      };
+    }>;
+  } | null;
   readonly killChainPhases?: {
     readonly edges: ReadonlyArray<{
       readonly node: {
-        readonly id: string
-        readonly kill_chain_name: string
-        readonly phase_name: string
-        readonly x_opencti_order: number | null
-      }
-    }>
-  } | null
+        readonly id: string;
+        readonly kill_chain_name: string;
+        readonly phase_name: string;
+        readonly x_opencti_order: number | null;
+      };
+    }>;
+  } | null;
 }
 
 interface Queries {
-  fieldPatch: GraphQLTaggedNode
-  relationAdd: GraphQLTaggedNode
-  relationDelete: GraphQLTaggedNode
-  editionFocus: GraphQLTaggedNode
+  fieldPatch: GraphQLTaggedNode;
+  relationAdd: GraphQLTaggedNode;
+  relationDelete: GraphQLTaggedNode;
+  editionFocus: GraphQLTaggedNode;
 }
 
 const useFormEditor = (

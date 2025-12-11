@@ -151,7 +151,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <AdministrativeAreaDeletion id={administrativeArea.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -289,7 +289,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
 
 const RootAdministrativeArea = () => {
   const { administrativeAreaId } = useParams() as {
-    administrativeAreaId: string
+    administrativeAreaId: string;
   };
   const queryRef = useQueryLoading<RootAdministrativeAreaQuery>(
     administrativeAreaQuery,

@@ -31,7 +31,7 @@ const relationshipCreationFromEntityFragment = graphql`
 `;
 
 interface StixCoreRelationshipCreationFromEntityHeaderProps {
-  data: StixCoreRelationshipCreationFromEntityHeader_stixCoreObject$key
+  data: StixCoreRelationshipCreationFromEntityHeader_stixCoreObject$key;
 }
 
 const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<

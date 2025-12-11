@@ -43,7 +43,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const EEChip = React.forwardRef<HTMLDivElement, { feature?: string, clickable?: boolean, floating?: boolean }>(({ feature, clickable = true, floating = false }, ref) => {
+const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: boolean; floating?: boolean }>(({ feature, clickable = true, floating = false }, ref) => {
   const classes = useStyles();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();

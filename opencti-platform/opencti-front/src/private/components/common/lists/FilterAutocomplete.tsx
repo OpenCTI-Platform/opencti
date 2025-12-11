@@ -10,38 +10,38 @@ import SearchScopeElement from './SearchScopeElement';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 export interface FilterOption {
-  id?: string
-  value: string | null
-  label: string
-  color?: string
-  type?: string
-  standard_id?: string
+  id?: string;
+  value: string | null;
+  label: string;
+  color?: string;
+  type?: string;
+  standard_id?: string;
 }
 
 export interface FilterOptionValue extends FilterOption {
-  type: string
-  parentTypes?: string[]
-  group?: string
+  type: string;
+  parentTypes?: string[];
+  group?: string;
 }
 
 export interface FilterAutocompleteInputValue {
-  key: string
-  values: string[]
-  operator?: string
+  key: string;
+  values: string[];
+  operator?: string;
 }
 
 interface FilterAutocompleteProps {
-  filterKey: string
-  searchContext: { entityTypes: string[], elementId?: string[] }
-  defaultHandleAddFilter: HandleAddFilter
-  inputValues: { key: string, values: string[], operator?: string }[]
-  setInputValues: (value: FilterAutocompleteInputValue[]) => void
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
-  availableRelationFilterTypes?: Record<string, string[]>
-  openOnFocus?: boolean
-  filterLabel: string
-  disabled?: boolean
+  filterKey: string;
+  searchContext: { entityTypes: string[]; elementId?: string[] };
+  defaultHandleAddFilter: HandleAddFilter;
+  inputValues: { key: string; values: string[]; operator?: string }[];
+  setInputValues: (value: FilterAutocompleteInputValue[]) => void;
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  availableRelationFilterTypes?: Record<string, string[]>;
+  openOnFocus?: boolean;
+  filterLabel: string;
+  disabled?: boolean;
 }
 
 const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) => {
@@ -78,7 +78,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     },
   );
   const [cacheEntities, setCacheEntities] = useState<
-    Record<string, { label: string, value: string, type: string }[]>
+    Record<string, { label: string; value: string; type: string }[]>
   >({});
   const [entities, searchEntities] = useSearchEntities({
     searchContext,
@@ -92,10 +92,10 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       filterKey: string,
       cacheEntities: Record<
         string,
-        { label: string, value: string, type: string }[]
+        { label: string; value: string; type: string }[]
       >,
       setCacheEntities: Dispatch<
-        Record<string, { label: string, value: string, type: string }[]>
+        Record<string, { label: string; value: string; type: string }[]>
       >,
       event: SyntheticEvent,
     ) => Record<string, FilterOptionValue[]>,

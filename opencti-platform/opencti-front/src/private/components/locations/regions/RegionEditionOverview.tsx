@@ -116,21 +116,21 @@ const regionEditionOverviewFragment = graphql`
 const REGION_TYPE = 'Region';
 
 interface RegionEdititionOverviewProps {
-  regionRef: RegionEditionOverview_region$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  regionRef: RegionEditionOverview_region$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface RegionEditionFormValues {
-  name: string
-  description: string | null
-  createdBy: FieldOption | undefined
-  confidence: number | undefined | null
-  objectMarking: FieldOption[]
-  x_opencti_workflow_id: FieldOption
-  message?: string
-  references?: FieldOption[]
+  name: string;
+  description: string | null;
+  createdBy: FieldOption | undefined;
+  confidence: number | undefined | null;
+  objectMarking: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
+  message?: string;
+  references?: FieldOption[];
 }
 
 const RegionEditionOverviewComponent: FunctionComponent<

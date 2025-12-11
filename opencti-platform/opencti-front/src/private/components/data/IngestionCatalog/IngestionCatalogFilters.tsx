@@ -9,21 +9,21 @@ import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 
 interface Contract {
-  title: string
-  use_cases: string[]
-  container_type: string
+  title: string;
+  use_cases: string[];
+  container_type: string;
 }
 
 interface FilterState {
-  search: string
-  type: string
-  useCase: string
+  search: string;
+  type: string;
+  useCase: string;
 }
 
 interface IngestionCatalogFiltersProps {
-  contracts: Contract[]
-  filters: FilterState
-  onFiltersChange: (filters: FilterState) => void
+  contracts: Contract[];
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
 }
 
 const INPUT_WIDTH = 200; // same as defined in ListFilters

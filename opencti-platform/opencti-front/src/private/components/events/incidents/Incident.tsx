@@ -75,7 +75,7 @@ const incidentFragment = graphql`
 `;
 
 interface IncidentProps {
-  incidentData: Incident_incident$key
+  incidentData: Incident_incident$key;
 }
 
 const Incident: React.FC<IncidentProps> = ({

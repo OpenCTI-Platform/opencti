@@ -18,11 +18,11 @@ import { useFormatter } from '../../../../components/i18n';
 import { StixCoreRelationshipHistoryFragment } from '@components/common/stix_core_relationships/StixCoreRelationshipHistoryLine';
 
 interface HistoryDrawerProps {
-  open: boolean
-  onClose: () => void
-  title: string
-  node: StixCoreObjectHistoryLine_node$key | undefined
-  isRelation: boolean
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  node: StixCoreObjectHistoryLine_node$key | undefined;
+  isRelation: boolean;
 }
 
 const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, title, node, isRelation }) => {

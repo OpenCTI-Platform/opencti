@@ -6,24 +6,24 @@ import stopEvent from '../utils/domEvent';
 import EnrichedTooltip from './EnrichedTooltip';
 
 interface Marking {
-  id: string
-  definition?: string | null
-  x_opencti_color?: string | null
+  id: string;
+  definition?: string | null;
+  x_opencti_color?: string | null;
 }
 
 interface ItemMarkingsProps {
-  markingDefinitions: readonly Marking[]
-  variant?: string
-  limit?: number
-  onClick?: (marking: Marking) => void
+  markingDefinitions: readonly Marking[];
+  variant?: string;
+  limit?: number;
+  onClick?: (marking: Marking) => void;
 }
 
 interface ChipMarkingProps {
-  markingDefinition: Marking
-  isInTooltip?: boolean
-  withTooltip?: boolean
-  variant?: ItemMarkingsProps['variant']
-  onClick?: ItemMarkingsProps['onClick']
+  markingDefinition: Marking;
+  isInTooltip?: boolean;
+  withTooltip?: boolean;
+  variant?: ItemMarkingsProps['variant'];
+  onClick?: ItemMarkingsProps['onClick'];
 }
 
 const ChipMarking = ({

@@ -87,8 +87,8 @@ const campaignQuery = graphql`
 `;
 
 type RootCampaignProps = {
-  campaignId: string
-  queryRef: PreloadedQuery<RootCampaignQuery>
+  campaignId: string;
+  queryRef: PreloadedQuery<RootCampaignQuery>;
 };
 
 const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
@@ -161,7 +161,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <CampaignDeletion id={campaign.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

@@ -65,7 +65,7 @@ const dataSourceFragment = graphql`
 `;
 
 interface DataSourceProps {
-  dataSourceData: DataSource_dataSource$key
+  dataSourceData: DataSource_dataSource$key;
 }
 
 const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {

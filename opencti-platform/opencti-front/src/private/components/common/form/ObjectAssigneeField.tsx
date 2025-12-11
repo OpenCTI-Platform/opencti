@@ -67,17 +67,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface OptionAssignee extends FieldOption {
-  type: string
-  group: string
+  type: string;
+  group: string;
 }
 interface ObjectAssigneeFieldProps {
-  name: string
-  onChange?: (name: string, values: OptionAssignee[]) => void
-  style?: Record<string, string | number>
-  helpertext?: unknown
-  label?: string
-  disabled?: boolean
-  required?: boolean
+  name: string;
+  onChange?: (name: string, values: OptionAssignee[]) => void;
+  style?: Record<string, string | number>;
+  helpertext?: unknown;
+  label?: string;
+  disabled?: boolean;
+  required?: boolean;
 }
 const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
   name,
@@ -148,7 +148,7 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(
         fieldProps: React.HTMLAttributes<HTMLLIElement>,
-        option: { type: string, label: string },
+        option: { type: string; label: string },
       ) => (
         <li {...fieldProps}>
           <div className={classes.icon}>

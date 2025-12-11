@@ -4,10 +4,10 @@ import { useFormatter } from '../i18n';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface DateRangeFilterProps {
-  filter?: Filter
-  filterKey: string
-  helpers?: handleFilterHelpers
-  filterValues: string[]
+  filter?: Filter;
+  filterKey: string;
+  helpers?: handleFilterHelpers;
+  filterValues: string[];
 }
 
 const DateRangeFilter: FunctionComponent<DateRangeFilterProps> = ({

@@ -8,11 +8,11 @@ import { useFormatter } from '../../../../components/i18n';
 import useSensitiveModifications, { SensitiveConfigType } from '../../../../utils/hooks/useSensitiveModifications';
 
 interface DangerZoneBlockProps {
-  title?: ReactNode
-  component?: ((props: { disabled?: boolean, style?: React.CSSProperties }) => ReactElement) | ReactNode
-  children?: ((props: { disabled?: boolean, style?: React.CSSProperties }) => ReactElement) | ReactNode
-  sx?: Record<string, React.CSSProperties>
-  type?: SensitiveConfigType
+  title?: ReactNode;
+  component?: ((props: { disabled?: boolean; style?: React.CSSProperties }) => ReactElement) | ReactNode;
+  children?: ((props: { disabled?: boolean; style?: React.CSSProperties }) => ReactElement) | ReactNode;
+  sx?: Record<string, React.CSSProperties>;
+  type?: SensitiveConfigType;
 }
 
 const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({ title, component, children, sx, type }) => {

@@ -94,7 +94,7 @@ export const draftTasksQuery = graphql`
 const LOCAL_STORAGE_KEY = 'draft_tasks';
 
 interface DraftTasksProps {
-  draftId: string
+  draftId: string;
 }
 
 const DraftTasks: FunctionComponent<DraftTasksProps> = ({ draftId }) => {

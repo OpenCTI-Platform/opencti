@@ -2,8 +2,8 @@ import React from 'react';
 import { isNotEmptyField } from '../utils/utils';
 
 interface FieldOrEmptyProps<T> {
-  source: T
-  children: React.ReactNode
+  source: T;
+  children: React.ReactNode;
 }
 
 const FieldOrEmpty = <T = unknown>({ source, children }: FieldOrEmptyProps<T>) => {

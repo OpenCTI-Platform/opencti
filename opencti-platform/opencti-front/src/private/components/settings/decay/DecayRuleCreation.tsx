@@ -55,21 +55,21 @@ const decayRuleCreationMutation = graphql`
 `;
 
 interface DecayRuleCreationFormData {
-  name: string
-  description: string
-  order: number
-  active: boolean
-  decay_lifetime: number
-  decay_pound: number
-  decay_points: number[]
-  decay_revoke_score: number
-  decay_observable_types: string[]
+  name: string;
+  description: string;
+  order: number;
+  active: boolean;
+  decay_lifetime: number;
+  decay_pound: number;
+  decay_points: number[];
+  decay_revoke_score: number;
+  decay_observable_types: string[];
 }
 
 interface DecayRuleCreationFormProps {
-  updater: (store: RecordSourceSelectorProxy) => void
-  onReset?: () => void
-  onCompleted?: () => void
+  updater: (store: RecordSourceSelectorProxy) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
 }
 const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
   updater,
@@ -288,7 +288,7 @@ const CreateDecayRuleControlledDial = (props: DrawerControlledDialProps) => (
 );
 
 interface DecayRuleCreationProps {
-  paginationOptions: DecayRulesLinesPaginationQuery$variables
+  paginationOptions: DecayRulesLinesPaginationQuery$variables;
 }
 
 const DecayRuleCreation: FunctionComponent<DecayRuleCreationProps> = ({

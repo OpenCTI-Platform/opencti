@@ -221,22 +221,22 @@ const stixNestedRefRelationshipCreationFromEntityLineFragment = graphql`
 `;
 
 interface StixNestedRefRelationshipCreationFromEntityLineProps {
-  node: StixNestedRefRelationshipCreationFromEntityLine_node$key
-  dataColumns: DataColumns
-  onLabelClick: HandleAddFilter
+  node: StixNestedRefRelationshipCreationFromEntityLine_node$key;
+  dataColumns: DataColumns;
+  onLabelClick: HandleAddFilter;
   onToggleEntity: (
     entity: StixNestedRefRelationshipCreationFromEntityLine_node$data,
     event?: React.SyntheticEvent,
-  ) => void
-  selectedElements: Record<string, StixNestedRefRelationshipCreationFromEntityLine_node$data>
-  deSelectedElements: Record<string, StixNestedRefRelationshipCreationFromEntityLine_node$data>
-  selectAll: boolean
+  ) => void;
+  selectedElements: Record<string, StixNestedRefRelationshipCreationFromEntityLine_node$data>;
+  deSelectedElements: Record<string, StixNestedRefRelationshipCreationFromEntityLine_node$data>;
+  selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: StixNestedRefRelationshipCreationFromEntityLine_node$data,
     event?: React.SyntheticEvent,
-  ) => void
-  index: number
+  ) => void;
+  index: number;
 }
 
 export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<StixNestedRefRelationshipCreationFromEntityLineProps> = ({

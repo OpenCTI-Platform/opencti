@@ -84,9 +84,9 @@ export const roleEditionCapabilitiesLinesSearch = graphql`
 `;
 
 interface RoleEditionCapabilitiesComponentProps {
-  role: RoleEditionCapabilities_role$data
-  queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>
-  isCapabilitiesInDraft?: boolean
+  role: RoleEditionCapabilities_role$data;
+  queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
+  isCapabilitiesInDraft?: boolean;
 }
 
 const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef, isCapabilitiesInDraft = false }) => {

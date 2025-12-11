@@ -28,8 +28,8 @@ const convertUserMutation = graphql`
 `;
 
 interface ConvertUserProps {
-  userId: string
-  userServiceAccount: boolean
+  userId: string;
+  userServiceAccount: boolean;
 }
 
 const ConvertUser: FunctionComponent<ConvertUserProps> = ({ userId, userServiceAccount }) => {

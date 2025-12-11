@@ -18,9 +18,9 @@ const EETooltip = ({
   title,
   forAi,
 }: {
-  children: ReactElement
-  title?: string
-  forAi?: boolean
+  children: ReactElement;
+  title?: string;
+  forAi?: boolean;
 }) => {
   const { t_i18n } = useFormatter();
   const [feedbackCreation, setFeedbackCreation] = useState(false);

@@ -56,7 +56,7 @@ const InfrastructureDetailsFragment = graphql`
 `;
 
 interface InfrastructureDetailsProps {
-  infrastructure: InfrastructureDetails_infrastructure$key
+  infrastructure: InfrastructureDetails_infrastructure$key;
 }
 
 const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({

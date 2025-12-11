@@ -4,7 +4,7 @@ import { useFormatter } from 'src/components/i18n';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
 
-function EdgeLabel({ transform, label }: { transform: string, label: string }) {
+function EdgeLabel({ transform, label }: { transform: string; label: string }) {
   const { t_i18n } = useFormatter();
   return (
     <div

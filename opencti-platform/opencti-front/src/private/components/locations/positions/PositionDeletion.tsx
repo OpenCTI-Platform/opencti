@@ -15,9 +15,9 @@ const positionDeletionMutation = graphql`
 `;
 
 interface PositionDeletionProps {
-  positionId: string
-  isOpen: boolean
-  handleClose: () => void
+  positionId: string;
+  isOpen: boolean;
+  handleClose: () => void;
 }
 
 const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({

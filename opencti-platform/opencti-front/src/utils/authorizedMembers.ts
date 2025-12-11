@@ -5,8 +5,8 @@ export const INPUT_AUTHORIZED_MEMBERS = 'restricted_members';
 export type AccessRight = 'none' | 'view' | 'use' | 'edit' | 'admin';
 
 export interface AuthorizedMemberOption extends FieldOption {
-  accessRight: AccessRight
-  groupsRestriction: FieldOption[]
+  accessRight: AccessRight;
+  groupsRestriction: FieldOption[];
 }
 
 export const CAN_USE_ENTITY_TYPES = ['Organization'];
@@ -24,21 +24,21 @@ export const CREATOR_AUTHORIZED_CONFIG = {
 };
 
 export type AuthorizedMembers = ReadonlyArray<{
-  readonly access_right: string
-  readonly entity_type: string
-  readonly id: string
-  readonly member_id: string
-  readonly name: string
+  readonly access_right: string;
+  readonly entity_type: string;
+  readonly id: string;
+  readonly member_id: string;
+  readonly name: string;
   readonly groups_restriction: ReadonlyArray<{
-    readonly id: string
-    readonly name: string
-  }> | null | undefined
+    readonly id: string;
+    readonly name: string;
+  }> | null | undefined;
 }> | null;
 
 export type Creator = {
-  readonly id: string
-  readonly name: string
-  readonly entity_type: string
+  readonly id: string;
+  readonly name: string;
+  readonly entity_type: string;
 };
 
 /**

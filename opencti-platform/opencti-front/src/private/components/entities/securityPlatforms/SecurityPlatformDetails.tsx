@@ -31,7 +31,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface SecurityPlatformDetailsComponentProps {
-  securityPlatform: SecurityPlatformDetails_securityPlatform$data
+  securityPlatform: SecurityPlatformDetails_securityPlatform$data;
 }
 
 const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetailsComponentProps> = ({ securityPlatform }) => {

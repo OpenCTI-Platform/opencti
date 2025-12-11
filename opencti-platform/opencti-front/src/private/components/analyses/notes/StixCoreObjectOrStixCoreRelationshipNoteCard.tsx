@@ -70,9 +70,9 @@ const StixCoreObjectOrStixCoreRelationshipNoteCardFragment = graphql`
 `;
 
 interface StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps {
-  data: StixCoreObjectOrStixCoreRelationshipNoteCard_node$key
-  stixCoreObjectOrStixCoreRelationshipId: string
-  paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables
+  data: StixCoreObjectOrStixCoreRelationshipNoteCard_node$key;
+  stixCoreObjectOrStixCoreRelationshipId: string;
+  paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
 }
 
 const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<

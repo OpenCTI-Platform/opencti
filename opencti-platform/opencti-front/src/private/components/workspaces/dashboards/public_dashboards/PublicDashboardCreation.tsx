@@ -12,7 +12,7 @@ const PublicDashboardCreateDial = (props: DrawerControlledDialProps) => (
 );
 
 interface PublicDashboardCreationProps {
-  paginationOptions: PublicDashboardsListQuery$variables
+  paginationOptions: PublicDashboardsListQuery$variables;
 }
 
 const PublicDashboardCreation = ({ paginationOptions }: PublicDashboardCreationProps) => {

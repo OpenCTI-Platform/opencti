@@ -43,22 +43,22 @@ const objectMembersFieldSearchQuery = graphql`
 `;
 
 export interface OptionMember extends FieldOption {
-  type: string
+  type: string;
 }
 
 type MemberType = 'Group' | 'Organization' | 'User';
 
 interface ObjectMembersFieldProps {
-  name: string
-  label?: string
-  multiple?: boolean
-  onChange?: (name: string, value: FieldOption[]) => void
-  style?: Record<string, string | number>
-  helpertext?: string
-  disabled?: boolean
-  required?: boolean
-  entityTypes?: MemberType[]
-  dynamicKeysForPlaybooks?: boolean
+  name: string;
+  label?: string;
+  multiple?: boolean;
+  onChange?: (name: string, value: FieldOption[]) => void;
+  style?: Record<string, string | number>;
+  helpertext?: string;
+  disabled?: boolean;
+  required?: boolean;
+  entityTypes?: MemberType[];
+  dynamicKeysForPlaybooks?: boolean;
 }
 const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   name,

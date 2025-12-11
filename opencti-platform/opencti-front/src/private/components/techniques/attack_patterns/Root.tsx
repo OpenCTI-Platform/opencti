@@ -78,8 +78,8 @@ const attackPatternQuery = graphql`
 `;
 
 type RootAttackPatternProps = {
-  attackPatternId: string
-  queryRef: PreloadedQuery<RootAttackPatternQuery>
+  attackPatternId: string;
+  queryRef: PreloadedQuery<RootAttackPatternQuery>;
 };
 const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootAttackPatternSubscription>>(() => ({
@@ -151,7 +151,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <AttackPatternDeletion id={attackPattern.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

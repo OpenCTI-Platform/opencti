@@ -4,8 +4,8 @@ import React from 'react';
 import { useFormatter } from '../../../../../../components/i18n';
 
 type IngestionCatalogCardDeployButtonProps = {
-  deploymentCount?: number
-  onClick: () => void
+  deploymentCount?: number;
+  onClick: () => void;
 };
 
 const IngestionCatalogCardDeployButton = ({ deploymentCount, onClick }: IngestionCatalogCardDeployButtonProps) => {

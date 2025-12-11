@@ -44,7 +44,7 @@ const RootPir = lazy(() => import('./components/pir/Root'));
 const RootXTMHub = lazy(() => import('@components/xtm_hub/Root'));
 
 interface IndexProps {
-  settings: RootSettings$data
+  settings: RootSettings$data;
 }
 
 const Index = ({ settings }: IndexProps) => {

@@ -22,8 +22,8 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 const LOCAL_STORAGE_KEY = 'externalReferences';
 
 interface ExternalReferencesProps {
-  history: History
-  location: Location
+  history: History;
+  location: Location;
 }
 
 const externalReferencesLineFragment = graphql`

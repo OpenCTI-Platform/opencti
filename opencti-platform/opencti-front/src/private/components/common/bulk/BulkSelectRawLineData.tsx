@@ -12,20 +12,20 @@ import { useFormatter } from '../../../../components/i18n';
 import { RelationsToEntity } from '../../../../utils/Relation';
 
 interface BulkSelectRawLineDataProps {
-  entity: BulkEntityTypeInfo
-  entityIndex: number
-  entityList: RelationsToEntity[]
-  isSubmitting: boolean
-  onChangeEntityType: (value: RelationsToEntity, entityIndex: number) => void
-  onDeleteEntity: (entityIndex: number) => void
-  selectedRelationType: string
+  entity: BulkEntityTypeInfo;
+  entityIndex: number;
+  entityList: RelationsToEntity[];
+  isSubmitting: boolean;
+  onChangeEntityType: (value: RelationsToEntity, entityIndex: number) => void;
+  onDeleteEntity: (entityIndex: number) => void;
+  selectedRelationType: string;
 }
 
 type autocompleteOptionsType = {
-  label: string
-  value: RelationsToEntity
-  groupLabel: string
-  groupOrder: number
+  label: string;
+  value: RelationsToEntity;
+  groupLabel: string;
+  groupOrder: number;
 };
 
 const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({

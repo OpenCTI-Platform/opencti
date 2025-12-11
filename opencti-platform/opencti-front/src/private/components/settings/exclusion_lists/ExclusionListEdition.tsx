@@ -32,18 +32,18 @@ export const exclusionListMutationFieldPatch = graphql`
 `;
 
 interface ExclusionListEditionComponentProps {
-  data: ExclusionListsLine_node$data
-  isOpen: boolean
-  refetchStatus: () => void
-  onClose: () => void
+  data: ExclusionListsLine_node$data;
+  isOpen: boolean;
+  refetchStatus: () => void;
+  onClose: () => void;
 }
 
 interface ExclusionListEditionFormData {
-  name: string
-  description?: string | null
-  exclusion_list_entity_types: FieldOption[]
-  fileContent?: string
-  file?: File | null
+  name: string;
+  description?: string | null;
+  exclusion_list_entity_types: FieldOption[];
+  fileContent?: string;
+  file?: File | null;
 }
 
 const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps> = ({

@@ -18,7 +18,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
 interface CaseRftsProps {
-  inputValue?: string
+  inputValue?: string;
 }
 
 const caseFragment = graphql`

@@ -55,8 +55,8 @@ const playbookComponentsFragment = graphql`
 `;
 
 interface PlaybookFlowProps {
-  dataPlaybook: PlaybookFlow_playbook$key
-  dataPlaybookComponents: PlaybookFlow_playbookComponents$key
+  dataPlaybook: PlaybookFlow_playbook$key;
+  dataPlaybookComponents: PlaybookFlow_playbookComponents$key;
 }
 
 const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProps) => {

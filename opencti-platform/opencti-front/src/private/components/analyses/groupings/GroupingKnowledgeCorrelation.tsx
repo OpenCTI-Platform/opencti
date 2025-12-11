@@ -18,8 +18,8 @@ export const groupingKnowledgeCorrelationQuery = graphql`
 `;
 
 interface GroupingKnowledgeCorrelationProps {
-  data: NonNullable<GroupingKnowledgeCorrelationQuery$data['grouping']>
-  id: string
+  data: NonNullable<GroupingKnowledgeCorrelationQuery$data['grouping']>;
+  id: string;
 }
 
 const GroupingKnowledgeCorrelation = ({

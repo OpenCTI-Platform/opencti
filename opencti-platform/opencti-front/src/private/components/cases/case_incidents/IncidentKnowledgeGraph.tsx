@@ -23,10 +23,10 @@ export const incidentKnowledgeGraphQuery = graphql`
 `;
 
 interface IncidentKnowledgeGraphProps {
-  data: NonNullable<IncidentKnowledgeGraphQuery$data['caseIncident']>
-  id: string
-  mode: string
-  enableReferences: boolean
+  data: NonNullable<IncidentKnowledgeGraphQuery$data['caseIncident']>;
+  id: string;
+  mode: string;
+  enableReferences: boolean;
 }
 
 const IncidentKnowledgeGraph = ({

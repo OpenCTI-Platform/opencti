@@ -119,9 +119,9 @@ const publicStixRelationshipsMultiHorizontalBarsQuery = graphql`
 `;
 
 interface PublicStixRelationshipsMultiHorizontalBarsComponentProps {
-  parameters: Widget['parameters']
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsMultiHorizontalBarsQuery>
+  parameters: Widget['parameters'];
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsMultiHorizontalBarsQuery>;
 }
 
 const PublicStixRelationshipsMultiHorizontalBarsComponent = ({

@@ -10,7 +10,7 @@ import EditEntityControlledDial from '../../../../components/EditEntityControlle
 const AdministrativeAreaEdition = ({
   administrativeAreaId,
 }: {
-  administrativeAreaId: string
+  administrativeAreaId: string;
 }) => {
   const [commit] = useApiMutation(administrativeAreaEditionOverviewFocus);
   const handleClose = () => {

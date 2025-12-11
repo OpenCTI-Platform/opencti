@@ -1,17 +1,17 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 
 interface UseExternalTabProps {
-  url: string
-  tabName: string
-  onMessage: (event: MessageEvent) => void
-  onClosingTab: () => void
+  url: string;
+  tabName: string;
+  onMessage: (event: MessageEvent) => void;
+  onClosingTab: () => void;
 }
 
 interface UseExternalTabReturn {
-  isTabOpen: boolean
-  openTab: () => void
-  closeTab: () => void
-  focusTab: () => void
+  isTabOpen: boolean;
+  openTab: () => void;
+  closeTab: () => void;
+  focusTab: () => void;
 }
 
 const useExternalTab = ({

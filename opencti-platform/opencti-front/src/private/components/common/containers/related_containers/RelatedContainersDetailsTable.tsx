@@ -112,7 +112,7 @@ const relatedContainersDetailsTableLinesFragment = graphql`
 `;
 
 interface RelatedContainersDetailsTableProps {
-  filters: FilterGroup
+  filters: FilterGroup;
 }
 
 const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps> = ({ filters: queryFilters }) => {

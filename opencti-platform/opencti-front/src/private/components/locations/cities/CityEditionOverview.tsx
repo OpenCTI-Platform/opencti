@@ -118,18 +118,18 @@ export const cityEditionOverviewFragment = graphql`
 const CITY_TYPE = 'City';
 
 interface CityEditionOverviewProps {
-  cityRef: CityEditionOverview_city$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  cityRef: CityEditionOverview_city$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface CityEditionFormValues {
-  message?: string
-  references?: FieldOption[]
-  createdBy: FieldOption | undefined
-  x_opencti_workflow_id: FieldOption
-  objectMarking?: FieldOption[]
+  message?: string;
+  references?: FieldOption[];
+  createdBy: FieldOption | undefined;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
 }
 
 const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({

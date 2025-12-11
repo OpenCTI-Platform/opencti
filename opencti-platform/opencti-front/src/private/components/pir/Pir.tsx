@@ -43,7 +43,7 @@ const pirQuery = graphql`
 `;
 
 interface PirComponentProps {
-  pirQueryRef: PreloadedQuery<PirQuery>
+  pirQueryRef: PreloadedQuery<PirQuery>;
 }
 
 const PirComponent = ({

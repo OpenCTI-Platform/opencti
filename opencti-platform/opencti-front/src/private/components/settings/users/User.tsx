@@ -230,14 +230,14 @@ const UserFragment = graphql`
 `;
 
 type Session = {
-  id: string
-  created?: string
-  ttl?: number
+  id: string;
+  created?: string;
+  ttl?: number;
 };
 
 interface UserProps {
-  data: User_user$key
-  refetch: () => void
+  data: User_user$key;
+  refetch: () => void;
 }
 
 const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
@@ -791,7 +791,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 render={({
                   props,
                 }: {
-                  props: UserAuditsTimeSeriesQuery$data
+                  props: UserAuditsTimeSeriesQuery$data;
                 }) => {
                   if (props && props.auditsTimeSeries) {
                     const chartData = props.auditsTimeSeries.map((entry) => ({

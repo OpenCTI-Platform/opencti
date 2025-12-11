@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 
 interface UseNetworkCheckResult {
-  isReachable: boolean | null
-  isLoading: boolean
+  isReachable: boolean | null;
+  isLoading: boolean;
 }
 
 const useNetworkCheck = (url?: string | null): UseNetworkCheckResult => {

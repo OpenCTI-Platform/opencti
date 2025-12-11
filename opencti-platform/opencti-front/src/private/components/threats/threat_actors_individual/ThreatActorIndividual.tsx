@@ -137,7 +137,7 @@ const hasDemographicsOrBiographics = (
 };
 
 interface ThreatActorIndividualProps {
-  threatActorIndividualData: ThreatActorIndividual_ThreatActorIndividual$key
+  threatActorIndividualData: ThreatActorIndividual_ThreatActorIndividual$key;
 }
 
 const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatActorIndividualData }) => {

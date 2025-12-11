@@ -243,7 +243,7 @@ const useGraphInteractions = () => {
    */
   const moveSelection = (
     node: NodeObject<GraphNode>,
-    translate: { x: number, y: number, z?: number },
+    translate: { x: number; y: number; z?: number },
   ) => {
     const selectedDraggedNode = selectedNodes.find((n) => n.id === node.id);
     if (selectedDraggedNode) {

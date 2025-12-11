@@ -26,14 +26,14 @@ import { useFormatter } from '../../../../components/i18n';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 interface StreamCollectionCreationProps {
-  paginationOptions: PaginationOptions
+  paginationOptions: PaginationOptions;
 }
 
 interface StreamCollectionCreationForm {
-  authorized_members: FieldOption[]
-  stream_public: boolean
-  name: string
-  description: string
+  authorized_members: FieldOption[];
+  stream_public: boolean;
+  name: string;
+  description: string;
 }
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

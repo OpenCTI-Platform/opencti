@@ -41,17 +41,17 @@ const workspaceHeaderToStixReportBundleQuery = graphql`
 `;
 
 type WorkspaceHeaderProps = {
-  data: WorkspaceHeaderFragment$key
-  variant: 'dashboard' | 'investigation'
-  adjust?: () => void
-  handleDateChange?: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void
+  data: WorkspaceHeaderFragment$key;
+  variant: 'dashboard' | 'investigation';
+  adjust?: () => void;
+  handleDateChange?: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void;
   config?: {
-    startDate: string | null
-    endDate: string | null
-    relativeDate: string | null
-  }
-  handleAddWidget?: () => void
-  handleImportWidget?: (widgetFile: File) => void
+    startDate: string | null;
+    endDate: string | null;
+    relativeDate: string | null;
+  };
+  handleAddWidget?: () => void;
+  handleImportWidget?: (widgetFile: File) => void;
 };
 
 const WorkspaceHeader = ({

@@ -83,8 +83,8 @@ const ThreatActorIndividualQuery = graphql`
 const THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES = ['related-to', 'part-of', 'impersonates', 'known-as'];
 
 type RootThreatActorIndividualProps = {
-  threatActorIndividualId: string
-  queryRef: PreloadedQuery<RootThreatActorIndividualQuery>
+  threatActorIndividualId: string;
+  queryRef: PreloadedQuery<RootThreatActorIndividualQuery>;
 };
 
 const RootThreatActorIndividualComponent = ({
@@ -173,7 +173,7 @@ const RootThreatActorIndividualComponent = ({
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ThreatActorIndividualDeletion id={threatActorIndividual.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -305,7 +305,7 @@ const RootThreatActorIndividualComponent = ({
 
 const Root = () => {
   const { threatActorIndividualId } = useParams() as {
-    threatActorIndividualId: string
+    threatActorIndividualId: string;
   };
   const queryRef = useQueryLoading<RootThreatActorIndividualQuery>(
     ThreatActorIndividualQuery,

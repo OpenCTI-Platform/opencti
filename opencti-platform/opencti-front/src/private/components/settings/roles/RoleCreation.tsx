@@ -21,8 +21,8 @@ const roleMutation = graphql`
 `;
 
 type FormValuesType = {
-  name: string
-  description: string
+  name: string;
+  description: string;
 };
 
 const CreateRoleControlledDial = (props: DrawerControlledDialProps) => (
@@ -33,7 +33,7 @@ const CreateRoleControlledDial = (props: DrawerControlledDialProps) => (
 );
 
 const RoleCreation = ({ paginationOptions }: {
-  paginationOptions: PaginationOptions
+  paginationOptions: PaginationOptions;
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -64,8 +64,8 @@ const RoleCreation = ({ paginationOptions }: {
   const onSubmit = (
     values: FormValuesType,
     { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void
-      resetForm: () => void
+      setSubmitting: (flag: boolean) => void;
+      resetForm: () => void;
     },
   ) => {
     commitMutation({

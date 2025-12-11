@@ -454,41 +454,41 @@ export const stixCoreRelationshipCreationFromEntityToMutation = graphql`
 `;
 
 interface StixCoreRelationshipCreationFromEntityProps {
-  entityId: string
-  objectId?: string
-  allowedRelationshipTypes?: string[]
-  isRelationReversed?: boolean
-  targetStixDomainObjectTypes?: string[]
-  targetStixCyberObservableTypes?: string[]
-  defaultStartTime?: string
-  defaultStopTime?: string
-  paginationOptions: Record<string, unknown>
-  connectionKey?: string
-  paddingRight: number
-  variant?: string
-  targetEntities?: TargetEntity[]
-  onCreate?: () => void
-  openExports?: boolean
-  handleReverseRelation?: () => void
-  currentView?: string
-  isCoverage?: boolean
+  entityId: string;
+  objectId?: string;
+  allowedRelationshipTypes?: string[];
+  isRelationReversed?: boolean;
+  targetStixDomainObjectTypes?: string[];
+  targetStixCyberObservableTypes?: string[];
+  defaultStartTime?: string;
+  defaultStopTime?: string;
+  paginationOptions: Record<string, unknown>;
+  connectionKey?: string;
+  paddingRight: number;
+  variant?: string;
+  targetEntities?: TargetEntity[];
+  onCreate?: () => void;
+  openExports?: boolean;
+  handleReverseRelation?: () => void;
+  currentView?: string;
+  isCoverage?: boolean;
 }
 
 export interface StixCoreRelationshipCreationFromEntityForm {
-  confidence: string
-  start_time: string
-  stop_time: string
-  createdBy: FieldOption
-  killChainPhases: FieldOption[]
-  objectMarking: FieldOption[]
-  externalReferences: FieldOption[]
-  coverage_information?: Array<{ coverage_name: string, coverage_score: number }>
+  confidence: string;
+  start_time: string;
+  stop_time: string;
+  createdBy: FieldOption;
+  killChainPhases: FieldOption[];
+  objectMarking: FieldOption[];
+  externalReferences: FieldOption[];
+  coverage_information?: Array<{ coverage_name: string; coverage_score: number }>;
 }
 
 export interface TargetEntity {
-  id: string
-  entity_type: string
-  name?: string
+  id: string;
+  entity_type: string;
+  name?: string;
 }
 
 const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelationshipCreationFromEntityProps> = (props) => {

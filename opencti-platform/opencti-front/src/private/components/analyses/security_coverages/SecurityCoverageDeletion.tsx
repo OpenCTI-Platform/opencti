@@ -13,10 +13,10 @@ const securityCoverageDeletionMutation = graphql`
 `;
 
 interface SecurityCoverageDeletionProps {
-  securityCoverageId: string
-  isOpen: boolean
-  handleClose: () => void
-  objectPath?: string
+  securityCoverageId: string;
+  isOpen: boolean;
+  handleClose: () => void;
+  objectPath?: string;
 }
 
 const SecurityCoverageDeletion: FunctionComponent<SecurityCoverageDeletionProps> = ({

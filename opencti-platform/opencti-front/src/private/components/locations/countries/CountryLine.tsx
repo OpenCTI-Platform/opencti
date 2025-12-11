@@ -43,8 +43,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CountryLineProps {
-  dataColumns: DataColumns
-  node: CountryLine_node$key
+  dataColumns: DataColumns;
+  node: CountryLine_node$key;
 }
 
 const countryLineFragment = graphql`
@@ -136,7 +136,7 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
 export const CountryLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

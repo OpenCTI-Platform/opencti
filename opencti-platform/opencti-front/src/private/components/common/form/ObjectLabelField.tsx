@@ -29,15 +29,15 @@ const useStyles = makeStyles({
 });
 
 interface ObjectLabelFieldProps {
-  style?: React.CSSProperties
-  name: string
-  helpertext?: string
-  dryrun?: boolean
-  required?: boolean
-  setFieldValue?: (name: string, value: FieldOption[]) => void
-  values?: FieldOption[]
-  onChange?: (name: string, value: FieldOption[]) => void
-  disabled?: boolean
+  style?: React.CSSProperties;
+  name: string;
+  helpertext?: string;
+  dryrun?: boolean;
+  required?: boolean;
+  setFieldValue?: (name: string, value: FieldOption[]) => void;
+  values?: FieldOption[];
+  onChange?: (name: string, value: FieldOption[]) => void;
+  disabled?: boolean;
 }
 
 const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({

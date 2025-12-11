@@ -3,8 +3,8 @@ import ItemIcon from '../components/ItemIcon';
 import type { Theme } from '../components/Theme';
 
 interface MarkingIconProps {
-  color: string | undefined | null
-  theme: Theme
+  color: string | undefined | null;
+  theme: Theme;
 }
 const MarkingIcon = ({ color, theme }: MarkingIconProps): React.ReactNode => {
   if (color === 'transparent') {

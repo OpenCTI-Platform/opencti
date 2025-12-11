@@ -70,18 +70,18 @@ export const AuditLinesQuery = graphql`
 `;
 
 interface AuditLinesProps {
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
-  dataColumns: DataColumns
-  paginationOptions: AuditLinesPaginationQuery$variables
-  queryRef: PreloadedQuery<AuditLinesPaginationQuery>
-  selectedElements: Record<string, AuditLine_node$data>
-  deSelectedElements: Record<string, AuditLine_node$data>
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  dataColumns: DataColumns;
+  paginationOptions: AuditLinesPaginationQuery$variables;
+  queryRef: PreloadedQuery<AuditLinesPaginationQuery>;
+  selectedElements: Record<string, AuditLine_node$data>;
+  deSelectedElements: Record<string, AuditLine_node$data>;
   onToggleEntity: (
     entity: AuditLine_node$data,
     event: React.SyntheticEvent,
-  ) => void
-  selectAll: boolean
-  onLabelClick?: HandleAddFilter
+  ) => void;
+  selectAll: boolean;
+  onLabelClick?: HandleAddFilter;
 }
 
 const AuditLines: FunctionComponent<AuditLinesProps> = ({

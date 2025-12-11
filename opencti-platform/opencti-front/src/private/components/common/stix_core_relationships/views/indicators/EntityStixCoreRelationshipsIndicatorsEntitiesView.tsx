@@ -27,13 +27,13 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
-  entityId: string
-  relationshipTypes: string[]
-  defaultStartTime: string
-  defaultStopTime: string
-  localStorage: PaginationLocalStorage<PaginationOptions>
-  isRelationReversed: boolean
-  currentView: string
+  entityId: string;
+  relationshipTypes: string[];
+  defaultStartTime: string;
+  defaultStopTime: string;
+  localStorage: PaginationLocalStorage<PaginationOptions>;
+  isRelationReversed: boolean;
+  currentView: string;
 }
 
 export const entityStixCoreRelationshipsIndicatorsEntitiesViewQuery = graphql`

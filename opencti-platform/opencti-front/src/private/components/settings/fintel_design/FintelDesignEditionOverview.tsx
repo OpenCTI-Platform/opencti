@@ -27,15 +27,15 @@ const fintelDesignOverviewFragment = graphql`
 `;
 
 interface FintelDesignEditionOverviewProps {
-  data: FintelDesignEditionOverview_fintelDesign$key
-  enableReferences?: boolean
+  data: FintelDesignEditionOverview_fintelDesign$key;
+  enableReferences?: boolean;
 }
 
 interface FintelDesignEditionFormValues {
-  name: string
-  description: string | null
-  message?: string
-  references?: FieldOption[]
+  name: string;
+  description: string | null;
+  message?: string;
+  references?: FieldOption[];
 }
 
 const FintelDesignEditionOverviewComponent: FunctionComponent<

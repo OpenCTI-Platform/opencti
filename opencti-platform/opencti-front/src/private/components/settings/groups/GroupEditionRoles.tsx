@@ -54,8 +54,8 @@ export const groupEditionRolesLinesSearchQuery = graphql`
 `;
 
 interface GroupEditionRolesComponentProps {
-  group: GroupEditionRoles_group$data
-  queryRef: PreloadedQuery<GroupEditionRolesLinesSearchQuery>
+  group: GroupEditionRoles_group$data;
+  queryRef: PreloadedQuery<GroupEditionRolesLinesSearchQuery>;
 }
 
 const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentProps> = (
@@ -68,7 +68,7 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
     groupEditionRolesLinesSearchQuery,
     queryRef,
   );
-  const rolesData = (roles?.edges ?? []).map((n) => n?.node) as { id: string, name: string }[];
+  const rolesData = (roles?.edges ?? []).map((n) => n?.node) as { id: string; name: string }[];
   const groupRoles = group.roles?.edges?.map(({ node: n }) => ({ id: n?.id })) ?? [];
   const [commitAddRole] = useApiMutation(groupEditionAddRoles);
   const [commitRemoveRole] = useApiMutation(groupEditionRemoveRoles);

@@ -3,10 +3,10 @@ import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface ProcessDialogProps {
-  open: boolean
-  title: string
-  onClose: () => void
-  children: React.ReactNode
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
 }
 
 const ProcessDialog: FunctionComponent<ProcessDialogProps> = ({

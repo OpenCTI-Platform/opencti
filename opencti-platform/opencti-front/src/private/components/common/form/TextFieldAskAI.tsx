@@ -33,12 +33,12 @@ import useAI from '../../../../utils/hooks/useAI';
 
 // region types
 interface TextFieldAskAiProps {
-  currentValue: string
-  setFieldValue: (value: string) => void
-  format: 'text' | 'html' | 'markdown'
-  variant?: 'markdown' | 'html' | 'text' | null
-  disabled?: boolean
-  style?: object
+  currentValue: string;
+  setFieldValue: (value: string) => void;
+  format: 'text' | 'html' | 'markdown';
+  variant?: 'markdown' | 'html' | 'text' | null;
+  disabled?: boolean;
+  style?: object;
 }
 
 const textFieldAskAIFixSpellingMutation = graphql`
@@ -94,7 +94,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const [openToneOptions, setOpenToneOptions] = useState(false);
   const [tone, setTone] = useState<'tactical' | 'operational' | 'strategic'>('tactical');
   const [isAcceptable, setIsAcceptable] = useState(true);
-  const [menuOpen, setMenuOpen] = useState<{ open: boolean, anchorEl: HTMLButtonElement | null }>({ open: false, anchorEl: null });
+  const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

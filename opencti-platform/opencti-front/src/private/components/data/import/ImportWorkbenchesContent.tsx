@@ -202,7 +202,7 @@ const ImportWorkbenchesContent = () => {
       isSortable: true,
       percentWidth: 20,
       render: ({ lastModified }: ImportWorkbenchesContentFileLine_file$data, { fd }: {
-        fd: (date: Date) => string
+        fd: (date: Date) => string;
       }) => fd(lastModified),
     },
   };

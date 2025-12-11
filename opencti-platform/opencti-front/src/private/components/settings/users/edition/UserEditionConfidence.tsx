@@ -14,24 +14,24 @@ import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 export interface OverrideFormData {
-  max_confidence: string
-  entity_type: string
+  max_confidence: string;
+  entity_type: string;
 }
 
 export interface ConfidenceFormData {
-  user_confidence_level_enabled: boolean
-  user_confidence_level: number | null | undefined
-  overrides: OverrideFormData[]
+  user_confidence_level_enabled: boolean;
+  user_confidence_level: number | null | undefined;
+  overrides: OverrideFormData[];
 }
 
 interface UserEditionConfidenceProps {
-  user: UserEdition_user$data
+  user: UserEdition_user$data;
   context:
     | readonly ({
-      readonly focusOn: string | null | undefined
-      readonly name: string
+      readonly focusOn: string | null | undefined;
+      readonly name: string;
     } | null)[]
-    | null | undefined
+    | null | undefined;
 }
 
 const userConfidenceValidation = (t: (value: string) => string) => {

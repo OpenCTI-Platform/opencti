@@ -13,7 +13,7 @@ const editorFragment = graphql`
 `;
 
 interface EmailTemplateContentEditorProps {
-  data: EmailTemplateContentEditor_template$key
+  data: EmailTemplateContentEditor_template$key;
 }
 
 const EmailTemplateContentEditor = ({

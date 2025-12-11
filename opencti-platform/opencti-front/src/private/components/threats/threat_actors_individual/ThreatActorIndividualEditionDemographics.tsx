@@ -78,9 +78,9 @@ const threatActorIndividualEditionDemographicsFragment = graphql`
 const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
 
 interface ThreatActorIndividualEditionDemographicsComponentProps {
-  threatActorIndividualRef: ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key
-  enableReferences: boolean
-  context?: readonly (GenericContext | null)[] | null
+  threatActorIndividualRef: ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key;
+  enableReferences: boolean;
+  context?: readonly (GenericContext | null)[] | null;
 }
 
 const ThreatActorIndividualEditionDemographicsComponent = ({

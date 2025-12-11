@@ -50,22 +50,22 @@ const attributeValidation = () => Yup.object().shape({
 });
 
 interface AttributeFormikValues {
-  mandatory: boolean
-  default_values: DefaultValues
-  scale: ScaleConfig
+  mandatory: boolean;
+  default_values: DefaultValues;
+  scale: ScaleConfig;
 }
 
 interface AttributeSubmitValues {
-  mandatory?: boolean
-  default_values: string[] | null
-  scale?: { local_config: ScaleConfig }
+  mandatory?: boolean;
+  default_values: string[] | null;
+  scale?: { local_config: ScaleConfig };
 }
 
 interface EntitySettingAttributeEditionProps {
-  attribute: EntitySettingAttributeLine_attribute$data
-  handleClose: () => void
-  entitySetting: EntitySettingAttributes_entitySetting$data
-  open?: boolean
+  attribute: EntitySettingAttributeLine_attribute$data;
+  handleClose: () => void;
+  entitySetting: EntitySettingAttributes_entitySetting$data;
+  open?: boolean;
 }
 
 const EntitySettingAttributeEdition = ({

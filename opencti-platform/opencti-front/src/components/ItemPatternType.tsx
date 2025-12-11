@@ -27,10 +27,10 @@ const useStyles = makeStyles(() => ({
 
 interface InlineStyle {
   [k: string]: {
-    backgroundColor: string
-    color: string
-    border: string
-  }
+    backgroundColor: string;
+    color: string;
+    border: string;
+  };
 }
 
 const inlineStyles: InlineStyle = {
@@ -87,8 +87,8 @@ const inlineStyles: InlineStyle = {
 };
 
 interface ItemPatternTypeProps {
-  label: string
-  variant?: 'inList'
+  label: string;
+  variant?: 'inList';
 }
 
 const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({

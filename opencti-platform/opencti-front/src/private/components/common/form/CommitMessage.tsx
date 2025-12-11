@@ -27,18 +27,18 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CommitMessageProps {
-  id: string
-  submitForm: () => Promise<void>
-  disabled: boolean
+  id: string;
+  submitForm: () => Promise<void>;
+  disabled: boolean;
   setFieldValue: (
     field: string,
     value: ExternalReferencesValues,
     shouldValidate?: boolean | undefined,
-  ) => void
-  values: ExternalReferencesValues | undefined
-  noStoreUpdate?: boolean
-  open: boolean
-  handleClose?: () => void
+  ) => void;
+  values: ExternalReferencesValues | undefined;
+  noStoreUpdate?: boolean;
+  open: boolean;
+  handleClose?: () => void;
 }
 
 const CommitMessage: FunctionComponent<CommitMessageProps> = ({

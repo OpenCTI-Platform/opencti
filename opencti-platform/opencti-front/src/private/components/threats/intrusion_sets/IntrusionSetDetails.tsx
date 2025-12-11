@@ -18,7 +18,7 @@ import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel'
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 type IntrusionSetDetailsProps = {
-  intrusionSet: IntrusionSetDetails_intrusionSet$data
+  intrusionSet: IntrusionSetDetails_intrusionSet$data;
 };
 
 const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps) => {

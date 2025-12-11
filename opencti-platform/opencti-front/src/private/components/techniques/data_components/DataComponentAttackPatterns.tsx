@@ -19,7 +19,7 @@ import { DataComponentAttackPatterns_dataComponent$data } from './__generated__/
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const DataComponentAttackPatternsComponent: FunctionComponent<{
-  dataComponent: DataComponentAttackPatterns_dataComponent$data
+  dataComponent: DataComponentAttackPatterns_dataComponent$data;
 }> = ({ dataComponent }) => {
   const { t_i18n } = useFormatter();
 

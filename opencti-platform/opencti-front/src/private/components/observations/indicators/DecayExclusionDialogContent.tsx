@@ -13,8 +13,8 @@ import Alert from '../../../../components/Alert';
 import Security from '../../../../utils/Security';
 
 interface DecayExclusionDialogContentProps {
-  indicator: IndicatorDetails_indicator$data
-  onClose: () => void
+  indicator: IndicatorDetails_indicator$data;
+  onClose: () => void;
 }
 
 const DecayExclusionDialogContent: FunctionComponent<DecayExclusionDialogContentProps> = ({ indicator, onClose }) => {

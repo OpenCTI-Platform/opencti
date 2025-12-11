@@ -4435,10 +4435,10 @@ const publicStixRelationshipsListQuery = graphql`
 `;
 
 interface PublicStixRelationshipsListComponentProps {
-  queryRef: PreloadedQuery<PublicStixRelationshipsListQuery>
-  widgetId: string
-  rootRef: DataTableProps['rootRef']
-  columns: WidgetColumn[]
+  queryRef: PreloadedQuery<PublicStixRelationshipsListQuery>;
+  widgetId: string;
+  rootRef: DataTableProps['rootRef'];
+  columns: WidgetColumn[];
 }
 
 const PublicStixRelationshipsListComponent = ({

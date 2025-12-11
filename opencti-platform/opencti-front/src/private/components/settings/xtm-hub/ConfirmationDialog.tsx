@@ -2,13 +2,13 @@ import React, { FunctionComponent } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 interface ConfirmationDialogProps {
-  open: boolean
-  title: string
-  message: string
-  confirmButtonText?: string
-  cancelButtonText?: string
-  onConfirm: () => void
-  onCancel: () => void
+  open: boolean;
+  title: string;
+  message: string;
+  confirmButtonText?: string;
+  cancelButtonText?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
 const ConfirmationDialog: FunctionComponent<ConfirmationDialogProps> = ({

@@ -5,16 +5,16 @@ import { useFormatter } from '../i18n';
 import { isEmptyField } from '../../utils/utils';
 
 interface PeriodicityFieldProps {
-  name: string
-  label?: string
-  style?: React.CSSProperties
-  helperText?: string
-  handleOnChange?: (value: string | null) => void
-  setFieldValue?: (field: string, value: unknown, shouldValidate?: boolean) => void
+  name: string;
+  label?: string;
+  style?: React.CSSProperties;
+  helperText?: string;
+  handleOnChange?: (value: string | null) => void;
+  setFieldValue?: (field: string, value: unknown, shouldValidate?: boolean) => void;
 }
 
 // Parse ISO 8601 duration string to extract value and unit
-const parseDuration = (duration: string): { value: number, unit: string } => {
+const parseDuration = (duration: string): { value: number; unit: string } => {
   if (isEmptyField(duration) || typeof duration !== 'string') {
     return { value: 0, unit: 'D' };
   }

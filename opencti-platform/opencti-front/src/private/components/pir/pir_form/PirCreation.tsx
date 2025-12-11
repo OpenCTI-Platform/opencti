@@ -36,7 +36,7 @@ const pirCreateMutation = graphql`
 `;
 
 interface PirCreationProps {
-  paginationOptions: PirsListQuery$variables
+  paginationOptions: PirsListQuery$variables;
 }
 
 const PirCreation = ({ paginationOptions }: PirCreationProps) => {

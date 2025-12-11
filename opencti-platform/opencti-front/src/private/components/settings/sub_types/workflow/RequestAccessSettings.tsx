@@ -29,9 +29,9 @@ const requestAccessSettingsFragment = graphql`
 `;
 
 interface RequestAccessSettingsProps {
-  subTypeId: string
-  data: RequestAccessSettings_requestAccess$key
-  dataConfiguration: RequestAccessConfigurationEdition_requestAccess$key
+  subTypeId: string;
+  data: RequestAccessSettings_requestAccess$key;
+  dataConfiguration: RequestAccessConfigurationEdition_requestAccess$key;
 }
 
 const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAccessSettingsProps) => {

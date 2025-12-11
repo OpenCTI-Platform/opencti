@@ -6,13 +6,13 @@ import {
 import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 
 interface StixDomainObjectAttackPatternsKillChainMatrixProps {
-  searchTerm: string
-  data: StixDomainObjectAttackPatternsKillChainContainer_data$data
-  handleAdd: (entity: TargetEntity) => void
-  selectedKillChain: string
-  entityType: string
-  attackPatternIdsToOverlap?: string[]
-  isModeOnlyActive: boolean
+  searchTerm: string;
+  data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
+  handleAdd: (entity: TargetEntity) => void;
+  selectedKillChain: string;
+  entityType: string;
+  attackPatternIdsToOverlap?: string[];
+  isModeOnlyActive: boolean;
 }
 const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
   {

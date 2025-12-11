@@ -77,8 +77,8 @@ const eventQuery = graphql`
 `;
 
 type RootEventProps = {
-  eventId: string
-  queryRef: PreloadedQuery<RootEventQuery>
+  eventId: string;
+  queryRef: PreloadedQuery<RootEventQuery>;
 };
 
 const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
@@ -151,7 +151,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <EventDeletion id={event.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

@@ -10,9 +10,9 @@ import useHelper from '../../utils/hooks/useHelper';
 export const LICENSE_OPTION_TRIAL = 'trial';
 
 interface BannerInfo {
-  message: React.ReactNode
-  bannerColor: TopBannerColor
-  buttonText?: string
+  message: React.ReactNode;
+  bannerColor: TopBannerColor;
+  buttonText?: string;
 }
 
 const getBannerColor = (remainingDays: number) => {

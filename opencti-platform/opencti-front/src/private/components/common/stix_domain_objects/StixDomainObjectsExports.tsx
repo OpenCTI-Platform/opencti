@@ -9,10 +9,10 @@ import {
 import { useFormatter } from '../../../../components/i18n';
 
 interface StixDomainObjectsExportsProps {
-  exportContext: { entity_id?: string, entity_type: string }
-  paginationOptions: StixDomainObjectsExportsContentRefetchQuery$variables
-  open: boolean
-  handleToggle: () => void
+  exportContext: { entity_id?: string; entity_type: string };
+  paginationOptions: StixDomainObjectsExportsContentRefetchQuery$variables;
+  open: boolean;
+  handleToggle: () => void;
 }
 
 const StixDomainObjectsExports: FunctionComponent<
@@ -31,7 +31,7 @@ const StixDomainObjectsExports: FunctionComponent<
         render={({
           props,
         }: {
-          props: StixDomainObjectsExportsContentRefetchQuery$data
+          props: StixDomainObjectsExportsContentRefetchQuery$data;
         }) => (
           <StixDomainObjectsExportsContent
             handleToggle={handleToggle}

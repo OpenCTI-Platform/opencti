@@ -116,21 +116,21 @@ const countryEditionOverviewFragment = graphql`
 const COUNTRY_TYPE = 'Country';
 
 interface CountryEditionOverviewProps {
-  countryRef: CountryEditionOverview_country$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  countryRef: CountryEditionOverview_country$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface CountryEditionFormValues {
-  name: string
-  description: string | null
-  confidence: number | undefined | null
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  x_opencti_workflow_id: FieldOption
-  message?: string
-  references?: FieldOption[]
+  name: string;
+  description: string | null;
+  confidence: number | undefined | null;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
+  message?: string;
+  references?: FieldOption[];
 }
 
 const CountryEditionOverviewComponent: FunctionComponent<

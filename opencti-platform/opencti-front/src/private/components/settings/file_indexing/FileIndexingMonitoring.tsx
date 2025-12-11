@@ -70,14 +70,14 @@ const fileIndexingMonitoringQuery = graphql`
 `;
 
 interface FileIndexingMonitoringComponentProps {
-  queryRef: PreloadedQuery<FileIndexingMonitoringQuery>
-  refetch: () => void
-  managerConfigurationId: string | undefined
-  filesMetrics: FileIndexingConfigurationAndMonitoringQuery$data['filesMetrics']
-  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
-  isStarted: boolean
-  totalFiles: number
-  lastIndexationDate: Date
+  queryRef: PreloadedQuery<FileIndexingMonitoringQuery>;
+  refetch: () => void;
+  managerConfigurationId: string | undefined;
+  filesMetrics: FileIndexingConfigurationAndMonitoringQuery$data['filesMetrics'];
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId'];
+  isStarted: boolean;
+  totalFiles: number;
+  lastIndexationDate: Date;
 }
 
 const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
@@ -386,12 +386,12 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
 };
 
 interface FileIndexingMonitoringProps {
-  filesMetrics: FileIndexingConfigurationAndMonitoringQuery$data['filesMetrics']
-  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
-  managerConfigurationId: string | undefined
-  isStarted: boolean
-  totalFiles: number
-  lastIndexationDate: Date
+  filesMetrics: FileIndexingConfigurationAndMonitoringQuery$data['filesMetrics'];
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId'];
+  managerConfigurationId: string | undefined;
+  isStarted: boolean;
+  totalFiles: number;
+  lastIndexationDate: Date;
 }
 
 const FileIndexingMonitoring: FunctionComponent<FileIndexingMonitoringProps> = ({

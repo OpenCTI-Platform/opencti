@@ -15,8 +15,8 @@ export const ingestionConnectorsCatalogsQuery = graphql`
 `;
 
 interface IngestionConnectorsCatalogsProps {
-  queryRef: PreloadedQuery<IngestionConnectorsCatalogsQuery>
-  children: ({ data }: { data: IngestionConnectorsCatalogsQuery['response'] }) => React.ReactNode
+  queryRef: PreloadedQuery<IngestionConnectorsCatalogsQuery>;
+  children: ({ data }: { data: IngestionConnectorsCatalogsQuery['response'] }) => React.ReactNode;
 }
 
 const IngestionConnectorsCatalogs: React.FC<IngestionConnectorsCatalogsProps> = ({ queryRef, children }) => {

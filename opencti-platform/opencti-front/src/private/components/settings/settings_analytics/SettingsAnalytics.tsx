@@ -31,11 +31,11 @@ const SettingsAnalyticsValidation = () => Yup.object().shape({
 
 interface SettingsAnalyticsProps {
   settings: SettingsQuery$data['settings'] & {
-    readonly id: string
-  }
-  handleChangeFocus: (id: string, name: string) => void
-  handleSubmitField: (id: string, name: string, value: string | null) => void
-  isEnterpriseEdition: boolean
+    readonly id: string;
+  };
+  handleChangeFocus: (id: string, name: string) => void;
+  handleSubmitField: (id: string, name: string, value: string | null) => void;
+  isEnterpriseEdition: boolean;
 }
 
 const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({

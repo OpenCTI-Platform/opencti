@@ -16,9 +16,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import useAuth from './useAuth';
 
 const useAI = (): {
-  configured: boolean
-  enabled: boolean
-  fullyActive: boolean
+  configured: boolean;
+  enabled: boolean;
+  fullyActive: boolean;
 } => {
   const { settings } = useAuth();
   return { enabled: settings.platform_ai_enabled, configured: settings.platform_ai_has_token, fullyActive: settings.platform_ai_enabled && settings.platform_ai_has_token };

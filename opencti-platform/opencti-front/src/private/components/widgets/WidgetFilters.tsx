@@ -9,10 +9,10 @@ import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
 
 interface WidgetFiltersProps {
-  perspective: WidgetPerspective | null
-  type: string
-  dataSelection: WidgetDataSelection
-  setDataSelection: (data: WidgetDataSelection) => void
+  perspective: WidgetPerspective | null;
+  type: string;
+  dataSelection: WidgetDataSelection;
+  setDataSelection: (data: WidgetDataSelection) => void;
 }
 
 const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {

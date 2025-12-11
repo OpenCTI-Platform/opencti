@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 const LOCAL_STORAGE_KEY = 'digest_notification';
 
 interface DigestNotificationProps {
-  notification: NotificationsLine_node$data | undefined
+  notification: NotificationsLine_node$data | undefined;
 }
 
 const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notification }) => {

@@ -55,8 +55,8 @@ export const addDataComponentsLinesFragment = graphql`
 `;
 
 interface AddDataComponentsLinesContainerProps {
-  attackPattern: AttackPatternDataComponents_attackPattern$data
-  queryRef: PreloadedQuery<AddDataComponentsLinesQuery>
+  attackPattern: AttackPatternDataComponents_attackPattern$data;
+  queryRef: PreloadedQuery<AddDataComponentsLinesQuery>;
 }
 
 const AddDataComponentsLines: FunctionComponent<

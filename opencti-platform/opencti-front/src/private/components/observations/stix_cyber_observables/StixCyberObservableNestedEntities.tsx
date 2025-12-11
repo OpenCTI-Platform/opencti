@@ -9,9 +9,9 @@ import StixCyberObservableNestedEntitiesTable from './StixCyberObservableNestedE
 import { useFormatter } from '../../../../components/i18n';
 
 interface StixCyberObservableNestedEntitiesProps {
-  entityId: string
-  entityType: string
-  variant?: 'inLine' | undefined
+  entityId: string;
+  entityType: string;
+  variant?: 'inLine' | undefined;
 }
 
 const StixCyberObservableNestedEntities: React.FC<StixCyberObservableNestedEntitiesProps> = ({

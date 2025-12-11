@@ -66,8 +66,8 @@ const PlaybookHeaderComponent = ({
   playbook,
   relay,
 }: {
-  playbook: PlaybookHeader_playbook$data
-  relay: RelayRefetchProp
+  playbook: PlaybookHeader_playbook$data;
+  relay: RelayRefetchProp;
 }) => {
   const theme = useTheme();
 

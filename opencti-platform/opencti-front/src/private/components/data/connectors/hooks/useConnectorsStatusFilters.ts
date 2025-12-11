@@ -8,8 +8,8 @@ type Connector
     & Partial<NonNullable<ConnectorsStateQuery['response']['connectors']>[number]>;
 
 type UseConnectorsStatusFiltersProps = {
-  connectors: Connector[]
-  searchParams: URLSearchParams
+  connectors: Connector[];
+  searchParams: URLSearchParams;
 };
 
 const parseBooleanParam = (value: string | null): boolean | null => {

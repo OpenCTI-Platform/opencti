@@ -57,7 +57,7 @@ const pirThreatMapFragment = graphql`
 `;
 
 interface PirThreatMapProps {
-  data: PirThreatMapFragment$key
+  data: PirThreatMapFragment$key;
 }
 
 const PirThreatMap = ({ data }: PirThreatMapProps) => {

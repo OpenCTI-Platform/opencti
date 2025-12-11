@@ -23,7 +23,7 @@ const useStyles = makeStyles({
   },
 });
 interface BasicRelationshipDetailsProps {
-  relation: GraphLink
+  relation: GraphLink;
 }
 const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps> = ({ relation }) => {
   const classes = useStyles();

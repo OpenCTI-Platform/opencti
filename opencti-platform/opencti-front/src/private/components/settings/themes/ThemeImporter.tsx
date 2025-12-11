@@ -16,8 +16,8 @@ const importMutation = graphql`
 `;
 
 interface ThemeImporterProps {
-  handleRefetch: () => Disposable
-  paginationOptions: ThemeManagerQuery$variables
+  handleRefetch: () => Disposable;
+  paginationOptions: ThemeManagerQuery$variables;
 }
 
 const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({

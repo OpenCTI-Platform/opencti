@@ -130,19 +130,19 @@ const stixCoreObjectFileExportQuery = graphql`
 `;
 
 interface OpenComponentProps {
-  onOpen: () => void
-  isExportPossible: boolean
+  onOpen: () => void;
+  isExportPossible: boolean;
 }
 
 type StixCoreObjectFileExportComponentProps = {
-  connectorsQueryRef: PreloadedQuery<StixCoreObjectFileExportQuery>
-  OpenFormComponent: FC<OpenComponentProps>
-  scoId: string
-  scoEntityType: string
-  scoName?: string
-  redirectToContentTab?: boolean
-  onClose?: () => void
-  onExportCompleted?: (fileName?: string, isDeleted?: boolean) => void
+  connectorsQueryRef: PreloadedQuery<StixCoreObjectFileExportQuery>;
+  OpenFormComponent: FC<OpenComponentProps>;
+  scoId: string;
+  scoEntityType: string;
+  scoName?: string;
+  redirectToContentTab?: boolean;
+  onClose?: () => void;
+  onExportCompleted?: (fileName?: string, isDeleted?: boolean) => void;
 } & Pick<StixCoreObjectFileExportFormProps, 'defaultValues'>;
 
 const StixCoreObjectFileExportComponent = ({

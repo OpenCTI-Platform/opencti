@@ -52,26 +52,26 @@ const individualMutation = graphql`
 const INDIVIDUAL_TYPE = 'Individual';
 
 interface IndividualAddInput {
-  name: string
-  description: string
-  confidence: number | null
-  x_opencti_reliability: string | undefined
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | null
+  name: string;
+  description: string;
+  confidence: number | null;
+  x_opencti_reliability: string | undefined;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | null;
 }
 
 interface IndividualFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: FieldOption
-  defaultMarkingDefinitions?: FieldOption[]
-  inputValue?: string
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
+  inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
@@ -319,7 +319,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
 };
 
 const IndividualCreation = ({ paginationOptions }: {
-  paginationOptions: IndividualsLinesPaginationQuery$variables
+  paginationOptions: IndividualsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

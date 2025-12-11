@@ -33,7 +33,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const HiddenTypesChipList = ({
   hiddenTypes = [],
 }: {
-  hiddenTypes: readonly string[]
+  hiddenTypes: readonly string[];
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

@@ -173,10 +173,10 @@ const clearSuggestedMappingMutation = graphql`
 `;
 
 interface ContainerMappingContentComponentProps {
-  containerData: ContainerMappingContent_container$data
-  queryRef: PreloadedQuery<ContainerStixCoreObjectsSuggestedMappingQuery>
-  loadQuery: (variables: ContainerStixCoreObjectsSuggestedMappingQuery$variables, options?: (UseQueryLoaderLoadQueryOptions | undefined)) => void
-  currentMode: 'content' | 'editor' | 'mapping'
+  containerData: ContainerMappingContent_container$data;
+  queryRef: PreloadedQuery<ContainerStixCoreObjectsSuggestedMappingQuery>;
+  loadQuery: (variables: ContainerStixCoreObjectsSuggestedMappingQuery$variables, options?: (UseQueryLoaderLoadQueryOptions | undefined)) => void;
+  currentMode: 'content' | 'editor' | 'mapping';
 }
 
 export type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
@@ -530,8 +530,8 @@ const ContainerMappingContentComponent: FunctionComponent<
 };
 
 interface ContainerMappingContentProps {
-  containerFragment: ContainerMappingContentQuery$data['container']
-  currentMode: 'mapping' | 'editor' | 'content'
+  containerFragment: ContainerMappingContentQuery$data['container'];
+  currentMode: 'mapping' | 'editor' | 'content';
 }
 
 const ContainerMappingContent = ({ containerFragment, currentMode }: ContainerMappingContentProps) => {

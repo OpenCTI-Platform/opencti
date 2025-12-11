@@ -18,7 +18,7 @@ mutation SecurityPlatformCreationMutation($input: SecurityPlatformAddInput!) {
 `;
 
 interface SecurityPlatformCreationProps {
-  paginationOptions: SecurityPlatformsPaginationQuery$variables
+  paginationOptions: SecurityPlatformsPaginationQuery$variables;
 }
 
 const SecurityPlatformCreation: FunctionComponent<SecurityPlatformCreationProps> = ({

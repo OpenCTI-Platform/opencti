@@ -246,7 +246,7 @@ const containersObjectsFragment = graphql`
 `;
 
 interface StixCoreObjectOrStixCoreRelationshipContainersGraphComponentProps {
-  id: string
+  id: string;
 }
 
 const StixCoreObjectOrStixCoreRelationshipContainersGraphComponent = ({
@@ -295,9 +295,9 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraphComponent = ({
 };
 
 interface StixCoreObjectOrStixCoreRelationshipContainersGraphProps {
-  id: string
-  positions: OctiGraphPositions
-  data: StixCoreObjectOrStixCoreRelationshipContainersGraph_fragment$key
+  id: string;
+  positions: OctiGraphPositions;
+  data: StixCoreObjectOrStixCoreRelationshipContainersGraph_fragment$key;
 }
 
 const StixCoreObjectOrStixCoreRelationshipContainersGraph = ({

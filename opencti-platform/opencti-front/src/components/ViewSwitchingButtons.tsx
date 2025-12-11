@@ -9,14 +9,14 @@ import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import { useFormatter } from './i18n';
 
 interface ViewSwitchingButtonsProps {
-  handleChangeView?: (value: string) => void
-  disableCards?: boolean
-  enableEntitiesView?: boolean
-  currentView?: string
-  enableSubEntityLines?: boolean
-  enableGraph?: boolean
-  enableNestedView?: boolean
-  enableContextualView?: boolean
+  handleChangeView?: (value: string) => void;
+  disableCards?: boolean;
+  enableEntitiesView?: boolean;
+  currentView?: string;
+  enableSubEntityLines?: boolean;
+  enableGraph?: boolean;
+  enableNestedView?: boolean;
+  enableContextualView?: boolean;
 }
 
 const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({

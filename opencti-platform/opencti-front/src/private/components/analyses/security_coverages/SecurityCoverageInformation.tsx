@@ -53,10 +53,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 interface SecurityCoverageInformationProps {
   coverage_information: ReadonlyArray<{
-    readonly coverage_name: string
-    readonly coverage_score: number
-  }> | null | undefined
-  variant?: 'header' | 'details' | 'matrix'
+    readonly coverage_name: string;
+    readonly coverage_score: number;
+  }> | null | undefined;
+  variant?: 'header' | 'details' | 'matrix';
 }
 
 const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformationProps> = ({ coverage_information, variant = 'header' }) => {

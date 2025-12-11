@@ -25,20 +25,20 @@ const ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery = graphql`
 `;
 
 interface IngestionCreationUserHandlingProps {
-  default_confidence_level: number
-  labelTag: 'C' | 'F' // C: Connector, F: Feed
-  isSensitive?: boolean
+  default_confidence_level: number;
+  labelTag: 'C' | 'F'; // C: Connector, F: Feed
+  isSensitive?: boolean;
 }
 
 interface IngestionCreationUserHandlingComponentProps extends IngestionCreationUserHandlingProps {
-  queryRef: PreloadedQuery<IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery>
+  queryRef: PreloadedQuery<IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery>;
 }
 
 export interface BasicUserHandlingValues {
-  name: string
-  user_id: string | FieldOption
-  automatic_user?: boolean
-  confidence_level?: string
+  name: string;
+  user_id: string | FieldOption;
+  automatic_user?: boolean;
+  confidence_level?: string;
 }
 
 const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_level, labelTag, isSensitive }: IngestionCreationUserHandlingComponentProps) => {

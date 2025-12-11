@@ -445,19 +445,19 @@ const graphContainerKnowledgeObjectsFragment = graphql`
 // endregion
 
 interface GraphContainerKnowledgeComponentProps {
-  totalData: number
-  currentData: number
-  dataHeader: ContainerHeader_container$key
-  dataContainer: GraphContainerKnowledgeData_fragment$key
-  enableReferences: boolean
-  onAddRelation: GraphToolbarProps['onAddRelation']
-  onDeleteRelation: GraphToolbarProps['onDeleteRelation']
-  onPositionsChanged: (positions: OctiGraphPositions) => void
+  totalData: number;
+  currentData: number;
+  dataHeader: ContainerHeader_container$key;
+  dataContainer: GraphContainerKnowledgeData_fragment$key;
+  enableReferences: boolean;
+  onAddRelation: GraphToolbarProps['onAddRelation'];
+  onDeleteRelation: GraphToolbarProps['onDeleteRelation'];
+  onPositionsChanged: (positions: OctiGraphPositions) => void;
   containerHeaderProps: {
-    mode: string
-    link: string
-    modes: string[]
-  }
+    mode: string;
+    link: string;
+    modes: string[];
+  };
 }
 
 const GraphContainerKnowledgeComponent = ({
@@ -537,11 +537,11 @@ const REFETCH_DEBOUNCE_MS = 50;
 
 interface GraphContainerKnowledgeProps
   extends Omit<GraphContainerKnowledgeComponentProps, 'data' | 'currentData' | 'totalData'> {
-  containerId: string
-  containerType: string
-  dataPositions: GraphContainerKnowledgePositions_fragment$key
-  queryObjectsRef: PreloadedQuery<GraphContainerKnowledgeObjectsQuery>
-  pageSize: number
+  containerId: string;
+  containerType: string;
+  dataPositions: GraphContainerKnowledgePositions_fragment$key;
+  queryObjectsRef: PreloadedQuery<GraphContainerKnowledgeObjectsQuery>;
+  pageSize: number;
 }
 
 const GraphContainerKnowledge = ({

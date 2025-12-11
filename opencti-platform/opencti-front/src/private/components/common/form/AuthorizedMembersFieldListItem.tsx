@@ -21,12 +21,12 @@ const smallText = {
 };
 
 interface AuthorizedMembersFieldListItemProps {
-  authorizedMember: AuthorizedMemberOption
-  name: string
-  accessRights: { label: string, value: string }[]
-  onRemove?: () => void
-  onChange?: (val: AccessRight) => void
-  ownerId?: string
+  authorizedMember: AuthorizedMemberOption;
+  name: string;
+  accessRights: { label: string; value: string }[];
+  onRemove?: () => void;
+  onChange?: (val: AccessRight) => void;
+  ownerId?: string;
 }
 
 const AuthorizedMembersFieldListItem = ({

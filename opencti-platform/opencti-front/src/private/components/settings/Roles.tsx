@@ -34,7 +34,7 @@ const Role = () => {
     LOCAL_STORAGE_KEY,
   );
   const classes = useStyles();
-  const [rolesState, setRolesState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [rolesState, setRolesState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',

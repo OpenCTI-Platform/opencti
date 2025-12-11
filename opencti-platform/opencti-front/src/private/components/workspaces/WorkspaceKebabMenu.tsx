@@ -33,7 +33,7 @@ const kebabMenuFragment = graphql`
 `;
 
 interface WorkspaceKebabMenuProps {
-  data: WorkspaceKebabMenuFragment$key
+  data: WorkspaceKebabMenuFragment$key;
 }
 
 const noop = () => {};

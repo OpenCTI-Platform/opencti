@@ -29,21 +29,21 @@ const entitySelectSearchQuery = graphql`
 `;
 
 export type EntityOption = Pick<FieldOption, 'label' | 'value'> & {
-  type: string
+  type: string;
 };
 
 interface EntitySelectBaseProps {
-  label: string
-  variant?: TextFieldVariants
-  size?: TextFieldProps['size']
-  onInputChange: (val: string) => void
-  queryRef: PreloadedQuery<EntitySelectSearchQuery>
+  label: string;
+  variant?: TextFieldVariants;
+  size?: TextFieldProps['size'];
+  onInputChange: (val: string) => void;
+  queryRef: PreloadedQuery<EntitySelectSearchQuery>;
 }
 
 interface EntitySelectComponentProps extends EntitySelectBaseProps {
-  multiple: boolean
-  value: EntityOption | EntityOption[] | null
-  onChange?: (val: EntityOption | EntityOption[] | null) => void
+  multiple: boolean;
+  value: EntityOption | EntityOption[] | null;
+  onChange?: (val: EntityOption | EntityOption[] | null) => void;
 }
 
 const EntitySelectComponent = ({
@@ -132,7 +132,7 @@ const EntitySelectComponent = ({
 };
 
 type EntitySelectProps = Omit<EntitySelectComponentProps, 'onInputChange' | 'queryRef'> & {
-  types: string[]
+  types: string[];
 };
 
 const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {

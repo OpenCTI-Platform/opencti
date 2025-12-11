@@ -40,9 +40,9 @@ const subTypeWorkflowStatusAddCreationMutation = graphql`
 `;
 
 interface SubTypeWorkflowStatusAddProps {
-  display: boolean
-  subTypeId: string
-  scope: string
+  display: boolean;
+  subTypeId: string;
+  scope: string;
 }
 
 const SubTypeWorkflowStatusAdd: FunctionComponent<

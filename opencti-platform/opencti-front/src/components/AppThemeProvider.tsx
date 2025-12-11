@@ -8,23 +8,23 @@ import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/h
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 
 interface AppThemeProviderProps {
-  children: React.ReactNode
-  settings: AppThemeProvider_settings$data
-  activeTheme?: { id: string } & AppThemeType | null
+  children: React.ReactNode;
+  settings: AppThemeProvider_settings$data;
+  activeTheme?: { id: string } & AppThemeType | null;
 }
 
 interface AppThemeType {
-  name: string
-  theme_background: string
-  theme_paper: string
-  theme_nav: string
-  theme_primary: string
-  theme_secondary: string
-  theme_accent: string
-  theme_logo?: string | null
-  theme_logo_collapsed?: string | null
-  theme_logo_login?: string | null
-  theme_text_color: string
+  name: string;
+  theme_background: string;
+  theme_paper: string;
+  theme_nav: string;
+  theme_primary: string;
+  theme_secondary: string;
+  theme_accent: string;
+  theme_logo?: string | null;
+  theme_logo_collapsed?: string | null;
+  theme_logo_login?: string | null;
+  theme_text_color: string;
 }
 
 const themeBuilder = (

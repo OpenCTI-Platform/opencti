@@ -128,25 +128,25 @@ const feedCreationMutation = graphql`
 `;
 
 interface FeedAddInput {
-  name: string
-  description: string
-  filters: string
-  separator: string
-  feed_date_attribute: string
-  rolling_time: number
-  include_header: boolean
-  feed_types: string[]
-  feed_public: boolean
-  feed_attributes: FeedAttributeMappingInput[]
-  authorized_members: FieldOption[]
+  name: string;
+  description: string;
+  filters: string;
+  separator: string;
+  feed_date_attribute: string;
+  rolling_time: number;
+  include_header: boolean;
+  feed_types: string[];
+  feed_public: boolean;
+  feed_attributes: FeedAttributeMappingInput[];
+  authorized_members: FieldOption[];
 }
 
 interface FeedCreationFormProps {
-  paginationOptions: PaginationOptions
-  open: boolean
-  isDuplicated: boolean
-  onDrawerClose: () => void
-  feed: FeedAddInput | undefined
+  paginationOptions: PaginationOptions;
+  open: boolean;
+  isDuplicated: boolean;
+  onDrawerClose: () => void;
+  feed: FeedAddInput | undefined;
 }
 
 const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().shape({

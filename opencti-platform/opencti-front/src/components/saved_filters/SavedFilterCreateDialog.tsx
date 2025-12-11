@@ -26,9 +26,9 @@ const savedFilterCreateDialogMutation = graphql`
 `;
 
 type SavedFilterDialogProps = {
-  onClose: () => void
-  isOpen: boolean
-  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void
+  onClose: () => void;
+  isOpen: boolean;
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
 const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: SavedFilterDialogProps) => {

@@ -17,7 +17,7 @@ const locationDetailsFragment = graphql`
 `;
 
 interface LocationDetailsProps {
-  locationData: LocationDetails_location$key
+  locationData: LocationDetails_location$key;
 }
 
 const LocationDetails: FunctionComponent<LocationDetailsProps> = ({ locationData }) => {

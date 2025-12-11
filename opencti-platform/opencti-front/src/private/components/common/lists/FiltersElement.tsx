@@ -9,37 +9,37 @@ import FilterAutocomplete from './FilterAutocomplete';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 export type FilterElementsInputValue = {
-  key: string
-  values: string[]
-  operator?: string
+  key: string;
+  values: string[];
+  operator?: string;
 };
 
 export interface FiltersElementProps {
-  variant?: string
-  keyword: string
-  availableFilterKeys: string[]
+  variant?: string;
+  keyword: string;
+  availableFilterKeys: string[];
   searchContext: {
-    entityTypes: string[]
-    elementId?: string[]
-  }
-  handleChangeKeyword: (event: React.ChangeEvent) => void
+    entityTypes: string[];
+    elementId?: string[];
+  };
+  handleChangeKeyword: (event: React.ChangeEvent) => void;
   setInputValues: (
     value: {
-      key: string
-      values: string[]
-      operator?: string
+      key: string;
+      values: string[];
+      operator?: string;
     }[],
-  ) => void
+  ) => void;
   inputValues: {
-    key: string
-    values: string[]
-    operator?: string
-  }[]
-  defaultHandleAddFilter: HandleAddFilter
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
-  availableRelationFilterTypes?: Record<string, string[]>
-  disabled?: boolean
+    key: string;
+    values: string[];
+    operator?: string;
+  }[];
+  defaultHandleAddFilter: HandleAddFilter;
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  availableRelationFilterTypes?: Record<string, string[]>;
+  disabled?: boolean;
 }
 
 const FiltersElement: FunctionComponent<FiltersElementProps> = ({

@@ -3,15 +3,15 @@ import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import { FieldOption } from '../../utils/field';
 
 interface ListLineOption extends FieldOption {
-  description: ReactNode
+  description: ReactNode;
 }
 
 export interface DataColumn {
-  isSortable: boolean
-  label: string
-  width?: string | number
+  isSortable: boolean;
+  label: string;
+  width?: string | number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  render?: (v: any, helpers?: any) => ReactNode
+  render?: (v: any, helpers?: any) => ReactNode;
 }
 
 export type DataColumns = Record<string, DataColumn>;
@@ -22,15 +22,15 @@ export enum OrderMode {
 }
 
 export interface PaginationOptions {
-  toId?: string | string[]
-  fromId?: string[]
-  toTypes?: string[]
-  fromTypes?: string[]
-  search?: string | null
-  orderBy?: string | null
-  orderMode?: OrderMode | null
-  filters?: FilterGroup
-  pageSize?: string
+  toId?: string | string[];
+  fromId?: string[];
+  toTypes?: string[];
+  fromTypes?: string[];
+  search?: string | null;
+  orderBy?: string | null;
+  orderMode?: OrderMode | null;
+  filters?: FilterGroup;
+  pageSize?: string;
 }
 
 export type ListLines = FunctionComponent<unknown>;

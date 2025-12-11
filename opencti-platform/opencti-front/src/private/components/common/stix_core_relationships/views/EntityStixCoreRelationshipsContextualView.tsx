@@ -67,12 +67,12 @@ const contextualViewQuery = graphql`
 `;
 
 interface EntityStixCoreRelationshipsContextualViewProps {
-  queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewQuery>
-  entityId: string
-  localStorage: PaginationLocalStorage<PaginationOptions>
-  relationshipTypes: string[]
-  stixCoreObjectTypes: string[]
-  currentView: string
+  queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewQuery>;
+  entityId: string;
+  localStorage: PaginationLocalStorage<PaginationOptions>;
+  relationshipTypes: string[];
+  stixCoreObjectTypes: string[];
+  currentView: string;
 }
 
 const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<EntityStixCoreRelationshipsContextualViewProps> = ({

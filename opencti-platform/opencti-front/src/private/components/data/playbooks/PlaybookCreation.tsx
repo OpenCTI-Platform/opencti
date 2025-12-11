@@ -52,8 +52,8 @@ const playbookImportMutation = graphql`
 `;
 
 interface PlaybookCreationForm {
-  name: string
-  description: string
+  name: string;
+  description: string;
 }
 
 const PlaybookCreation = () => {

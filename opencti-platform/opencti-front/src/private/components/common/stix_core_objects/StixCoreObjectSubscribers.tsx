@@ -22,7 +22,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useComputeLink } from '../../../../utils/hooks/useAppData';
 
 interface ContainerHeaderSharedProps {
-  triggerData: stixCoreObjectTriggersUtilsPaginationQuery$data
+  triggerData: stixCoreObjectTriggersUtilsPaginationQuery$data;
 }
 
 // Deprecated - https://mui.com/system/styles/basics/

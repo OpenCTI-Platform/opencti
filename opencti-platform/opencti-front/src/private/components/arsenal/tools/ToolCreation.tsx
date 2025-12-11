@@ -53,29 +53,29 @@ const toolMutation = graphql`
 const TOOL_TYPE = 'Tool';
 
 interface ToolAddInput {
-  name: string
-  description: string
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  killChainPhases: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  tool_types: string[]
-  tool_version: string
-  confidence: number | null
-  file: File | null
+  name: string;
+  description: string;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  killChainPhases: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  tool_types: string[];
+  tool_version: string;
+  confidence: number | null;
+  file: File | null;
 }
 
 interface ToolFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  defaultConfidence?: number
-  inputValue?: string
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultConfidence?: number;
+  inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
@@ -340,7 +340,7 @@ const CreateToolControlledDial = (props: DrawerControlledDialProps) => (
 const ToolCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: ToolsLinesPaginationQuery$variables
+  paginationOptions: ToolsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

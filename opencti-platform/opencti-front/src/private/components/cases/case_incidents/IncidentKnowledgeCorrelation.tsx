@@ -18,8 +18,8 @@ export const incidentKnowledgeCorrelationQuery = graphql`
 `;
 
 interface IncidentKnowledgeCorrelationProps {
-  data: NonNullable<IncidentKnowledgeCorrelationQuery$data['caseIncident']>
-  id: string
+  data: NonNullable<IncidentKnowledgeCorrelationQuery$data['caseIncident']>;
+  id: string;
 }
 
 const IncidentKnowledgeCorrelation = ({

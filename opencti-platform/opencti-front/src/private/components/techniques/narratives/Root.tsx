@@ -78,8 +78,8 @@ const narrativeQuery = graphql`
 `;
 
 type RootNarrativeProps = {
-  narrativeId: string
-  queryRef: PreloadedQuery<RootNarrativeQuery>
+  narrativeId: string;
+  queryRef: PreloadedQuery<RootNarrativeQuery>;
 };
 const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootNarrativeSubscription>>(() => ({
@@ -147,7 +147,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <NarrativeDeletion id={narrative.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

@@ -102,7 +102,7 @@ const ThreatActorIndividualDetailsFragment = graphql`
 `;
 
 interface ThreatActorIndividualDetailsProps {
-  threatActorIndividualData: ThreatActorIndividualDetails_ThreatActorIndividual$key
+  threatActorIndividualData: ThreatActorIndividualDetails_ThreatActorIndividual$key;
 }
 
 const ThreatActorIndividualDetails: FunctionComponent<

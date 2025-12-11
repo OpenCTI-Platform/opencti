@@ -5,9 +5,9 @@ import { emptyFilled, truncate } from '../utils/String';
 import MarkdownDisplay from './MarkdownDisplay';
 
 interface ExpandableMarkdownProps {
-  source?: string | null
-  limit: number
-  removeLinks?: boolean
+  source?: string | null;
+  limit: number;
+  removeLinks?: boolean;
 }
 
 const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({

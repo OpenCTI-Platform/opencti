@@ -282,7 +282,7 @@ export const draftSightingsLinesFragment = graphql`
 const LOCAL_STORAGE_KEY = 'draft_sightings';
 
 interface DraftSightingsProps {
-  isReadOnly: boolean
+  isReadOnly: boolean;
 }
 
 const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) => {

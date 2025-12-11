@@ -73,10 +73,10 @@ export const userHistoryLinesFragment = graphql`
   `;
 
 interface UserHistoryLinesProps {
-  isRelationLog: boolean
-  queryRef: PreloadedQuery<UserHistoryLinesQuery>
-  queryArgs: UserHistoryLinesQuery$variables
-  refetch: (args: UserHistoryLinesQuery$variables) => void
+  isRelationLog: boolean;
+  queryRef: PreloadedQuery<UserHistoryLinesQuery>;
+  queryArgs: UserHistoryLinesQuery$variables;
+  refetch: (args: UserHistoryLinesQuery$variables) => void;
 }
 
 const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({

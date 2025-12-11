@@ -412,9 +412,9 @@ export const investigationGraphCountRelToQuery = graphql`
 `;
 
 interface InvestigationGraphComponentProps {
-  totalData: number
-  currentData: number
-  dataInvestigation: InvestigationGraph_fragment$key
+  totalData: number;
+  currentData: number;
+  dataInvestigation: InvestigationGraph_fragment$key;
 }
 
 const InvestigationGraphComponent = ({
@@ -587,10 +587,10 @@ const REFETCH_DEBOUNCE_MS = 50;
 
 interface InvestigationGraphLoaderProps
   extends Omit<InvestigationGraphComponentProps, 'currentData' | 'totalData'> {
-  investigationId: string
-  dataPositions: InvestigationGraphData_fragment$key
-  queryObjectsRef: PreloadedQuery<InvestigationGraphObjectsQuery>
-  pageSize: number
+  investigationId: string;
+  dataPositions: InvestigationGraphData_fragment$key;
+  queryObjectsRef: PreloadedQuery<InvestigationGraphObjectsQuery>;
+  pageSize: number;
 }
 
 const InvestigationGraphLoader = ({
@@ -665,8 +665,8 @@ const InvestigationGraphLoader = ({
 };
 
 interface InvestigationGraphProps {
-  id: string
-  data: NonNullable<InvestigationGraphQuery$data['workspace']>
+  id: string;
+  data: NonNullable<InvestigationGraphQuery$data['workspace']>;
 }
 
 const InvestigationGraph = ({

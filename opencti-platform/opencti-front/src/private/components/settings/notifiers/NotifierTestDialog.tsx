@@ -42,7 +42,7 @@ export const notifierTestQuery = graphql`
 const NotifierTestResult = ({
   queryRef,
 }: {
-  queryRef: PreloadedQuery<NotifierTestDialogQuery>
+  queryRef: PreloadedQuery<NotifierTestDialogQuery>;
 }) => {
   const { notifierTest } = usePreloadedQuery<NotifierTestDialogQuery>(
     notifierTestQuery,
@@ -65,10 +65,10 @@ const NotifierTestResult = ({
 };
 
 interface NotifierTestDialogProps {
-  open: boolean
-  onClose: () => void
-  queryRef?: PreloadedQuery<NotifierTestDialogQuery> | null
-  onTest: (target: string) => void
+  open: boolean;
+  onClose: () => void;
+  queryRef?: PreloadedQuery<NotifierTestDialogQuery> | null;
+  onTest: (target: string) => void;
 }
 
 const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({

@@ -15,9 +15,9 @@ export const ingestionCsvEditionContainerQuery = graphql`
 `;
 
 interface IngestionCsvEditionContainerProps {
-  queryRef: PreloadedQuery<IngestionCsvEditionContainerQuery>
-  open: boolean
-  handleClose?: () => void
+  queryRef: PreloadedQuery<IngestionCsvEditionContainerQuery>;
+  open: boolean;
+  handleClose?: () => void;
 }
 
 const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContainerProps> = ({

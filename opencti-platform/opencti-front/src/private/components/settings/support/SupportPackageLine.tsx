@@ -92,9 +92,9 @@ const packageStatusColors: { [key in PackageStatus]: string } = {
 };
 
 interface SupportPackageLineProps {
-  dataColumns: DataColumns
-  node: SupportPackageLine_node$key
-  paginationOptions: { search: string, orderMode: string, orderBy: string }
+  dataColumns: DataColumns;
+  node: SupportPackageLine_node$key;
+  paginationOptions: { search: string; orderMode: string; orderBy: string };
 }
 
 const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({

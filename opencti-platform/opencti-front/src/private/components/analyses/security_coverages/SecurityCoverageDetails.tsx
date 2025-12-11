@@ -66,7 +66,7 @@ const securityCoverageDetailsFragment = graphql`
 `;
 
 interface SecurityCoverageDetailsProps {
-  securityCoverage: SecurityCoverageDetails_securityCoverage$key
+  securityCoverage: SecurityCoverageDetails_securityCoverage$key;
 }
 
 const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> = ({

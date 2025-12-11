@@ -66,9 +66,9 @@ const countsQuery = graphql`
 `;
 
 interface PirOverviewCountProps {
-  label: string
-  value: number
-  value24h: number
+  label: string;
+  value: number;
+  value24h: number;
 }
 
 const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => {
@@ -113,8 +113,8 @@ const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => 
 };
 
 interface PirOverviewCountsComponentProps {
-  countsQueryRef: PreloadedQuery<PirOverviewCountsQuery>
-  counts24hQueryRef: PreloadedQuery<PirOverviewCountsQuery>
+  countsQueryRef: PreloadedQuery<PirOverviewCountsQuery>;
+  counts24hQueryRef: PreloadedQuery<PirOverviewCountsQuery>;
 }
 
 const PirOverviewCountsComponent = ({
@@ -173,7 +173,7 @@ const PirOverviewCountsComponent = ({
 };
 
 interface PirOverviewCountsProps {
-  data: PirOverviewCountsFragment$key
+  data: PirOverviewCountsFragment$key;
 }
 
 const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {

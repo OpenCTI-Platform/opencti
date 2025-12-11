@@ -27,7 +27,7 @@ const Feed = () => {
     location,
     LOCAL_STORAGE_KEY,
   );
-  const [feedState, setFeedState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [feedState, setFeedState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',

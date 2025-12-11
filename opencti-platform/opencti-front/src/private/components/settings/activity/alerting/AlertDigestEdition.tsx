@@ -27,17 +27,17 @@ import AlertsField from './AlertsField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 interface AlertDigestEditionProps {
-  handleClose: () => void
-  paginationOptions?: AlertingPaginationQuery$variables
-  queryRef: PreloadedQuery<AlertEditionQuery>
+  handleClose: () => void;
+  paginationOptions?: AlertingPaginationQuery$variables;
+  queryRef: PreloadedQuery<AlertEditionQuery>;
 }
 
 interface AlertDigestFormValues {
-  name?: string
-  notifiers: FieldOption[]
-  recipients: FieldOption[]
-  trigger_ids: { value: string }[]
-  period: string
+  name?: string;
+  notifiers: FieldOption[];
+  recipients: FieldOption[];
+  trigger_ids: { value: string }[];
+  period: string;
 }
 
 const alertDigestEditionFragment = graphql`

@@ -22,8 +22,8 @@ const securityPlatformKnowledgeFragment = graphql`
 const SecurityPlatformKnowledgeComponent = ({
   securityPlatformData,
 }: {
-  securityPlatformData: SecurityPlatformKnowledge_securityPlatform$key
-  relatedRelationshipTypes: string[]
+  securityPlatformData: SecurityPlatformKnowledge_securityPlatform$key;
+  relatedRelationshipTypes: string[];
 }) => {
   const securityPlatform = useFragment(
     securityPlatformKnowledgeFragment,

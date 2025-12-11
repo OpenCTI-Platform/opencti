@@ -21,8 +21,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataColumns } from '../../../../components/list_lines';
 
 interface ControlledDialProps {
-  onOpen: () => void
-  title: string
+  onOpen: () => void;
+  title: string;
 }
 
 const ControlledDial = ({ onOpen, title }: ControlledDialProps) => {
@@ -57,24 +57,24 @@ const GraphControlledDial = ({ onOpen }: { onOpen: () => void }) => {
 };
 
 type scoEdge = {
-  types: string[]
+  types: string[];
   node: {
-    id: string
-  }
+    id: string;
+  };
 };
 
 interface ContainerAddStixCreObjectsInLineLoaderProps {
-  queryRef: PreloadedQuery<ContainerAddStixCoreObjectsLinesQuery>
-  containerId: string
-  buildColumns: () => DataColumns
-  linesPaginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables
-  knowledgeGraph?: boolean
-  selectedElements: unknown[]
-  handleSelect: (o: { id: string }) => void
-  handleDeselect: (o: { id: string }) => void
-  helpers: PaginationLocalStorage['helpers']
-  containerRef: HTMLInputElement
-  enableReferences?: boolean
+  queryRef: PreloadedQuery<ContainerAddStixCoreObjectsLinesQuery>;
+  containerId: string;
+  buildColumns: () => DataColumns;
+  linesPaginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables;
+  knowledgeGraph?: boolean;
+  selectedElements: unknown[];
+  handleSelect: (o: { id: string }) => void;
+  handleDeselect: (o: { id: string }) => void;
+  helpers: PaginationLocalStorage['helpers'];
+  containerRef: HTMLInputElement;
+  enableReferences?: boolean;
 }
 
 const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStixCreObjectsInLineLoaderProps> = ({
@@ -111,18 +111,18 @@ const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStix
 };
 
 interface ContainerAddStixCoreObjectsInLineProps {
-  containerId: string
-  targetStixCoreObjectTypes: string[]
-  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables
-  containerStixCoreObjects: unknown[]
-  onAdd?: (node: { id: string }) => void
-  onDelete?: (node: { id: string }) => void
-  confidence?: number
-  defaultCreatedBy?: unknown
-  defaultMarkingDefinitions?: unknown[]
-  selectedText?: string
-  enableReferences?: boolean | undefined
-  knowledgeGraph?: boolean | undefined
+  containerId: string;
+  targetStixCoreObjectTypes: string[];
+  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables;
+  containerStixCoreObjects: unknown[];
+  onAdd?: (node: { id: string }) => void;
+  onDelete?: (node: { id: string }) => void;
+  confidence?: number;
+  defaultCreatedBy?: unknown;
+  defaultMarkingDefinitions?: unknown[];
+  selectedText?: string;
+  enableReferences?: boolean | undefined;
+  knowledgeGraph?: boolean | undefined;
 }
 
 const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreObjectsInLineProps> = ({

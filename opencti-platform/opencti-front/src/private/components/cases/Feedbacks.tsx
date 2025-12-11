@@ -14,7 +14,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 interface FeedbacksProps {
-  inputValue?: string
+  inputValue?: string;
 }
 
 const feedbackFragment = graphql`

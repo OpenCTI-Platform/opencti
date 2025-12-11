@@ -88,11 +88,11 @@ const alertingFragment = graphql`
 `;
 
 interface AlertingLinesProps {
-  queryRef: PreloadedQuery<AlertingPaginationQuery>
-  dataColumns: DataColumns
-  paginationOptions?: AlertingPaginationQuery$variables
-  setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements']
-  onLabelClick?: HandleAddFilter
+  queryRef: PreloadedQuery<AlertingPaginationQuery>;
+  dataColumns: DataColumns;
+  paginationOptions?: AlertingPaginationQuery$variables;
+  setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  onLabelClick?: HandleAddFilter;
 }
 
 const AlertingLines: FunctionComponent<AlertingLinesProps> = ({

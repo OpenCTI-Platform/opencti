@@ -330,9 +330,9 @@ const graphContainerCorrelationObjectsFragment = graphql`
 // endregion
 
 interface GraphContainerCorrelationComponentProps {
-  totalData: number
-  currentData: number
-  onPositionsChanged: (positions: OctiGraphPositions) => void
+  totalData: number;
+  currentData: number;
+  onPositionsChanged: (positions: OctiGraphPositions) => void;
 }
 
 const GraphContainerCorrelationComponent = ({
@@ -383,11 +383,11 @@ const REFETCH_DEBOUNCE_MS = 50;
 
 interface GraphContainerCorrelationProps
   extends Omit<GraphContainerCorrelationComponentProps, 'currentData' | 'totalData'> {
-  containerId: string
-  containerType: string
-  dataPositions: GraphContainerCorrelationPositions_fragment$key
-  queryObjectsRef: PreloadedQuery<GraphContainerCorrelationObjectsQuery>
-  pageSize: number
+  containerId: string;
+  containerType: string;
+  dataPositions: GraphContainerCorrelationPositions_fragment$key;
+  queryObjectsRef: PreloadedQuery<GraphContainerCorrelationObjectsQuery>;
+  pageSize: number;
 }
 
 const GraphContainerCorrelation = ({

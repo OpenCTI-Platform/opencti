@@ -1544,18 +1544,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
 };
 
 type MetricConf = {
-  attribute: string
-  name: string
+  attribute: string;
+  name: string;
 };
 
 export type MetricsDefinition = {
-  readonly entity_type: string
-  readonly metrics: readonly MetricConf[] | null | undefined
+  readonly entity_type: string;
+  readonly metrics: readonly MetricConf[] | null | undefined;
 };
 
 export type Metric = {
-  readonly name: string
-  readonly value: string
+  readonly name: string;
+  readonly value: string;
 };
 
 export const buildMetricsColumns = (

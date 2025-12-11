@@ -36,21 +36,21 @@ export const pointInPolygon = (
 
 interface ContainerEdges {
   edges: readonly ({
-    types?: readonly (string | undefined | null)[] | undefined | null
-    node: object
-  } | null | undefined)[] | undefined | null
+    types?: readonly (string | undefined | null)[] | undefined | null;
+    node: object;
+  } | null | undefined)[] | undefined | null;
 }
 interface GraphQueryData {
   objects: {
     edges: readonly ({
-      types?: readonly (string | undefined | null)[] | undefined | null
+      types?: readonly (string | undefined | null)[] | undefined | null;
       node: object & {
-        reports?: ContainerEdges | undefined | null
-        groupings?: ContainerEdges | undefined | null
-        cases?: ContainerEdges | undefined | null
-      }
-    } | null | undefined)[] | undefined | null
-  } | undefined | null
+        reports?: ContainerEdges | undefined | null;
+        groupings?: ContainerEdges | undefined | null;
+        cases?: ContainerEdges | undefined | null;
+      };
+    } | null | undefined)[] | undefined | null;
+  } | undefined | null;
 }
 
 /**

@@ -164,7 +164,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <IncidentDeletion id={incident.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

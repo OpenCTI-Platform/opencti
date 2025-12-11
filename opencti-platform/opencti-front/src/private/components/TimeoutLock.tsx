@@ -15,11 +15,11 @@ import { APP_BASE_PATH } from '../../relay/environment';
  * Gets timeout and banner settings from react relay and return those values.
  */
 interface TimeoutState {
-  idleLimit: number
-  sessionLimit: number
-  idleCount: number | null
-  startDate: Date
-  startDateEpoch: number
+  idleLimit: number;
+  sessionLimit: number;
+  idleCount: number | null;
+  startDate: Date;
+  startDateEpoch: number;
 }
 
 type Action = { type: 'count down' } | { type: 'reset timeout' };

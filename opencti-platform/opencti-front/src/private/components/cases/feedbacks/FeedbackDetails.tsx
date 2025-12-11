@@ -49,7 +49,7 @@ const FeedbackDetailsFragment = graphql`
 `;
 
 interface FeedbackDetailsProps {
-  feedbackData: FeedbackDetails_case$key
+  feedbackData: FeedbackDetails_case$key;
 }
 
 const FeedbackDetails: FunctionComponent<FeedbackDetailsProps> = ({

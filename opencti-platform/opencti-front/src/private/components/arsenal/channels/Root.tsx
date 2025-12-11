@@ -78,8 +78,8 @@ const channelQuery = graphql`
 `;
 
 type RootChannelProps = {
-  channelId: string
-  queryRef: PreloadedQuery<RootChannelQuery>
+  channelId: string;
+  queryRef: PreloadedQuery<RootChannelQuery>;
 };
 
 const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
@@ -153,7 +153,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ChannelDeletion id={channel.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

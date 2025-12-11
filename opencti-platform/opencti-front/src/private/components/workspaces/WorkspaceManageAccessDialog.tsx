@@ -38,11 +38,11 @@ const workspaceManageAccessDialogAuthorizedMembersFragment = graphql`
 `;
 
 interface WorkspaceManageAccessDialogProps {
-  workspaceId: string
-  authorizedMembersData: WorkspaceManageAccessDialog_authorizedMembers$key
-  owner: InvestigationGraph_fragment$data['owner']
-  handleClose: () => void
-  open: boolean
+  workspaceId: string;
+  authorizedMembersData: WorkspaceManageAccessDialog_authorizedMembers$key;
+  owner: InvestigationGraph_fragment$data['owner'];
+  handleClose: () => void;
+  open: boolean;
 }
 
 const WorkspaceManageAccessDialog: FunctionComponent<

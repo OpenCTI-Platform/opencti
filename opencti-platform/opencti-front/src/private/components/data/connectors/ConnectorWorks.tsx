@@ -34,10 +34,10 @@ export const connectorWorksWorkDeletionMutation = graphql`
 export type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
 
 interface ConnectorWorksComponentProps {
-  data: ConnectorWorks_data$data
-  options: ConnectorWorksQuery$variables[]
-  relay: RelayRefetchProp
-  inProgress?: boolean
+  data: ConnectorWorks_data$data;
+  options: ConnectorWorksQuery$variables[];
+  relay: RelayRefetchProp;
+  inProgress?: boolean;
 }
 
 const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> = ({

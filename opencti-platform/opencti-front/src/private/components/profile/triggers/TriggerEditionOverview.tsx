@@ -72,24 +72,24 @@ const triggerEditionOverviewFragment = graphql`
 `;
 
 interface TriggerEditionOverviewProps {
-  data: TriggerEditionOverview_trigger$key
-  handleClose: () => void
-  paginationOptions?: TriggersLinesPaginationQuery$variables
+  data: TriggerEditionOverview_trigger$key;
+  handleClose: () => void;
+  paginationOptions?: TriggersLinesPaginationQuery$variables;
 }
 
 interface TriggerEditionFormValues {
-  name: string
-  description: string | null
+  name: string;
+  description: string | null;
   event_types: {
-    value: TriggerEventType
-    label: string
-  }[]
+    value: TriggerEventType;
+    label: string;
+  }[];
   notifiers: {
-    value: string
-    label: string
-  }[]
-  trigger_ids: { value: string }[]
-  period: string
+    value: string;
+    label: string;
+  }[];
+  trigger_ids: { value: string }[];
+  period: string;
 }
 
 const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({ data, handleClose, paginationOptions }) => {
@@ -104,7 +104,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
     ?? defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
   const [instanceTrigger, setInstanceTrigger] = useState<boolean>(trigger.instance_trigger ?? false);
-  const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
+  const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
@@ -279,7 +279,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const onChangeInstanceTrigger = (
     setFieldValue: (
       key: string,
-      value: { value: string, label: string }[],
+      value: { value: string; label: string }[],
     ) => void,
   ) => {
     const newInstanceTriggerValue = !instanceTrigger;
@@ -364,7 +364,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               }
               onChange={(
                 name: string,
-                value: { value: string, label: string }[],
+                value: { value: string; label: string }[],
               ) => handleSubmitField(
                 name,
                 value.map((n) => n.value),
@@ -372,7 +372,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               }
               renderOption={(
                 props: React.HTMLAttributes<HTMLLIElement>,
-                option: { value: TriggerEventType, label: string },
+                option: { value: TriggerEventType; label: string },
               ) => (
                 <MenuItem value={option.value} {...props}>
                   <Checkbox

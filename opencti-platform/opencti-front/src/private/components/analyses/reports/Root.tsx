@@ -126,7 +126,7 @@ const RootReport = () => {
                         <ReportEdition reportId={report.id} />
                       </Security>
                     )}
-                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                         <ReportDeletion reportId={report.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>

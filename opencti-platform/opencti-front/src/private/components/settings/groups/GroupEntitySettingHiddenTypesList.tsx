@@ -21,8 +21,8 @@ const groupEntitySettingHiddenTypesListQuery = graphql`
 `;
 
 const GroupHiddenTypesListComponent: FunctionComponent<{
-  targetType: string
-  queryRef: PreloadedQuery<GroupEntitySettingHiddenTypesListQuery>
+  targetType: string;
+  queryRef: PreloadedQuery<GroupEntitySettingHiddenTypesListQuery>;
 }> = ({
   targetType,
   queryRef,

@@ -48,9 +48,9 @@ const caseTemplateTasksDeletionMutation = graphql`
 `;
 
 interface CaseHeaderMenuProps {
-  queryRef: PreloadedQuery<CaseTemplateEditionQuery>
-  caseTemplateId: string
-  paginationOptions: CaseTemplateTasksLines_DataQuery$variables
+  queryRef: PreloadedQuery<CaseTemplateEditionQuery>;
+  caseTemplateId: string;
+  paginationOptions: CaseTemplateTasksLines_DataQuery$variables;
 }
 
 const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({

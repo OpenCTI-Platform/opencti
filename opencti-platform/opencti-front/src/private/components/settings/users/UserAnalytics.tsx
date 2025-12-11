@@ -46,7 +46,7 @@ const UserFragment = graphql`
 `;
 
 interface UserAnalyticsProps {
-  data: UserAnalytics_user$key
+  data: UserAnalytics_user$key;
 }
 
 const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {

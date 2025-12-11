@@ -206,18 +206,18 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
 `;
 
 interface EntityStixCoreRelationshipsEntitiesLineProps {
-  node: EntityStixCoreRelationshipsEntitiesViewLine_node$key
-  dataColumns: DataColumns
-  onLabelClick: HandleAddFilter
-  onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity']
-  selectedElements: UseEntityToggle<{ id: string }>['selectedElements']
-  deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements']
-  selectAll: UseEntityToggle<{ id: string }>['selectAll']
+  node: EntityStixCoreRelationshipsEntitiesViewLine_node$key;
+  dataColumns: DataColumns;
+  onLabelClick: HandleAddFilter;
+  onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity'];
+  selectedElements: UseEntityToggle<{ id: string }>['selectedElements'];
+  deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements'];
+  selectAll: UseEntityToggle<{ id: string }>['selectAll'];
   onToggleShiftEntity: (
     index: number,
     entity: EntityStixCoreRelationshipsEntitiesViewLine_node$data,
-  ) => void
-  index: number
+  ) => void;
+  index: number;
 }
 
 export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
@@ -336,7 +336,7 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
 export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

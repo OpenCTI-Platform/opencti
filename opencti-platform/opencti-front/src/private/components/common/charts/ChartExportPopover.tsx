@@ -7,9 +7,9 @@ import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
 
 interface ExportPopoverProps {
-  chart?: ApexCharts
-  series?: ApexOptions['series']
-  isReadOnly?: boolean
+  chart?: ApexCharts;
+  series?: ApexOptions['series'];
+  isReadOnly?: boolean;
 }
 
 const ExportPopover = ({

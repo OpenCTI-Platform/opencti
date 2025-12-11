@@ -117,9 +117,9 @@ export const IntrusionSetCardFragment = graphql`
 `;
 
 interface IntrusionSetCardProps {
-  node: IntrusionSetCard_node$key
-  onLabelClick: HandleAddFilter
-  bookmarksIds?: string[]
+  node: IntrusionSetCard_node$key;
+  onLabelClick: HandleAddFilter;
+  bookmarksIds?: string[];
 }
 const IntrusionSetCard: FunctionComponent<IntrusionSetCardProps> = ({
   node,

@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 type Data_GroupConfidenceLevel = Group_group$data['group_confidence_level'];
 
 type GroupConfidenceLevelProps = {
-  confidenceLevel?: Data_GroupConfidenceLevel
+  confidenceLevel?: Data_GroupConfidenceLevel;
 };
 
 const ConfidenceTooltip: React.FC<GroupConfidenceLevelProps> = ({ confidenceLevel }) => {

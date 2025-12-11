@@ -78,8 +78,8 @@ const indicatorQuery = graphql`
 `;
 
 type RootIndicatorProps = {
-  indicatorId: string
-  queryRef: PreloadedQuery<RootIndicatorQuery>
+  indicatorId: string;
+  queryRef: PreloadedQuery<RootIndicatorQuery>;
 };
 
 const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
@@ -126,7 +126,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                 />
               </Security>
             )}
-            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <IndicatorDeletion id={indicator.id} isOpen={isOpen} handleClose={onClose} />
               </Security>

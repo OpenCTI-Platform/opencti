@@ -107,6 +107,7 @@ export default defineConfig([
       '@stylistic/space-before-blocks': 'error',
       '@stylistic/quote-props': ['error', 'as-needed'],
       '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
+      '@stylistic/member-delimiter-style': ['error', { singleline: { requireLast: false } }],
       '@stylistic/semi': ['error', 'always'],
       'custom-rules/classes-rule': 1,
       'no-restricted-syntax': 0,

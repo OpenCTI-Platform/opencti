@@ -98,37 +98,37 @@ export const ingestionJsonEditionFragment = graphql`
 `;
 
 interface IngestionJsonEditionProps {
-  ingestionJson: IngestionJsonEditionFragment_ingestionJson$key
-  handleClose: () => void
-  enableReferences?: boolean
+  ingestionJson: IngestionJsonEditionFragment_ingestionJson$key;
+  handleClose: () => void;
+  enableReferences?: boolean;
 }
 
 export interface IngestionJsonEditionForm {
-  message?: string | null
-  references?: ExternalReferencesValues
-  name: string
-  description?: string | null
-  scheduling_period?: string | null
-  uri: string
-  verb: string
-  body: string | null | undefined
-  pagination_with_sub_page: boolean
-  pagination_with_sub_page_query_verb: string | null | undefined
-  pagination_with_sub_page_attribute_path: string | null | undefined
-  headers: IngestionJsonHeader[]
-  query_attributes: IngestionJsonAttributes[]
-  authentication_type: string
-  authentication_value?: string | null
-  ingestion_running?: boolean | null
-  json_mapper_id: string | FieldOption
-  user_id: string | FieldOption
-  username?: string
-  password?: string
-  token?: string
-  cert?: string
-  key?: string
-  ca?: string
-  markings: FieldOption[]
+  message?: string | null;
+  references?: ExternalReferencesValues;
+  name: string;
+  description?: string | null;
+  scheduling_period?: string | null;
+  uri: string;
+  verb: string;
+  body: string | null | undefined;
+  pagination_with_sub_page: boolean;
+  pagination_with_sub_page_query_verb: string | null | undefined;
+  pagination_with_sub_page_attribute_path: string | null | undefined;
+  headers: IngestionJsonHeader[];
+  query_attributes: IngestionJsonAttributes[];
+  authentication_type: string;
+  authentication_value?: string | null;
+  ingestion_running?: boolean | null;
+  json_mapper_id: string | FieldOption;
+  user_id: string | FieldOption;
+  username?: string;
+  password?: string;
+  token?: string;
+  cert?: string;
+  key?: string;
+  ca?: string;
+  markings: FieldOption[];
 }
 
 const resolveHasUserChoiceJsonMapper = (option: JsonMapperFieldOption) => {

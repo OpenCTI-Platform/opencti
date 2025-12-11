@@ -79,8 +79,8 @@ const sectorQuery = graphql`
 `;
 
 type RootSectorProps = {
-  sectorId: string
-  queryRef: PreloadedQuery<RootSectorQuery>
+  sectorId: string;
+  queryRef: PreloadedQuery<RootSectorQuery>;
 };
 
 const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
@@ -156,7 +156,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <SectorDeletion id={sector.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

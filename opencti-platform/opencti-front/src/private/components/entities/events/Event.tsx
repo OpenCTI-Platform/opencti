@@ -65,7 +65,7 @@ const eventFragment = graphql`
 `;
 
 interface EventProps {
-  eventData: Event_event$key
+  eventData: Event_event$key;
 }
 
 const Event: React.FC<EventProps> = ({

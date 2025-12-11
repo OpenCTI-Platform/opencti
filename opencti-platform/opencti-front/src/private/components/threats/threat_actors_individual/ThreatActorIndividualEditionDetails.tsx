@@ -83,18 +83,18 @@ const threatActorIndividualEditionDetailsFragment = graphql`
 const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
 
 interface ThreatActorIndividualEditionDetailsProps {
-  threatActorIndividualRef: ThreatActorIndividualEditionDetails_ThreatActorIndividual$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences: boolean
-  handleClose: () => void
+  threatActorIndividualRef: ThreatActorIndividualEditionDetails_ThreatActorIndividual$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences: boolean;
+  handleClose: () => void;
 }
 
 interface ThreatActorIndividualEditionDetailsFormValues {
-  message?: string
-  references?: FieldOption[]
-  first_seen?: FieldOption
-  last_seen?: FieldOption
-  goals: string
+  message?: string;
+  references?: FieldOption[];
+  first_seen?: FieldOption;
+  last_seen?: FieldOption;
+  goals: string;
 }
 
 const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<

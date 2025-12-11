@@ -85,40 +85,40 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface toEdges {
-  edges: ReadonlyArray<{ node: { to: { name?: string } | null } }>
+  edges: ReadonlyArray<{ node: { to: { name?: string } | null } }>;
 }
 
 interface fromEdges {
-  edges: ReadonlyArray<{ node: { from: { name?: string } | null } }>
+  edges: ReadonlyArray<{ node: { from: { name?: string } | null } }>;
 }
 
 export interface DraftVersion {
-  draft_id: string
-  draft_operation: string
+  draft_id: string;
+  draft_operation: string;
 }
 
 export interface GenericAttack {
-  id: string
-  draftVersion: DraftVersion | null
-  name: string
-  description: string | null
-  modified: string
-  aliases: ReadonlyArray<string | null> | null
-  objectLabel: ReadonlyArray<{ id: string, value: string | null, color: string | null | undefined }> | null | undefined
-  avatar?: { id: string, name: string } | null
-  relatedIntrusionSets?: fromEdges | null
-  usedMalware?: toEdges | null
-  targetedCountries: toEdges | null
-  targetedSectors: toEdges | null
-  countryFlag?: toEdgesLocated | null
+  id: string;
+  draftVersion: DraftVersion | null;
+  name: string;
+  description: string | null;
+  modified: string;
+  aliases: ReadonlyArray<string | null> | null;
+  objectLabel: ReadonlyArray<{ id: string; value: string | null; color: string | null | undefined }> | null | undefined;
+  avatar?: { id: string; name: string } | null;
+  relatedIntrusionSets?: fromEdges | null;
+  usedMalware?: toEdges | null;
+  targetedCountries: toEdges | null;
+  targetedSectors: toEdges | null;
+  countryFlag?: toEdgesLocated | null;
 }
 
 interface GenericAttackCardProps {
-  cardData: GenericAttack
-  cardLink: string
-  entityType: string
-  onLabelClick: HandleAddFilter
-  bookmarksIds?: string[]
+  cardData: GenericAttack;
+  cardLink: string;
+  entityType: string;
+  onLabelClick: HandleAddFilter;
+  bookmarksIds?: string[];
 }
 
 export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({

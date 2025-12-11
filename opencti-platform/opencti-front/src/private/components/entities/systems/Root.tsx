@@ -79,8 +79,8 @@ const systemQuery = graphql`
 `;
 
 type RootSystemProps = {
-  systemId: string
-  queryRef: PreloadedQuery<RootSystemQuery>
+  systemId: string;
+  queryRef: PreloadedQuery<RootSystemQuery>;
 };
 
 const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
@@ -180,7 +180,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <SystemDeletion id={system.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

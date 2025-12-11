@@ -6,47 +6,47 @@ import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils'
 import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 
 export interface WidgetConfigType {
-  fintelVariableName: string | null
+  fintelVariableName: string | null;
   widget: {
-    type: WidgetVisualizationTypes | ''
-    perspective: WidgetPerspective | null
-    dataSelection: WidgetDataSelection[]
-    parameters: WidgetParameters
-  }
+    type: WidgetVisualizationTypes | '';
+    perspective: WidgetPerspective | null;
+    dataSelection: WidgetDataSelection[];
+    parameters: WidgetParameters;
+  };
 }
 
 interface WidgetConfigContextProps {
-  context: WidgetContext
-  disabledSteps: number[]
-  fintelWidgets?: FintelTemplateWidget[]
-  fintelEntityType?: string
-  fintelEditorValue?: string
-  step: number
-  setStep: Dispatch<React.SetStateAction<number>>
-  config: WidgetConfigType
-  setConfigWidget: (widget: WidgetConfigType['widget']) => void
+  context: WidgetContext;
+  disabledSteps: number[];
+  fintelWidgets?: FintelTemplateWidget[];
+  fintelEntityType?: string;
+  fintelEditorValue?: string;
+  step: number;
+  setStep: Dispatch<React.SetStateAction<number>>;
+  config: WidgetConfigType;
+  setConfigWidget: (widget: WidgetConfigType['widget']) => void;
   setConfigVariableName: (
     variableName: WidgetConfigType['fintelVariableName'],
-  ) => void
-  setDataSelection: (dataSelection: WidgetDataSelection[]) => void
+  ) => void;
+  setDataSelection: (dataSelection: WidgetDataSelection[]) => void;
   setDataSelectionWithIndex: (
     selection: WidgetDataSelection,
     index: number,
-  ) => void
+  ) => void;
 }
 
 const WidgetConfigContext = createContext<WidgetConfigContextProps | undefined>(undefined);
 
 interface WidgetConfigProviderProps {
-  children: ReactNode
-  context: WidgetContext
-  disabledSteps: number[]
-  fintelWidgets: FintelTemplateWidget[] | undefined
-  fintelEntityType: string | undefined
-  fintelEditorValue: string | undefined
-  initialWidget: Widget | undefined
-  initialVariableName: string | undefined
-  open: boolean
+  children: ReactNode;
+  context: WidgetContext;
+  disabledSteps: number[];
+  fintelWidgets: FintelTemplateWidget[] | undefined;
+  fintelEntityType: string | undefined;
+  fintelEditorValue: string | undefined;
+  initialWidget: Widget | undefined;
+  initialVariableName: string | undefined;
+  open: boolean;
 }
 
 const buildConfig = (

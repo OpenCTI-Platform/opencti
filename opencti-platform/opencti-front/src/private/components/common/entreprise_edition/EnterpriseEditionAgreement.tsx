@@ -24,9 +24,9 @@ const EnterpriseEditionAgreementMutationFieldPatch = graphql`
 `;
 
 interface EnterpriseEditionAgreementProps {
-  open: boolean
-  onClose: () => void
-  settingsId: string
+  open: boolean;
+  onClose: () => void;
+  settingsId: string;
 }
 
 const EnterpriseEditionAgreement: FunctionComponent<

@@ -27,9 +27,9 @@ const TriggerPopover = ({
   paginationOptions,
   disabled,
 }: {
-  id: string
-  paginationOptions?: TriggersLinesPaginationQuery$variables
-  disabled: boolean
+  id: string;
+  paginationOptions?: TriggersLinesPaginationQuery$variables;
+  disabled: boolean;
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);

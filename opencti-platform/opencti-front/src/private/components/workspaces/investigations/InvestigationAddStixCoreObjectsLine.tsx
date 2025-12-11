@@ -42,16 +42,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface InvestigationAddStixCoreObjectsLineComponentProps {
-  dataColumns: DataColumns
-  node: InvestigationAddStixCoreObjectsLine_node$data
-  onLabelClick: HandleAddFilter
+  dataColumns: DataColumns;
+  node: InvestigationAddStixCoreObjectsLine_node$data;
+  onLabelClick: HandleAddFilter;
   onToggleEntity: (
     entity: InvestigationAddStixCoreObjectsLine_node$data,
     event: React.SyntheticEvent,
-  ) => void
+  ) => void;
   addedElements: {
-    [key: string]: InvestigationAddStixCoreObjectsLine_node$data
-  }
+    [key: string]: InvestigationAddStixCoreObjectsLine_node$data;
+  };
 }
 
 const InvestigationAddStixCoreObjectsLineComponent = ({
@@ -327,7 +327,7 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
 );
 
 interface InvestigationAddStixCoreObjecstLineDummyProps {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }
 
 export const InvestigationAddStixCoreObjecstLineDummy = (

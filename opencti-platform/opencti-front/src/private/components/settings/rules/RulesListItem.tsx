@@ -16,9 +16,9 @@ import type { Theme } from '../../../../components/Theme';
 import Tag from './RulesListItemTag';
 
 interface RulesListItemProps {
-  rule: NonNullable<Rule>
-  task: Task
-  toggle: () => void
+  rule: NonNullable<Rule>;
+  task: Task;
+  toggle: () => void;
 }
 
 const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {

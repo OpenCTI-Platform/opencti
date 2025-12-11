@@ -65,8 +65,8 @@ export const fileIndexingResetMutation = graphql`
 `;
 
 interface FileIndexingComponentProps {
-  queryRef: PreloadedQuery<FileIndexingConfigurationQuery>
-  refetch: () => void
+  queryRef: PreloadedQuery<FileIndexingConfigurationQuery>;
+  refetch: () => void;
 }
 
 const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({

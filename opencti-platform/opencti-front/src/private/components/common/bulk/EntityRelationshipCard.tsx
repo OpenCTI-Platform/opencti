@@ -6,8 +6,8 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 
 interface EntityRelationshipCardProps {
-  entityName: string
-  entityType: string
+  entityName: string;
+  entityType: string;
 }
 
 const EntityRelationshipCard: FunctionComponent<EntityRelationshipCardProps> = ({ entityName, entityType }) => {

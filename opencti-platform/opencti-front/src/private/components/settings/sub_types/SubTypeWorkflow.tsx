@@ -66,10 +66,10 @@ export const subTypeWorkflowEditionFragment = graphql`
 `;
 
 interface SubTypeEditionContainerProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<SubTypeWorkflowEditionQuery>
-  open?: boolean
-  scope: string
+  handleClose: () => void;
+  queryRef: PreloadedQuery<SubTypeWorkflowEditionQuery>;
+  open?: boolean;
+  scope: string;
 }
 
 const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({

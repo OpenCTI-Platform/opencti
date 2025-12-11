@@ -68,40 +68,40 @@ export const searchStixCoreObjectsByRepresentativeQuery = graphql`
 `;
 
 interface BulkRelationDialogProps {
-  stixDomainObjectId: string
-  stixDomainObjectName: string
-  stixDomainObjectType: string
-  isOpen: boolean
-  onClose: () => void
-  selectedEntities: TargetEntity[]
-  defaultRelationshipType?: string
-  paginationKey: string
-  paginationOptions: PaginationOptions
-  targetObjectTypes: string[]
-  onBulkCreate: () => void
+  stixDomainObjectId: string;
+  stixDomainObjectName: string;
+  stixDomainObjectType: string;
+  isOpen: boolean;
+  onClose: () => void;
+  selectedEntities: TargetEntity[];
+  defaultRelationshipType?: string;
+  paginationKey: string;
+  paginationOptions: PaginationOptions;
+  targetObjectTypes: string[];
+  onBulkCreate: () => void;
 }
 
 export interface BulkEntityTypeInfo {
-  representative: string
-  searchTerm: string
-  entityName?: string
-  entityType?: string
-  index: number
-  isMatchingEntity: boolean
-  isExisting: boolean
-  selectedEntityType: RelationsToEntity
-  entityTypeList?: entityTypeListType[]
+  representative: string;
+  searchTerm: string;
+  entityName?: string;
+  entityType?: string;
+  index: number;
+  isMatchingEntity: boolean;
+  isExisting: boolean;
+  selectedEntityType: RelationsToEntity;
+  entityTypeList?: entityTypeListType[];
 }
 
 type entityTypeListType = {
-  entity_type: string
-  representative: string
-  id: string
+  entity_type: string;
+  representative: string;
+  id: string;
 };
 
 type missingEntityType = {
-  key: string
-  values: string[]
+  key: string;
+  values: string[];
 };
 
 const classes = {

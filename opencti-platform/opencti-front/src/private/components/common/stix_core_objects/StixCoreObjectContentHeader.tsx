@@ -8,10 +8,10 @@ import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface StixCoreObjectContentHeaderProps {
-  currentMode?: string
-  modes: string[]
-  disableMapping: boolean
-  disableEditor: boolean
+  currentMode?: string;
+  modes: string[];
+  disableMapping: boolean;
+  disableEditor: boolean;
 }
 
 const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeaderProps> = ({

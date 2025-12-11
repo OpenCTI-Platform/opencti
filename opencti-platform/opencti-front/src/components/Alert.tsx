@@ -6,9 +6,9 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 
 type AlertProps = {
-  content: ReactNode
-  style?: CSSProperties
-  severity?: MuiAlertProps['severity']
+  content: ReactNode;
+  style?: CSSProperties;
+  severity?: MuiAlertProps['severity'];
 };
 
 const Alert = ({ content, style, severity = 'info' }: AlertProps) => {

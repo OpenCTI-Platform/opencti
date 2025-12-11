@@ -15,9 +15,9 @@ import { FilterRepresentative } from './FiltersModel';
 import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
 
 interface DisplayFiltersValuesProps {
-  filtersRepresentativesMap: Map<string, FilterRepresentative>
-  values: string[]
-  mode?: string
+  filtersRepresentativesMap: Map<string, FilterRepresentative>;
+  values: string[];
+  mode?: string;
 }
 
 const DisplayFiltersValues: FunctionComponent<DisplayFiltersValuesProps> = ({
@@ -56,9 +56,9 @@ const DisplayFiltersValues: FunctionComponent<DisplayFiltersValuesProps> = ({
 };
 
 interface DisplayFilterGroupsProps {
-  filtersRepresentativesMap: Map<string, FilterRepresentative>
-  filterGroups: FilterGroup[]
-  filterMode: string
+  filtersRepresentativesMap: Map<string, FilterRepresentative>;
+  filterGroups: FilterGroup[];
+  filterMode: string;
 }
 
 const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = ({
@@ -275,11 +275,11 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
 };
 
 interface DisplayFilterGroupProps {
-  filterObj: FilterGroup
-  filterMode: string
-  filtersRepresentativesMap: Map<string, FilterRepresentative>
-  classFilter: string
-  classChipLabel: string
+  filterObj: FilterGroup;
+  filterMode: string;
+  filtersRepresentativesMap: Map<string, FilterRepresentative>;
+  classFilter: string;
+  classChipLabel: string;
 }
 
 const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({

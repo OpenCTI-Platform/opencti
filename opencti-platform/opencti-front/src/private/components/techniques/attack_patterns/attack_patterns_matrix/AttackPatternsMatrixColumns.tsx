@@ -24,27 +24,27 @@ export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrix
 export type AttackPattern = NonNullable<AttackPatternsOfPhase['attackPatterns']>[number];
 export type SubAttackPattern = NonNullable<AttackPattern['subAttackPatterns']>[number];
 export type MinimalAttackPattern = {
-  attack_pattern_id: string
-  name: string
+  attack_pattern_id: string;
+  name: string;
 };
 export type FilteredSubAttackPattern = SubAttackPattern & {
-  isCovered: boolean
-  isOverlapping?: boolean
+  isCovered: boolean;
+  isOverlapping?: boolean;
 };
 
 export type FilteredAttackPattern = AttackPattern & {
-  isCovered: boolean
-  isOverlapping?: boolean
-  subAttackPatternsTotal?: number
-  subAttackPatterns: FilteredSubAttackPattern[] | undefined
+  isCovered: boolean;
+  isOverlapping?: boolean;
+  subAttackPatternsTotal?: number;
+  subAttackPatterns: FilteredSubAttackPattern[] | undefined;
 };
 
 type FilteredData = {
-  attackPatterns: FilteredAttackPattern[] | undefined
+  attackPatterns: FilteredAttackPattern[] | undefined;
 } & AttackPatternsOfPhase;
 
 interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
-  queryRef: PreloadedQuery<AttackPatternsMatrixQuery>
+  queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
 }
 
 const LAYOUT_SIZE = {
@@ -101,10 +101,10 @@ export const getBoxStyles = ({
   isSecurityPlatform,
   theme,
 }: {
-  attackPattern: FilteredAttackPattern | FilteredSubAttackPattern
-  isHovered: boolean
-  isSecurityPlatform: boolean
-  theme: Theme
+  attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
+  isHovered: boolean;
+  isSecurityPlatform: boolean;
+  theme: Theme;
 }) => {
   // Handle colors for Security Platform page
   const highlightColor = isSecurityPlatform

@@ -5,16 +5,16 @@ import { UseLocalStorageHelpers } from './useLocalStorage';
 import { numberFormat } from '../Number';
 
 type KeyType<TData = unknown> = Readonly<{
-  ' $data'?: TData | undefined
-  ' $fragmentSpreads': FragmentType
+  ' $data'?: TData | undefined;
+  ' $fragmentSpreads': FragmentType;
 }>;
 
 export interface UsePreloadedPaginationFragment<QueryType extends OperationType> {
-  queryRef: PreloadedQuery<QueryType>
-  linesQuery: GraphQLTaggedNode
-  linesFragment: GraphQLTaggedNode
-  nodePath?: string[]
-  setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements']
+  queryRef: PreloadedQuery<QueryType>;
+  linesQuery: GraphQLTaggedNode;
+  linesFragment: GraphQLTaggedNode;
+  nodePath?: string[];
+  setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 const usePreloadedPaginationFragment = <QueryType extends OperationType, FragmentKey extends KeyType>({

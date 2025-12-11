@@ -33,8 +33,8 @@ const playbookQuery = graphql`
 `;
 
 interface RootPlaybookComponentProps {
-  playbookQueryRef: PreloadedQuery<RootPlaybookQuery>
-  playbookComponentsQueryRef: PreloadedQuery<PlaybookComponentsQuery>
+  playbookQueryRef: PreloadedQuery<RootPlaybookQuery>;
+  playbookComponentsQueryRef: PreloadedQuery<PlaybookComponentsQuery>;
 }
 
 const RootPlaybookComponent = ({

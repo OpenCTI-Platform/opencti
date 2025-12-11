@@ -66,10 +66,10 @@ const pirHistoryQuery = graphql`
 `;
 
 interface PirOverviewComponentProps {
-  pir: PirOverviewFragment$data
-  redisQueryRef: PreloadedQuery<PirOverviewRedisStreamQuery>
-  historyQueryRef: PreloadedQuery<PirOverviewHistoryQuery>
-  threatMapQueryRef: PreloadedQuery<PirOverviewThreatMapQuery>
+  pir: PirOverviewFragment$data;
+  redisQueryRef: PreloadedQuery<PirOverviewRedisStreamQuery>;
+  historyQueryRef: PreloadedQuery<PirOverviewHistoryQuery>;
+  threatMapQueryRef: PreloadedQuery<PirOverviewThreatMapQuery>;
 }
 
 const PirOverviewComponent = ({
@@ -101,7 +101,7 @@ const PirOverviewComponent = ({
 };
 
 interface PirOverviewProps {
-  data: PirOverviewFragment$key
+  data: PirOverviewFragment$key;
 }
 
 const PirOverview = ({ data }: PirOverviewProps) => {

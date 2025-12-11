@@ -83,8 +83,8 @@ const securityPlatformQuery = graphql`
 `;
 
 type RootSecurityPlatformProps = {
-  securityPlatformId: string
-  queryRef: PreloadedQuery<RootSecurityPlatformQuery>
+  securityPlatformId: string;
+  queryRef: PreloadedQuery<RootSecurityPlatformQuery>;
 };
 
 const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlatformProps) => {
@@ -148,7 +148,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <SecurityPlatformDeletion id={securityPlatform.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

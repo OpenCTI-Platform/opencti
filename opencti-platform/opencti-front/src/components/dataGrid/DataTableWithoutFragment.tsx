@@ -23,13 +23,13 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   | 'onLineClick'
   | 'isLocalStorageEnabled'
   | 'variant'> & {
-    data: unknown
-    globalCount: number
+    data: unknown;
+    globalCount: number;
   };
 
 interface DataTableWithoutFragmentInternalToolBarProps {
-  taskScope: string
-  dataIds: string[]
+  taskScope: string;
+  dataIds: string[];
 }
 
 const DataTableWithoutFragmentInternalToolbar = ({ taskScope, dataIds }: DataTableWithoutFragmentInternalToolBarProps) => {
@@ -64,7 +64,7 @@ const DataTableWithoutFragmentInternalToolbar = ({ taskScope, dataIds }: DataTab
 };
 
 const DataTableWithoutFragment = (props: OCTIDataTableProps & {
-  taskScope?: string
+  taskScope?: string;
 }) => {
   const { data, taskScope } = props;
 

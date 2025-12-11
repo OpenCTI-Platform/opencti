@@ -76,10 +76,10 @@ const CaseTaskFragment = graphql`
 `;
 
 interface CaseTasksLineProps {
-  node: CaseTasksLine_data$key
-  entityId?: string
-  paginationOptions: CaseTasksLinesQuery$variables
-  enableReferences: boolean
+  node: CaseTasksLine_data$key;
+  entityId?: string;
+  paginationOptions: CaseTasksLinesQuery$variables;
+  enableReferences: boolean;
 }
 
 export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({

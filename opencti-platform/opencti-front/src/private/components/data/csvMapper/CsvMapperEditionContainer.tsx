@@ -56,9 +56,9 @@ export const csvMapperEditionContainerQuery = graphql`
 `;
 
 interface CsvMapperEditionProps {
-  queryRef: PreloadedQuery<CsvMapperEditionContainerQuery>
-  open: boolean
-  onClose?: () => void
+  queryRef: PreloadedQuery<CsvMapperEditionContainerQuery>;
+  open: boolean;
+  onClose?: () => void;
 }
 
 const CsvMapperEditionContainer: FunctionComponent<CsvMapperEditionProps> = ({

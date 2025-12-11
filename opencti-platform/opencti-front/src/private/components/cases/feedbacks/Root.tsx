@@ -126,7 +126,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
             <FeedbackEdition feedbackId={feedbackData.id} />
           </Security>
         )}
-        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <FeedbackDeletion id={feedbackData.id} isOpen={isOpen} handleClose={onClose} />
           </Security>

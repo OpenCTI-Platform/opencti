@@ -27,10 +27,10 @@ const ingestionJsonMapperTestMutation = graphql`
 `;
 
 interface IngestionJsonMapperTestDialogProps {
-  open: boolean
-  onClose: () => void
-  values: IngestionJsonAddInput
-  setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>
+  open: boolean;
+  onClose: () => void;
+  values: IngestionJsonAddInput;
+  setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDialogProps> = ({

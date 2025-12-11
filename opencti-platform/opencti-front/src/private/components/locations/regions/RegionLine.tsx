@@ -66,8 +66,8 @@ const regionLineFragment = graphql`
 `;
 
 interface RegionLineComponentProps {
-  dataColumns: DataColumns
-  node: RegionLine_node$key
+  dataColumns: DataColumns;
+  node: RegionLine_node$key;
 }
 
 export const RegionLineComponent: FunctionComponent<
@@ -121,7 +121,7 @@ export const RegionLineComponent: FunctionComponent<
 export const RegionLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

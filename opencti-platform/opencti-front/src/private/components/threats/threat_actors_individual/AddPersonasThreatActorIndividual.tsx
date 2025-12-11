@@ -16,10 +16,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface AddPersonaThreatActorIndividualComponentProps {
-  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data
-  queryRef: PreloadedQuery<AddPersonasThreatActorIndividualLinesQuery>
-  onSearch: (search: string) => void
-  paginationOptions: AddPersonasThreatActorIndividualLinesQuery$variables
+  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data;
+  queryRef: PreloadedQuery<AddPersonasThreatActorIndividualLinesQuery>;
+  onSearch: (search: string) => void;
+  paginationOptions: AddPersonasThreatActorIndividualLinesQuery$variables;
 }
 
 const AddPersonaThreatActorIndividualComponent: FunctionComponent<
@@ -94,7 +94,7 @@ const AddPersonaThreatActorIndividualComponent: FunctionComponent<
 };
 
 interface AddPersonaThreatActorIndividualProps {
-  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data
+  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data;
 }
 
 const AddPersonaThreatActorIndividual: FunctionComponent<AddPersonaThreatActorIndividualProps> = (props) => {

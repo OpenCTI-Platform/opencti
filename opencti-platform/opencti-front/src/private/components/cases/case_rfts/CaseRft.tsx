@@ -26,8 +26,8 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 interface CaseRftProps {
-  caseRftData: CaseUtils_case$key
-  enableReferences: boolean
+  caseRftData: CaseUtils_case$key;
+  enableReferences: boolean;
 }
 
 const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {

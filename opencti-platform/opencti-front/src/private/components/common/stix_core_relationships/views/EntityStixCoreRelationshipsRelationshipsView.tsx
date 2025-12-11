@@ -18,24 +18,24 @@ import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
-  entityId: string
-  entityLink: string
-  defaultStartTime?: string
-  defaultStopTime?: string
-  stixCoreObjectTypes?: string[]
-  relationshipTypes: string[]
-  localStorage: PaginationLocalStorage<PaginationOptions>
-  currentView: string
-  allDirections?: boolean
-  isRelationReversed?: boolean
-  enableContextualView: boolean
-  enableEntitiesView?: boolean
-  enableNestedView?: boolean
-  paddingRightButtonAdd?: number
-  role?: string
-  handleChangeView?: (viewMode: string) => void
-  allowCreation?: boolean
-  isCoverage?: boolean
+  entityId: string;
+  entityLink: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
+  stixCoreObjectTypes?: string[];
+  relationshipTypes: string[];
+  localStorage: PaginationLocalStorage<PaginationOptions>;
+  currentView: string;
+  allDirections?: boolean;
+  isRelationReversed?: boolean;
+  enableContextualView: boolean;
+  enableEntitiesView?: boolean;
+  enableNestedView?: boolean;
+  paddingRightButtonAdd?: number;
+  role?: string;
+  handleChangeView?: (viewMode: string) => void;
+  allowCreation?: boolean;
+  isCoverage?: boolean;
 }
 
 const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStixCoreRelationshipsRelationshipsViewProps> = ({

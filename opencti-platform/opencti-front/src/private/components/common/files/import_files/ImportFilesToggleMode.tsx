@@ -11,7 +11,7 @@ const CARD_HEIGHT = 300;
 const ImportFilesToggleMode = () => {
   const { t_i18n } = useFormatter();
   const { setActiveStep, importMode, setImportMode, entityId } = useImportFilesContext();
-  const modes: { mode: ImportMode, title: string, description: string, icon: React.ReactElement }[] = [
+  const modes: { mode: ImportMode; title: string; description: string; icon: React.ReactElement }[] = [
     {
       mode: 'auto',
       title: t_i18n('Direct/Automatic Import'),

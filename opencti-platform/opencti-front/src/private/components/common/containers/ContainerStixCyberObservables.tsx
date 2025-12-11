@@ -55,8 +55,8 @@ export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
 `;
 
 interface ContainerStixCyberObservablesComponentProps {
-  container: ContainerStixCyberObservables_container$data
-  enableReferences?: boolean
+  container: ContainerStixCyberObservables_container$data;
+  enableReferences?: boolean;
 }
 
 const ContainerStixCyberObservablesComponent: FunctionComponent<
@@ -115,7 +115,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
   ) => {
     return (data.container?.objects?.edges ?? [])
       .map((o) => ({ id: o?.node.id, value: o?.node.observable_value }))
-      .filter((o) => o.id) as { id: string, value: string }[];
+      .filter((o) => o.id) as { id: string; value: string }[];
   };
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Stix-Cyber-Observable']);

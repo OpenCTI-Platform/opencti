@@ -133,22 +133,22 @@ export const infrastructureEditionOverviewFragment = graphql`
 const INFRASTRUCTURE_TYPE = 'Infrastructure';
 
 interface InfrastructureEditionOverviewProps {
-  infrastructureData: InfrastructureEditionOverview_infrastructure$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences: boolean
-  handleClose: () => void
+  infrastructureData: InfrastructureEditionOverview_infrastructure$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences: boolean;
+  handleClose: () => void;
 }
 
 interface InfrastructureEditionFormValues {
-  message?: string
-  references?: FieldOption[]
-  createdBy: FieldOption | undefined
-  x_opencti_workflow_id: FieldOption
-  objectMarking?: FieldOption[]
-  killChainPhases?: FieldOption[]
-  first_seen: null | Date
-  last_seen: null | Date
-  confidence: number | null | undefined
+  message?: string;
+  references?: FieldOption[];
+  createdBy: FieldOption | undefined;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
+  killChainPhases?: FieldOption[];
+  first_seen: null | Date;
+  last_seen: null | Date;
+  confidence: number | null | undefined;
 }
 
 const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEditionOverviewProps> = ({

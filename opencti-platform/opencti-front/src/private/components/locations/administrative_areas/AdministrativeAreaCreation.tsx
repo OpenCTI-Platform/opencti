@@ -52,27 +52,27 @@ const administrativeAreaMutation = graphql`
 `;
 
 interface AdministrativeAreaAddInput {
-  name: string
-  description: string
-  latitude: string
-  longitude: string
-  confidence: number | null
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: FieldOption[]
-  file: File | null
+  name: string;
+  description: string;
+  latitude: string;
+  longitude: string;
+  confidence: number | null;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
+  file: File | null;
 }
 
 interface AdministrativeAreaFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  inputValue?: string
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 const ADMINISTRATIVE_AREA_TYPE = 'Administrative-Area';
@@ -328,7 +328,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
 const AdministrativeAreaCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: AdministrativeAreasLinesPaginationQuery$variables
+  paginationOptions: AdministrativeAreasLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

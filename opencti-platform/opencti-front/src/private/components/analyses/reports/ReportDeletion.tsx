@@ -28,9 +28,9 @@ const reportDeletionMutation = graphql`
 `;
 
 interface ReportDeletionProps {
-  reportId: string
-  handleClose: () => void
-  isOpen: boolean
+  reportId: string;
+  handleClose: () => void;
+  isOpen: boolean;
 }
 
 const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({

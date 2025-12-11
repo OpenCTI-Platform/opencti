@@ -11,11 +11,11 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 const nbOfRowsToLoad = 50;
 
 interface SystemsLinesProps {
-  queryRef: PreloadedQuery<SystemsLinesPaginationQuery>
-  dataColumns: DataColumns
-  paginationOptions?: SystemsLinesPaginationQuery$variables
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
-  onLabelClick: HandleAddFilter
+  queryRef: PreloadedQuery<SystemsLinesPaginationQuery>;
+  dataColumns: DataColumns;
+  paginationOptions?: SystemsLinesPaginationQuery$variables;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  onLabelClick: HandleAddFilter;
 }
 
 export const systemsLinesQuery = graphql`

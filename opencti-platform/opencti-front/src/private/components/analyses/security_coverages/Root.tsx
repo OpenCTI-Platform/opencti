@@ -70,8 +70,8 @@ const securityCoverageQuery = graphql`
 `;
 
 type RootSecurityCoverageProps = {
-  securityCoverageId: string
-  queryRef: PreloadedQuery<RootSecurityCoverageQuery>
+  securityCoverageId: string;
+  queryRef: PreloadedQuery<RootSecurityCoverageQuery>;
 };
 
 const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCoverageProps) => {
@@ -107,7 +107,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 <SecurityCoverageEdition securityCoverageId={securityCoverage.id} />
               </Security>
             )}
-            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <SecurityCoverageDeletion securityCoverageId={securityCoverage.id} isOpen={isOpen} handleClose={onClose} />
               </Security>

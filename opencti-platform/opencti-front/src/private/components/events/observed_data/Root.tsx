@@ -66,8 +66,8 @@ const observedDataQuery = graphql`
 `;
 
 type RootObservedDataProps = {
-  observedDataId: string
-  queryRef: PreloadedQuery<RootObservedDataQuery>
+  observedDataId: string;
+  queryRef: PreloadedQuery<RootObservedDataQuery>;
 };
 
 const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) => {
@@ -107,7 +107,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
               <ObservedDataEdition observedDataId={observedData.id} />
             </Security>
           )}
-          DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+          DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
             <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
               <ObservedDataDeletion id={observedData.id} isOpen={isOpen} handleClose={onClose} />
             </Security>

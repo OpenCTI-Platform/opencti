@@ -71,9 +71,9 @@ export const ThreatActorsIndividualCardsFragment = graphql`
 `;
 
 interface ThreatActorsIndividualCardsProps {
-  queryRef: PreloadedQuery<ThreatActorsIndividualCardsPaginationQuery>
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
-  onLabelClick: HandleAddFilter
+  queryRef: PreloadedQuery<ThreatActorsIndividualCardsPaginationQuery>;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  onLabelClick: HandleAddFilter;
 }
 
 const ThreatActorsIndividualCards: FunctionComponent<

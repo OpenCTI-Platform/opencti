@@ -45,7 +45,7 @@ const roleEditionQuery = graphql`
 `;
 
 interface RootRoleComponentProps {
-  queryRef: PreloadedQuery<RootRoleQuery>
+  queryRef: PreloadedQuery<RootRoleQuery>;
 }
 
 const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef }) => {

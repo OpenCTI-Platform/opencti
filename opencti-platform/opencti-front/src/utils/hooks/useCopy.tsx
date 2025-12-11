@@ -5,13 +5,13 @@ import { useFormatter } from '../../components/i18n';
 import { FilterGroup } from '../filters/filtersHelpers-types';
 
 interface UseCopyProps<T> {
-  filters?: FilterGroup
-  searchTerm: string
-  deselectedIds: string[]
-  selectedValues: string[]
-  query: GraphQLTaggedNode
-  elementId?: string
-  getValuesForCopy: (el: T) => { id: string, value: string }[]
+  filters?: FilterGroup;
+  searchTerm: string;
+  deselectedIds: string[];
+  selectedValues: string[];
+  query: GraphQLTaggedNode;
+  elementId?: string;
+  getValuesForCopy: (el: T) => { id: string; value: string }[];
 }
 
 const useCopy = <T extends OperationType['response']>(

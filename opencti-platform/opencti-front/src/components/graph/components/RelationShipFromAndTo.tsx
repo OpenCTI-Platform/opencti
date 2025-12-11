@@ -138,8 +138,8 @@ const relationShipFromAndToQuery = graphql`
 `;
 
 interface RelationShipFromAndToComponentProps {
-  queryRef: PreloadedQuery<RelationShipFromAndToQuery>
-  direction: string
+  queryRef: PreloadedQuery<RelationShipFromAndToQuery>;
+  direction: string;
 }
 const RelationShipFromAndToComponent: FunctionComponent<
   RelationShipFromAndToComponentProps
@@ -167,9 +167,9 @@ const RelationShipFromAndToComponent: FunctionComponent<
 };
 
 interface RelationShipFromAndToProps {
-  id: string
-  direction: string
-  queryRef: PreloadedQuery<RelationShipFromAndToQuery>
+  id: string;
+  direction: string;
+  queryRef: PreloadedQuery<RelationShipFromAndToQuery>;
 }
 
 const RelationShipFromAndTo: FunctionComponent<

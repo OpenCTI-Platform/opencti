@@ -30,10 +30,10 @@ const ToolbarSpacer = styled('div')(({ theme }) => ({
 }));
 
 export interface MenuEntry {
-  path: string
-  label: string
-  icon?: ReactElement
-  isEE?: boolean
+  path: string;
+  label: string;
+  icon?: ReactElement;
+  isEE?: boolean;
 }
 
 const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ children }) => {

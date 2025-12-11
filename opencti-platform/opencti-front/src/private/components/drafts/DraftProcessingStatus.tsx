@@ -13,7 +13,7 @@ import DraftWorks from './DraftWorks';
 import DraftTasks from './DraftTasks';
 
 interface DraftProcessingStatusProps {
-  forceRefetch: () => void
+  forceRefetch: () => void;
 }
 const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ forceRefetch }) => {
   const { t_i18n } = useFormatter();

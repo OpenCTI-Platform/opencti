@@ -14,10 +14,10 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 const nbOfRowsToLoad = 50;
 
 interface IngestionJsonLinesProps {
-  queryRef: PreloadedQuery<IngestionJsonLinesPaginationQuery>
-  dataColumns: DataColumns
-  paginationOptions?: IngestionJsonLinesPaginationQuery$variables
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  queryRef: PreloadedQuery<IngestionJsonLinesPaginationQuery>;
+  dataColumns: DataColumns;
+  paginationOptions?: IngestionJsonLinesPaginationQuery$variables;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 export const ingestionJsonLinesQuery = graphql`

@@ -6,7 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useGranted, { CSVMAPPERS } from '../../../../utils/hooks/useGranted';
 
 interface ManageImportConnectorMessageProps {
-  name: string | undefined
+  name: string | undefined;
 }
 const WarningText = styled('span')(({ theme }) => ({
   color: theme.palette.error.main,

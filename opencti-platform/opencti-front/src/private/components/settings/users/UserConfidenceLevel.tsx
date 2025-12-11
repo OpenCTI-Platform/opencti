@@ -9,7 +9,7 @@ import UserConfidenceOverrides from '@components/settings/users/UserConfidenceOv
 import { useFormatter } from '../../../../components/i18n';
 
 type UserConfidenceLevelProps = {
-  user: Pick<User_user$data, 'effective_confidence_level'>
+  user: Pick<User_user$data, 'effective_confidence_level'>;
 };
 
 const MaxConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {

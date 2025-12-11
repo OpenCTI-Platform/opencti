@@ -67,28 +67,28 @@ const DEFAULT_ENTITY_TYPES = [
 
 // Type definitions for GraphQL responses
 interface StixCoreObjectNode {
-  id: string
-  name?: string
-  entity_type: string
-  created_at: string
-  representative?: { main: string }
-  createdBy?: { id: string, name: string }
-  objectLabel?: { id: string, value: string, color: string }[]
-  objectMarking?: { id: string, definition_type: string, definition: string, x_opencti_order: number, x_opencti_color: string }[]
+  id: string;
+  name?: string;
+  entity_type: string;
+  created_at: string;
+  representative?: { main: string };
+  createdBy?: { id: string; name: string };
+  objectLabel?: { id: string; value: string; color: string }[];
+  objectMarking?: { id: string; definition_type: string; definition: string; x_opencti_order: number; x_opencti_color: string }[];
 }
 
 interface EntitiesQueryProps {
   stixCoreObjects?: {
-    edges: Array<{ node: StixCoreObjectNode }>
-  }
+    edges: Array<{ node: StixCoreObjectNode }>;
+  };
 }
 
 interface ConnectorsQueryProps {
   connectors?: Array<{
-    active: boolean
-    connector_type?: string
-    connector_scope?: string[]
-  }>
+    active: boolean;
+    connector_type?: string;
+    connector_scope?: string[];
+  }>;
 }
 
 const securityCoverageMutation = graphql`
@@ -217,31 +217,31 @@ const securityCoverageValidation = (t: (value: string) => string, isAutomated: b
 };
 
 export interface SecurityCoverageFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onClose?: () => void
-  inputValue?: string
-  defaultCreatedBy?: FieldOption
-  defaultMarkingDefinitions?: FieldOption[]
-  defaultConfidence?: number
-  hasEnrichmentConnectors?: boolean
-  preSelectedEntityId?: string
-  preSelectedEntityName?: string
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onClose?: () => void;
+  inputValue?: string;
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
+  defaultConfidence?: number;
+  hasEnrichmentConnectors?: boolean;
+  preSelectedEntityId?: string;
+  preSelectedEntityName?: string;
 }
 
 interface SecurityCoverageFormValues {
-  name: string
-  description: string
-  external_uri: string
-  auto_enrichment_disable: boolean
-  confidence: number | undefined
-  createdBy?: FieldOption
-  objectMarking: { value: string }[]
-  objectLabel: { value: string, label: string }[]
-  coverage_information: { coverage_name: string, coverage_score: number | string }[]
-  periodicity?: string
-  duration?: string
-  type_affinity: 'ENDPOINT' | 'CLOUD' | 'WEB' | 'TABLE-TOP'
-  platforms_affinity: string[]
+  name: string;
+  description: string;
+  external_uri: string;
+  auto_enrichment_disable: boolean;
+  confidence: number | undefined;
+  createdBy?: FieldOption;
+  objectMarking: { value: string }[];
+  objectLabel: { value: string; label: string }[];
+  coverage_information: { coverage_name: string; coverage_score: number | string }[];
+  periodicity?: string;
+  duration?: string;
+  type_affinity: 'ENDPOINT' | 'CLOUD' | 'WEB' | 'TABLE-TOP';
+  platforms_affinity: string[];
 }
 
 // Query for fetching a single entity when preselected
@@ -282,7 +282,7 @@ const securityCoveragePreselectedEntityQuery = graphql`
 `;
 
 interface SecurityCoverageFormInnerProps extends SecurityCoverageFormProps {
-  preSelectedEntity: StixCoreObjectNode | null
+  preSelectedEntity: StixCoreObjectNode | null;
 }
 
 const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormInnerProps> = ({
@@ -855,7 +855,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 };
 
 interface SecurityCoverageCreationProps {
-  paginationOptions: SecurityCoveragesLinesPaginationQuery$variables
+  paginationOptions: SecurityCoveragesLinesPaginationQuery$variables;
 }
 
 // Wrapper component to handle preselected entity fetching
@@ -881,7 +881,7 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
   return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={null} />;
 };
 
-const SecurityCoverageCreationWrapper: FunctionComponent<{ updater: (store: RecordSourceSelectorProxy, key: string) => void, onClose?: () => void }> = ({ updater, onClose }) => {
+const SecurityCoverageCreationWrapper: FunctionComponent<{ updater: (store: RecordSourceSelectorProxy, key: string) => void; onClose?: () => void }> = ({ updater, onClose }) => {
   return (
     <QueryRenderer
       query={securityCoverageConnectorsQuery}

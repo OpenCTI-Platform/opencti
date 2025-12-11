@@ -43,9 +43,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface SystemLineProps {
-  node: SystemLine_node$key
-  dataColumns: DataColumns
-  onLabelClick: HandleAddFilter
+  node: SystemLine_node$key;
+  dataColumns: DataColumns;
+  onLabelClick: HandleAddFilter;
 }
 
 const systemLineFragment = graphql`
@@ -136,7 +136,7 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
 export const SystemLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

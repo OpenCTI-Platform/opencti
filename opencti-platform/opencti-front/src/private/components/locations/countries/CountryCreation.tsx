@@ -49,25 +49,25 @@ const countryMutation = graphql`
 `;
 
 interface CountryAddInput {
-  name: string
-  description: string
-  confidence: number | null
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: FieldOption[]
-  file: File | null
+  name: string;
+  description: string;
+  confidence: number | null;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
+  file: File | null;
 }
 
 interface CountryFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  inputValue?: string
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 const COUNTRY_TYPE = 'Country';
@@ -293,7 +293,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
 const CountryCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: CountriesLinesPaginationQuery$variables
+  paginationOptions: CountriesLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

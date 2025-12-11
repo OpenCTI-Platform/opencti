@@ -21,8 +21,8 @@ const importFilesFormViewQuery = graphql`
 `;
 
 interface ImportFilesFormViewContentProps {
-  queryRef: PreloadedQuery<ImportFilesFormViewQuery>
-  onSuccess?: () => void
+  queryRef: PreloadedQuery<ImportFilesFormViewQuery>;
+  onSuccess?: () => void;
 }
 
 const ImportFilesFormViewContent: React.FC<ImportFilesFormViewContentProps> = ({ queryRef, onSuccess }) => {
@@ -67,7 +67,7 @@ const ImportFilesFormViewContent: React.FC<ImportFilesFormViewContentProps> = ({
 };
 
 interface ImportFilesFormViewProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 const ImportFilesFormView: React.FC<ImportFilesFormViewProps> = ({ onSuccess }) => {

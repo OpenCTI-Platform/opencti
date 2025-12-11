@@ -79,8 +79,8 @@ const toolQuery = graphql`
 `;
 
 type RootToolProps = {
-  toolId: string
-  queryRef: PreloadedQuery<RootToolQuery>
+  toolId: string;
+  queryRef: PreloadedQuery<RootToolQuery>;
 };
 
 const RootTool = ({ queryRef, toolId }: RootToolProps) => {
@@ -153,7 +153,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ToolDeletion id={tool.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

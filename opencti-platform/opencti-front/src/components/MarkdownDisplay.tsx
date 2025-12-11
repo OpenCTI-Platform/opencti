@@ -46,17 +46,17 @@ export const MarkDownComponents = (
 });
 
 interface MarkdownWithRedirectionWarningProps {
-  content: string | null
-  expand?: boolean
-  limit?: number
-  remarkGfmPlugin?: boolean
-  markdownComponents?: boolean
-  commonmark?: boolean
-  removeLinks?: boolean
-  removeLineBreaks?: boolean
-  remarkPlugins?: MarkdownProps['remarkPlugins']
-  emptyStringIfUndefined?: boolean
-  disableWarningAtLinkClick?: boolean
+  content: string | null;
+  expand?: boolean;
+  limit?: number;
+  remarkGfmPlugin?: boolean;
+  markdownComponents?: boolean;
+  commonmark?: boolean;
+  removeLinks?: boolean;
+  removeLineBreaks?: boolean;
+  remarkPlugins?: MarkdownProps['remarkPlugins'];
+  emptyStringIfUndefined?: boolean;
+  disableWarningAtLinkClick?: boolean;
 }
 
 const MarkdownDisplay: FunctionComponent<

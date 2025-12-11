@@ -57,7 +57,7 @@ const decayRuleFragment = graphql`
 `;
 
 interface DecayRuleComponentProps {
-  queryRef: PreloadedQuery<DecayRuleQuery>
+  queryRef: PreloadedQuery<DecayRuleQuery>;
 }
 
 const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {

@@ -52,29 +52,29 @@ const positionMutation = graphql`
 const POSITION_TYPE = 'Position';
 
 interface PositionAddInput {
-  name: string
-  description: string
-  confidence: number | null
-  latitude: string
-  longitude: string
-  street_address: string
-  postal_code: string
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | null
+  name: string;
+  description: string;
+  confidence: number | null;
+  latitude: string;
+  longitude: string;
+  street_address: string;
+  postal_code: string;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | null;
 }
 
 interface PositionFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  inputValue?: string
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
@@ -380,7 +380,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
 const PositionCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: PositionsLinesPaginationQuery$variables
+  paginationOptions: PositionsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

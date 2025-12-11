@@ -119,18 +119,18 @@ export const administrativeAreaEditionOverviewFragment = graphql`
 const ADMINISTRATIVE_AREA_TYPE = 'Administrative-Area';
 
 interface AdministrativeAreaEditionOverviewProps {
-  administrativeAreaRef: AdministrativeAreaEditionOverview_administrativeArea$key
-  context?: readonly (GenericContext | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  administrativeAreaRef: AdministrativeAreaEditionOverview_administrativeArea$key;
+  context?: readonly (GenericContext | null)[] | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface AdministrativeAreaEditionFormValues {
-  message?: string
-  references?: FieldOption[]
-  createdBy: FieldOption | undefined
-  x_opencti_workflow_id: FieldOption
-  objectMarking?: FieldOption[]
+  message?: string;
+  references?: FieldOption[];
+  createdBy: FieldOption | undefined;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
 }
 
 // eslint-disable-next-line max-len

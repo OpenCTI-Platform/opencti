@@ -9,9 +9,9 @@ export enum DialogConnectivityLostStatus {
 }
 
 interface Props {
-  status: DialogConnectivityLostStatus
-  onCancel: () => void
-  onConfirm: () => void
+  status: DialogConnectivityLostStatus;
+  onCancel: () => void;
+  onConfirm: () => void;
 }
 
 const XtmHubDialogConnectivityLost: React.FC<Props> = ({ status, onCancel, onConfirm }) => {

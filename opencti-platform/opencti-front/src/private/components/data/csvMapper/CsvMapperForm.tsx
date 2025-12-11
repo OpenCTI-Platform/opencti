@@ -54,12 +54,12 @@ const csvMapperValidation = (t_i18n: (s: string) => string) => Yup.object().shap
 });
 
 interface CsvMapperFormProps {
-  csvMapper: CsvMapperFormData
+  csvMapper: CsvMapperFormData;
   onSubmit: (
     values: CsvMapperFormData,
     formikHelpers: FormikHelpers<CsvMapperFormData>,
-  ) => void
-  isDuplicated?: boolean
+  ) => void;
+  isDuplicated?: boolean;
 }
 
 const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSubmit, isDuplicated }) => {

@@ -66,15 +66,15 @@ export const NotifiersLinesQuery = graphql`
 `;
 
 interface NotifiersLinesProps {
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
-  dataColumns: DataColumns
-  paginationOptions: NotifiersLinesPaginationQuery$variables
-  queryRef: PreloadedQuery<NotifiersLinesPaginationQuery>
-  selectedElements: Record<string, NotifierLine_node$data>
-  deSelectedElements: Record<string, NotifierLine_node$data>
-  onToggleEntity: (entity: NotifierLine_node$data, event: React.SyntheticEvent) => void
-  selectAll: boolean
-  onLabelClick?: HandleAddFilter
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  dataColumns: DataColumns;
+  paginationOptions: NotifiersLinesPaginationQuery$variables;
+  queryRef: PreloadedQuery<NotifiersLinesPaginationQuery>;
+  selectedElements: Record<string, NotifierLine_node$data>;
+  deSelectedElements: Record<string, NotifierLine_node$data>;
+  onToggleEntity: (entity: NotifierLine_node$data, event: React.SyntheticEvent) => void;
+  selectAll: boolean;
+  onLabelClick?: HandleAddFilter;
 }
 
 const NotifiersLines: FunctionComponent<NotifiersLinesProps> = ({

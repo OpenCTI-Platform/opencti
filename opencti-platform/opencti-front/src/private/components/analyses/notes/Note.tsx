@@ -61,8 +61,8 @@ const NoteComponentFragment = graphql`
 `;
 
 interface NoteComponentProps {
-  noteFragment: Note_note$key
-  enableReferences: boolean
+  noteFragment: Note_note$key;
+  enableReferences: boolean;
 }
 
 const NoteComponent: FunctionComponent<NoteComponentProps> = ({

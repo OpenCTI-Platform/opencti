@@ -16,8 +16,8 @@ import { DraftContext } from '../../../../../utils/hooks/useDraftContext';
 import useAuth from '../../../../../utils/hooks/useAuth';
 
 interface ImportFilesOptionsProps {
-  optionsFormikContext: FormikContextType<OptionsFormValues>
-  draftContext?: DraftContext | null
+  optionsFormikContext: FormikContextType<OptionsFormValues>;
+  draftContext?: DraftContext | null;
 }
 
 const ImportFilesOptions = ({

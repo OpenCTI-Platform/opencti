@@ -17,10 +17,10 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 const nbOfRowsToLoad = 50;
 
 interface SupportPackageLinesProps {
-  dataColumns: DataColumns
-  queryRef: PreloadedQuery<SupportPackageLinesPaginationQuery>
-  paginationOptions: SupportPackageLinesPaginationQuery$variables
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  dataColumns: DataColumns;
+  queryRef: PreloadedQuery<SupportPackageLinesPaginationQuery>;
+  paginationOptions: SupportPackageLinesPaginationQuery$variables;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 export const supportPackageLinesQuery = graphql`

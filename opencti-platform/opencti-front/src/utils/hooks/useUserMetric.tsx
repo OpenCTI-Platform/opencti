@@ -15,8 +15,8 @@ export const BASE_WEIGHT_TYPE: Mass = 'kg';
 type SupportedUnitType = 'Imperial' | 'Metric';
 
 type UnitType = {
-  length: Length
-  weight: Mass
+  length: Length;
+  weight: Mass;
 };
 
 export const Units: { [k in SupportedUnitType]: UnitType } = {

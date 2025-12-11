@@ -26,8 +26,8 @@ const workflowStatusDeletionMutation = graphql`
 `;
 
 interface SubTypeStatusPopoverProps {
-  subTypeId: string
-  statusId: string
+  subTypeId: string;
+  statusId: string;
 }
 
 const SubTypeWorkflowStatusPopover: FunctionComponent<

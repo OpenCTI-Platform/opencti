@@ -10,10 +10,10 @@ import type { WidgetColumn } from '../../../utils/widget/widget';
 import { Accordion, AccordionSummary } from '../../../components/Accordion';
 
 type WidgetConfigColumnsCustomizationProps = {
-  availableColumns: WidgetColumn[]
-  defaultColumns: WidgetColumn[]
-  value?: WidgetColumn[]
-  onChange: (columns: WidgetColumn[]) => void
+  availableColumns: WidgetColumn[];
+  defaultColumns: WidgetColumn[];
+  value?: WidgetColumn[];
+  onChange: (columns: WidgetColumn[]) => void;
 };
 
 const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCustomizationProps> = ({

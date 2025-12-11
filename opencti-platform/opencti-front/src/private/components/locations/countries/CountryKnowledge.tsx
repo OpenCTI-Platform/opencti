@@ -25,7 +25,7 @@ const countryKnowledgeFragment = graphql`
 const CountryKnowledgeComponent = ({
   countryData,
 }: {
-  countryData: CountryKnowledge_country$key
+  countryData: CountryKnowledge_country$key;
 }) => {
   const country = useFragment<CountryKnowledge_country$key>(
     countryKnowledgeFragment,

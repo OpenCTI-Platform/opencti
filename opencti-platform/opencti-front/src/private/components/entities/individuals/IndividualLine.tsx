@@ -43,9 +43,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface IndividualLineProps {
-  node: IndividualLine_node$key
-  dataColumns: DataColumns
-  onLabelClick: HandleAddFilter
+  node: IndividualLine_node$key;
+  dataColumns: DataColumns;
+  onLabelClick: HandleAddFilter;
 }
 
 const individualLineFragment = graphql`
@@ -136,7 +136,7 @@ export const IndividualLine: FunctionComponent<IndividualLineProps> = ({
 export const IndividualLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

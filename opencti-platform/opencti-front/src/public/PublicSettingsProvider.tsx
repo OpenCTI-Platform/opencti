@@ -3,14 +3,14 @@ import React, { ReactNode, createContext, useContext } from 'react';
 import { PublicSettingsProvider_settings$data } from './__generated__/PublicSettingsProvider_settings.graphql';
 
 interface PublicSettingsContextType {
-  settings?: PublicSettingsProvider_settings$data
+  settings?: PublicSettingsProvider_settings$data;
 }
 
 const PublicSettingsContext = createContext<PublicSettingsContextType>({});
 
 interface PublicSettingsProviderProps {
-  children: ReactNode
-  settings: PublicSettingsProvider_settings$data
+  children: ReactNode;
+  settings: PublicSettingsProvider_settings$data;
 }
 
 const PublicSettingsProvider = createFragmentContainer(

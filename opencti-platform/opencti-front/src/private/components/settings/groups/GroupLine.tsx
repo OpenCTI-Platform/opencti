@@ -44,8 +44,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface GroupLineProps {
-  dataColumns: DataColumns
-  node: GroupLine_node$data
+  dataColumns: DataColumns;
+  node: GroupLine_node$data;
 }
 
 const GroupLineComponent: React.FC<GroupLineProps> = (props) => {

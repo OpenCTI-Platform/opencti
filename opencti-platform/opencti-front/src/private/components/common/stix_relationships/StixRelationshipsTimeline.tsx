@@ -971,12 +971,12 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
 `;
 
 interface StixRelationshipsTimelineProps {
-  variant: string
-  height?: number
-  startDate: string | null
-  endDate: string | null
-  dataSelection: WidgetDataSelection[]
-  parameters?: WidgetParameters
+  variant: string;
+  height?: number;
+  startDate: string | null;
+  endDate: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
 }
 
 const StixRelationshipsTimeline = ({

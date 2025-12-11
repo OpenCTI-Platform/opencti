@@ -14,13 +14,13 @@ import { Dashboard_workspace$data } from './__generated__/Dashboard_workspace.gr
 import { buildDate } from '../../../../utils/Time';
 
 interface DashboardTimeFiltersProps {
-  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data
+  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
   config?: {
-    startDate: string | null
-    endDate: string | null
-    relativeDate: string | null
-  }
-  handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void
+    startDate: string | null;
+    endDate: string | null;
+    relativeDate: string | null;
+  };
+  handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void;
 }
 
 const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({

@@ -8,9 +8,9 @@ import ImportFilesDialog from '../common/files/import_files/ImportFilesDialog';
 import { useFormatter } from '../../../components/i18n';
 
 interface DataTableWithoutFragmentToolBarProps {
-  taskScope: string
-  selectedValues: string[]
-  handleClearSelectedElements: () => void
+  taskScope: string;
+  selectedValues: string[];
+  handleClearSelectedElements: () => void;
 }
 
 const DataTableWithoutFragmentToolBar = ({

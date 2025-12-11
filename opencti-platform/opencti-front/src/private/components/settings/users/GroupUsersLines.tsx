@@ -65,9 +65,9 @@ const groupUsersLinesFragment = graphql`
 `;
 
 interface GroupUsersLinesProps {
-  dataColumns: DataColumns
-  queryRef: PreloadedQuery<GroupUsersLinesQuery>
-  paginationOptions: GroupUsersLinesQuery$variables
+  dataColumns: DataColumns;
+  queryRef: PreloadedQuery<GroupUsersLinesQuery>;
+  paginationOptions: GroupUsersLinesQuery$variables;
 }
 
 const nbOfRowsToLoad = 50;

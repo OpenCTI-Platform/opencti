@@ -35,13 +35,13 @@ const workspaceMutation = graphql`
 `;
 
 type WorkspaceHeaderTagManagerProps = {
-  tags: readonly string[]
-  workspaceId: string
-  canEdit: boolean
+  tags: readonly string[];
+  workspaceId: string;
+  canEdit: boolean;
 };
 
 export type WorkspaceHeaderTagCreatorFormValues = {
-  newTag: string
+  newTag: string;
 };
 const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHeaderTagManagerProps) => {
   const { t_i18n } = useFormatter();

@@ -31,10 +31,10 @@ const RoleEditionFragment = graphql`
 `;
 
 interface RoleEditionDrawerProps {
-  roleRef: RootRoleEditionQuery$data['role']
-  handleClose?: () => void
-  open?: boolean
-  disabled?: boolean
+  roleRef: RootRoleEditionQuery$data['role'];
+  handleClose?: () => void;
+  open?: boolean;
+  disabled?: boolean;
 }
 
 const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
@@ -104,10 +104,10 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
 };
 
 interface RoleEditionProps {
-  roleEditionData?: RootRoleEditionQuery$data
-  handleClose?: () => void
-  open?: boolean
-  disabled?: boolean
+  roleEditionData?: RootRoleEditionQuery$data;
+  handleClose?: () => void;
+  open?: boolean;
+  disabled?: boolean;
 }
 
 const RoleEdition: FunctionComponent<RoleEditionProps> = ({

@@ -64,18 +64,18 @@ const externalReferenceValidation = (t: (value: string) => string) => Yup.object
 });
 
 interface ExternalReferenceCreationProps {
-  paginationOptions?: ExternalReferencesLinesPaginationQuery$variables
-  display?: boolean
-  contextual?: boolean
-  inputValue?: string
+  paginationOptions?: ExternalReferencesLinesPaginationQuery$variables;
+  display?: boolean;
+  contextual?: boolean;
+  inputValue?: string;
   onCreate?: (
     externalReference: ExternalReferenceAddInput | null | undefined,
     onlyCreate: boolean,
-  ) => void
-  openContextual: boolean
-  handleCloseContextual?: () => void
-  creationCallback?: (data: ExternalReferenceCreationMutation$data) => void
-  dryrun?: boolean
+  ) => void;
+  openContextual: boolean;
+  handleCloseContextual?: () => void;
+  creationCallback?: (data: ExternalReferenceCreationMutation$data) => void;
+  dryrun?: boolean;
 }
 
 const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProps> = ({

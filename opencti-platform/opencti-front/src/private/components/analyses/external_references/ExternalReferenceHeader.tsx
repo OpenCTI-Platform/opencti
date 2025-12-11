@@ -21,8 +21,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ExternalReferenceHeaderComponentProps {
-  externalReference: ExternalReferenceHeader_externalReference$data
-  EditComponent?: React.JSX.Element | boolean
+  externalReference: ExternalReferenceHeader_externalReference$data;
+  EditComponent?: React.JSX.Element | boolean;
 }
 
 const ExternalReferenceHeaderComponent = ({

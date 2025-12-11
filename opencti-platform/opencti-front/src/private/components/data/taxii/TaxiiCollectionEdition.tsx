@@ -35,10 +35,10 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface TaxiiCollectionCreationForm {
-  restricted_members: FieldOption[] | null
-  taxii_public?: boolean | null
-  name: string | null
-  description: string | null
+  restricted_members: FieldOption[] | null;
+  taxii_public?: boolean | null;
+  name: string | null;
+  description: string | null;
 }
 
 const taxiiCollectionMutationFieldPatch = graphql`

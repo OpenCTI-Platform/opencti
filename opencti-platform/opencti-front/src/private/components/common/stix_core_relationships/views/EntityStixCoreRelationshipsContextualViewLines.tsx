@@ -77,14 +77,14 @@ export const contextualViewLinesQuery = graphql`
 `;
 
 interface EntityStixCoreRelationshipsContextualViewLinesProps {
-  queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewLinesQuery>
-  dataColumns: DataColumns
-  paginationOptions: Partial<EntityStixCoreRelationshipsContextualViewLinesQuery$variables>
-  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['onToggleEntity']
-  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectedElements']
-  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['deSelectedElements']
-  selectAll: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectAll']
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewLinesQuery>;
+  dataColumns: DataColumns;
+  paginationOptions: Partial<EntityStixCoreRelationshipsContextualViewLinesQuery$variables>;
+  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['onToggleEntity'];
+  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectedElements'];
+  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['deSelectedElements'];
+  selectAll: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectAll'];
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent<EntityStixCoreRelationshipsContextualViewLinesProps> = ({

@@ -65,7 +65,7 @@ const sidebarFragment = graphql`
 `;
 
 interface FintelTemplateWidetsSidebarProps {
-  data: FintelTemplateWidgetsSidebar_template$key
+  data: FintelTemplateWidgetsSidebar_template$key;
 }
 
 const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSidebarProps> = ({ data }) => {

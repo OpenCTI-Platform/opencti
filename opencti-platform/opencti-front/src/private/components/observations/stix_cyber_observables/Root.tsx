@@ -74,8 +74,8 @@ const stixCyberObservableQuery = graphql`
 `;
 
 type RootStixCyberObservableProps = {
-  observableId: string
-  queryRef: PreloadedQuery<RootStixCyberObservableQuery>
+  observableId: string;
+  queryRef: PreloadedQuery<RootStixCyberObservableQuery>;
 };
 
 const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObservableProps) => {
@@ -111,7 +111,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
           />
           <StixCyberObservableHeader
             stixCyberObservable={stixCyberObservable}
-            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <StixCyberObservableDeletion id={stixCyberObservable.id} isOpen={isOpen} handleClose={onClose} />
               </Security>

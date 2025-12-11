@@ -44,21 +44,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface ThreatActorIndividualLineProps {
-  node: ThreatActorIndividualLine_node$key
-  dataColumns: DataColumns
-  selectedElements: Record<string, ThreatActorIndividualLine_node$data>
-  deSelectedElements: Record<string, ThreatActorIndividualLine_node$data>
+  node: ThreatActorIndividualLine_node$key;
+  dataColumns: DataColumns;
+  selectedElements: Record<string, ThreatActorIndividualLine_node$data>;
+  deSelectedElements: Record<string, ThreatActorIndividualLine_node$data>;
   onToggleEntity: (
     entity: ThreatActorIndividualLine_node$data,
     event: React.SyntheticEvent,
-  ) => void
-  selectAll: boolean
+  ) => void;
+  selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: ThreatActorIndividualLine_node$data,
     event: React.SyntheticEvent,
-  ) => void
-  index: number
+  ) => void;
+  index: number;
 }
 
 const threatActorIndividualFragment = graphql`
@@ -152,7 +152,7 @@ export const ThreatActorIndividualLine: FunctionComponent<
 export const ThreatActorIndividualLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

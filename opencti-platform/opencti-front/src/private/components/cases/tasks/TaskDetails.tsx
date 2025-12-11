@@ -63,7 +63,7 @@ const TaskDetailsFragment = graphql`
 `;
 
 interface TasksDetailsProps {
-  tasksData: TaskDetails_task$key
+  tasksData: TaskDetails_task$key;
 }
 
 const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {

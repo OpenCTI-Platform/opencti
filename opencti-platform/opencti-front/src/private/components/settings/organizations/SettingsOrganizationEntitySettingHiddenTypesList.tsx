@@ -21,8 +21,8 @@ const settingsOrganizationEntitySettingHiddenTypesListQuery = graphql`
 `;
 
 const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionComponent<{
-  targetType: string
-  queryRef: PreloadedQuery<SettingsOrganizationEntitySettingHiddenTypesListQuery>
+  targetType: string;
+  queryRef: PreloadedQuery<SettingsOrganizationEntitySettingHiddenTypesListQuery>;
 }> = ({
   targetType,
   queryRef,

@@ -17,16 +17,16 @@ import { EntityStixCoreRelationshipsEntitiesViewLines_data$key } from './__gener
 const nbOfRowsToLoad = 50;
 
 interface EntityStixCoreRelationshipsEntitiesProps {
-  queryRef: PreloadedQuery<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery>
-  dataColumns: DataColumns
-  paginationOptions: Partial<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables>
-  isRelationReversed: boolean
-  onLabelClick: HandleAddFilter
-  onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity']
-  selectedElements: UseEntityToggle<{ id: string }>['selectedElements']
-  deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements']
-  selectAll: UseEntityToggle<{ id: string }>['selectAll']
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  queryRef: PreloadedQuery<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery>;
+  dataColumns: DataColumns;
+  paginationOptions: Partial<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables>;
+  isRelationReversed: boolean;
+  onLabelClick: HandleAddFilter;
+  onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity'];
+  selectedElements: UseEntityToggle<{ id: string }>['selectedElements'];
+  deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements'];
+  selectAll: UseEntityToggle<{ id: string }>['selectAll'];
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 const entityStixCoreRelationshipsEntitiesFragment = graphql`

@@ -34,8 +34,8 @@ const entitySettingAttributesFragment = graphql`
 `;
 
 interface EntitySettingAttributesProps {
-  entitySettingsData: EntitySettingAttributes_entitySetting$key
-  searchTerm?: string
+  entitySettingsData: EntitySettingAttributes_entitySetting$key;
+  searchTerm?: string;
 }
 
 const EntitySettingAttributes = ({
@@ -52,8 +52,8 @@ const EntitySettingAttributes = ({
   }
 
   const attributesMandatory = entitySetting.attributesDefinitions
-    .filter((attr: { mandatory: boolean, name: string }) => attr.mandatory)
-    .map((attr: { mandatory: boolean, name: string }) => attr.name);
+    .filter((attr: { mandatory: boolean; name: string }) => attr.mandatory)
+    .map((attr: { mandatory: boolean; name: string }) => attr.name);
 
   const dataColumns = {
     name: {

@@ -18,7 +18,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 
 interface SecurityCoverageSecurityPlatformsProps {
-  securityCoverage: SecurityCoverageSecurityPlatforms_securityCoverage$data
+  securityCoverage: SecurityCoverageSecurityPlatforms_securityCoverage$data;
 }
 
 const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCoverageSecurityPlatformsProps> = ({

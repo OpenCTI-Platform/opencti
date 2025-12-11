@@ -49,25 +49,25 @@ const regionMutation = graphql`
 `;
 
 interface RegionAddInput {
-  name: string
-  description: string
-  confidence: number | null
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: FieldOption[]
-  file: File | null
+  name: string;
+  description: string;
+  confidence: number | null;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
+  file: File | null;
 }
 
 interface RegionFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: FieldOption
-  defaultMarkingDefinitions?: FieldOption[]
-  inputValue?: string
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
+  inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 const REGION_TYPE = 'Region';
@@ -293,7 +293,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
 const RegionCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: RegionsLinesPaginationQuery$variables
+  paginationOptions: RegionsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

@@ -43,9 +43,9 @@ const ingestionTaxiiEditionQuery = graphql`
 `;
 
 interface IngestionTaxiiPopoverProps {
-  ingestionTaxiiId: string
-  running?: boolean | null
-  paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables | null | undefined
+  ingestionTaxiiId: string;
+  running?: boolean | null;
+  paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables | null | undefined;
 }
 
 const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({

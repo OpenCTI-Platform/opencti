@@ -16,8 +16,8 @@ declare module 'use-analytics' {
   export const AnalyticsContext: Context<AnalyticsInstance>;
 
   export function AnalyticsProvider(props: {
-    instance: AnalyticsInstance
-    children: ReactNode
+    instance: AnalyticsInstance;
+    children: ReactNode;
   }): JSX.Element;
 }
 

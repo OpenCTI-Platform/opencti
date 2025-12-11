@@ -54,30 +54,30 @@ const infrastructureMutation = graphql`
 const INFRASTRUCTURE_TYPE = 'Infrastructure';
 
 interface InfrastructureAddInput {
-  name: string
-  infrastructure_types: string[]
-  confidence: number | null
-  description: string
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  first_seen: Date | null
-  last_seen: Date | null
-  killChainPhases: FieldOption[]
-  file: File | null
+  name: string;
+  infrastructure_types: string[];
+  confidence: number | null;
+  description: string;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  first_seen: Date | null;
+  last_seen: Date | null;
+  killChainPhases: FieldOption[];
+  file: File | null;
 }
 
 interface InfrastructureFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  defaultConfidence?: number
-  inputValue?: string
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultConfidence?: number;
+  inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormProps> = ({
@@ -360,7 +360,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
 };
 
 const InfrastructureCreation = ({ paginationOptions }: {
-  paginationOptions: InfrastructuresLinesPaginationQuery$variables
+  paginationOptions: InfrastructuresLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

@@ -19,24 +19,24 @@ export const TELEMETRY_MANAGER = 'TELEMETRY_MANAGER';
 export const GARBAGE_COLLECTION_MANAGER = 'GARBAGE_COLLECTION_MANAGER';
 
 export interface ModuleHelper {
-  isModuleEnable: (id: string) => boolean
-  isModuleWarning: (id: string) => boolean
-  isFeatureEnable: (id: string) => boolean
-  isRuntimeFieldEnable: () => boolean
-  isRuleEngineEnable: () => boolean
-  isPlayBookManagerEnable: () => boolean
-  isTasksManagerEnable: () => boolean
-  isSyncManagerEnable: () => boolean
-  isRetentionManagerEnable: () => boolean
-  isIngestionManagerEnable: () => boolean
-  isFileIndexManagerEnable: () => boolean
-  isIndicatorDecayManagerEnable: () => boolean
-  isTelemetryManagerEnable: () => boolean
-  isTrashEnable: () => boolean
-  isPlaygroundEnable: () => boolean
-  generateDisableMessage: (manager: string) => string
-  isRequestAccessEnabled: () => boolean
-  isChatbotAiEnabled: () => boolean
+  isModuleEnable: (id: string) => boolean;
+  isModuleWarning: (id: string) => boolean;
+  isFeatureEnable: (id: string) => boolean;
+  isRuntimeFieldEnable: () => boolean;
+  isRuleEngineEnable: () => boolean;
+  isPlayBookManagerEnable: () => boolean;
+  isTasksManagerEnable: () => boolean;
+  isSyncManagerEnable: () => boolean;
+  isRetentionManagerEnable: () => boolean;
+  isIngestionManagerEnable: () => boolean;
+  isFileIndexManagerEnable: () => boolean;
+  isIndicatorDecayManagerEnable: () => boolean;
+  isTelemetryManagerEnable: () => boolean;
+  isTrashEnable: () => boolean;
+  isPlaygroundEnable: () => boolean;
+  generateDisableMessage: (manager: string) => string;
+  isRequestAccessEnabled: () => boolean;
+  isChatbotAiEnabled: () => boolean;
 }
 
 export const isFeatureEnable = (

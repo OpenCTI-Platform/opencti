@@ -23,12 +23,12 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 
 interface StixDomainObjectAttackPatternsKillChainMatrixProps {
-  storageKey: string
-  entityId: string
-  currentView?: string
-  viewButtons: ReactElement[]
-  defaultStartTime?: string
-  defaultStopTime?: string
+  storageKey: string;
+  entityId: string;
+  currentView?: string;
+  viewButtons: ReactElement[];
+  defaultStartTime?: string;
+  defaultStopTime?: string;
 }
 
 const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (

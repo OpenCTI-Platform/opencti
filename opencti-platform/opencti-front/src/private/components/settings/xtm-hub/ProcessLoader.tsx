@@ -3,8 +3,8 @@ import { Box, Button } from '@mui/material';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface ProcessLoaderProps {
-  onFocusTab: () => void
-  buttonText: string
+  onFocusTab: () => void;
+  buttonText: string;
 }
 
 const ProcessLoader: FunctionComponent<ProcessLoaderProps> = ({

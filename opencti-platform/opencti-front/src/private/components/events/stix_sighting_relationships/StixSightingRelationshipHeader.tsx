@@ -13,9 +13,9 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 interface StixSightingRelationshipHeaderProps {
-  headerName?: string
-  onOpenDelete: () => void
-  onOpenEdit: () => void
+  headerName?: string;
+  onOpenDelete: () => void;
+  onOpenEdit: () => void;
 }
 
 const StixSightingRelationshipHeader = ({

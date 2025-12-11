@@ -4,14 +4,14 @@ import { useFormatter } from '../../i18n';
 import { splitMultilines } from '../../../utils/String';
 
 interface BulkTextModalProps {
-  open: boolean
-  onClose: () => void
-  onValidate: (value: string) => void
-  formValue: string
-  title?: string
-  selectedKey?: string
-  availableKeys?: string[]
-  onSelectKey?: (key: string) => void
+  open: boolean;
+  onClose: () => void;
+  onValidate: (value: string) => void;
+  formValue: string;
+  title?: string;
+  selectedKey?: string;
+  availableKeys?: string[];
+  onSelectKey?: (key: string) => void;
 }
 
 const MAX_LINES = 50;

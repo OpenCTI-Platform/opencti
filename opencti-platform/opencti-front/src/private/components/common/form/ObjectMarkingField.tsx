@@ -89,32 +89,32 @@ const objectMarkingFieldAllowedMarkingQuery = graphql`
 `;
 
 interface ObjectMarkingFieldProps {
-  name: string
-  required?: boolean
-  style?: React.CSSProperties
+  name: string;
+  required?: boolean;
+  style?: React.CSSProperties;
   onChange?: (
     name: string,
     values: FieldOption[],
     operation?: string | undefined,
-  ) => void
-  isOptionEqualToValue?: (option: FieldOption, value: FieldOption) => boolean
-  helpertext?: unknown
-  disabled?: boolean
-  label?: string
-  allowedMarkingOwnerId?: string
-  setFieldValue?: (name: string, values: FieldOption[]) => void
-  limitToMaxSharing?: boolean
-  filterTargetIds?: string[]
+  ) => void;
+  isOptionEqualToValue?: (option: FieldOption, value: FieldOption) => boolean;
+  helpertext?: unknown;
+  disabled?: boolean;
+  label?: string;
+  allowedMarkingOwnerId?: string;
+  setFieldValue?: (name: string, values: FieldOption[]) => void;
+  limitToMaxSharing?: boolean;
+  filterTargetIds?: string[];
 }
 
 interface MarkingOption extends FieldOption {
-  definition_type: string
-  x_opencti_order: number
+  definition_type: string;
+  x_opencti_order: number;
 }
 
 interface OptionValues {
-  currentValues: MarkingOption[]
-  valueToReplace: MarkingOption
+  currentValues: MarkingOption[];
+  valueToReplace: MarkingOption;
 }
 
 const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
@@ -139,7 +139,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   >(undefined);
   const [operation, setOperation] = useState<string | undefined>(undefined);
   const [otherUserAllowedMarkingsData, setOtherUserAllowedMarkingsData] = useState(
-    [] as { definition: string | null | undefined, id: string, x_opencti_color: string | null | undefined }[] | undefined,
+    [] as { definition: string | null | undefined; id: string; x_opencti_color: string | null | undefined }[] | undefined,
   );
 
   const fetchCreatorAllowedMarking = async (creatorId: string) => {

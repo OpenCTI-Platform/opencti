@@ -18,12 +18,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface EntityStixCoreRelationshipsForStixCyberObservableProps {
-  entityId: string
-  entityLink: string
-  defaultStartTime: string
-  defaultStopTime: string
-  relationshipTypes: string[]
-  isRelationReversed: boolean
+  entityId: string;
+  entityLink: string;
+  defaultStartTime: string;
+  defaultStopTime: string;
+  relationshipTypes: string[];
+  isRelationReversed: boolean;
 }
 
 const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntityStixCoreRelationshipsForStixCyberObservableProps> = (props) => {

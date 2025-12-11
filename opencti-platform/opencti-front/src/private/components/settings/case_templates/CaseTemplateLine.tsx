@@ -54,8 +54,8 @@ export const CaseTemplateLineFragment = graphql`
 `;
 
 interface CaseTemplateLineProps {
-  node: CaseTemplateLine_node$key
-  dataColumns: DataColumns
+  node: CaseTemplateLine_node$key;
+  dataColumns: DataColumns;
 }
 
 const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({

@@ -21,16 +21,16 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface RelationFieldProps {
-  name: string
-  label: string
-  variant?: string
-  helperText?: string
-  onFocus: () => void
-  noOptionsText?: string
-  options: FieldOption[]
-  onChange: (name: string, value: FieldOption) => void
-  onInputChange: (v: string | null) => void
-  value: unknown
+  name: string;
+  label: string;
+  variant?: string;
+  helperText?: string;
+  onFocus: () => void;
+  noOptionsText?: string;
+  options: FieldOption[];
+  onChange: (name: string, value: FieldOption) => void;
+  onInputChange: (v: string | null) => void;
+  value: unknown;
 }
 
 const ReferenceField: FunctionComponent<RelationFieldProps> = ({

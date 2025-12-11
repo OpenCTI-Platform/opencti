@@ -126,7 +126,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                 />
               </Security>
             )}
-            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <InfrastructureDeletion id={infrastructure.id} isOpen={isOpen} handleClose={onClose} />
               </Security>

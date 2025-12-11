@@ -64,7 +64,7 @@ const Groups = () => {
     LOCAL_STORAGE_KEY,
   );
 
-  const [groupState, setGroupState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [groupState, setGroupState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     sortBy: params.sortBy ?? 'name',
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',

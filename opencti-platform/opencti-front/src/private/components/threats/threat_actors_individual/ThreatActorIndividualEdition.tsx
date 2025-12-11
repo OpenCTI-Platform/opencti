@@ -11,7 +11,7 @@ import EditEntityControlledDial from '../../../../components/EditEntityControlle
 const ThreatActorIndividualEdition = ({
   threatActorIndividualId,
 }: {
-  threatActorIndividualId: string
+  threatActorIndividualId: string;
 }) => {
   const [commit] = useApiMutation<ThreatActorIndividualEditionOverviewFocusMutation>(
     ThreatActorIndividualEditionOverviewFocus,

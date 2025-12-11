@@ -42,9 +42,9 @@ const csvMapperFragment = graphql`
 `;
 
 interface CsvMapperLineProps {
-  node: CsvMapperLine_csvMapper$key
-  dataColumns: DataColumns
-  paginationOptions: csvMappers_MappersQuery$variables
+  node: CsvMapperLine_csvMapper$key;
+  dataColumns: DataColumns;
+  paginationOptions: csvMappers_MappersQuery$variables;
 }
 
 const CsvMapperLine: FunctionComponent<CsvMapperLineProps> = ({

@@ -33,8 +33,8 @@ const statusTemplateEditionQuery = graphql`
 `;
 
 interface StatusTemplatePopoverProps {
-  data: StatusTemplatesLine_node$data
-  paginationOptions?: StatusTemplatesLinesPaginationQuery$variables
+  data: StatusTemplatesLine_node$data;
+  paginationOptions?: StatusTemplatesLinesPaginationQuery$variables;
 }
 
 const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
@@ -103,7 +103,7 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
           render={({
             props,
           }: {
-            props: StatusTemplatePopoverEditionQuery$data
+            props: StatusTemplatePopoverEditionQuery$data;
           }) => {
             if (props && props.statusTemplate) {
               return (

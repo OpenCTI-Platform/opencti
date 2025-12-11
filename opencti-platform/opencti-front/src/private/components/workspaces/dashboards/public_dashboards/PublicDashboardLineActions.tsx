@@ -16,8 +16,8 @@ import { deleteNode } from '../../../../../utils/store';
 import { copyPublicLinkUrl } from '../../../../../utils/dashboard';
 
 interface PublicDashboardLineActionsProps {
-  publicDashboard: PublicDashboards_PublicDashboard$data
-  paginationOptions: PublicDashboardsListQuery$variables
+  publicDashboard: PublicDashboards_PublicDashboard$data;
+  paginationOptions: PublicDashboardsListQuery$variables;
 }
 
 const publicDashboardLineActionsDeleteMutation = graphql`

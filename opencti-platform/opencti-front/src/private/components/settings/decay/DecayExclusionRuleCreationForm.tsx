@@ -27,16 +27,16 @@ const decayExclusionRuleCreationFormAddMutation = graphql`
 `;
 
 type DecayExclusionRuleCreationFormProps = {
-  updater: (store: RecordSourceSelectorProxy, rootField: string) => void
-  onReset: () => void
-  onCompleted: () => void
+  updater: (store: RecordSourceSelectorProxy, rootField: string) => void;
+  onReset: () => void;
+  onCompleted: () => void;
 };
 
 type DecayExclusionRuleCreationFormData = {
-  name: string
-  description: string
-  decay_exclusion_filters: string
-  active: boolean
+  name: string;
+  description: string;
+  decay_exclusion_filters: string;
+  active: boolean;
 };
 
 const decayExclusionRuleCreationValidator = (t: (value: string) => string) => {

@@ -21,7 +21,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface ExternalReferenceOverviewComponentProps {
-  externalReference: ExternalReferenceOverview_externalReference$data
+  externalReference: ExternalReferenceOverview_externalReference$data;
 }
 
 const ExternalReferenceOverviewComponent: FunctionComponent<

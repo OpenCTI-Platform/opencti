@@ -69,7 +69,7 @@ const auditsListComponentQuery = graphql`
 `;
 
 interface AuditsListComponentProps {
-  queryRef: PreloadedQuery<AuditsListComponentQuery>
+  queryRef: PreloadedQuery<AuditsListComponentQuery>;
 }
 
 const AuditsListComponent: FunctionComponent<AuditsListComponentProps> = ({
@@ -87,12 +87,12 @@ const AuditsListComponent: FunctionComponent<AuditsListComponentProps> = ({
 };
 
 interface AuditsListProps {
-  variant?: string
-  height?: number
-  startDate?: string | null
-  endDate?: string | null
-  dataSelection: WidgetDataSelection[]
-  parameters?: WidgetParameters
+  variant?: string;
+  height?: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
 }
 
 const AuditsList: FunctionComponent<AuditsListProps> = ({

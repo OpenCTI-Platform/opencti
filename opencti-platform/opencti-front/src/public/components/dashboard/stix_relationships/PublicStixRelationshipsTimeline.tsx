@@ -954,8 +954,8 @@ const publicStixRelationshipsTimelineQuery = graphql`
 `;
 
 interface PublicStixRelationshipsTimelineComponentProps {
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsTimelineQuery>
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsTimelineQuery>;
 }
 
 const PublicStixRelationshipsTimelineComponent = ({

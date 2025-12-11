@@ -191,7 +191,7 @@ export const draftRelationshipsLinesFragment = graphql`
 const LOCAL_STORAGE_KEY = 'draft_relationships';
 
 interface DraftRelationshipsProps {
-  isReadOnly: boolean
+  isReadOnly: boolean;
 }
 
 const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isReadOnly }) => {

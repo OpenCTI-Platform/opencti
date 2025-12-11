@@ -122,19 +122,19 @@ const entityCheckQuery = graphql`
 `;
 
 interface FormViewInnerProps {
-  queryRef: PreloadedQuery<FormViewQuery>
-  embedded?: boolean
-  onSuccess?: () => void
+  queryRef: PreloadedQuery<FormViewQuery>;
+  embedded?: boolean;
+  onSuccess?: () => void;
 }
 
 interface EntityCheckResult {
   stixCoreObject?: {
-    id: string
-  } | null
+    id: string;
+  } | null;
 }
 
 interface FormInitialValues {
-  [key: string]: string | boolean | string[] | Date | Record<string, unknown> | Record<string, unknown>[] | number | null
+  [key: string]: string | boolean | string[] | Date | Record<string, unknown> | Record<string, unknown>[] | number | null;
 }
 
 const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedded = false, onSuccess }) => {
@@ -414,7 +414,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           },
           isDraft,
         },
-        onCompleted: (response: { formSubmit?: { success?: boolean, message?: string, entityId?: string } }) => {
+        onCompleted: (response: { formSubmit?: { success?: boolean; message?: string; entityId?: string } }) => {
           if (response?.formSubmit?.success) {
             setSubmitted(true);
             setSubmitting(false);
@@ -936,9 +936,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 };
 
 interface FormViewProps {
-  formId?: string
-  embedded?: boolean
-  onSuccess?: () => void
+  formId?: string;
+  embedded?: boolean;
+  onSuccess?: () => void;
 }
 
 const FormView: FunctionComponent<FormViewProps> = ({ formId: propFormId, embedded = false, onSuccess }) => {

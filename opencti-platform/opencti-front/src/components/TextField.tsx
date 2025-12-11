@@ -8,14 +8,14 @@ import StixDomainObjectDetectDuplicate from '../private/components/common/stix_d
 import useAI from '../utils/hooks/useAI';
 
 export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
-  detectDuplicate?: string[]
-  askAi?: boolean
-  startAdornment?: ReactNode
-  onFocus?: (name: string) => void
-  onChange?: (name: string, value: string) => void
-  onSubmit?: (name: string, value: string) => void
-  onKeyDown?: (key: string) => void
-  onBeforePaste?: (value: string) => string
+  detectDuplicate?: string[];
+  askAi?: boolean;
+  startAdornment?: ReactNode;
+  onFocus?: (name: string) => void;
+  onChange?: (name: string, value: string) => void;
+  onSubmit?: (name: string, value: string) => void;
+  onKeyDown?: (key: string) => void;
+  onBeforePaste?: (value: string) => string;
 };
 
 const TextField = (props: TextFieldProps) => {

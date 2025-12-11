@@ -29,7 +29,7 @@ const publicStixCoreObjectsNumberQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsNumberComponentProps {
-  queryRef: PreloadedQuery<PublicStixCoreObjectsNumberQuery>
+  queryRef: PreloadedQuery<PublicStixCoreObjectsNumberQuery>;
 }
 
 const PublicStixCoreObjectsNumberComponent = ({

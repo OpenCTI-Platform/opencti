@@ -76,8 +76,8 @@ const positionQuery = graphql`
 `;
 
 type RootPositionProps = {
-  positionId: string
-  queryRef: PreloadedQuery<RootPositionQuery>
+  positionId: string;
+  queryRef: PreloadedQuery<RootPositionQuery>;
 };
 
 const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
@@ -154,7 +154,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <PositionDeletion positionId={position.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>

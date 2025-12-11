@@ -3,10 +3,10 @@ import React from 'react';
 import { useFormatter } from '../../i18n';
 
 interface BulkTextModalButtonProps {
-  onClick: ButtonProps['onClick']
-  disabled?: ButtonProps['disabled']
-  sx?: ButtonProps['sx']
-  title?: string
+  onClick: ButtonProps['onClick'];
+  disabled?: ButtonProps['disabled'];
+  sx?: ButtonProps['sx'];
+  title?: string;
 }
 
 const BulkTextModalButton = ({ onClick, title, disabled, sx = {} }: BulkTextModalButtonProps) => {

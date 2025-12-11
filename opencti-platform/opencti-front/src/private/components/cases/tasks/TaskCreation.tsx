@@ -58,22 +58,22 @@ const taskAddMutation = graphql`
 
 const TASK_TYPE = 'Task';
 interface FormikTaskAddInput {
-  name: string
-  due_date?: Date | null
-  description?: string
-  objectAssignee?: FieldOption[]
-  objectLabel?: FieldOption[]
-  objectMarking: FieldOption[]
+  name: string;
+  due_date?: Date | null;
+  description?: string;
+  objectAssignee?: FieldOption[];
+  objectLabel?: FieldOption[];
+  objectMarking: FieldOption[];
 }
 
 interface TaskCreationProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-  ) => void
-  onClose?: () => void
-  defaultMarkings?: { value: string, label: string }[]
-  inputValue?: string
+  ) => void;
+  onClose?: () => void;
+  defaultMarkings?: { value: string; label: string }[];
+  inputValue?: string;
 }
 
 export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
@@ -226,7 +226,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
 const TaskCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: TasksLinesPaginationQuery$variables
+  paginationOptions: TasksLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks__caseTasks', paginationOptions, 'taskAdd');

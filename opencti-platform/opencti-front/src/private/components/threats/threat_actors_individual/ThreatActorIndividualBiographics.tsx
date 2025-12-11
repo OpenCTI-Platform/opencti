@@ -25,21 +25,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface ListValue {
-  primary: string
-  secondary: string
+  primary: string;
+  secondary: string;
 }
 
 interface FormatValue {
-  date: string | Date | null
-  height?: number | null
-  weight?: number | null
+  date: string | Date | null;
+  height?: number | null;
+  weight?: number | null;
 }
 
 interface DetailValue {
-  title: string
-  tooltip: string
-  children?: React.ReactNode
-  extra?: React.ReactNode
+  title: string;
+  tooltip: string;
+  children?: React.ReactNode;
+  extra?: React.ReactNode;
 }
 
 const ListValueDisplay = ({ primary, secondary }: ListValue) => (
@@ -98,7 +98,7 @@ const DetailGrid = ({ title, tooltip, children, extra }: DetailValue) => (
 );
 
 interface ThreatActorIndividualBiographicsComponentProps {
-  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data;
 }
 
 const ThreatActorIndividualBiographicsComponent = ({

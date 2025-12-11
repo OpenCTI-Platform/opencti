@@ -43,11 +43,11 @@ const fileUploaderEntityMutation = graphql`
 `;
 
 interface FileUploaderProps {
-  entityId?: string
-  onUploadSuccess: (id?: string) => unknown
-  accept?: string
-  size: 'small' | 'large' | 'medium' | undefined
-  nameInCallback?: boolean
+  entityId?: string;
+  onUploadSuccess: (id?: string) => unknown;
+  accept?: string;
+  size: 'small' | 'large' | 'medium' | undefined;
+  nameInCallback?: boolean;
 }
 
 const FileUploader: FunctionComponent<FileUploaderProps> = ({

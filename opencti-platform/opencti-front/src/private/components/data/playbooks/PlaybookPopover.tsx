@@ -58,9 +58,9 @@ const playbookExportQuery = graphql`
 `;
 
 interface PlaybookPopoverProps {
-  playbookId: string
-  running: boolean
-  paginationOptions?: PlaybooksLinesPaginationQuery$variables
+  playbookId: string;
+  running: boolean;
+  paginationOptions?: PlaybooksLinesPaginationQuery$variables;
 }
 
 const PlaybookPopover = ({

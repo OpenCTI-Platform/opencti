@@ -67,10 +67,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface TriggerLineProps {
-  node: TriggerLine_node$key
-  dataColumns: DataColumns
-  bypassEditionRestriction: boolean
-  paginationOptions?: TriggersLinesPaginationQuery$variables
+  node: TriggerLine_node$key;
+  dataColumns: DataColumns;
+  bypassEditionRestriction: boolean;
+  paginationOptions?: TriggersLinesPaginationQuery$variables;
 }
 
 const triggerLineFragment = graphql`
@@ -259,7 +259,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
 export const TriggerLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

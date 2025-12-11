@@ -36,7 +36,7 @@ const Stream = () => {
     location,
     LOCAL_STORAGE_KEY,
   );
-  const [streamState, setStreamState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [streamState, setStreamState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',

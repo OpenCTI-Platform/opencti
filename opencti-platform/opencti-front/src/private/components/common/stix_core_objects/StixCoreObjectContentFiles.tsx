@@ -33,9 +33,9 @@ import Security from '../../../../utils/Security';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface ContentBlocProps {
-  title: ReactNode
-  children: ReactNode
-  actions?: ReactNode
+  title: ReactNode;
+  children: ReactNode;
+  actions?: ReactNode;
 }
 
 const ContentBloc = ({ title, actions, children }: ContentBlocProps) => {
@@ -85,19 +85,19 @@ export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
 `;
 
 interface StixCoreObjectContentFilesProps {
-  files: NonNullable<StixCoreObjectContent_stixCoreObject$data['importFiles']>['edges'][number]['node'][]
-  stixCoreObjectId: string
-  stixCoreObjectName: string
-  stixCoreObjectType: string
-  content: string | null
-  handleSelectFile: (fileId: string) => void
-  handleSelectContent: () => void
-  contentSelected: boolean
-  currentFileId: string
-  onFileChange: (fileName?: string, isDeleted?: boolean) => void
-  exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][]
-  filesFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['filesFromTemplate']>['edges'][number]['node'][]
-  hasOutcomesTemplate?: boolean
+  files: NonNullable<StixCoreObjectContent_stixCoreObject$data['importFiles']>['edges'][number]['node'][];
+  stixCoreObjectId: string;
+  stixCoreObjectName: string;
+  stixCoreObjectType: string;
+  content: string | null;
+  handleSelectFile: (fileId: string) => void;
+  handleSelectContent: () => void;
+  contentSelected: boolean;
+  currentFileId: string;
+  onFileChange: (fileName?: string, isDeleted?: boolean) => void;
+  exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][];
+  filesFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['filesFromTemplate']>['edges'][number]['node'][];
+  hasOutcomesTemplate?: boolean;
 }
 
 const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesProps> = ({

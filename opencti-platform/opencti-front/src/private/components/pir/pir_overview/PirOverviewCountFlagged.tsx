@@ -29,7 +29,7 @@ const countFlaggedFragment = graphql`
 `;
 
 interface PirOverviewCountFlaggedProps {
-  data: PirOverviewCountFlaggedFragment$key
+  data: PirOverviewCountFlaggedFragment$key;
 }
 
 const PirOverviewCountFlagged = ({ data }: PirOverviewCountFlaggedProps) => {

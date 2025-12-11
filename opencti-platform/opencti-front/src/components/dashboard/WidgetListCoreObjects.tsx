@@ -5,12 +5,12 @@ import type { WidgetColumn } from '../../utils/widget/widget';
 
 interface WidgetListCoreObjectsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
-  publicWidget?: boolean
-  rootRef: DataTableProps['rootRef']
-  widgetId: string
-  pageSize: number
-  columns: WidgetColumn[]
+  data: any[];
+  publicWidget?: boolean;
+  rootRef: DataTableProps['rootRef'];
+  widgetId: string;
+  pageSize: number;
+  columns: WidgetColumn[];
 }
 
 const WidgetListCoreObjects = ({

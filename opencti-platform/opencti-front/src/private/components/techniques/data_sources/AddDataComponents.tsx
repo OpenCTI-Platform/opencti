@@ -23,7 +23,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const AddDataComponents: FunctionComponent<{
-  dataSource: DataSourceDataComponents_dataSource$data
+  dataSource: DataSourceDataComponents_dataSource$data;
 }> = ({ dataSource }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();

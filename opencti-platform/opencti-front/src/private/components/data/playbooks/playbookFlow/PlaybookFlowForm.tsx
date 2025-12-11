@@ -50,21 +50,21 @@ export type PlaybookFlowFormData
   = PlaybookUpdateActionsForm
     & {
     // Common for every component
-      name: string
+      name: string;
       // Component: CRON
-      time?: string
-      period?: string
-      day?: string
+      time?: string;
+      period?: string;
+      day?: string;
     };
 
 interface PlaybookFlowFormProps {
-  action: string | null
-  selectedNode: PlaybookNode | null
-  playbookComponents: PlaybookComponents
-  componentId: string | null
-  onConfigAdd: (component: unknown, name: string, config: unknown) => void
-  onConfigReplace: (component: unknown, name: string, config: unknown) => void
-  handleClose: () => void
+  action: string | null;
+  selectedNode: PlaybookNode | null;
+  playbookComponents: PlaybookComponents;
+  componentId: string | null;
+  onConfigAdd: (component: unknown, name: string, config: unknown) => void;
+  onConfigReplace: (component: unknown, name: string, config: unknown) => void;
+  handleClose: () => void;
 }
 
 const PlaybookFlowForm = ({

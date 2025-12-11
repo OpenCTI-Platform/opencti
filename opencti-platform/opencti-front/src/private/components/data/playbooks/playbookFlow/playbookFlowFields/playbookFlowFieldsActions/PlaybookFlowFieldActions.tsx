@@ -29,7 +29,7 @@ import useActionFieldOptions from './useActionFieldOptions';
 import PlaybookActionValueField from './PlaybookActionValueField';
 
 interface PlaybookFlowFieldActionsProps {
-  operations?: string[]
+  operations?: string[];
 }
 
 const PlaybookFlowFieldActions = ({

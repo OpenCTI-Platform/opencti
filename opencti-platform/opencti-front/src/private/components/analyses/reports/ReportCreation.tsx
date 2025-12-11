@@ -73,41 +73,41 @@ export const reportCreationMutation = graphql`
 const REPORT_TYPE = 'Report';
 
 interface ReportAddInput {
-  name: string
-  description: string
-  content: string
-  published: Date | null
-  confidence: number | undefined
-  report_types: string[]
-  x_opencti_reliability: string | undefined
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  objectAssignee: { value: string }[]
-  objectParticipant: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  content: string;
+  published: Date | null;
+  confidence: number | undefined;
+  report_types: string[];
+  x_opencti_reliability: string | undefined;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  objectAssignee: { value: string }[];
+  objectParticipant: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
   authorized_members: {
-    value: string
-    accessRight: string
+    value: string;
+    accessRight: string;
     groupsRestriction: {
-      label: string
-      value: string
-      type: string
-    }[] }[] | undefined
+      label: string;
+      value: string;
+      type: string;
+    }[]; }[] | undefined;
 }
 
 interface ReportFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string, name: string } | null | undefined,
-  ) => void
-  onClose?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  defaultConfidence?: number
-  inputValue?: string
+    response: { id: string; name: string } | null | undefined,
+  ) => void;
+  onClose?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
@@ -408,7 +408,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
 const ReportCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: ReportsLinesPaginationQuery$variables
+  paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(

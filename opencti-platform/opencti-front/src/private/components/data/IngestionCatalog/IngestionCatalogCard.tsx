@@ -20,16 +20,16 @@ import Security from '../../../../utils/Security';
 import type { Theme } from '../../../../components/Theme';
 
 export interface IngestionCatalogCardProps {
-  node: IngestionConnector
-  dataListId: string
-  isEnterpriseEdition: boolean
-  onClickDeploy: () => void
-  deploymentCount?: number
+  node: IngestionConnector;
+  dataListId: string;
+  isEnterpriseEdition: boolean;
+  onClickDeploy: () => void;
+  deploymentCount?: number;
 }
 
 interface ConnectorLogoProps {
-  src: string
-  alt: string
+  src: string;
+  alt: string;
 }
 
 const ConnectorLogo = ({ src, alt }: ConnectorLogoProps) => {
@@ -47,7 +47,7 @@ const ConnectorLogo = ({ src, alt }: ConnectorLogoProps) => {
 };
 
 interface ConnectorTitleProps {
-  title: string
+  title: string;
 }
 
 const ConnectorTitle = ({ title }: ConnectorTitleProps) => {
@@ -72,10 +72,10 @@ const ConnectorTitle = ({ title }: ConnectorTitleProps) => {
 };
 
 interface ConnectorActionsProps {
-  connectorMetadata: { label: string, color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' | string }
-  isEnterpriseEdition: boolean
-  deploymentCount: number
-  onClickDeploy: () => void
+  connectorMetadata: { label: string; color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' | string };
+  isEnterpriseEdition: boolean;
+  deploymentCount: number;
+  onClickDeploy: () => void;
 }
 
 const ConnectorActions = ({

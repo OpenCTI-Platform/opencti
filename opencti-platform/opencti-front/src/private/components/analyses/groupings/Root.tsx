@@ -127,7 +127,7 @@ const RootGrouping = () => {
                         <GroupingEdition groupingId={grouping.id} />
                       </Security>
                     )}
-                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} hasAccess={currentAccessRight.canEdit}>
                         <GroupingDeletion groupingId={grouping.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>

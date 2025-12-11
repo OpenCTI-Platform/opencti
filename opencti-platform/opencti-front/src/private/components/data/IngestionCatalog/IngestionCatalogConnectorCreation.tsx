@@ -86,21 +86,21 @@ const customRenderers = [
 ];
 
 interface IngestionCatalogConnectorCreationProps {
-  connector: IngestionConnector
-  open: boolean
-  onClose: () => void
-  catalogId: string
-  hasActiveManagers: boolean
-  deploymentCount?: number
-  onCreate?: (connectorId: string) => void
+  connector: IngestionConnector;
+  open: boolean;
+  onClose: () => void;
+  catalogId: string;
+  hasActiveManagers: boolean;
+  deploymentCount?: number;
+  onCreate?: (connectorId: string) => void;
 }
 
 export interface ManagedConnectorValues extends BasicUserHandlingValues {
-  name: string
-  display_name: string
-  user_id: string | FieldOption
-  automatic_user?: boolean
-  confidence_level?: string
+  name: string;
+  display_name: string;
+  user_id: string | FieldOption;
+  automatic_user?: boolean;
+  confidence_level?: string;
 }
 
 const validationSchema = Yup.object().shape({

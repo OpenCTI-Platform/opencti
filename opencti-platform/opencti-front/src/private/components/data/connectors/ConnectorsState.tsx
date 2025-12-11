@@ -32,8 +32,8 @@ export const connectorsStateQuery = graphql`
 `;
 
 interface ConnectorsStateProps {
-  queryRef: PreloadedQuery<ConnectorsStateQuery>
-  children: ({ data }: { data: ConnectorsStateQuery['response'] }) => React.ReactNode
+  queryRef: PreloadedQuery<ConnectorsStateQuery>;
+  children: ({ data }: { data: ConnectorsStateQuery['response'] }) => React.ReactNode;
 }
 
 const ConnectorsState: React.FC<ConnectorsStateProps> = ({ queryRef, children }) => {

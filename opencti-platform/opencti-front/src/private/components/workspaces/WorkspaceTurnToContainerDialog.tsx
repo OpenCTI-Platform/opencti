@@ -24,23 +24,23 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../components/Theme';
 
 interface WorkspaceTurnToContainerDialogProps {
-  workspace: { id: string | null }
-  open: boolean
-  handleClose: () => void
+  workspace: { id: string | null };
+  open: boolean;
+  handleClose: () => void;
 }
 
 interface ActionInputs {
-  type?: string
-  fieldType?: string
-  field?: string
-  inputValue?: string
-  value?: FilterOption
+  type?: string;
+  fieldType?: string;
+  field?: string;
+  inputValue?: string;
+  value?: FilterOption;
 }
 
 interface StixContainer {
-  name?: string
-  entity_type?: string
-  id?: string
+  name?: string;
+  entity_type?: string;
+  id?: string;
 }
 
 const investigationToContainerMutation = graphql`

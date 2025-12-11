@@ -41,8 +41,8 @@ export const playbookComponentsQuery = graphql`
 `;
 
 interface PlaybookProps {
-  dataPlaybook: Playbook_playbook$key
-  playbookComponentsQueryRef: PreloadedQuery<PlaybookComponentsQuery>
+  dataPlaybook: Playbook_playbook$key;
+  playbookComponentsQueryRef: PreloadedQuery<PlaybookComponentsQuery>;
 }
 
 const Playbook = ({ dataPlaybook, playbookComponentsQueryRef }: PlaybookProps) => {

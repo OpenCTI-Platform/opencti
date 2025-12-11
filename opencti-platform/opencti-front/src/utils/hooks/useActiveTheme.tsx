@@ -1,22 +1,22 @@
 import { RootPrivateQuery$data } from '../../private/__generated__/RootPrivateQuery.graphql';
 
 interface UseActiveThemeParams {
-  userThemeId?: string | null
+  userThemeId?: string | null;
   platformTheme?: {
-    id: string
-    name: string
-    theme_background: string
-    theme_paper: string
-    theme_nav: string
-    theme_primary: string
-    theme_secondary: string
-    theme_accent: string
-    theme_text_color: string
-    theme_logo?: string | null
-    theme_logo_collapsed?: string | null
-    theme_logo_login?: string | null
-  } | null
-  allThemes: RootPrivateQuery$data['themes']
+    id: string;
+    name: string;
+    theme_background: string;
+    theme_paper: string;
+    theme_nav: string;
+    theme_primary: string;
+    theme_secondary: string;
+    theme_accent: string;
+    theme_text_color: string;
+    theme_logo?: string | null;
+    theme_logo_collapsed?: string | null;
+    theme_logo_login?: string | null;
+  } | null;
+  allThemes: RootPrivateQuery$data['themes'];
 }
 
 const useActiveTheme = ({

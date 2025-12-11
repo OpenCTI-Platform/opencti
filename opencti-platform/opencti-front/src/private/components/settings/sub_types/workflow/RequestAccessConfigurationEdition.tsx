@@ -48,15 +48,15 @@ export const requestAccessConfigurationFragment = graphql`
 `;
 
 interface RequestAccessWorkflowProps {
-  handleClose: () => void
-  data: RequestAccessConfigurationEdition_requestAccess$key
-  open?: boolean
+  handleClose: () => void;
+  data: RequestAccessConfigurationEdition_requestAccess$key;
+  open?: boolean;
 }
 
 interface RequestAccessEditionFormInputs {
-  acceptedTemplate: FieldOption
-  declinedTemplate: FieldOption
-  approvalAdmin: GroupFieldOption
+  acceptedTemplate: FieldOption;
+  declinedTemplate: FieldOption;
+  approvalAdmin: GroupFieldOption;
 }
 
 const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflowProps> = ({

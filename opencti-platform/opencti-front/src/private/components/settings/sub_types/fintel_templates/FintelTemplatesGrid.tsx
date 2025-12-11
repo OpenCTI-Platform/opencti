@@ -44,7 +44,7 @@ const fintelTemplatesFragment = graphql`
 `;
 
 interface FintelTemplatesGridProps {
-  data: FintelTemplatesGrid_templates$key
+  data: FintelTemplatesGrid_templates$key;
 }
 
 const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {

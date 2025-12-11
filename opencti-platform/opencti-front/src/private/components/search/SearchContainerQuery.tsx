@@ -23,8 +23,8 @@ const searchContainerQueryFilesCountQuery = graphql`
 `;
 
 interface SearchRootComponentProps {
-  children: ReactNode
-  filesCount?: number
+  children: ReactNode;
+  filesCount?: number;
 }
 
 const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children, filesCount = 0 }) => {
@@ -74,8 +74,8 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
 };
 
 interface SearchContainerQueryWithRefProps {
-  children: ReactNode
-  queryRef: PreloadedQuery<SearchContainerQueryFilesCountQuery>
+  children: ReactNode;
+  queryRef: PreloadedQuery<SearchContainerQueryFilesCountQuery>;
 }
 
 const SearchContainerQueryWithRef: FunctionComponent<SearchContainerQueryWithRefProps> = ({ queryRef, children }) => {
@@ -89,7 +89,7 @@ const SearchContainerQueryWithRef: FunctionComponent<SearchContainerQueryWithRef
 };
 
 interface SearchContainerQueryProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 const SearchContainerQuery = ({ children }: SearchContainerQueryProps) => {

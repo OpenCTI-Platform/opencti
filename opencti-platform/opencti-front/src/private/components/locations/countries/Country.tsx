@@ -91,7 +91,7 @@ export const countryFragment = graphql`
 const CountryComponent = ({
   countryData,
 }: {
-  countryData: Country_country$key
+  countryData: Country_country$key;
 }) => {
   useInitCreateRelationshipContext();
 

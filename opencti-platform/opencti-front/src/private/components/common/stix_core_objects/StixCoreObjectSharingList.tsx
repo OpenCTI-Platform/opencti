@@ -33,9 +33,9 @@ const objectOrganizationDeleteMutation = graphql`
 `;
 
 interface StixCoreObjectSharingListProps {
-  data: StixCoreObjectSharingListFragment$key
-  inContainer?: boolean
-  disabled?: boolean
+  data: StixCoreObjectSharingListFragment$key;
+  inContainer?: boolean;
+  disabled?: boolean;
 }
 
 const StixCoreObjectSharingList = ({ data, disabled, inContainer }: StixCoreObjectSharingListProps) => {

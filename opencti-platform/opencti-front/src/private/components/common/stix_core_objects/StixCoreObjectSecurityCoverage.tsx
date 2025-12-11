@@ -27,17 +27,17 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 interface SecurityCoverage {
-  id: string
+  id: string;
   coverage_information: ReadonlyArray<{
-    readonly coverage_name: string
-    readonly coverage_score: number
-  }> | null | undefined
+    readonly coverage_name: string;
+    readonly coverage_score: number;
+  }> | null | undefined;
 }
 
 interface StixCoreObjectSecurityCoverageProps {
-  id: string // ID of the STIX Core Object
-  coverage?: SecurityCoverage | null | undefined
-  onCoverageCreated?: (coverageId: string) => void
+  id: string; // ID of the STIX Core Object
+  coverage?: SecurityCoverage | null | undefined;
+  onCoverageCreated?: (coverageId: string) => void;
 }
 
 // Query for checking enrichment connectors availability
@@ -68,10 +68,10 @@ const securityCoverageEntityQuery = graphql`
 
 interface ConnectorsQueryProps {
   connectors?: Array<{
-    active: boolean
-    connector_type?: string
-    connector_scope?: string[]
-  }>
+    active: boolean;
+    connector_type?: string;
+    connector_scope?: string[];
+  }>;
 }
 
 const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCoverageProps> = ({
@@ -164,7 +164,7 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
         <QueryRenderer
           query={securityCoverageEntityQuery}
           variables={{ id }}
-          render={({ props: entityProps }: { props: { stixCoreObject: { id: string, entity_type: string, representative?: { main?: string } } } | null }) => {
+          render={({ props: entityProps }: { props: { stixCoreObject: { id: string; entity_type: string; representative?: { main?: string } } } | null }) => {
             if (!entityProps) {
               return <Loader variant={LoaderVariant.inElement} />;
             }

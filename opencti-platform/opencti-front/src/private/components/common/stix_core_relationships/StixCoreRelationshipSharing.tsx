@@ -28,11 +28,11 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 // region types
 interface ContainerHeaderSharedProps {
-  elementId: string
+  elementId: string;
 }
 
 interface OrganizationForm {
-  objectOrganization: { value: string, label: string }
+  objectOrganization: { value: string; label: string };
 }
 
 // endregion

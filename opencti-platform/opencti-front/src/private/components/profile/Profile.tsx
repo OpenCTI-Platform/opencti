@@ -37,7 +37,7 @@ export const profileQuery = graphql`
 `;
 
 interface ProfileComponentProps {
-  queryRef: PreloadedQuery<ProfileQuery>
+  queryRef: PreloadedQuery<ProfileQuery>;
 }
 
 const ProfileComponent: FunctionComponent<ProfileComponentProps> = ({

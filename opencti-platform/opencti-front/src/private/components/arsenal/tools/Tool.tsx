@@ -65,7 +65,7 @@ const toolFragment = graphql`
 `;
 
 interface ToolProps {
-  toolData: Tool_tool$key
+  toolData: Tool_tool$key;
 }
 
 const Tool: React.FC<ToolProps> = ({

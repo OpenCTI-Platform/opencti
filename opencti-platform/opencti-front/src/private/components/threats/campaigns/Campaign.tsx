@@ -67,7 +67,7 @@ const campaignFragment = graphql`
 const CampaignComponent = ({
   campaignData,
 }: {
-  campaignData: Campaign_campaign$key
+  campaignData: Campaign_campaign$key;
 }) => {
   useInitCreateRelationshipContext();
 

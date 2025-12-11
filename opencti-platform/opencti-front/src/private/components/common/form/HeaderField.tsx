@@ -8,11 +8,11 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 
 interface HeaderFieldAddProps {
-  id: string
-  name: string
-  values: { name: string, value: string }[]
-  containerStyle: { marginTop: number, width: string }
-  setFieldValue?: (name: string, value: unknown) => void
+  id: string;
+  name: string;
+  values: { name: string; value: string }[];
+  containerStyle: { marginTop: number; width: string };
+  setFieldValue?: (name: string, value: unknown) => void;
 }
 // eslint-disable-next-line import/prefer-default-export
 export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({

@@ -5,17 +5,17 @@ import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 
 interface IngestionCatalogChipProps {
-  label: string
-  tooltipLabel?: string
-  variant?: 'outlined' | 'filled'
-  color?: 'primary' | 'secondary' | 'error' | 'success' | 'warning' | string
-  withTooltip?: boolean
-  isInTooltip?: boolean
-  isInlist?: boolean
+  label: string;
+  tooltipLabel?: string;
+  variant?: 'outlined' | 'filled';
+  color?: 'primary' | 'secondary' | 'error' | 'success' | 'warning' | string;
+  withTooltip?: boolean;
+  isInTooltip?: boolean;
+  isInlist?: boolean;
 }
 
 interface CustomChipProps extends Omit<ChipProps, 'color'> {
-  color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' | 'info' | 'default' | string
+  color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' | 'info' | 'default' | string;
 }
 
 const CustomChip = ({ color, ...props }: CustomChipProps) => {

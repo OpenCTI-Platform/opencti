@@ -34,7 +34,7 @@ export const rootQuery = graphql`
 `;
 
 interface ConfigurationComponentProps {
-  queryRef: PreloadedQuery<RootAlertingQuery>
+  queryRef: PreloadedQuery<RootAlertingQuery>;
 }
 
 const AlertingComponent: FunctionComponent<ConfigurationComponentProps> = ({

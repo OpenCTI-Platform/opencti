@@ -5,10 +5,10 @@ import { FilteredAttackPattern, FilteredSubAttackPattern } from '@components/tec
 import type { Theme } from '../../../../../components/Theme';
 
 interface AttackPatternsMatrixBadgeProps {
-  attackPattern: FilteredAttackPattern
-  color: string
-  textColor?: string
-  children: React.ReactNode
+  attackPattern: FilteredAttackPattern;
+  color: string;
+  textColor?: string;
+  children: React.ReactNode;
 }
 
 const AttackPatternsMatrixBadge = ({ attackPattern, color, textColor, children }: AttackPatternsMatrixBadgeProps) => {

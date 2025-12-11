@@ -128,27 +128,27 @@ const securityCoverageEditionOverviewFragment = graphql`
 `;
 
 interface SecurityCoverageEditionOverviewProps {
-  securityCoverage: SecurityCoverageEditionOverview_securityCoverage$key
+  securityCoverage: SecurityCoverageEditionOverview_securityCoverage$key;
   context: readonly ({
-    readonly focusOn: string | null | undefined
-    readonly name: string
-  } | null)[] | null | undefined
-  enableReferences?: boolean
+    readonly focusOn: string | null | undefined;
+    readonly name: string;
+  } | null)[] | null | undefined;
+  enableReferences?: boolean;
 }
 
 interface SecurityCoverageEditionFormValues {
-  name: string
-  description: string | null
-  periodicity: string | null
-  duration: string | null
-  type_affinity: string | null
-  platforms_affinity: readonly string[]
-  external_uri: string | null
-  auto_enrichment_disable: boolean
-  confidence: number | null
-  coverage_information: { coverage_name: string, coverage_score: number }[]
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
+  name: string;
+  description: string | null;
+  periodicity: string | null;
+  duration: string | null;
+  type_affinity: string | null;
+  platforms_affinity: readonly string[];
+  external_uri: string | null;
+  auto_enrichment_disable: boolean;
+  confidence: number | null;
+  coverage_information: { coverage_name: string; coverage_score: number }[];
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
 }
 
 const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEditionOverviewProps> = ({

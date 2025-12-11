@@ -67,7 +67,7 @@ export const securityPlatformFragment = graphql`
 `;
 
 interface SecurityPlatformProps {
-  securityPlatformData: SecurityPlatform_securityPlatform$key
+  securityPlatformData: SecurityPlatform_securityPlatform$key;
 }
 
 const SecurityPlatform: React.FC<SecurityPlatformProps> = ({

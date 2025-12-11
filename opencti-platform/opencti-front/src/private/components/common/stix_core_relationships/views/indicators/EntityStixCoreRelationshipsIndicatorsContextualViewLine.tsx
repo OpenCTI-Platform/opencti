@@ -73,17 +73,17 @@ const contextualViewLineFragment = graphql`
 `;
 
 interface ContextualViewLineProps {
-  node: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key
-  dataColumns: DataColumns
-  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['onToggleEntity']
-  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectedElements']
-  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['deSelectedElements']
-  selectAll: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectAll']
+  node: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key;
+  dataColumns: DataColumns;
+  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['onToggleEntity'];
+  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectedElements'];
+  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['deSelectedElements'];
+  selectAll: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectAll'];
   onToggleShiftEntity: (
     index: number,
     entity: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
-  ) => void
-  index: number
+  ) => void;
+  index: number;
 }
 
 const EntityStixCoreRelationshipsIndicatorsContextualViewLine: FunctionComponent<

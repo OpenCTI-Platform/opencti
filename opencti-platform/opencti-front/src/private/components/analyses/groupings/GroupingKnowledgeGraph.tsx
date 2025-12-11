@@ -23,10 +23,10 @@ export const groupingKnowledgeGraphQuery = graphql`
 `;
 
 interface GroupingKnowledgeGraphProps {
-  data: NonNullable<GroupingKnowledgeGraphQuery$data['grouping']>
-  id: string
-  mode: string
-  enableReferences: boolean
+  data: NonNullable<GroupingKnowledgeGraphQuery$data['grouping']>;
+  id: string;
+  mode: string;
+  enableReferences: boolean;
 }
 
 const GroupingKnowledgeGraph = ({

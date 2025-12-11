@@ -10,13 +10,13 @@ import { useFormatter } from 'src/components/i18n';
 import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 
 type SavedFiltersAutocompleteProps = {
-  isDisabled?: boolean
-  value?: AutocompleteOptionType
-  inputValue?: string
-  onChange?: (selectionOption: AutocompleteOptionType) => void
-  onInputChange?: (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => void
-  onDelete?: (value: SavedFiltersSelectionData) => void
-  options?: AutocompleteOptionType[]
+  isDisabled?: boolean;
+  value?: AutocompleteOptionType;
+  inputValue?: string;
+  onChange?: (selectionOption: AutocompleteOptionType) => void;
+  onInputChange?: (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => void;
+  onDelete?: (value: SavedFiltersSelectionData) => void;
+  options?: AutocompleteOptionType[];
 };
 const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onInputChange, onDelete, options }: SavedFiltersAutocompleteProps) => {
   const { t_i18n } = useFormatter();

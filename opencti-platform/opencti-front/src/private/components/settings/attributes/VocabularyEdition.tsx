@@ -45,19 +45,19 @@ const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
 });
 
 interface VocabularyEditionFormikValues {
-  name: string
-  description: string
-  aliases: { id: string, label: string, value: string }[]
-  order: number | null | undefined
-  is_hidden: boolean | null | undefined
+  name: string;
+  description: string;
+  aliases: { id: string; label: string; value: string }[];
+  order: number | null | undefined;
+  is_hidden: boolean | null | undefined;
 }
 
 const VocabularyEdition = ({
   handleClose,
   vocab,
 }: {
-  handleClose: () => void
-  vocab: useVocabularyCategory_Vocabularynode$data
+  handleClose: () => void;
+  vocab: useVocabularyCategory_Vocabularynode$data;
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -106,7 +106,7 @@ const VocabularyEdition = ({
           id: n,
           value: n,
           label: n,
-        })) as { id: string, label: string, value: string }[],
+        })) as { id: string; label: string; value: string }[],
         description: vocab.description ?? '',
         order: vocab.order,
         is_hidden: vocab.is_hidden,

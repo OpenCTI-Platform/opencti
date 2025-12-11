@@ -15,8 +15,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { StixCoreObjectOpinionsOpenVocabQuery } from './__generated__/StixCoreObjectOpinionsOpenVocabQuery.graphql';
 
 interface StixCoreObjectOpinionsProps {
-  stixCoreObjectId: string
-  queryVocabulariesRef: PreloadedQuery<StixCoreObjectOpinionsOpenVocabQuery>
+  stixCoreObjectId: string;
+  queryVocabulariesRef: PreloadedQuery<StixCoreObjectOpinionsOpenVocabQuery>;
 }
 
 const stixCoreObjectOpinionsOpenVocabQuery = graphql`

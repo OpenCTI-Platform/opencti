@@ -54,16 +54,16 @@ const CreateLabelsControlledDial = (
 );
 
 interface LabelCreationProps {
-  contextual: boolean
-  inputValueContextual: string
-  required: boolean
+  contextual: boolean;
+  inputValueContextual: string;
+  required: boolean;
   creationCallback: (
     data: LabelCreationContextualMutation$data,
-  ) => void
-  handleClose: () => void
-  open: boolean
-  paginationOptions?: PaginationOptions
-  dryrun: boolean
+  ) => void;
+  handleClose: () => void;
+  open: boolean;
+  paginationOptions?: PaginationOptions;
+  dryrun: boolean;
 }
 
 const LabelCreation: FunctionComponent<LabelCreationProps> = ({
@@ -90,8 +90,8 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
   const onSubmit = (
     values: typeof initialValues,
     { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void
-      resetForm: () => void
+      setSubmitting: (flag: boolean) => void;
+      resetForm: () => void;
     },
   ) => {
     const finalValues = {

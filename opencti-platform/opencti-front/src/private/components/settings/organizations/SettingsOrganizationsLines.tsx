@@ -10,9 +10,9 @@ import { SettingsOrganizationLine, SettingsOrganizationLineDummy } from './Setti
 const nbOfRowsToLoad = 50;
 
 export interface SettingsOrganizationsLinesProps {
-  paginationOptions: SettingsOrganizationsLinesPaginationQuery$variables
-  dataColumns: DataColumns
-  queryRef: PreloadedQuery<SettingsOrganizationsLinesPaginationQuery>
+  paginationOptions: SettingsOrganizationsLinesPaginationQuery$variables;
+  dataColumns: DataColumns;
+  queryRef: PreloadedQuery<SettingsOrganizationsLinesPaginationQuery>;
 }
 
 export const settingsOrganizationsLinesQuery = graphql`

@@ -7,16 +7,16 @@ import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../../components/i18n';
 
 export interface DecayHistory {
-  score: number
-  updated_at: Date
+  score: number;
+  updated_at: Date;
 }
 
 interface DecayChartProps {
-  currentScore?: number
-  decayCurvePoint?: DecayHistory[]
-  decayLiveScore?: number
-  revokeScore: number
-  reactionPoints?: number[]
+  currentScore?: number;
+  decayCurvePoint?: DecayHistory[];
+  decayLiveScore?: number;
+  revokeScore: number;
+  reactionPoints?: number[];
 }
 
 const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCurvePoint, decayLiveScore, revokeScore, reactionPoints }) => {
@@ -40,7 +40,7 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
   };
 
   // This is the chart serie data, aka the curve.
-  const decayCurveDataPoints: { x: number, y: number }[] = [];
+  const decayCurveDataPoints: { x: number; y: number }[] = [];
   if (decayCurvePoint) {
     decayCurvePoint.forEach((dataPoint) => {
       decayCurveDataPoints.push({

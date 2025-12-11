@@ -65,18 +65,18 @@ const subTypesLinesFragment = graphql`
 `;
 
 interface SubTypeLineProps {
-  node: SubTypesLine_node$key
-  dataColumns: DataColumns
-  selectedElements: Record<string, { id: string }>
-  deSelectedElements: Record<string, { id: string }>
-  selectAll: boolean
-  onToggleEntity: (entity: { id: string }, event: React.SyntheticEvent) => void
+  node: SubTypesLine_node$key;
+  dataColumns: DataColumns;
+  selectedElements: Record<string, { id: string }>;
+  deSelectedElements: Record<string, { id: string }>;
+  selectAll: boolean;
+  onToggleEntity: (entity: { id: string }, event: React.SyntheticEvent) => void;
   onToggleShiftEntity: (
     index: number,
     entity: { id: string },
     event: React.SyntheticEvent,
-  ) => void
-  index: number
+  ) => void;
+  index: number;
 }
 
 const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
@@ -187,7 +187,7 @@ export default SubTypeLine;
 export const SubTypeLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
   return (

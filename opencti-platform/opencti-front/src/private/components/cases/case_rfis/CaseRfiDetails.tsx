@@ -76,7 +76,7 @@ const CaseRfiDetailsFragment = graphql`
 `;
 
 interface CaseRfiDetailsProps {
-  caseRfiData: CaseRfiDetails_case$key
+  caseRfiData: CaseRfiDetails_case$key;
 }
 
 const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({

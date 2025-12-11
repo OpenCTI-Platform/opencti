@@ -4,7 +4,7 @@ import React from 'react';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface AttackPatternsMatrixShouldCoverIconProps {
-  isOverlapping: boolean
+  isOverlapping: boolean;
 }
 
 const AttackPatternsMatrixShouldCoverIcon = ({ isOverlapping }: AttackPatternsMatrixShouldCoverIconProps) => {

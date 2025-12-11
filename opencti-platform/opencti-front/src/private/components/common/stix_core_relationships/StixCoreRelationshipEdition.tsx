@@ -44,21 +44,21 @@ export const stixCoreRelationshipEditionDeleteMutation = graphql`
 `;
 
 type StixCoreRelationshipEditionContainerProps = {
-  stixCoreRelationshipId: string
-  open: boolean
-  inGraph: boolean
-  noStoreUpdate: boolean
-  handleDelete?: () => void
-  handleClose: () => void
-  isCoverage?: boolean
+  stixCoreRelationshipId: string;
+  open: boolean;
+  inGraph: boolean;
+  noStoreUpdate: boolean;
+  handleDelete?: () => void;
+  handleClose: () => void;
+  isCoverage?: boolean;
 };
 
 type StixCoreRelationshipEditionProps = {
-  stixCoreRelationshipId: string
-  noStoreUpdate: boolean
-  handleDelete?: () => void
-  handleClose: () => void
-  isCoverage?: boolean
+  stixCoreRelationshipId: string;
+  noStoreUpdate: boolean;
+  handleDelete?: () => void;
+  handleClose: () => void;
+  isCoverage?: boolean;
 };
 
 const StixCoreRelationshipEdition = ({

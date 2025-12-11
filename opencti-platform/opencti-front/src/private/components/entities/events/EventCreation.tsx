@@ -54,28 +54,28 @@ const eventMutation = graphql`
 const EVENT_TYPE = 'Event';
 
 interface EventAddInput {
-  name: string
-  description: string
-  confidence: number | null
-  event_types: string[]
-  start_time: Date | null
-  stop_time: Date | null
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | null
+  name: string;
+  description: string;
+  confidence: number | null;
+  event_types: string[];
+  start_time: Date | null;
+  stop_time: Date | null;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | null;
 }
 
 interface EventFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: FieldOption
-  defaultMarkingDefinitions?: FieldOption[]
-  inputValue?: string
-  bulkModalOpen?: boolean
-  onBulkModalClose: () => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
+  inputValue?: string;
+  bulkModalOpen?: boolean;
+  onBulkModalClose: () => void;
 }
 
 export const EventCreationForm: FunctionComponent<EventFormProps> = ({
@@ -345,7 +345,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
 const EventCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: EventsLinesPaginationQuery$variables
+  paginationOptions: EventsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

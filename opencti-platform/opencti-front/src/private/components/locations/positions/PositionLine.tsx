@@ -41,8 +41,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface PositionLineProps {
-  dataColumns: DataColumns
-  node: CountryLine_node$key
+  dataColumns: DataColumns;
+  node: CountryLine_node$key;
 }
 
 const positionLineFragment = graphql`
@@ -120,7 +120,7 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
 };
 
 interface PositionLineDummyProps {
-  dataColumns: DataColumns
+  dataColumns: DataColumns;
 }
 
 export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({

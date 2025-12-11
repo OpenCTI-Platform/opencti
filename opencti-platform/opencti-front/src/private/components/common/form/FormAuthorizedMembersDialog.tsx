@@ -14,15 +14,15 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 
 interface FormAuthorizedMembersDialogProps {
-  id: string
-  mutation: GraphQLTaggedNode
-  authorizedMembers?: AuthorizedMemberOption[] | null
-  owner?: Creator
-  open?: boolean
-  handleClose?: () => void
-  isCanUseEnable?: boolean
-  canDeactivate: boolean
-  customInfoMessage?: string
+  id: string;
+  mutation: GraphQLTaggedNode;
+  authorizedMembers?: AuthorizedMemberOption[] | null;
+  owner?: Creator;
+  open?: boolean;
+  handleClose?: () => void;
+  isCanUseEnable?: boolean;
+  canDeactivate: boolean;
+  customInfoMessage?: string;
 }
 
 const FormAuthorizedMembersDialog = ({

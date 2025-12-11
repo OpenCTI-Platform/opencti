@@ -6,10 +6,10 @@ import { ExternalReferenceEditionContainer_externalReference$data } from './__ge
 import ExternalReferenceEditionOverview from './ExternalReferenceEditionOverview';
 
 interface ExternalReferenceEditionContainerProps {
-  handleClose: () => void
-  externalReference: ExternalReferenceEditionContainer_externalReference$data
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  handleClose: () => void;
+  externalReference: ExternalReferenceEditionContainer_externalReference$data;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEditionContainerProps> = ({

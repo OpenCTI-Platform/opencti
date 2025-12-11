@@ -4,7 +4,7 @@ import { JsonAttrPathConfiguration } from '@components/data/jsonMapper/represent
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface JsonMapperRepresentationAttributeSelectedConfigurationsProps {
-  configuration?: JsonAttrPathConfiguration | null
+  configuration?: JsonAttrPathConfiguration | null;
 }
 
 const flexStyle = { display: 'flex', alignItems: 'end', gap: '4px' };

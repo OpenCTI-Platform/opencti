@@ -1,12 +1,12 @@
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 
 interface CsvMapperContextProps {
-  dynamicMappingColumn: string | null
-  setDynamicMappingColumn: (index: string) => void
+  dynamicMappingColumn: string | null;
+  setDynamicMappingColumn: (index: string) => void;
 }
 
 interface CsvMapperProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 const CsvMapperContext = createContext<CsvMapperContextProps | undefined>(undefined);

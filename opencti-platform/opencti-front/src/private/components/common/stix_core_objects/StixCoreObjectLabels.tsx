@@ -9,13 +9,13 @@ import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 interface StixCoreObjectLabelsProps {
   labels: readonly {
-    readonly color: string | null | undefined
-    readonly id: string
-    readonly value: string | null | undefined
-  }[] | null | undefined
-  onClick?: HandleAddFilter
-  variant?: string
-  revoked?: boolean
+    readonly color: string | null | undefined;
+    readonly id: string;
+    readonly value: string | null | undefined;
+  }[] | null | undefined;
+  onClick?: HandleAddFilter;
+  variant?: string;
+  revoked?: boolean;
 }
 
 const StixCoreObjectLabels = ({
