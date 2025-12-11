@@ -16,9 +16,9 @@ import type { Theme } from '../../../../components/Theme';
 import Tag from './RulesListItemTag';
 
 interface RulesListItemProps {
-  rule: NonNullable<Rule>
-  task: Task
-  toggle: () => void
+  rule: NonNullable<Rule>;
+  task: Task;
+  toggle: () => void;
 }
 
 const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
@@ -58,7 +58,7 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
     <Grid container spacing={3} sx={{ marginBottom: 3 }}>
       <Grid size={{ xs: 3 }} sx={styleRuleRoot}>
         <DangerZoneBlock
-          type={'rules'}
+          type="rules"
           title={t_i18n(rule.name)}
           sx={{ title: styleRuleTitle }}
           component={({ disabled, style }) => (

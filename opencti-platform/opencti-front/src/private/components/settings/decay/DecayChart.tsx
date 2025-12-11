@@ -7,19 +7,19 @@ import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../../components/i18n';
 
 export interface DecayHistory {
-  score: number,
-  updated_at: Date,
+  score: number;
+  updated_at: Date;
 }
 
 interface DecayChartProps {
-  currentScore?: number,
-  decayCurvePoint?: DecayHistory[],
-  decayLiveScore?: number,
-  revokeScore: number,
-  reactionPoints?: number[],
+  currentScore?: number;
+  decayCurvePoint?: DecayHistory[];
+  decayLiveScore?: number;
+  revokeScore: number;
+  reactionPoints?: number[];
 }
 
-const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCurvePoint, decayLiveScore, revokeScore, reactionPoints }) => {
+const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCurvePoint, decayLiveScore, revokeScore, reactionPoints }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 

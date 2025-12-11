@@ -21,9 +21,9 @@ export const widgetAttributesInputInstanceQuery = graphql`
 `;
 
 interface WidgetAttributesInputContainerProps {
-  value: readonly WidgetColumn[],
-  onChange: (value: WidgetColumn[]) => void,
-  instanceId?: string,
+  value: readonly WidgetColumn[];
+  onChange: (value: WidgetColumn[]) => void;
+  instanceId?: string;
 }
 
 const WidgetAttributesInputContainer: FunctionComponent<WidgetAttributesInputContainerProps> = ({

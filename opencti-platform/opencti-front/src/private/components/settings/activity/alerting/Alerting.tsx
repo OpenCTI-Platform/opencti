@@ -103,8 +103,8 @@ const AlertingLines: FunctionComponent<AlertingLinesProps> = ({
   onLabelClick,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  AlertingPaginationQuery,
-  AlertingLines_data$key
+    AlertingPaginationQuery,
+    AlertingLines_data$key
   >({
     linesQuery: alertingQuery,
     linesFragment: alertingFragment,
@@ -194,7 +194,7 @@ const Alerting: FunctionComponent = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array.from(Array(20).keys()).map((idx) => (
                   <AlertingLineDummy
@@ -203,7 +203,7 @@ const Alerting: FunctionComponent = () => {
                   />
                 ))}
               </>
-            }
+            )}
           >
             <AlertingLines
               queryRef={queryRef}
@@ -220,7 +220,7 @@ const Alerting: FunctionComponent = () => {
 
   return (
     <div className={classes.container} data-testid="alerting-page">
-      <ActivityMenu/>
+      <ActivityMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
       {renderLines()}
     </div>

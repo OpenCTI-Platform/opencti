@@ -68,11 +68,11 @@ class ThreatActorGroupLocationsComponent extends Component {
               const location = locationEdge.node;
               const link = resolveLink(location.entity_type);
               const flag = location.entity_type === 'Country'
-              && R.head(
-                (location.x_opencti_aliases ?? []).filter(
-                  (n) => n?.length === 2,
-                ),
-              );
+                && R.head(
+                  (location.x_opencti_aliases ?? []).filter(
+                    (n) => n?.length === 2,
+                  ),
+                );
               return (
                 <ListItem
                   key={location.id}
@@ -80,15 +80,15 @@ class ThreatActorGroupLocationsComponent extends Component {
                   divider={true}
                   disablePadding
                   secondaryAction={types.includes('manual') && (
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={() => this.removeLocation(locationEdge)}
-                      size="large"
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  </Security>
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={() => this.removeLocation(locationEdge)}
+                        size="large"
+                      >
+                        <LinkOff />
+                      </IconButton>
+                    </Security>
                   )}
                 >
                   <ListItemButton
@@ -109,7 +109,7 @@ class ThreatActorGroupLocationsComponent extends Component {
                       </ListItemIcon>
                     </ListItemIcon>
                     <ListItemText primary={location.name} />
-                    {!types.includes('manual') && <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
+                    {!types.includes('manual') && <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
                   </ListItemButton>
                 </ListItem>
               );

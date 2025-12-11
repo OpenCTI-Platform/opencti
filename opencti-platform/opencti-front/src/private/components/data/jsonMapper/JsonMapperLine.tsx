@@ -64,18 +64,18 @@ const JsonMapperLine: FunctionComponent<JsonMapperLineProps> = ({
       key={jsonMapper.id}
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <JsonMapperPopover
           jsonMapperId={jsonMapper.id}
           paginationOptions={paginationOptions}
         />
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -87,7 +87,7 @@ const JsonMapperLine: FunctionComponent<JsonMapperLineProps> = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

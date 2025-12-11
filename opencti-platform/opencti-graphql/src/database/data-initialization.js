@@ -169,13 +169,13 @@ export const CAPABILITIES = [
     description: 'Access ingestion',
     dependencies: [
       { name: 'SETINGESTIONS', description: 'Manage ingestion', attribute_order: 2610 },
-    ]
+    ],
   },
   {
     name: 'CSVMAPPERS',
     description: 'Manage data mappers',
-    attribute_order: 2700
-  }
+    attribute_order: 2700,
+  },
 ];
 // endregion
 
@@ -252,7 +252,7 @@ const createVocabularies = async (context) => {
         aliases: aliases ?? [],
         category,
         order,
-        builtIn: builtInOv.includes(category)
+        builtIn: builtInOv.includes(category),
       };
       await addVocabulary(context, SYSTEM_USER, data);
     }
@@ -281,13 +281,13 @@ export const createInitialRequestAccessFlow = async (context) => {
     context,
     SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_CASE_RFI,
-    { template_id: statusTemplateDeclined.id, order: 1, scope: StatusScope.RequestAccess }
+    { template_id: statusTemplateDeclined.id, order: 1, scope: StatusScope.RequestAccess },
   );
   const statusEntityRFIApproved = await createStatus(
     context,
     SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_CASE_RFI,
-    { template_id: statusTemplateApproved.id, order: 1, scope: StatusScope.RequestAccess }
+    { template_id: statusTemplateApproved.id, order: 1, scope: StatusScope.RequestAccess },
   );
 
   const initialConfig = {
@@ -298,7 +298,7 @@ export const createInitialRequestAccessFlow = async (context) => {
   const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
   if (rfiEntitySettings) {
     const editInput = [
-      { key: 'request_access_workflow', value: [initialConfig] }
+      { key: 'request_access_workflow', value: [initialConfig] },
     ];
     await updateAttribute(context, SYSTEM_USER, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, editInput);
   }
@@ -382,7 +382,7 @@ const createBasicRolesAndCapabilities = async (context) => {
       'SETTINGS_SETVOCABULARIES',
       'SETTINGS_SETKILLCHAINPHASES',
     ],
-    can_manage_sensitive_config: false
+    can_manage_sensitive_config: false,
   };
 
   const connectorRole = await addRole(context, SYSTEM_USER, connectorRoleInput);
@@ -393,7 +393,7 @@ const createBasicRolesAndCapabilities = async (context) => {
     name: 'Connectors',
     description: 'Connector group',
     auto_new_marking: true,
-    auto_integration_assignation: ['global']
+    auto_integration_assignation: ['global'],
   });
   const connectorRoleRelationInput = {
     toId: connectorRole.id,
@@ -448,7 +448,7 @@ export const setPlatformId = async (context, platformId) => {
       // to change the id in elastic, we have no choice but to create a patched copy and delete the old document
       const response = await elRawGet({
         index: INDEX_INTERNAL_OBJECTS,
-        id: platformSettings.id
+        id: platformSettings.id,
       });
       await elRawIndex({
         index: INDEX_INTERNAL_OBJECTS,
@@ -456,14 +456,14 @@ export const setPlatformId = async (context, platformId) => {
         body: {
           ...response._source,
           internal_id: platformId,
-          id: platformId
+          id: platformId,
         },
-        refresh: true
+        refresh: true,
       });
       await elRawDelete({
         index: INDEX_INTERNAL_OBJECTS,
         id: platformSettings.id,
-        refresh: true
+        refresh: true,
       });
     }
   }

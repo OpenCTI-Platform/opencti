@@ -112,7 +112,7 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               if (shouldBypass) {
                 return resolve(source, args, context, info);
               }
-              
+
               let userCapabilities: string[] = [];
 
               const isInDraftContext = !!getDraftContext(context, user);
@@ -123,7 +123,7 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               } else {
                 userCapabilities = userBaseCapabilities;
               }
-              
+
               if (typeName === 'Organization' && requiredCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(SETTINGS_SET_ACCESSES)) {
                 if (user.administrated_organizations.some(({ id }) => id === source.id)) {
                   return resolve(source, args, context, info);

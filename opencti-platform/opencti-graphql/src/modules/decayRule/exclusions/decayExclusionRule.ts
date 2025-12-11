@@ -9,11 +9,11 @@ const DECAY_EXCLUSION_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayExclusio
     id: 'decayExclusionRule',
     name: ENTITY_TYPE_DECAY_EXCLUSION_RULE,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: () => uuidv4()
+      [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: () => uuidv4(),
     },
   },
   attributes: [
@@ -26,7 +26,7 @@ const DECAY_EXCLUSION_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayExclusio
   representative: (stix: StixDecayExclusionRule) => {
     return stix.name;
   },
-  converter_2_1: convertDecayExclusionRuleToStix
+  converter_2_1: convertDecayExclusionRuleToStix,
 };
 
 registerDefinition(DECAY_EXCLUSION_RULE_DEFINITION);

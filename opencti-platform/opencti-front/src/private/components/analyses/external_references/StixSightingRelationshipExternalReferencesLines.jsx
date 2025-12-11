@@ -192,7 +192,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           />
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
@@ -225,7 +225,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                           dense={true}
                           divider={true}
                           disablePadding
-                          secondaryAction={
+                          secondaryAction={(
                             <>
                               <Tooltip title={t('Browse the link')}>
                                 <IconButton
@@ -240,20 +240,20 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                 </IconButton>
                               </Tooltip>
                               {!isFileAttached && (
-                              <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                                <FileUploader
-                                  entityId={externalReference.id}
-                                  onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                }
-                                />
-                              </Security>
+                                <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                                  <FileUploader
+                                    entityId={externalReference.id}
+                                    onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                                    }
+                                  />
+                                </Security>
                               )}
                               {!isFileAttached && (
-                              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                                <ExternalReferenceEnrichment
-                                  externalReferenceId={externalReference.id}
-                                />
-                              </Security>
+                                <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                                  <ExternalReferenceEnrichment
+                                    externalReferenceId={externalReference.id}
+                                  />
+                                </Security>
                               )}
                               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                                 <ExternalReferencePopover
@@ -268,7 +268,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                 />
                               </Security>
                             </>
-      }
+                          )}
                         >
                           <ListItemButton
                             component={Link}
@@ -304,13 +304,13 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                       <ListItem
                         dense={true}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <>
                             <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                               <FileUploader
                                 entityId={externalReference.id}
                                 onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                            }
+                                }
                               />
                             </Security>
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -325,7 +325,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                               />
                             </Security>
                           </>
-                      }
+                        )}
                       >
                         <ListItemButton
                           component={Link}

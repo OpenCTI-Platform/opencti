@@ -31,7 +31,7 @@ const ItemCreators = (props) => {
           <Security
             key={creator.id}
             needs={[SETTINGS_SETACCESSES]}
-            placeholder={
+            placeholder={(
               <Button
                 variant="outlined"
                 size="small"
@@ -40,7 +40,7 @@ const ItemCreators = (props) => {
               >
                 {creator.name}
               </Button>
-            }
+            )}
           >
             {systemUsers.includes(creator.id) ? (
               <Button

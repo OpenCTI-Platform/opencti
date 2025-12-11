@@ -123,9 +123,9 @@ export const searchBulkFragment = graphql`
 `;
 
 interface SearchBulkProps {
-  inputValues: string[],
-  dataColumns: DataTableProps['dataColumns'],
-  setNumberOfEntities: (n: number) => void,
+  inputValues: string[];
+  dataColumns: DataTableProps['dataColumns'];
+  setNumberOfEntities: (n: number) => void;
 }
 
 const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBulkProps) => {

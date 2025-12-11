@@ -119,7 +119,7 @@ const RootIncidentComponent = ({ queryRef }) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -137,7 +137,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                   data={incident}
                   attribution={['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign']}
                 />
-              }
+              )}
             />
           </Routes>
           <div
@@ -164,7 +164,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <IncidentDeletion id={incident.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -225,7 +225,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={incident.id}/>
+                  <AIInsights id={incident.id} />
                   <StixCoreObjectSecurityCoverage id={incident.id} coverage={incident.securityCoverage} />
                 </div>
               )}
@@ -246,19 +246,19 @@ const RootIncidentComponent = ({ queryRef }) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <IncidentKnowledge incidentData={incident} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={incident}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"

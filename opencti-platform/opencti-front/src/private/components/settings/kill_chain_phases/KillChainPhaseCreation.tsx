@@ -31,10 +31,10 @@ const CreateKillChainPhaseControlledDial = (
   />
 );
 interface KillChainPhaseCreationProps {
-  paginationOptions: PaginationOptions,
+  paginationOptions: PaginationOptions;
 }
 const KillChainPhaseCreation: FunctionComponent<
-KillChainPhaseCreationProps
+  KillChainPhaseCreationProps
 > = ({
   paginationOptions,
 }) => {
@@ -52,8 +52,8 @@ KillChainPhaseCreationProps
   const onSubmit = (
     values: typeof initialValues,
     { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void,
-      resetForm: () => void,
+      setSubmitting: (flag: boolean) => void;
+      resetForm: () => void;
     },
   ) => {
     const finalValues = {

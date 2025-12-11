@@ -218,7 +218,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
           <DraftProcessingStatus forceRefetch={refetch} />
         </div>
         <div style={{ padding: '0 12px', flex: 1 }}>
-          <DraftBlock body={truncate(name, 40)}/>
+          <DraftBlock body={truncate(name, 40)} />
         </div>
         <div>
           <Button
@@ -230,7 +230,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             {t_i18n('Exit draft')}
           </Button>
         </div>
-        
+
         <div style={{ padding: '0 12px' }}>
           <Tooltip title={(!canDeleteKnowledge || !currentAccessRight.canEdit) ? t_i18n('You do not have the access rights to approve a draft') : ''}>
             <span>
@@ -259,11 +259,12 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
               <DialogContentText>
                 {t_i18n('Do you want to approve this draft and send it to ingestion?')}
                 {currentlyProcessing && (
-                <Alert style={{ marginTop: 10 }} severity={'warning'}>
-                  <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
-                  {t_i18n('There are processes still running that could impact the data of the draft. '
-                    + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
-                </Alert>)}
+                  <Alert style={{ marginTop: 10 }} severity="warning">
+                    <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
+                    {t_i18n('There are processes still running that could impact the data of the draft. '
+                      + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
+                  </Alert>
+                )}
               </DialogContentText>
             </DialogContent>
             <DialogActions>
@@ -276,7 +277,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             </DialogActions>
           </Dialog>
         </div>
-      
+
       </div>
     </div>
   );

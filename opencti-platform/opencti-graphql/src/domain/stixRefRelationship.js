@@ -7,7 +7,7 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
-  ABSTRACT_STIX_RELATIONSHIP
+  ABSTRACT_STIX_RELATIONSHIP,
 } from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixRefRelationship, META_RELATIONS, STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
@@ -99,7 +99,7 @@ export const addStixRefRelationship = async (context, user, stixRefRelationship)
       from: stixRefRelationship.fromId,
       from_missing: !from,
       to: stixRefRelationship.toId,
-      to_missing: !to
+      to_missing: !to,
     });
   }
   return createRelation(context, user, stixRefRelationship);

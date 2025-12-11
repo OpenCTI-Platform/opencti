@@ -10,7 +10,7 @@ import Transition from '../../../../components/Transition';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 type PlatformCriticalAlertDialogProps = {
-  alerts: RootSettings$data['platform_critical_alerts']
+  alerts: RootSettings$data['platform_critical_alerts'];
 };
 
 const PlatformCriticalAlertDialog: React.FC<PlatformCriticalAlertDialogProps> = ({ alerts }) => {

@@ -272,10 +272,10 @@ const getEntityMainRepresentativeForWorkbenchChecks = (n, fallback = 'Unknown') 
         || n.hashes['SHA-1']
         || n.hashes['SHA-256']
         || n.hashes['SHA-512']))
-    || getEntityMainRepresentativeForWorkbenchChecks((R.head(n.objects?.edges ?? []))?.node)
-    || n.main_entity_name
-    || n.dst_port
-    || fallback;
+      || getEntityMainRepresentativeForWorkbenchChecks((R.head(n.objects?.edges ?? []))?.node)
+      || n.main_entity_name
+      || n.dst_port
+      || fallback;
   return mainValue;
 };
 
@@ -760,7 +760,7 @@ const WorkbenchFileContentComponent = ({
       'object_refs',
       (n.object_refs || []).filter(
         (o) => !objectsToBeDeletedIds.includes(o)
-            && !stixCoreRelationshipsToRemove.includes(o),
+          && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
     ));
@@ -1114,7 +1114,7 @@ const WorkbenchFileContentComponent = ({
       'object_refs',
       (n.object_refs || []).filter(
         (o) => o !== toDeleteObject.id
-            && !stixCoreRelationshipsToRemove.includes(o),
+          && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
     ));
@@ -1145,10 +1145,10 @@ const WorkbenchFileContentComponent = ({
     );
     const identity = values.createdBy?.entity
       ? {
-        ...values.createdBy.entity,
-        id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
-        type: 'identity',
-      }
+          ...values.createdBy.entity,
+          id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
+          type: 'identity',
+        }
       : null;
     const finalValues = {
       ...R.omit(
@@ -1213,7 +1213,7 @@ const WorkbenchFileContentComponent = ({
           newEntity.identity_class = resolveIdentityClass(currentEntityType);
         } else if (
           newEntity.type === 'location'
-            && !newEntity.x_opencti_location_type
+          && !newEntity.x_opencti_location_type
         ) {
           newEntity.x_opencti_location_type = currentEntityType;
         }
@@ -1326,10 +1326,10 @@ const WorkbenchFileContentComponent = ({
     );
     const identity = values.createdBy?.entity
       ? {
-        ...values.createdBy.entity,
-        id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
-        type: 'identity',
-      }
+          ...values.createdBy.entity,
+          id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
+          type: 'identity',
+        }
       : null;
     const finalValues = {
       ...R.omit(
@@ -1401,10 +1401,10 @@ const WorkbenchFileContentComponent = ({
     }
     const identity = values.createdBy?.entity
       ? {
-        ...values.createdBy.entity,
-        id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
-        type: 'identity',
-      }
+          ...values.createdBy.entity,
+          id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
+          type: 'identity',
+        }
       : null;
     let finalValues = {
       ...R.omit(
@@ -1518,10 +1518,10 @@ const WorkbenchFileContentComponent = ({
     );
     const identity = values.createdBy?.entity
       ? {
-        ...values.createdBy.entity,
-        id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
-        type: 'identity',
-      }
+          ...values.createdBy.entity,
+          id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
+          type: 'identity',
+        }
       : null;
     const finalValues = {
       ...R.omit(
@@ -1566,7 +1566,7 @@ const WorkbenchFileContentComponent = ({
     );
     setContainerSelectAll(
       (container.object_refs || []).length
-        >= Object.keys(indexedStixObjects).length,
+      >= Object.keys(indexedStixObjects).length,
     );
     setContainerStep(1);
     setStixDomainObjects(
@@ -2947,13 +2947,13 @@ const WorkbenchFileContentComponent = ({
         ...n,
         source_ref_name: getMainRepresentative(
           indexedStixObjects[n.source_ref]
-            || indexedStixObjects[n.sighting_of_ref]
-            || {},
+          || indexedStixObjects[n.sighting_of_ref]
+          || {},
         ),
         target_ref_name: getMainRepresentative(
           indexedStixObjects[n.target_ref]
-            || indexedStixObjects[n.where_sighted_refs?.at(0)]
-            || {},
+          || indexedStixObjects[n.where_sighted_refs?.at(0)]
+          || {},
         ),
       }, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
@@ -2998,14 +2998,14 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <div>
                   {sortHeaderContainer('ttype', 'Type', true)}
                   {sortHeaderContainer('default_value', 'Default value', true)}
                   {sortHeaderContainer('labels', 'Labels', true)}
                   {sortHeaderContainer('markings', 'Marking definitions', true)}
                 </div>
-              }
+              )}
             />
           </ListItemButton>
           {sortedObjects.map((object) => {
@@ -3055,7 +3055,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -3090,7 +3090,7 @@ const WorkbenchFileContentComponent = ({
                         />
                       </div>
                     </div>
-                  }
+                  )}
                 />
               </ListItem>
             );
@@ -3147,18 +3147,18 @@ const WorkbenchFileContentComponent = ({
               if (props && props.markingDefinitions) {
                 return props.markingDefinitions.edges.length > 0
                   ? (
-                    <ItemBoolean
-                      variant="inList"
-                      status={true}
-                      label={t_i18n('Yes')}
-                    />
-                  ) : (
-                    <ItemBoolean
-                      variant="inList"
-                      status={false}
-                      label={t_i18n('No')}
-                    />
-                  );
+                      <ItemBoolean
+                        variant="inList"
+                        status={true}
+                        label={t_i18n('Yes')}
+                      />
+                    ) : (
+                      <ItemBoolean
+                        variant="inList"
+                        status={false}
+                        label={t_i18n('No')}
+                      />
+                    );
               }
               return (
                 <ItemBoolean
@@ -3192,18 +3192,18 @@ const WorkbenchFileContentComponent = ({
             if (props && props.stixDomainObjects) {
               return props.stixDomainObjects.edges.length > 0
                 ? (
-                  <ItemBoolean
-                    variant="inList"
-                    status={true}
-                    label={t_i18n('Yes')}
-                  />
-                ) : (
-                  <ItemBoolean
-                    variant="inList"
-                    status={false}
-                    label={t_i18n('No')}
-                  />
-                );
+                    <ItemBoolean
+                      variant="inList"
+                      status={true}
+                      label={t_i18n('Yes')}
+                    />
+                  ) : (
+                    <ItemBoolean
+                      variant="inList"
+                      status={false}
+                      label={t_i18n('No')}
+                    />
+                  );
             }
             return (
               <ItemBoolean
@@ -3250,7 +3250,7 @@ const WorkbenchFileContentComponent = ({
                 </span>
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <div>
                     {sortHeader('ttype', 'Type', true)}
                     {sortHeader('default_value', 'Default value', true)}
@@ -3258,7 +3258,7 @@ const WorkbenchFileContentComponent = ({
                     {sortHeader('markings', 'Marking definitions', true)}
                     {sortHeader('in_platform', 'Already in plat.', false)}
                   </div>
-                }
+                )}
               />
             </ListItemButton>
           </ListItem>
@@ -3294,14 +3294,14 @@ const WorkbenchFileContentComponent = ({
                     ? null
                     : () => handleOpenEntity(object.type, object.id)
                 }
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     onClick={() => handleDeleteObject(object)}
                     aria-haspopup="true"
                   >
                     <DeleteOutlined />
                   </IconButton>
-                }
+                )}
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -3322,7 +3322,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -3371,7 +3371,7 @@ const WorkbenchFileContentComponent = ({
                         )}
                       </div>
                     </div>
-                  }
+                  )}
                 />
               </ListItem>
             );
@@ -3448,7 +3448,7 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
@@ -3456,7 +3456,7 @@ const WorkbenchFileContentComponent = ({
                   {sortHeader('markings', 'Marking definitions', true)}
                   {sortHeader('in_platform', 'Already in plat.', false)}
                 </div>
-              }
+              )}
             />
           </ListItem>
           {sortedStixCyberObservables.map((object) => {
@@ -3472,14 +3472,14 @@ const WorkbenchFileContentComponent = ({
                     ? null
                     : () => handleOpenObservable(object.type, object.id)
                 }
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     onClick={() => handleDeleteObject(object)}
                     aria-haspopup="true"
                   >
                     <DeleteOutlined />
                   </IconButton>
-                }
+                )}
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -3500,7 +3500,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -3579,18 +3579,18 @@ const WorkbenchFileContentComponent = ({
                               if (props && props.stixCyberObservables) {
                                 return props.stixCyberObservables.edges.length
                                   > 0 ? (
-                                    <ItemBoolean
-                                      variant="inList"
-                                      status={true}
-                                      label={t_i18n('Yes')}
-                                    />
-                                  ) : (
-                                    <ItemBoolean
-                                      variant="inList"
-                                      status={false}
-                                      label={t_i18n('No')}
-                                    />
-                                  );
+                                      <ItemBoolean
+                                        variant="inList"
+                                        status={true}
+                                        label={t_i18n('Yes')}
+                                      />
+                                    ) : (
+                                      <ItemBoolean
+                                        variant="inList"
+                                        status={false}
+                                        label={t_i18n('No')}
+                                      />
+                                    );
                               }
                               return (
                                 <ItemBoolean
@@ -3610,7 +3610,7 @@ const WorkbenchFileContentComponent = ({
                         )}
                       </div>
                     </div>
-                  }
+                  )}
                 />
               </ListItem>
             );
@@ -3688,14 +3688,14 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
                   {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                 </div>
-              }
+              )}
             />
           </ListItem>
           {sortedStixCoreRelationships.map((object) => (
@@ -3703,14 +3703,14 @@ const WorkbenchFileContentComponent = ({
               key={object.id}
               divider
               disablePadding
-              secondaryAction={
+              secondaryAction={(
                 <IconButton
                   onClick={() => handleDeleteObject(object)}
                   aria-haspopup="true"
                 >
                   <DeleteOutlined />
                 </IconButton>
-              }
+              )}
             >
               <ListItemButton
                 classes={{ root: classes.item }}
@@ -3724,9 +3724,9 @@ const WorkbenchFileContentComponent = ({
                   <Checkbox
                     edge="start"
                     checked={
-                    (selectAll && !(object.id in (deSelectedElements || {})))
-                    || object.id in (selectedElements || {})
-                  }
+                      (selectAll && !(object.id in (deSelectedElements || {})))
+                      || object.id in (selectedElements || {})
+                    }
                     disableRipple
                   />
                 </ListItemIcon>
@@ -3734,7 +3734,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={object.relationship_type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -3768,7 +3768,7 @@ const WorkbenchFileContentComponent = ({
                         />
                       </div>
                     </div>
-                }
+                  )}
                 />
               </ListItemButton>
             </ListItem>
@@ -3843,14 +3843,14 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
                   {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                 </div>
-              }
+              )}
             />
           </ListItem>
           {sortedStixSightings.map((object) => (
@@ -3858,14 +3858,14 @@ const WorkbenchFileContentComponent = ({
               key={object.id}
               divider
               disablePadding
-              secondaryAction={
+              secondaryAction={(
                 <IconButton
                   onClick={() => handleDeleteObject(object)}
                   aria-haspopup="true"
                 >
                   <DeleteOutlined />
                 </IconButton>
-              }
+              )}
             >
               <ListItemButton
                 classes={{ root: classes.item }}
@@ -3878,9 +3878,9 @@ const WorkbenchFileContentComponent = ({
                   <Checkbox
                     edge="start"
                     checked={
-                    (selectAll && !(object.id in (deSelectedElements || {})))
-                    || object.id in (selectedElements || {})
-                  }
+                      (selectAll && !(object.id in (deSelectedElements || {})))
+                      || object.id in (selectedElements || {})
+                    }
                     disableRipple
                   />
                 </ListItemIcon>
@@ -3888,7 +3888,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type="sighting" />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -3922,7 +3922,7 @@ const WorkbenchFileContentComponent = ({
                         />
                       </div>
                     </div>
-                }
+                  )}
                 />
               </ListItemButton>
             </ListItem>
@@ -4011,7 +4011,7 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
@@ -4019,7 +4019,7 @@ const WorkbenchFileContentComponent = ({
                   {sortHeader('markings', 'Marking definitions', true)}
                   {sortHeader('in_platform', 'Already in plat.', false)}
                 </div>
-              }
+              )}
             />
 
           </ListItem>
@@ -4032,14 +4032,14 @@ const WorkbenchFileContentComponent = ({
                 divider
                 button={object.type !== 'marking-definition'}
                 onClick={() => handleOpenContainer(object.type, object.id)}
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     onClick={() => handleDeleteObject(object)}
                     aria-haspopup="true"
                   >
                     <DeleteOutlined />
                   </IconButton>
-                }
+                )}
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -4060,7 +4060,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -4122,18 +4122,18 @@ const WorkbenchFileContentComponent = ({
                               if (props && props.stixDomainObjects) {
                                 return props.stixDomainObjects.edges.length
                                   > 0 ? (
-                                    <ItemBoolean
-                                      variant="inList"
-                                      status={true}
-                                      label={t_i18n('Yes')}
-                                    />
-                                  ) : (
-                                    <ItemBoolean
-                                      variant="inList"
-                                      status={false}
-                                      label={t_i18n('No')}
-                                    />
-                                  );
+                                      <ItemBoolean
+                                        variant="inList"
+                                        status={true}
+                                        label={t_i18n('Yes')}
+                                      />
+                                    ) : (
+                                      <ItemBoolean
+                                        variant="inList"
+                                        status={false}
+                                        label={t_i18n('No')}
+                                      />
+                                    );
                               }
                               return (
                                 <ItemBoolean
@@ -4153,7 +4153,7 @@ const WorkbenchFileContentComponent = ({
                         )}
                       </div>
                     </div>
-                  }
+                  )}
                 />
               </ListItem>
             );
@@ -4266,22 +4266,22 @@ const WorkbenchFileContentComponent = ({
               <DialogTitle>{t_i18n('Validate and send for import')}</DialogTitle>
               <DialogContent>
                 {!!file.metaData.entity_id && !!file.metaData.entity && (
-                <>
-                  <Alert severity="info" variant="outlined">
-                    <Typography>
-                      {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.')}
-                    </Typography>
-                    <Typography>
-                      {t_i18n('Because by default the workbench won\'t include the updates made on the entity after the creation of the workbench.')}
-                    </Typography>
-                  </Alert>
-                  <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="refreshEntity"
-                    label={t_i18n('Refresh entity')}
-                  />
-                </>
+                  <>
+                    <Alert severity="info" variant="outlined">
+                      <Typography>
+                        {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.')}
+                      </Typography>
+                      <Typography>
+                        {t_i18n('Because by default the workbench won\'t include the updates made on the entity after the creation of the workbench.')}
+                      </Typography>
+                    </Alert>
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="refreshEntity"
+                      label={t_i18n('Refresh entity')}
+                    />
+                  </>
                 )}
                 <Field
                   component={SelectField}

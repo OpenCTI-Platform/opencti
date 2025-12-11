@@ -24,7 +24,7 @@ export const checkRelationConsistency = async (
   user: AuthUser,
   relationshipType: string,
   from: ConsistencyObject,
-  to: ConsistencyObject | ConsistencyObject[]
+  to: ConsistencyObject | ConsistencyObject[],
 ) => {
   const checkRelationConsistencyFn = async () => {
     // 01 - check type consistency
@@ -36,7 +36,7 @@ export const checkRelationConsistency = async (
       if (isStixCoreRelationship(relationshipType)) {
         if (!checkStixCoreRelationshipMapping(fromType, toType, relationshipType)) {
           throw FunctionalError(
-            `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
+            `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`,
           );
         }
       } else if (isStixRefRelationship(relationshipType)) {
@@ -57,7 +57,7 @@ export const isRelationConsistent = async (
   user: AuthUser,
   relationshipType: string,
   from: ConsistencyObject,
-  to: ConsistencyObject | ConsistencyObject[]
+  to: ConsistencyObject | ConsistencyObject[],
 ) => {
   try {
     await checkRelationConsistency(context, user, relationshipType, from, to);

@@ -16,7 +16,7 @@ const PositionPopoverDeletionMutation = graphql`
 interface PositionPopoverDeletionProps {
   positionId: string;
   handleClose: () => void;
-  deletion: { deleting: boolean, handleOpenDelete: () => void, displayDelete: boolean, handleCloseDelete: () => void, setDeleting: React.Dispatch<React.SetStateAction<boolean>> };
+  deletion: { deleting: boolean; handleOpenDelete: () => void; displayDelete: boolean; handleCloseDelete: () => void; setDeleting: React.Dispatch<React.SetStateAction<boolean>> };
 }
 
 const PositionPopoverDeletion: FunctionComponent<PositionPopoverDeletionProps> = ({

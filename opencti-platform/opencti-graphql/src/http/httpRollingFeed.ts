@@ -29,7 +29,7 @@ const errorConverter = (e: any) => {
 };
 
 const escapeCsvField = (separator: string, data: string) => {
-  let escapedData:string;
+  let escapedData: string;
 
   if (data.includes('"') || data.includes(separator)
   ) {
@@ -39,7 +39,7 @@ const escapeCsvField = (separator: string, data: string) => {
   return data;
 };
 
-export const buildCsvLines = (elements:any[], feed:BasicStoreEntityFeed):string[] => {
+export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed): string[] => {
   const lines: string[] = [];
   const separator = feed.separator ?? ',';
   for (let index = 0; index < elements.length; index += 1) {

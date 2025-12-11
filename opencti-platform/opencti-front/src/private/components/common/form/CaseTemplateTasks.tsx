@@ -112,11 +112,11 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
           ...(values ?? []),
           ...(data.taskTemplateAdd
             ? [
-              {
-                value: data.taskTemplateAdd.id,
-                label: data.taskTemplateAdd.name,
-              },
-            ]
+                {
+                  value: data.taskTemplateAdd.id,
+                  label: data.taskTemplateAdd.name,
+                },
+              ]
             : []),
         ]);
         resetForm();

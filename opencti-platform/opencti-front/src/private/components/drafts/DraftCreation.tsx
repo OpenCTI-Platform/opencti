@@ -67,14 +67,14 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
       authorized_members: !values.authorizedMembers
         ? null
         : values.authorizedMembers
-          .filter((v) => v.accessRight !== 'none')
-          .map((member) => ({
-            id: member.value,
-            access_right: member.accessRight,
-            groups_restriction_ids: member.groupsRestriction?.length > 0
-              ? member.groupsRestriction.map((group) => group.value)
-              : undefined,
-          })),
+            .filter((v) => v.accessRight !== 'none')
+            .map((member) => ({
+              id: member.value,
+              access_right: member.accessRight,
+              groups_restriction_ids: member.groupsRestriction?.length > 0
+                ? member.groupsRestriction.map((group) => group.value)
+                : undefined,
+            })),
     };
     commitCreationMutation({
       variables: {
@@ -162,7 +162,7 @@ const DraftCreation = ({ paginationOptions }: { paginationOptions: DraftsLinesPa
     'draftWorkspaceAdd',
   );
   const CreateDraftControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='DraftWorkspace' {...props} />
+    <CreateEntityControlledDial entityType="DraftWorkspace" {...props} />
   );
   return (
     <Drawer

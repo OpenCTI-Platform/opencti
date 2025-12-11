@@ -89,20 +89,20 @@ interface FormikCaseIncidentAddInput {
   response_types: string[];
   caseTemplates?: FieldOption[];
   authorized_members: {
-    value: string,
-    accessRight: string,
+    value: string;
+    accessRight: string;
     groupsRestriction: {
-      label: string,
-      value: string,
-      type: string
-    }[] }[] | undefined;
+      label: string;
+      value: string;
+      type: string;
+    }[]; }[] | undefined;
 }
 
 interface IncidentFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null | undefined
+    response: { id: string; name: string } | null | undefined,
   ) => void;
   onClose?: () => void;
   defaultConfidence?: number;
@@ -359,13 +359,13 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >
               <div style={fieldSpacingContainerStyle}>
-                <Accordion >
+                <Accordion>
                   <AccordionSummary id="accordion-panel">
                     <Typography>{t_i18n('Advanced options')}</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
                     <Field
-                      name={'authorized_members'}
+                      name="authorized_members"
                       component={AuthorizedMembersField}
                       containerstyle={{ marginTop: 20 }}
                       showAllMembersLine
@@ -430,7 +430,7 @@ const CaseIncidentCreation = ({
     'caseIncidentAdd',
   );
   const CreateCaseIncidentControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Case-Incident' {...props} />
+    <CreateEntityControlledDial entityType="Case-Incident" {...props} />
   );
 
   return (

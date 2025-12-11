@@ -10,7 +10,7 @@ export interface UseEntityToggle<T> {
   onToggleEntity: (
     entity: T | T[],
     _?: React.SyntheticEvent,
-    forceRemove?: T[]
+    forceRemove?: T[],
   ) => void;
   handleClearSelectedElements: () => void;
   handleToggleSelectAll: () => void;
@@ -18,10 +18,10 @@ export interface UseEntityToggle<T> {
 }
 
 type UseEntityToggleType = {
-  id: string,
-  name?: string | null,
-  observable_value?: string | null,
-  entity_type?: string | null
+  id: string;
+  name?: string | null;
+  observable_value?: string | null;
+  entity_type?: string | null;
   representative?: {
     main: string;
   };
@@ -38,9 +38,9 @@ const useEntityToggle = <T extends UseEntityToggleType>(
 
   const busKey = `${key}_entityToggle`;
   const callback = useCallback((values: {
-    selectAll?: boolean,
-    selectedElements?: Record<string, T>,
-    deSelectedElements?: Record<string, T>,
+    selectAll?: boolean;
+    selectedElements?: Record<string, T>;
+    deSelectedElements?: Record<string, T>;
   }) => {
     if (values.selectAll != null) {
       setSelectAll(values.selectAll);

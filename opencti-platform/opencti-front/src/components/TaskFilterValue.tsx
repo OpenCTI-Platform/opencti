@@ -72,12 +72,12 @@ const TaskFilterValue = ({
             <span key={currentFilter.key}>
               <Chip
                 classes={{ root: classes.filter }}
-                label={
+                label={(
                   <div>
                     <strong>{label}</strong>:{' '}
                     <TaskFilterValue filters={{ mode: 'and', filters: sortedFilterValues, filterGroups: [] }} queryRef={queryRef} />
                   </div>
-              }
+                )}
               />
             </span>
           );
@@ -86,12 +86,12 @@ const TaskFilterValue = ({
           <span key={currentFilter.key}>
             <Chip
               classes={{ root: classes.filter }}
-              label={
+              label={(
                 <div>
                   <strong>{label}</strong>
                   {!isOperatorDisplayed && (
                     <Box
-                      component={'span'}
+                      component="span"
                       sx={{ padding: '0 4px', fontWeight: 'normal' }}
                     >
                       {t_i18n(currentFilter.operator)}
@@ -107,7 +107,7 @@ const TaskFilterValue = ({
                     return (
                       <Tooltip
                         key={o}
-                        title={
+                        title={(
                           <FilterValuesContent
                             filterKey={currentFilter.key}
                             id={o}
@@ -115,7 +115,7 @@ const TaskFilterValue = ({
                             isFilterTooltip={true}
                             filterOperator={currentFilter.operator}
                           />
-                          }
+                        )}
                       >
                         <span key={o}>
                           <FilterValuesContent
@@ -133,7 +133,7 @@ const TaskFilterValue = ({
                   })
                   }
                 </div>
-              }
+              )}
             />
             {R.last(filters.filters)?.key !== currentFilter.key && (
               <Chip

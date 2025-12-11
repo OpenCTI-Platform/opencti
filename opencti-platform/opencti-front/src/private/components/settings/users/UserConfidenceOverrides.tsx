@@ -5,21 +5,21 @@ import { useFormatter } from '../../../../components/i18n';
 
 type UserConfidenceOverridesProps = {
   overrides: readonly {
-    readonly entity_type: string,
-    readonly max_confidence: number,
+    readonly entity_type: string;
+    readonly max_confidence: number;
     readonly source: {
       readonly object: {
-        readonly entity_type?: string | undefined,
-        readonly id?: string | undefined,
-        readonly name?: string | undefined
-      } | null | undefined,
-      readonly type: EffectiveConfidenceLevelSourceType
-    } | null | undefined
-  }[]
+        readonly entity_type?: string | undefined;
+        readonly id?: string | undefined;
+        readonly name?: string | undefined;
+      } | null | undefined;
+      readonly type: EffectiveConfidenceLevelSourceType;
+    } | null | undefined;
+  }[];
 };
 
 type OverrideConfidenceSourceProps = {
-  override: UserConfidenceOverridesProps['overrides'][0]
+  override: UserConfidenceOverridesProps['overrides'][0];
 };
 
 const OverrideConfidenceWithSource: React.FC<OverrideConfidenceSourceProps> = ({ override, ...rest }) => {

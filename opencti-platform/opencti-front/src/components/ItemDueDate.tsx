@@ -16,7 +16,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const ItemDueDate = ({ due_date, variant }: { due_date: string | null, variant: string }) => {
+const ItemDueDate = ({ due_date, variant }: { due_date: string | null; variant: string }) => {
   const { fld, fldt } = useFormatter();
   const classes = useStyles();
   const isoDate = new Date().toISOString();

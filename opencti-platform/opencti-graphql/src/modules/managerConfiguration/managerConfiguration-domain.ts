@@ -21,10 +21,10 @@ export const findByManagerId = async (context: AuthContext, user: AuthUser, mana
       filters: {
         mode: 'and',
         filters: [
-          { key: ['manager_id'], values: [managerId], mode: 'or', operator: 'eq' }
+          { key: ['manager_id'], values: [managerId], mode: 'or', operator: 'eq' },
         ],
         filterGroups: [],
-      } as FilterGroup
+      } as FilterGroup,
     });
   };
   return telemetry(context, user, 'QUERY managerConfiguration', {
@@ -41,7 +41,7 @@ export const managerConfigurationEditField = async (context: AuthContext, user: 
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for manager configuration \`${element.manager_id}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_MANAGER_CONFIGURATION, input }
+    context_data: { id, entity_type: ENTITY_TYPE_MANAGER_CONFIGURATION, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, element, user);
 };
@@ -62,7 +62,7 @@ export const updateManagerConfigurationLastRun = async (
   context: AuthContext,
   user: AuthUser,
   managerConfigurationId: string,
-  updateInput: { last_run_start_date?: Date, last_run_end_date?: Date }
+  updateInput: { last_run_start_date?: Date; last_run_end_date?: Date },
 ) => {
   const updatedManagerConfiguration = await patchAttribute(context, user, managerConfigurationId, ENTITY_TYPE_MANAGER_CONFIGURATION, updateInput);
   await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, updatedManagerConfiguration, user);
@@ -73,7 +73,7 @@ export const updateManagerConfigurationLastRun = async (
 const addManagerConfiguration = async (
   context: AuthContext,
   user: AuthUser,
-  managerConfiguration: { manager_id: string, manager_running: boolean, manager_setting: any }
+  managerConfiguration: { manager_id: string; manager_running: boolean; manager_setting: any },
 ) => {
   const createdManagerConfiguration = await createEntity(context, user, managerConfiguration, ENTITY_TYPE_MANAGER_CONFIGURATION);
   await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].ADDED_TOPIC, createdManagerConfiguration, user);

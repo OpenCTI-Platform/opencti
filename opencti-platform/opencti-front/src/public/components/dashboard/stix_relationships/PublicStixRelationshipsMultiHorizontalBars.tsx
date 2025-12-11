@@ -119,9 +119,9 @@ const publicStixRelationshipsMultiHorizontalBarsQuery = graphql`
 `;
 
 interface PublicStixRelationshipsMultiHorizontalBarsComponentProps {
-  parameters: Widget['parameters']
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsMultiHorizontalBarsQuery>
+  parameters: Widget['parameters'];
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsMultiHorizontalBarsQuery>;
 }
 
 const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
@@ -229,18 +229,18 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
     );
     const redirectionUtils = finalField === 'internal_id'
       ? publicStixRelationshipsDistribution.map((n) => ({
-        id: n?.label,
-        entity_type: n?.entity?.entity_type,
-        series: subSectionIdsOrder.map((subSectionId) => {
-          const [entity] = (n?.breakdownDistribution ?? []).filter(
-            (e) => e?.label === subSectionId,
-          );
-          return {
-            id: subSectionId,
-            entity_type: entity ? entity.entity?.entity_type : null,
-          };
-        }),
-      }))
+          id: n?.label,
+          entity_type: n?.entity?.entity_type,
+          series: subSectionIdsOrder.map((subSectionId) => {
+            const [entity] = (n?.breakdownDistribution ?? []).filter(
+              (e) => e?.label === subSectionId,
+            );
+            return {
+              id: subSectionId,
+              entity_type: entity ? entity.entity?.entity_type : null,
+            };
+          }),
+        }))
       : undefined;
 
     return (

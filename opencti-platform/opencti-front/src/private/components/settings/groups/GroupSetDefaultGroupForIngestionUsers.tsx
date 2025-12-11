@@ -46,13 +46,13 @@ export const groupSetDefaultGroupForIngestionUsersQuery = graphql`
   }
 `;
 interface GroupSetDefaultGroupForIngestionUsersComponentProps {
-  queryRef: PreloadedQuery<GroupSetDefaultGroupForIngestionUsersQuery>
+  queryRef: PreloadedQuery<GroupSetDefaultGroupForIngestionUsersQuery>;
 }
 const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDefaultGroupForIngestionUsersComponentProps) => {
   const { t_i18n } = useFormatter();
   const [commitFieldPatch] = useApiMutation(groupSetDefaultGroupForIngestionUsersMutationFieldPatch);
   const [currentGroupForAutoIntegrationAssignation, setCurrentGroupForAutoIntegrationAssignation] = useState<
-  { id: string | undefined, name: string | undefined }>({ id: undefined, name: undefined });
+    { id: string | undefined; name: string | undefined }>({ id: undefined, name: undefined });
   const { setFieldValue } = useFormikContext();
   const { groups } = usePreloadedQuery(groupSetDefaultGroupForIngestionUsersQuery, queryRef);
 
@@ -66,7 +66,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
     }
   }, []);
 
-  const handleChange = (name: string, value: { label: string, value: string }) => {
+  const handleChange = (name: string, value: { label: string; value: string }) => {
     // Remove key from pre-selected group
     if (currentGroupForAutoIntegrationAssignation.id) {
       commitFieldPatch({
@@ -94,29 +94,34 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
     setCurrentGroupForAutoIntegrationAssignation({ id: value.value, name: value.label });
   };
 
-  return <Grid item xs={6}>
-    <Typography variant="h4" gutterBottom={true}>
-      { t_i18n('Service account policy')}
-    </Typography>
-    <Paper style={{
-      marginTop: 8,
-      padding: 20,
-      borderRadius: 4,
-    }} className={'paper-for-grid'} variant="outlined"
-    >
-      <Alert severity="info" variant="outlined">
-        {t_i18n('Define a group that will be assigned to each service account created on the fly for each ingestion type. \n'
-          + 'Service accounts will have specific rights (no ability to login via UI). ')}
-      </Alert>
-      <GroupField
-        style={{ marginTop: 20 }}
-        name="default_group_for_ingestion_users"
-        label={t_i18n('Default group for Service accounts')}
-        multiple={false}
-        onChange={handleChange}
-      />
-    </Paper>
-  </Grid>;
+  return (
+    <Grid item xs={6}>
+      <Typography variant="h4" gutterBottom={true}>
+        { t_i18n('Service account policy')}
+      </Typography>
+      <Paper
+        style={{
+          marginTop: 8,
+          padding: 20,
+          borderRadius: 4,
+        }}
+        className="paper-for-grid"
+        variant="outlined"
+      >
+        <Alert severity="info" variant="outlined">
+          {t_i18n('Define a group that will be assigned to each service account created on the fly for each ingestion type. \n'
+            + 'Service accounts will have specific rights (no ability to login via UI). ')}
+        </Alert>
+        <GroupField
+          style={{ marginTop: 20 }}
+          name="default_group_for_ingestion_users"
+          label={t_i18n('Default group for Service accounts')}
+          multiple={false}
+          onChange={handleChange}
+        />
+      </Paper>
+    </Grid>
+  );
 };
 
 const GroupSetDefaultGroupForIngestionUsers = () => {

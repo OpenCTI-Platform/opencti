@@ -13,7 +13,7 @@ import {
   refreshedAt,
   standardId,
   updatedAt,
-  metrics
+  metrics,
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_BASIC_OBJECT } from '../../schema/general';

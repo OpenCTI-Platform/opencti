@@ -18,8 +18,8 @@ export const groupingKnowledgeCorrelationQuery = graphql`
 `;
 
 interface GroupingKnowledgeCorrelationProps {
-  data: NonNullable<GroupingKnowledgeCorrelationQuery$data['grouping']>
-  id: string
+  data: NonNullable<GroupingKnowledgeCorrelationQuery$data['grouping']>;
+  id: string;
 }
 
 const GroupingKnowledgeCorrelation = ({
@@ -54,7 +54,7 @@ const GroupingKnowledgeCorrelation = ({
         queryObjectsRef={queryObjectsRef}
         pageSize={PAGE_SIZE}
         containerId={id}
-        containerType='grouping'
+        containerType="grouping"
         dataPositions={data}
         onPositionsChanged={savePositions}
       />

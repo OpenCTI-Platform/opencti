@@ -5,14 +5,14 @@ import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
 
 interface PaintOptions {
-  showNbConnectedElements?: boolean
+  showNbConnectedElements?: boolean;
 }
 
 interface UseGraphPainterArgs {
-  selectedLinks: GraphLink[]
-  selectedNodes: GraphNode[]
-  detailsPreviewSelected: GraphLink | GraphNode | undefined
-  search: string | undefined
+  selectedLinks: GraphLink[];
+  selectedNodes: GraphNode[];
+  detailsPreviewSelected: GraphLink | GraphNode | undefined;
+  search: string | undefined;
 }
 
 const useGraphPainter = (args?: UseGraphPainterArgs) => {

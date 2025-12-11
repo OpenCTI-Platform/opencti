@@ -52,7 +52,7 @@ const Message = () => {
     const subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
         if (messages && messages.length > 0 && messages[0]) {
-          const firstMessage = messages[0] as { text: string | ReactElement, type: string, fullError: FullError | null };
+          const firstMessage = messages[0] as { text: string | ReactElement; type: string; fullError: FullError | null };
           const textPart = firstMessage.text;
           const translatedText = (typeof textPart === 'string' || textPart instanceof String)
             ? t_i18n(textPart)
@@ -120,25 +120,33 @@ const Message = () => {
     }
     switch (type) {
       case 'error':
-        return <Alert severity="error" onClose={() => handleCloseMessage()}>
-          {text}
-        </Alert>;
+        return (
+          <Alert severity="error" onClose={() => handleCloseMessage()}>
+            {text}
+          </Alert>
+        );
       case 'nlq':
-        return <Alert
-          icon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />}
-          style={{ backgroundColor: theme.palette.ai.background, color: theme.palette.ai.light }}
-          onClose={() => handleCloseMessage()}
-               >
-          {text}
-        </Alert>;
+        return (
+          <Alert
+            icon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
+            style={{ backgroundColor: theme.palette.ai.background, color: theme.palette.ai.light }}
+            onClose={() => handleCloseMessage()}
+          >
+            {text}
+          </Alert>
+        );
       case 'message':
-        return <Alert severity="success" onClose={() => handleCloseMessage()}>
-          {text}
-        </Alert>;
+        return (
+          <Alert severity="success" onClose={() => handleCloseMessage()}>
+            {text}
+          </Alert>
+        );
       default:
-        return <Alert severity="success" onClose={() => handleCloseMessage()}>
-          {text}
-        </Alert>;
+        return (
+          <Alert severity="success" onClose={() => handleCloseMessage()}>
+            {text}
+          </Alert>
+        );
     }
   };
 
@@ -153,11 +161,11 @@ const Message = () => {
         {displayAlert()}
       </Snackbar>
       {isRequestAccessFeatureEnabled && (
-      <RequestAccessDialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        entitiesIds={entityIds}
-      />
+        <RequestAccessDialog
+          open={dialogOpen}
+          onClose={handleDialogClose}
+          entitiesIds={entityIds}
+        />
       )}
     </>
   );

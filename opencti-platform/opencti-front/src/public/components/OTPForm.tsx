@@ -9,9 +9,9 @@ import useApiMutation from '../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../relay/environment';
 
 interface OTPFormProps {
-  variant?: 'login' | 'resetPassword',
-  transactionId?: string,
-  onCompleted?: () => void
+  variant?: 'login' | 'resetPassword';
+  transactionId?: string;
+  onCompleted?: () => void;
 }
 
 const otpMutation = graphql`

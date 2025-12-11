@@ -67,7 +67,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
     <List>
       <TransitionGroup>
         {files.length > 0 && (
-          <Collapse key="header" >
+          <Collapse key="header">
             <ListItem divider>
               <Grid container columnSpacing={2}>
                 <Grid item xs={0.5}></Grid>
@@ -109,7 +109,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                 <Grid container alignItems="center" columnSpacing={2}>
                   {/* Column 1: File Icon */}
                   <Grid item xs={0.5} sx={{ display: 'flex' }}>
-                    <UploadFileOutlined color="primary"/>
+                    <UploadFileOutlined color="primary" />
                   </Grid>
 
                   {/* Column 2: File Name */}
@@ -149,7 +149,9 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                                   {t_i18n('Select a connector')}
                                 </MenuItem>
                                 {connectorsForImport?.map((connector) => (
-                                  <MenuItem key={connector?.id} value={connector?.id}
+                                  <MenuItem
+                                    key={connector?.id}
+                                    value={connector?.id}
                                     disabled={!connector?.active || !connector?.connector_scope?.includes(file.type)}
                                   >
                                     {connector?.name}
@@ -213,7 +215,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                   {/* Column 5: Delete Button */}
                   <Grid item xs={0.5}>
                     <IconButton edge="end" onClick={() => removeFile(file.name)} color="primary">
-                      <DeleteOutlined/>
+                      <DeleteOutlined />
                     </IconButton>
                   </Grid>
                 </Grid>

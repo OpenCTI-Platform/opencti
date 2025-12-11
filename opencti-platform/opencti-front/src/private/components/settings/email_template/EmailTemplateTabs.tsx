@@ -14,12 +14,12 @@ const tabsFragment = graphql`
 `;
 
 interface ChildrenProps {
-  index: number
+  index: number;
 }
 
 interface EmailTemplateTabsProps {
-  data: EmailTemplateTabs_template$key
-  children: (props: ChildrenProps) => ReactNode
+  data: EmailTemplateTabs_template$key;
+  children: (props: ChildrenProps) => ReactNode;
 }
 
 const EmailTemplateTabs = ({ children, data }: EmailTemplateTabsProps) => {

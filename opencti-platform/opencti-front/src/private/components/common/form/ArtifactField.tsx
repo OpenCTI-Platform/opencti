@@ -37,7 +37,7 @@ interface ArtifactFieldComponentProps {
 }
 
 const ArtifactFieldComponent: FunctionComponent<
-ArtifactFieldComponentProps
+  ArtifactFieldComponentProps
 > = ({ queryRef, attributeName, attributeValue, onChange, setSearch }) => {
   const data = usePreloadedQuery<ArtifactFieldGetQuery>(
     artifactQuery,

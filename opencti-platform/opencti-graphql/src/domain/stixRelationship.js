@@ -96,7 +96,7 @@ export const schemaTypesMapping = (mapping) => {
   return mergeEntries(flatEntries.map(([key, values]) => {
     return {
       key,
-      values: values.map((def) => def.name)
+      values: values.map((def) => def.name),
     };
   }));
 };

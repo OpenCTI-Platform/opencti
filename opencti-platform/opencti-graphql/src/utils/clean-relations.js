@@ -69,7 +69,7 @@ const computeMissingRelationsForType = async (context, relationType) => {
         .filter((s) => {
           return !R.all(
             (a) => resolvedIds.includes(a),
-            s.connections.map((c) => c.internal_id)
+            s.connections.map((c) => c.internal_id),
           );
         });
       relationsToTakeCare.push(...relationsToRemove);

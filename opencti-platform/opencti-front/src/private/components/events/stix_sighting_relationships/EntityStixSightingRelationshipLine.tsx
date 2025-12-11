@@ -291,7 +291,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
           <ItemIcon type={!restricted ? entity?.entity_type : 'restricted'} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -351,7 +351,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
                 <ItemConfidence confidence={data.confidence} entityType={data.entity_type} variant="inList" />
               </div>
             </div>
-          }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -368,17 +368,17 @@ export const EntityStixSightingRelationshipLineDummy = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined/>
+          <MoreVertOutlined />
         </Box>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <HelpOutlined />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -458,7 +458,7 @@ export const EntityStixSightingRelationshipLineDummy = ({
               />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );

@@ -11,7 +11,7 @@ import {
   opinionsTimeSeries,
   opinionsTimeSeriesByAuthor,
   opinionsTimeSeriesByEntity,
-  updateOpinionsMetrics
+  updateOpinionsMetrics,
 } from '../domain/opinion';
 import {
   stixDomainObjectAddRelation,
@@ -21,7 +21,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { resolveUserIndividual } from '../domain/user';
 import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../utils/access';

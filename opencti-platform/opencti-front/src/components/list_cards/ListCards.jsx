@@ -94,16 +94,16 @@ class ListCards extends Component {
                   keyword={keyword}
                 />
                 {availableFilterKeys.length > 0 && (
-                <Filters
-                  helpers={helpers}
-                  availableFilterKeys={availableFilterKeys}
-                  handleAddFilter={handleAddFilter}
-                  handleSwitchGlobalMode={handleSwitchGlobalMode}
-                  handleSwitchLocalMode={handleSwitchLocalMode}
-                  searchContext={{
-                    entityTypes: entityType ? [entityType] : [],
-                  }}
-                />
+                  <Filters
+                    helpers={helpers}
+                    availableFilterKeys={availableFilterKeys}
+                    handleAddFilter={handleAddFilter}
+                    handleSwitchGlobalMode={handleSwitchGlobalMode}
+                    handleSwitchLocalMode={handleSwitchLocalMode}
+                    searchContext={{
+                      entityTypes: entityType ? [entityType] : [],
+                    }}
+                  />
                 )}
                 <div className={classes.sortFieldContainer}>
                   <InputLabel classes={{ root: classes.sortFieldLabel }}>
@@ -121,7 +121,7 @@ class ListCards extends Component {
                         id: 'sort-by',
                       }}
                     >
-                      <MenuItem key='_score' value='_score'>
+                      <MenuItem key="_score" value="_score">
                         {t('Score')}
                       </MenuItem>
                       {toPairs(dataColumns).map((dataColumn) => (
@@ -137,19 +137,19 @@ class ListCards extends Component {
                     size="small"
                   >
                     {orderAsc ? (
-                      <ArrowDownward fontSize="small"/>
+                      <ArrowDownward fontSize="small" />
                     ) : (
-                      <ArrowUpward fontSize="small"/>
+                      <ArrowUpward fontSize="small" />
                     )}
                   </IconButton>
                 </div>
-                <div className={classes.filler}/>
+                <div className={classes.filler} />
                 <div style={{ display: 'flex' }}>
                   {numberOfElements && (
-                  <div style={{ marginRight: '8px', alignSelf: 'center' }}>
-                    <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
-                    {t('entitie(s)')}
-                  </div>
+                    <div style={{ marginRight: '8px', alignSelf: 'center' }}>
+                      <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
+                      {t('entitie(s)')}
+                    </div>
                   )}
                   {(typeof handleChangeView === 'function'
                     || typeof handleToggleExports === 'function') && (
@@ -169,48 +169,48 @@ class ListCards extends Component {
                       {typeof handleChangeView === 'function' && (
                         <ToggleButton value="cards" aria-label="cards">
                           <Tooltip title={t('Cards view')}>
-                            <ViewModuleOutlined fontSize="small"/>
+                            <ViewModuleOutlined fontSize="small" />
                           </Tooltip>
                         </ToggleButton>
                       )}
                       {typeof handleChangeView === 'function' && (
                         <ToggleButton value="lines" aria-label="lines">
                           <Tooltip title={t('Lines view')}>
-                            <ViewListOutlined color="primary" fontSize="small"/>
+                            <ViewListOutlined color="primary" fontSize="small" />
                           </Tooltip>
                         </ToggleButton>
                       )}
                       {typeof handleToggleExports === 'function'
                         && !exportDisabled && (
-                          <ToggleButton value="export" aria-label="export">
-                            <Tooltip title={t('Open export panel')}>
-                              <FileDownloadOutlined
-                                color={openExports ? 'secondary' : 'primary'}
-                                fontSize="small"
-                              />
-                            </Tooltip>
-                          </ToggleButton>
+                        <ToggleButton value="export" aria-label="export">
+                          <Tooltip title={t('Open export panel')}>
+                            <FileDownloadOutlined
+                              color={openExports ? 'secondary' : 'primary'}
+                              fontSize="small"
+                            />
+                          </Tooltip>
+                        </ToggleButton>
                       )}
                       {typeof handleToggleExports === 'function'
                         && exportDisabled && (
-                          <Tooltip
-                            title={`${
-                              t(
-                                'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                              ) + export_max_size
-                            })`}
-                          >
-                            <span>
-                              <ToggleButton
-                                size="small"
-                                value="export"
-                                aria-label="export"
-                                disabled={true}
-                              >
-                                <FileDownloadOutlined fontSize="small"/>
-                              </ToggleButton>
-                            </span>
-                          </Tooltip>
+                        <Tooltip
+                          title={`${
+                            t(
+                              'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                            ) + export_max_size
+                          })`}
+                        >
+                          <span>
+                            <ToggleButton
+                              size="small"
+                              value="export"
+                              aria-label="export"
+                              disabled={true}
+                            >
+                              <FileDownloadOutlined fontSize="small" />
+                            </ToggleButton>
+                          </span>
+                        </Tooltip>
                       )}
                     </ToggleButtonGroup>
                   )}

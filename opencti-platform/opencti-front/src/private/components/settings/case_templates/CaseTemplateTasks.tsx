@@ -96,8 +96,8 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
     });
   };
   const caseTemplate = usePreloadedFragment<
-  CaseTemplateEditionQuery,
-  CaseTemplateLine_node$key
+    CaseTemplateEditionQuery,
+    CaseTemplateLine_node$key
   >({
     queryRef,
     fragmentDef: CaseTemplateLineFragment,

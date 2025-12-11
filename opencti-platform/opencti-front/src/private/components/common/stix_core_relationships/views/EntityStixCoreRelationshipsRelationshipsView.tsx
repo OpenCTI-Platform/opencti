@@ -18,24 +18,24 @@ import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
-  entityId: string
-  entityLink: string
-  defaultStartTime?: string
-  defaultStopTime?: string
-  stixCoreObjectTypes?: string[]
-  relationshipTypes: string[]
-  localStorage: PaginationLocalStorage<PaginationOptions>
-  currentView: string
-  allDirections?: boolean
-  isRelationReversed?: boolean
-  enableContextualView: boolean
-  enableEntitiesView?: boolean
-  enableNestedView?: boolean
-  paddingRightButtonAdd?: number
-  role?: string,
-  handleChangeView?: (viewMode: string) => void
-  allowCreation?: boolean
-  isCoverage?: boolean
+  entityId: string;
+  entityLink: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
+  stixCoreObjectTypes?: string[];
+  relationshipTypes: string[];
+  localStorage: PaginationLocalStorage<PaginationOptions>;
+  currentView: string;
+  allDirections?: boolean;
+  isRelationReversed?: boolean;
+  enableContextualView: boolean;
+  enableEntitiesView?: boolean;
+  enableNestedView?: boolean;
+  paddingRightButtonAdd?: number;
+  role?: string;
+  handleChangeView?: (viewMode: string) => void;
+  allowCreation?: boolean;
+  isCoverage?: boolean;
 }
 
 const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStixCoreRelationshipsRelationshipsViewProps> = ({
@@ -340,25 +340,27 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
-        type={'stix-core-relationship'}
+        type="stix-core-relationship"
       />
 
-      {allowCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <StixCoreRelationshipCreationFromEntity
-          entityId={entityId}
-          allowedRelationshipTypes={relationshipTypes}
-          isRelationReversed={reversedRelation}
-          handleReverseRelation={handleReverseRelation}
-          targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
-          targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(stixCoreObjectTypes)}
-          defaultStartTime={defaultStartTime}
-          defaultStopTime={defaultStopTime}
-          paginationOptions={paginationOptions}
-          paddingRight={paddingRightButtonAdd ?? 220}
-          currentView={finalView}
-          isCoverage={isCoverage}
-        />
-      </Security>}
+      {allowCreation && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixCoreRelationshipCreationFromEntity
+            entityId={entityId}
+            allowedRelationshipTypes={relationshipTypes}
+            isRelationReversed={reversedRelation}
+            handleReverseRelation={handleReverseRelation}
+            targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
+            targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(stixCoreObjectTypes)}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+            paginationOptions={paginationOptions}
+            paddingRight={paddingRightButtonAdd ?? 220}
+            currentView={finalView}
+            isCoverage={isCoverage}
+          />
+        </Security>
+      )}
     </>
   );
 };

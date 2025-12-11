@@ -27,9 +27,9 @@ interface StixCoreRelationshipsProps {
   entityId: string;
   currentView?: string;
   viewButtons: ReactElement[];
-  targetTypes: string[]
-  direction: 'fromEntity' | 'toEntity' | 'all'
-  relationshipTypes: string[]
+  targetTypes: string[];
+  direction: 'fromEntity' | 'toEntity' | 'all';
+  relationshipTypes: string[];
   defaultStartTime?: string;
   defaultStopTime?: string;
 }

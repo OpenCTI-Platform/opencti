@@ -109,46 +109,46 @@ interface IngestionCsvCreationProps {
   drawerSettings?: {
     title: string;
     button: string;
-  }
+  };
 }
 
 interface IngestionCsvCreationContainerProps extends IngestionCsvCreationProps {
-  queryRef?: PreloadedQuery<IngestionCsvEditionContainerQuery>,
-  open?: boolean,
+  queryRef?: PreloadedQuery<IngestionCsvEditionContainerQuery>;
+  open?: boolean;
 
 }
 
 export interface IngestionCsvAddInput extends BasicUserHandlingValues {
-  name: string
-  message?: string | null
-  references?: ExternalReferencesValues
-  description?: string | null
-  scheduling_period?: string | null
-  uri: string
-  csv_mapper_type?: boolean
-  csv_mapper?: CsvMapperAddInput
-  csv_mapper_id?: string | FieldOption
-  authentication_type: IngestionAuthType | string
-  authentication_value?: string | null
-  ingestion_running?: boolean | null
-  user_id: string | FieldOption
-  automatic_user?: boolean
-  confidence_level?: string
-  username?: string
-  password?: string
-  cert?: string
-  key?: string
-  ca?: string
-  markings: FieldOption[]
+  name: string;
+  message?: string | null;
+  references?: ExternalReferencesValues;
+  description?: string | null;
+  scheduling_period?: string | null;
+  uri: string;
+  csv_mapper_type?: boolean;
+  csv_mapper?: CsvMapperAddInput;
+  csv_mapper_id?: string | FieldOption;
+  authentication_type: IngestionAuthType | string;
+  authentication_value?: string | null;
+  ingestion_running?: boolean | null;
+  user_id: string | FieldOption;
+  automatic_user?: boolean;
+  confidence_level?: string;
+  username?: string;
+  password?: string;
+  cert?: string;
+  key?: string;
+  ca?: string;
+  markings: FieldOption[];
 }
 
 const resolveHasUserChoiceCsvMapper = (option: FieldOption & {
-  representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
+  representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[];
 }) => {
   return option.representations.some(
     (representation) => representation.attributes.some(
       (attribute) => attribute.key === 'objectMarking' && attribute.default_values.some(
-        ((value) => (typeof value === 'string' ? value === USER_CHOICE_MARKING_CONFIG : value?.name === USER_CHOICE_MARKING_CONFIG)),
+        (value) => (typeof value === 'string' ? value === USER_CHOICE_MARKING_CONFIG : value?.name === USER_CHOICE_MARKING_CONFIG),
       ),
     ),
   );
@@ -156,7 +156,7 @@ const resolveHasUserChoiceCsvMapper = (option: FieldOption & {
 
 const CreateIngestionCsvControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='IngestionCsv'
+    entityType="IngestionCsv"
     {...props}
   />
 );
@@ -184,14 +184,14 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   };
   const onCsvMapperSelection = async (
     option: FieldOption & {
-      representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
+      representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[];
     },
     {
       setFieldValue,
       values,
-    }:{
+    }: {
       setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>);
-      values: IngestionCsvAddInput
+      values: IngestionCsvAddInput;
     },
   ) => {
     const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option);
@@ -333,7 +333,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               onChange={(_event, value) => handleChangeTab(value)}
             >
               <Tab label={t_i18n('Overview')} />
-              <Tab label={t_i18n('Inline csv mapper')} disabled={values.csv_mapper_type}/>
+              <Tab label={t_i18n('Inline csv mapper')} disabled={values.csv_mapper_type} />
             </Tabs>
           </Box>
           <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
@@ -362,7 +362,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <IngestionSchedulingField/>
+              <IngestionSchedulingField />
               <Field
                 component={TextField}
                 variant="standard"
@@ -388,16 +388,16 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               </Box>
               {
                 values.csv_mapper_type && queryRef && (
-                  <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+                  <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
                     <Box sx={{ width: '100%', marginTop: 5 }}>
                       <Alert
                         severity="info"
                         variant="outlined"
                         style={{ padding: '0px 10px 0px 10px' }}
                       >
-                        {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
-                        <br/>
-                        {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br/>
+                        {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
+                        <br />
+                        {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
                       </Alert>
                     </Box>
                     <CsvMapperField
@@ -492,7 +492,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                   variant="outlined"
                   style={{ padding: '0px 10px 0px 10px' }}
                 >
-                  {t_i18n('Please, verify the validity of the selected CSV mapper for the given URL.')}<br/>
+                  {t_i18n('Please, verify the validity of the selected CSV mapper for the given URL.')}<br />
                   {t_i18n('Only successful tests allow the ingestion creation.')}
                 </Alert>
               </Box>

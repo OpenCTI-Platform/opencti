@@ -15,7 +15,7 @@ import {
   stixCoreRelationshipsDistribution,
   stixCoreRelationshipsExportAsk,
   stixCoreRelationshipsMultiTimeSeries,
-  stixCoreRelationshipsNumber
+  stixCoreRelationshipsNumber,
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
@@ -32,7 +32,7 @@ import {
   notesPaginated,
   opinionsPaginated,
   reportsPaginated,
-  stixCoreObjectsExportPush
+  stixCoreObjectsExportPush,
 } from '../domain/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';

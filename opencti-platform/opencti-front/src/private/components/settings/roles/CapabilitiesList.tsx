@@ -51,12 +51,12 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
             <ItemIcon type="Capability" />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <>
                 {t_i18n('Allow modification of sensitive configuration')}
                 <DangerZoneChip style={{ marginTop: 0 }} />
               </>
-            }
+            )}
           />
         </ListItem>
       )}

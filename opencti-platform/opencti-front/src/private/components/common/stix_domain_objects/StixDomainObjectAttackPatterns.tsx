@@ -18,11 +18,11 @@ import { containerTypes } from '../../../../utils/hooks/useAttributes';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 
 interface StixDomainObjectAttackPatternsProps {
-  stixDomainObjectId: string,
-  defaultStartTime?: string,
-  defaultStopTime?: string,
-  disableExport: boolean,
-  entityType: string,
+  stixDomainObjectId: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
+  disableExport: boolean;
+  entityType: string;
 }
 
 const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPatternsProps> = ({

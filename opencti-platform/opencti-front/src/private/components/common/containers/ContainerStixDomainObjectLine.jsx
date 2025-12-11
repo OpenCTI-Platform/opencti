@@ -120,20 +120,20 @@ const ContainerStixDomainObjectLineComponent = (props) => {
           classes={{ root: classes.itemIcon }}
           style={{ minWidth: 40 }}
           onClick={(event) => !isOnlyThroughInference
-          && (event.shiftKey
-            ? onToggleShiftEntity(index, node, event)
-            : onToggleEntity(node, event))
-        }
+            && (event.shiftKey
+              ? onToggleShiftEntity(index, node, event)
+              : onToggleEntity(node, event))
+          }
         >
           <Checkbox
             edge="start"
             disabled={isOnlyThroughInference}
             checked={
-            (selectAll
-              && !isOnlyThroughInference
-              && !(node.id in (deSelectedElements || {})))
-            || node.id in (selectedElements || {})
-          }
+              (selectAll
+                && !isOnlyThroughInference
+                && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
+            }
             disableRipple={true}
           />
         </ListItemIcon>
@@ -141,7 +141,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -156,7 +156,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                 {node.x_mitre_id
                   ? `[${node.x_mitre_id}] ${node.name}`
                   : getMainRepresentative(node)}
-                {node.draftVersion && (<DraftChip/>)}
+                {node.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -189,19 +189,21 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                   'Course-Of-Action',
                   'Data-Component',
                   'Data-Source',
-                ].includes(node.entity_type) ? (
-                  <Chip
-                    classes={{ root: classes.chipNoLink }}
-                    label={n(node.containersNumber.total)}
-                  />
-                  ) : (
-                    <Chip
-                      classes={{ root: classes.chip }}
-                      label={n(node.containersNumber.total)}
-                      component={Link}
-                      to={linkAnalyses}
-                    />
-                  )}
+                ].includes(node.entity_type)
+                  ? (
+                      <Chip
+                        classes={{ root: classes.chipNoLink }}
+                        label={n(node.containersNumber.total)}
+                      />
+                    ) : (
+                      <Chip
+                        classes={{ root: classes.chip }}
+                        label={n(node.containersNumber.total)}
+                        component={Link}
+                        to={linkAnalyses}
+                      />
+                    )
+                }
               </div>
               <div
                 className={classes.bodyItem}
@@ -214,7 +216,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                 />
               </div>
             </div>
-        }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -373,11 +375,11 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <IconButton disabled={true} aria-haspopup="true" size="large" classes={classes.itemIconDisabled}>
           <MoreVert />
         </IconButton>
-      }
+      )}
     >
       <ListItemIcon
         classes={{ root: classes.itemIconDisabled }}
@@ -389,7 +391,7 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -469,7 +471,7 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

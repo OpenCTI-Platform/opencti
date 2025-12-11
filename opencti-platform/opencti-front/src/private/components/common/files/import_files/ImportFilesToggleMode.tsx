@@ -11,18 +11,18 @@ const CARD_HEIGHT = 300;
 const ImportFilesToggleMode = () => {
   const { t_i18n } = useFormatter();
   const { setActiveStep, importMode, setImportMode, entityId } = useImportFilesContext();
-  const modes: { mode: ImportMode, title: string, description: string, icon: React.ReactElement }[] = [
+  const modes: { mode: ImportMode; title: string; description: string; icon: React.ReactElement }[] = [
     {
       mode: 'auto',
       title: t_i18n('Direct/Automatic Import'),
       description: t_i18n('Quick import with no configuration needed. Just upload your files and the platform takes care of the rest. Perfect if your file follows a standard format (STIX2.1, MISP).'),
-      icon: <UploadFileOutlined sx={{ fontSize: 40 }} color="primary"/>,
+      icon: <UploadFileOutlined sx={{ fontSize: 40 }} color="primary" />,
     },
     {
       mode: 'manual',
       title: t_i18n('Step-by-Step Import'),
       description: t_i18n('A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import'),
-      icon: <RouteOutlined sx={{ fontSize: 40, transform: 'rotate(90deg)' }} color="primary"/>,
+      icon: <RouteOutlined sx={{ fontSize: 40, transform: 'rotate(90deg)' }} color="primary" />,
     },
   ];
 
@@ -32,7 +32,7 @@ const ImportFilesToggleMode = () => {
       mode: 'form',
       title: t_i18n('Import using a Form'),
       description: t_i18n('Use a structured form to create and import data. Select from available forms and fill in the required information to generate properly formatted entities.'),
-      icon: <DescriptionOutlined sx={{ fontSize: 40 }} color="primary"/>,
+      icon: <DescriptionOutlined sx={{ fontSize: 40 }} color="primary" />,
     });
   }
 
@@ -85,7 +85,7 @@ const ImportFilesToggleMode = () => {
               >
                 {title}
               </Typography>
-              <br/>
+              <br />
               <Typography variant="body1">
                 {description}
               </Typography>

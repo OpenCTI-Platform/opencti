@@ -36,7 +36,7 @@ export const addRegion = async (context, user, region) => {
     context,
     user,
     assoc('x_opencti_location_type', ENTITY_TYPE_LOCATION_REGION, region),
-    ENTITY_TYPE_LOCATION_REGION
+    ENTITY_TYPE_LOCATION_REGION,
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

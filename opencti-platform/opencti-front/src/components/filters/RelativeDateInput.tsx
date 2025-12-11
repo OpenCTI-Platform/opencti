@@ -44,9 +44,11 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       return t_i18n('', {
         id: 'The value must be a datetime or a relative date expressed in date math. See our documentation for more information.',
         values: {
-          link: <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?H=filters#operators">
-            {t_i18n('our documentation')}
-          </Link>,
+          link: (
+            <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?H=filters#operators">
+              {t_i18n('our documentation')}
+            </Link>
+          ),
         },
       });
     }
@@ -83,12 +85,14 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   return (
     <div style={{ display: 'flex' }}>
       {isDatePickerOpen
-        && <DateTimePicker
-          open={true}
-          onClose={() => setIsDatePickerOpen(false)}
-          sx={{ display: 'none' }}
-          onChange={handleChangeAbsoluteDateFilter}
-           />
+        && (
+          <DateTimePicker
+            open={true}
+            onClose={() => setIsDatePickerOpen(false)}
+            sx={{ display: 'none' }}
+            onChange={handleChangeAbsoluteDateFilter}
+          />
+        )
       }
       <TextField
         variant="outlined"
@@ -111,20 +115,22 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         helperText={generateErrorMessage(dateInput)}
         slotProps={{
           input: {
-            endAdornment: <Button
-              size="small"
-              sx={{
-                marginLeft: -1,
-                marginRight: -3,
-                color: theme.palette.text.primary,
-                ':hover': {
-                  backgroundColor: 'transparent',
-                },
-              }}
-              onClick={() => setIsDatePickerOpen(true)}
-                          >
-              <DateRangeOutlined/>
-            </Button>,
+            endAdornment: (
+              <Button
+                size="small"
+                sx={{
+                  marginLeft: -1,
+                  marginRight: -3,
+                  color: theme.palette.text.primary,
+                  ':hover': {
+                    backgroundColor: 'transparent',
+                  },
+                }}
+                onClick={() => setIsDatePickerOpen(true)}
+              >
+                <DateRangeOutlined />
+              </Button>
+            ),
           },
         }}
       />

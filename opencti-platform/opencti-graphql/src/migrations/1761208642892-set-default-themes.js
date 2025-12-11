@@ -22,8 +22,8 @@ export const up = async (next) => {
     body: {
       query: {
         term: {
-          'entity_type.keyword': 'Theme'
-        }
+          'entity_type.keyword': 'Theme',
+        },
       },
     },
   }).catch((err) => {
@@ -49,7 +49,7 @@ export const up = async (next) => {
     theme_logo: settings.platform_theme_dark_logo || DARK_DEFAULTS.theme_logo,
     theme_logo_collapsed: settings.platform_theme_dark_logo_collapsed || DARK_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: settings.platform_theme_dark_logo_login || DARK_DEFAULTS.theme_logo_login,
-    built_in: true
+    built_in: true,
   };
 
   const darkTheme = await addTheme(context, SYSTEM_USER, darkThemeInput);
@@ -68,7 +68,7 @@ export const up = async (next) => {
     theme_logo: settings.platform_theme_light_logo || LIGHT_DEFAULTS.theme_logo,
     theme_logo_collapsed: settings.platform_theme_light_logo_collapsed || LIGHT_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: settings.platform_theme_light_logo_login || LIGHT_DEFAULTS.theme_logo_login,
-    built_in: true
+    built_in: true,
   };
 
   const lightTheme = await addTheme(context, SYSTEM_USER, lightThemeInput);
@@ -94,13 +94,13 @@ export const up = async (next) => {
   const updateQuery = {
     query: {
       term: {
-        'entity_type.keyword': 'Settings'
-      }
+        'entity_type.keyword': 'Settings',
+      },
     },
     script: {
       source: `ctx._source.platform_theme = '${themeId}'`,
-      lang: 'painless'
-    }
+      lang: 'painless',
+    },
   };
 
   await elRawUpdateByQuery({

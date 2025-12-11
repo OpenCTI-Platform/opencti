@@ -126,7 +126,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                 />
               </Security>
             )}
-            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <InfrastructureDeletion id={infrastructure.id} isOpen={isOpen} handleClose={onClose} />
               </Security>
@@ -181,7 +181,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
           <Routes>
             <Route
               path="/"
-              element={<Infrastructure data={infrastructure}/>}
+              element={<Infrastructure data={infrastructure} />}
             />
             <Route
               path="/knowledge"
@@ -194,48 +194,51 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             />
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <div key={forceUpdate}>
-                  <InfrastructureKnowledge infrastructure={infrastructure}/>
+                  <InfrastructureKnowledge infrastructure={infrastructure} />
                 </div>
-              }
+              )}
             />
             <Route
               path="/content/*"
-              element={
+              element={(
                 <StixCoreObjectContentRoot
                   stixCoreObject={infrastructure}
                 />
-              }
+              )}
             />
             <Route
               path="/analyses/*"
-              element={
+              element={(
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   stixDomainObjectOrStixCoreRelationship={infrastructure}
-                />}
+                />
+              )}
             />
             <Route
               path="/files"
-              element={
+              element={(
                 <FileManager
                   id={infrastructureId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={infrastructure}
-                />}
+                />
+              )}
             />
             <Route
               path="/history"
-              element={
+              element={(
                 <StixCoreObjectHistory
                   stixCoreObjectId={infrastructureId}
-                />}
+                />
+              )}
             />
           </Routes>
         </div>
       ) : (
-        <ErrorNotFound/>
+        <ErrorNotFound />
       )}
     </CreateRelationshipContextProvider>
   );

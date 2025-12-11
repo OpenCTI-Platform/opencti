@@ -4,18 +4,18 @@ import { logApp } from '../config/conf';
 const PARENT_PROCESS_SCHEDULE_LISTENER = 2000;
 
 interface InternalLock {
-  signal: AbortSignal
-  extend: () => Promise<void>
-  unlock: () => Promise<void>
+  signal: AbortSignal;
+  extend: () => Promise<void>;
+  unlock: () => Promise<void>;
 }
 
 const activeLocks: Map<string, InternalLock> = new Map<string, InternalLock>();
 
 interface LockData {
-  type: 'lock' | 'unlock'
-  operation: string
-  ids: string[]
-  args: object
+  type: 'lock' | 'unlock';
+  operation: string;
+  ids: string[];
+  args: object;
 }
 
 initializeOnlyRedisLockClient().then(() => {

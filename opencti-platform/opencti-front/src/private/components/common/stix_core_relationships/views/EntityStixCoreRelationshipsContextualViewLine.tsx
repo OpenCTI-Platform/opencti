@@ -84,21 +84,21 @@ const contextualViewLineFragment = graphql`
 `;
 
 interface ContextualViewLineProps {
-  node: EntityStixCoreRelationshipsContextualViewLine_node$key
-  dataColumns: DataColumns
-  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['onToggleEntity']
-  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectedElements']
-  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['deSelectedElements']
-  selectAll: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectAll']
+  node: EntityStixCoreRelationshipsContextualViewLine_node$key;
+  dataColumns: DataColumns;
+  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['onToggleEntity'];
+  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectedElements'];
+  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['deSelectedElements'];
+  selectAll: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectAll'];
   onToggleShiftEntity: (
     index: number,
-    entity: EntityStixCoreRelationshipsContextualViewLine_node$data
-  ) => void
-  index: number
+    entity: EntityStixCoreRelationshipsContextualViewLine_node$data,
+  ) => void;
+  index: number;
 }
 
 const EntityStixCoreRelationshipsContextualViewLine: FunctionComponent<
-ContextualViewLineProps
+  ContextualViewLineProps
 > = ({
   node,
   dataColumns,
@@ -143,7 +143,7 @@ ContextualViewLineProps
         <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -155,7 +155,7 @@ ContextualViewLineProps
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />

@@ -87,8 +87,8 @@ const SearchIndexedFilesLines: FunctionComponent<SearchIndexedFilesLinesProps> =
   queryRef,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  SearchIndexedFilesLinesPaginationQuery,
-  SearchIndexedFilesLines_data$key
+    SearchIndexedFilesLinesPaginationQuery,
+    SearchIndexedFilesLines_data$key
   >({
     linesQuery: searchIndexedFilesLinesQuery,
     linesFragment: searchIndexedFilesLinesFragment,

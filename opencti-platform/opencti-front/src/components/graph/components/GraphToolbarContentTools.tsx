@@ -19,13 +19,13 @@ import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './Gra
 import ContainerAddStixCoreObjectsInLine from '../../../private/components/common/containers/ContainerAddStixCoreObjectsInLine';
 
 export interface GraphToolbarContentToolsProps {
-  stixCoreObjectRefetchQuery?: GraphQLTaggedNode
-  relationshipRefetchQuery?: GraphQLTaggedNode
-  onAddRelation?: (rel: ObjectToParse, onCompleted: () => void) => void
-  entity?: GraphEntity
-  enableReferences?: boolean
-  onDeleteRelation?: GraphToolbarDeleteConfirmProps['onDeleteRelation']
-  onRemove?: GraphToolbarDeleteConfirmProps['onRemove']
+  stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
+  relationshipRefetchQuery?: GraphQLTaggedNode;
+  onAddRelation?: (rel: ObjectToParse, onCompleted: () => void) => void;
+  entity?: GraphEntity;
+  enableReferences?: boolean;
+  onDeleteRelation?: GraphToolbarDeleteConfirmProps['onDeleteRelation'];
+  onRemove?: GraphToolbarDeleteConfirmProps['onRemove'];
 }
 
 const GraphToolbarContentTools = ({
@@ -123,7 +123,7 @@ const GraphToolbarContentTools = ({
           defaultCreatedBy={entity.createdBy ?? null}
           defaultMarkingDefinitions={(entity.objectMarking ?? []) as unknown[]}
           targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-          onAdd={addNode as (node: { id: string; }) => void}
+          onAdd={addNode as (node: { id: string }) => void}
           onDelete={removeFromAddPanel}
           confidence={entity.confidence ?? undefined}
           enableReferences={enableReferences}

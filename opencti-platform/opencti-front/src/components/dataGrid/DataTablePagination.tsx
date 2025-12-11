@@ -17,10 +17,10 @@ const DataTablePagination = ({
   numberOfElements: unstoreNOE,
   redirectionModeEnabled = false,
 }: {
-  page: number,
-  setPage: Dispatch<SetStateAction<number>>,
-  numberOfElements?: NumberOfElements,
-  redirectionModeEnabled?: boolean,
+  page: number;
+  setPage: Dispatch<SetStateAction<number>>;
+  numberOfElements?: NumberOfElements;
+  redirectionModeEnabled?: boolean;
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -103,35 +103,35 @@ const DataTablePagination = ({
     },
     ...(redirectionModeEnabled
       ? [
-        {
-          label: t_i18n('Redirection mode'),
-          menuLevel: 0,
-          value: 'redirect-mode',
-          nestedOptions: [
-            {
-              label: t_i18n('Redirecting to the Overview section'),
-              value: 'overview',
-              menuLevel: 1,
-              onClick: () => helpers.handleAddProperty('redirectionMode', 'overview'),
-              selected: redirectionMode === 'overview',
-            },
-            {
-              label: t_i18n('Redirecting to the Knowledge section'),
-              value: 'knowledge',
-              menuLevel: 1,
-              onClick: () => helpers.handleAddProperty('redirectionMode', 'knowledge'),
-              selected: redirectionMode === 'knowledge',
-            },
-            {
-              label: t_i18n('Redirecting to the Content section'),
-              value: 'content',
-              menuLevel: 1,
-              onClick: () => helpers.handleAddProperty('redirectionMode', 'content'),
-              selected: redirectionMode === 'content',
-            },
-          ],
-        },
-      ]
+          {
+            label: t_i18n('Redirection mode'),
+            menuLevel: 0,
+            value: 'redirect-mode',
+            nestedOptions: [
+              {
+                label: t_i18n('Redirecting to the Overview section'),
+                value: 'overview',
+                menuLevel: 1,
+                onClick: () => helpers.handleAddProperty('redirectionMode', 'overview'),
+                selected: redirectionMode === 'overview',
+              },
+              {
+                label: t_i18n('Redirecting to the Knowledge section'),
+                value: 'knowledge',
+                menuLevel: 1,
+                onClick: () => helpers.handleAddProperty('redirectionMode', 'knowledge'),
+                selected: redirectionMode === 'knowledge',
+              },
+              {
+                label: t_i18n('Redirecting to the Content section'),
+                value: 'content',
+                menuLevel: 1,
+                onClick: () => helpers.handleAddProperty('redirectionMode', 'content'),
+                selected: redirectionMode === 'content',
+              },
+            ],
+          },
+        ]
       : []),
   ];
 
@@ -162,12 +162,12 @@ const DataTablePagination = ({
           <ArrowLeft />
         </Button>
         <Tooltip
-          title={
+          title={(
             <div>
               <strong>{`${numberOfElements.original}`}</strong>{' '}
               {t_i18n('entitie(s)')}
             </div>
-            }
+          )}
         >
           <Box
             sx={{
@@ -206,7 +206,7 @@ const DataTablePagination = ({
               border: 'none',
             },
           }}
-          menuButtonChildren={<TableTuneIcon/>}
+          menuButtonChildren={<TableTuneIcon />}
           options={nestedMenuOptions}
           menuLevels={2}
         />

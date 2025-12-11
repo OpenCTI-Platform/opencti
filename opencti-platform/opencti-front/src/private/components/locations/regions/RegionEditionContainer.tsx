@@ -8,10 +8,10 @@ import { RegionEditionContainerQuery } from './__generated__/RegionEditionContai
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 interface RegionEditionContainerProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<RegionEditionContainerQuery>
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  handleClose: () => void;
+  queryRef: PreloadedQuery<RegionEditionContainerQuery>;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 export const regionEditionQuery = graphql`

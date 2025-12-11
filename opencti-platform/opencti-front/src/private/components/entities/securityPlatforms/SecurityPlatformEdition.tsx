@@ -16,10 +16,10 @@ query SecurityPlatformEditionContainerQuery($id: String!) {
 `;
 
 interface SecurityPlatformEditionProps {
-  securityPlatformId: string
+  securityPlatformId: string;
 }
 
-const SecurityPlatformEdition : FunctionComponent<SecurityPlatformEditionProps> = ({
+const SecurityPlatformEdition: FunctionComponent<SecurityPlatformEditionProps> = ({
   securityPlatformId,
 }) => {
   const handleClose = () => {
@@ -41,7 +41,7 @@ const SecurityPlatformEdition : FunctionComponent<SecurityPlatformEditionProps> 
           return (
             <SecurityPlatformEditionContainer
               securityPlatform={props.securityPlatform}
-              handleClose={ handleClose}
+              handleClose={handleClose}
               controlledDial={EditEntityControlledDial}
             />
           );

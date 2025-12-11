@@ -9,8 +9,8 @@ import { FieldOption } from '../../../../utils/field';
 interface MyOrganizationFieldProps {
   name: string;
   label: string;
-  disabled:boolean;
-  multiple:boolean;
+  disabled: boolean;
+  multiple: boolean;
   style?: CSSProperties;
   onChange?: (name: string, value: FieldOption) => void;
 }
@@ -54,7 +54,7 @@ const MyOrganizationField = (props: MyOrganizationFieldProps) => {
       ) => (
         <li {...renderProps}>
           <div style={{ paddingTop: 4, display: 'inline-block' }}>
-            <ItemIcon type="Organization"/>
+            <ItemIcon type="Organization" />
           </div>
           <div style={{ display: 'inline-block', flexGrow: 1, marginLeft: 10 }}>{option.label ?? ''}</div>
         </li>

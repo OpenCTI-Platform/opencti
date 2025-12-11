@@ -205,7 +205,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
-                        }
+            }
           />
           <Field
             component={MarkdownField}
@@ -220,7 +220,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
-                        }
+            }
           />
           <OpenVocabField
             label={t_i18n('Security platform type')}
@@ -236,17 +236,17 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             containerStyle={fieldSpacingContainerStyle}
           />
           {securityPlatform.workflowEnabled && (
-          <StatusField
-            name="x_opencti_workflow_id"
-            type="SecurityPlatform"
-            onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            setFieldValue={setFieldValue}
-            style={{ marginTop: 20 }}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-                  }
-          />
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="SecurityPlatform"
+              onFocus={editor.changeFocus}
+              onChange={handleSubmitField}
+              setFieldValue={setFieldValue}
+              style={{ marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+              }
+            />
           )}
           <CreatedByField
             name="createdBy"
@@ -255,7 +255,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
-                        }
+            }
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
@@ -264,7 +264,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
-                        }
+            }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

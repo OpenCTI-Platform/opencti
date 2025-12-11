@@ -21,7 +21,7 @@ const createApolloServer = () => {
         throw new GraphQLError('Value cannot have only whitespace(s)');
       }
       return true;
-    }
+    },
   };
   const constraintPlugin = createApollo4QueryValidationPlugin({ formats });
   const apolloPlugins = [loggerPlugin, httpResponsePlugin, constraintPlugin];
@@ -29,12 +29,12 @@ const createApolloServer = () => {
   const batchPermissions = {
     Query: {
       '*': conf.get('app:graphql:batching_protection:query_default') ?? 2, // default value for all queries
-      subTypes: conf.get('app:graphql:batching_protection:query_subtypes') ?? 4 // subTypes are used multiple times for schema fetching
+      subTypes: conf.get('app:graphql:batching_protection:query_subtypes') ?? 4, // subTypes are used multiple times for schema fetching
     },
     Mutation: {
       '*': conf.get('app:graphql:batching_protection:mutation_default') ?? 1, // default value for all mutations
-      token: 1 // force default value for login mutation
-    }
+      token: 1, // force default value for login mutation
+    },
   };
   const { validation: batchValidationRule } = createAliasBatch({ permissions: batchPermissions });
   const apolloValidationRules = [batchValidationRule];

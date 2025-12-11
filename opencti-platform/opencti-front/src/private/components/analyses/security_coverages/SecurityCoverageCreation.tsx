@@ -240,7 +240,7 @@ interface SecurityCoverageFormValues {
   coverage_information: { coverage_name: string; coverage_score: number | string }[];
   periodicity?: string;
   duration?: string;
-  type_affinity: 'ENDPOINT' | 'CLOUD' | 'WEB' | 'TABLE-TOP',
+  type_affinity: 'ENDPOINT' | 'CLOUD' | 'WEB' | 'TABLE-TOP';
   platforms_affinity: string[];
 }
 
@@ -335,14 +335,14 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   // When we have a preselected entity, we skip the "Select entity" step
   const steps = preSelectedEntityId
     ? [
-      t_i18n('Choose type'),
-      t_i18n('Coverage details'),
-    ]
+        t_i18n('Choose type'),
+        t_i18n('Coverage details'),
+      ]
     : [
-      t_i18n('Choose type'),
-      t_i18n('Select entity to cover'),
-      t_i18n('Coverage details'),
-    ];
+        t_i18n('Choose type'),
+        t_i18n('Select entity to cover'),
+        t_i18n('Coverage details'),
+      ];
 
   const buildColumns = () => {
     return {
@@ -457,7 +457,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 
   // Use entity name from preselected entity or fallback to provided name
   const defaultName = preSelectedEntity?.representative?.main || preSelectedEntity?.name || preSelectedEntityName || inputValue || '';
-  const defaultLabels = (preSelectedEntity?.objectLabel ?? []).map((label) => ({value: label.id, label: label.value}));
+  const defaultLabels = (preSelectedEntity?.objectLabel ?? []).map((label) => ({ value: label.id, label: label.value }));
 
   const initialValues = useDefaultValues<SecurityCoverageFormValues>(
     'Security-Coverage',
@@ -474,7 +474,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       periodicity: 'P1D',
       duration: 'P30D',
       type_affinity: 'ENDPOINT',
-      platforms_affinity: ['windows','linux','macos'],
+      platforms_affinity: ['windows', 'linux', 'macos'],
     },
   );
 
@@ -726,16 +726,16 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                   fullWidth={true}
                   containerstyle={{ width: '100%', marginTop: 20 }}
                 >
-                  <MenuItem key='ENDPOINT' value='ENDPOINT'>
+                  <MenuItem key="ENDPOINT" value="ENDPOINT">
                     {t_i18n('Endpoint')}
                   </MenuItem>
-                  <MenuItem key='CLOUD' value='CLOUD'>
+                  <MenuItem key="CLOUD" value="CLOUD">
                     {t_i18n('Cloud')}
                   </MenuItem>
-                  <MenuItem key='WEB' value='WEB'>
+                  <MenuItem key="WEB" value="WEB">
                     {t_i18n('Web')}
                   </MenuItem>
-                  <MenuItem key='TABLE-TOP' value='TABLE-TOP'>
+                  <MenuItem key="TABLE-TOP" value="TABLE-TOP">
                     {t_i18n('Table-top')}
                   </MenuItem>
                 </Field>
@@ -748,7 +748,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                   multiple={true}
                 />
               </>
-              )}
+            )}
             <Field
               component={SwitchField}
               type="checkbox"
@@ -916,7 +916,7 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
   );
 
   const CreateSecurityCoverageControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Security-Coverage' {...props} />
+    <CreateEntityControlledDial entityType="Security-Coverage" {...props} />
   );
 
   return (

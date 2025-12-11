@@ -95,21 +95,21 @@ const DashboardSettings = () => {
   return (
     <Security
       needs={[EXPLORE]}
-      placeholder={
+      placeholder={(
         <FormControl style={{ width: '100%' }}>
           <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
           <Select
             labelId="timeField"
             value={timeField === null ? '' : timeField}
             onChange={(event) => handleUpdate('default_time_field', event.target.value)
-                  }
+            }
             fullWidth={true}
           >
             <MenuItem value="technical">{t_i18n('Technical date')}</MenuItem>
             <MenuItem value="functional">{t_i18n('Functional date')}</MenuItem>
           </Select>
         </FormControl>
-            }
+      )}
     >
       <QueryRenderer
         query={dashboardSettingsDashboardsQuery}
@@ -141,7 +141,7 @@ const DashboardSettings = () => {
                       'default_time_field',
                       event.target.value,
                     )
-                          }
+                    }
                     fullWidth={true}
                   >
                     <MenuItem value="technical">
@@ -163,7 +163,7 @@ const DashboardSettings = () => {
                       'default_dashboard',
                       event.target.value,
                     )
-                          }
+                    }
                     fullWidth={true}
                     classes={{
                       select: classes.muiSelect,
@@ -176,9 +176,9 @@ const DashboardSettings = () => {
                       <em>{t_i18n('Platform dashboard')}</em>
                     </MenuItem>
                     {dashboards.length > 0 && (
-                    <ListSubheader>
-                      {t_i18n('Dashboards from your groups & organizations')}
-                    </ListSubheader>
+                      <ListSubheader>
+                        {t_i18n('Dashboards from your groups & organizations')}
+                      </ListSubheader>
                     )}
                     {dashboards.map(({ id, name }) => (
                       <MenuItem key={id} value={id}>
@@ -192,7 +192,7 @@ const DashboardSettings = () => {
                       </MenuItem>
                     ))}
                     {workspaces?.length > 0 && (
-                    <ListSubheader>{t_i18n('Other custom dashboards')}</ListSubheader>
+                      <ListSubheader>{t_i18n('Other custom dashboards')}</ListSubheader>
                     )}
                     {workspaces?.map(({ node }) => (
                       <MenuItem key={node.id} value={node.id}>

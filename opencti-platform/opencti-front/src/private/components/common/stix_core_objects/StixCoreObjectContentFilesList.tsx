@@ -43,27 +43,27 @@ const renderIcon = (mimeType: string) => {
 };
 
 export interface ContentFile {
-  id: string
-  lastModified: string
-  name: string
+  id: string;
+  lastModified: string;
+  name: string;
   metaData: {
-    mimetype: string | null | undefined
-  } | null | undefined
+    mimetype: string | null | undefined;
+  } | null | undefined;
   objectMarking?: readonly {
     readonly id: string;
-    readonly definition?: string | null ;
-    readonly x_opencti_color?: string | null ;
+    readonly definition?: string | null;
+    readonly x_opencti_color?: string | null;
   }[];
 }
 
 interface StixCoreObjectContentFilesListProps {
-  files: ContentFile[],
-  stixCoreObjectId: string,
-  stixCoreObjectName: string,
-  stixCoreObjectType: string,
-  currentFileId: string,
-  handleSelectFile: (fileId: string) => void,
-  onFileChange: (fileName?: string, isDeleted?: boolean) => void,
+  files: ContentFile[];
+  stixCoreObjectId: string;
+  stixCoreObjectName: string;
+  stixCoreObjectType: string;
+  currentFileId: string;
+  handleSelectFile: (fileId: string) => void;
+  onFileChange: (fileName?: string, isDeleted?: boolean) => void;
 }
 
 const StixCoreObjectContentFilesList = ({
@@ -140,7 +140,7 @@ const StixCoreObjectContentFilesList = ({
                 dense={true}
                 divider={true}
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <>
                     {canDisseminate && (
                       <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
@@ -153,7 +153,7 @@ const StixCoreObjectContentFilesList = ({
                               aria-label="disseminate"
                               disabled={!isEnterpriseEdition}
                             >
-                              <SendOutlined/>
+                              <SendOutlined />
                             </IconButton>
                           </EETooltip>
                         </>
@@ -168,7 +168,7 @@ const StixCoreObjectContentFilesList = ({
                       <MoreVert />
                     </IconButton>
                   </>
-                }
+                )}
               >
                 <ListItemButton
                   selected={file.id === currentFileId}
@@ -198,27 +198,27 @@ const StixCoreObjectContentFilesList = ({
                           limit={1}
                         />
                       </div>
-                )}
+                    )}
                   />
                 </ListItemButton>
               </ListItem>
             </Tooltip>
             {canDisseminate && isEnterpriseEdition && (
-            <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
-              <Drawer
-                title={t_i18n('Disseminate a file')}
-                open={isDrawerOpen}
-                onClose={() => setDrawerOpen(false)}
-              >
-                <StixCoreObjectContentFilesDissemination
-                  entityId={stixCoreObjectId}
-                  fileId={menuFile?.id ?? ''}
-                  fileName={menuFile?.name ?? ''}
-                  fileType={menuFile?.metaData?.mimetype ?? ''}
+              <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
+                <Drawer
+                  title={t_i18n('Disseminate a file')}
+                  open={isDrawerOpen}
                   onClose={() => setDrawerOpen(false)}
-                />
-              </Drawer>
-            </Security>
+                >
+                  <StixCoreObjectContentFilesDissemination
+                    entityId={stixCoreObjectId}
+                    fileId={menuFile?.id ?? ''}
+                    fileName={menuFile?.name ?? ''}
+                    fileType={menuFile?.metaData?.mimetype ?? ''}
+                    onClose={() => setDrawerOpen(false)}
+                  />
+                </Drawer>
+              </Security>
             )}
           </Fragment>
         );
@@ -230,36 +230,36 @@ const StixCoreObjectContentFilesList = ({
         onClose={closePopover}
       >
         {menuFile && (
-        <MenuItem
-          component={Link}
-          to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(menuFile.id)}`}
-          onClick={closePopover}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t_i18n('Download file')}
-        </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(menuFile.id)}`}
+            onClick={closePopover}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t_i18n('Download file')}
+          </MenuItem>
         )}
         {!draftContext && canDownloadAsPdf && (
-        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
-          <StixCoreObjectFileExport
-            onClose={() => setAnchorEl(null)}
-            scoId={stixCoreObjectId}
-            scoName={stixCoreObjectName}
-            scoEntityType={stixCoreObjectType}
-            defaultValues={{
-              connector: BUILT_IN_HTML_TO_PDF.value,
-              format: 'application/pdf',
-              fileToExport: menuFile.id,
-            }}
-            onExportCompleted={onFileChange}
-            OpenFormComponent={({ onOpen }) => (
-              <MenuItem onClick={onOpen}>
-                {t_i18n('Generate a PDF export')}
-              </MenuItem>
-            )}
-          />
-        </Security>
+          <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
+            <StixCoreObjectFileExport
+              onClose={() => setAnchorEl(null)}
+              scoId={stixCoreObjectId}
+              scoName={stixCoreObjectName}
+              scoEntityType={stixCoreObjectType}
+              defaultValues={{
+                connector: BUILT_IN_HTML_TO_PDF.value,
+                format: 'application/pdf',
+                fileToExport: menuFile.id,
+              }}
+              onExportCompleted={onFileChange}
+              OpenFormComponent={({ onOpen }) => (
+                <MenuItem onClick={onOpen}>
+                  {t_i18n('Generate a PDF export')}
+                </MenuItem>
+              )}
+            />
+          </Security>
         )}
         <Security needs={[KNOWLEDGE_KNASKIMPORT]} matchAll>
           <MenuItem onClick={handleDelete}>

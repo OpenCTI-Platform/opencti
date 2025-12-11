@@ -104,20 +104,21 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
                 )}
                 <FormGroup>
                   <FormControlLabel
-                    control={
+                    control={(
                       <Checkbox
                         disableRipple={true}
                         checked={purgeElements}
                         onChange={() => setPurgeElements(!purgeElements)}
                       />
-                    }
+                    )}
                     label={t_i18n('Also delete these elements')}
                   />
                 </FormGroup>
               </Alert>
             );
           }}
-        ></QueryRenderer>
+        >
+        </QueryRenderer>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCloseDelete} disabled={deleting}>

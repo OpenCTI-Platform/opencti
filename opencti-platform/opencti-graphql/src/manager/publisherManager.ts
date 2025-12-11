@@ -16,7 +16,7 @@ import {
   NOTIFIER_CONNECTOR_UI,
   NOTIFIER_CONNECTOR_WEBHOOK,
   type NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE,
-  SIMPLIFIED_EMAIL_TEMPLATE
+  SIMPLIFIED_EMAIL_TEMPLATE,
 } from '../modules/notifier/notifier-statics';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -32,7 +32,7 @@ import {
   type DigestEvent,
   getNotifications,
   type KnowledgeNotificationEvent,
-  type NotificationUser
+  type NotificationUser,
 } from './notificationManager';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { extractRepresentative } from '../database/entity-representative';
@@ -63,7 +63,7 @@ export async function processNotificationData(
       const event: NotificationContentEvent = {
         operation: type,
         message,
-        instance_id: instance.id
+        instance_id: instance.id,
       };
 
       const notificationUser = usersMap.get(user.user_id);
@@ -91,7 +91,7 @@ export function assembleTemplateData(
   triggers: BasicStoreEntityTrigger[],
   settings: BasicStoreSettings,
   user: NotificationUser,
-  data: NotificationData[]
+  data: NotificationData[],
 ) {
   const platformBackgroundColor = (settings.platform_theme_dark_background ?? '#0a1929').substring(1);
   return {
@@ -103,7 +103,7 @@ export function assembleTemplateData(
     data,
     doc_uri: DOC_URI,
     platform_uri: getBaseUrl(),
-    background_color: platformBackgroundColor
+    background_color: platformBackgroundColor,
   };
 }
 
@@ -113,7 +113,7 @@ export async function handleUINotification(
   triggerIds: Array<string | undefined>,
   notificationType: string,
   user: NotificationUser,
-  content: Array<{ title: string; events: NotificationContentEvent[] }>
+  content: Array<{ title: string; events: NotificationContentEvent[] }>,
 ) {
   const notificationPayload = {
     name: notificationName,
@@ -124,7 +124,7 @@ export async function handleUINotification(
     created: now(),
     created_at: now(),
     updated_at: now(),
-    is_read: false
+    is_read: false,
   } as NotificationAddInput;
 
   try {
@@ -150,17 +150,17 @@ export async function handleEmailNotification(
   };
 
   const renderedTitle = await safeRender(title, sanitizedData, {
-    useNotificationTool: true
+    useNotificationTool: true,
   });
   const renderedEmail = await safeRender(template, sanitizedData, {
-    useNotificationTool: true
+    useNotificationTool: true,
   });
 
   const emailPayload = {
     from: await smtpComputeFrom(),
     to: user.user_email,
     subject: renderedTitle,
-    html: renderedEmail
+    html: renderedEmail,
   };
 
   await sendMail(emailPayload, { identifier: triggerIds, category: 'notification' });
@@ -178,7 +178,7 @@ export async function handleSimplifiedEmailNotification(
     logo,
     footer,
     background_color,
-    url_suffix
+    url_suffix,
   } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE;
 
   const sanitizedData = {
@@ -192,17 +192,17 @@ export async function handleSimplifiedEmailNotification(
   };
 
   const renderedTitle = await safeRender(title, sanitizedData, {
-    useNotificationTool: true
+    useNotificationTool: true,
   });
   const renderedEmail = await safeRender(SIMPLIFIED_EMAIL_TEMPLATE, sanitizedData, {
-    useNotificationTool: true
+    useNotificationTool: true,
   });
 
   const emailPayload = {
     from: await smtpComputeFrom(),
     to: user.user_email,
     subject: renderedTitle,
-    html: renderedEmail
+    html: renderedEmail,
   };
   if (!emailPayload.to) {
     logApp.warn('[OPENCTI-MODULE] No recipient defined in email payload', { toId: user.user_id, manager: 'PUBLISHER_MANAGER' });
@@ -216,7 +216,7 @@ export async function handleWebhookNotification(configurationString: string | un
 
   // Use safeRender with JSON escape option for webhook templates
   const renderedWebhookTemplate = await safeRender(template, sanitizeNotificationData(templateData), {
-    useJsonEscape: true
+    useJsonEscape: true,
   });
   const webhookPayload = JSON.parse(renderedWebhookTemplate);
 
@@ -293,7 +293,7 @@ export const processNotificationEvent = async (
 
   const allNotifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
   const notifierMap = new Map<string, BasicStoreEntityNotifier>(
-    allNotifiers.map((notifier) => [notifier.internal_id, notifier])
+    allNotifiers.map((notifier) => [notifier.internal_id, notifier]),
   );
 
   for (let i = 0; i < userNotifiers.length; i += 1) {
@@ -339,7 +339,7 @@ const createFullNotificationMessage = (
 export const processLiveNotificationEvent = async (
   context: AuthContext,
   notificationMap: Map<string, BasicStoreEntityTrigger>,
-  event: KnowledgeNotificationEvent | ActivityNotificationEvent | ActionNotificationEvent
+  event: KnowledgeNotificationEvent | ActivityNotificationEvent | ActionNotificationEvent,
 ): Promise<void> => {
   const { targets, data: instance, origin, notification_id } = event as KnowledgeNotificationEvent;
   const usersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
@@ -363,15 +363,15 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
   await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage, usersMap);
 };
 
-const liveNotificationBufferPerEntity: Record<string, { timestamp: number, events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
+const liveNotificationBufferPerEntity: Record<string, { timestamp: number; events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
 
 const processBufferedEvents = async (
   context: AuthContext,
   triggerMap: Map<string, BasicStoreEntityTrigger>,
-  events: KnowledgeNotificationEvent[]
+  events: KnowledgeNotificationEvent[],
 ) => {
   const usersFromCache = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const notifDataPerUser: Record<string, { user: NotificationUser, data: NotificationData }[]> = {};
+  const notifDataPerUser: Record<string, { user: NotificationUser; data: NotificationData }[]> = {};
   // We process all events to transform them into notification data per user
   for (let i = 0; i < events.length; i += 1) {
     const event = events[i];

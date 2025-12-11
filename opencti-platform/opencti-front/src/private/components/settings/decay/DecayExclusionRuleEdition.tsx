@@ -50,7 +50,7 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
   const { t_i18n } = useFormatter();
   const [filters, filterHelpers] = useFiltersState(
     deserializeFilterGroupForFrontend(data.decay_exclusion_filters) ?? emptyFilterGroup,
-    deserializeFilterGroupForFrontend(data.decay_exclusion_filters) ?? emptyFilterGroup
+    deserializeFilterGroupForFrontend(data.decay_exclusion_filters) ?? emptyFilterGroup,
   );
 
   const [commitFieldPatch] = useApiMutation(decayExclusionRuleEditionFieldPatch);

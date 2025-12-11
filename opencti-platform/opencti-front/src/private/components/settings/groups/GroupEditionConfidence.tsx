@@ -32,17 +32,17 @@ export interface OverrideFormData {
 
 export interface ConfidenceFormData {
   group_confidence_level: number | null | undefined;
-  overrides: OverrideFormData[]
+  overrides: OverrideFormData[];
 }
 
 interface GroupEditionConfidenceProps {
   group: GroupEditionConfidence_group$data;
   context:
-  | readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
-  } | null)[]
-  | null | undefined;
+    | readonly ({
+      readonly focusOn: string | null | undefined;
+      readonly name: string;
+    } | null)[]
+    | null | undefined;
 }
 
 const groupConfidenceValidation = (t: (value: string) => string) => {

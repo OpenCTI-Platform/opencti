@@ -12,7 +12,7 @@ export const up = async (next) => {
   const securityActivityCapability = await addCapability(context, SYSTEM_USER, {
     name: 'SETTINGS_SECURITYACTIVITY',
     description: 'Security Activity',
-    attribute_order: 3500
+    attribute_order: 3500,
   });
   const roles = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_ROLE], {});
   for (let i = 0; i < roles.length; i += 1) {

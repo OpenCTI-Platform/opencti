@@ -41,7 +41,7 @@ interface PictureManagementViewerProps {
 }
 
 const PictureManagementViewer: FunctionComponent<
-PictureManagementViewerProps
+  PictureManagementViewerProps
 > = ({ entity }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -88,12 +88,12 @@ PictureManagementViewerProps
               <List>
                 {images.map(
                   (file, idx) => file && (
-                  <PictureLine
-                    picture={file}
-                    key={idx}
-                    dataColumns={dataColumns}
-                    entityId={data.id}
-                  />
+                    <PictureLine
+                      picture={file}
+                      key={idx}
+                      dataColumns={dataColumns}
+                      entityId={data.id}
+                    />
                   ),
                 )}
               </List>

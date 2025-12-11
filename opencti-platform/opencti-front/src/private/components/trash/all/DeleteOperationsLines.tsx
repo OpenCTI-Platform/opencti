@@ -20,7 +20,7 @@ interface DeleteOperationsLinesProps {
   deSelectedElements: Record<string, DeleteOperationLine_node$data>;
   onToggleEntity: (
     entity: DeleteOperationLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
 }
@@ -91,8 +91,8 @@ const DeleteOperationsLines: FunctionComponent<DeleteOperationsLinesProps> = ({
   queryRef,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  DeleteOperationsLinesPaginationQuery,
-  DeleteOperationsLines_data$key
+    DeleteOperationsLinesPaginationQuery,
+    DeleteOperationsLines_data$key
   >({
     linesQuery: deleteOperationsLinesQuery,
     linesFragment: deleteOperationsLinesFragment,

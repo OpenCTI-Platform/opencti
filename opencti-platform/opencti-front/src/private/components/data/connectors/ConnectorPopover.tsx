@@ -154,7 +154,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
         aria-haspopup="true"
         value="popover"
         color="primary"
-        size={'small'}
+        size="small"
       >
         <MoreVert fontSize="small" color="primary" />
       </ToggleButton>
@@ -171,11 +171,11 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
           <DangerZoneBlock
             type="connector_reset"
             sx={{ title: { display: 'none' } }}
-            component={
+            component={(
               <MenuItem onClick={handleOpenResetState} sx={{ color: theme.palette.dangerZone.main }}>
                 {t_i18n('Reset')}<DangerZoneChip style={{ marginLeft: 8 }} />
               </MenuItem>
-            }
+            )}
           />
         ) : (
           <MenuItem onClick={handleOpenResetState}>{t_i18n('Reset the connector state')}</MenuItem>
@@ -254,7 +254,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
               <div>
                 {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
                 <br />
-                {refreshingQueueDetails 
+                {refreshingQueueDetails
                   ? t_i18n('Loading current message count...')
                   : t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
               </div>

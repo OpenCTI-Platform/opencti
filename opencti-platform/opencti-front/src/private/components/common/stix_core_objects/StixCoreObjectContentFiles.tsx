@@ -33,12 +33,12 @@ import Security from '../../../../utils/Security';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface ContentBlocProps {
-  title: ReactNode
-  children: ReactNode
-  actions?: ReactNode
+  title: ReactNode;
+  children: ReactNode;
+  actions?: ReactNode;
 }
 
-const ContentBloc = ({ title, actions, children }:ContentBlocProps) => {
+const ContentBloc = ({ title, actions, children }: ContentBlocProps) => {
   return (
     <div style={{ marginBottom: '24px' }}>
       <div style={{ padding: '0 16px', display: 'flex', alignItems: 'center' }}>
@@ -85,19 +85,19 @@ export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
 `;
 
 interface StixCoreObjectContentFilesProps {
-  files: NonNullable<StixCoreObjectContent_stixCoreObject$data['importFiles']>['edges'][number]['node'][],
-  stixCoreObjectId: string,
-  stixCoreObjectName: string,
-  stixCoreObjectType: string,
-  content: string | null,
-  handleSelectFile: (fileId: string) => void,
-  handleSelectContent: () => void,
-  contentSelected: boolean,
-  currentFileId: string,
-  onFileChange: (fileName?: string, isDeleted?: boolean) => void,
-  exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][],
-  filesFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['filesFromTemplate']>['edges'][number]['node'][],
-  hasOutcomesTemplate?: boolean,
+  files: NonNullable<StixCoreObjectContent_stixCoreObject$data['importFiles']>['edges'][number]['node'][];
+  stixCoreObjectId: string;
+  stixCoreObjectName: string;
+  stixCoreObjectType: string;
+  content: string | null;
+  handleSelectFile: (fileId: string) => void;
+  handleSelectContent: () => void;
+  contentSelected: boolean;
+  currentFileId: string;
+  onFileChange: (fileName?: string, isDeleted?: boolean) => void;
+  exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][];
+  filesFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['filesFromTemplate']>['edges'][number]['node'][];
+  hasOutcomesTemplate?: boolean;
 }
 
 const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesProps> = ({
@@ -276,21 +276,23 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
       {hasOutcomesTemplate && (
         <ContentBloc
-          title={
+          title={(
             <>
               {t_i18n('Generated finished intelligence')} {!isEnterpriseEdition && <EEChip />}
               {isEnterpriseEdition
-                && <Tooltip
-                  title={t_i18n('Files generated from a template')}
-                   >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ marginLeft: 5 }}
-                  />
-                </Tooltip>}
+                && (
+                  <Tooltip
+                    title={t_i18n('Files generated from a template')}
+                  >
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                      style={{ marginLeft: 5 }}
+                    />
+                  </Tooltip>
+                )}
             </>
-          }
+          )}
           actions={!draftContext && isEnterpriseEdition && (
             <StixCoreObjectFileExport
               scoId={stixCoreObjectId}

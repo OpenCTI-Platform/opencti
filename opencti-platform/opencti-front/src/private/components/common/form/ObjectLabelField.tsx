@@ -37,7 +37,7 @@ interface ObjectLabelFieldProps {
   setFieldValue?: (name: string, value: FieldOption[]) => void;
   values?: FieldOption[];
   onChange?: (name: string, value: FieldOption[]) => void;
-  disabled?: boolean
+  disabled?: boolean;
 }
 
 const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({

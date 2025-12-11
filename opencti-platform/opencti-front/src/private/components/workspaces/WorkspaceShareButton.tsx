@@ -33,7 +33,7 @@ const workspaceShareButtonEditMutation = graphql`
 `;
 
 interface WorkspaceShareButtonProps {
-  workspaceId: string
+  workspaceId: string;
 }
 
 const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {

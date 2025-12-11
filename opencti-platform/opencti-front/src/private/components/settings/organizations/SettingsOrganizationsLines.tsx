@@ -77,8 +77,8 @@ const SettingsOrganizationsLines: FunctionComponent<SettingsOrganizationsLinesPr
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  SettingsOrganizationsLinesPaginationQuery,
-  SettingsOrganizationsLines_data$key
+    SettingsOrganizationsLinesPaginationQuery,
+    SettingsOrganizationsLines_data$key
   >({
     queryRef,
     linesQuery: settingsOrganizationsLinesQuery,

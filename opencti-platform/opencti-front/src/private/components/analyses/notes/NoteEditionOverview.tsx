@@ -186,12 +186,12 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             askAi={true}
-            helperText={
+            helperText={(
               <SubscriptionFocus
                 context={context}
                 fieldName="attribute_abstract"
               />
-            }
+            )}
           />
           <Field
             component={MarkdownField}
@@ -260,12 +260,12 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <ObjectMarkingField

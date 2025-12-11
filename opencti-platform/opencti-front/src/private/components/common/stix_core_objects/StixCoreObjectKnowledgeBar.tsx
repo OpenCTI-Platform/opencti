@@ -71,8 +71,8 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
 `;
 
 type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsWithoutRelatedToDistribution']
-| StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
-| StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution'];
+  | StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
+  | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution'];
 
 interface StixCoreObjectKnowledgeBarProps {
   stixCoreObjectLink: string;
@@ -133,7 +133,7 @@ const StixCoreObjectKnowledgeBar = ({
     stixCoreObjectsDistribution,
   } = useFragment(stixCoreObjectKnowledgeBarFragment, data);
 
-  const indexEntities = (distribution: ObjectsDistribution) : Record<string, number> => (
+  const indexEntities = (distribution: ObjectsDistribution): Record<string, number> => (
     distribution?.reduce((acc, item) => ({
       ...acc,
       ...(item?.label ? { [item.label]: item.value || 0 } : {}),

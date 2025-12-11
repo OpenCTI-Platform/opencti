@@ -79,7 +79,7 @@ const LocationMiniMap = (props) => {
       <Typography variant="h4" gutterBottom={true} style={{ marginBottom: 10 }}>
         {`${t('Mini map')} (lat. ${validatedCenter[0]}, long. ${validatedCenter[1]})`}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <MapContainer
           center={validatedCenter}
           zoom={zoom}

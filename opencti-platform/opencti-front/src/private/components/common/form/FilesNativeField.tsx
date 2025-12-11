@@ -12,8 +12,8 @@ interface FilesFieldProps {
   stixCoreObjectId: string;
   name: string;
   label: string;
-  currentValue: { label: string, value: string }[];
-  onChange?: (value: { label: string, value: string }[] | null) => void;
+  currentValue: { label: string; value: string }[];
+  onChange?: (value: { label: string; value: string }[] | null) => void;
   containerStyle?: Record<string, string | number>;
   helperText?: string;
 }
@@ -129,7 +129,7 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
         )}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: { label: string, value: string },
+          option: { label: string; value: string },
         ) => (
           <li {...props}>
             <div className={classes.icon}>

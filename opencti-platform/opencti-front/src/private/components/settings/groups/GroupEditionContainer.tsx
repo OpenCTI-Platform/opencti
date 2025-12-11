@@ -70,10 +70,10 @@ const GroupEditionContainerFragment = graphql`
 `;
 
 interface GroupEditionContainerProps {
-  groupQueryRef: PreloadedQuery<GroupEditionContainerQuery>
-  handleClose?: () => void
-  open?: boolean
-  disabled?: boolean
+  groupQueryRef: PreloadedQuery<GroupEditionContainerQuery>;
+  handleClose?: () => void;
+  open?: boolean;
+  disabled?: boolean;
 }
 
 const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({

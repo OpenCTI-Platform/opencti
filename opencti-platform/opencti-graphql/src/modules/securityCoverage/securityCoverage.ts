@@ -8,10 +8,10 @@ import {
   INPUT_COVERED,
   RELATION_COVERED,
   type StixSecurityCoverage,
-  type StoreEntitySecurityCoverage
+  type StoreEntitySecurityCoverage,
 } from './securityCoverage-types';
 import convertSecurityCoverageToStix from './securityCoverage-converter';
-import { createdBy, objectLabel, objectMarking, objectOrganization, } from '../../schema/stixRefRelationship';
+import { createdBy, objectLabel, objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY } from '../../schema/stixDomainObject';
 import { COVERED_ENTITIES_TYPE, securityCoverageStixBundle } from './securityCoverage-domain';
 import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
@@ -64,7 +64,7 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
         { name: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type: REL_NEW },
         { name: ENTITY_TYPE_VULNERABILITY, type: REL_NEW },
-      ]
+      ],
     },
   ],
   relationsRefs: [
@@ -87,13 +87,13 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
     objectLabel,
     objectMarking,
     createdBy,
-    { ...objectOrganization, isFilterable: false }
+    { ...objectOrganization, isFilterable: false },
   ],
   representative: (stix: StixSecurityCoverage) => {
     return stix.name;
   },
   converter_2_1: convertSecurityCoverageToStix,
-  bundleResolver: securityCoverageStixBundle
+  bundleResolver: securityCoverageStixBundle,
 };
 
 registerDefinition(SECURITY_COVERAGE_DEFINITION);

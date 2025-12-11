@@ -12,9 +12,9 @@ import { AUTOMATION } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 interface StixCoreObjectEnrollPlaybookLinesProps {
-  stixCoreObjectId: string,
-  handleClose?: () => void,
-  open?: boolean,
+  stixCoreObjectId: string;
+  handleClose?: () => void;
+  open?: boolean;
 }
 
 const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybookLinesProps> = ({
@@ -45,7 +45,7 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
               size="small"
               style={{ marginRight: 3, height: '100%' }}
             >
-              <PrecisionManufacturingOutlined fontSize="small" color={disabledInDraft ? 'disabled' : 'primary' }/>
+              <PrecisionManufacturingOutlined fontSize="small" color={disabledInDraft ? 'disabled' : 'primary'} />
             </ToggleButton>
           </EETooltip>
         )}

@@ -4,8 +4,8 @@ import { fetchQuery } from '../../../../relay/environment';
 import { ThemeExportHandlerQuery$data } from './__generated__/ThemeExportHandlerQuery.graphql';
 
 interface themeToExport {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 const ThemeExportHandlerQuery = graphql`

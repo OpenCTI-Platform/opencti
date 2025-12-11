@@ -71,8 +71,8 @@ interface EntitySettingHidden {
 }
 
 interface HiddenTypesFieldProps {
-  initialValues?: string[]
-  handleChange?: (newValues: string[]) => void
+  initialValues?: string[];
+  handleChange?: (newValues: string[]) => void;
 }
 
 const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
@@ -180,7 +180,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
           >
             <Checkbox
               checked={
-              entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
+                entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
               style={{ marginLeft: 10 }}
             />
             {t_i18n(`entity_${platformHiddenType.target_type}`)}

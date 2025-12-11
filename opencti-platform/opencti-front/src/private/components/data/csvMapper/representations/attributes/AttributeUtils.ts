@@ -120,16 +120,16 @@ export const formDataToCsvMapperAttribute = (
   const configuration = isNotEmptyField(data.pattern_date)
     || isNotEmptyField(data.separator)
     ? {
-      pattern_date: data.pattern_date ?? null,
-      separator: data.separator ?? null,
-    }
+        pattern_date: data.pattern_date ?? null,
+        separator: data.separator ?? null,
+      }
     : null;
 
   const column = isNotEmptyField(data.column_name) || isNotEmptyField(configuration)
     ? {
-      column_name: data.column_name ?? null,
-      configuration,
-    }
+        column_name: data.column_name ?? null,
+        configuration,
+      }
     : null;
 
   return {

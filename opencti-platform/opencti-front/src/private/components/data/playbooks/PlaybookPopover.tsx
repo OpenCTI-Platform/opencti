@@ -58,9 +58,9 @@ const playbookExportQuery = graphql`
 `;
 
 interface PlaybookPopoverProps {
-  playbookId: string
-  running: boolean
-  paginationOptions?: PlaybooksLinesPaginationQuery$variables
+  playbookId: string;
+  running: boolean;
+  paginationOptions?: PlaybooksLinesPaginationQuery$variables;
 }
 
 const PlaybookPopover = ({
@@ -183,7 +183,7 @@ const PlaybookPopover = ({
       >
         {paginationOptions
           ? <MoreVert />
-          : <MoreVert fontSize="small" color="primary"/>}
+          : <MoreVert fontSize="small" color="primary" />}
       </MoreVertButton>
       <Menu
         anchorEl={anchorEl}

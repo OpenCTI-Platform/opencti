@@ -52,17 +52,17 @@ const pirRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
 `;
 
 interface PirRelationshipsMultiAreaChartProps {
-  dataSelection: PirWidgetDataSelection[],
-  parameters: WidgetParameters,
-  relationshipTypes: string[],
-  variant?: string,
-  title?: string,
-  height?: number,
-  startDate?: string | null,
-  endDate?: string | null,
-  withExportPopover?: boolean,
-  isReadOnly?: boolean,
-  withoutTitle?: boolean,
+  dataSelection: PirWidgetDataSelection[];
+  parameters: WidgetParameters;
+  relationshipTypes: string[];
+  variant?: string;
+  title?: string;
+  height?: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  withExportPopover?: boolean;
+  isReadOnly?: boolean;
+  withoutTitle?: boolean;
 }
 
 const PirRelationshipsMultiAreaChart = ({

@@ -76,7 +76,7 @@ const groupMutationRelationDelete = graphql`
 `;
 
 interface GroupEditionOverviewComponentProps {
-  group: GroupEditionOverview_group$data,
+  group: GroupEditionOverview_group$data;
   context?: readonly (GenericContext | null)[] | null;
 
 }
@@ -150,12 +150,12 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               style={{ marginTop: 20 }}
               onFocus={editor.changeFocus}
               onSubmit={editor.changeField}
-              helperText={
+              helperText={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="description"
                 />
-              }
+              )}
             />
             <DashboardField
               onChange={editor.changeField}
@@ -181,22 +181,24 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               component={SwitchField}
               type="checkbox"
               name="auto_new_marking"
-              label={<>
-                {t_i18n(
-                  'Automatically authorize this group to new marking definition',
-                )}
-                <Tooltip
-                  title={t_i18n(
-                    'The new marking definitions will also be shareable by this group.',
+              label={(
+                <>
+                  {t_i18n(
+                    'Automatically authorize this group to new marking definition',
                   )}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ margin: '0 0 -5px 10px' }}
-                  />
-                </Tooltip>
-              </>}
+                  <Tooltip
+                    title={t_i18n(
+                      'The new marking definitions will also be shareable by this group.',
+                    )}
+                  >
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                      style={{ margin: '0 0 -5px 10px' }}
+                    />
+                  </Tooltip>
+                </>
+              )}
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
             />

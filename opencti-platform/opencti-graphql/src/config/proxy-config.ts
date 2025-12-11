@@ -13,7 +13,7 @@ export type ConfigAdapter = {
 export const createDefaultConfigAdapter = (): ConfigAdapter => ({
   get: (key: string) => nconf.get(key),
   booleanConf: (key: string, defaultValue: boolean) => booleanConf(key, defaultValue),
-  loadCert: (cert: string | undefined) => loadCert(cert)
+  loadCert: (cert: string | undefined) => loadCert(cert),
 });
 
 const validateNoProxyForUrllib = (noProxyList: string[]): string[] => {
@@ -34,7 +34,7 @@ const validateNoProxyForUrllib = (noProxyList: string[]): string[] => {
   if (invalidEntries.length > 0) {
     logApp.warn('[OPENCTI] The following NO_PROXY entries are not compatible with Python urllib.request and will be excluded:', {
       invalid_entries: invalidEntries,
-      reason: 'urllib.request does not support wildcard (*) patterns or CIDR notation (/24). Use leading dot (.example.com) for subdomain matching.'
+      reason: 'urllib.request does not support wildcard (*) patterns or CIDR notation (/24). Use leading dot (.example.com) for subdomain matching.',
     });
   }
 
@@ -50,7 +50,7 @@ const validateProxyUrl = (url: string, proxyType: string): boolean => {
       logApp.warn(`[OPENCTI] Invalid ${proxyType} protocol`, {
         url,
         protocol: parsed.protocol,
-        valid_protocols: validProtocols
+        valid_protocols: validProtocols,
       });
       return false;
     }
@@ -58,7 +58,7 @@ const validateProxyUrl = (url: string, proxyType: string): boolean => {
   } catch (e) {
     logApp.warn(`[OPENCTI] Invalid ${proxyType} URL format`, {
       url,
-      error: e instanceof Error ? e.message : String(e)
+      error: e instanceof Error ? e.message : String(e),
     });
     return false;
   }
@@ -66,7 +66,7 @@ const validateProxyUrl = (url: string, proxyType: string): boolean => {
 
 const processProxyCACertificates = (
   proxyCA: any,
-  configAdapter: ConfigAdapter
+  configAdapter: ConfigAdapter,
 ): string[] => {
   if (proxyCA === undefined || proxyCA === null || proxyCA === '') {
     return [];
@@ -75,7 +75,7 @@ const processProxyCACertificates = (
   if (!Array.isArray(proxyCA)) {
     logApp.error('[OPENCTI] https_proxy_ca must be an array of certificate paths or contents', {
       received_type: typeof proxyCA,
-      received_value: String(proxyCA).substring(0, 100)
+      received_value: String(proxyCA).substring(0, 100),
     });
     return [];
   }
@@ -117,14 +117,14 @@ const processProxyCACertificates = (
       errors: errors.map((e, i) => ({
         index: i,
         value: e.cert.substring(0, 100),
-        reason: e.reason
-      }))
+        reason: e.reason,
+      })),
     });
   }
 
   if (caCertificates.length > 0) {
     logApp.info('[OPENCTI] Successfully loaded CA certificates', {
-      count: caCertificates.length
+      count: caCertificates.length,
     });
   }
 
@@ -136,7 +136,7 @@ const proxyConfigCache = new WeakMap<ConfigAdapter, Record<string, string>>();
 const defaultConfigAdapter = createDefaultConfigAdapter();
 
 export const getProxyConfigurationForContract = (
-  configAdapter: ConfigAdapter = defaultConfigAdapter
+  configAdapter: ConfigAdapter = defaultConfigAdapter,
 ): Record<string, string> => {
   const cached = proxyConfigCache.get(configAdapter);
   if (cached) {
@@ -194,15 +194,15 @@ export const getProxyConfigurationForContract = (
 
 export const injectProxyConfiguration = (
   existingConfig: Array<{ key: string; value: string }>,
-  configAdapter: ConfigAdapter = defaultConfigAdapter
+  configAdapter: ConfigAdapter = defaultConfigAdapter,
 ): Array<{ key: string; value: string }> => {
   const proxyConfig = getProxyConfigurationForContract(configAdapter);
   const filteredConfig = existingConfig.filter(
-    (item) => !['HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_CA_CERTIFICATES', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'].includes(item.key)
+    (item) => !['HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_CA_CERTIFICATES', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'].includes(item.key),
   );
   const proxyConfigArray = Object.entries(proxyConfig).map(([key, value]) => ({
     key,
-    value
+    value,
   }));
   return [...filteredConfig, ...proxyConfigArray];
 };

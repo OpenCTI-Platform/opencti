@@ -41,9 +41,9 @@ export const workspaceShareListQuery = graphql`
 `;
 
 interface WorkspaceShareListProps {
-  queryRef: PreloadedQuery<WorkspaceShareListQuery>
-  onDelete: (id: string) => void
-  onToggleEnabled: (id: string, enabled: boolean) => void
+  queryRef: PreloadedQuery<WorkspaceShareListQuery>;
+  onDelete: (id: string) => void;
+  onToggleEnabled: (id: string, enabled: boolean) => void;
 }
 
 const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceShareListProps) => {
@@ -163,7 +163,7 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
                       </div>
                     )}
                   >
-                    <ReportGmailerrorred fontSize={'small'} color={'error'} />
+                    <ReportGmailerrorred fontSize="small" color="error" />
                   </Tooltip>
                 )}
               </div>

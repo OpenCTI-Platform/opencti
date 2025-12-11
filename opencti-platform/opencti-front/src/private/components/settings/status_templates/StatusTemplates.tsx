@@ -152,14 +152,16 @@ const StatusTemplates = () => {
           actions={(row) => <StatusTemplatePopover data={row} paginationOptions={paginationOptions} />}
           searchContextFinal={{ entityTypes: ['StatusTemplates'] }}
           icon={(data) => <FactCheckOutlined sx={{ color: data.color }} />}
-          createButton={<StatusTemplateCreation
-            paginationOptions={paginationOptions}
-            contextual={false}
-            creationCallback={() => { }}
-            handleClose={() => { }}
-            inputValueContextual={''}
-            open={false}
-                        />}
+          createButton={(
+            <StatusTemplateCreation
+              paginationOptions={paginationOptions}
+              contextual={false}
+              creationCallback={() => { }}
+              handleClose={() => { }}
+              inputValueContextual=""
+              open={false}
+            />
+          )}
         />
       )}
     </div>

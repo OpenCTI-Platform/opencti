@@ -83,7 +83,7 @@ const Root = () => {
         />
         <Route
           path="/ingestion"
-          element={
+          element={(
             <Security
               needs={[INGESTION]}
               placeholder={(
@@ -99,7 +99,7 @@ const Root = () => {
             >
               <Navigate to={isConnectorReader ? '/dashboard/data/ingestion/connectors' : '/dashboard/data/ingestion/catalog'} />
             </Security>
-          }
+          )}
         />
         <Route
           path="/ingestion/sync"
@@ -139,14 +139,14 @@ const Root = () => {
         />
         <Route
           path="/ingestion/forms/:formId"
-          element={
+          element={(
             <Security
               needs={[KNOWLEDGE_KNUPDATE]}
               placeholder={<Navigate to="/dashboard" />}
             >
               <FormView />
             </Security>
-          }
+          )}
         />
         <Route
           path="/ingestion/connectors"
@@ -178,7 +178,7 @@ const Root = () => {
         />
         <Route
           path="/processing"
-          element={
+          element={(
             <Security
               needs={[KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE]}
               placeholder={(
@@ -192,7 +192,7 @@ const Root = () => {
             >
               <Navigate to={isGrantedToAutomation ? '/dashboard/data/processing/automation' : '/dashboard/data/processing/tasks'} />
             </Security>
-          }
+          )}
         />
         <Route
           path="/processing/automation"
@@ -204,36 +204,36 @@ const Root = () => {
         />
         <Route
           path="/processing/csv_mapper"
-          element={
+          element={(
             <Security
               needs={[CSVMAPPERS]}
               placeholder={<Navigate to="/dashboard" />}
             >
-              <CsvMappers/>
+              <CsvMappers />
             </Security>
-          }
+          )}
         />
         <Route
           path="/processing/json_mapper"
-          element={
+          element={(
             <Security
               needs={[CSVMAPPERS]}
               placeholder={<Navigate to="/dashboard" />}
             >
-              <JsonMappers/>
+              <JsonMappers />
             </Security>
-            }
+          )}
         />
         <Route
           path="/processing/tasks"
-          element={
+          element={(
             <Security
               needs={[KNOWLEDGE_KNUPDATE]}
               placeholder={<Navigate to="/dashboard" />}
             >
               <Tasks />
             </Security>
-          }
+          )}
         />
         <Route
           path="/restriction/*"

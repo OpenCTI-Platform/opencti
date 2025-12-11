@@ -160,15 +160,15 @@ class CaseRftKnowledgeComponent extends Component {
         data-testid="case-rft-knowledge"
       >
         {mode !== 'graph' && (
-        <ContainerHeader
-          container={caseData}
-          link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
-          modes={['graph', 'timeline', 'correlation', 'matrix']}
-          currentMode={mode}
-          knowledge={true}
-          enableSuggestions={true}
-          investigationAddFromContainer={investigationAddFromContainer}
-        />
+          <ContainerHeader
+            container={caseData}
+            link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
+            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            currentMode={mode}
+            knowledge={true}
+            enableSuggestions={true}
+            investigationAddFromContainer={investigationAddFromContainer}
+          />
         )}
         <Routes>
           <Route
@@ -196,7 +196,7 @@ class CaseRftKnowledgeComponent extends Component {
                   );
                 }}
               />
-          )}
+            )}
           />
           <Route
             path="/timeline"
@@ -245,7 +245,7 @@ class CaseRftKnowledgeComponent extends Component {
                   }}
                 />
               </>
-          )}
+            )}
           />
           <Route
             path="/correlation"
@@ -270,7 +270,7 @@ class CaseRftKnowledgeComponent extends Component {
                   );
                 }}
               />
-          )}
+            )}
           />
           <Route
             path="/matrix"
@@ -283,11 +283,11 @@ class CaseRftKnowledgeComponent extends Component {
           />
           <Route
             path="/relations/:relationId"
-            element={
+            element={(
               <StixCoreRelationship
                 entityId={caseData.id}
               />
-            }
+            )}
           />
         </Routes>
       </div>

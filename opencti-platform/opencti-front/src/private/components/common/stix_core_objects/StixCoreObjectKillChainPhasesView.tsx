@@ -29,7 +29,7 @@ interface StixCoreObjectKillChainPhasesViewProps {
     phase_name: string;
     x_opencti_order?: number | null;
   }>;
-  firstLine?: boolean,
+  firstLine?: boolean;
 }
 
 const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillChainPhasesViewProps> = ({ killChainPhases, firstLine }) => {
@@ -51,9 +51,9 @@ const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillCha
                 classes={{ root: classes.killChainPhaseItem }}
               >
                 <ListItemIcon>
-                  <ItemIcon type={killChainPhase.entity_type}/>
+                  <ItemIcon type={killChainPhase.entity_type} />
                 </ListItemIcon>
-                <ListItemText primary={killChainPhase.phase_name}/>
+                <ListItemText primary={killChainPhase.phase_name} />
               </ListItem>
             );
           })}

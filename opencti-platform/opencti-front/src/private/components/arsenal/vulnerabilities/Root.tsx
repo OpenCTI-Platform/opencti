@@ -109,7 +109,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -128,7 +128,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                   ]}
                   data={vulnerability}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -153,7 +153,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <VulnerabilityDeletion id={vulnerability.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -231,19 +231,19 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
-                    <VulnerabilityKnowledge vulnerabilityData={vulnerability}/>
+                    <VulnerabilityKnowledge vulnerabilityData={vulnerability} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={vulnerability}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -283,7 +283,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
 };
 
 const Root = () => {
-  const { vulnerabilityId } = useParams() as { vulnerabilityId: string; };
+  const { vulnerabilityId } = useParams() as { vulnerabilityId: string };
   const queryRef = useQueryLoading<RootVulnerabilityQuery>(vulnerabilityQuery, {
     id: vulnerabilityId,
   });

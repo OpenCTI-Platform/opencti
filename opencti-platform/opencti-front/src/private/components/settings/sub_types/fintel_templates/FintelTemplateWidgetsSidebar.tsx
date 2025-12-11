@@ -65,7 +65,7 @@ const sidebarFragment = graphql`
 `;
 
 interface FintelTemplateWidetsSidebarProps {
-  data: FintelTemplateWidgetsSidebar_template$key,
+  data: FintelTemplateWidgetsSidebar_template$key;
 }
 
 const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSidebarProps> = ({ data }) => {
@@ -152,10 +152,12 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     if (!variableName) {
       MESSAGING$.notifyError(t_i18n('You should provide a variable name'));
       return false;
-    } if (variableName.includes(' ')) {
+    }
+    if (variableName.includes(' ')) {
       MESSAGING$.notifyError(t_i18n('The variable name should not contain spaces'));
       return false;
-    } if (!variableName.match(fintelTemplateVariableNameChecker)) {
+    }
+    if (!variableName.match(fintelTemplateVariableNameChecker)) {
       MESSAGING$.notifyError(t_i18n('The variable name should not contain special characters'));
       return false;
     }

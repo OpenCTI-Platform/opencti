@@ -53,21 +53,21 @@ const organizationMutation = graphql`
 const ORGANIZATION_TYPE = 'Organization';
 
 interface OrganizationAddInput {
-  name: string
-  description: string
-  confidence: number | null
-  x_opencti_reliability: string | undefined
-  x_opencti_organization_type: string | undefined
-  x_opencti_score: string | undefined
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | null
+  name: string;
+  description: string;
+  confidence: number | null;
+  x_opencti_reliability: string | undefined;
+  x_opencti_organization_type: string | undefined;
+  x_opencti_score: string | undefined;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | null;
 }
 
 interface OrganizationFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -189,167 +189,169 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     },
   );
 
-  return <Formik<OrganizationAddInput>
-    initialValues={initialValues}
-    validationSchema={organizationValidator}
-    validateOnChange={false}
-    validateOnBlur={false}
-    onSubmit={onSubmit}
-    onReset={onReset}
-         >
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-      resetForm,
-    }) => (
-      <>
-        <BulkTextModal
-          open={bulkModalOpen}
-          onClose={onBulkModalClose}
-          onValidate={async (val) => {
-            await setFieldValue('name', val);
-            if (splitMultilines(val).length > 1) {
-              await setFieldValue('file', null);
-            }
-          }}
-          formValue={values.name}
-        />
-        <ProgressBar
-          open={progressBarOpen}
-          value={(bulkCurrentCount / bulkCount) * 100}
-          label={`${bulkCurrentCount}/${bulkCount}`}
-          title={t_i18n('Create multiple entities')}
-          onClose={() => {
-            setProgressBarOpen(false);
-            resetForm();
-            resetBulk();
-            onCompleted?.();
-          }}
-        >
-          <BulkResult variablesToString={(v) => v.input.name} />
-        </ProgressBar>
-        <Form>
-          <Field
-            component={BulkTextField}
-            variant="standard"
-            name="name"
-            label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
-            fullWidth={true}
-            detectDuplicate={['Organization']}
+  return (
+    <Formik<OrganizationAddInput>
+      initialValues={initialValues}
+      validationSchema={organizationValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
+      onSubmit={onSubmit}
+      onReset={onReset}
+    >
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+        resetForm,
+      }) => (
+        <>
+          <BulkTextModal
+            open={bulkModalOpen}
+            onClose={onBulkModalClose}
+            onValidate={async (val) => {
+              await setFieldValue('name', val);
+              if (splitMultilines(val).length > 1) {
+                await setFieldValue('file', null);
+              }
+            }}
+            formValue={values.name}
           />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={fieldSpacingContainerStyle}
-          />
-          <ConfidenceField
-            entityType="Organization"
-            containerStyle={fieldSpacingContainerStyle}
-          />
-          { /* TODO Improve customization (vocab with letter range) 2662 */}
-          <OpenVocabField
-            label={t_i18n('Organization type')}
-            type="organization_type_ov"
-            name="x_opencti_organization_type"
-            required={(mandatoryAttributes.includes('x_opencti_organization_type'))}
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={false}
-            onChange={setFieldValue}
-          />
-          <OpenVocabField
-            label={t_i18n('Reliability')}
-            type="reliability_ov"
-            name="x_opencti_reliability"
-            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={false}
-            onChange={setFieldValue}
-          />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="x_opencti_score"
-            required={(mandatoryAttributes.includes('x_opencti_score'))}
-            label={t_i18n('Score')}
-            fullWidth={true}
-            type="number"
-            style={fieldSpacingContainerStyle}
-          />
-          <CreatedByField
-            name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-            name="objectLabel"
-            required={(mandatoryAttributes.includes('objectLabel'))}
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.objectLabel}
-          />
-          <ObjectMarkingField
-            name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ExternalReferencesField
-            name="externalReferences"
-            required={(mandatoryAttributes.includes('externalReferences'))}
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.externalReferences}
-          />
-          <Field
-            component={CustomFileUploader}
-            name="file"
-            setFieldValue={setFieldValue}
-            disabled={splitMultilines(values.name).length > 1}
-            noFileSelectedLabel={splitMultilines(values.name).length > 1
-              ? t_i18n('File upload not allowed in bulk creation')
-              : undefined
-            }
-          />
-          <div style={{
-            marginTop: '20px',
-            textAlign: 'right',
-          }}
+          <ProgressBar
+            open={progressBarOpen}
+            value={(bulkCurrentCount / bulkCount) * 100}
+            label={`${bulkCurrentCount}/${bulkCount}`}
+            title={t_i18n('Create multiple entities')}
+            onClose={() => {
+              setProgressBarOpen(false);
+              resetForm();
+              resetBulk();
+              onCompleted?.();
+            }}
           >
-            <Button
-              variant="contained"
-              onClick={handleReset}
-              disabled={isSubmitting}
+            <BulkResult variablesToString={(v) => v.input.name} />
+          </ProgressBar>
+          <Form>
+            <Field
+              component={BulkTextField}
+              variant="standard"
+              name="name"
+              label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
+              fullWidth={true}
+              detectDuplicate={['Organization']}
+            />
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={fieldSpacingContainerStyle}
+            />
+            <ConfidenceField
+              entityType="Organization"
+              containerStyle={fieldSpacingContainerStyle}
+            />
+            { /* TODO Improve customization (vocab with letter range) 2662 */}
+            <OpenVocabField
+              label={t_i18n('Organization type')}
+              type="organization_type_ov"
+              name="x_opencti_organization_type"
+              required={(mandatoryAttributes.includes('x_opencti_organization_type'))}
+              containerStyle={fieldSpacingContainerStyle}
+              multiple={false}
+              onChange={setFieldValue}
+            />
+            <OpenVocabField
+              label={t_i18n('Reliability')}
+              type="reliability_ov"
+              name="x_opencti_reliability"
+              required={(mandatoryAttributes.includes('x_opencti_reliability'))}
+              containerStyle={fieldSpacingContainerStyle}
+              multiple={false}
+              onChange={setFieldValue}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="x_opencti_score"
+              required={(mandatoryAttributes.includes('x_opencti_score'))}
+              label={t_i18n('Score')}
+              fullWidth={true}
+              type="number"
+              style={fieldSpacingContainerStyle}
+            />
+            <CreatedByField
+              name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
+            <ObjectLabelField
+              name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+            />
+            <ObjectMarkingField
+              name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
+            <ExternalReferencesField
+              name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+            />
+            <Field
+              component={CustomFileUploader}
+              name="file"
+              setFieldValue={setFieldValue}
+              disabled={splitMultilines(values.name).length > 1}
+              noFileSelectedLabel={splitMultilines(values.name).length > 1
+                ? t_i18n('File upload not allowed in bulk creation')
+                : undefined
+              }
+            />
+            <div style={{
+              marginTop: '20px',
+              textAlign: 'right',
+            }}
             >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
-              sx={{ marginLeft: 2 }}
-            >
-              {t_i18n('Create')}
-            </Button>
-          </div>
-        </Form>
-      </>
-    )}
-  </Formik>;
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                sx={{ marginLeft: 2 }}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </div>
+          </Form>
+        </>
+      )}
+    </Formik>
+  );
 };
 
 const OrganizationCreation = ({ paginationOptions }: {
-  paginationOptions: OrganizationsLinesPaginationQuery$variables
+  paginationOptions: OrganizationsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
@@ -360,7 +362,7 @@ const OrganizationCreation = ({ paginationOptions }: {
     'organizationAdd',
   );
   const CreateOrganizationControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Organization' {...props} />
+    <CreateEntityControlledDial entityType="Organization" {...props} />
   );
 
   return (

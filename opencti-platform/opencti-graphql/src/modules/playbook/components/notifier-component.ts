@@ -16,8 +16,8 @@ import { isEventInPirRelationship } from '../../../manager/playbookManager/playb
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 
 export interface NotifierConfiguration {
-  notifiers: string[]
-  authorized_members: object
+  notifiers: string[];
+  authorized_members: object;
 }
 
 const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> = {
@@ -28,7 +28,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> 
       uniqueItems: true,
       default: [],
       $ref: 'Notifiers',
-      items: { type: 'string', oneOf: [] }
+      items: { type: 'string', oneOf: [] },
     },
     authorized_members: { type: 'object' },
   },
@@ -60,7 +60,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
     const targetUsers = await convertMembersToUsers(
       authorized_members as { value: string }[],
       baseData,
-      bundle
+      bundle,
     );
 
     const notificationsCall = [];
@@ -81,7 +81,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
           // Default message.
           let message = generateCreateMessage({
             ...stixObject,
-            entity_type: convertStixToInternalTypes(stixObject.type)
+            entity_type: convertStixToInternalTypes(stixObject.type),
           });
           if (event) {
             if (event.type === 'update') {
@@ -91,7 +91,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
             } else if (event.type === 'delete') {
               message = generateDeleteMessage({
                 ...stixObject,
-                entity_type: convertStixToInternalTypes(stixObject.type)
+                entity_type: convertStixToInternalTypes(stixObject.type),
               });
             }
           }
@@ -101,7 +101,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
             type: event?.type ?? 'create',
             message: message === '-' ? playbookNode.name : message,
           };
-        })
+        }),
       };
       notificationsCall.push(storeNotificationEvent(context, notificationEvent));
     }
@@ -109,5 +109,5 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
       await Promise.all(notificationsCall);
     }
     return { output_port: undefined, bundle };
-  }
+  },
 };

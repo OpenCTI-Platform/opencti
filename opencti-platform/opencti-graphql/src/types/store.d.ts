@@ -35,7 +35,7 @@ import {
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  RELATION_OBJECT_PARTICIPANT
+  RELATION_OBJECT_PARTICIPANT,
 } from '../schema/stixRefRelationship';
 import {
   INPUT_ASSIGNEE,
@@ -49,7 +49,7 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_OBJECTS,
-  INPUT_PARTICIPANT
+  INPUT_PARTICIPANT,
 } from '../schema/general';
 import type { StixId } from './stix-2-1-common';
 import { type EditOperation, type PageInfo, StatusScope } from '../generated/graphql';
@@ -60,8 +60,8 @@ import type { Metric } from '../modules/metrics/metrics';
 import type { PirInformation } from '../modules/pir/pir-types';
 
 interface Representative {
-  main: string
-  secondary: string
+  main: string;
+  secondary: string;
 }
 
 interface InternalEditInput {
@@ -128,10 +128,10 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   draft_change?: DraftChange;
   sort?: SortResults;
   // representative
-  representative: Representative
+  representative: Representative;
   restricted_members?: Array<AuthorizedMember>;
   metrics?: Array<Metric>;
-  pir_information?: Array<PirInformation>
+  pir_information?: Array<PirInformation>;
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {
@@ -174,14 +174,14 @@ interface StoreConnection {
 }
 
 interface StoreRawRule {
-   
+
   inferred: any;
   explanation: string[];
 }
 
 interface StoreRule {
   rule: string;
-  attributes: Array<{ field: string, value: string }>;
+  attributes: Array<{ field: string; value: string }>;
   explanation: string[];
 }
 
@@ -202,9 +202,9 @@ interface BasicStoreCommon extends BasicStoreBase {
 }
 
 interface StoreCommon {
-  internal_id: string
+  internal_id: string;
   standard_id: StixId;
-  entity_type: string
+  entity_type: string;
   parent_types: string[];
   // inputs
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
@@ -255,12 +255,12 @@ interface BasicStoreRelation extends StoreRawRelation {
   toRole: string;
   toType: string;
   toName: string;
-  coverage: Array<{ name: string, score: number }>;
+  coverage: Array<{ name: string; score: number }>;
 }
 
 interface StoreRelation extends BasicStoreRelation, StoreCommon {
-  from: BasicStoreBase | undefined | null,
-  to: BasicStoreBase | undefined | null,
+  from: BasicStoreBase | undefined | null;
+  to: BasicStoreBase | undefined | null;
   [INPUT_CREATED_BY]: BasicStoreEntity;
   [INPUT_DOMAIN_FROM]: BasicStoreObject;
   [INPUT_DOMAIN_TO]: BasicStoreObject;
@@ -269,8 +269,8 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
 }
 
 interface BasicNodeEdge<T> {
-  cursor: string
-  types?: (string | null | undefined)[]
+  cursor: string;
+  types?: (string | null | undefined)[];
   node: T;
 }
 
@@ -461,9 +461,9 @@ interface StoreEntity extends BasicStoreEntity, StoreCommon {
 }
 
 interface StoreEntityReport extends StoreCommon {
-  name: string
-  published: Date
-  [INPUT_OBJECTS]: Array<StoreEntity>
+  name: string;
+  published: Date;
+  [INPUT_OBJECTS]: Array<StoreEntity>;
 }
 
 interface BasicStoreEntityFeed extends BasicStoreEntity {
@@ -707,12 +707,12 @@ interface BasicWorkflowStatusEntity extends BasicStoreEntity {
 }
 
 interface BasicIdentityEntity extends BasicStoreEntity {
-  name: string
-  description: string
-  roles: string[]
-  identity_class: string
-  contact_information: string
-  x_opencti_aliases?: string[]
+  name: string;
+  description: string;
+  roles: string[];
+  identity_class: string;
+  contact_information: string;
+  x_opencti_aliases?: string[];
 }
 
 interface StoreEntityIdentity extends StoreEntity, BasicIdentityEntity {}

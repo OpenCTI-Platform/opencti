@@ -17,7 +17,7 @@ import {
   INPUT_OBJECTS,
   INPUT_PARTICIPANT,
   INPUT_WORKS,
-  STIX_TYPE_SIGHTING
+  STIX_TYPE_SIGHTING,
 } from './general';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -25,7 +25,7 @@ import {
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_COUNTRY,
   isStixDomainObjectContainer,
-  isStixDomainObjectLocation
+  isStixDomainObjectLocation,
 } from './stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
@@ -49,7 +49,7 @@ import {
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
   ENTITY_USER_ACCOUNT,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
 } from './stixCyberObservable';
 import { ATTRIBUTE_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { FunctionalError } from '../config/errors';
@@ -675,7 +675,7 @@ export const STIX_REF_RELATIONSHIPS: RefAttribute[] = [
   bodyMultipart,
   values,
   xOpenctiLinkedTo, // deprecated, but needed for migration to work properly
-  serviceDlls
+  serviceDlls,
 ];
 
 // -- Meta relationships
@@ -763,10 +763,10 @@ export const objectOrganization: RefAttribute = {
   upsert: true,
   isRefExistingForTypes(this, fromType, toType) {
     return !(fromType === ENTITY_TYPE_EVENT
-        || fromType === ENTITY_TYPE_IDENTITY_ORGANIZATION
-        || fromType === ENTITY_TYPE_IDENTITY_SECTOR
-        || isStixDomainObjectLocation(fromType))
-      && this.toTypes.includes(toType);
+      || fromType === ENTITY_TYPE_IDENTITY_ORGANIZATION
+      || fromType === ENTITY_TYPE_IDENTITY_SECTOR
+      || isStixDomainObjectLocation(fromType))
+    && this.toTypes.includes(toType);
   },
   datable: false,
   isFilterable: true,
@@ -880,7 +880,7 @@ export const work: RefAttribute = {
   label: 'Work',
   datable: false,
   isFilterable: true,
-  toTypes: [ENTITY_TYPE_WORK]
+  toTypes: [ENTITY_TYPE_WORK],
 };
 
 export const internalFiles: RefAttribute = {
@@ -898,7 +898,7 @@ export const internalFiles: RefAttribute = {
   label: 'Internal file',
   datable: false,
   isFilterable: true,
-  toTypes: [ENTITY_TYPE_INTERNAL_FILE]
+  toTypes: [ENTITY_TYPE_INTERNAL_FILE],
 };
 
 export const externalReferences: RefAttribute = {
@@ -955,7 +955,7 @@ export const META_RELATIONS: RefAttribute[] = [
 // Register
 schemaTypesDefinition.register(
   ABSTRACT_STIX_REF_RELATIONSHIP,
-  [...STIX_REF_RELATIONSHIPS, ...META_RELATIONS].map((arr) => arr.databaseName)
+  [...STIX_REF_RELATIONSHIPS, ...META_RELATIONS].map((arr) => arr.databaseName),
 );
 
 export const isStixRefRelationship = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_REF_RELATIONSHIP) || type === ABSTRACT_STIX_REF_RELATIONSHIP;
@@ -967,7 +967,7 @@ export const isStixRefUnidirectionalRelationship = (type: string) => isStixMetaR
 export const buildRelationRef = (relationRef: Omit<RefAttribute, 'isRefExistingForTypes'>, isRefExistingForTypes: Checker): RefAttribute => {
   return {
     ...relationRef,
-    isRefExistingForTypes
+    isRefExistingForTypes,
   };
 };
 

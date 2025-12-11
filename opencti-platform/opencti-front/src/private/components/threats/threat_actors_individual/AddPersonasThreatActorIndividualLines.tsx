@@ -52,14 +52,14 @@ const AddPersonasThreatActorIndividualLinesFragment = graphql`
 `;
 
 interface AddPersonasThreatActorIndividualLineProps {
-  id: string,
-  name: string,
-  currentTargets: string[],
-  handleClick: () => void,
+  id: string;
+  name: string;
+  currentTargets: string[];
+  handleClick: () => void;
 }
 
 const AddPersonasThreatActorIndividualLine: FunctionComponent<
-AddPersonasThreatActorIndividualLineProps
+  AddPersonasThreatActorIndividualLineProps
 > = ({
   id,
   name,
@@ -75,7 +75,7 @@ AddPersonasThreatActorIndividualLineProps
       <ListItemIcon>
         {currentTargets.includes(id)
           ? <CheckCircle style={{ color: theme.palette.primary.main }} />
-          : <ItemIcon type='Individual' />
+          : <ItemIcon type="Individual" />
         }
       </ListItemIcon>
       <ListItemText
@@ -86,12 +86,12 @@ AddPersonasThreatActorIndividualLineProps
 };
 
 interface AddPersonasThreatActorIndividualLinesProps {
-  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
-  fragmentKey: AddPersonasThreatActorIndividualLines_data$key,
+  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data;
+  fragmentKey: AddPersonasThreatActorIndividualLines_data$key;
 }
 
 const AddPersonasThreatActorIndividualLines: FunctionComponent<
-AddPersonasThreatActorIndividualLinesProps
+  AddPersonasThreatActorIndividualLinesProps
 > = ({
   threatActorIndividual,
   fragmentKey,

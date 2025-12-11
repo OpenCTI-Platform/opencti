@@ -160,7 +160,8 @@ const Users = () => {
           <UserCreation paginationOptions={queryPaginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
         </React.Suspense>
       );
-    } if (isOnlyAdminOrganization && isEnterpriseEdition) {
+    }
+    if (isOnlyAdminOrganization && isEnterpriseEdition) {
       return (
         <SettingsOrganizationUserCreation
           paginationOptions={queryPaginationOptions}
@@ -218,7 +219,7 @@ const Users = () => {
       }}
       data-testid="users-settings-page"
     >
-      <AccessesMenu/>
+      <AccessesMenu />
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Security') },
@@ -227,34 +228,34 @@ const Users = () => {
       {isSetAccess || isEnterpriseEdition ? (
         <>
           {queryRef && (
-          <DataTable
-            dataColumns={dataColumns}
-            resolvePath={(data) => data.users?.edges?.map(({ node }: { node: UsersLine_node$data }) => node)}
-            storageKey={LOCAL_STORAGE_KEY}
-            initialValues={initialValues}
-            contextFilters={contextFilters}
-            lineFragment={usersLineFragment}
-            preloadedPaginationProps={preloadedPaginationProps}
-            createButton={userCreateButton}
-            disableLineSelection={isOnlyAdminOrganization}
-            icon={(user) => {
-              const external = user.external === true;
-              const userServiceAccount = user.user_service_account;
-              if (userServiceAccount) {
-                return <ManageAccountsOutlined color="primary" />;
-              }
-              if (external) {
-                return <AccountCircleOutlined color="primary" />;
-              }
-              return <PersonOutlined color="primary" />;
-            }}
-            taskScope={'USER'}
-            entityTypes={['User']}
-          />
+            <DataTable
+              dataColumns={dataColumns}
+              resolvePath={(data) => data.users?.edges?.map(({ node }: { node: UsersLine_node$data }) => node)}
+              storageKey={LOCAL_STORAGE_KEY}
+              initialValues={initialValues}
+              contextFilters={contextFilters}
+              lineFragment={usersLineFragment}
+              preloadedPaginationProps={preloadedPaginationProps}
+              createButton={userCreateButton}
+              disableLineSelection={isOnlyAdminOrganization}
+              icon={(user) => {
+                const external = user.external === true;
+                const userServiceAccount = user.user_service_account;
+                if (userServiceAccount) {
+                  return <ManageAccountsOutlined color="primary" />;
+                }
+                if (external) {
+                  return <AccountCircleOutlined color="primary" />;
+                }
+                return <PersonOutlined color="primary" />;
+              }}
+              taskScope="USER"
+              entityTypes={['User']}
+            />
           )}
         </>
       ) : (
-        <EnterpriseEdition feature="Organization sharing"/>
+        <EnterpriseEdition feature="Organization sharing" />
       )}
     </div>
   );

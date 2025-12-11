@@ -15,9 +15,9 @@ import { FilterRepresentative } from './FiltersModel';
 import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
 
 interface DisplayFiltersValuesProps {
-  filtersRepresentativesMap: Map<string, FilterRepresentative>,
-  values: string[],
-  mode?: string,
+  filtersRepresentativesMap: Map<string, FilterRepresentative>;
+  values: string[];
+  mode?: string;
 }
 
 const DisplayFiltersValues: FunctionComponent<DisplayFiltersValuesProps> = ({
@@ -56,9 +56,9 @@ const DisplayFiltersValues: FunctionComponent<DisplayFiltersValuesProps> = ({
 };
 
 interface DisplayFilterGroupsProps {
-  filtersRepresentativesMap: Map<string, FilterRepresentative>,
-  filterGroups: FilterGroup[],
-  filterMode: string,
+  filtersRepresentativesMap: Map<string, FilterRepresentative>;
+  filterGroups: FilterGroup[];
+  filterMode: string;
 }
 
 const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = ({
@@ -79,45 +79,53 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
             .filter((v) => v.key === 'relationship_type')
             .flat()
             .map((value) => {
-              return (<span key={'relationship_type'}>
+              return (
+                <span key="relationship_type">
+                  <DisplayFiltersValues
+                    filtersRepresentativesMap={filtersRepresentativesMap}
+                    values={value.values}
+                  />
+                </span>
+              );
+            })}
+          {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0
+            && (
+              <Box
+                sx={{
+                  paddingTop: 2,
+                  textTransform: 'uppercase',
+                  fontFamily: 'Consolas, monaco, monospace',
+                  backgroundColor: 'rgba(255, 255, 255, .1)',
+                  fontWeight: 'bold',
+                  display: 'inline-block',
+                  margin: '0 8px',
+                  padding: '8px',
+                }}
+              >
+                {t_i18n('WITH')}
+              </Box>
+            )
+          }
+          {values.filter((v) => v.key === 'id').flat().map((value) => {
+            return (
+              <span key="id">
                 <DisplayFiltersValues
                   filtersRepresentativesMap={filtersRepresentativesMap}
                   values={value.values}
                 />
-              </span>);
-            })}
-          {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0
-            && <Box
-              sx={{
-                paddingTop: 2,
-                textTransform: 'uppercase',
-                fontFamily: 'Consolas, monaco, monospace',
-                backgroundColor: 'rgba(255, 255, 255, .1)',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                margin: '0 8px',
-                padding: '8px',
-              }}
-               >
-              {t_i18n('WITH')}
-            </Box>
-          }
-          {values.filter((v) => v.key === 'id').flat().map((value) => {
-            return (<span key={'id'}>
-              <DisplayFiltersValues
-                filtersRepresentativesMap={filtersRepresentativesMap}
-                values={value.values}
-              />
-            </span>);
+              </span>
+            );
           })}
           {values.filter((v) => v.key === 'dynamic').flat().map((value) => {
-            return (<span key={'id'}>
-              <DisplayFiltersFilterGroups
-                filterGroups={value.values}
-                filtersRepresentativesMap={filtersRepresentativesMap}
-                filterMode={'and'}
-              />
-            </span>);
+            return (
+              <span key="id">
+                <DisplayFiltersFilterGroups
+                  filterGroups={value.values}
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  filterMode="and"
+                />
+              </span>
+            );
           })}
         </>
       );
@@ -297,7 +305,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
         classes={{ root: classFilter, label: classChipLabel }}
         color="warning"
         onClick={handleClickOpen}
-        label={
+        label={(
           <>
             {t_i18n('Filters are not fully displayed')}
             <InformationOutline
@@ -305,7 +313,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
               color="secondary"
             />
           </>
-        }
+        )}
       />
 
       <Dialog
@@ -343,7 +351,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
           </Typography>
           <CodeBlock
             code={JSON.stringify(filterObj, null, 2)}
-            language={'json'}
+            language="json"
           />
         </DialogContent>
         <DialogActions>

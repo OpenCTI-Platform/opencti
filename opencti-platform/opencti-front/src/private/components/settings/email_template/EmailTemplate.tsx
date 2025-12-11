@@ -24,12 +24,12 @@ export const emailTemplateQuery = graphql`
 `;
 
 interface EmailTemplateProps {
-  queryRef: PreloadedQuery<EmailTemplateQuery>
+  queryRef: PreloadedQuery<EmailTemplateQuery>;
 }
 
 const EmailTemplateComponent = ({ queryRef }: EmailTemplateProps) => {
   const { emailTemplate } = usePreloadedQuery(emailTemplateQuery, queryRef);
-  if (!emailTemplate) return <ErrorNotFound/>;
+  if (!emailTemplate) return <ErrorNotFound />;
 
   return (
     <EmailTemplateProvider>
@@ -56,7 +56,7 @@ const EmailTemplateComponent = ({ queryRef }: EmailTemplateProps) => {
 
 const EmailTemplate = () => {
   const { emailTemplateId } = useParams<{ emailTemplateId?: string }>();
-  if (!emailTemplateId) return <ErrorNotFound/>;
+  if (!emailTemplateId) return <ErrorNotFound />;
 
   const templateRef = useQueryLoading<EmailTemplateQuery>(
     emailTemplateQuery,

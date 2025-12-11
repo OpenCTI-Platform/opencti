@@ -99,7 +99,7 @@ export const syncStreamCollectionQuery = graphql`
 
 const CreateSynchronizerControlledDial = (props) => (
   <CreateEntityControlledDial
-    entityType='Synchronizer'
+    entityType="Synchronizer"
     {...props}
   />
 );
@@ -274,7 +274,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       containerstyle={fieldSpacingContainerStyle}
                       renderValue={(value) => streams.filter((stream) => stream.value === value).at(0)
                         .name
-                            }
+                      }
                     >
                       {streams.map(
                         ({ value, label, name, description, filters }) => {
@@ -284,7 +284,7 @@ const SyncCreation = ({ paginationOptions }) => {
                               key={value}
                               value={value}
                               style={{ overflow: 'hidden' }}
-                              title={
+                              title={(
                                 <Grid
                                   container
                                   spacing={1}
@@ -303,7 +303,7 @@ const SyncCreation = ({ paginationOptions }) => {
                                     />
                                   </Grid>
                                 </Grid>
-                                        }
+                              )}
                               placement="bottom-start"
                             >
                               <MenuItem key={value} value={value}>
@@ -321,7 +321,7 @@ const SyncCreation = ({ paginationOptions }) => {
                         variant="contained"
                         color="secondary"
                         onClick={() => handleGetStreams(values, setErrors, errors)
-                              }
+                        }
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >

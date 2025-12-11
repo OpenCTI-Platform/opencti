@@ -9,7 +9,7 @@ import {
   statusTemplateDelete,
   statusTemplateEditContext,
   statusTemplateEditField,
-  statusTemplateUsagesNumber
+  statusTemplateUsagesNumber,
 } from '../domain/status';
 import type { Resolvers } from '../generated/graphql';
 

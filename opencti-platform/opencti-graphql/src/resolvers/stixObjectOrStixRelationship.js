@@ -1,6 +1,6 @@
 import { includes } from 'ramda';
 import { findById, findStixObjectOrRelationshipsPaginated } from '../domain/stixObjectOrStixRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
 import { onlyStableStixIds } from '../database/stix';
 import { isInferredIndex } from '../database/utils';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';

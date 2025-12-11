@@ -31,7 +31,7 @@ const popoverFragment = graphql`
 `;
 
 interface PirPopoverProps {
-  data: PirPopoverFragment$key,
+  data: PirPopoverFragment$key;
 }
 
 const PirPopover = ({ data }: PirPopoverProps) => {

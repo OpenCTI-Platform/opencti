@@ -58,12 +58,12 @@ const taskAddMutation = graphql`
 
 const TASK_TYPE = 'Task';
 interface FormikTaskAddInput {
-  name: string
-  due_date?: Date | null
-  description?: string
-  objectAssignee?: FieldOption[]
-  objectLabel?: FieldOption[]
-  objectMarking: FieldOption[]
+  name: string;
+  due_date?: Date | null;
+  description?: string;
+  objectAssignee?: FieldOption[];
+  objectLabel?: FieldOption[];
+  objectMarking: FieldOption[];
 }
 
 interface TaskCreationProps {
@@ -72,7 +72,7 @@ interface TaskCreationProps {
     key: string,
   ) => void;
   onClose?: () => void;
-  defaultMarkings?: { value: string, label: string }[];
+  defaultMarkings?: { value: string; label: string }[];
   inputValue?: string;
 }
 

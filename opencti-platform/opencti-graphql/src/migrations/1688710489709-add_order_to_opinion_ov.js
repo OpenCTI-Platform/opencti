@@ -20,14 +20,14 @@ export const up = async (next) => {
       source: 'ctx._source.order = params.order;',
     },
     query: {
-      term: { 'entity_type.keyword': { value: ENTITY_TYPE_VOCABULARY } }
+      term: { 'entity_type.keyword': { value: ENTITY_TYPE_VOCABULARY } },
     },
   };
   await elRawUpdateByQuery({
     index: [READ_INDEX_STIX_META_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateEntityQuery
+    body: updateEntityQuery,
   })
     .catch((err) => {
       throw DatabaseError('Error updating elastic', { cause: err });
@@ -45,7 +45,7 @@ export const up = async (next) => {
     mode: 'and',
     filters: [{
       key: VocabularyFilters,
-      values: [VocabularyCategory.OpinionOv]
+      values: [VocabularyCategory.OpinionOv],
     }],
     filterGroups: [],
   };

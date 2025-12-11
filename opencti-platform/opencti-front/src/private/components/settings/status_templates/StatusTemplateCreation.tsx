@@ -59,7 +59,7 @@ interface StatusTemplateCreationProps {
   contextual: boolean;
   inputValueContextual: string;
   creationCallback: (
-    data: StatusTemplateCreationContextualMutation$data
+    data: StatusTemplateCreationContextualMutation$data,
   ) => void;
   handleClose: () => void;
   open: boolean;
@@ -88,8 +88,8 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
   const onSubmit = (
     values: typeof initialValues,
     { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void,
-      resetForm: () => void,
+      setSubmitting: (flag: boolean) => void;
+      resetForm: () => void;
     },
   ) => {
     const finalValues = {
@@ -208,7 +208,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
     return (
       <div>
         <Formik
-          initialValues = {{
+          initialValues={{
             name: inputValueContextual,
             color: '',
           }}

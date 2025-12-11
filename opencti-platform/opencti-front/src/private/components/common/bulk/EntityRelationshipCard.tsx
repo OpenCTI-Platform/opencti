@@ -10,7 +10,7 @@ interface EntityRelationshipCardProps {
   entityType: string;
 }
 
-const EntityRelationshipCard : FunctionComponent<EntityRelationshipCardProps> = ({ entityName, entityType }) => {
+const EntityRelationshipCard: FunctionComponent<EntityRelationshipCardProps> = ({ entityName, entityType }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   return (

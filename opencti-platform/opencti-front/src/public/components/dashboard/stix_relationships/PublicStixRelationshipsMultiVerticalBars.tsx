@@ -33,9 +33,9 @@ const publicStixRelationshipsMultiVerticalBarsQuery = graphql`
 `;
 
 interface PublicStixRelationshipsMultiVerticalBarsComponentProps {
-  parameters: Widget['parameters']
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsMultiVerticalBarsQuery>
+  parameters: Widget['parameters'];
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsMultiVerticalBarsQuery>;
 }
 
 const PublicStixRelationshipsMultiVerticalBarsComponent = ({

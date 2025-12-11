@@ -27,22 +27,22 @@ const ingestionCsvFeedTestMutation = graphql`
 `;
 
 interface ingestionCsvFeedTestDialogProps {
-  open: boolean
-  onClose: () => void
+  open: boolean;
+  onClose: () => void;
   values: {
-    name: string,
-    description?: string | null,
-    authentication_type: string,
-    csv_mapper?: CsvMapperAddInput,
-    csv_mapper_type?: string,
-    authentication_value?: string | null,
-    uri: string,
-    ingestion_running?: boolean | null,
-    csv_mapper_id?: string | FieldOption | null,
-    user_id: string | FieldOption
-    markings: FieldOption[]
-  }
-  setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>
+    name: string;
+    description?: string | null;
+    authentication_type: string;
+    csv_mapper?: CsvMapperAddInput;
+    csv_mapper_type?: string;
+    authentication_value?: string | null;
+    uri: string;
+    ingestion_running?: boolean | null;
+    csv_mapper_id?: string | FieldOption | null;
+    user_id: string | FieldOption;
+    markings: FieldOption[];
+  };
+  setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogProps> = ({
@@ -82,7 +82,7 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
         },
       },
       onCompleted: (data) => {
-        const resultTest = (data as IngestionCsvFeedTestDialogMutation$data);
+        const resultTest = data as IngestionCsvFeedTestDialogMutation$data;
         if (resultTest) {
           setResult(resultTest);
           if (setIsCreateDisabled) {
@@ -125,30 +125,32 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
           </Button>
           {loading && (
             <Box sx={{ marginLeft: '8px' }}>
-              <Loader variant={LoaderVariant.inElement}/>
+              <Loader variant={LoaderVariant.inElement} />
             </Box>
           )}
           {result
-            && <Box
-              sx={{
-                paddingTop: '8px',
-                marginLeft: '12px',
-                fontSize: '1rem',
-                gap: '8px',
-                justifyContent: 'center',
-                display: 'flex',
-              }}
-               >
-              <span>{t_i18n('Objects found')} : </span>
-              <span><strong>{result?.ingestionCsvTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
-              <span><strong>{result?.ingestionCsvTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
-            </Box>
+            && (
+              <Box
+                sx={{
+                  paddingTop: '8px',
+                  marginLeft: '12px',
+                  fontSize: '1rem',
+                  gap: '8px',
+                  justifyContent: 'center',
+                  display: 'flex',
+                }}
+              >
+                <span>{t_i18n('Objects found')} : </span>
+                <span><strong>{result?.ingestionCsvTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
+                <span><strong>{result?.ingestionCsvTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
+              </Box>
+            )
           }
         </Box>
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
             code={result?.ingestionCsvTester?.objects || t_i18n('You will find here the result in JSON format.')}
-            language={'json'}
+            language="json"
           />
         </Box>
       </DialogContent>

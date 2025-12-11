@@ -9,10 +9,10 @@ import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncid
 import CaseIncidentEditionOverview from './CaseIncidentEditionOverview';
 
 interface CaseIncidentEditionContainerProps {
-  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 export const caseIncidentEditionQuery = graphql`
@@ -28,7 +28,7 @@ export const caseIncidentEditionQuery = graphql`
 `;
 
 const CaseIncidentEditionContainer: FunctionComponent<
-CaseIncidentEditionContainerProps
+  CaseIncidentEditionContainerProps
 > = ({ queryRef, handleClose, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
   const { caseIncident } = usePreloadedQuery(caseIncidentEditionQuery, queryRef);

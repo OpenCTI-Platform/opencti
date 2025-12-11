@@ -6,7 +6,7 @@ import {
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField
+  stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
 import type { BasicStoreEntityDataComponent } from '../dataComponent/dataComponent-types';
 
@@ -46,7 +46,7 @@ const dataSourceResolvers: Resolvers = {
     dataSourceDataComponentDelete: (_, { id, dataComponentId }, context) => {
       return dataSourceDataComponentDelete(context, context.user, id, dataComponentId);
     },
-  }
+  },
 };
 
 export default dataSourceResolvers;

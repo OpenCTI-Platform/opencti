@@ -33,12 +33,12 @@ const aISummaryForecastQuery = graphql`
 `;
 
 interface AISummaryForecastComponentProps {
-  refetch: () => void
+  refetch: () => void;
   language: string;
   setLanguage: (language: string) => void;
-  content: string
-  loading: boolean
-  result: AISummaryForecastStixCoreObjectAskAiForecastQuery$data | null
+  content: string;
+  loading: boolean;
+  result: AISummaryForecastStixCoreObjectAskAiForecastQuery$data | null;
 }
 
 const AISummaryForecastComponent = ({
@@ -77,9 +77,9 @@ const AISummaryForecastComponent = ({
 };
 
 interface AISummaryForecastProps {
-  id: string
-  loading: boolean
-  setLoading: (loading: boolean) => void
+  id: string;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 const AISummaryForecast = ({ id, loading, setLoading }: AISummaryForecastProps) => {

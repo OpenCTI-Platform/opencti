@@ -40,7 +40,7 @@ type Option = {
   label?: string; // if not present, value is used
   onClick?: () => void; // individual click handler
   selected?: boolean;
-  nestedOptions? : Option[];
+  nestedOptions?: Option[];
 };
 
 type NestedMenuProps = {
@@ -260,15 +260,15 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
                         selected={!!option.selected}
                         aria-haspopup={!!(option.nestedOptions ?? undefined)}
                         aria-expanded={
-                            option.nestedOptions
-                              ? anchors.elements.some(
+                          option.nestedOptions
+                            ? anchors.elements.some(
                                 (element) => element?.innerText === option.value,
                               )
-                              : undefined
-                          }
+                            : undefined
+                        }
                         onClick={() => handleClickOption(option)}
-                        onMouseMove={(event) => handleMouseMove(event, option, optIndex) }
-                        onMouseLeave={(event) => handleMouseLeave(event, option, optIndex) }
+                        onMouseMove={(event) => handleMouseMove(event, option, optIndex)}
+                        onMouseLeave={(event) => handleMouseLeave(event, option, optIndex)}
                         onKeyDown={(event) => handleKeyDown(event, option)}
                       >
                         <Box

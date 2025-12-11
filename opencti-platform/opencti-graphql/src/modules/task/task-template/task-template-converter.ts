@@ -13,8 +13,8 @@ const convertCaseTaskToStix = (instance: StoreEntityTaskTemplate): StixTaskTempl
       [STIX_EXT_OCTI]: cleanObject({
         ...caseTask.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 

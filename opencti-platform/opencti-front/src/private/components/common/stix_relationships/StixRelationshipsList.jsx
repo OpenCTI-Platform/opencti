@@ -4547,8 +4547,8 @@ const StixRelationshipsList = ({
           render={({ props }) => {
             if (
               props
-            && props.stixRelationships
-            && props.stixRelationships.edges.length > 0
+              && props.stixRelationships
+              && props.stixRelationships.edges.length > 0
             ) {
               const data = props.stixRelationships.edges;
               return (

@@ -14,7 +14,7 @@ import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 
 interface WidgetListAuditsProps {
-  data: NonNullable<AuditsListComponentQuery$data['audits']>['edges']
+  data: NonNullable<AuditsListComponentQuery$data['audits']>['edges'];
 }
 
 const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
@@ -32,13 +32,15 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
   };
 
   return (
-    <div id="container" style={{
-      width: '100%',
-      height: '100%',
-      overflow: 'auto',
-      paddingBottom: 10,
-      marginBottom: 10,
-    }}
+    <div
+      id="container"
+      style={{
+        width: '100%',
+        height: '100%',
+        overflow: 'auto',
+        paddingBottom: 10,
+        marginBottom: 10,
+      }}
     >
       <List style={{ marginTop: -10 }}>
         {data.map((auditEdge) => {
@@ -79,7 +81,7 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
                 />
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <>
                     <div
                       style={{ ...bodyItemStyle, width: '15%' }}
@@ -116,7 +118,7 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
                       </span>
                     </div>
                   </>
-                }
+                )}
               />
             </ListItemButton>
           );

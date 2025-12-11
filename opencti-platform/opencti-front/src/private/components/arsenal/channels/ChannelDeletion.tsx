@@ -14,7 +14,7 @@ const ChannelDeletionDeleteMutation = graphql`
   }
 `;
 
-const ChannelDeletion = ({ id, isOpen, handleClose }: { id: string, isOpen: boolean, handleClose: () => void }) => {
+const ChannelDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const deleteSuccessMessage = t_i18n('', {

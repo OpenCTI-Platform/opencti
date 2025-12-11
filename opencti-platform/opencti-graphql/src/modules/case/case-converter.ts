@@ -14,8 +14,8 @@ const convertCaseToStix = (instance: StoreEntityCase): StixCase => {
       [STIX_EXT_OCTI]: cleanObject({
         ...cases.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 

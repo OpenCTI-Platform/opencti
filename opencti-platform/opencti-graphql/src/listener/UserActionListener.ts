@@ -5,157 +5,157 @@ import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATI
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 interface BasicUserAction {
-  user: AuthUser
-  status?: 'success' | 'error' // nothing = success
-  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
-  event_scope: string
-  event_access: 'extended' | 'administration'
-  prevent_indexing?: boolean
+  user: AuthUser;
+  status?: 'success' | 'error'; // nothing = success
+  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command';
+  event_scope: string;
+  event_access: 'extended' | 'administration';
+  prevent_indexing?: boolean;
 }
 
 // region actions
 export interface UserSearchActionContextData {
-  input: unknown,
-  search?: string,
+  input: unknown;
+  search?: string;
 }
 export interface UserSearchAction extends BasicUserAction {
-  event_type: 'command'
-  event_scope: 'search'
-  context_data: UserSearchActionContextData
+  event_type: 'command';
+  event_scope: 'search';
+  context_data: UserSearchActionContextData;
 }
 
 export interface ElementContextData {
-  id: string
-  entity_name: string
-  entity_type: string
-  creator_ids?: string[]
-  granted_refs_ids?: string[]
-  object_marking_refs_ids?: string[]
-  object_marking_refs_definitions?: string[]
-  created_by_ref_id?: string
-  workspace_type?: string
-  labels_ids?: string[]
+  id: string;
+  entity_name: string;
+  entity_type: string;
+  creator_ids?: string[];
+  granted_refs_ids?: string[];
+  object_marking_refs_ids?: string[];
+  object_marking_refs_definitions?: string[];
+  created_by_ref_id?: string;
+  workspace_type?: string;
+  labels_ids?: string[];
 }
 export interface UserAnalyzeActionContextData extends ElementContextData {
-  connector_id: string
-  connector_name: string
+  connector_id: string;
+  connector_name: string;
 }
 export interface UserAnalyzeAction extends BasicUserAction {
-  event_type: 'command'
-  event_scope: 'analyze'
-  context_data: UserAnalyzeActionContextData
+  event_type: 'command';
+  event_scope: 'analyze';
+  context_data: UserAnalyzeActionContextData;
 }
 export interface UserEnrichActionContextData extends ElementContextData {
-  connector_id: string
-  connector_name: string
+  connector_id: string;
+  connector_name: string;
 }
 export interface UserEnrichAction extends BasicUserAction {
-  event_type: 'command'
-  event_scope: 'enrich'
-  context_data: UserEnrichActionContextData
+  event_type: 'command';
+  event_scope: 'enrich';
+  context_data: UserEnrichActionContextData;
 }
 export interface UserImportActionContextData extends ElementContextData {
-  file_id: string,
-  file_mime: string,
-  file_name: string,
-  connectors: string[],
+  file_id: string;
+  file_mime: string;
+  file_name: string;
+  connectors: string[];
 }
 export interface UserImportAction extends BasicUserAction {
-  event_type: 'command'
-  event_scope: 'import'
-  context_data: UserImportActionContextData
+  event_type: 'command';
+  event_scope: 'import';
+  context_data: UserImportActionContextData;
 }
 export interface UserExportActionContextData extends ElementContextData {
-  format: string
-  entity_type: string
-  export_scope: 'query' | 'single' | 'selection'
-  export_type: 'simple' | 'full'
-  element_id: string // Same as id
-  max_marking: string
-  list_params?: unknown,
-  selected_ids?: string[]
+  format: string;
+  entity_type: string;
+  export_scope: 'query' | 'single' | 'selection';
+  export_type: 'simple' | 'full';
+  element_id: string; // Same as id
+  max_marking: string;
+  list_params?: unknown;
+  selected_ids?: string[];
 }
 export interface UserExportAction extends BasicUserAction {
-  event_type: 'command'
-  event_scope: 'export'
-  context_data: UserExportActionContextData
+  event_type: 'command';
+  event_scope: 'export';
+  context_data: UserExportActionContextData;
 }
 
 export interface UserSendActionContextData extends ElementContextData {
-  input: unknown
+  input: unknown;
 }
 
 export interface UserSendAction extends BasicUserAction {
-  event_type: 'command'
-  event_scope: 'send'
-  context_data: UserSendActionContextData
+  event_type: 'command';
+  event_scope: 'send';
+  context_data: UserSendActionContextData;
 }
 // endregion
 
 // region file
 export interface UserFileActionContextData extends ElementContextData {
-  path: string
-  file_name: string
+  path: string;
+  file_name: string;
   input?: unknown;
 }
 export interface UserFileAction extends BasicUserAction {
-  event_type: 'file'
+  event_type: 'file';
   event_scope: 'read' | 'create' | 'delete' | 'download';
-  context_data: UserFileActionContextData
+  context_data: UserFileActionContextData;
 }
 
 export interface UserDisseminateActionContextData extends ElementContextData {
-  input: unknown
+  input: unknown;
 }
 export interface DisseminateAction extends BasicUserAction {
-  event_type: 'file'
+  event_type: 'file';
   event_scope: 'disseminate';
-  context_data: UserDisseminateActionContextData
+  context_data: UserDisseminateActionContextData;
 }
 // endregion
 
 // region read / mutation
 export interface UserReadActionContextData extends ElementContextData {
-  workspace_type?: string
+  workspace_type?: string;
 }
 export interface UserReadAction extends BasicUserAction {
-  event_type: 'read'
-  event_scope: 'read'
-  context_data: UserReadActionContextData
+  event_type: 'read';
+  event_scope: 'read';
+  context_data: UserReadActionContextData;
 }
 export interface UserForbiddenAction extends BasicUserAction {
-  event_type: 'read' | 'mutation'
-  event_scope: 'unauthorized'
+  event_type: 'read' | 'mutation';
+  event_scope: 'unauthorized';
   context_data: {
-    operation: string
-    input: unknown,
-  }
+    operation: string;
+    input: unknown;
+  };
 }
 export interface UserModificationAction extends BasicUserAction {
-  event_type: 'mutation'
-  event_scope: 'create' | 'update' | 'delete'
-  message: string
+  event_type: 'mutation';
+  event_scope: 'create' | 'update' | 'delete';
+  message: string;
   context_data: {
-    id: string
-    entity_type: string
-    input: unknown
-  }
+    id: string;
+    entity_type: string;
+    input: unknown;
+  };
 }
 // endregion
 
 // region authentication
 export interface UserLoginAction extends BasicUserAction {
-  event_type: 'authentication'
-  event_scope: 'login'
+  event_type: 'authentication';
+  event_scope: 'login';
   context_data: {
-    provider: string
-    username: string
-  }
+    provider: string;
+    username: string;
+  };
 }
 export interface UserLogoutAction extends BasicUserAction {
-  event_type: 'authentication'
-  event_scope: 'logout'
-  context_data: undefined
+  event_type: 'authentication';
+  event_scope: 'logout';
+  context_data: undefined;
 }
 
 export interface UserForgotPasswordAction extends BasicUserAction {
@@ -166,15 +166,15 @@ export interface UserForgotPasswordAction extends BasicUserAction {
 }
 // endregion
 
-export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction |
-UserLogoutAction | UserExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction;
+export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction
+  | UserLogoutAction | UserExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction;
 
 export interface ActionListener {
-  id: string
-  next: (action: UserAction) => Promise<void>
+  id: string;
+  next: (action: UserAction) => Promise<void>;
 }
 export interface ActionHandler {
-  unregister: () => void
+  unregister: () => void;
 }
 
 const listeners = new Map<string, ActionListener>();

@@ -5,14 +5,14 @@ import { isStixRelation } from '../../schema/stixRelationship';
 export enum StreamDataEventTypeEnum {
   UPDATE = 'update',
   DELETE = 'delete',
-  CREATE = 'create'
+  CREATE = 'create',
 }
 
 interface EventConfig {
-  create?: boolean
-  create_rel?: boolean
-  update?: boolean
-  delete?: boolean
+  create?: boolean;
+  create_rel?: boolean;
+  update?: boolean;
+  delete?: boolean;
 }
 
 export const isValidEventType = (eventType: StreamDataEventType, configuration: EventConfig) => {
@@ -20,7 +20,7 @@ export const isValidEventType = (eventType: StreamDataEventType, configuration: 
     update,
     create,
     create_rel,
-    delete: deletion
+    delete: deletion,
   } = configuration;
 
   let validEventType = false;
@@ -37,7 +37,7 @@ export const isValidEventType = (eventType: StreamDataEventType, configuration: 
  * @param eventData The event.
  * @returns True if the event concerns a relationship in-pir.
  */
-export const isEventInPirRelationship = (eventData : StreamDataEvent) => {
+export const isEventInPirRelationship = (eventData: StreamDataEvent) => {
   const { data, scope } = eventData;
   return scope === 'internal' && isStixRelation(data) && data.relationship_type === RELATION_IN_PIR;
 };
@@ -47,7 +47,7 @@ export const isEventInPirRelationship = (eventData : StreamDataEvent) => {
  * @param eventData The event.
  * @returns True if the event is an update of entity.
  */
-export const isEventUpdateOnEntity = (eventData : StreamDataEvent) => {
+export const isEventUpdateOnEntity = (eventData: StreamDataEvent) => {
   const { data, type } = eventData;
   return type === StreamDataEventTypeEnum.UPDATE && !isStixRelation(data);
 };

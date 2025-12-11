@@ -15,10 +15,10 @@ import WidgetCreationParameters from './WidgetCreationParameters';
 import useWidgetConfigValidateForm from './useWidgetConfigValidateForm';
 
 interface WidgetUpsertProps {
-  open: boolean,
-  onCancel: () => void,
-  onSubmit: (conf: WidgetConfigType) => void,
-  isUpdate: boolean
+  open: boolean;
+  onCancel: () => void;
+  onSubmit: (conf: WidgetConfigType) => void;
+  isUpdate: boolean;
 }
 
 const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({

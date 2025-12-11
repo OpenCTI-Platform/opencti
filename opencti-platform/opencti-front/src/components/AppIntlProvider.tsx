@@ -30,16 +30,16 @@ import messages_ru_back from '../../lang/back/ru.json';
 
 import { useDocumentLangModifier } from '../utils/hooks/useDocumentModifier';
 
-type PlatformLang =
-  | 'de-de'
-  | 'en-us'
-  | 'es-es'
-  | 'fr-fr'
-  | 'it-it'
-  | 'ja-jp'
-  | 'ko-kr'
-  | 'zh-cn'
-  | 'ru-ru';
+type PlatformLang
+  = | 'de-de'
+    | 'en-us'
+    | 'es-es'
+    | 'fr-fr'
+    | 'it-it'
+    | 'ja-jp'
+    | 'ko-kr'
+    | 'zh-cn'
+    | 'ru-ru';
 
 const localeMap: Record<PlatformLang, Locale> = {
   'de-de': de,

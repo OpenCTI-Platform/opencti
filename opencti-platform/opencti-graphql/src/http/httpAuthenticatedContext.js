@@ -69,7 +69,9 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   }
   // endregion
   // Return with batch loaders
-  executeContext.changeDraftContext = (draftId) => { executeContext.draft_context = draftId; };
+  executeContext.changeDraftContext = (draftId) => {
+    executeContext.draft_context = draftId;
+  };
   executeContext.batch = computeLoaders(executeContext, executeContext.user);
   return executeContext;
 };

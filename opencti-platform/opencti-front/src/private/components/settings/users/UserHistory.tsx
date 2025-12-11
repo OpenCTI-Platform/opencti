@@ -21,7 +21,7 @@ const createdByUserRedirectButton = {
 };
 
 interface UserHistoryProps {
-  userId: string,
+  userId: string;
 }
 
 const UserHistory: FunctionComponent<UserHistoryProps> = ({

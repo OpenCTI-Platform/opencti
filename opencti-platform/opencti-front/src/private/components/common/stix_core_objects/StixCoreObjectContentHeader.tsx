@@ -31,51 +31,51 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
     >
       <ToggleButtonGroup size="small" exclusive={true}>
         {modes.includes('content') && (
-        <Tooltip title={t_i18n('Content view')}>
-          <ToggleButton
-            component={Link}
-            to=''
-            selected={currentMode === 'content'}
-            value={'content'}
-          >
-            <NewspaperOutlined
-              fontSize="small"
-              color={currentMode === 'content' ? 'primary' : 'inherit'}
-            />
-          </ToggleButton>
-        </Tooltip>
+          <Tooltip title={t_i18n('Content view')}>
+            <ToggleButton
+              component={Link}
+              to=""
+              selected={currentMode === 'content'}
+              value="content"
+            >
+              <NewspaperOutlined
+                fontSize="small"
+                color={currentMode === 'content' ? 'primary' : 'inherit'}
+              />
+            </ToggleButton>
+          </Tooltip>
         )}
         {modes.includes('editor') && (
-        <Tooltip title={t_i18n('Editor view')}>
-          <ToggleButton
-            component={Link}
-            to='editor'
-            selected={currentMode === 'editor'}
-            value={'editor'}
-            disabled={disableEditor}
-          >
-            <DriveFileRenameOutlineOutlined
-              fontSize="small"
-              color={currentMode === 'editor' ? 'primary' : 'inherit'}
-            />
-          </ToggleButton>
-        </Tooltip>
+          <Tooltip title={t_i18n('Editor view')}>
+            <ToggleButton
+              component={Link}
+              to="editor"
+              selected={currentMode === 'editor'}
+              value="editor"
+              disabled={disableEditor}
+            >
+              <DriveFileRenameOutlineOutlined
+                fontSize="small"
+                color={currentMode === 'editor' ? 'primary' : 'inherit'}
+              />
+            </ToggleButton>
+          </Tooltip>
         )}
         {modes.includes('mapping') && (
-        <Tooltip title={t_i18n('Content mapping view')}>
-          <ToggleButton
-            component={Link}
-            to='mapping'
-            selected={currentMode === 'mapping'}
-            value={'mapping'}
-            disabled={disableMapping || !!draftContext}
-          >
-            <DifferenceOutlined
-              fontSize="small"
-              color={currentMode === 'mapping' ? 'primary' : 'inherit'}
-            />
-          </ToggleButton>
-        </Tooltip>
+          <Tooltip title={t_i18n('Content mapping view')}>
+            <ToggleButton
+              component={Link}
+              to="mapping"
+              selected={currentMode === 'mapping'}
+              value="mapping"
+              disabled={disableMapping || !!draftContext}
+            >
+              <DifferenceOutlined
+                fontSize="small"
+                color={currentMode === 'mapping' ? 'primary' : 'inherit'}
+              />
+            </ToggleButton>
+          </Tooltip>
         )}
       </ToggleButtonGroup>
     </div>

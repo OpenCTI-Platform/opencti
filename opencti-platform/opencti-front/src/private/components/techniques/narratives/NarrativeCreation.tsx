@@ -76,14 +76,14 @@ const narrativeMutation = graphql`
 const NARRATIVE_TYPE = 'Narrative';
 
 interface NarrativeAddInput {
-  name: string
-  description: string
-  confidence: number | null
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | null
+  name: string;
+  description: string;
+  confidence: number | null;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | null;
 }
 
 interface NarrativeFormProps {
@@ -346,7 +346,7 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   );
 
   const CreateNarrativeControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Narrative' {...props} />
+    <CreateEntityControlledDial entityType="Narrative" {...props} />
   );
   const CreateNarrativeControlledDialContextual = CreateNarrativeControlledDial({
     onOpen: handleOpen,

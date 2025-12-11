@@ -14,10 +14,10 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { IncidentEditionContainerQuery } from './__generated__/IncidentEditionContainerQuery.graphql';
 
 interface IncidentEditionContainerProps {
-  queryRef: PreloadedQuery<IncidentEditionContainerQuery>
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  queryRef: PreloadedQuery<IncidentEditionContainerQuery>;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 export const IncidentEditionQuery = graphql`

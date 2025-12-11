@@ -12,13 +12,13 @@ export const up = async (next) => {
       source: `ctx._source.filigran_chatbot_ai_cgu_status = "pending"; ctx._source.platform_ai_enabled = ${isAiInsightEnabled};`,
     },
     query: {
-      term: { 'entity_type.keyword': { value: 'Settings' } }
+      term: { 'entity_type.keyword': { value: 'Settings' } },
     },
   };
   await elUpdateByQueryForMigration(
     message,
     READ_INDEX_INTERNAL_OBJECTS,
-    updateQuery
+    updateQuery,
   );
   logMigration.info(`${message} > done`);
   next();

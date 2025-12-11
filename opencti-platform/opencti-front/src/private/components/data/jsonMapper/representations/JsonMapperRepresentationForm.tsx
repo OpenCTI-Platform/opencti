@@ -61,7 +61,7 @@ interface JsonMapperRepresentationFormProps
   prefixLabel: string;
   onDelete: () => void;
   selectedOption: string;
-  attributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes']
+  attributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'];
 }
 
 const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFormProps> = ({
@@ -198,7 +198,7 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
               renderOption={(props, option) => (
                 <li {...props}>
                   <div className={classes.icon}>
-                    <ItemIcon type={option.label}/>
+                    <ItemIcon type={option.label} />
                   </div>
                   <div className={classes.text}>
                     {t_i18n(`${prefixLabel}${option.label}`)}

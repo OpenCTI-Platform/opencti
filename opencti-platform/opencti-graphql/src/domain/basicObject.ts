@@ -14,10 +14,10 @@ import { INTERNAL_USERS } from '../utils/access';
 import { SELF_ID, SELF_ID_VALUE } from '../utils/fintelTemplate/__fintelTemplateWidgets';
 
 interface FilterRepresentative {
-  id: string
-  value: string
-  entity_type: string | null
-  color: string | null
+  id: string;
+  value: string;
+  entity_type: string | null;
+  color: string | null;
 }
 
 // region filters representatives
@@ -28,7 +28,7 @@ export const findFiltersRepresentatives = async (
   user: AuthUser,
   inputFilters: FilterGroup,
   opts?: { isMeValueForbidden?: boolean | null },
-  ) => {
+) => {
   const filtersRepresentatives: FilterRepresentative[] = [];
   // extract the ids to resolve from inputFilters
   const keysToResolve = schemaRelationsRefDefinition.getAllInputNames()
@@ -61,7 +61,7 @@ export const findFiltersRepresentatives = async (
       id: idsToResolve[index],
       value: (entity ? extractEntityRepresentativeName(entity) : null),
       entity_type: entity?.entity_type ?? null,
-      color: entity?.color || entity?.x_opencti_color || null
+      color: entity?.color || entity?.x_opencti_color || null,
     });
   }
   // resolve SELF_ID differently
@@ -95,7 +95,7 @@ export const findFiltersRepresentatives = async (
     id,
     value: id,
     entity_type: null,
-    color: null
+    color: null,
   })));
 };
 // endregion

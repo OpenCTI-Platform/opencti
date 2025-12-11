@@ -168,9 +168,9 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.stixDomainObjectsTypes === 'string') {
     finalParams.stixDomainObjectsTypes = finalParams.stixDomainObjectsTypes
       ? (finalParams.stixDomainObjectsTypes = split(
-        ',',
-        finalParams.stixDomainObjectsTypes,
-      ))
+          ',',
+          finalParams.stixDomainObjectsTypes,
+        ))
       : [];
   }
   if (typeof finalParams.indicatorTypes === 'string') {

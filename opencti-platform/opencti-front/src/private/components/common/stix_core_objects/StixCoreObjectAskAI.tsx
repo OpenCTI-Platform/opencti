@@ -99,7 +99,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const [newFileName, setNewFileName] = useState<string | null>(null);
   const [tone, setTone] = useState<'tactical' | 'operational' | 'strategic'>('tactical');
   const [paragraphs, setParagraphs] = useState(10);
-  const [files, setFiles] = useState<{ label: string, value: string }[]>([]);
+  const [files, setFiles] = useState<{ label: string; value: string }[]>([]);
   const [disableResponse, setDisableResponse] = useState(false);
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
@@ -326,7 +326,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
               <ListItem
                 dense={true}
                 divider={true}
-                secondaryAction={
+                secondaryAction={(
                   <Radio
                     checked={destination === 'content'}
                     onChange={() => setDestination('content')}
@@ -334,7 +334,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
                     name="destination"
                     inputProps={{ 'aria-label': 'destination' }}
                   />
-                }
+                )}
               >
                 <ListItemText
                   primary={t_i18n('Main content')}
@@ -346,7 +346,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
               <ListItem
                 dense={true}
                 divider={true}
-                secondaryAction={
+                secondaryAction={(
                   <Radio
                     checked={destination === 'file'}
                     onChange={() => setDestination('file')}
@@ -354,7 +354,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
                     name="destination"
                     inputProps={{ 'aria-label': 'destination' }}
                   />
-                }
+                )}
               >
                 <ListItemText
                   primary={t_i18n('New file')}

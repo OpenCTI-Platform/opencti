@@ -82,7 +82,7 @@ export const sendStixBundle = async (context, user, connectorId, bundle, work_id
       applicant_id: user.internal_id,
       content,
       work_id: target_work_id,
-      update: true
+      update: true,
     });
     return true;
   } catch (err) {
@@ -124,7 +124,7 @@ export const askListExport = async (context, user, exportContext, format, select
     // All the params needed to execute the export on python connector
     file_markings: fileMarkings,
     main_filter: mainFilter,
-    access_filter: markingFilter
+    access_filter: markingFilter,
   };
   const buildExportMessage = (work, fileName) => {
     const internal = {
@@ -162,14 +162,14 @@ export const askListExport = async (context, user, exportContext, format, select
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
       return work;
-    }, connectors)
+    }, connectors),
   );
   await publishUserAction({
     user,
     event_access: 'extended',
     event_type: 'command',
     event_scope: 'export',
-    context_data: baseEvent
+    context_data: baseEvent,
   });
   return worksForExport;
 };
@@ -197,7 +197,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
     export_type: type, // Simple or full
     file_markings: fileMarkings,
     main_filter: mainFilter,
-    access_filter: markingFilter
+    access_filter: markingFilter,
   };
   const buildExportMessage = (work, fileName) => {
     return {
@@ -205,12 +205,12 @@ export const askEntityExport = async (context, user, format, entity, type, conte
         work_id: work.id, // Related action for history
         applicant_id: user.id, // User asking for the import
         trigger: null, // Export as no specific trigger
-        mode: 'manual'
+        mode: 'manual',
       },
       event: {
         event_type: CONNECTOR_INTERNAL_EXPORT_FILE,
         file_name: fileName, // Export expected file name
-        ...baseEvent
+        ...baseEvent,
       },
     };
   };
@@ -224,7 +224,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
       return work;
-    }, connectors)
+    }, connectors),
   );
   const contextData = completeContextDataForEntity(baseEvent, entity);
   await publishUserAction({
@@ -232,7 +232,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
     event_access: 'extended',
     event_type: 'command',
     event_scope: 'export',
-    context_data: contextData
+    context_data: contextData,
   });
   return worksForExport;
 };
@@ -263,7 +263,7 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
     ids: [containerId],
     actions: [{ type, context: { values: organizationIds }, containerId }],
     scope: 'KNOWLEDGE',
-    orderMode: 'asc'
+    orderMode: 'asc',
   };
   await createListTask(context, context.user, input);
 };
@@ -278,7 +278,7 @@ export const addOrganizationRestriction = async (context, user, fromId, organiza
   const organizationsNotCurrentlyGranted = organizationIds.filter((o) => !currentGrants.includes(o));
   // If entity is not sharable or if entity is already shared with organizations, we can return without doing anything
   if (!objectOrganization.isRefExistingForTypes(from.entity_type, ENTITY_TYPE_IDENTITY_ORGANIZATION)
-      || organizationsNotCurrentlyGranted.length === 0
+    || organizationsNotCurrentlyGranted.length === 0
   ) {
     return from;
   }
@@ -305,7 +305,7 @@ export const removeOrganizationRestriction = async (context, user, fromId, organ
   const organizationsCurrentlyGranted = organizationIds.filter((o) => currentGrants.includes(o));
   // If entity is not sharable or if entity is already shared with organizations, we can return without doing anything
   if (!objectOrganization.isRefExistingForTypes(from.entity_type, ENTITY_TYPE_IDENTITY_ORGANIZATION)
-      || organizationsCurrentlyGranted.length === 0
+    || organizationsCurrentlyGranted.length === 0
   ) {
     return from;
   }

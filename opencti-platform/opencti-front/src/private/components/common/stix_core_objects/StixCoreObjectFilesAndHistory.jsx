@@ -184,14 +184,14 @@ const StixCoreObjectFilesAndHistory = ({
         authorized_members: !authorizedMembers
           ? null
           : authorizedMembers
-            .filter((v) => v.accessRight !== 'none')
-            .map((member) => ({
-              id: member.value,
-              access_right: member.accessRight,
-              groups_restriction_ids: member.groupsRestriction?.length > 0
-                ? member.groupsRestriction.map((group) => group.value)
-                : undefined,
-            })),
+              .filter((v) => v.accessRight !== 'none')
+              .map((member) => ({
+                id: member.value,
+                access_right: member.accessRight,
+                groups_restriction_ids: member.groupsRestriction?.length > 0
+                  ? member.groupsRestriction.map((group) => group.value)
+                  : undefined,
+              })),
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -359,16 +359,16 @@ const StixCoreObjectFilesAndHistory = ({
                     setFieldValue={setFieldValue}
                   >
                     <MenuItem
-                      key={'workbench'}
-                      value={'workbench'}
+                      key="workbench"
+                      value="workbench"
                     >
-                      {'Workbench'}
+                      Workbench
                     </MenuItem>
                     <MenuItem
-                      key={'draft'}
-                      value={'draft'}
+                      key="draft"
+                      value="draft"
                     >
-                      {'Draft'}
+                      Draft
                     </MenuItem>
                   </Field>
                 )}
@@ -386,26 +386,28 @@ const StixCoreObjectFilesAndHistory = ({
                   />
                 )}
                 {selectedConnector?.configurations?.length > 0
-                  ? <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="configuration"
-                      label={t_i18n('Configuration')}
-                      fullWidth={true}
-                      containerstyle={{ marginTop: 20, width: '100%' }}
-                      onChange={(_, value) => onCsvMapperSelection(value)}
-                    >
-                    {selectedConnector.configurations.map((config) => {
-                      return (
-                        <MenuItem
-                          key={config.id}
-                          value={config.configuration}
-                        >
-                          {config.name}
-                        </MenuItem>
-                      );
-                    })}
-                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name} />
+                  ? (
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="configuration"
+                        label={t_i18n('Configuration')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                        onChange={(_, value) => onCsvMapperSelection(value)}
+                      >
+                        {selectedConnector.configurations.map((config) => {
+                          return (
+                            <MenuItem
+                              key={config.id}
+                              value={config.configuration}
+                            >
+                              {config.name}
+                            </MenuItem>
+                          );
+                        })}
+                      </Field>
+                    ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
                 }
                 {selectedConnector?.name === 'ImportCsv'
                   && hasUserChoiceCsvMapper

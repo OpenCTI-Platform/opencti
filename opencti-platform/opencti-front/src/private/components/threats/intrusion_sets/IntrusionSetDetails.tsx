@@ -18,7 +18,7 @@ import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel'
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 type IntrusionSetDetailsProps = {
-  intrusionSet: IntrusionSetDetails_intrusionSet$data
+  intrusionSet: IntrusionSetDetails_intrusionSet$data;
 };
 
 const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps) => {
@@ -46,7 +46,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
           padding: '15px',
           borderRadius: '4px',
         }}
-        className={'paper-for-grid'}
+        className="paper-for-grid"
         variant="outlined"
       >
         <Grid container spacing={3}>
@@ -136,7 +136,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
                         <BullseyeArrow />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <pre style={{
                             display: 'inline-block',
                             margin: 0,
@@ -146,7 +146,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
                           >
                             {goal}
                           </pre>
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}
@@ -164,29 +164,29 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             </Typography>
             <FieldOrEmpty source={intrusionSet.secondary_motivations}>
               {intrusionSet.secondary_motivations && (
-              <List>
-                {intrusionSet.secondary_motivations.map(
-                  (secondaryMotivation) => (
-                    <ListItem
-                      key={secondaryMotivation}
-                      dense
-                      divider
-                    >
-                      <ListItemIcon>
-                        <ArmFlexOutline />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <ItemOpenVocab
-                            type="attack-motivation-ov"
-                            value={secondaryMotivation}
-                          />
-                        }
-                      />
-                    </ListItem>
-                  ),
-                )}
-              </List>
+                <List>
+                  {intrusionSet.secondary_motivations.map(
+                    (secondaryMotivation) => (
+                      <ListItem
+                        key={secondaryMotivation}
+                        dense
+                        divider
+                      >
+                        <ListItemIcon>
+                          <ArmFlexOutline />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={(
+                            <ItemOpenVocab
+                              type="attack-motivation-ov"
+                              value={secondaryMotivation}
+                            />
+                          )}
+                        />
+                      </ListItem>
+                    ),
+                  )}
+                </List>
               )}
             </FieldOrEmpty>
           </Grid>

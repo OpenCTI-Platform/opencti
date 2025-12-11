@@ -6,7 +6,7 @@ import { useFormatter } from './i18n';
 import { chipInListBasicStyle } from '../utils/chipStyle';
 
 interface ItemOperationsProps {
-  draftOperation?: string
+  draftOperation?: string;
 }
 
 const operationStylesLight = {

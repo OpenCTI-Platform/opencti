@@ -49,7 +49,7 @@ const initSupportPackageListener = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping Support Package pub sub listener');
       return true;
-    }
+    },
   };
 };
 const supportPackageListener = initSupportPackageListener();

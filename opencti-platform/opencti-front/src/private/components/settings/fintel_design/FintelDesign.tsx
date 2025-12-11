@@ -47,7 +47,7 @@ const fintelDesignComponentFragment = graphql`
 `;
 
 interface FintelDesignComponentProps {
-  queryRef: PreloadedQuery<FintelDesignQuery>
+  queryRef: PreloadedQuery<FintelDesignQuery>;
 }
 
 const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
@@ -99,7 +99,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   return (
     <>
       <PageContainer withRightMenu>
-        <CustomizationMenu/>
+        <CustomizationMenu />
         <Breadcrumbs
           elements={[
             { label: t_i18n('Settings') },
@@ -116,7 +116,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             >
               {fintelDesign.name}
             </Typography>
-            <div className="clearfix"/>
+            <div className="clearfix" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ display: 'flex' }}>
@@ -150,7 +150,8 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
           </div>
         </FintelDesignHeader>
         <Grid
-          container spacing={3}
+          container
+          spacing={3}
           sx={{ marginTop: 2 }}
         >
           <Grid size={{ xs: 4 }}>
@@ -185,7 +186,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               variant="outlined"
             >
               {pdf && (
-                <PdfViewer pdf={pdf}/>
+                <PdfViewer pdf={pdf} />
               )}
             </Paper>
           </Grid>
@@ -203,7 +204,7 @@ const FintelDesign = () => {
     { id: fintelDesignId },
   );
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.container}/>}>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
       <FintelDesignComponent queryRef={queryRef} />
     </React.Suspense>
   ) : (

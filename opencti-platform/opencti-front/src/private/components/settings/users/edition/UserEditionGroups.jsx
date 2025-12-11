@@ -83,7 +83,7 @@ const UserEditionGroupsComponent = ({ user }) => {
             <ListItem
               key={group.id}
               divider={true}
-              secondaryAction={
+              secondaryAction={(
                 <Checkbox
                   onChange={(event) => handleToggle(
                     group.id,
@@ -92,26 +92,26 @@ const UserEditionGroupsComponent = ({ user }) => {
                   )}
                   checked={userGroup !== undefined}
                 />
-              }
+              )}
             >
               <ListItemIcon color="primary">
                 <GroupOutlined />
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     {group.name}
                     {group.group_confidence_level === null ? (
                       <Tooltip
                         title={t_i18n('This group has no Max Confidence Level defined.')}
                       >
-                        <ReportGmailerrorred fontSize={'small'} color={'error'} style={{ marginLeft: 5 }}/>
+                        <ReportGmailerrorred fontSize="small" color="error" style={{ marginLeft: 5 }} />
                       </Tooltip>
                     ) : (
                       ` (${t_i18n('Max Confidence Level:')} ${group.group_confidence_level.max_confidence})`
                     )}
                   </div>
-                }
+                )}
                 secondary={group.description ?? ''}
               />
             </ListItem>

@@ -24,10 +24,10 @@ export const up = async (next) => {
         script: {
           params: { toType, toId: threatActor.internal_id },
           source: 'for(def connection : ctx._source.connections) {'
-              + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
-              + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
-              + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
-              + '}'
+            + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
+            + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
+            + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
+            + '}',
         },
         query: {
           nested: {
@@ -36,19 +36,19 @@ export const up = async (next) => {
               bool: {
                 should: [
                   { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } },
-                  { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } }
+                  { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } },
                 ],
-                minimum_should_match: 1
-              }
-            }
-          }
+                minimum_should_match: 1,
+              },
+            },
+          },
         },
       };
       const relationsPromise = elRawUpdateByQuery({
         index: READ_INDEX_INFERRED_RELATIONSHIPS,
         refresh: true,
         wait_for_completion: true,
-        body: updateRelationsQuery
+        body: updateRelationsQuery,
       }).catch((err) => {
         throw DatabaseError('Error updating elastic', { cause: err });
       });

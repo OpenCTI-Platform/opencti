@@ -10,13 +10,13 @@ import useHasOnlyAccessToImportDraftTab from '../../../../utils/hooks/useHasOnly
 const Root = () => {
   const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const hasOnlyAccessToImportDraftTab = useHasOnlyAccessToImportDraftTab();
-  
+
   const restrictAccessToDraftOnly = canAskImportKnowledge || !hasOnlyAccessToImportDraftTab;
   return (
     <Routes>
       <Route
         path="/"
-        element={<Navigate to={hasOnlyAccessToImportDraftTab ? '/dashboard/data/import/draft' : '/dashboard/data/import/file'} replace/>}
+        element={<Navigate to={hasOnlyAccessToImportDraftTab ? '/dashboard/data/import/draft' : '/dashboard/data/import/file'} replace />}
       />
       {restrictAccessToDraftOnly && (
         <>
@@ -26,17 +26,17 @@ const Root = () => {
           />
           <Route
             path="/file"
-            element={<ImportFilesContent/>}
+            element={<ImportFilesContent />}
           />
           <Route
             path="/workbench"
-            element={<ImportWorkbenchesContent/>}
+            element={<ImportWorkbenchesContent />}
           />
         </>
       )}
       <Route
         path="/draft"
-        element={<Drafts/>}
+        element={<Drafts />}
       />
     </Routes>
   );

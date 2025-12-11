@@ -61,30 +61,30 @@ class MeterManager {
     // - Basic counters
     this.sentEmails = meter.createCounter('opencti_sent_email', {
       valueType: ValueType.INT,
-      description: 'Counts total number of email sent'
+      description: 'Counts total number of email sent',
     });
     this.requests = meter.createCounter('opencti_api_requests', {
       valueType: ValueType.INT,
-      description: 'Counts total number of requests'
+      description: 'Counts total number of requests',
     });
     this.errors = meter.createCounter('opencti_api_errors', {
       valueType: ValueType.INT,
-      description: 'Counts total number of errors'
+      description: 'Counts total number of errors',
     });
     // - Histograms
     this.latencyHistogram = meter.createHistogram('opencti_api_latency', {
       valueType: ValueType.INT,
       description: 'Latency computing per query',
-      advice: { explicitBucketBoundaries: [0, 100, 500, 2000, 5000] }
+      advice: { explicitBucketBoundaries: [0, 100, 500, 2000, 5000] },
     });
     // - Gauges
     this.directBulkGauge = meter.createGauge('opencti_api_direct_bulk', {
       valueType: ValueType.INT,
-      description: 'Size of bulks for direct absorption'
+      description: 'Size of bulks for direct absorption',
     });
     this.sideBulkGauge = meter.createGauge('opencti_api_side_bulk', {
       valueType: ValueType.INT,
-      description: 'Size of bulk for absorption impacts'
+      description: 'Size of bulk for absorption impacts',
     });
     // - Library metrics
     nodeMetrics(this.meterProvider, { prefix: '' });
@@ -127,7 +127,7 @@ export const telemetry = async (context: AuthContext, user: AuthUser, spanName: 
     attributes: {
       'enduser.type': context.source,
       [SEMATTRS_ENDUSER_ID]: user.id,
-      ...attrs
+      ...attrs,
     },
     kind: 2 }, ctx);
 

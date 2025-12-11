@@ -114,7 +114,7 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
-              }
+            }
           />
           <Field
             component={MarkdownField}
@@ -128,7 +128,7 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
-              }
+            }
           />
         </Form>
       )}

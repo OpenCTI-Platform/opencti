@@ -49,14 +49,14 @@ export const requestAccessConfigurationFragment = graphql`
 
 interface RequestAccessWorkflowProps {
   handleClose: () => void;
-  data: RequestAccessConfigurationEdition_requestAccess$key
-  open?: boolean
+  data: RequestAccessConfigurationEdition_requestAccess$key;
+  open?: boolean;
 }
 
 interface RequestAccessEditionFormInputs {
-  acceptedTemplate: FieldOption
-  declinedTemplate: FieldOption
-  approvalAdmin: GroupFieldOption
+  acceptedTemplate: FieldOption;
+  declinedTemplate: FieldOption;
+  approvalAdmin: GroupFieldOption;
 }
 
 const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflowProps> = ({
@@ -140,7 +140,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
                 helpertext={t_i18n('Request for information status to use when access request is accepted.')}
                 required={true}
                 style={fieldSpacingContainerStyle}
-                scope='REQUEST_ACCESS'
+                scope="REQUEST_ACCESS"
               />
               <StatusTemplateFieldScoped
                 name="declinedTemplate"
@@ -149,7 +149,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
                 helpertext={t_i18n('Request for information status to use when access request is declined.')}
                 required={true}
                 style={fieldSpacingContainerStyle}
-                scope='REQUEST_ACCESS'
+                scope="REQUEST_ACCESS"
               />
               {/* When multiple is moved to true, need to change access.canRequestAccess method,
                 search for request_access_workflow.approval_admin */}

@@ -81,7 +81,7 @@ const countryQuery = graphql`
 
 const RootCountryComponent = ({ queryRef, countryId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootCountriesSubscription>
+    GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
     () => ({
       subscription,
@@ -105,7 +105,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -125,7 +125,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                   ]}
                   data={country}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -151,7 +151,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <CountryDeletion id={country.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -218,72 +218,72 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={country.id}/>
+                  <AIInsights id={country.id} />
                 </div>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
-                element={<Country countryData={country}/>}
+                element={<Country countryData={country} />}
               />
               <Route
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} replace={true} />
-              }
-              />
-              <Route
-                path="/knowledge/*"
-                element={
-                  <div key={forceUpdate}>
-                    <CountryKnowledge countryData={country} />
-                  </div>
                 }
               />
               <Route
+                path="/knowledge/*"
+                element={(
+                  <div key={forceUpdate}>
+                    <CountryKnowledge countryData={country} />
+                  </div>
+                )}
+              />
+              <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={country}
                   />
-              }
+                )}
               />
               <Route
                 path="/analyses"
-                element={
+                element={(
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={country}
                   />
-              }
+                )}
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={country.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={countryId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={country}
                   />
-              }
+                )}
               />
               <Route
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={countryId} />
-              }
+                }
               />
             </Routes>
           </div>

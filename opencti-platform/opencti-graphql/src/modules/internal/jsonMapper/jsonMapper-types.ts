@@ -21,103 +21,103 @@ import type { AttributeRef } from '../../../generated/graphql';
 export const ENTITY_TYPE_JSON_MAPPER = 'JsonMapper';
 
 interface AttributeColumnConfiguration {
-  separator?: string
-  pattern_date?: string
-  timezone?: string
+  separator?: string;
+  pattern_date?: string;
+  timezone?: string;
 }
 export interface ComplexAttributePath {
-  formula: string
-  variables?: { path: string, independent?: boolean, variable: string }[]
-  configuration?: AttributeColumnConfiguration
+  formula: string;
+  variables?: { path: string; independent?: boolean; variable: string }[];
+  configuration?: AttributeColumnConfiguration;
 }
 export interface SimpleAttributePath {
-  path: string
-  independent?: boolean
-  configuration?: AttributeColumnConfiguration
+  path: string;
+  independent?: boolean;
+  configuration?: AttributeColumnConfiguration;
 }
 interface AttributeBasedOn {
-  identifier?: string
-  representations?: string[]
+  identifier?: string;
+  representations?: string[];
 }
 
 export interface JsonMapperRepresentationAttribute {
-  key: string
-  mode: 'simple' | 'complex' | 'base'
-  default_values?: string[]
+  key: string;
+  mode: 'simple' | 'complex' | 'base';
+  default_values?: string[];
 }
 
 export interface JsonMapperRepresentationAttributeResolved {
-  key: string
-  mode: 'simple' | 'complex' | 'base'
-  default_values?: { id:string, name:string }[]
-  ref?: AttributeRef
+  key: string;
+  mode: 'simple' | 'complex' | 'base';
+  default_values?: { id: string; name: string }[];
+  ref?: AttributeRef;
 }
 
 export interface SimpleRepresentationAttribute extends JsonMapperRepresentationAttribute {
-  mode: 'simple'
-  attr_path?: SimpleAttributePath
+  mode: 'simple';
+  attr_path?: SimpleAttributePath;
 }
 
 export interface ComplexRepresentationAttribute extends JsonMapperRepresentationAttribute {
-  mode: 'complex'
-  complex_path?: ComplexAttributePath
+  mode: 'complex';
+  complex_path?: ComplexAttributePath;
 }
 
 export interface BasedRepresentationAttribute extends JsonMapperRepresentationAttribute {
-  mode: 'base'
-  based_on: AttributeBasedOn
+  mode: 'base';
+  based_on: AttributeBasedOn;
 }
 
 export type RepresentationAttribute = SimpleRepresentationAttribute | ComplexRepresentationAttribute | BasedRepresentationAttribute;
 
 interface JsonMapperRepresentationTarget {
-  entity_type: string
-  path: string
+  entity_type: string;
+  path: string;
 }
 export enum JsonMapperRepresentationType {
   Entity = 'entity',
   Relationship = 'relationship',
 }
 export interface JsonMapperRepresentation {
-  id: string
-  type: JsonMapperRepresentationType
-  target: JsonMapperRepresentationTarget
-  identifier?: string
-  attributes: RepresentationAttribute[]
+  id: string;
+  type: JsonMapperRepresentationType;
+  target: JsonMapperRepresentationTarget;
+  identifier?: string;
+  attributes: RepresentationAttribute[];
 }
 
 export interface JsonMapperRepresentationResolved {
-  id: string
-  type: JsonMapperRepresentationType
-  target: JsonMapperRepresentationTarget
-  attributes: JsonMapperRepresentationAttributeResolved[]
-  from?: string
-  to?: string
+  id: string;
+  type: JsonMapperRepresentationType;
+  target: JsonMapperRepresentationTarget;
+  attributes: JsonMapperRepresentationAttributeResolved[];
+  from?: string;
+  to?: string;
 }
 
 export type JsonMapperParsed = Omit<BasicStoreEntityJsonMapper, 'representations' | 'variables'> & {
-  variables: { name: string, path: ComplexAttributePath }[]
-  representations: JsonMapperRepresentation[]
-  user_chosen_markings?: string[]
+  variables: { name: string; path: ComplexAttributePath }[];
+  representations: JsonMapperRepresentation[];
+  user_chosen_markings?: string[];
 };
 
 export type JsonMapperResolved = Omit<BasicStoreEntityJsonMapper, 'representations'> & {
-  representations: JsonMapperRepresentationResolved[]
-  user_chosen_markings?: string[]
+  representations: JsonMapperRepresentationResolved[];
+  user_chosen_markings?: string[];
 };
 
 export interface BasicStoreEntityJsonMapper extends BasicStoreEntity {
-  variables: string
-  representations: string
-  user_chosen_markings?: string[]
+  variables: string;
+  representations: string;
+  user_chosen_markings?: string[];
 }
 
 export interface StoreEntityJsonMapper extends BasicStoreEntityJsonMapper, StoreEntity {}
 
 export interface StixJsonMapper extends StixObject {
-  name: string
-  representations: string
+  name: string;
+  representations: string;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
+  };
 }

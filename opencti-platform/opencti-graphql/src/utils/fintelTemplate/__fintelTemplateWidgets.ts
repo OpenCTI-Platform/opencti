@@ -35,7 +35,7 @@ export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
     parameters: {
       title: 'Attributes of the Report',
       description: 'This is a multi attributes widget.',
-    }
+    },
   },
 };
 
@@ -54,8 +54,8 @@ export const widgetGroupingMultiAttributes: FintelTemplateWidgetAddInput = {
     parameters: {
       title: 'Attributes of the grouping',
       description: 'This is a multi attributes widget.',
-    }
-  }
+    },
+  },
 };
 
 export const widgetRFIMultiAttributes: FintelTemplateWidgetAddInput = {
@@ -73,7 +73,7 @@ export const widgetRFIMultiAttributes: FintelTemplateWidgetAddInput = {
     parameters: {
       title: 'Attributes of the RFI',
       description: 'This is a multi attributes widget.',
-    }
+    },
   },
 };
 
@@ -92,7 +92,7 @@ export const widgetRFTMultiAttributes: FintelTemplateWidgetAddInput = {
     parameters: {
       title: 'Attributes of the RFT',
       description: 'This is a multi attributes widget.',
-    }
+    },
   },
 };
 
@@ -112,7 +112,7 @@ export const widgetIncidentResponseMultiAttributes: FintelTemplateWidgetAddInput
     }],
     parameters: {
       title: 'Attributes of the Incident Response',
-    }
+    },
   },
 };
 
@@ -141,7 +141,7 @@ export const widgetContainerObservables: FintelTemplateWidgetAddInput = {
     ],
     parameters: {
       title: 'Observables contained in the container',
-    }
+    },
   },
 };
 
@@ -170,7 +170,7 @@ export const widgetIncidentIOC: FintelTemplateWidgetAddInput = {
     ],
     parameters: {
       title: 'Indicators contained in the container',
-    }
+    },
   },
 };
 
@@ -199,7 +199,7 @@ export const widgetIndicators: FintelTemplateWidgetAddInput = {
     ],
     parameters: {
       title: 'Indicators contained in the container',
-    }
+    },
   },
 };
 
@@ -229,7 +229,7 @@ export const widgetIncidentTasksActions: FintelTemplateWidgetAddInput = {
     ],
     parameters: {
       title: 'Tasks contained in the container',
-    }
+    },
   },
 };
 
@@ -258,7 +258,7 @@ export const widgetAttackPatterns: FintelTemplateWidgetAddInput = {
     ],
     parameters: {
       title: 'Attack Patterns contained in the container',
-    }
+    },
   },
 };
 
@@ -288,7 +288,7 @@ export const widgetThreats: FintelTemplateWidgetAddInput = {
     ],
     parameters: {
       title: 'Threats contained in the container',
-    }
+    },
   },
 };
 
@@ -318,7 +318,7 @@ export const widgetVictims: FintelTemplateWidgetAddInput = {
     ],
     parameters: {
       title: 'Victims contained in the container',
-    }
+    },
   },
 };
 
@@ -347,6 +347,6 @@ export const widgetAllEntitiesAndObservables: FintelTemplateWidgetAddInput = {
     ],
     parameters: {
       title: 'Entities and Observables contained in the container',
-    }
+    },
   },
 };

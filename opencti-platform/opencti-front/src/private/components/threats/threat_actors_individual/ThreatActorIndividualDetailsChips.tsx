@@ -12,10 +12,10 @@ type SupportedTypes = 'known-as' | 'impersonates';
 type SupportedFields = 'observable_value' | 'name';
 
 interface MappingFields {
-  title: string,
-  field: SupportedFields,
-  path: string,
-  AddComponent: React.FunctionComponent<{ threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data }>,
+  title: string;
+  field: SupportedFields;
+  path: string;
+  AddComponent: React.FunctionComponent<{ threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data }>;
 }
 
 const typeMappings: Record<SupportedTypes, MappingFields> = {
@@ -34,12 +34,12 @@ const typeMappings: Record<SupportedTypes, MappingFields> = {
 };
 
 interface ThreatActorIndividualDetailsChipsProps {
-  data: ThreatActorIndividualDetails_ThreatActorIndividual$data,
-  relType: SupportedTypes,
+  data: ThreatActorIndividualDetails_ThreatActorIndividual$data;
+  relType: SupportedTypes;
 }
 
 const ThreatActorIndividualDetailsChips: FunctionComponent<
-ThreatActorIndividualDetailsChipsProps
+  ThreatActorIndividualDetailsChipsProps
 > = ({
   data,
   relType,
@@ -77,21 +77,21 @@ ThreatActorIndividualDetailsChipsProps
       >
         {title}
       </CardLabel>
-      <div className='clearfix'/>
+      <div className="clearfix" />
       <FieldOrEmpty source={nodes}>
         {
-        nodes.map(({ id, to }) => (
-          <Button
-            key={id}
-            variant='outlined'
-            size='small'
-            href={`${path}/${to?.id}`}
-            style={{ margin: '0 5px 5px 0' }}
-          >
-            {to?.[field]}
-          </Button>
-        ))
-      }
+          nodes.map(({ id, to }) => (
+            <Button
+              key={id}
+              variant="outlined"
+              size="small"
+              href={`${path}/${to?.id}`}
+              style={{ margin: '0 5px 5px 0' }}
+            >
+              {to?.[field]}
+            </Button>
+          ))
+        }
       </FieldOrEmpty>
     </div>
   );

@@ -130,7 +130,7 @@ class StixDomainObjectDetectDuplicate extends Component {
                       key={element.node.id}
                       dense={true}
                       divider={true}
-                      secondaryAction={
+                      secondaryAction={(
                         <IconButton
                           component={Link}
                           to={`${link}/${element.node.id}`}
@@ -138,7 +138,7 @@ class StixDomainObjectDetectDuplicate extends Component {
                         >
                           <VisibilityOutlined />
                         </IconButton>
-                      }
+                      )}
                     >
                       <ListItemIcon>
                         <ItemIcon type={element.node.entity_type} />

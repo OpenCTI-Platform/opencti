@@ -184,7 +184,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             {!isEnterpriseEditionByConfig && isGrantedToParameters && (
               <div style={{ float: 'right', marginTop: theme.spacing(-2.6), position: 'relative' }}>
                 <DangerZoneBlock
-                  type='ce_ee_toggle'
+                  type="ce_ee_toggle"
                   sx={{
                     root: { border: 'none', padding: 0, margin: 0 },
                     title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
@@ -195,7 +195,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                       <Button
                         size="small"
                         variant="outlined"
-                        color='dangerZone'
+                        color="dangerZone"
                         onClick={() => setOpenEEChanges(true)}
                         disabled={disabled}
                         style={{
@@ -221,7 +221,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                             style={{ borderColor: theme.palette.dangerZone.main }}
                           >
                             {t_i18n(getEEWarningMessage(isLtsPlatform))}
-                            <br/><br/>
+                            <br /><br />
                             <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
                           </Alert>
                         </DialogContent>
@@ -257,18 +257,18 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 position: 'relative',
               }}
               >
-                <EnterpriseEditionButton inLine={true} title={t_i18n('Update license')}/>
+                <EnterpriseEditionButton inLine={true} title={t_i18n('Update license')} />
               </div>
             )}
-            <div className="clearfix"/>
+            <div className="clearfix" />
             <Paper
               classes={{ root: classes.paper }}
               variant="outlined"
-              className='paper-for-grid'
+              className="paper-for-grid"
             >
               <List style={{ marginTop: -20 }}>
                 <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Organization')}/>
+                  <ListItemText primary={t_i18n('Organization')} />
                   <ItemBoolean
                     variant="xlarge"
                     neutralLabel={settings.platform_enterprise_edition.license_customer}
@@ -276,7 +276,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   />
                 </ListItem>
                 <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Scope')}/>
+                  <ListItemText primary={t_i18n('Scope')} />
                   <ItemBoolean
                     variant="xlarge"
                     neutralLabel={settings.platform_enterprise_edition.license_global ? t_i18n('Global') : t_i18n('Current instance')}
@@ -298,7 +298,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   </ListItem>
                 )}
                 <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Start date')}/>
+                  <ListItemText primary={t_i18n('Start date')} />
                   <ItemBoolean
                     variant="xlarge"
                     label={fldt(settings.platform_enterprise_edition.license_start_date)}
@@ -306,7 +306,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   />
                 </ListItem>
                 <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Expiration date')}/>
+                  <ListItemText primary={t_i18n('Expiration date')} />
                   <ItemBoolean
                     variant="xlarge"
                     label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
@@ -314,7 +314,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   />
                 </ListItem>
                 <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
-                  <ListItemText primary={t_i18n('License type')}/>
+                  <ListItemText primary={t_i18n('License type')} />
                   <ItemBoolean
                     variant="xlarge"
                     neutralLabel={settings.platform_enterprise_edition.license_type}
@@ -324,20 +324,22 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 {isGrantedToParameters && (
                   <ListItem divider={true}>
                     <ListItemText
-                      primary={<div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span>{t_i18n('Agentic AI (Ariane Assistant)')}</span>
-                        <Tooltip title={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}>
-                          <Chip
-                            label={t_i18n('Preview')}
-                            color="primary"
-                            variant="outlined"
-                            size="small"
-                            style={{
-                              marginLeft: theme.spacing(1),
-                            }}
-                          />
-                        </Tooltip>
-                      </div>}
+                      primary={(
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <span>{t_i18n('Agentic AI (Ariane Assistant)')}</span>
+                          <Tooltip title={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}>
+                            <Chip
+                              label={t_i18n('Preview')}
+                              color="primary"
+                              variant="outlined"
+                              size="small"
+                              style={{
+                                marginLeft: theme.spacing(1),
+                              }}
+                            />
+                          </Tooltip>
+                        </div>
+                      )}
                     />
                     {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
                       <Button
@@ -357,12 +359,12 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                       </Box>
                     )}
                     {openValidateTermsOfUse && (
-                      <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={handleValidateTermsOfUse}/>
+                      <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={handleValidateTermsOfUse} />
                     )}
                   </ListItem>
                 )}
                 <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Generative AI (AI Insight, NLQ)')}/>
+                  <ListItemText primary={t_i18n('Generative AI (AI Insight, NLQ)')} />
                   <Box sx={{ marginBlock: -6 }}>
                     <Switch
                       checked={platform_ai_enabled}
@@ -383,10 +385,10 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 <EnterpriseEditionButton inLine={true} />
               )}
             </div>
-            <div className="clearfix"/>
+            <div className="clearfix" />
             <Paper
               classes={{ root: classes.paper }}
-              className='paper-for-grid'
+              className="paper-for-grid"
               variant="outlined"
             >
               <Box>
@@ -407,11 +409,9 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             </Paper>
           </Grid>
         )}
-        {
-          <Grid item xs={6}>
-            <XtmHubSettings />
-          </Grid>
-        }
+        <Grid item xs={6}>
+          <XtmHubSettings />
+        </Grid>
 
         {isGrantedToSupport && (
           <Grid item xs={12} style={{ marginTop: 15 }}>

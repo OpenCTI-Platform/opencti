@@ -35,21 +35,21 @@ const OrganizationKnowledgeComponent = ({
       <Routes>
         <Route
           path="/relations/:relationId/*"
-          element={
+          element={(
             <StixCoreRelationship
               entityId={organization.id}
               paddingRight={true}
             />
-          }
+          )}
         />
         <Route
           path="/sightings/:sightingId"
-          element={
+          element={(
             <StixSightingRelationship
               entityId={organization.id}
               paddingRight={true}
             />
-          }
+          )}
         />
         <Route
           path="/overview"
@@ -64,11 +64,11 @@ const OrganizationKnowledgeComponent = ({
               stixDomainObjectType="Organization"
             />
           ))
-            }
+          }
         />
         <Route
           path="/all"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -78,11 +78,11 @@ const OrganizationKnowledgeComponent = ({
               defaultStopTime={organization.stopTime}
               allDirections
             />
-          }
+          )}
         />
         <Route
           path="/threats"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -99,11 +99,11 @@ const OrganizationKnowledgeComponent = ({
                 'Tool',
               ]}
             />
-          }
+          )}
         />
         <Route
           path="/related"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -111,11 +111,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               allDirections={true}
             />
-          }
+          )}
         />
         <Route
           path="/organizations"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -125,11 +125,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-          }
+          )}
         />
         <Route
           path="/individuals"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -138,11 +138,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/locations"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -151,11 +151,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-          }
+          )}
         />
         <Route
           path="/sectors"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -164,11 +164,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-          }
+          )}
         />
         <Route
           path="/used_tools"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -177,11 +177,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-          }
+          )}
         />
         <Route
           path="/threat_actors"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -190,11 +190,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/intrusion_sets"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -203,11 +203,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/campaigns"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -216,11 +216,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/incidents"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -229,11 +229,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/malwares"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -242,11 +242,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/attack_patterns"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -255,11 +255,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/tools"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -268,11 +268,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-          }
+          )}
         />
         <Route
           path="/vulnerabilities"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -281,11 +281,11 @@ const OrganizationKnowledgeComponent = ({
               entityLink={link}
               allDirections={true}
             />
-          }
+          )}
         />
         <Route
           path="/observables"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
@@ -295,7 +295,7 @@ const OrganizationKnowledgeComponent = ({
               allDirections={true}
               isRelationReversed={true}
             />
-          }
+          )}
         />
       </Routes>
     </div>

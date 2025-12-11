@@ -75,14 +75,14 @@ const ImportFilesDropzone = ({
         transition: 'height 0.2s, background 0.1s, border 0.1s, padding 0.1s',
       }}
     >
-      <CloudUploadOutlined color="primary" fontSize="large"/>
+      <CloudUploadOutlined color="primary" fontSize="large" />
       <Typography variant="h3" sx={{ marginBlock: 2 }}>
         {t_i18n('Drag and drop files to import')}
       </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
         <Button variant="contained" component="label" size="small">
           {t_i18n('Browse files')}
-          <input type="file" hidden multiple onChange={handleFileChange}/>
+          <input type="file" hidden multiple onChange={handleFileChange} />
         </Button>
         {openFreeText && (
           <Button variant="outlined" component="label" size="small" onClick={() => openFreeText?.(true)}>
@@ -90,7 +90,8 @@ const ImportFilesDropzone = ({
           </Button>
         )}
       </Box>
-    </Box>);
+    </Box>
+  );
 };
 
 export default ImportFilesDropzone;

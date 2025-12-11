@@ -60,11 +60,11 @@ interface AddAttackPatternsLinesContainerProps {
 }
 
 const AddAttackPatternsLines: FunctionComponent<
-AddAttackPatternsLinesContainerProps
+  AddAttackPatternsLinesContainerProps
 > = ({ dataComponent, queryRef }) => {
   const { data } = usePreloadedPaginationFragment<
-  AddAttackPatternsLinesToDataComponentQuery,
-  AddAttackPatternsLinesToDataComponent_data$key
+    AddAttackPatternsLinesToDataComponentQuery,
+    AddAttackPatternsLinesToDataComponent_data$key
   >({
     linesQuery: addAttackPatternsLinesQuery,
     linesFragment: addAttackPatternsLinesFragment,
@@ -76,7 +76,7 @@ AddAttackPatternsLinesContainerProps
   return (
     <StixCoreRelationshipCreationFromEntityList
       entity={dataComponent}
-      relationshipType={'detects'}
+      relationshipType="detects"
       availableDatas={data?.attackPatterns}
       existingDatas={attackPatterns}
       updaterOptions={{ path: 'attackPatterns' }}

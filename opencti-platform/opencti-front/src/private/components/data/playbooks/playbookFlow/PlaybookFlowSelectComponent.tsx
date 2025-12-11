@@ -22,9 +22,9 @@ import { useFormatter } from '../../../../../components/i18n';
 import { PlaybookComponents, PlaybookNode } from '../types/playbook-types';
 
 interface PlaybookSelectComponentProps {
-  components: PlaybookComponents
-  selectedNode: PlaybookNode | null
-  onSelect: (componentId: string) => void
+  components: PlaybookComponents;
+  selectedNode: PlaybookNode | null;
+  onSelect: (componentId: string) => void;
 }
 
 const PlaybookFlowSelectComponent = ({
@@ -50,7 +50,7 @@ const PlaybookFlowSelectComponent = ({
             onClick={() => onSelect(component.id)}
           >
             <ListItemIcon>
-              <ItemIcon type={component.icon}/>
+              <ItemIcon type={component.icon} />
             </ListItemIcon>
             <ListItemText
               primary={t_i18n(component.name)}

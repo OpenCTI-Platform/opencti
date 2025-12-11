@@ -12,11 +12,11 @@ interface InputSliderFieldProps {
   onSubmit?: (name: string, value: string | number | number[]) => void;
   onFocus?: (name: string, value: string) => void;
   editContext?:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+    | readonly ({
+      readonly focusOn: string | null;
+      readonly name: string;
+    } | null)[]
+    | null;
   containerStyle?: Record<string, string | number>;
   entityType: string;
   attributeName: string;
@@ -68,7 +68,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
     const finalDisabled = (disabled === true || disabled === false) ? disabled : initialValue > max;
     return (
       <>
-        <Grid container={true} spacing={3} >
+        <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Field
               component={SimpleTextField}

@@ -6,14 +6,14 @@ export const ENTITY_TYPE_IDENTITY_ORGANIZATION = 'Organization';
 
 // region Database types
 export interface BasicStoreEntityOrganization extends BasicIdentityEntity {
-  x_opencti_organization_type: string
-  x_opencti_reliability: string
-  sectors: string[]
-  default_dashboard: string
-  authorized_authorities?: string[]
-  grantable_groups: string[]
-  restrict_access: boolean
-  [RELATION_PARTICIPATE_TO]: string[]
+  x_opencti_organization_type: string;
+  x_opencti_reliability: string;
+  sectors: string[];
+  default_dashboard: string;
+  authorized_authorities?: string[];
+  grantable_groups: string[];
+  restrict_access: boolean;
+  [RELATION_PARTICIPATE_TO]: string[];
 }
 
 export interface StoreEntityOrganization extends StoreEntityIdentity, BasicStoreEntityOrganization {}

@@ -135,7 +135,7 @@ interface AdministrativeAreaEditionFormValues {
 
 // eslint-disable-next-line max-len
 const AdministrativeAreaEditionOverview: FunctionComponent<
-AdministrativeAreaEditionOverviewProps
+  AdministrativeAreaEditionOverviewProps
 > = ({
   administrativeAreaRef,
   context,
@@ -325,12 +325,12 @@ AdministrativeAreaEditionOverviewProps
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

@@ -18,17 +18,17 @@ export const up = async (next) => {
           + 'ctx._source.remove("current_state")',
         params: {
           emptyCurrentState: {},
-          defaultDate
-        }
+          defaultDate,
+        },
       },
       query: {
         term: {
           'entity_type.keyword': {
-            value: 'Sync'
-          }
-        }
-      }
-    }
+            value: 'Sync',
+          },
+        },
+      },
+    },
   );
 
   next();

@@ -132,7 +132,7 @@ interface TasksEditionFormValues {
   message?: string;
   objectMarking?: FieldOption[];
   objectAssignee?: FieldOption[];
-  objectParticipant?: FieldOption[]
+  objectParticipant?: FieldOption[];
   x_opencti_workflow_id: FieldOption;
 }
 
@@ -289,12 +289,12 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
               onChange={editor.changeField}
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <ObjectMarkingField

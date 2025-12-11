@@ -25,10 +25,10 @@ class AddSubSectorsLinesContainer extends Component {
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={sector}
-        relationshipType={'part-of'}
+        relationshipType="part-of"
         availableDatas={data?.sectors}
         existingDatas={sectorSubSectors}
-        updaterOptions={ { path: 'subSectors' } }
+        updaterOptions={{ path: 'subSectors' }}
         isRelationReversed={true}
       />
     );

@@ -175,23 +175,23 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
         {t_i18n('Correlated indicators and observables')}
       </Typography>
       {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: RelatedContainersDetailsTableLines_data$data) => data.stixCoreObjects?.edges?.map((e) => e?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        lineFragment={relatedContainersDetailsTableLineFragment}
-        preloadedPaginationProps={preloadedPaginationProps}
-        entityTypes={['Stix-Cyber-Observable', 'Indicator']}
-        searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable', 'Indicator'] }}
-        availableEntityTypes={['Stix-Cyber-Observable', 'Indicator']}
-        variant={DataTableVariant.inline}
-        disableNavigation
-        disableToolBar
-        removeSelectAll
-        disableLineSelection
-        onLineClick={ (row) => navigate(`${resolveLink(row.entity_type)}/${row.id}`) }
-      />
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: RelatedContainersDetailsTableLines_data$data) => data.stixCoreObjects?.edges?.map((e) => e?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          lineFragment={relatedContainersDetailsTableLineFragment}
+          preloadedPaginationProps={preloadedPaginationProps}
+          entityTypes={['Stix-Cyber-Observable', 'Indicator']}
+          searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable', 'Indicator'] }}
+          availableEntityTypes={['Stix-Cyber-Observable', 'Indicator']}
+          variant={DataTableVariant.inline}
+          disableNavigation
+          disableToolBar
+          removeSelectAll
+          disableLineSelection
+          onLineClick={(row) => navigate(`${resolveLink(row.entity_type)}/${row.id}`)}
+        />
       )}
     </>
   );

@@ -52,7 +52,7 @@ const workspaceDuplicationDialogDuplicatedWorkspaceCreation = graphql`
   }
 `;
 const WorkspaceDuplicationDialog: FunctionComponent<
-WorkspaceDuplicationDialogProps
+  WorkspaceDuplicationDialogProps
 > = ({
   data,
   duplicating,

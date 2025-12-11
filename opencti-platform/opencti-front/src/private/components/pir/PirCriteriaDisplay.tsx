@@ -27,10 +27,10 @@ import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 
 interface PirFiltersDisplayComponentProps extends PropsWithChildren {
-  size?: ChipProps['size']
-  full?: boolean
-  criteria: FilterGroup[]
-  queryRef: PreloadedQuery<FilterValuesContentQuery>
+  size?: ChipProps['size'];
+  full?: boolean;
+  criteria: FilterGroup[];
+  queryRef: PreloadedQuery<FilterValuesContentQuery>;
 }
 
 const PirCriteriaDisplayComponent = ({
@@ -107,11 +107,11 @@ const PirCriteriaDisplay = ({ criteria, ...props }: PirCriteriaDisplayProps) => 
   );
 
   return filtersRepresentativesQueryRef && (
-  <PirCriteriaDisplayComponent
-    {...props}
-    criteria={criteria}
-    queryRef={filtersRepresentativesQueryRef}
-  />
+    <PirCriteriaDisplayComponent
+      {...props}
+      criteria={criteria}
+      queryRef={filtersRepresentativesQueryRef}
+    />
   );
 };
 

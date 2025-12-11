@@ -31,7 +31,7 @@ interface ThemeFormProps {
   onCancel: () => void;
   onChange?: () => void;
   submitLabel?: string;
-  withButtons?: boolean
+  withButtons?: boolean;
 }
 
 const ThemeForm: FunctionComponent<ThemeFormProps> = ({

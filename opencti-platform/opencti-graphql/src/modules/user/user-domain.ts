@@ -23,7 +23,7 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
         },
       ],
       filterGroups: [],
-    }
+    },
   });
   return users.edges.length > 0;
 };
@@ -31,7 +31,7 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
 export const createOnTheFlyUser = async (
   context: AuthContext,
   user: AuthUser,
-  input: { userName: string, serviceAccount: boolean, confidenceLevel: number | null | undefined }
+  input: { userName: string; serviceAccount: boolean; confidenceLevel: number | null | undefined },
 ) => {
   const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
   if (defaultIngestionGroups.length < 1) {

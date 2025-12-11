@@ -227,7 +227,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             />
           </Alert>
           <CreatorField
-            name={'user_id'}
+            name="user_id"
             label={t_i18n('User responsible for data creation (empty = System)')}
             containerStyle={fieldSpacingContainerStyle}
             onChange={handleSubmitField}
@@ -265,7 +265,8 @@ const SyncEditionContainer = ({ synchronizer }) => {
               <Typography>{t_i18n('Advanced options')}</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Alert icon={false}
+              <Alert
+                icon={false}
                 classes={{ root: classes.alert, message: classes.message }}
                 severity="error"
                 variant="outlined"

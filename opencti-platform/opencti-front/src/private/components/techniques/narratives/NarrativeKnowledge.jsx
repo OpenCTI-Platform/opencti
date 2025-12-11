@@ -35,34 +35,34 @@ const NarrativeKnowledgeComponent = ({
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={
+          element={(
             <StixCoreRelationship
               entityId={narrative.id}
               paddingRight={true}
             />
-            }
+          )}
         />
         <Route
           path="/sightings/:sightingId"
-          element={
+          element={(
             <StixSightingRelationship
               entityId={narrative.id}
               paddingRight={true}
             />
-            }
+          )}
         />
         <Route
           path="/overview"
-          element={
+          element={(
             <StixDomainObjectKnowledge
               stixDomainObjectId={narrative.id}
               stixDomainObjectType="Narrative"
             />
-            }
+          )}
         />
         <Route
           path="/all"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={narrative.id}
@@ -72,11 +72,11 @@ const NarrativeKnowledgeComponent = ({
               entityLink={link}
               allDirections
             />
-            }
+          )}
         />
         <Route
           path="/related"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={narrative.id}
@@ -100,11 +100,11 @@ const NarrativeKnowledgeComponent = ({
               entityLink={link}
               allDirections={true}
             />
-            }
+          )}
         />
         <Route
           path="/threat_actors"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={narrative.id}
@@ -113,11 +113,11 @@ const NarrativeKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-            }
+          )}
         />
         <Route
           path="/intrusion_sets"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={narrative.id}
@@ -126,11 +126,11 @@ const NarrativeKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-            }
+          )}
         />
         <Route
           path="/campaigns"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={narrative.id}
@@ -139,11 +139,11 @@ const NarrativeKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-            }
+          )}
         />
         <Route
           path="/channels"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={narrative.id}
@@ -152,11 +152,11 @@ const NarrativeKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-            }
+          )}
         />
         <Route
           path="/incidents"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={narrative.id}
@@ -165,11 +165,11 @@ const NarrativeKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-            }
+          )}
         />
         <Route
           path="/observables"
-          element={
+          element={(
             <EntityStixCoreRelationshipsStixCyberObservable
               entityId={narrative.id}
               entityLink={link}
@@ -178,11 +178,11 @@ const NarrativeKnowledgeComponent = ({
               isRelationReversed={true}
               relationshipTypes={['related-to']}
             />
-            }
+          )}
         />
         <Route
           path="/sightings"
-          element={
+          element={(
             <EntityStixSightingRelationships
               entityId={narrative.id}
               entityLink={link}
@@ -198,7 +198,7 @@ const NarrativeKnowledgeComponent = ({
                 'System',
               ]}
             />
-            }
+          )}
         />
       </Routes>
     </div>

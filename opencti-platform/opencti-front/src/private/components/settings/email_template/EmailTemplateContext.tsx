@@ -2,13 +2,13 @@ import React, { createContext, Dispatch, ReactNode, useContext, useState } from 
 
 interface EmailTemplateContextProps {
   editorValue: string | null;
-  setEditorValue: Dispatch<React.SetStateAction<string | null>>
+  setEditorValue: Dispatch<React.SetStateAction<string | null>>;
 }
 
 const EmailTemplateContext = createContext<EmailTemplateContextProps | undefined>(undefined);
 
 interface EmailTemplateProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export const EmailTemplateProvider = ({ children }: EmailTemplateProviderProps) => {

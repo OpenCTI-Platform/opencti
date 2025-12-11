@@ -67,12 +67,12 @@ const contextualViewQuery = graphql`
 `;
 
 interface EntityStixCoreRelationshipsContextualViewProps {
-  queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewQuery>
-  entityId: string
-  localStorage: PaginationLocalStorage<PaginationOptions>
-  relationshipTypes: string[]
-  stixCoreObjectTypes: string[]
-  currentView: string
+  queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewQuery>;
+  entityId: string;
+  localStorage: PaginationLocalStorage<PaginationOptions>;
+  relationshipTypes: string[];
+  stixCoreObjectTypes: string[];
+  currentView: string;
 }
 
 const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<EntityStixCoreRelationshipsContextualViewProps> = ({
@@ -87,8 +87,8 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
   const { t_i18n, n, nsdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
-  EntityStixCoreRelationshipsContextualViewQuery,
-  EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key
+    EntityStixCoreRelationshipsContextualViewQuery,
+    EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key
   >({
     queryDef: contextualViewQuery,
     fragmentDef: contextualViewFragment,
@@ -276,32 +276,36 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       >
         {
           existEntitiesToDisplay
-          && <EntityStixCoreRelationshipsContextualViewLines
-            paginationOptions={paginationOptions}
-            dataColumns={dataColumns}
-            onToggleEntity={onToggleEntity}
-            setNumberOfElements={helpers.handleSetNumberOfElements}
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            selectAll={selectAll}
-             />
+          && (
+            <EntityStixCoreRelationshipsContextualViewLines
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              onToggleEntity={onToggleEntity}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              selectAll={selectAll}
+            />
+          )
         }
       </ListLines>
       {existEntitiesToDisplay
-        && <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={contextFilters}
-          search={searchTerm}
-          handleClearSelectedElements={handleClearSelectedElements}
-          variant="medium"
-          warning={true}
-          warningMessage={t_i18n(
-            'Be careful, you are about to delete the selected entities',
-          )}
-           />}
+        && (
+          <ToolBar
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            numberOfSelectedElements={numberOfSelectedElements}
+            selectAll={selectAll}
+            filters={contextFilters}
+            search={searchTerm}
+            handleClearSelectedElements={handleClearSelectedElements}
+            variant="medium"
+            warning={true}
+            warningMessage={t_i18n(
+              'Be careful, you are about to delete the selected entities',
+            )}
+          />
+        )}
     </>
   );
 };
@@ -313,11 +317,11 @@ const EntityStixCoreRelationshipsContextualView: FunctionComponent<Omit<EntitySt
   );
 
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-      <EntityStixCoreRelationshipsContextualViewComponent {...props} queryRef={queryRef}/>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <EntityStixCoreRelationshipsContextualViewComponent {...props} queryRef={queryRef} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement}/>
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

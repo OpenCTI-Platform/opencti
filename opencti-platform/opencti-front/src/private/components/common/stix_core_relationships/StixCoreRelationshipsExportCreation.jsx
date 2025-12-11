@@ -164,7 +164,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                         className={classes.createButton}
                         disabled={!isExportPossible}
                       >
-                        <Add/>
+                        <Add />
                       </Fab>
                     </Tooltip>
                     <Formik
@@ -240,7 +240,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                     </DialogContent>
                                   );
                                 }
-                                return <Loader variant="inElement"/>;
+                                return <Loader variant="inElement" />;
                               }}
                             />
                             <DialogActions>

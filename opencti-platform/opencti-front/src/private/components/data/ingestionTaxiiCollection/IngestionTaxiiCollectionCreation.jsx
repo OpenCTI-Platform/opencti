@@ -45,7 +45,7 @@ const ingestionTaxiiCollectionCreationValidation = (t) => Yup.object().shape({
 
 const CreateIngestionTaxiiCollectionControlledDial = (props) => (
   <CreateEntityControlledDial
-    entityType='IngestionTaxiiCollection'
+    entityType="IngestionTaxiiCollection"
     {...props}
   />
 );
@@ -127,7 +127,7 @@ const IngestionTaxiiCollectionCreation = (props) => {
                 showConfidence
               />
               <ObjectMembersField
-                label={'Accessible for'}
+                label="Accessible for"
                 style={fieldSpacingContainerStyle}
                 onChange={setFieldValue}
                 multiple={true}

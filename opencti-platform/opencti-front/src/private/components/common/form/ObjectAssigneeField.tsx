@@ -75,9 +75,9 @@ interface ObjectAssigneeFieldProps {
   onChange?: (name: string, values: OptionAssignee[]) => void;
   style?: Record<string, string | number>;
   helpertext?: unknown;
-  label?: string,
-  disabled?: boolean,
-  required?: boolean,
+  label?: string;
+  disabled?: boolean;
+  required?: boolean;
 }
 const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
   name,
@@ -127,7 +127,8 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
   };
 
   return (
-    <Field component={AutocompleteField}
+    <Field
+      component={AutocompleteField}
       style={style}
       name={name}
       disabled={disabled}

@@ -54,7 +54,7 @@ const CaseTemplateLineDummy: FunctionComponent<CaseTemplateLineDummyProps> = ({ 
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map(({ label, width }) => (
               <div
@@ -71,7 +71,7 @@ const CaseTemplateLineDummy: FunctionComponent<CaseTemplateLineDummyProps> = ({ 
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

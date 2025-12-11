@@ -22,7 +22,7 @@ export const createInternalObject = async <T extends StoreEntity>(context: AuthC
       event_scope: 'create',
       event_access: 'administration',
       message: `creates ${humanReadableFormatEntityType(entityType)} \`${element.name}\``,
-      context_data: { id: element.id, entity_type: element.entity_type, input }
+      context_data: { id: element.id, entity_type: element.entity_type, input },
     });
   }
   const notifyTopic = getBusTopicForEntityType(entityType)?.ADDED_TOPIC ?? BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC;
@@ -35,7 +35,7 @@ export const editInternalObject = async <T extends StoreEntity>(
   id: string,
   entityType: string,
   input: EditInput[],
-  opts: { auditLogEnabled?: boolean } = {}
+  opts: { auditLogEnabled?: boolean } = {},
 ): Promise<T> => {
   const internalObject = await storeLoadById(context, user, id, entityType);
   if (!internalObject) {
@@ -50,7 +50,7 @@ export const editInternalObject = async <T extends StoreEntity>(
       event_scope: 'update',
       event_access: 'administration',
       message: `updates \`${input.map((i) => i.key).join(', ')}\` for ${humanReadableFormatEntityType(entityType)} \`${element.name}\``,
-      context_data: { id, entity_type: entityType, input }
+      context_data: { id, entity_type: entityType, input },
     });
   }
   const notifyTopic = getBusTopicForEntityType(entityType)?.EDIT_TOPIC ?? BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC;
@@ -74,7 +74,7 @@ export const deleteInternalObject = async (
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes ${humanReadableFormatEntityType(entityType)} \`${deleted.name}\``,
-    context_data: { id, entity_type: entityType, input: deleted }
+    context_data: { id, entity_type: entityType, input: deleted },
   });
   const notifyTopic = getBusTopicForEntityType(entityType)?.DELETE_TOPIC ?? BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC;
   await notify(notifyTopic, internalObject, user);

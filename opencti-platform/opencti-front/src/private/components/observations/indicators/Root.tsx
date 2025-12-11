@@ -126,7 +126,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                 />
               </Security>
             )}
-            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <IndicatorDeletion id={indicator.id} isOpen={isOpen} handleClose={onClose} />
               </Security>
@@ -193,15 +193,15 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
           <Routes>
             <Route
               path="/"
-              element={(<Indicator indicatorData={indicator}/>)}
+              element={(<Indicator indicatorData={indicator} />)}
             />
             <Route
               path="/content/*"
-              element={
+              element={(
                 <StixCoreObjectContentRoot
                   stixCoreObject={indicator}
                 />
-              }
+              )}
             />
             <Route
               path="/analyses"
@@ -290,7 +290,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
 };
 
 const Root = () => {
-  const { indicatorId } = useParams() as { indicatorId: string; };
+  const { indicatorId } = useParams() as { indicatorId: string };
   const queryRef = useQueryLoading<RootIndicatorQuery>(indicatorQuery, {
     id: indicatorId,
   });

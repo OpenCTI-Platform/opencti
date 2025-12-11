@@ -16,22 +16,22 @@ export interface StixIndicatorExtension extends StixOpenctiExtension {
   detection: boolean;
   score: number;
   main_observable_type: string;
-  observable_values: ObservableValues[]
+  observable_values: ObservableValues[];
 }
 // name, description, indicator_types, pattern, pattern_type, pattern_version, valid_from, valid_until, kill_chain_phases
 export interface StixIndicator extends StixDomainObject {
   name: string; // optional
   description: string; // optional
-  indicator_types : Array<string>; // optional
-  pattern : string;
-  pattern_type : string;
-  pattern_version : string; // optional
-  valid_from : StixDate;
-  valid_until : StixDate; // optional
+  indicator_types: Array<string>; // optional
+  pattern: string;
+  pattern_type: string;
+  pattern_version: string; // optional
+  valid_from: StixDate;
+  valid_until: StixDate; // optional
   kill_chain_phases: Array<StixKillChainPhase>; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixIndicatorExtension;
-    [STIX_EXT_MITRE] : StixMitreExtension
+    [STIX_EXT_MITRE]: StixMitreExtension;
   };
 }
 
@@ -39,8 +39,8 @@ export interface IndicatorDecayRule {
   decay_rule_id: string;
   decay_lifetime: number;
   decay_pound: number;
-  decay_points: number[]
-  decay_revoke_score: number
+  decay_points: number[];
+  decay_revoke_score: number;
 }
 
 interface IndicatorDecayExclusionRule {

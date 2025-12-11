@@ -118,11 +118,11 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
 }));
 
 interface AIInsightProps {
-  id: string
-  tabs?: Array<'activity' | 'containers' | 'forecast' | 'history'>
-  defaultTab?: 'activity' | 'containers' | 'forecast' | 'history'
-  floating?: boolean
-  onlyIcon?: boolean
+  id: string;
+  tabs?: Array<'activity' | 'containers' | 'forecast' | 'history'>;
+  defaultTab?: 'activity' | 'containers' | 'forecast' | 'history';
+  floating?: boolean;
+  onlyIcon?: boolean;
   isContainer?: boolean;
 }
 
@@ -187,7 +187,7 @@ const AIInsights = ({
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
             >
-              <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />
+              <FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />
             </IconButton>
           ) : (
             <Button
@@ -195,7 +195,7 @@ const AIInsights = ({
               size="small"
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />}
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
             >
               {t_i18n('AI Insights')}
             </Button>
@@ -229,7 +229,7 @@ const AIInsights = ({
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
             >
-              <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />
+              <FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />
             </IconButton>
           ) : (
             <Button
@@ -237,7 +237,7 @@ const AIInsights = ({
               size="small"
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
-              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />}
+              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
             >
               {t_i18n('AI Insights')}
             </Button>
@@ -272,7 +272,7 @@ const AIInsights = ({
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
           >
-            <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai"/>
+            <FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />
           </IconButton>
         ) : (
           <Button
@@ -280,7 +280,7 @@ const AIInsights = ({
             size="small"
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai"/>}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
           >
             {t_i18n('AI Insights')}
           </Button>
@@ -302,7 +302,7 @@ const AIInsights = ({
             size="large"
             color="primary"
           >
-            <Close fontSize="small" color="primary"/>
+            <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>
             {t_i18n('AI Insights')}
@@ -311,7 +311,7 @@ const AIInsights = ({
             variant="outlined"
             size="small"
             className={classes.chipNoAction}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai"/>}
+            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
           >
             {t_i18n('XTM AI')}
           </Button>
@@ -326,47 +326,47 @@ const AIInsights = ({
           }}
           >
             <Tabs value={currentTab} onChange={handleChangeTab}>
-              {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')}/>}
-              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')}/>}
-              {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')}/>}
-              {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')}/>}
+              {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
+              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')} />}
+              {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
+              {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
             </Tabs>
             {loading && (
-            <div style={{ paddingTop: 10 }}>
-              <Loader variant={LoaderVariant.inline}/>
-            </div>
+              <div style={{ paddingTop: 10 }}>
+                <Loader variant={LoaderVariant.inline} />
+              </div>
             )}
           </Box>
           {currentTab === 'activity' && (
-          <AISummaryActivity
-            id={id}
-            loading={loading}
-            setLoading={setLoading}
-          />
+            <AISummaryActivity
+              id={id}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
           {currentTab === 'containers' && (
-          <AISummaryContainers
-            busId={containersBusId}
-            isContainer={isContainer}
-            filters={containersFilters}
-            helpers={containersFiltersHelpers}
-            loading={loading}
-            setLoading={setLoading}
-          />
+            <AISummaryContainers
+              busId={containersBusId}
+              isContainer={isContainer}
+              filters={containersFilters}
+              helpers={containersFiltersHelpers}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
           {currentTab === 'forecast' && (
-          <AISummaryForecast
-            id={id}
-            loading={loading}
-            setLoading={setLoading}
-          />
+            <AISummaryForecast
+              id={id}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
           {currentTab === 'history' && (
-          <AISummaryHistory
-            id={id}
-            loading={loading}
-            setLoading={setLoading}
-          />
+            <AISummaryHistory
+              id={id}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
         </div>
       </Drawer>

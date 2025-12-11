@@ -50,33 +50,33 @@ export type IngestionTypedProperty<K extends keyof IngestionTypeMap = keyof Inge
 };
 
 export interface IngestionConnector {
-  title: string,
-  slug: string,
-  description: string,
-  short_description: string,
-  logo: string,
-  use_cases: string[],
-  verified: boolean,
-  last_verified_date: string,
-  playbook_supported: boolean,
-  max_confidence_level: number,
-  support_version: string,
-  subscription_link: string,
-  source_code: string,
-  manager_supported: boolean,
-  container_version: string,
-  container_image: string,
-  container_type: IngestionConnectorType,
+  title: string;
+  slug: string;
+  description: string;
+  short_description: string;
+  logo: string;
+  use_cases: string[];
+  verified: boolean;
+  last_verified_date: string;
+  playbook_supported: boolean;
+  max_confidence_level: number;
+  support_version: string;
+  subscription_link: string;
+  source_code: string;
+  manager_supported: boolean;
+  container_version: string;
+  container_image: string;
+  container_type: IngestionConnectorType;
   config_schema: {
-    $schema: string,
-    $id: string,
-    type: string,
+    $schema: string;
+    $id: string;
+    type: string;
     properties: {
-      [key: string]: IngestionTypedProperty
-    },
-    required: string[],
-    additionalProperties: boolean,
-  }
+      [key: string]: IngestionTypedProperty;
+    };
+    required: string[];
+    additionalProperties: boolean;
+  };
 }
 
 const BrowseMoreButton = () => {
@@ -86,7 +86,7 @@ const BrowseMoreButton = () => {
     <GradientButton
       size="small"
       sx={{ marginLeft: 1 }}
-      href={'https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76'}
+      href="https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76"
       target="_blank"
       title={t_i18n('Browse more')}
     >

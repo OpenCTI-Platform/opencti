@@ -29,15 +29,15 @@ export const schemaAttributesQuery = graphql`
 `;
 
 type JsonMappersContextType = {
-  jsonMappers?: jsonMappers_MappersQuery$data,
-  schemaAttributes?: jsonMappers_SchemaAttributesQuery$data,
+  jsonMappers?: jsonMappers_MappersQuery$data;
+  schemaAttributes?: jsonMappers_SchemaAttributesQuery$data;
 };
 const JsonMappersContext = createContext<JsonMappersContextType>({});
 
 interface JsonMappersProviderProps {
-  mappersQueryRef: PreloadedQuery<jsonMappers_MappersQuery>
-  schemaAttributesQueryRef: PreloadedQuery<jsonMappers_SchemaAttributesQuery>
-  children: ReactNode
+  mappersQueryRef: PreloadedQuery<jsonMappers_MappersQuery>;
+  schemaAttributesQueryRef: PreloadedQuery<jsonMappers_SchemaAttributesQuery>;
+  children: ReactNode;
 }
 const JsonMappersProvider = ({
   mappersQueryRef,

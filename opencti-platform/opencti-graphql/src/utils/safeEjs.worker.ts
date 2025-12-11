@@ -35,7 +35,7 @@ const executeWorker = async () => {
   // Send result back to main thread
   const message: WorkerReply = {
     success: true,
-    result
+    result,
   };
   parentPort?.postMessage(message);
 };
@@ -44,7 +44,7 @@ executeWorker().catch((error) => {
   // Send error back to main thread
   const message: WorkerReply = {
     success: false,
-    error: error instanceof Error ? error.message : 'Unknown error'
+    error: error instanceof Error ? error.message : 'Unknown error',
   };
   parentPort?.postMessage(message);
 });

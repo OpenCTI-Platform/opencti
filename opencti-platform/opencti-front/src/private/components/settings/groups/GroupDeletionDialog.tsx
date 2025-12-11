@@ -15,9 +15,9 @@ const groupDeletionMutation = graphql`
 `;
 
 interface GroupDeletionDialogProps {
-  groupId: string,
-  isOpen: boolean
-  handleClose: () => void
+  groupId: string;
+  isOpen: boolean;
+  handleClose: () => void;
 }
 
 const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({

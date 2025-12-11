@@ -62,7 +62,7 @@ class StixSightingRelationshipExternalReferences extends Component {
                 {t('External references')}
               </Typography>
               <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+              <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
                 <List>
                   {Array.from(Array(5), (e, i) => (
                     <ListItem
@@ -76,7 +76,7 @@ class StixSightingRelationshipExternalReferences extends Component {
                         </Avatar>
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
@@ -84,15 +84,15 @@ class StixSightingRelationshipExternalReferences extends Component {
                             height={15}
                             style={{ marginBottom: 10 }}
                           />
-                        }
-                        secondary={
+                        )}
+                        secondary={(
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
                             width="90%"
                             height={15}
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}

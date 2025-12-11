@@ -59,8 +59,8 @@ const detailsRedisFragment = graphql`
 `;
 
 interface PirOverviewDetailsProps {
-  data: PirOverviewDetailsFragment$key
-  dataStream: PirOverviewDetailsRedisFragment$key
+  data: PirOverviewDetailsFragment$key;
+  dataStream: PirOverviewDetailsRedisFragment$key;
 }
 
 const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
@@ -78,7 +78,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
   return (
     <Grid size={{ xs: 12 }}>
       <PaperAccordion
-        title={'PIR Details'}
+        title="PIR Details"
         preview={(
           <div style={{
             flex: 1,
@@ -147,7 +147,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
               <Typography variant="h3" gutterBottom>
                 {t_i18n('Creators')}
               </Typography>
-              <ItemCreators creators={pir.creators ?? []}/>
+              <ItemCreators creators={pir.creators ?? []} />
             </div>
           </div>
         )}
@@ -157,7 +157,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
             <Typography variant="h3" gutterBottom>
               {t_i18n('Description')}
             </Typography>
-            <ExpandableMarkdown source={pir.description} limit={400}/>
+            <ExpandableMarkdown source={pir.description} limit={400} />
           </div>
           <div>
             <Typography variant="h3" gutterBottom>

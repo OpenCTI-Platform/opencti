@@ -1,4 +1,3 @@
-// eslint-disable-next-line max-classes-per-file
 import { parser as jsParser } from '@lezer/javascript';
 import type { Data, Options } from 'ejs';
 import { render } from 'ejs';
@@ -21,16 +20,16 @@ export class VerifierProcessingQuotaExceededError extends VerifierError {
 }
 
 export type SafeOptions = {
-  maxExecutedStatementCount?: number | undefined,
-  maxExecutionDuration?: number | undefined,
-  yieldMethod?: (() => Promise<void>) | undefined,
-  useNotificationTool?: boolean | undefined,
+  maxExecutedStatementCount?: number | undefined;
+  maxExecutionDuration?: number | undefined;
+  yieldMethod?: (() => Promise<void>) | undefined;
+  useNotificationTool?: boolean | undefined;
 };
 
 export type SafeRenderOptions = Options & SafeOptions;
 
 export const safeReservedPrefix = '____safe____';
-export const safeName = (name: 'statement' | 'property' | 'Object' ) => `${safeReservedPrefix}${name}`;
+export const safeName = (name: 'statement' | 'property' | 'Object') => `${safeReservedPrefix}${name}`;
 
 const forbiddenProperties = new Set([
   '__proto__',
@@ -106,9 +105,9 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
         await yieldMethod?.();
       }
       : () => {
-        checkMaxExecutedStatementCount();
-        checkMaxExecutionDuration();
-      },
+          checkMaxExecutedStatementCount();
+          checkMaxExecutionDuration();
+        },
 
     [safeName('property')]: (propertyName: unknown) => {
       if (typeof propertyName === 'string' && (propertyName.startsWith(safeReservedPrefix) || forbiddenProperties.has(propertyName))) {
@@ -130,7 +129,7 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
               if (key.startsWith(safeReservedPrefix) || forbiddenProperties.has(key)) {
                 throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName: key })}`);
               }
-              // eslint-disable-next-line no-param-reassign
+
               target[key] = value;
             });
           });
@@ -161,7 +160,7 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
     pos = template.indexOf(openTag, pos);
     if (pos !== -1) {
       let startPos = pos + openTag.length;
-      
+
       // Skip EJS comments (<%# ... %>)
       if (template[startPos] === '#') {
         const commentStart = pos;
@@ -179,17 +178,17 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
         pos = pos + closeTag.length;
         continue;
       }
-      
+
       if (template[startPos] === '=') {
         startPos += 1;
       }
-      
+
       const hasStartWhitespaceControl = ['_', '-'].includes(template[startPos]);
       let codeStartPos = startPos;
       if (hasStartWhitespaceControl) {
         codeStartPos += 1;
       }
-      
+
       pos = template.indexOf(closeTag, codeStartPos);
       if (pos === -1) {
         throw new VerifierParsingError('Unable to parse EJS template, missing close tag');
@@ -204,7 +203,7 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
       if (startPos > processedPos) {
         pushFragment(template.substring(processedPos, startPos), false);
       }
-      
+
       if (hasStartWhitespaceControl) {
         pushFragment(template[startPos], false);
       }

@@ -60,7 +60,7 @@ interface ContainerStixCyberObservablesComponentProps {
 }
 
 const ContainerStixCyberObservablesComponent: FunctionComponent<
-ContainerStixCyberObservablesComponentProps
+  ContainerStixCyberObservablesComponentProps
 > = ({ container, enableReferences }) => {
   const { t_i18n } = useFormatter();
 
@@ -243,7 +243,7 @@ ContainerStixCyberObservablesComponentProps
             >
               {queryRef && (
                 <React.Suspense
-                  fallback={
+                  fallback={(
                     <>
                       {Array(20)
                         .fill(0)
@@ -254,7 +254,7 @@ ContainerStixCyberObservablesComponentProps
                           />
                         ))}
                     </>
-                  }
+                  )}
                 >
                   <ContainerStixCyberObservablesLines
                     queryRef={queryRef}

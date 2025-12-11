@@ -87,9 +87,9 @@ const DataTableFilters = ({
 
   const exportDisabled = !exportContext || (numberOfElements
     && ((Object.keys(selectedElements).length > export_max_size
-        && numberOfElements.number > export_max_size)
-      || (Object.keys(selectedElements).length === 0
-        && numberOfElements.number > export_max_size)));
+      && numberOfElements.number > export_max_size)
+    || (Object.keys(selectedElements).length === 0
+      && numberOfElements.number > export_max_size)));
 
   const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
 
@@ -180,48 +180,48 @@ const DataTableFilters = ({
         && exportContext.entity_type !== 'Stix-Core-Object'
         && exportContext.entity_type !== 'Stix-Cyber-Observable'
         && exportContext.entity_type !== 'stix-core-relationship' && (
-          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixDomainObjectsExports
-              open={!!openExports}
-              handleToggle={helpers.handleToggleExports}
-              paginationOptions={exportPaginationOptions}
-              exportContext={exportContext}
-            />
-          </Security>
+        <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+          <StixDomainObjectsExports
+            open={!!openExports}
+            handleToggle={helpers.handleToggleExports}
+            paginationOptions={exportPaginationOptions}
+            exportContext={exportContext}
+          />
+        </Security>
       )}
       {helpers.handleToggleExports && exportContext
         && exportContext.entity_type === 'stix-core-relationship' && (
-          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixCoreRelationshipsExports
-              open={openExports}
-              handleToggle={helpers.handleToggleExports}
-              paginationOptions={exportPaginationOptions}
-              exportContext={exportContext}
-            />
-          </Security>
+        <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+          <StixCoreRelationshipsExports
+            open={openExports}
+            handleToggle={helpers.handleToggleExports}
+            paginationOptions={exportPaginationOptions}
+            exportContext={exportContext}
+          />
+        </Security>
       )}
       {helpers.handleToggleExports && exportContext
         && exportContext.entity_type === 'Stix-Core-Object' && (
-          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixCoreObjectsExports
-              open={openExports}
-              handleToggle={helpers.handleToggleExports}
-              paginationOptions={exportPaginationOptions}
-              exportContext={exportContext}
-              exportType={undefined}
-            />
-          </Security>
+        <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+          <StixCoreObjectsExports
+            open={openExports}
+            handleToggle={helpers.handleToggleExports}
+            paginationOptions={exportPaginationOptions}
+            exportContext={exportContext}
+            exportType={undefined}
+          />
+        </Security>
       )}
       {helpers.handleToggleExports && exportContext
         && exportContext.entity_type === 'Stix-Cyber-Observable' && (
-          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixCyberObservablesExports
-              open={openExports}
-              handleToggle={helpers.handleToggleExports}
-              paginationOptions={exportPaginationOptions}
-              exportContext={exportContext}
-            />
-          </Security>
+        <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+          <StixCyberObservablesExports
+            open={openExports}
+            handleToggle={helpers.handleToggleExports}
+            paginationOptions={exportPaginationOptions}
+            exportContext={exportContext}
+          />
+        </Security>
       )}
     </ExportContext.Provider>
   );

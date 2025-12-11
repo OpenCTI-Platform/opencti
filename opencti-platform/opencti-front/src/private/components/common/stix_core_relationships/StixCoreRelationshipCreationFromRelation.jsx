@@ -370,7 +370,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
               />
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
@@ -378,15 +378,15 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                   height={15}
                   style={{ marginBottom: 10 }}
                 />
-              }
-              secondary={
+              )}
+              secondary={(
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
                   width="90%"
                   height={15}
                 />
-              }
+              )}
             />
           </ListItem>
         ))}
@@ -470,11 +470,11 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 );
               }
               return !stixCoreObjectTypes
-              || stixCoreObjectTypes.length === 0 ? (
-                  this.renderFakeList()
-                ) : (
-                  <div> &nbsp; </div>
-                );
+                || stixCoreObjectTypes.length === 0 ? (
+                    this.renderFakeList()
+                  ) : (
+                    <div> &nbsp; </div>
+                  );
             }}
           />
           <StixDomainObjectCreation
@@ -509,8 +509,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             schema.schemaRelationsTypesMapping,
           ).filter(
             (n) => R.isNil(allowedRelationshipTypes)
-                    || allowedRelationshipTypes.length === 0
-                    || allowedRelationshipTypes.includes(n),
+              || allowedRelationshipTypes.length === 0
+              || allowedRelationshipTypes.includes(n),
           ));
           return (
             <>

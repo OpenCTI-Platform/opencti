@@ -120,7 +120,7 @@ interface DraftsProps {
   entityId?: string;
   openCreate?: boolean;
   setOpenCreate?: () => void;
-  emptyStateMessage?: string
+  emptyStateMessage?: string;
 }
 
 const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {

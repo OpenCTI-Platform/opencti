@@ -156,8 +156,8 @@ const createHttpServer = async () => {
           }
         }
         return executeContext;
-      }
-    })
+      },
+    }),
   );
   const { sseMiddleware } = await createApp(app, schema);
   return { httpServer, sseMiddleware };

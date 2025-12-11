@@ -69,12 +69,12 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                 key={stixCoreObject.id}
                 divider={true}
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <StixNestedRefRelationshipPopover
                     stixNestedRefRelationshipId={node.id}
                     paginationOptions={paginationOptions}
                   />
-              }
+                )}
               >
                 <ListItemButton
                   classes={{ root: classes.item }}
@@ -85,7 +85,7 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                     <ItemIcon type={stixCoreObject.entity_type} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={
+                    primary={(
                       <div>
                         <div
                           className={classes.bodyItem}
@@ -101,7 +101,7 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                         >
                           <ItemEntityType
                             entityType={stixCoreObject.entity_type}
-                            size='large'
+                            size="large"
                             showIcon
                           />
                         </div>
@@ -110,13 +110,13 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                           style={{ width: '40%' }}
                         >
                           {getMainRepresentative(stixCoreObject)}
-                          {stixCoreObject.draftVersion && (<DraftChip/>)}
+                          {stixCoreObject.draftVersion && (<DraftChip />)}
                         </div>
                         <div className={classes.bodyItem}>
                           {fsd(node.start_time)}
                         </div>
                       </div>
-                  }
+                    )}
                   />
                 </ListItemButton>
               </ListItem>

@@ -53,7 +53,7 @@ export const findSessions = () => {
             id: s.redis_key_id,
             created: s.user.session_creation,
             ttl: s.redis_key_ttl,
-            originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
+            originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000),
           };
         });
         return { user_id: k, sessions: userSessions };

@@ -336,8 +336,8 @@ const useSearchEntities = ({
 
   const searchEntities = (
     filterKey: string,
-    cacheEntities: Record< string, { label: string; value: string | null; type: string }[] >,
-    setCacheEntities: Dispatch< Record<string, { label: string; value: string | null; type: string }[]> >,
+    cacheEntities: Record<string, { label: string; value: string | null; type: string }[]>,
+    setCacheEntities: Dispatch<Record<string, { label: string; value: string | null; type: string }[]>>,
     event: BaseSyntheticEvent,
     isSubKey?: boolean,
   ) => {
@@ -905,7 +905,7 @@ const useSearchEntities = ({
           );
           break;
         case 'relationship_type': {
-          let relationshipsTypes: { label: string, value: string, type: string }[] = [];
+          let relationshipsTypes: { label: string; value: string; type: string }[] = [];
           if (availableRelationshipTypes && !isSubKey) { // if available RelationshipTypes is specified, we display only the specified relationship types
             relationshipsTypes = availableRelationshipTypes
               .map((n) => ({

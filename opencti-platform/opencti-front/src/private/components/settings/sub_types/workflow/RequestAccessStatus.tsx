@@ -37,8 +37,8 @@ export const requestAccessFragment = graphql`
 `;
 
 interface RequestAccessStatusProps {
-  data: RequestAccessConfigurationEdition_requestAccess$key,
-  requestAccessWorkflowDisabled: boolean
+  data: RequestAccessConfigurationEdition_requestAccess$key;
+  requestAccessWorkflowDisabled: boolean;
 }
 
 const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
@@ -72,7 +72,8 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
               borderRadius: 4,
               width: 100,
             }}
-          />)}
+          />
+        )}
         { !requestAccessWorkflowDisabled && (
           <Chip
             key={approvedToRfiStatus?.id}
@@ -110,7 +111,8 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
               borderRadius: 4,
               width: 100,
             }}
-          />)}
+          />
+        )}
         { !requestAccessWorkflowDisabled && (
           <Chip
             key={declinedToRfiStatus?.id}
@@ -144,7 +146,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
             <ListItemIcon>
               <ItemIcon type="group" />
             </ListItemIcon>
-            <ListItemText primary={member?.name}/>
+            <ListItemText primary={member?.name} />
           </ListItemButton>
         );
       })}

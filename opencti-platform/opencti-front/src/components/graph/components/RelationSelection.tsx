@@ -18,32 +18,32 @@ const useStyles = makeStyles({
 });
 
 interface RelationSelectionProps {
-  width: number
-  height: number
-  activated: boolean
-  setSelectedNodes: (nodes: Set<GraphNode>) => void
-  graphDataNodes: GraphNode[]
-  graph: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>
+  width: number;
+  height: number;
+  activated: boolean;
+  setSelectedNodes: (nodes: Set<GraphNode>) => void;
+  graphDataNodes: GraphNode[];
+  graph: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>;
 }
 
 interface Coord {
-  x: number,
-  y: number
+  x: number;
+  y: number;
 }
 
 interface ContextHandlerProps {
-  ctx?: CanvasRenderingContext2D | null
-  coord?: Coord
-  freeHand?: boolean
-  freePathCoords?: Coord[]
-  selectedNodes?: Set<GraphNode>
-  graphDataNodes?: GraphNode[]
-  canvas?: HTMLCanvasElement
-  theme?: Theme
-  setSelectedNodes?: (nodes: Set<GraphNode>) => void
-  activated?: boolean
-  storeFreeSelectionFunction?: (event: MouseEvent) => void
-  graph?: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>
+  ctx?: CanvasRenderingContext2D | null;
+  coord?: Coord;
+  freeHand?: boolean;
+  freePathCoords?: Coord[];
+  selectedNodes?: Set<GraphNode>;
+  graphDataNodes?: GraphNode[];
+  canvas?: HTMLCanvasElement;
+  theme?: Theme;
+  setSelectedNodes?: (nodes: Set<GraphNode>) => void;
+  activated?: boolean;
+  storeFreeSelectionFunction?: (event: MouseEvent) => void;
+  graph?: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>;
 }
 
 const DISTANCE = 5;

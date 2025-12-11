@@ -26,7 +26,7 @@ import {
   FROM_TEMPLATE_STORAGE_PATH,
   IMPORT_STORAGE_PATH,
   indexFileToDocument,
-  SUPPORT_STORAGE_PATH
+  SUPPORT_STORAGE_PATH,
 } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
@@ -102,7 +102,7 @@ export const loadFile = async (
   context: AuthContext,
   user: AuthUser,
   fileS3Path: string,
-  opts: { dontThrow?: boolean } = {}
+  opts: { dontThrow?: boolean } = {},
 ): Promise<LoadedFile | undefined> => {
   try {
     if (!fileS3Path) {
@@ -117,10 +117,10 @@ export const loadFile = async (
     }
     // 01.1. Check if user as enough capability to load import / export / template knowledge files
     if ((fileS3Path.startsWith(IMPORT_STORAGE_PATH)
-        || fileS3Path.startsWith(EMBEDDED_STORAGE_PATH)
-        || fileS3Path.startsWith(EXPORT_STORAGE_PATH)
-        || fileS3Path.startsWith(FROM_TEMPLATE_STORAGE_PATH))
-      && !isUserHasCapability(user, KNOWLEDGE)) {
+      || fileS3Path.startsWith(EMBEDDED_STORAGE_PATH)
+      || fileS3Path.startsWith(EXPORT_STORAGE_PATH)
+      || fileS3Path.startsWith(FROM_TEMPLATE_STORAGE_PATH))
+    && !isUserHasCapability(user, KNOWLEDGE)) {
       if (opts.dontThrow) {
         return undefined;
       }
@@ -164,7 +164,7 @@ export const loadFile = async (
       id: fileS3Path,
       information: '',
       uploadStatus: 'complete',
-      metaData
+      metaData,
     } as LoadedFile;
   } catch (err) {
     if (opts.dontThrow) {
@@ -251,7 +251,7 @@ export const deleteRawFiles = async (context: AuthContext, user: AuthUser, ids: 
  */
 export const copyFile = async (
   context: AuthContext,
-  copyProps: { sourceId: string; targetId: string; sourceDocument: BasicStoreEntityDocument; targetEntityId: string }
+  copyProps: { sourceId: string; targetId: string; sourceDocument: BasicStoreEntityDocument; targetEntityId: string },
 ): Promise<LoadedFile | null> => {
   const { sourceId, targetId, sourceDocument, targetEntityId } = copyProps;
   try {
@@ -375,7 +375,7 @@ export const loadedFilesListing = async (
   context: AuthContext,
   user: AuthUser,
   directory: string,
-  opts: { recursive?: boolean; callback?: ((files: LoadedFile[]) => void) | null; dontThrow?: boolean } = {}
+  opts: { recursive?: boolean; callback?: ((files: LoadedFile[]) => void) | null; dontThrow?: boolean } = {},
 ): Promise<LoadedFile[]> => {
   const { recursive = false, callback = null, dontThrow = false } = opts;
   const files: LoadedFile[] = [];
@@ -394,7 +394,7 @@ export const loadedFilesListing = async (
       const resultLoaded = await promiseMap(
         resultFiles,
         (f: S3FileObject) => loadFile(context, user, f.Key, { dontThrow }),
-        5
+        5,
       );
       if (callback) {
         callback(resultLoaded.filter((n) => n !== undefined));
@@ -442,7 +442,7 @@ export const uploadJobImport = async (
     bypassValidation?: boolean;
     validationMode?: string;
     forceValidation?: boolean;
-  } = {}
+  } = {},
 ): Promise<BasicStoreEntityConnector[]> => {
   const {
     manual = false,
@@ -450,7 +450,7 @@ export const uploadJobImport = async (
     configuration = null,
     bypassValidation = false,
     validationMode = defaultValidationMode,
-    forceValidation = false
+    forceValidation = false,
   } = opts;
   const draftContext = getDraftContext(context, user);
   let connectors = await connectorsForImport(context, user, file.metaData.mimetype ?? '', true, !manual);
@@ -478,7 +478,7 @@ export const uploadJobImport = async (
           applicant_id: user.id, // User asking for the import
           draft_id: draftContext ?? null, // If we are in a draft, import in current draft context
           trigger: 'update',
-          mode: 'auto'
+          mode: 'auto',
         },
         event: {
           file_id: file.id,
@@ -490,7 +490,7 @@ export const uploadJobImport = async (
           bypass_validation: draftContext ? true : bypassValidation, // Force no validation: always force it when in draft
           force_validation: forceValidation, // Force validation
         },
-        configuration: connectorConfiguration
+        configuration: connectorConfiguration,
       };
     };
     const pushMessage = (data: { connector: BasicStoreEntityConnector; work: { id: string } }) => {
@@ -517,7 +517,7 @@ const triggerJobImport = async (
   context: AuthContext,
   user: AuthUser,
   file: LoadedFile,
-  contextEntities: BasicStoreEntity[] = []
+  contextEntities: BasicStoreEntity[] = [],
 ): Promise<void> => {
   if (contextEntities.length === 0) {
     // global import
@@ -557,7 +557,7 @@ export const upload = async (
   user: AuthUser,
   filePath: string,
   fileUpload: FileUploadData,
-  opts: FileUploadOpts
+  opts: FileUploadOpts,
 ): Promise<{ upload: LoadedFile; untouched: boolean }> => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
   // Verify markings
@@ -649,18 +649,18 @@ export const streamConverter = (stream: Readable): Promise<string> => {
   });
 };
 export interface FileUploadOpts {
-  entity?: BasicStoreBase, // entity on which the file is uploaded
-  meta?: Record<string, any>,
-  noTriggerImport?: boolean,
-  errorOnExisting?: boolean,
-  file_markings?: string[],
-  importContextEntities?: BasicStoreEntity[], // entities used for import context
+  entity?: BasicStoreBase; // entity on which the file is uploaded
+  meta?: Record<string, any>;
+  noTriggerImport?: boolean;
+  errorOnExisting?: boolean;
+  file_markings?: string[];
+  importContextEntities?: BasicStoreEntity[]; // entities used for import context
 }
 
 export interface FileUploadData {
-  createReadStream: () => Readable,
-  filename: string,
-  mimeType?: string,
+  createReadStream: () => Readable;
+  filename: string;
+  mimeType?: string;
 }
 
 /**

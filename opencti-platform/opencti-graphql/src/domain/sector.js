@@ -33,11 +33,11 @@ export const isSubSector = async (context, user, sectorId) => {
 export const targetedOrganizations = async (context, user, sectorId) => {
   const organizations = await fullEntitiesThroughRelationsFromList(context, user, sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   const targets = await Promise.all(
-    organizations.map((organization) => topRelationsList(context, user, RELATION_TARGETS, { fromId: organization.id }))
+    organizations.map((organization) => topRelationsList(context, user, RELATION_TARGETS, { fromId: organization.id })),
   );
   const finalTargets = R.pipe(
     R.map((n) => n.edges),
-    R.flatten
+    R.flatten,
   )(targets);
   return buildPagination(0, 0, finalTargets, finalTargets.length);
 };

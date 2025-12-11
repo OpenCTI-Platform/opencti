@@ -42,7 +42,7 @@ export const alertingPopoverDeletionMutation = graphql`
   }
 `;
 
-const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$data, paginationOptions?: AlertingPaginationQuery$variables }) => {
+const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$data; paginationOptions?: AlertingPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [queryRef, loadQuery] = useQueryLoader<AlertEditionQuery>(alertEditionQuery);
@@ -88,7 +88,7 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         style={{ marginTop: 3 }}
         color="primary"
       >
-        <MoreVert/>
+        <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
@@ -99,20 +99,23 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this trigger?')}
       />
-      {displayEdit && <Drawer open={true}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={() => setDisplayEdit(false)}
-                      >
-        {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-            {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)}/>}
-            {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)}/>}
-          </React.Suspense>
-        )}
-      </Drawer>}
+      {displayEdit && (
+        <Drawer
+          open={true}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={() => setDisplayEdit(false)}
+        >
+          {queryRef && (
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+              {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+            </React.Suspense>
+          )}
+        </Drawer>
+      )}
     </div>
   );
 };

@@ -86,26 +86,26 @@ class TaxiiLineLineComponent extends Component {
       <ListItem
         divider={true}
         disablePadding
-        secondaryAction={
+        secondaryAction={(
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <TaxiiPopover
               taxiiCollectionId={node.id}
               paginationOptions={paginationOptions}
             />
           </Security>
-        }
+        )}
       >
         <ListItemButton
           classes={{ root: classes.item }}
           component="a"
           href={`/taxii2/root/collections/${node.id}/objects/`}
-          target={'_blank'}
+          target="_blank"
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
             <DatabaseExportOutline />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <>
                 <div
                   className={classes.bodyItem}
@@ -130,15 +130,17 @@ class TaxiiLineLineComponent extends Component {
                   style={{ width: dataColumns.filters.width }}
                 >
                   {isFilterGroupNotEmpty(filters)
-                    ? <FilterIconButton
-                        filters={filters}
-                        dataColumns={dataColumns}
-                        styleNumber={3}
-                      />
+                    ? (
+                        <FilterIconButton
+                          filters={filters}
+                          dataColumns={dataColumns}
+                          styleNumber={3}
+                        />
+                      )
                     : '-'}
                 </div>
               </>
-          }
+            )}
           />
         </ListItemButton>
       </ListItem>
@@ -178,7 +180,7 @@ class TaxiiDummyComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={<MoreVert classes={classes.itemIconDisabled } />}
+        secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton
@@ -189,7 +191,7 @@ class TaxiiDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div
                 className={classes.bodyItem}
@@ -236,7 +238,7 @@ class TaxiiDummyComponent extends Component {
                 />
               </div>
             </>
-          }
+          )}
         />
       </ListItem>
     );

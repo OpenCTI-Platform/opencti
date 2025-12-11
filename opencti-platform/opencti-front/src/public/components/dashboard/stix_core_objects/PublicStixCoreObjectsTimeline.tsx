@@ -70,8 +70,8 @@ const publicStixCoreObjectsTimelineQuery = graphql`
 `;
 
 interface PublicStixCoreObjectsTimelineComponentProps {
-  queryRef: PreloadedQuery<PublicStixCoreObjectsTimelineQuery>
-  dateAttribute?: string
+  queryRef: PreloadedQuery<PublicStixCoreObjectsTimelineQuery>;
+  dateAttribute?: string;
 }
 
 const PublicStixCoreObjectsTimelineComponent = ({

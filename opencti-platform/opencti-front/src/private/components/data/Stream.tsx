@@ -36,7 +36,7 @@ const Stream = () => {
     location,
     LOCAL_STORAGE_KEY,
   );
-  const [streamState, setStreamState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [streamState, setStreamState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
@@ -107,11 +107,11 @@ const Stream = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <StreamCollectionCreation paginationOptions={paginationOptions} />
           </Security>
-        }
+        )}
       >
         <QueryRenderer
           query={StreamLinesQuery}
@@ -136,7 +136,7 @@ const Stream = () => {
   return (
     <div className={classes.container} data-testid="sharing-streams-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('Live streams'), current: true }]} />
-      <SharingMenu/>
+      <SharingMenu />
       {streamState.view === 'lines' ? renderLines(paginationOptions) : ''}
     </div>
   );

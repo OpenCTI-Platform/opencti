@@ -9,10 +9,10 @@ import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQ
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 interface CityEditionContainerProps {
-  queryRef: PreloadedQuery<CityEditionContainerQuery>
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  queryRef: PreloadedQuery<CityEditionContainerQuery>;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 export const cityEditionQuery = graphql`

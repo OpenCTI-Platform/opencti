@@ -74,8 +74,8 @@ const securityCoverageKillChainPhasesFragment = graphql`
 `;
 
 interface SecurityCoverageAttackPatternsProps {
-  data: SecurityCoverageAttackPatternsFragment$key
-  dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key
+  data: SecurityCoverageAttackPatternsFragment$key;
+  dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
 }
 
 const SecurityCoverageAttackPatterns = ({
@@ -137,9 +137,9 @@ const SecurityCoverageAttackPatterns = ({
           <StixCoreRelationshipCreationFromEntity
             entityId={securityCoverage.id}
             objectId={securityCoverage.id}
-            connectionKey={'Pagination_attPatterns'}
+            connectionKey="Pagination_attPatterns"
             targetEntities={targetEntities}
-            currentView={'relationships'}
+            currentView="relationships"
             allowedRelationshipTypes={['has-covered']}
             targetStixDomainObjectTypes={['Attack-Pattern']}
             paginationOptions={paginationOptions}
@@ -175,10 +175,10 @@ const SecurityCoverageAttackPatterns = ({
             }}
           >
             <ToggleButton value="matrix" aria-label="matrix view">
-              <ViewModuleOutlined fontSize="small"/>
+              <ViewModuleOutlined fontSize="small" />
             </ToggleButton>
             <ToggleButton value="lines" aria-label="lines view">
-              <ViewListOutlined fontSize="small"/>
+              <ViewListOutlined fontSize="small" />
             </ToggleButton>
           </ToggleButtonGroup>
           {showKillChainSelector && viewMode === 'matrix' && (
@@ -237,15 +237,15 @@ const SecurityCoverageAttackPatterns = ({
                       dense={true}
                       divider={true}
                       disablePadding={true}
-                      secondaryAction={
+                      secondaryAction={(
                         <StixCoreRelationshipPopover
                           objectId={securityCoverage.id}
-                          connectionKey={'Pagination_attPatterns'}
+                          connectionKey="Pagination_attPatterns"
                           stixCoreRelationshipId={attackPatternEdge.node.id}
                           paginationOptions={paginationOptions}
                           isCoverage={true}
                         />
-                                  }
+                      )}
                     >
                       <ListItemButton
                         component={Link}
@@ -256,7 +256,7 @@ const SecurityCoverageAttackPatterns = ({
                           <ItemIcon color={theme.palette.primary.main} type="attack-pattern" />
                         </ListItemIcon>
                         <ListItemText
-                          primary={
+                          primary={(
                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                               <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
                               <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
@@ -266,7 +266,7 @@ const SecurityCoverageAttackPatterns = ({
                                 />
                               </Box>
                             </Box>
-                                          }
+                          )}
                         />
                       </ListItemButton>
                     </ListItem>

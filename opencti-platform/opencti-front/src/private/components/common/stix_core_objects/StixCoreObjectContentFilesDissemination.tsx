@@ -116,16 +116,16 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
             style={{ marginBottom: theme.spacing(2) }}
-            control={
+            control={(
               <Switch
                 checked={useOctiTemplate}
                 onChange={() => setUseOctiTemplate(!useOctiTemplate)}
                 color="primary"
               />
-              }
+            )}
             label={t_i18n('Use OpenCTI template')}
           />
-          <DisseminationListField/>
+          <DisseminationListField />
           <Field
             component={TextField}
             label={t_i18n('Email subject')}
@@ -139,27 +139,27 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
               style={{
                 marginTop: theme.spacing(2),
               }}
-              control={
+              control={(
                 <Switch
                   checked={useFileContent}
                   onChange={() => setUseFileContent(!useFileContent)}
                   color="primary"
                 />
-                }
+              )}
               label={t_i18n('Use file content as email body')}
             />
           )}
           {!useFileContent && (
-          <Field
-            component={MarkdownField}
-            label={t_i18n('Email body')}
-            name="emailBody"
-            multiline
-            rows="4"
-            fullWidth
-            required
-            style={fieldSpacingContainerStyle}
-          />
+            <Field
+              component={MarkdownField}
+              label={t_i18n('Email body')}
+              name="emailBody"
+              multiline
+              rows="4"
+              fullWidth
+              required
+              style={fieldSpacingContainerStyle}
+            />
           )}
           <Field
             component={TextField}

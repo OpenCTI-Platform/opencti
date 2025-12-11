@@ -45,7 +45,7 @@ import {
   TYPE_FILTER,
   WORKFLOW_FILTER,
   PATTERN_TYPE_FILTER,
-  PIR_SCORE_FILTER
+  PIR_SCORE_FILTER,
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -55,7 +55,7 @@ import type { AuthUser } from '../../../types/user';
 import { UnsupportedError } from '../../../config/errors';
 import type { PirInformation } from '../../../modules/pir/pir-types';
 
-//-----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
 // Testers for each possible filter.
 // The stix object format is sometimes very different from what we store internally
 // and in our filters, so we need extra, specific steps.
@@ -469,7 +469,7 @@ export const testPirScore = (stix: any, filter: Filter) => {
     : stix.extensions[STIX_EXT_OCTI].pir_information?.filter((pir: PirInformation) => pirIds.includes(pir.pir_id));
 
   // If at least one of the PIR matches the score filter then it's True.
-  const stixValues: number[] = pirInformation?.map((pir:PirInformation) => pir.pir_score) ?? [];
+  const stixValues: number[] = pirInformation?.map((pir: PirInformation) => pir.pir_score) ?? [];
   return stixValues.some((stixValue) => testNumericFilter(pirScoreFilter, stixValue));
 };
 

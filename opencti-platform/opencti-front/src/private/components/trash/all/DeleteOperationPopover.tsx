@@ -168,7 +168,7 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
             {confirmOperation === 'delete' && (
               <Alert severity="warning" variant="outlined">
                 {t_i18n('', { id: 'The main object and the ... relationships/references linked to it will be deleted permanently.', values: { count: deletedCount - 1 } })}
-                <br/>
+                <br />
                 {t_i18n('This operation cannot be undone.')}
               </Alert>
             )}

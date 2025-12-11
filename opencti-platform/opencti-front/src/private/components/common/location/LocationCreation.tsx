@@ -63,20 +63,20 @@ const locationMutation = graphql`
 `;
 
 interface LocationAddInput {
-  name: string
-  description: string
-  type: string
+  name: string;
+  description: string;
+  type: string;
 }
 
 interface LocationCreationFormProps {
   updater: (store: RecordSourceSelectorProxy) => void;
   onReset?: () => void;
-  display?: boolean
-  contextual?: boolean
+  display?: boolean;
+  contextual?: boolean;
   onCompleted?: () => void;
-  inputValue: string
-  creationCallback?: (data:LocationCreationMutation$data) => void;
-  onlyAuthors?: boolean
+  inputValue: string;
+  creationCallback?: (data: LocationCreationMutation$data) => void;
+  onlyAuthors?: boolean;
 }
 
 const locations = [

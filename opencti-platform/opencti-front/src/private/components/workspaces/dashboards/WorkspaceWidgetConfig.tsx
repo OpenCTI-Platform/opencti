@@ -9,9 +9,9 @@ import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../../components/i18n';
 
 type WorkspaceWidgetConfigProps = {
-  handleImportWidget: (widgetFile: File) => void
-  widget?: Widget,
-  onComplete: (value: Widget, variableName?: string) => void,
+  handleImportWidget: (widgetFile: File) => void;
+  widget?: Widget;
+  onComplete: (value: Widget, variableName?: string) => void;
   closeMenu?: () => void;
 };
 
@@ -42,14 +42,14 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
         <>
           <VisuallyHiddenInput
             type="file"
-            accept={'application/JSON'}
+            accept="application/JSON"
             ref={inputRef}
             onChange={handleWidgetImport}
           />
           <Security needs={[EXPLORE_EXUPDATE]}>
             <>
               <Button
-                variant='outlined'
+                variant="outlined"
                 disableElevation
                 sx={{ marginLeft: 1 }}
                 onClick={handleImportWidgetButtonClick}
@@ -57,7 +57,7 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
                 {t_i18n('Import Widget')}
               </Button>
               <Button
-                variant='outlined'
+                variant="outlined"
                 disableElevation
                 sx={{ marginLeft: 1 }}
                 onClick={handleOpenWidgetConfig}

@@ -18,8 +18,8 @@ export const reportKnowledgeCorrelationQuery = graphql`
 `;
 
 interface ReportKnowledgeCorrelationProps {
-  data: NonNullable<ReportKnowledgeCorrelationQuery$data['report']>
-  id: string
+  data: NonNullable<ReportKnowledgeCorrelationQuery$data['report']>;
+  id: string;
 }
 
 const ReportKnowledgeCorrelation = ({
@@ -54,7 +54,7 @@ const ReportKnowledgeCorrelation = ({
         queryObjectsRef={queryObjectsRef}
         pageSize={PAGE_SIZE}
         containerId={id}
-        containerType='report'
+        containerType="report"
         dataPositions={data}
         onPositionsChanged={savePositions}
       />

@@ -5,7 +5,7 @@ type Mutable<T> = { -readonly [P in keyof T]: T[P]; };
 export type JsonMapperRepresentationAttribute = Mutable<JsonMapperEditionContainerFragment_jsonMapper$data['representations'][number]['attributes'][number]>;
 
 export type JsonMapperRepresentationAttributeEdit = Omit<JsonMapperRepresentationAttribute, 'default_values'> & {
-  default_values: string[] | null
+  default_values: string[] | null;
 };
 
 export interface JsonAttrPathConfiguration {
@@ -15,19 +15,19 @@ export interface JsonAttrPathConfiguration {
 }
 
 export interface JsonMapperRepresentationAttributeFormData {
-  key: string
-  mode: string // 'simple' | ' complex' | 'base'
+  key: string;
+  mode: string; // 'simple' | ' complex' | 'base'
   attr_path?: {
-    path: string
-    independent: boolean | undefined | null
-    configuration: JsonAttrPathConfiguration | null | undefined
-  } | null
+    path: string;
+    independent: boolean | undefined | null;
+    configuration: JsonAttrPathConfiguration | null | undefined;
+  } | null;
   complex_path?: {
-    formula: string
-  }
+    formula: string;
+  };
   based_on?: {
-    identifier?: string | null
-    representations?: string[] | undefined | null
-  } | null
-  default_values?: DefaultValues
+    identifier?: string | null;
+    representations?: string[] | undefined | null;
+  } | null;
+  default_values?: DefaultValues;
 }

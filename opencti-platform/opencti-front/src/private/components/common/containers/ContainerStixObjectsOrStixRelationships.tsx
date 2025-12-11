@@ -35,7 +35,7 @@ interface ContainerStixObjectsOrStixRelationshipsComponentProps {
 }
 
 const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
-ContainerStixObjectsOrStixRelationshipsComponentProps
+  ContainerStixObjectsOrStixRelationshipsComponentProps
 > = ({ container, isSupportParticipation = false, types, title, variant, enableReferences }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -149,7 +149,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
       )}
       <div className="clearfix" />
       {variant !== 'noPaper' ? (
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           {renderContent()}
         </Paper>
       ) : (

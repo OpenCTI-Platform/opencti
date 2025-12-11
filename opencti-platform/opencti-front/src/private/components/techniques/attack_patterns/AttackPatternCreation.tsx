@@ -85,16 +85,16 @@ const attackPatternMutation = graphql`
 const ATTACK_PATTERN_TYPE = 'Attack-Pattern';
 
 interface AttackPatternAddInput {
-  name: string
-  description: string
-  x_mitre_id: string
-  confidence: number | undefined
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  killChainPhases: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  x_mitre_id: string;
+  confidence: number | undefined;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  killChainPhases: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface AttackPatternFormProps {
@@ -305,7 +305,7 @@ const AttackPatternCreation = ({
     'attackPatternAdd',
   );
   const CreateAttackPatternControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Attack-Pattern' {...props} />
+    <CreateEntityControlledDial entityType="Attack-Pattern" {...props} />
   );
   const CreateAttackPatternControlledDialContextual = CreateAttackPatternControlledDial({
     onOpen: handleOpen,

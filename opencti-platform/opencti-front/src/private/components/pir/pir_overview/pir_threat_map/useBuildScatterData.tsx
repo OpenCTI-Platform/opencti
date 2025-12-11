@@ -21,8 +21,8 @@ import { itemColor } from '../../../../../utils/Colors';
 import { ApexPirThreatMapSeries, PirThreatMapMarker } from './pirThreatMapUtils';
 
 interface UseBuildScatterDataArgs {
-  stixDomainObjects: PirThreatMapFragment$data['stixDomainObjects']
-  entityTypes: string[]
+  stixDomainObjects: PirThreatMapFragment$data['stixDomainObjects'];
+  entityTypes: string[];
 }
 
 const useBuildScatterData = ({

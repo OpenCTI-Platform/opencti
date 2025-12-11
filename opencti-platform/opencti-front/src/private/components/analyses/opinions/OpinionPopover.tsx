@@ -50,7 +50,7 @@ interface OpinionPopoverProps {
     explanation: string | null | undefined;
     createdBy: CreatedBy | null | undefined;
     objectMarking: readonly ObjectMarking[] | null | undefined; // Mark as readonly
-  }
+  };
 }
 
 const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, variant = 'overview', onDelete }) => {

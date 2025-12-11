@@ -44,18 +44,18 @@ const scan = { types: [RELATION_PARTICIPATE_TO], fromTypes: [ENTITY_TYPE_USER], 
 const filterParticipateTo = {
   types: [RELATION_PARTICIPATE_TO],
   fromTypes: [ENTITY_TYPE_USER],
-  toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION]
+  toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
 };
 
 const filterPartOf = {
   types: [RELATION_PART_OF],
   fromTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
-  toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION]
+  toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
 };
 
 const scopes = [
   { filters: filterParticipateTo, attributes: [] },
-  { filters: filterPartOf, attributes: [] }
+  { filters: filterPartOf, attributes: [] },
 ];
 
 const definition: RuleDefinition = { id, name, description, scan, scopes, category, display };

@@ -88,14 +88,14 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
         <ItemIcon type="Position" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-              {data.draftVersion && (<DraftChip/>)}
+              {data.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}
@@ -110,7 +110,7 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
               {fd(data.modified)}
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -133,7 +133,7 @@ export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
@@ -169,7 +169,7 @@ export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
               />
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined color="disabled" />

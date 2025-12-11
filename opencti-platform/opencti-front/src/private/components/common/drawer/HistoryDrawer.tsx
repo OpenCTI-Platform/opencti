@@ -18,16 +18,16 @@ import { useFormatter } from '../../../../components/i18n';
 import { StixCoreRelationshipHistoryFragment } from '@components/common/stix_core_relationships/StixCoreRelationshipHistoryLine';
 
 interface HistoryDrawerProps {
-  open: boolean
-  onClose: () => void
-  title: string
-  node: StixCoreObjectHistoryLine_node$key | undefined
-  isRelation: boolean
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  node: StixCoreObjectHistoryLine_node$key | undefined;
+  isRelation: boolean;
 }
 
 const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, title, node, isRelation }) => {
-  const drawerFragment = isRelation ?
-    StixCoreRelationshipHistoryFragment
+  const drawerFragment = isRelation
+    ? StixCoreRelationshipHistoryFragment
     : StixCoreObjectHistoryFragment;
   const data = useFragment(drawerFragment, node);
   const theme = useTheme<Theme>();
@@ -88,25 +88,29 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                           </TableCell>
                           <TableCell align="left">{row?.previous && row.previous.length > 0
                             ? row.previous.join(', ')
-                            : '-'}</TableCell>
+                            : '-'}
+                          </TableCell>
                           <TableCell align="left">{row?.new && row.new.length > 0
                             ? row.new.join(', ')
-                            : '-'}</TableCell>
+                            : '-'}
+                          </TableCell>
                           <TableCell align="left">{row?.added && row.added.length > 0
                             ? row.added.join(', ')
-                            : '-'}</TableCell>
+                            : '-'}
+                          </TableCell>
                           <TableCell align="left">{row?.removed && row.removed.length > 0
                             ? row.removed.join(', ')
-                            : '-'}</TableCell>
+                            : '-'}
+                          </TableCell>
                         </TableRow>
                       ))
-                        ) : (
-                          <TableRow>
-                            <TableCell align="center" colSpan={5}>
-                              {t_i18n('No detail available for this event')}
-                            </TableCell>
-                          </TableRow>
-                        )}
+                      ) : (
+                        <TableRow>
+                          <TableCell align="center" colSpan={5}>
+                            {t_i18n('No detail available for this event')}
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -116,6 +120,6 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
         </div>
       </div>
     </Drawer>
-);
+  );
 };
 export default HistoryDrawer;

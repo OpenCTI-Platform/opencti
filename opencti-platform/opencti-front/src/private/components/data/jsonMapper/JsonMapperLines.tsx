@@ -52,8 +52,8 @@ const JsonMapperLines: FunctionComponent<JsonMapperLinesProps> = ({
 }) => {
   const { jsonMappers } = useJsonMappersData();
   const { data } = usePaginationFragment<
-  jsonMappers_MappersQuery,
-  JsonMapperLines_jsonMapper$key
+    jsonMappers_MappersQuery,
+    JsonMapperLines_jsonMapper$key
   >(jsonMapperLinesFragment, jsonMappers);
 
   const jsonMappersData = data?.jsonMappers?.edges ?? [];

@@ -94,7 +94,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
           />
         </Security>
       )
-    }
+      }
     >
       <ListItemButton
         classes={{ root: classes.item }}
@@ -105,7 +105,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div
                 className={classes.bodyItem}
@@ -118,7 +118,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 style={{ width: dataColumns.value.width }}
               >
                 {node.representative?.main}
-                {node.draftVersion && (<DraftChip/>)}
+                {node.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -149,14 +149,14 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 <Chip
                   classes={{ root: classes.chipInList }}
                   label={
-                  (mappedString && contentMappingCount[mappedString])
-                    ? contentMappingCount[mappedString]
-                    : '0'
-                }
+                    (mappedString && contentMappingCount[mappedString])
+                      ? contentMappingCount[mappedString]
+                      : '0'
+                  }
                 />
               </div>
             </>
-        }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -208,17 +208,17 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true" size="large">
           <MoreVert />
         </IconButton>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -235,7 +235,7 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

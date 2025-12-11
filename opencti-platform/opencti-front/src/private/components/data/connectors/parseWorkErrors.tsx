@@ -85,21 +85,21 @@ export type ResolvedEntity = NonNullable<NonNullable<NonNullable<parseWorkErrors
 type ErrorLevel = 'Critical' | 'Warning' | 'Unclassified';
 
 export interface FullParsedWorkMessage {
-  isParsed: true,
-  level: ErrorLevel,
+  isParsed: true;
+  level: ErrorLevel;
   parsedError: {
-    category: string,
-    doc_code: string,
-    message: string,
-    entity: ResolvedEntity,
-  }
-  rawError: NonNullable<WorkMessages>[number],
+    category: string;
+    doc_code: string;
+    message: string;
+    entity: ResolvedEntity;
+  };
+  rawError: NonNullable<WorkMessages>[number];
 }
 
 export interface PartialParsedWorkMessage {
-  isParsed: false,
-  level: 'Unclassified',
-  rawError: NonNullable<WorkMessages>[number],
+  isParsed: false;
+  level: 'Unclassified';
+  rawError: NonNullable<WorkMessages>[number];
 }
 
 export type ParsedWorkMessage = FullParsedWorkMessage | PartialParsedWorkMessage;

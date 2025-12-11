@@ -130,19 +130,21 @@ const SecurityPlatforms = () => {
     <div data-testid="security-platform-page">
       <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Security platforms'), current: true }]} />
       {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: SecurityPlatformsLines_data$data) => data.securityPlatforms?.edges?.map((n) => n?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        contextFilters={contextFilters}
-        preloadedPaginationProps={preloadedPaginationProps}
-        lineFragment={securityPlatformFragment}
-        exportContext={{ entity_type: 'SecurityPlatform' }}
-        createButton={<SecurityPlatformCreation
-          paginationOptions={queryPaginationOptions}
-                      />}
-      />
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: SecurityPlatformsLines_data$data) => data.securityPlatforms?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          contextFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={securityPlatformFragment}
+          exportContext={{ entity_type: 'SecurityPlatform' }}
+          createButton={(
+            <SecurityPlatformCreation
+              paginationOptions={queryPaginationOptions}
+            />
+          )}
+        />
       )}
     </div>
   );

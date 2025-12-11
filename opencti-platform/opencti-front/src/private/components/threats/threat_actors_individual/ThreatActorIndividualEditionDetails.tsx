@@ -98,7 +98,7 @@ interface ThreatActorIndividualEditionDetailsFormValues {
 }
 
 const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
-ThreatActorIndividualEditionDetailsProps
+  ThreatActorIndividualEditionDetailsProps
 > = ({ threatActorIndividualRef, context, enableReferences, handleClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();

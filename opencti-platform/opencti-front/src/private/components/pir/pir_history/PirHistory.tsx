@@ -120,7 +120,7 @@ const historyFragment = graphql`
 `;
 
 interface PirHistoryProps {
-  data: PirHistoryFragment$key,
+  data: PirHistoryFragment$key;
 }
 
 const PirHistory = ({ data }: PirHistoryProps) => {

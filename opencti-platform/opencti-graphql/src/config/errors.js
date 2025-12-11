@@ -59,7 +59,7 @@ export const ForbiddenAccess = (message, data) => error(
     http_status: 403,
     genre: CATEGORY_TECHNICAL,
     ...data,
-  }
+  },
 );
 
 export const AUTH_ERRORS = [
@@ -67,7 +67,7 @@ export const AUTH_ERRORS = [
   AUTH_REQUIRED,
   OTP_REQUIRED,
   OTP_REQUIRED_ACTIVATION,
-  FORBIDDEN_ACCESS
+  FORBIDDEN_ACCESS,
 ];
 // endregion
 
@@ -197,6 +197,6 @@ export const FUNCTIONAL_ERRORS = [
   MISSING_REF_ERROR,
   VALIDATION_ERROR,
   RESOURCE_NOT_FOUND_ERROR,
-  TYPE_LOCK_ERROR
+  TYPE_LOCK_ERROR,
 ];
 // endregion

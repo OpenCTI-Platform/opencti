@@ -62,9 +62,9 @@ const ingestionCsvLineFragment = graphql`
 `;
 
 interface CellProps {
-  width: number | string | undefined
-  children: ReactNode
-  withTooltip?: boolean
+  width: number | string | undefined;
+  children: ReactNode;
+  withTooltip?: boolean;
 }
 const Cell = ({ width, children, withTooltip = true }: CellProps) => {
   const classes = useStyles();
@@ -94,7 +94,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionCsvPopover
             ingestionCsvId={data.id}
@@ -103,13 +103,13 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
             setStateHash={setStateHash}
           />
         </Security>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <Cell width={dataColumns.name.width}>
               {data.name}
@@ -131,7 +131,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
               {stateHash}
             </Cell>
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -143,7 +143,7 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={<MoreVert classes={classes.itemIconDisabled}/>}
+      secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton
@@ -154,7 +154,7 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -211,7 +211,7 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

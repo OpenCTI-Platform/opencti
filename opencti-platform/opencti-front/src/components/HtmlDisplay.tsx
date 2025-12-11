@@ -17,7 +17,7 @@ const HtmlDisplay: FunctionComponent<HtmlDisplayProps> = ({ content, limit }) =>
     );
   }
   return (
-    <div className='ck-content'>
+    <div className="ck-content">
       {limit ? parse(purify.sanitize(truncate(content, limit))) : parse(purify.sanitize(content))}
     </div>
   );

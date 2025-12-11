@@ -52,7 +52,7 @@ const ExternalReferenceHeaderComponent = ({
         >
           {truncate(externalReference.source_name, 80)}
         </Typography>
-        <div className="clearfix"/>
+        <div className="clearfix" />
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div style={{ display: 'flex' }}>
@@ -76,7 +76,8 @@ const ExternalReferenceHeaderComponent = ({
             <ExternalReferenceDeletion id={externalReference.id} isOpen={openDelete} handleClose={handleCloseDelete} />
           </Security>
         </div>
-      </div></div>
+      </div>
+    </div>
   );
 };
 

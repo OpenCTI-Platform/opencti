@@ -10,7 +10,7 @@ import {
   topEntitiesList,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
-  storeLoadById
+  storeLoadById,
 } from '../database/middleware-loader';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -19,7 +19,7 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
-  ENTITY_TYPE_IDENTITY
+  ENTITY_TYPE_IDENTITY,
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_ENTITIES_INDICES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
@@ -117,7 +117,7 @@ export const containersNumber = (context, user, args) => {
       context,
       user,
       READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER] }
+      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER] },
     ),
   };
 };
@@ -229,17 +229,17 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
           standard_id: c.standard_id,
           entity_type: c.entity_type,
           parent_types: c.parent_types,
-          relationship_type: c.parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? c.entity_type : null
+          relationship_type: c.parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? c.entity_type : null,
         },
         to: {
           id: toId,
           standard_id: resolvedObjectsMap[toId].standard_id,
           entity_type: resolvedObjectsMap[toId].entity_type,
           parent_types: resolvedObjectsMap[toId].parent_types,
-          relationship_type: resolvedObjectsMap[toId].parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? resolvedObjectsMap[toId].entity_type : null
-        }
+          relationship_type: resolvedObjectsMap[toId].parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? resolvedObjectsMap[toId].entity_type : null,
+        },
       }
-    ))).flat())
+    ))).flat()),
   );
   const limit = hasMoreThanMaxObject ? resolvedObjects.length : 0;
   const globalCount = hasMoreThanMaxObject ? loadedReportsCount : resolvedObjects.length;
@@ -310,7 +310,7 @@ export const getFintelTemplates = async (context, user, container) => {
         key: 'start_date',
         values: [nowDate],
         operator: 'lte',
-      }
+      },
     ],
     filterGroups: [],
   };
@@ -400,7 +400,7 @@ export const aiSummary = async (context, user, args) => {
   const summary = {
     result: finalResult,
     topics: topics.split(',').map((n) => n.trim()),
-    updated_at: now()
+    updated_at: now(),
   };
   aiResponseCache[identifier] = summary;
   return summary;

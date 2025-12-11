@@ -12,11 +12,11 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     id: 'indicator',
     name: ENTITY_TYPE_INDICATOR,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_INDICATOR]: [{ src: 'pattern' }]
+      [ENTITY_TYPE_INDICATOR]: [{ src: 'pattern' }],
     },
     resolvers: {},
   },
@@ -41,7 +41,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
       multiple: false,
       upsert: true,
       label: 'Decay next reaction date',
-      isFilterable: false
+      isFilterable: false,
     },
     {
       name: 'decay_base_score',
@@ -73,7 +73,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
       upsert: true,
       label: 'Decay history',
       isFilterable: false,
-      format: 'flat'
+      format: 'flat',
     },
     {
       name: 'decay_applied_rule',
@@ -84,7 +84,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
       upsert: true,
       label: 'Decay applied rule',
       isFilterable: false,
-      format: 'flat'
+      format: 'flat',
     },
     {
       name: 'decay_exclusion_applied_rule',
@@ -95,7 +95,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
       upsert: true,
       label: 'Decay exclusion applied rule',
       isFilterable: false,
-      format: 'flat'
+      format: 'flat',
     },
     { ...revoked, isFilterable: true },
   ],
@@ -104,14 +104,14 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
       name: RELATION_DERIVED_FROM,
       targets: [
         { name: ENTITY_TYPE_INDICATOR, type: REL_BUILT_IN },
-      ]
-    }
+      ],
+    },
   ],
   relationsRefs: [objectOrganization, killChainPhases],
   representative: (stix: StixIndicator) => {
     return stix.name;
   },
-  converter_2_1: convertIndicatorToStix
+  converter_2_1: convertIndicatorToStix,
 };
 
 registerDefinition(INDICATOR_DEFINITION);

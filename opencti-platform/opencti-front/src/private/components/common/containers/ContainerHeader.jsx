@@ -561,33 +561,33 @@ const ContainerHeader = (props) => {
     <div style={containerStyle}>
       <React.Suspense fallback={<span />}>
         {!knowledge && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Tooltip
-            title={
-              container.name
-              || container.attribute_abstract
-              || container.content
-              || container.opinion
-              || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
-            }
-          >
-            <Typography variant="h1" sx={{ margin: 0, lineHeight: 'unset' }}>
-              {truncate(
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Tooltip
+              title={
                 container.name
                 || container.attribute_abstract
                 || container.content
                 || container.opinion
-                || `${fd(container.first_observed)} - ${fd(
-                  container.last_observed,
-                )}`,
-                80,
-              )}
-            </Typography>
-          </Tooltip>
-          {container.draftVersion && (
-            <DraftChip />
-          )}
-        </div>
+                || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
+              }
+            >
+              <Typography variant="h1" sx={{ margin: 0, lineHeight: 'unset' }}>
+                {truncate(
+                  container.name
+                  || container.attribute_abstract
+                  || container.content
+                  || container.opinion
+                  || `${fd(container.first_observed)} - ${fd(
+                    container.last_observed,
+                  )}`,
+                  80,
+                )}
+              </Typography>
+            </Tooltip>
+            {container.draftVersion && (
+              <DraftChip />
+            )}
+          </div>
         )}
         {knowledge && (
           <div>
@@ -743,11 +743,13 @@ const ContainerHeader = (props) => {
               </Security>
             )}
             {displayEnrollPlaybook
-              && <StixCoreObjectEnrollPlaybook
-                stixCoreObjectId={container.id}
-                open={openEnrollPlaybook}
-                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-                 />
+              && (
+                <StixCoreObjectEnrollPlaybook
+                  stixCoreObjectId={container.id}
+                  open={openEnrollPlaybook}
+                  handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+                />
+              )
             }
             {displayPopoverMenu && (
               <>
@@ -755,40 +757,40 @@ const ContainerHeader = (props) => {
                   {({ closeMenu }) => (
                     <Box>
                       {displaySharing && !displaySharingButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        setOpen={setOpenSharing}
-                        title={t_i18n('Share with an organization')}
-                        isDisabled={isSharingDisabled}
-                        handleCloseMenu={closeMenu}
-                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                      />
+                        <StixCoreObjectMenuItemUnderEE
+                          setOpen={setOpenSharing}
+                          title={t_i18n('Share with an organization')}
+                          isDisabled={isSharingDisabled}
+                          handleCloseMenu={closeMenu}
+                          needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                        />
                       )}
                       {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        setOpen={setOpenAccessRestriction}
-                        title={t_i18n('Manage access restriction')}
-                        handleCloseMenu={closeMenu}
-                        isDisabled={!enableManageAuthorizedMembers}
-                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                      />
+                        <StixCoreObjectMenuItemUnderEE
+                          setOpen={setOpenAccessRestriction}
+                          title={t_i18n('Manage access restriction')}
+                          handleCloseMenu={closeMenu}
+                          isDisabled={!enableManageAuthorizedMembers}
+                          needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                        />
                       )}
                       {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        title={t_i18n('Enroll in playbook')}
-                        setOpen={setOpenEnrollPlaybook}
-                        handleCloseMenu={closeMenu}
-                        needs={[AUTOMATION]}
-                        matchAll
-                      />
+                        <StixCoreObjectMenuItemUnderEE
+                          title={t_i18n('Enroll in playbook')}
+                          setOpen={setOpenEnrollPlaybook}
+                          handleCloseMenu={closeMenu}
+                          needs={[AUTOMATION]}
+                          matchAll
+                        />
                       )}
                       {canDelete && (
-                      <MenuItem onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
-                      }}
-                      >
-                        {t_i18n('Delete')}
-                      </MenuItem>
+                        <MenuItem onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
+                        >
+                          {t_i18n('Delete')}
+                        </MenuItem>
                       )}
                     </Box>
                   )}

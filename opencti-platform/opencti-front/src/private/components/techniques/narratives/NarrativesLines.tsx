@@ -20,7 +20,7 @@ interface NarrativesLinesProps {
   deSelectedElements: Record<string, NarrativeLine_node$data>;
   onToggleEntity: (
     entity: NarrativeLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onLabelClick?: HandleAddFilter;
@@ -103,8 +103,8 @@ const NarrativesLines: FunctionComponent<NarrativesLinesProps> = ({
   onLabelClick,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  NarrativesLinesPaginationQuery,
-  NarrativesLines_data$key
+    NarrativesLinesPaginationQuery,
+    NarrativesLines_data$key
   >({
     linesQuery: narrativesLinesQuery,
     linesFragment: narrativesLinesFragment,

@@ -59,7 +59,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
   return (
     <Grid container spacing={2}>
       <Grid item xs={4}>
-        <Typography variant={'h4'}>
+        <Typography variant="h4">
           {t_i18n('Status')}
         </Typography>
         <Paper
@@ -70,11 +70,11 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
             justifyContent: 'space-between',
             alignItems: 'center',
           }}
-          className={'paper-for-grid'}
+          className="paper-for-grid"
         >
           <ItemBoolean
-            neutralLabel={'In progress'}
-            label={'Synchronized'}
+            neutralLabel="In progress"
+            label="Synchronized"
             status={(isInProgress === false) || null}
           />
           {isInProgress && (
@@ -87,7 +87,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
         </Paper>
       </Grid>
       <Grid item xs={4}>
-        <Typography variant={'h4'}>
+        <Typography variant="h4">
           {t_i18n('Last modification date')}
         </Typography>
         <Paper
@@ -98,14 +98,14 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
             justifyContent: 'space-between',
             alignItems: 'center',
           }}
-          className={'paper-for-grid'}
+          className="paper-for-grid"
         >
           <div>{fldt(refreshDate)}</div>
           <UpdateOutlined color="primary" style={{ fontSize: 40 }} />
         </Paper>
       </Grid>
       <Grid item xs={4}>
-        <Typography variant={'h4'}>
+        <Typography variant="h4">
           {t_i18n('Current cache version date')}
         </Typography>
         <Paper
@@ -116,7 +116,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
             justifyContent: 'space-between',
             alignItems: 'center',
           }}
-          className={'paper-for-grid'}
+          className="paper-for-grid"
         >
           <div>{fldt(cacheDate)}</div>
           <EventRepeatOutlined color="primary" style={{ fontSize: 40 }} />

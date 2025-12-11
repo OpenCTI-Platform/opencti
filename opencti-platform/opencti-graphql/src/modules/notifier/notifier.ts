@@ -10,7 +10,7 @@ const NOTIFIER_DEFINITION: ModuleDefinition<StoreEntityNotifier, StixNotifier> =
   type: {
     id: 'notifiers',
     name: ENTITY_TYPE_NOTIFIER,
-    category: ABSTRACT_INTERNAL_OBJECT
+    category: ABSTRACT_INTERNAL_OBJECT,
   },
   identifier: {
     definition: {
@@ -32,6 +32,6 @@ const NOTIFIER_DEFINITION: ModuleDefinition<StoreEntityNotifier, StixNotifier> =
   representative: (stix: StixNotifier) => {
     return stix.name;
   },
-  converter_2_1: convertNotifierToStix
+  converter_2_1: convertNotifierToStix,
 };
 registerDefinition(NOTIFIER_DEFINITION);

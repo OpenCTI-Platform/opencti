@@ -46,7 +46,7 @@ interface WorkspaceManageAccessDialogProps {
 }
 
 const WorkspaceManageAccessDialog: FunctionComponent<
-WorkspaceManageAccessDialogProps
+  WorkspaceManageAccessDialogProps
 > = ({ workspaceId, authorizedMembersData, owner, handleClose, open }) => {
   const { t_i18n } = useFormatter();
 

@@ -62,10 +62,10 @@ interface AttributeSubmitValues {
 }
 
 interface EntitySettingAttributeEditionProps {
-  attribute: EntitySettingAttributeLine_attribute$data
-  handleClose: () => void
-  entitySetting: EntitySettingAttributes_entitySetting$data
-  open?: boolean
+  attribute: EntitySettingAttributeLine_attribute$data;
+  handleClose: () => void;
+  entitySetting: EntitySettingAttributes_entitySetting$data;
+  open?: boolean;
 }
 
 const EntitySettingAttributeEdition = ({

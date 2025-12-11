@@ -18,7 +18,7 @@ mutation SecurityPlatformCreationMutation($input: SecurityPlatformAddInput!) {
 `;
 
 interface SecurityPlatformCreationProps {
-  paginationOptions: SecurityPlatformsPaginationQuery$variables
+  paginationOptions: SecurityPlatformsPaginationQuery$variables;
 }
 
 const SecurityPlatformCreation: FunctionComponent<SecurityPlatformCreationProps> = ({
@@ -39,7 +39,7 @@ const SecurityPlatformCreation: FunctionComponent<SecurityPlatformCreationProps>
   const CreateSecurityPlatformControlledDial = (
     props: DrawerControlledDialProps,
   ) => (
-    <CreateEntityControlledDial entityType='SecurityPlatform' {...props} />
+    <CreateEntityControlledDial entityType="SecurityPlatform" {...props} />
   );
 
   return (

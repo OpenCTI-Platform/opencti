@@ -47,7 +47,7 @@ export interface StixFintelTemplate extends StixObject {
   fintel_template_widgets: [FintelTemplateWidget];
   start_date: string;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }
 // endregion

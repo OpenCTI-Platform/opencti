@@ -140,7 +140,7 @@ const ArtifactCreation = ({
   return (
     <>
       <CreateEntityControlledDial
-        entityType='Artifact'
+        entityType="Artifact"
         onOpen={handleOpen}
       />
       <Drawer

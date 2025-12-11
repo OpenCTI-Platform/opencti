@@ -68,8 +68,8 @@ export const taskFragment = graphql`
 `;
 
 interface TaskProps {
-  taskData: Tasks_tasks$key
-  enableReferences: boolean
+  taskData: Tasks_tasks$key;
+  enableReferences: boolean;
 }
 
 const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {

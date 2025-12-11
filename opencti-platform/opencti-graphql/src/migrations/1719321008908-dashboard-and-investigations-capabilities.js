@@ -17,19 +17,19 @@ export const up = async (next) => {
   const accessInvestigationsCapability = await addCapability(context, SYSTEM_USER, {
     name: 'INVESTIGATION',
     description: 'Access investigations',
-    attribute_order: 1400
+    attribute_order: 1400,
   });
   // ------ Create 'Create / Update investigations'
   const createUpdateInvestigationsCapability = await addCapability(context, SYSTEM_USER, {
     name: 'INVESTIGATION_INUPDATE',
     description: 'Create / Update investigations',
-    attribute_order: 1410
+    attribute_order: 1410,
   });
   // ------ Create 'Delete investigations'
   const deleteInvestigationsCapability = await addCapability(context, SYSTEM_USER, {
     name: 'INVESTIGATION_INUPDATE_INDELETE',
     description: 'Delete investigations',
-    attribute_order: 1420
+    attribute_order: 1420,
   });
 
   // ------ Update roles

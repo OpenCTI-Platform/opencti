@@ -41,7 +41,7 @@ const Root = () => {
       <Routes>
         <Route
           path="/"
-          element={ <Navigate to={`/dashboard/entities/${redirect}`} replace={true} />}
+          element={<Navigate to={`/dashboard/entities/${redirect}`} replace={true} />}
         />
         <Route
           path="/sectors"

@@ -86,8 +86,8 @@ const OrganizationsLines: FunctionComponent<OrganizationsLinesProps> = ({
   onLabelClick,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  OrganizationsLinesPaginationQuery,
-  OrganizationsLines_data$key
+    OrganizationsLinesPaginationQuery,
+    OrganizationsLines_data$key
   >({
     linesQuery: organizationsLinesQuery,
     linesFragment: organizationsLinesFragment,

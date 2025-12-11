@@ -21,8 +21,8 @@ export const convertCaseRfiToStix_2_1 = (instance: StoreEntityCaseRfi): StixCase
       [STIX_EXT_OCTI]: cleanObject({
         ...caseRfi.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 

@@ -7,7 +7,7 @@ export const ENTITY_TYPE_FINTEL_DESIGN = 'FintelDesign';
 export interface FintelDesign {
   name: string;
   description: string;
-  file_id: string
+  file_id: string;
   gradiantFromColor: string;
   gradiantToColor: string;
   textColor: string;
@@ -17,7 +17,7 @@ export interface FintelDesign {
 export interface BasicStoreEntityFintelDesign extends BasicStoreEntity {
   name: string;
   description: string;
-  file_id: string
+  file_id: string;
   gradiantFromColor: string;
   gradiantToColor: string;
   textColor: string;
@@ -26,7 +26,7 @@ export interface BasicStoreEntityFintelDesign extends BasicStoreEntity {
 export interface StoreEntityFintelDesign extends StoreEntity {
   name: string;
   description: string;
-  file_id: string
+  file_id: string;
   gradiantFromColor: string;
   gradiantToColor: string;
   textColor: string;
@@ -37,12 +37,12 @@ export interface StoreEntityFintelDesign extends StoreEntity {
 export interface StixFintelDesign extends StixObject {
   name: string;
   description: string;
-  file_id: string
+  file_id: string;
   gradiantFromColor: string;
   gradiantToColor: string;
   textColor: string;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }
 // endregion

@@ -20,7 +20,7 @@ const decayRuleResolvers: Resolvers = {
     decayRuleFieldPatch: (_, { id, input }, context) => {
       return fieldPatchDecayRule(context, context.user, id, input);
     },
-  }
+  },
 };
 
 export default decayRuleResolvers;

@@ -54,7 +54,7 @@ export const reportsNumber = (context, user, args) => {
       context,
       user,
       READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER_REPORT] }
+      { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_CONTAINER_REPORT] },
     ),
   };
 };
@@ -133,7 +133,7 @@ const buildReportDeleteElementsFilter = (reportId) => {
     mode: 'and',
     filters: [
       { key: [refKey], values: [reportId] },
-      { key: [refKey], values: [`doc['${refKey}.keyword'].length == 1`], operator: 'script' }
+      { key: [refKey], values: [`doc['${refKey}.keyword'].length == 1`], operator: 'script' },
     ],
     filterGroups: [],
   };

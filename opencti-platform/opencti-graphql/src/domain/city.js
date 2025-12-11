@@ -24,7 +24,7 @@ export const addCity = async (context, user, city) => {
     context,
     user,
     { ...city, x_opencti_location_type: ENTITY_TYPE_LOCATION_CITY },
-    ENTITY_TYPE_LOCATION_CITY
+    ENTITY_TYPE_LOCATION_CITY,
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

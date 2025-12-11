@@ -126,7 +126,7 @@ interface ThreatActorIndividualFormProps {
 }
 
 export const ThreatActorIndividualCreationForm: FunctionComponent<
-ThreatActorIndividualFormProps
+  ThreatActorIndividualFormProps
 > = ({
   updater,
   onReset,
@@ -344,13 +344,13 @@ ThreatActorIndividualFormProps
               <Tabs value={currentTab} onChange={handleChangeTab}>
                 <Tab
                   id="create-overview"
-                  label={
+                  label={(
                     <ErrorBadge
                       badgeContent={Object.keys(errors).length}
                     >
                       {t_i18n('Overview')}
                     </ErrorBadge>
-                  }
+                  )}
                 />
                 <Tab id="threat-details" label={t_i18n('Details')} />
                 <Tab id="threat-demographics" label={t_i18n('Demographics')} />
@@ -702,7 +702,7 @@ const ThreatActorIndividualCreation = ({
   );
 
   const CreateThreatActorIndividualControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Threat-Actor-Individual' {...props} />
+    <CreateEntityControlledDial entityType="Threat-Actor-Individual" {...props} />
   );
 
   return (

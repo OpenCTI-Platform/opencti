@@ -119,40 +119,43 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
     navigate('/dashboard/workspaces/dashboards');
   };
 
-  return <>
-    <XtmHubDialogConnectivityLost
-      status={dialogConnectivityLostStatus}
-      onConfirm={onConfirm}
-      onCancel={onCancel}
-    />
-    <ToggleButton
-      value="import"
-      size="small"
-      sx={{ marginLeft: 1 }}
-      title={t_i18n('Import a CSV Feed')}
-      onClick={() => inputFileRef?.current?.click()}
-    >
-      <FileUploadOutlined fontSize="small" color={'primary'}/>
-    </ToggleButton>
-    <VisuallyHiddenInput
-      ref={inputFileRef}
-      type="file"
-      accept={'application/JSON'}
-      onChange={fileImport}
-    />
-    <IngestionCsvCreationContainer
-      ingestionCsvData={{
-        ...ingestCSVData,
-      } as unknown as IngestionCsvEditionFragment_ingestionCsv$data}
-      triggerButton={false}
-      handleClose={() => setOpen(false)}
-      open={open}
-      paginationOptions={paginationOptions}
-      drawerSettings={{
-        title: t_i18n('Import a CSV Feed'),
-        button: t_i18n('Create'),
-      }}
-    /></>;
+  return (
+    <>
+      <XtmHubDialogConnectivityLost
+        status={dialogConnectivityLostStatus}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
+      <ToggleButton
+        value="import"
+        size="small"
+        sx={{ marginLeft: 1 }}
+        title={t_i18n('Import a CSV Feed')}
+        onClick={() => inputFileRef?.current?.click()}
+      >
+        <FileUploadOutlined fontSize="small" color="primary" />
+      </ToggleButton>
+      <VisuallyHiddenInput
+        ref={inputFileRef}
+        type="file"
+        accept="application/JSON"
+        onChange={fileImport}
+      />
+      <IngestionCsvCreationContainer
+        ingestionCsvData={{
+          ...ingestCSVData,
+        } as unknown as IngestionCsvEditionFragment_ingestionCsv$data}
+        triggerButton={false}
+        handleClose={() => setOpen(false)}
+        open={open}
+        paginationOptions={paginationOptions}
+        drawerSettings={{
+          title: t_i18n('Import a CSV Feed'),
+          button: t_i18n('Create'),
+        }}
+      />
+    </>
+  );
 };
 
 export default IngestionCsvImport;

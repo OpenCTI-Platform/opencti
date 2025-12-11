@@ -316,7 +316,7 @@ interface RelationshipDetailsComponentProps {
 }
 
 const RelationshipDetailsComponent: FunctionComponent<
-RelationshipDetailsComponentProps
+  RelationshipDetailsComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
@@ -375,14 +375,14 @@ RelationshipDetailsComponentProps
           {t_i18n('Description')}
         </Typography>
         {stixRelationship.description
-        && stixRelationship.description.length > 0 ? (
-          <ExpandableMarkdown
-            source={stixRelationship.description}
-            limit={400}
-          />
-          ) : (
-            '-'
-          )}
+          && stixRelationship.description.length > 0 ? (
+              <ExpandableMarkdown
+                source={stixRelationship.description}
+                limit={400}
+              />
+            ) : (
+              '-'
+            )}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
           {t_i18n('Confidence level')}
         </Typography>
@@ -441,16 +441,16 @@ RelationshipDetailsComponentProps
                       <ItemIcon type={report.entity_type} />
                     </ListItemIcon>
                     <ListItemText
-                      primary={
+                      primary={(
                         <Tooltip title={report.name}>
                           <div className={classes.bodyItem}>{report.name}</div>
                         </Tooltip>
-                      }
-                      secondary={
+                      )}
+                      secondary={(
                         <div className={classes.bodyItem}>
                           {report.createdBy?.name ?? '-'}
                         </div>
-                      }
+                      )}
                     />
                   </ListItemButton>
                 );
@@ -498,16 +498,16 @@ RelationshipDetailsComponentProps
                         <ItemIcon type="External-Reference" />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <div className={classes.bodyItem}>
                             {`${externalReference.node.source_name} ${externalReferenceId}`}
                           </div>
-                        }
-                        secondary={
+                        )}
+                        secondary={(
                           <div className={classes.bodyItem}>
                             {externalReferenceSecondary}
                           </div>
-                        }
+                        )}
                       />
                     </ListItemButton>
                   </React.Fragment>
@@ -532,26 +532,26 @@ RelationshipDetailsComponentProps
       />
       {!stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (
-          <RelationShipFromAndTo
-            id={stixRelationship.from?.id}
-            direction={'From'}
-          />
+        <RelationShipFromAndTo
+          id={stixRelationship.from?.id}
+          direction="From"
+        />
       )}
       {stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (
-          <div>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              className={classes.label}
-            >
-              {t_i18n('Source')}
-            </Typography>
-            {stixRelationship.from?.relationship_type}
-          </div>
+        <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            className={classes.label}
+          >
+            {t_i18n('Source')}
+          </Typography>
+          {stixRelationship.from?.relationship_type}
+        </div>
       )}
       {!stixRelationship.to?.relationship_type && stixRelationship.to?.id && (
-        <RelationShipFromAndTo id={stixRelationship.to?.id} direction={'To'} />
+        <RelationShipFromAndTo id={stixRelationship.to?.id} direction="To" />
       )}
       {stixRelationship.to?.relationship_type && stixRelationship.to?.id && (
         <div>
@@ -594,7 +594,7 @@ interface RelationshipDetailsProps {
 }
 
 const RelationshipDetails: FunctionComponent<
-Omit<RelationshipDetailsProps, 'queryRef'>
+  Omit<RelationshipDetailsProps, 'queryRef'>
 > = ({ relation }) => {
   const queryRef = useQueryLoading<RelationshipDetailsQuery>(
     relationshipDetailsQuery,

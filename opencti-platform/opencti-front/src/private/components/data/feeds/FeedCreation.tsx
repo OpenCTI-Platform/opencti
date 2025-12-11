@@ -160,7 +160,7 @@ const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().s
 
 const CreateFeedControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='Feed'
+    entityType="Feed"
     {...props}
   />
 );
@@ -178,9 +178,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
 
   const feedAttributesInitialState = feed && feed.feed_attributes
     ? feed.feed_attributes.map((n) => ({
-      ...n,
-      mappings: R.indexBy(R.prop('type'), n.mappings),
-    }))
+        ...n,
+        mappings: R.indexBy(R.prop('type'), n.mappings),
+      }))
     : { 0: {} };
 
   // TODO: typing this state properly implies deep refactoring
@@ -270,7 +270,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const areAttributesValid = () => {
     if (
       selectedTypes.length === 0
-            || Object.keys(feedAttributes).length === 0
+      || Object.keys(feedAttributes).length === 0
     ) {
       return false;
     }
@@ -278,15 +278,15 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
       const feedAttribute = feedAttributes[n];
       if (
         !feedAttribute
-                || !feedAttribute.attribute
-                || !feedAttribute.mappings
-                || R.values(feedAttribute.mappings).length !== selectedTypes.length
-                || R.values(feedAttribute.mappings).filter(
-                  (m) => !m.attribute
-                        || !m.type
-                        || m.attribute.length === 0
-                        || m.type.length === 0,
-                ).length > 0
+        || !feedAttribute.attribute
+        || !feedAttribute.mappings
+        || R.values(feedAttribute.mappings).length !== selectedTypes.length
+        || R.values(feedAttribute.mappings).filter(
+          (m) => !m.attribute
+            || !m.type
+            || m.attribute.length === 0
+            || m.type.length === 0,
+        ).length > 0
       ) {
         return false;
       }
@@ -354,7 +354,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   return (
     <Drawer
       title={isDuplicated ? (t_i18n('Duplicate a feed')) : (t_i18n('Create a feed'))}
-      controlledDial={!isDuplicated ? CreateFeedControlledDial : undefined }
+      controlledDial={!isDuplicated ? CreateFeedControlledDial : undefined}
       open={open}
       onClose={onHandleClose}
     >
@@ -422,7 +422,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         />
                         {!values.feed_public && (
                           <ObjectMembersField
-                            label={'Accessible for'}
+                            label="Accessible for"
                             style={fieldSpacingContainerStyle}
                             onChange={setFieldValue}
                             multiple={true}
@@ -476,8 +476,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         multiple={false}
                         containerstyle={{ width: '100%', marginTop: 20 }}
                       >
-                        <MenuItem key={'created_at'} value={'created_at'}>{t_i18n('Creation date')}</MenuItem>
-                        <MenuItem key={'updated_at'} value={'updated_at'}>{t_i18n('Update date')}</MenuItem>
+                        <MenuItem key="created_at" value="created_at">{t_i18n('Creation date')}</MenuItem>
+                        <MenuItem key="updated_at" value="updated_at">{t_i18n('Update date')}</MenuItem>
                       </Field>
                       <Field
                         component={SelectField}
@@ -595,9 +595,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                               <Select
                                                 style={{ width: 150 }}
                                                 value={feedAttributes[i]?.mappings
-                                                    && feedAttributes[i]?.mappings?.[
-                                                      selectedType
-                                                    ]?.attribute}
+                                                  && feedAttributes[i]?.mappings?.[
+                                                    selectedType
+                                                  ]?.attribute}
                                                 onChange={(event) => handleChangeAttributeMapping(
                                                   i,
                                                   selectedType,

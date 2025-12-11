@@ -179,7 +179,7 @@ const ImportWorkbenchesContent = () => {
     createdBy: {
       label: 'Creator',
       percentWidth: 10,
-      render: (({ metaData }: ImportWorkbenchesContentFileLine_file$data) => metaData?.creator?.name ?? '-'),
+      render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) => metaData?.creator?.name ?? '-',
     },
     objectLabel: {
       percentWidth: 10,
@@ -202,7 +202,7 @@ const ImportWorkbenchesContent = () => {
       isSortable: true,
       percentWidth: 20,
       render: ({ lastModified }: ImportWorkbenchesContentFileLine_file$data, { fd }: {
-        fd: (date: Date) => string
+        fd: (date: Date) => string;
       }) => fd(lastModified),
     },
   };
@@ -212,7 +212,7 @@ const ImportWorkbenchesContent = () => {
       <Breadcrumbs
         elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
       />
-      <ImportMenu/>
+      <ImportMenu />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -224,16 +224,16 @@ const ImportWorkbenchesContent = () => {
           lineFragment={workbenchLineFragment}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
-          taskScope={'IMPORT'}
+          taskScope="IMPORT"
           getComputeLink={({ id }: ImportWorkbenchesContentFileLine_file$data) => (
             `/dashboard/data/import/workbench/${toB64(id)}`
           )}
-          createButton={<WorkbenchCreation paginationOptions={queryPaginationOptions}/>}
+          createButton={<WorkbenchCreation paginationOptions={queryPaginationOptions} />}
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => (
             <ImportActionsPopover
               file={file}
               paginationOptions={queryPaginationOptions}
-              paginationKey={'Pagination_global_pendingFiles'}
+              paginationKey="Pagination_global_pendingFiles"
             />
           )}
         />

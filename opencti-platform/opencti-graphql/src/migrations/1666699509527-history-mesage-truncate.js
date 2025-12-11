@@ -14,28 +14,28 @@ export const up = async (next) => {
         must_not: [
           {
             exists: {
-              field: 'context_data.message.keyword' // Keyword is not available for field size > 512
-            }
-          }
+              field: 'context_data.message.keyword', // Keyword is not available for field size > 512
+            },
+          },
         ],
         must: [
           {
             match: {
-              entity_type: 'History' // Prevent work fetching
-            }
+              entity_type: 'History', // Prevent work fetching
+            },
           }, {
             bool: {
               should: [{
                 multi_match: {
                   fields: ['event_type.keyword'],
-                  query: 'update' // Only update must be cleaned
-                }
-              }]
-            }
-          }
-        ]
-      }
-    }
+                  query: 'update', // Only update must be cleaned
+                },
+              }],
+            },
+          },
+        ],
+      },
+    },
   });
   logApp.info('[MIGRATION] End truncating history message');
   next();

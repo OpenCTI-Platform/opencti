@@ -33,34 +33,34 @@ export const modules = new Map();
 
 export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   type: {
-    id: string
-    name: string
-    aliased?: boolean
-    category: 'Case' | 'Container' | 'Location' | 'Identity' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object' | 'Threat-Actor'
+    id: string;
+    name: string;
+    aliased?: boolean;
+    category: 'Case' | 'Container' | 'Location' | 'Identity' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object' | 'Threat-Actor';
   };
   identifier: {
     definition: {
-      [k: string]: Array<{ src: string, dependencies?: string[] }> | string | (() => string)
+      [k: string]: Array<{ src: string; dependencies?: string[] }> | string | (() => string);
     };
     resolvers?: {
-      [f: string]: (data: object) => string
+      [f: string]: (data: object) => string;
     };
   };
-  representative: RepresentativeFn<Z>
-  converter_2_1: ConvertFn<T, Z>
-  bundleResolver?: (context: AuthContext, user: AuthUser, id: string) => Promise<string>
-  overviewLayoutCustomization?: Array<OverviewWidgetCustomization>
-  attributes: Array<AttributeDefinition>
+  representative: RepresentativeFn<Z>;
+  converter_2_1: ConvertFn<T, Z>;
+  bundleResolver?: (context: AuthContext, user: AuthUser, id: string) => Promise<string>;
+  overviewLayoutCustomization?: Array<OverviewWidgetCustomization>;
+  attributes: Array<AttributeDefinition>;
   relations: Array<{
     name: string;
-    targets: Array<RelationDefinition>
+    targets: Array<RelationDefinition>;
   }>;
-  relationsRefs?: RefAttribute[]
+  relationsRefs?: RefAttribute[];
   validators?: {
-    validatorCreation?: ValidatorFn
-    validatorUpdate?: ValidatorFn
-  }
-  depsKeys?: { src: string, types?: string[] }[]
+    validatorCreation?: ValidatorFn;
+    validatorUpdate?: ValidatorFn;
+  };
+  depsKeys?: { src: string; types?: string[] }[];
 }
 
 export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(definition: ModuleDefinition<T, Z>) => {

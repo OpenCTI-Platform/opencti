@@ -6,10 +6,10 @@ import type { FintelTemplate } from '../fintelTemplate/fintelTemplate-types';
 export const ENTITY_TYPE_ENTITY_SETTING = 'EntitySetting';
 
 export interface AttributeConfiguration {
-  name: string
-  mandatory: boolean
-  default_values?: string[]
-  scale?: Scale
+  name: string;
+  mandatory: boolean;
+  default_values?: string[];
+  scale?: Scale;
 }
 
 export interface Scale {
@@ -20,7 +20,7 @@ export interface ScaleConfig {
   better_side: string;
   min: Tick;
   max: Tick;
-  ticks: Array<Tick>
+  ticks: Array<Tick>;
 }
 
 export interface Tick {
@@ -39,7 +39,7 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   availableSettings?: string[];
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
   templates?: Array<FintelTemplate>;
-  request_access_workflow?: RequestAccessFlow
+  request_access_workflow?: RequestAccessFlow;
 }
 
 export interface OverviewLayoutCustomization {
@@ -64,7 +64,7 @@ export interface StoreEntityEntitySetting extends StoreEntity {
   availableSettings?: string[];
   overviewLayoutCustomization?: Array<string>;
   templates?: Array<FintelTemplate>;
-  request_access_workflow?: RequestAccessFlow
+  request_access_workflow?: RequestAccessFlow;
 }
 
 export interface StixEntitySetting extends StixObject {
@@ -76,8 +76,8 @@ export interface StixEntitySetting extends StixObject {
   workflow_configuration: boolean;
   available_settings?: string[];
   templates?: Array<FintelTemplate>;
-  request_access_workflow?: RequestAccessFlow
+  request_access_workflow?: RequestAccessFlow;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
+  };
 }

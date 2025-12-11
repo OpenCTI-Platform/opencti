@@ -7,12 +7,12 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import Security from '../../../../utils/Security';
 
 interface StixCoreObjectMenuItemUnderEEProps {
-  setOpen: (v: boolean) => void,
-  handleCloseMenu?: () => void,
-  title: string,
-  isDisabled?: boolean,
-  needs?: string[]
-  matchAll?: boolean
+  setOpen: (v: boolean) => void;
+  handleCloseMenu?: () => void;
+  title: string;
+  isDisabled?: boolean;
+  needs?: string[];
+  matchAll?: boolean;
 }
 
 const StixCoreObjectMenuItemUnderEE: FunctionComponent<StixCoreObjectMenuItemUnderEEProps> = ({

@@ -12,7 +12,7 @@ import {
   getFilesFromTemplate,
   getFintelTemplates,
   aiSummary,
-  containersDistributionByEntity
+  containersDistributionByEntity,
 } from '../domain/container';
 import {
   stixDomainObjectAddRelation,

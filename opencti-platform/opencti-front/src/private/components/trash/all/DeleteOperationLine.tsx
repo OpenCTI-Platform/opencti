@@ -48,13 +48,13 @@ interface DeleteOperationLineComponentProps {
   deSelectedElements: Record<string, DeleteOperationLine_node$data>;
   onToggleEntity: (
     entity: DeleteOperationLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: DeleteOperationLine_node$data,
-    event?: React.SyntheticEvent
+    event?: React.SyntheticEvent,
   ) => void;
   index: number;
 }
@@ -90,13 +90,13 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
     <ListItem
       sx={listItemSx}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <DeleteOperationPopover
           mainEntityId={data.id}
           deletedCount={data.deleted_elements.length}
           paginationOptions={paginationOptions}
         />
-      }
+      )}
     >
       <ListItemIcon
         style={{ minWidth: 40 }}
@@ -108,8 +108,8 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
         <Checkbox
           edge="start"
           checked={
-              (selectAll && !(data.id in (deSelectedElements || {})))
-              || data.id in (selectedElements || {})
+            (selectAll && !(data.id in (deSelectedElements || {})))
+            || data.id in (selectedElements || {})
           }
           disableRipple={true}
         />
@@ -118,7 +118,7 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
         <ItemIcon type={data.main_entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <Box sx={{ ...cellSx, width: dataColumns.main_entity_type.width ?? 'inherit' }}>
               <ItemEntityType entityType={data.main_entity_type} />
@@ -140,7 +140,7 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
               />
             </Box>
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -155,17 +155,17 @@ export const DeleteOperationLineDummy: React.FC<DeleteOperationLineDummyProps> =
     <ListItem
       sx={listItemSx}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <IconButton disabled={true} aria-haspopup="true" size="large">
           <MoreVert />
         </IconButton>
-      }
+      )}
     >
       <ListItemIcon>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <Box
@@ -181,7 +181,7 @@ export const DeleteOperationLineDummy: React.FC<DeleteOperationLineDummyProps> =
               </Box>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

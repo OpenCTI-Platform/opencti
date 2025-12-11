@@ -123,7 +123,7 @@ const hasDemographicsOrBiographics = (
     return true;
   }
   for (const { node } of threatActorIndividual?.stixCoreRelationships?.edges
-  ?? []) {
+    ?? []) {
     const { relationship_type } = node ?? {};
     switch (relationship_type) {
       case 'resides-in':

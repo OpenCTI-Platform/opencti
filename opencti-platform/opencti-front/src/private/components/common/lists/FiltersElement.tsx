@@ -112,7 +112,8 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
                   setInputValues={setInputValues}
                   filterLabel={filterLabel}
                 />
-              </Grid>);
+              </Grid>
+            );
           }
           return (
             <Grid key={filterKey} item xs={6}>

@@ -163,7 +163,7 @@ class StixObjectOrStixRelationship extends Component {
                   )}/${stixObjectOrStixRelationship.id}`;
                 }
                 if (redirectLink) {
-                  return <Navigate exact from={`/id/${id}`} to={redirectLink} replace={true}/>;
+                  return <Navigate exact from={`/id/${id}`} to={redirectLink} replace={true} />;
                 }
               }
               return <ErrorNotFound />;

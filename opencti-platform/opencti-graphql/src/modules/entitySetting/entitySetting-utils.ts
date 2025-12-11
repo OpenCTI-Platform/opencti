@@ -5,7 +5,7 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ENTITY_TYPE_CONTAINER,
   INPUT_AUTHORIZED_MEMBERS,
-  INPUT_MARKINGS
+  INPUT_MARKINGS,
 } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
@@ -29,16 +29,16 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types'
 export type typeAvailableSetting = boolean | string;
 
 export interface EntitySettingSchemaAttribute {
-  name: string
-  type: string
-  mandatory: boolean
-  mandatoryType: MandatoryType
-  multiple: boolean
-  editDefault: boolean
-  upsert: boolean
-  label?: string
-  defaultValues?: { id: string, name:string }[]
-  scale?: string
+  name: string;
+  type: string;
+  mandatory: boolean;
+  mandatoryType: MandatoryType;
+  multiple: boolean;
+  editDefault: boolean;
+  upsert: boolean;
+  label?: string;
+  defaultValues?: { id: string; name: string }[];
+  scale?: string;
 }
 
 export const defaultEntitySetting: Record<string, typeAvailableSetting> = {
@@ -69,7 +69,7 @@ export const defaultScale = JSON.stringify({
       { value: 60, color: '#92f81c', label: '2 - Probably True' },
       { value: 80, color: '#4caf50', label: '1 - Confirmed by other sources' },
     ],
-  }
+  },
 });
 
 // Available settings works by override.

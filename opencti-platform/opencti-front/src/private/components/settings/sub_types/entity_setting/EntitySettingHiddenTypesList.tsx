@@ -25,11 +25,11 @@ const computeHiddenEntities = (nodes: Array<Entity | undefined>, targetType: str
 };
 
 const EntitySettingHiddenTypesList: FunctionComponent<{
-  targetType: string
-  nodes: Array<Entity | undefined>
-  label: string
-  link: string
-  entityType: string
+  targetType: string;
+  nodes: Array<Entity | undefined>;
+  label: string;
+  link: string;
+  entityType: string;
 }> = ({
   targetType,
   nodes,

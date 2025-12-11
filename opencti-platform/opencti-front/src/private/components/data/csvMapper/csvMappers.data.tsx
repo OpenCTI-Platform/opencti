@@ -29,15 +29,15 @@ export const schemaAttributesQuery = graphql`
 `;
 
 type CsvMappersContextType = {
-  csvMappers?: csvMappers_MappersQuery$data,
-  schemaAttributes?: csvMappers_SchemaAttributesQuery$data,
+  csvMappers?: csvMappers_MappersQuery$data;
+  schemaAttributes?: csvMappers_SchemaAttributesQuery$data;
 };
 const CsvMappersContext = createContext<CsvMappersContextType>({});
 
 interface CsvMappersProviderProps {
-  mappersQueryRef: PreloadedQuery<csvMappers_MappersQuery>
-  schemaAttributesQueryRef: PreloadedQuery<csvMappers_SchemaAttributesQuery>
-  children: ReactNode
+  mappersQueryRef: PreloadedQuery<csvMappers_MappersQuery>;
+  schemaAttributesQueryRef: PreloadedQuery<csvMappers_SchemaAttributesQuery>;
+  children: ReactNode;
 }
 const CsvMappersProvider = ({
   mappersQueryRef,

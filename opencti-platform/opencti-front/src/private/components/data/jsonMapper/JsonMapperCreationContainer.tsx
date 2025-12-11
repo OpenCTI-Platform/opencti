@@ -9,7 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 
 interface JsonMapperCreationProps {
   paginationOptions: jsonMappers_MappersQuery$variables;
-  editionQueryRef?: PreloadedQuery<JsonMapperEditionContainerQuery>,
+  editionQueryRef?: PreloadedQuery<JsonMapperEditionContainerQuery>;
   isDuplicated?: boolean;
   onClose?: () => void;
   open: boolean;

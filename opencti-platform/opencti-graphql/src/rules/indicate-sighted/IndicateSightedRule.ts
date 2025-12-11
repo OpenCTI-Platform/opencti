@@ -48,7 +48,7 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
           confidence: computedConfidence,
           start_time: range.start,
           stop_time: range.end,
-          objectMarking: elementMarkings
+          objectMarking: elementMarkings,
         });
         await createInferredRelation(context, input, ruleContent);
       }
@@ -56,7 +56,7 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
       fromId: fromIndicator,
       toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION],
-      callback: listFromCallback
+      callback: listFromCallback,
     };
     await fullRelationsList(context, RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, listFromArgs);
   };
@@ -91,7 +91,7 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
           confidence: computedConfidence,
           start_time: range.start,
           stop_time: range.end,
-          objectMarking: elementMarkings
+          objectMarking: elementMarkings,
         });
         await createInferredRelation(context, input, ruleContent);
       }
@@ -99,7 +99,7 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
       fromId: fromSightingIndicator,
       toTypes: [ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT],
-      callback: listFromCallback
+      callback: listFromCallback,
     };
     await fullRelationsList(context, RULE_MANAGER_USER, RELATION_INDICATES, listFromArgs);
   };

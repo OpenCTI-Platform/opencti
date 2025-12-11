@@ -101,7 +101,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -121,7 +121,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                   ]}
                   data={city}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -147,7 +147,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <CityDeletion id={city.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -219,57 +219,57 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/cities/${cityId}/knowledge/overview`} replace={true} />
-              }
-              />
-              <Route
-                path="/knowledge/*"
-                element={
-                  <div key={forceUpdate}>
-                    <CityKnowledge cityData={city} />
-                  </div>
                 }
               />
               <Route
+                path="/knowledge/*"
+                element={(
+                  <div key={forceUpdate}>
+                    <CityKnowledge cityData={city} />
+                  </div>
+                )}
+              />
+              <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={city}
                   />
-              }
+                )}
               />
               <Route
                 path="/analyses"
                 element={
                   <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={city} />
-              }
+                }
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={city.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={cityId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={city}
                   />
-              }
+                )}
               />
               <Route
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={cityId} />
-              }
+                }
               />
             </Routes>
           </div>

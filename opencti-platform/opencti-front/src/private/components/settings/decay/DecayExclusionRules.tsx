@@ -149,7 +149,7 @@ const DecayExclusionRules = () => {
   };
 
   return (
-    <div data-testid='decay-exclusion-rules-page' style={{ margin: 0, padding: '0 200px 0 0' }}>
+    <div data-testid="decay-exclusion-rules-page" style={{ margin: 0, padding: '0 200px 0 0' }}>
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

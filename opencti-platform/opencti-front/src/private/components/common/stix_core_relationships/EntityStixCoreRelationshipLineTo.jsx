@@ -80,9 +80,9 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
         secondaryAction={node.is_inferred ? (
           <Tooltip
             title={
-            t('Inferred knowledge based on the rule ')
-            + R.head(node.x_opencti_inferences).rule.name
-          }
+              t('Inferred knowledge based on the rule ')
+              + R.head(node.x_opencti_inferences).rule.name
+            }
           >
             <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
           </Tooltip>
@@ -105,22 +105,22 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
             onClick={(event) => (event.shiftKey
               ? onToggleShiftEntity(index, node)
               : onToggleEntity(node, event))
-          }
+            }
           >
             <Checkbox
               edge="start"
               checked={
-              (selectAll && !(node.id in (deSelectedElements || {})))
-              || node.id in (selectedElements || {})
-            }
+                (selectAll && !(node.id in (deSelectedElements || {})))
+                || node.id in (selectedElements || {})
+              }
               disableRipple={true}
             />
           </ListItemIcon>
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null } />
+            <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null} />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <div>
                 {dataColumns.relationship_type && (
                   <div
@@ -140,7 +140,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                     <ItemEntityType
                       entityType={node.from?.entity_type}
                       isRestricted={!node.from}
-                      size='large'
+                      size="large"
                       showIcon
                     />
                   </div>
@@ -154,7 +154,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                   }}
                 >
                   {!restricted ? getMainRepresentative(node.from) : t('Restricted')}
-                  {node.from?.draftVersion && (<DraftChip/>)}
+                  {node.from?.draftVersion && (<DraftChip />)}
                 </div>
                 {dataColumns.x_mitre_id && (
                   <div
@@ -234,7 +234,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                   </div>
                 )}
               </div>
-          }
+            )}
           />
         </ListItemButton>
       </ListItem>
@@ -629,11 +629,11 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={
+        secondaryAction={(
           <Box sx={{ root: classes.itemIconDisabled }}>
-            <MoreVertOutlined/>
+            <MoreVertOutlined />
           </Box>
-        }
+        )}
       >
         <ListItemIcon
           classes={{ root: classes.itemIconDisabled }}
@@ -650,7 +650,7 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               {dataColumns.relationship_type && (
                 <div
@@ -803,7 +803,7 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
                 </div>
               )}
             </div>
-          }
+          )}
         />
       </ListItem>
     );

@@ -11,11 +11,11 @@ export type TemplateType = NonNullable<FintelTemplatesGrid_templates$data['finte
 type TemplateEdges = FintelTemplatesGrid_templates$data['fintelTemplates'];
 
 interface FintelTemplatesLinesProps {
-  fintelTemplates: TemplateEdges,
-  dataTableRef: HTMLDivElement | null,
-  onUpdate: (t: TemplateType) => void,
-  entitySettingId: string,
-  targetType: string,
+  fintelTemplates: TemplateEdges;
+  dataTableRef: HTMLDivElement | null;
+  onUpdate: (t: TemplateType) => void;
+  entitySettingId: string;
+  targetType: string;
 }
 
 const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({

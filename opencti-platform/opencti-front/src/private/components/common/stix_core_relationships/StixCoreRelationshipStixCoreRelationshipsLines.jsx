@@ -67,7 +67,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
           />
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           <List classes={{ root: classes.list }}>
             {data.stixCoreRelationships.edges.map(
               (stixCoreRelationshipEdge) => {
@@ -114,16 +114,16 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                       <ListItemIcon>
                         <ItemIcon
                           type={
-                          !restricted ? remoteNode.entity_type : 'restricted'
-                        }
+                            !restricted ? remoteNode.entity_type : 'restricted'
+                          }
                         />
                       </ListItemIcon>
                       <ListItemText
                         primary={
-                        remoteNode.observable_value
-                          ? remoteNode.observable_value
-                          : remoteNode.name
-                      }
+                          remoteNode.observable_value
+                            ? remoteNode.observable_value
+                            : remoteNode.name
+                        }
                         secondary={t(`entity_${remoteNode.entity_type}`)}
                       />
                     </ListItemButton>

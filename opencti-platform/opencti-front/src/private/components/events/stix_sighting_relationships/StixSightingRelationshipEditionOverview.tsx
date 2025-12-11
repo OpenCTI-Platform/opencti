@@ -170,8 +170,8 @@ interface StixSightingRelationshipEditionOverviewProps {
   handleDelete: () => void;
   queryRef: PreloadedQuery<StixSightingRelationshipEditionOverviewQuery>;
   stixSightingRelationship: StixSightingRelationshipEditionOverview_stixSightingRelationship$data;
-  inferred: boolean
-  noStoreUpdate: boolean
+  inferred: boolean;
+  noStoreUpdate: boolean;
 }
 
 interface StixSightingRelationshipAddInput {
@@ -179,13 +179,13 @@ interface StixSightingRelationshipAddInput {
   confidence: number | null;
   first_seen: null | Date;
   last_seen: null | Date;
-  description: string | null,
-  x_opencti_negative: boolean | null,
+  description: string | null;
+  x_opencti_negative: boolean | null;
   x_opencti_workflow_id: FieldOption;
   createdBy: FieldOption | undefined;
   objectMarking: FieldOption[];
-  message?: string
-  references?: FieldOption[]
+  message?: string;
+  references?: FieldOption[];
 }
 
 const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixSightingRelationshipEditionOverviewProps, 'queryRef'>> = ({
@@ -336,7 +336,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                   fullWidth: true,
                   style: { marginTop: 20 },
                   helperText: (
-                    <SubscriptionFocus context={editContext} fieldName="first_seen"/>
+                    <SubscriptionFocus context={editContext} fieldName="first_seen" />
                   ),
                 }}
                 disabled={inferred}
@@ -353,7 +353,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                   fullWidth: true,
                   style: { marginTop: 20 },
                   helperText: (
-                    <SubscriptionFocus context={editContext} fieldName="last_seen"/>
+                    <SubscriptionFocus context={editContext} fieldName="last_seen" />
                   ),
                 }}
                 disabled={inferred}

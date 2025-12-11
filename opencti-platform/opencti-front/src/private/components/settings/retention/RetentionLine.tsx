@@ -90,18 +90,18 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <RetentionPopover
           retentionRuleId={data.id}
           paginationOptions={paginationOptions}
         />
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <LayersClearOutlined/>
+        <LayersClearOutlined />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {data.name}
@@ -146,20 +146,22 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
                 <span>{appliedOnContent}</span>
                 {data.scope !== 'knowledge'
-                  && <Tooltip
-                    title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
-                     >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                      style={{ position: 'absolute', marginLeft: 10 }}
-                    />
-                  </Tooltip>
+                  && (
+                    <Tooltip
+                      title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{ position: 'absolute', marginLeft: 10 }}
+                      />
+                    </Tooltip>
+                  )
                 }
               </div>
             )}
           </div>
-          }
+        )}
       />
     </ListItem>
   );
@@ -171,11 +173,11 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVert/>
+          <MoreVert />
         </Box>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton
@@ -186,7 +188,7 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -256,7 +258,7 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
               />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );

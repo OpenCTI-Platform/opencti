@@ -30,12 +30,14 @@ const LocationDetails: FunctionComponent<LocationDetailsProps> = ({ locationData
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Details')}
       </Typography>
-      <Paper style={{
-        marginTop: theme.spacing(1),
-        padding: '15px',
-        borderRadius: 4,
-      }}
-        className={'paper-for-grid'} variant="outlined"
+      <Paper
+        style={{
+          marginTop: theme.spacing(1),
+          padding: '15px',
+          borderRadius: 4,
+        }}
+        className="paper-for-grid"
+        variant="outlined"
       >
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>

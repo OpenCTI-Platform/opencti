@@ -24,13 +24,13 @@ const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('app:csv_ingestion:max_bundle_si
 // region CSV actual Ingestion
 
 export interface CsvBundlerIngestionOpts {
-  workId: string,
-  applicantUser: AuthUser,
-  entity: BasicStoreBase | undefined,
-  csvMapper: CsvMapperParsed,
-  maxRecordNumber?: number,
-  connectorId: string,
-  draftId?: string,
+  workId: string;
+  applicantUser: AuthUser;
+  entity: BasicStoreBase | undefined;
+  csvMapper: CsvMapperParsed;
+  maxRecordNumber?: number;
+  connectorId: string;
+  draftId?: string;
 }
 
 const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngestionOpts) => {
@@ -141,7 +141,7 @@ const internalGenerateBundles = async (
 export const generateAndSendBundleProcess = async (
   context: AuthContext,
   lines: string[],
-  opts: CsvBundlerIngestionOpts
+  opts: CsvBundlerIngestionOpts,
 ) => {
   logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length}.`);
   const { bundleCount, objectCount } = await internalGenerateBundles(context, lines, opts, true);
@@ -154,9 +154,9 @@ export const generateAndSendBundleProcess = async (
 // ------------------------
 // region Test CSV Ingestion
 export interface CsvBundlerTestOpts {
-  applicantUser: AuthUser,
-  csvMapper: CsvMapperParsed,
-  maxRecordNumber?: number,
+  applicantUser: AuthUser;
+  csvMapper: CsvMapperParsed;
+  maxRecordNumber?: number;
 }
 
 /**
@@ -168,7 +168,7 @@ export interface CsvBundlerTestOpts {
 export const generateTestBundle = async (
   context: AuthContext,
   lines: string[],
-  opts: CsvBundlerTestOpts
+  opts: CsvBundlerTestOpts,
 ) => {
   const testOpts = { ...opts, workId: '', connectorId: '', entity: undefined };
   const { allBundlesToSend } = await internalGenerateBundles(context, lines, testOpts, false);
@@ -183,7 +183,7 @@ export const generateTestBundle = async (
  * @param csvLines
  * @param skipLineChar
  */
-export const removeHeaderFromFullFile = (csvLines:string[], skipLineChar: string) => {
+export const removeHeaderFromFullFile = (csvLines: string[], skipLineChar: string) => {
   if (skipLineChar && skipLineChar.length === 1) {
     let isACommentLine: boolean = true;
     while (isACommentLine) {
@@ -200,7 +200,7 @@ export const removeHeaderFromFullFile = (csvLines:string[], skipLineChar: string
 export const getCsvTestObjects = async (
   context: AuthContext,
   lines: string[],
-  opts: CsvBundlerTestOpts
+  opts: CsvBundlerTestOpts,
 ) => {
   const bundlesBuilder = await generateTestBundle(context, lines, opts);
   let allObjects: StixObject[] = [];
@@ -215,7 +215,7 @@ export const getTestBundleObjectsFromFile = async (
   context: AuthContext,
   user: AuthUser,
   filePath: string,
-  mapper: CsvMapperParsed
+  mapper: CsvMapperParsed,
 ) => {
   const csvLines = await parseReadableToLines(fs.createReadStream(filePath));
   if (mapper.has_header) {
@@ -234,8 +234,8 @@ export const getTestBundleObjectsFromFile = async (
 
 // Deprecated region
 export interface BundleProcessOpts {
-  entity?: BasicStoreBase
-  maxRecordNumber?: number,
+  entity?: BasicStoreBase;
+  maxRecordNumber?: number;
 }
 
 /** @deprecated Will be removed when workbench are replaced by draft.
@@ -245,7 +245,7 @@ export const bundleProcess = async (
   user: AuthUser,
   lines: string[],
   mapper: CsvMapperParsed,
-  opts: BundleProcessOpts = {}
+  opts: BundleProcessOpts = {},
 ) => {
   const { entity, maxRecordNumber } = opts;
   await validateCsvMapper(context, user, mapper);

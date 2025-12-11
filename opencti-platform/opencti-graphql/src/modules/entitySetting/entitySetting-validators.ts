@@ -23,7 +23,7 @@ const optionsValidation = async (targetType: string, input: BasicStoreEntityEnti
     if (keyAvailableSetting.includes(key) && !settings.includes(key)) {
       throw UnsupportedError('This setting is not available for this entity', {
         setting: key,
-        entity: targetType
+        entity: targetType,
       });
     }
   });
@@ -34,7 +34,7 @@ export const validateSetting = (typeId: string, setting: string) => {
   if (!settings.includes(setting)) {
     throw UnsupportedError('This setting is not available for this entity', {
       setting,
-      entity: typeId
+      entity: typeId,
     });
   }
 };
@@ -109,7 +109,7 @@ const attributesConfigurationValidation = async (targetType: string, input: Basi
 
 export const validateEntitySettingCreation = async (context: AuthContext, user: AuthUser, input: Record<string, unknown>) => {
   const validateEntitySettingUpdateFn = async () => {
-    const entitySetting = (input as unknown as BasicStoreEntityEntitySetting);
+    const entitySetting = input as unknown as BasicStoreEntityEntitySetting;
 
     await optionsValidation(entitySetting.target_type, input as unknown as BasicStoreEntityEntitySetting);
     await attributesConfigurationValidation(entitySetting.target_type, entitySetting);
@@ -125,8 +125,8 @@ export const validateEntitySettingCreation = async (context: AuthContext, user: 
 
 export const validateEntitySettingUpdate = async (context: AuthContext, user: AuthUser, input: Record<string, unknown>, initial: Record<string, unknown> | undefined) => {
   const validateEntitySettingUpdateFn = async () => {
-    const entitySetting = (input as unknown as BasicStoreEntityEntitySetting);
-    const entitySettingInitial = (initial as unknown as BasicStoreEntityEntitySetting);
+    const entitySetting = input as unknown as BasicStoreEntityEntitySetting;
+    const entitySettingInitial = initial as unknown as BasicStoreEntityEntitySetting;
 
     await optionsValidation(entitySettingInitial.target_type, input as unknown as BasicStoreEntityEntitySetting);
     await attributesConfigurationValidation(entitySettingInitial.target_type, entitySetting);

@@ -30,11 +30,11 @@ const INDICATOR_TTL_DEFINITION: Array<TTL_DEFINITION> = [
       [MARKING_TLP_AMBER_STRICT]: 60,
       [MARKING_TLP_RED]: 60,
     },
-    default: 60
+    default: 60,
   },
   {
     target: ['File'],
-    default: DEFAULT_INDICATOR_TTL
+    default: DEFAULT_INDICATOR_TTL,
   },
   {
     target: ['Url'],
@@ -45,7 +45,7 @@ const INDICATOR_TTL_DEFINITION: Array<TTL_DEFINITION> = [
       [MARKING_TLP_AMBER_STRICT]: 180,
       [MARKING_TLP_RED]: 180,
     },
-    default: 180
+    default: 180,
   },
 ];
 

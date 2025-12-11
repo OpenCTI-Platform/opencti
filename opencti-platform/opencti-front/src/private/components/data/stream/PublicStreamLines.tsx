@@ -120,7 +120,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
       classes={{ root: classes.item }}
       color="primary"
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <>
           <Tooltip
             title={t_i18n(
@@ -141,13 +141,13 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
             </span>
           </Tooltip>
         </>
-      }
+      )}
     >
       <ListItemIcon>
         <ItemIcon type="streamcollection" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -159,7 +159,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -195,7 +195,7 @@ const PublicStreamLines = () => {
       <Typography
         variant="h5"
         gutterBottom={true}
-        color={'error'}
+        color="error"
         style={{ marginTop: 20, marginBottom: 40 }}
       >
         {t_i18n('No available public stream on this platform')}

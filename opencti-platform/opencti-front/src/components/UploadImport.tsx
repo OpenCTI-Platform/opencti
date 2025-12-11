@@ -58,7 +58,7 @@ const UploadImport = ({
             aria-haspopup="true"
             onClick={() => setOpenImportFilesDialog(true)}
           >
-            <UploadFileOutlined fontSize={fontSize}/>
+            <UploadFileOutlined fontSize={fontSize} />
           </IconButton>
         </Tooltip>
       ) : (

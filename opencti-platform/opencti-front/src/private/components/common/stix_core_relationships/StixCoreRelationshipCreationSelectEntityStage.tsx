@@ -53,7 +53,7 @@ const fragment = graphql`
 `;
 
 const StixCoreRelationshipCreationSelectEntityStage: FunctionComponent<
-StixCoreRelationshipCreationSelectEntityStageProps
+  StixCoreRelationshipCreationSelectEntityStageProps
 > = ({
   handleNextStep,
   storageKey,

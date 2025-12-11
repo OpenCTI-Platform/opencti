@@ -29,7 +29,7 @@ import useActionFieldOptions from './useActionFieldOptions';
 import PlaybookActionValueField from './PlaybookActionValueField';
 
 interface PlaybookFlowFieldActionsProps {
-  operations?: string[]
+  operations?: string[];
 }
 
 const PlaybookFlowFieldActions = ({
@@ -50,7 +50,7 @@ const PlaybookFlowFieldActions = ({
   /**
    * When changing either the operation (op) or the attribute, we need to reset
    * the field for the value of the action.
-   * 
+   *
    * @param index Index of the action in the array of actions in the form.
    * @param attribute The new value of attribute concerned by the action (undefined = it's the 'op' that has changed).
    */
@@ -58,7 +58,7 @@ const PlaybookFlowFieldActions = ({
     if (actions[index]) {
       const newValue: PlaybookUpdateAction = {
         // By default we only set in the new object the operation.
-        op: actions[index].op
+        op: actions[index].op,
       };
       if (attribute) {
         newValue.attribute = attribute;
@@ -139,10 +139,10 @@ const PlaybookFlowFieldActions = ({
                         {fieldOptions.length === 0
                           ? <MenuItem value="none">{t_i18n('None')}</MenuItem>
                           : fieldOptions.map((option) => (
-                            <MenuItem key={option.value} value={option.value}>
-                              {option.label}
-                            </MenuItem>
-                          ))
+                              <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                              </MenuItem>
+                            ))
                         }
                       </Field>
                     </Grid>

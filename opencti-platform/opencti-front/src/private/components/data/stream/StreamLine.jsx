@@ -79,26 +79,26 @@ class StreamLineLineComponent extends Component {
       <ListItem
         divider={true}
         disablePadding
-        secondaryAction={
+        secondaryAction={(
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <StreamPopover
               streamCollection={node}
               paginationOptions={paginationOptions}
             />
           </Security>
-        }
+        )}
       >
         <ListItemButton
           classes={{ root: classes.item }}
           component="a"
           href={`/stream/${node.id}`}
-          target={'_blank'}
+          target="_blank"
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
             <Stream />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <>
                 <div
                   className={classes.bodyItem}
@@ -143,16 +143,18 @@ class StreamLineLineComponent extends Component {
                   style={{ width: dataColumns.filters.width }}
                 >
                   {isFilterGroupNotEmpty(filters)
-                    ? <FilterIconButton
-                        filters={filters}
-                        dataColumns={dataColumns}
-                        styleNumber={3}
-                        entityTypes={['Stix-Filtering']}
-                      />
+                    ? (
+                        <FilterIconButton
+                          filters={filters}
+                          dataColumns={dataColumns}
+                          styleNumber={3}
+                          entityTypes={['Stix-Filtering']}
+                        />
+                      )
                     : '-'}
                 </div>
               </>
-          }
+            )}
           />
         </ListItemButton>
       </ListItem>
@@ -206,7 +208,7 @@ class StreamDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -275,7 +277,7 @@ class StreamDummyComponent extends Component {
                 />
               </div>
             </div>
-          }
+          )}
         />
       </ListItem>
     );

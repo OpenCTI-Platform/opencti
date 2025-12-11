@@ -40,8 +40,8 @@ const inlineStyles = {
 };
 
 interface TaskScopeProps {
-  label: string,
-  scope: string,
+  label: string;
+  scope: string;
 }
 
 const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {

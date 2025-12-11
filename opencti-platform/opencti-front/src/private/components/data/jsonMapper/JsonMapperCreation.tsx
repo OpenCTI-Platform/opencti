@@ -29,10 +29,10 @@ const jsonMapperCreation = graphql`
 `;
 
 interface JsonMapperCreationFormProps {
-  paginationOptions: jsonMappers_MappersQuery$variables
-  isDuplicated?: boolean
-  onClose?: () => void
-  mappingJson?: JsonMapperEditionContainerFragment_jsonMapper$key | null,
+  paginationOptions: jsonMappers_MappersQuery$variables;
+  isDuplicated?: boolean;
+  onClose?: () => void;
+  mappingJson?: JsonMapperEditionContainerFragment_jsonMapper$key | null;
 }
 
 const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({
@@ -99,7 +99,7 @@ const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({
       computeDefaultValues,
     );
   }
-  return <JsonMapperForm attributes={data.csvMapperSchemaAttributes} jsonMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated}/>;
+  return <JsonMapperForm attributes={data.csvMapperSchemaAttributes} jsonMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated} />;
 };
 
 export default JsonMapperCreation;

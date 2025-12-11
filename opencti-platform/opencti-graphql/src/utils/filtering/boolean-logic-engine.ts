@@ -34,7 +34,7 @@ export const toValidArray = <T = unknown>(v: T) => {
 export const testGenericFilter = <T extends string | number | boolean>(
   { mode = FilterMode.Or, operator = FilterOperator.Eq }: FilterLogic,
   adaptedFilterValues: T[],
-  stixCandidates: T[]
+  stixCandidates: T[],
 ) => {
   const op = operator ?? 'eq';
   const operationMode = mode ?? 'and';
@@ -63,11 +63,11 @@ export const testGenericFilter = <T extends string | number | boolean>(
       || (op === 'search' && adaptedFilterValues.every((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string'
         && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contains at least one of the filter values words
 
-      // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
-      || (op === 'lt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c < v)))
-      || (op === 'lte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c <= v)))
-      || (op === 'gt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c > v)))
-      || (op === 'gte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c >= v)));
+    // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
+        || (op === 'lt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c < v)))
+        || (op === 'lte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c <= v)))
+        || (op === 'gt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c > v)))
+        || (op === 'gte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c >= v)));
   }
 
   if (operationMode === 'or') {
@@ -83,11 +83,11 @@ export const testGenericFilter = <T extends string | number | boolean>(
       || (op === 'search' && adaptedFilterValues.some((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string'
         && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contains at least one of the filter values words
 
-      // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
-      || (op === 'lt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c < v)))
-      || (op === 'lte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c <= v)))
-      || (op === 'gt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c > v)))
-      || (op === 'gte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c >= v)));
+    // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
+        || (op === 'lt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c < v)))
+        || (op === 'lte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c <= v)))
+        || (op === 'gt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c > v)))
+        || (op === 'gte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c >= v)));
   }
 
   return false;
@@ -169,7 +169,7 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
   return false;
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 // generic representation of a tester function
 // its implementations are dependent on the data model, to find the information requested by the filter
@@ -184,7 +184,7 @@ export type TesterFunction = (data: any, filter: Filter) => boolean;
  * @param testerByFilterKeyMap function that gives a function to test a filter, according to the filter key
  *                               see unit tests for an example.
  */
-export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>) : boolean => {
+export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>): boolean => {
   if (!isFilterGroupNotEmpty(filterGroup)) return true; // no filters -> stix always match
   if (filterGroup.mode === 'and') {
     const results: boolean[] = [];

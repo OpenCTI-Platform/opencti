@@ -47,7 +47,7 @@ const previewFragment = graphql`
 
 interface FintelTemplatePreviewProps {
   data: FintelTemplatePreview_template$key;
-  isTabActive: boolean
+  isTabActive: boolean;
 }
 
 const FintelTemplatePreview = ({

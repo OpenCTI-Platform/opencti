@@ -1,10 +1,10 @@
-export type IngestionConnectorType =
-  | 'INTERNAL_ENRICHMENT'
-  | 'INTERNAL_INGESTION'
-  | 'EXTERNAL_IMPORT'
-  | 'INTERNAL_EXPORT_FILE'
-  | 'INTERNAL_IMPORT_FILE'
-  | 'STREAM';
+export type IngestionConnectorType
+  = | 'INTERNAL_ENRICHMENT'
+    | 'INTERNAL_INGESTION'
+    | 'EXTERNAL_IMPORT'
+    | 'INTERNAL_EXPORT_FILE'
+    | 'INTERNAL_IMPORT_FILE'
+    | 'STREAM';
 
 export const getConnectorMetadata = (
   containerType: IngestionConnectorType,

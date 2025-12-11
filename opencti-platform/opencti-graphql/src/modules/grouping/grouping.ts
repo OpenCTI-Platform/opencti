@@ -13,11 +13,11 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     id: 'groupings',
     name: ENTITY_TYPE_CONTAINER_GROUPING,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CONTAINER_GROUPING]: [{ src: NAME_FIELD }, { src: 'context' }, { src: 'created' }]
+      [ENTITY_TYPE_CONTAINER_GROUPING]: [{ src: NAME_FIELD }, { src: 'context' }, { src: 'created' }],
     },
     resolvers: {
       name(data: object) {
@@ -46,13 +46,13 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
       name: RELATION_DERIVED_FROM,
       targets: [
         { name: ENTITY_TYPE_CONTAINER_GROUPING, type: REL_BUILT_IN },
-      ]
-    }
+      ],
+    },
   ],
   representative: (stix: StixGrouping) => {
     return stix.name;
   },
-  converter_2_1: convertGroupingToStix_2_1
+  converter_2_1: convertGroupingToStix_2_1,
 };
 
 registerDefinition(GROUPING_DEFINITION);

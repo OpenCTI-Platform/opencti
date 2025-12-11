@@ -13,9 +13,9 @@ interface element {
 }
 
 interface BreadcrumbsProps {
-  elements: element[]
-  noMargin?: boolean
-  isSensitive?: boolean
+  elements: element[];
+  noMargin?: boolean;
+  isSensitive?: boolean;
 }
 
 const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin = false, isSensitive = false }) => {

@@ -38,7 +38,7 @@ export const createTaxiiCollection = async (context, user, input) => {
       event_scope: 'create',
       event_access: 'administration',
       message: `creates Taxii collection \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_TAXII_COLLECTION, input }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_TAXII_COLLECTION, input },
     });
   }
   return element;
@@ -72,7 +72,7 @@ export const taxiiCollectionEditField = async (context, user, collectionId, inpu
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for Taxii collection \`${element.name}\``,
-    context_data: { id: collectionId, entity_type: ENTITY_TYPE_TAXII_COLLECTION, input }
+    context_data: { id: collectionId, entity_type: ENTITY_TYPE_TAXII_COLLECTION, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, element, user);
 };
@@ -84,7 +84,7 @@ export const taxiiCollectionDelete = async (context, user, collectionId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes Taxii collection \`${deleted.name}\``,
-    context_data: { id: collectionId, entity_type: ENTITY_TYPE_TAXII_COLLECTION, input: deleted }
+    context_data: { id: collectionId, entity_type: ENTITY_TYPE_TAXII_COLLECTION, input: deleted },
   });
   return collectionId;
 };
@@ -124,7 +124,7 @@ export const collectionQuery = async (context, user, collection, args) => {
   const options = await convertFiltersToQueryOptions(filters, {
     defaultTypes: [STIX_CORE_RELATIONSHIPS, STIX_SIGHTING_RELATIONSHIP, ABSTRACT_STIX_OBJECT],
     after: added_after,
-    after_exclude: true
+    after_exclude: true,
   });
   options.after = next;
   options.bypassSizeLimit = true;

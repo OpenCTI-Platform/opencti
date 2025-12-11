@@ -107,7 +107,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
                 <TaskEdition caseId={data.id} />
               </Security>
             )}
-            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <TaskDeletion id={data.id} isOpen={isOpen} handleClose={onClose} />
               </Security>
@@ -159,15 +159,15 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             />
             <Route
               path="/content/*"
-              element={
+              element={(
                 <StixCoreObjectContentRoot
                   stixCoreObject={data}
                 />
-              }
+              )}
             />
             <Route
               path="/files"
-              element={
+              element={(
                 <StixCoreObjectFilesAndHistory
                   id={taskId}
                   connectorsExport={connectorsForExport}
@@ -176,7 +176,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
                   withoutRelations={true}
                   bypassEntityId={true}
                 />
-              }
+              )}
             />
             <Route
               path="/history"

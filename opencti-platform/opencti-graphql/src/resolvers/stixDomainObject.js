@@ -19,7 +19,7 @@ import {
   stixDomainObjectsExportAsk,
   stixDomainObjectsNumber,
   stixDomainObjectsTimeSeries,
-  stixDomainObjectsTimeSeriesByAuthor
+  stixDomainObjectsTimeSeriesByAuthor,
 } from '../domain/stixDomainObject';
 import { findById as findStatusById, findByType } from '../domain/status';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';

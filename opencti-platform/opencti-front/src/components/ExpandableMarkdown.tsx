@@ -21,11 +21,11 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
   return (
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
-      <div style={{ position: 'absolute', top: -32, right: 0 }}>
-        <IconButton onClick={onClick} size="large">
-          {expand ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
-      </div>
+        <div style={{ position: 'absolute', top: -32, right: 0 }}>
+          <IconButton onClick={onClick} size="large">
+            {expand ? <ExpandLess /> : <ExpandMore />}
+          </IconButton>
+        </div>
       )}
       <div style={{ overflowX: 'auto' }}>
         <MarkdownDisplay

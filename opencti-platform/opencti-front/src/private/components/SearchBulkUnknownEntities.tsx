@@ -24,9 +24,9 @@ const searchBulkUnknownEntitiesQuery = graphql`
 `;
 
 interface SearchBulkUnknownEntitiesContentProps {
-  queryRef: PreloadedQuery<SearchBulkUnknownEntitiesQuery>,
-  setNumberOfEntities: (n: number) => void,
-  isDisplayed: boolean,
+  queryRef: PreloadedQuery<SearchBulkUnknownEntitiesQuery>;
+  setNumberOfEntities: (n: number) => void;
+  isDisplayed: boolean;
 }
 
 const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesContentProps) => {
@@ -54,23 +54,25 @@ const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDis
   return (
     <>
       {isDisplayed
-        && <DataTableWithoutFragment
-          data={unknownEntities}
-          globalCount={unknownEntities.length}
-          dataColumns={dataColumns}
-          storageKey={UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY}
-          taskScope="UNKNOWN_ENTITIES"
-          disableNavigation
-          selectOnLineClick
-           />}
+        && (
+          <DataTableWithoutFragment
+            data={unknownEntities}
+            globalCount={unknownEntities.length}
+            dataColumns={dataColumns}
+            storageKey={UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY}
+            taskScope="UNKNOWN_ENTITIES"
+            disableNavigation
+            selectOnLineClick
+          />
+        )}
     </>
   );
 };
 
 interface SearchBulkUnknownEntitiesProps {
-  values: string[],
-  setNumberOfEntities: (n: number) => void,
-  isDisplayed: boolean,
+  values: string[];
+  setNumberOfEntities: (n: number) => void;
+  isDisplayed: boolean;
 }
 
 const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesProps) => {
@@ -92,14 +94,17 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }:
 
   return (
     <>
-      {queryRef && <React.Suspense fallback={<Loader />}>
-        <SearchBulkUnknownEntitiesContent
-          queryRef={queryRef}
-          setNumberOfEntities={setNumberOfEntities}
-          isDisplayed={isDisplayed}
-        />
-      </React.Suspense>}
-    </>);
+      {queryRef && (
+        <React.Suspense fallback={<Loader />}>
+          <SearchBulkUnknownEntitiesContent
+            queryRef={queryRef}
+            setNumberOfEntities={setNumberOfEntities}
+            isDisplayed={isDisplayed}
+          />
+        </React.Suspense>
+      )}
+    </>
+  );
 };
 
 export default SearchBulkUnknownEntities;

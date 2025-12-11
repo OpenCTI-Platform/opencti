@@ -12,14 +12,14 @@ export const up = async (next) => {
   await addCapability(context, SYSTEM_USER, {
     name: 'SETTINGS_SETDISSEMINATION',
     description: 'Manage dissemination lists',
-    attribute_order: 3320
+    attribute_order: 3320,
   });
 
   // ------ Create 'Disseminate files'
   await addCapability(context, SYSTEM_USER, {
     name: 'KNOWLEDGE_KNDISSEMINATION',
     description: 'Disseminate files by email',
-    attribute_order: 900
+    attribute_order: 900,
   });
 
   logApp.info(`${message} > done`);

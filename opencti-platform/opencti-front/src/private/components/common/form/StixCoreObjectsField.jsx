@@ -317,7 +317,7 @@ const StixCoreObjectsField = (props) => {
                       size="small"
                       checked={(searchScope[name] || []).includes(entityType.value)}
                     />
-                    <ListItemText primary={entityType.label}/>
+                    <ListItemText primary={entityType.label} />
                   </MenuItem>
                 ))}
               </MenuList>

@@ -20,7 +20,7 @@ import {
   stixCyberObservablesNumber,
   stixCyberObservablesTimeSeries,
   stixFileObsArtifact,
-  vulnerabilitiesPaginated
+  vulnerabilitiesPaginated,
 } from '../domain/stixCyberObservable';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush, stixCoreRelationshipsPaginated } from '../domain/stixCoreObject';
@@ -110,7 +110,7 @@ const stixCyberObservableResolvers = {
       exportAsk: (args) => stixCyberObservableExportAsk(context, context.user, id, args),
       exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
-      promoteToIndicator: () => promoteObservableToIndicator(context, context.user, id)
+      promoteToIndicator: () => promoteObservableToIndicator(context, context.user, id),
     }),
     stixCyberObservableAdd: (_, args, context) => addStixCyberObservable(context, context.user, args),
     stixCyberObservablesExportAsk: (_, { input }, context) => stixCyberObservablesExportAsk(context, context.user, input),

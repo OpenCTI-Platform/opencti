@@ -13,7 +13,7 @@ type DecayExclusionRuleCreationProps = {
 
 const CreateDecayExclusionRuleControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='DecayExclusionRule'
+    entityType="DecayExclusionRule"
     {...props}
   />
 );

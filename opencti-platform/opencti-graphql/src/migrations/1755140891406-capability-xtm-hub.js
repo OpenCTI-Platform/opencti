@@ -15,7 +15,7 @@ export const up = async (next) => {
       mode: 'and',
       filters: [{ key: 'name', values: ['SETTINGS_SETMANAGEXTMHUB'] }],
       filterGroups: [],
-    }
+    },
   });
   if (isNotEmptyField(capability)) {
     await updateCapability(context, SYSTEM_USER, capability.id, [{ key: 'attribute_order', value: [3450] }]);
@@ -23,7 +23,7 @@ export const up = async (next) => {
     await addCapability(context, SYSTEM_USER, {
       name: 'SETTINGS_SETMANAGEXTMHUB',
       description: 'Manage XTM Hub',
-      attribute_order: 3450
+      attribute_order: 3450,
     });
   }
   logMigration.info(`${message} > done`);

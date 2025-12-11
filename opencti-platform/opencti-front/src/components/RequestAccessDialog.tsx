@@ -34,7 +34,7 @@ interface RequestAccessDialogProps {
 
 interface OrganizationForm {
   value: string;
-  label: string
+  label: string;
 }
 
 interface RequestAccessFormAddInput {
@@ -152,7 +152,8 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
             }}
           </Formik>
         </DialogContent>
-      </Dialog>)}
+      </Dialog>
+    )}
     </>
   );
 };

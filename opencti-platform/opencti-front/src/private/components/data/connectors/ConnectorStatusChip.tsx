@@ -5,7 +5,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import { computeConnectorStatus } from '../../../../utils/Connector';
 
 type ConnectorStatusChipProps = {
-  connector: Partial<ConnectorsStateQuery$data['connectors'][0]>
+  connector: Partial<ConnectorsStateQuery$data['connectors'][0]>;
 };
 
 const ConnectorStatusChip: React.FC<ConnectorStatusChipProps> = ({ connector }) => {
@@ -45,7 +45,7 @@ const ConnectorStatusChip: React.FC<ConnectorStatusChipProps> = ({ connector }) 
     <ItemBoolean
       status={itemBooleanStatus}
       label={getTranslatedLabel(label)}
-      variant={'inList'}
+      variant="inList"
     />
   );
 };

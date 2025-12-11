@@ -18,8 +18,8 @@ import TextField from '../../../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 
 interface PlaybookFlowFieldNumberProps {
-  name: string
-  label: string
+  name: string;
+  label: string;
 }
 
 const PlaybookFlowFieldNumber = ({

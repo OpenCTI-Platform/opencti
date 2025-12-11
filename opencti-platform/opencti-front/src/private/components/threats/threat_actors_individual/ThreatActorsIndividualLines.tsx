@@ -86,7 +86,7 @@ const threatActorsIndividualLinesFragment = graphql`
 `;
 
 const ThreatActorsIndividualLines: FunctionComponent<
-ThreatActorsIndividualLinesProps
+  ThreatActorsIndividualLinesProps
 > = ({
   dataColumns,
   selectedElements,
@@ -98,8 +98,8 @@ ThreatActorsIndividualLinesProps
   setNumberOfElements,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  ThreatActorsIndividualLinesPaginationQuery,
-  ThreatActorsIndividualLines_data$key
+    ThreatActorsIndividualLinesPaginationQuery,
+    ThreatActorsIndividualLines_data$key
   >({
     linesQuery: threatActorsIndividualLinesQuery,
     linesFragment: threatActorsIndividualLinesFragment,

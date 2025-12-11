@@ -9,7 +9,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
-import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { buildRelationsFilter, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';

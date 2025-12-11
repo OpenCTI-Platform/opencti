@@ -11,7 +11,7 @@ import { buildResolutionMapForFilterGroup, resolveFilterGroup } from '../filteri
 import { UnsupportedError } from '../../../config/errors';
 import { checkFiltersFormat } from '../filtering-utils';
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * check a FilterGroup's keys validity in stix filtering
@@ -42,7 +42,7 @@ export const validateFilterGroupForStixMatch = (filterGroup: FilterGroup) => {
   checkFiltersKeysForStixMatch(filterGroup);
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // STIX MATCH
 
 /**
@@ -55,7 +55,7 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   stix: any,
   filterGroup: FilterGroup | undefined,
   resolutionMap: FilterResolutionMap,
-) : Promise<boolean> => {
+): Promise<boolean> => {
   // we are limited to certain filter keys right now, so better throw an explicit error if a key is not compatible
   // Note that similar check is done when saving a filter in stream, taxii, feed, or playbook node.
   // This check should thus not fail here, theoretically.
@@ -94,7 +94,7 @@ export const isStixMatchFilterGroup = async (
   user: AuthUser,
   stix: any,
   filterGroup?: FilterGroup,
-) : Promise<boolean> => {
+): Promise<boolean> => {
   // resolve some of the ids as we filter on their corresponding values or standard-id for instance
   // the provided map will contain replacements for filter values, if any necessary.
   // we use the entities stored in cache for the "Resolved-Filters" (all the entities used by the saved filters - stream, trigger, playbooks)

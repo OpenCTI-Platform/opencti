@@ -66,28 +66,30 @@ const ImportFilesOptions = ({
                 variant="standard"
                 name="validationMode"
                 containerstyle={{ marginTop: 16, width: '100%', marginRight: 10 }}
-                label={<>
-                  {t_i18n('Validation mode')}
-                  <Tooltip
-                    title={t_i18n('Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.')}
-                  >
-                    <InformationOutline
-                      style={{ display: 'flex', marginTop: -22, marginLeft: 115 }}
-                      fontSize="small"
-                      color="primary"
-                    />
-                  </Tooltip>
-                </>}
+                label={(
+                  <>
+                    {t_i18n('Validation mode')}
+                    <Tooltip
+                      title={t_i18n('Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.')}
+                    >
+                      <InformationOutline
+                        style={{ display: 'flex', marginTop: -22, marginLeft: 115 }}
+                        fontSize="small"
+                        color="primary"
+                      />
+                    </Tooltip>
+                  </>
+                )}
               >
                 <MenuItem
-                  key={'draft'}
-                  value={'draft'}
+                  key="draft"
+                  value="draft"
                 >
                   {t_i18n('Draft')}
                 </MenuItem>
                 <MenuItem
-                  key={'workbench'}
-                  value={'workbench'}
+                  key="workbench"
+                  value="workbench"
                   disabled={!isWorkbenchEnabled}
                 >
                   {t_i18n('Workbench')}

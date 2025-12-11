@@ -11,7 +11,7 @@ import {
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
   stixSightingRelationshipRemoveFromDraft,
-  stixSightingRelationshipsNumber
+  stixSightingRelationshipsNumber,
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
@@ -37,7 +37,7 @@ const stixSightingRelationshipResolvers = {
     stixSightingRelationshipsDistribution: (_, args, context) => distributionRelations(
       context,
       context.user,
-      { ...args, relationship_type: [STIX_SIGHTING_RELATIONSHIP] }
+      { ...args, relationship_type: [STIX_SIGHTING_RELATIONSHIP] },
     ),
     stixSightingRelationshipsNumber: (_, args, context) => stixSightingRelationshipsNumber(context, context.user, args),
   },

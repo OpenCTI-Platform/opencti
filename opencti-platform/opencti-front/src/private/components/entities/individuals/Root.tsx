@@ -186,7 +186,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <IndividualDeletion id={individual.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -253,53 +253,53 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
             <Routes>
               <Route
                 path="/"
-                element={
+                element={(
                   <Individual
                     individualData={individual}
                     viewAs={viewAs}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/entities/individuals/${individualId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <IndividualKnowledge
                       individualData={individual}
                       viewAs={viewAs}
                     />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={individual}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
-                element={
+                element={(
                   <IndividualAnalysis
                     individual={individual}
                     viewAs={viewAs}
                   />
-                }
+                )}
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={individual.id}
                     entityLink={link}
@@ -316,26 +316,26 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                       'System',
                     ]}
                   />
-                }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={individualId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={individual}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
-                element={
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={individualId}
                   />
-                }
+                )}
               />
             </Routes>
           </div>
@@ -347,7 +347,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
   );
 };
 const Root = () => {
-  const { individualId } = useParams() as { individualId: string; };
+  const { individualId } = useParams() as { individualId: string };
   const queryRef = useQueryLoading<RootIndividualQuery>(individualQuery, {
     id: individualId,
   });

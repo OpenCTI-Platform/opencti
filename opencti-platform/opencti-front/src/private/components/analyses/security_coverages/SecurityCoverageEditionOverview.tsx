@@ -141,7 +141,7 @@ interface SecurityCoverageEditionFormValues {
   description: string | null;
   periodicity: string | null;
   duration: string | null;
-  type_affinity: string | null,
+  type_affinity: string | null;
   platforms_affinity: readonly string[];
   external_uri: string | null;
   auto_enrichment_disable: boolean;
@@ -340,16 +340,16 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             fullWidth={true}
             containerstyle={{ width: '100%', marginTop: 20 }}
           >
-            <MenuItem key='ENDPOINT' value='ENDPOINT'>
+            <MenuItem key="ENDPOINT" value="ENDPOINT">
               {t_i18n('Endpoint')}
             </MenuItem>
-            <MenuItem key='CLOUD' value='CLOUD'>
+            <MenuItem key="CLOUD" value="CLOUD">
               {t_i18n('Cloud')}
             </MenuItem>
-            <MenuItem key='WEB' value='WEB'>
+            <MenuItem key="WEB" value="WEB">
               {t_i18n('Web')}
             </MenuItem>
-            <MenuItem key='TABLE-TOP' value='TABLE-TOP'>
+            <MenuItem key="TABLE-TOP" value="TABLE-TOP">
               {t_i18n('Table-top')}
             </MenuItem>
           </Field>
@@ -371,23 +371,25 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             label={t_i18n('Force manual coverage (prevent enrichment connectors from running)')}
             containerstyle={fieldSpacingContainerStyle}
           />
-          {values.auto_enrichment_disable && <>
-            <CoverageInformationFieldEdit
-              id={securityCoverageData.id}
-              mode={'entity'}
-              name="coverage_information"
-              values={values.coverage_information}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="external_uri"
-              onSubmit={handleSubmitField}
-              label={t_i18n('Source external link')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-          </>}
+          {values.auto_enrichment_disable && (
+            <>
+              <CoverageInformationFieldEdit
+                id={securityCoverageData.id}
+                mode="entity"
+                name="coverage_information"
+                values={values.coverage_information}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="external_uri"
+                onSubmit={handleSubmitField}
+                label={t_i18n('Source external link')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+            </>
+          )}
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}

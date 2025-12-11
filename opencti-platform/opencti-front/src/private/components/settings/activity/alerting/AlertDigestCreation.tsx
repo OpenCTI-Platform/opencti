@@ -175,7 +175,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     setFieldValue: (
       field: string,
       value: unknown,
-      shouldValidate?: boolean | undefined
+      shouldValidate?: boolean | undefined,
     ) => void,
     values: TriggerDigestActivityAddInput,
   ) => (
@@ -265,11 +265,11 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       )}
       <NotifierField name="notifiers" onChange={setFieldValue} />
       <ObjectMembersField
-        label={'Recipients'}
+        label="Recipients"
         style={fieldSpacingContainerStyle}
         onChange={setFieldValue}
         multiple={true}
-        name={'recipients'}
+        name="recipients"
       />
     </React.Fragment>
   );

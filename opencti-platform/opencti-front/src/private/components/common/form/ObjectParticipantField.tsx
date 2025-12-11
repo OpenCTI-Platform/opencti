@@ -67,8 +67,8 @@ interface ObjectParticipantFieldProps {
   onChange?: (name: string, values: OptionParticipant[]) => void;
   style?: Record<string, string | number>;
   helpertext?: unknown;
-  label?: string,
-  disabled?: boolean,
+  label?: string;
+  disabled?: boolean;
 }
 const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = ({
   name,

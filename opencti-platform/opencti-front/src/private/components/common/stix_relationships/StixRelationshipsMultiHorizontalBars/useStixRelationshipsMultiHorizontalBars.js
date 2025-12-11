@@ -5,22 +5,22 @@ export const useStixRelationshipsMultiHorizontalBars = (
   subSelection,
   stixRelationshipsDistribution,
   finalSubDistributionField,
-  finalField
+  finalField,
 ) => {
   const { t_i18n } = useFormatter();
   const DEFAULT_SUBSELECTION_NUMBER = 15;
   const subSelectionNumber = subSelection.number ?? DEFAULT_SUBSELECTION_NUMBER;
-  const distributionKey =
-    subSelection.perspective === 'entities'
+  const distributionKey
+    = subSelection.perspective === 'entities'
       ? 'stixCoreObjectsDistribution'
       : 'stixCoreRelationshipsDistribution';
 
   const categories = stixRelationshipsDistribution.map((n) =>
-    getMainRepresentative(n.entity, t_i18n('Restricted'))
+    getMainRepresentative(n.entity, t_i18n('Restricted')),
   );
 
   const getDistributionKey = (distribution) => {
-    if (finalSubDistributionField === 'internal_id'){
+    if (finalSubDistributionField === 'internal_id') {
       return getMainRepresentative(distribution.entity, t_i18n('Restricted'));
     }
 
@@ -41,8 +41,8 @@ export const useStixRelationshipsMultiHorizontalBars = (
   for (const distrib of stixRelationshipsDistribution) {
     for (const subDistrib of distrib.entity[distributionKey]) {
       const subDistributionKey = getDistributionKey(subDistrib);
-      entitiesMapping[subDistributionKey] =
-        (entitiesMapping[subDistributionKey] || 0) + subDistrib.value;
+      entitiesMapping[subDistributionKey]
+        = (entitiesMapping[subDistributionKey] || 0) + subDistrib.value;
     }
   }
 
@@ -52,10 +52,10 @@ export const useStixRelationshipsMultiHorizontalBars = (
 
   const categoriesValues = {};
   for (const distrib of stixRelationshipsDistribution) {
-    const distribMap = new Map(distrib.entity?.[distributionKey].map(entityDistrib => [
-        getDistributionKey(entityDistrib),
-        entityDistrib
-      ])
+    const distribMap = new Map(distrib.entity?.[distributionKey].map((entityDistrib) => [
+      getDistributionKey(entityDistrib),
+      entityDistrib,
+    ]),
     );
 
     for (const sortedEntity of sortedEntityMapping) {
@@ -75,7 +75,7 @@ export const useStixRelationshipsMultiHorizontalBars = (
 
     (categoriesValues[mainRepresentative] ??= []).push(distrib.value - sum);
   }
-  
+
   sortedEntityMapping.push(['Others', 0]);
   const chartData = sortedEntityMapping
     .map(([name], index) => {
@@ -89,31 +89,31 @@ export const useStixRelationshipsMultiHorizontalBars = (
 
   let subSectionIdsOrder = [];
   if (
-    finalField === 'internal_id' &&
-    finalSubDistributionField === 'internal_id'
+    finalField === 'internal_id'
+    && finalSubDistributionField === 'internal_id'
   ) {
     // find subbars orders for entity subbars redirection
     for (const distrib of stixRelationshipsDistribution) {
       for (const subDistrib of distrib.entity[distributionKey]) {
-        subSectionIdsOrder[subDistrib.label] =
-          (subSectionIdsOrder[subDistrib.label] || 0) + subDistrib.value;
+        subSectionIdsOrder[subDistrib.label]
+          = (subSectionIdsOrder[subDistrib.label] || 0) + subDistrib.value;
       }
     }
     subSectionIdsOrder = Object.entries(subSectionIdsOrder)
-        .sort(([, a], [, b]) => b - a)
-        .map((k) => k[0])
-        .slice(0, subSelectionNumber);
+      .sort(([, a], [, b]) => b - a)
+      .map((k) => k[0])
+      .slice(0, subSelectionNumber);
   }
 
-  const redirectionUtils =
-    finalField === 'internal_id'
+  const redirectionUtils
+    = finalField === 'internal_id'
       ? stixRelationshipsDistribution.map((n) => ({
           id: n.label,
           entity_type: n.entity?.entity_type,
           series: subSectionIdsOrder.map((subSectionId) => {
-            const [entity] =
-              n.entity[distributionKey]?.filter(
-                (e) => e.label === subSectionId
+            const [entity]
+              = n.entity[distributionKey]?.filter(
+                (e) => e.label === subSectionId,
               ) ?? [];
             return {
               id: subSectionId,
@@ -122,7 +122,7 @@ export const useStixRelationshipsMultiHorizontalBars = (
           }),
         }))
       : null;
-      
+
   return {
     chartData,
     redirectionUtils,

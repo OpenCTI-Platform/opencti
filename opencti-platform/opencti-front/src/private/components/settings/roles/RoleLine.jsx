@@ -60,7 +60,7 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
         <ItemIcon type="Role" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
@@ -96,7 +96,8 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
                   <div
                     className={classes.bodyItem}
                     style={{ width: dataColumns.groups.width }}
-                  ></div>
+                  >
+                  </div>
                 );
               }}
             />
@@ -113,7 +114,7 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
               {fd(node.updated_at)}
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -155,11 +156,11 @@ class RoleLineDummyComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={
+        secondaryAction={(
           <Box sx={{ root: classes.itemIconDisabled }}>
             <KeyboardArrowRightOutlined />
           </Box>
-        }
+        )}
       >
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Skeleton
@@ -170,7 +171,7 @@ class RoleLineDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -217,7 +218,7 @@ class RoleLineDummyComponent extends Component {
                 />
               </div>
             </div>
-          }
+          )}
         />
       </ListItem>
     );

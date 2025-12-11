@@ -12,6 +12,6 @@ export interface FieldOption {
 // TODO move this interface inside file KillChainPhasesField
 // when it has been transformed it TypeScript.
 export interface KillChainPhaseFieldOption extends FieldOption {
-  kill_chain_name: string,
-  phase_name: string
+  kill_chain_name: string;
+  phase_name: string;
 }

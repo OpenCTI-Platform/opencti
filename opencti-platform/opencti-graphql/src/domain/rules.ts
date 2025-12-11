@@ -53,7 +53,7 @@ export const RULES_DECLARATION: Array<RuleRuntime> = [
   ReportRefsIndicatorBasedOnRule,
   ReportRefObservableBasedOnRule,
   ReportRefsLocationLocatedAtRule,
-  ParentTechniqueUseRule
+  ParentTechniqueUseRule,
 ];
 if (DEV_MODE) {
   RULES_DECLARATION.push(RelatedToRelatedRule);
@@ -103,7 +103,7 @@ export const setRuleActivation = async (context: AuthContext, user: AuthUser, ru
     event_scope: 'update',
     event_access: 'administration',
     message: `${active ? 'activates' : 'deactivates'} rule \`${resolvedRule?.name}\``,
-    context_data: { id: ruleId, entity_type: ENTITY_TYPE_SETTINGS, input: { id: ruleId, active } }
+    context_data: { id: ruleId, entity_type: ENTITY_TYPE_SETTINGS, input: { id: ruleId, active } },
   });
   return getRule(context, user, ruleId);
 };

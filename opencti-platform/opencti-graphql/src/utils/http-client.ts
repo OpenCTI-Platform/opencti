@@ -9,20 +9,20 @@ import { fromBase64, isNotEmptyField } from '../database/utils';
 export class OpenCTIHeaders extends AxiosHeaders {}
 
 export interface Certificates {
-  cert: string,
-  key: string,
-  ca: string,
+  cert: string;
+  key: string;
+  ca: string;
 }
 export interface GetHttpClient {
-  baseURL?: string
-  rejectUnauthorized?: boolean
-  responseType: 'json' | 'arraybuffer' | 'text'
+  baseURL?: string;
+  rejectUnauthorized?: boolean;
+  responseType: 'json' | 'arraybuffer' | 'text';
   headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
-  certificates?: Certificates
-  auth? : {
-    username: string
-    password: string
-  }
+  certificates?: Certificates;
+  auth?: {
+    username: string;
+    password: string;
+  };
 }
 
 const buildHttpAgentOpts = (uri: string, baseURL: string | undefined, defaultHttpAgent: HttpAgent, defaultHttpsAgent: HttpsAgent) => {
@@ -30,7 +30,7 @@ const buildHttpAgentOpts = (uri: string, baseURL: string | undefined, defaultHtt
   return {
     httpAgent: getPlatformHttpProxyAgent(agentUri) ?? defaultHttpAgent,
     httpsAgent: getPlatformHttpProxyAgent(agentUri) ?? defaultHttpsAgent,
-    proxy: false // Disable direct proxy protocol in http adapter
+    proxy: false, // Disable direct proxy protocol in http adapter
   };
 };
 export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, responseType, certificates, auth }: GetHttpClient) => {
@@ -54,6 +54,6 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, responseTy
     get: async (url: string, opts: any = {}) => caller.get(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
     post: async (url: string, data: object, opts: any = {}) => caller.post(url, data, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
     delete: async (url: string, opts: any = {}) => caller.delete(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
-    head: async (url: string, opts: any = {}) => caller.head(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) })
+    head: async (url: string, opts: any = {}) => caller.head(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
   };
 };

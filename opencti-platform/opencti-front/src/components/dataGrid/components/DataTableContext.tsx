@@ -4,8 +4,8 @@ import type { DataTableContextProps } from '../dataTableTypes';
 const DataTableContext = createContext<DataTableContextProps | undefined>(undefined);
 
 interface DataTableProviderProps {
-  children: ReactNode
-  initialValue: DataTableContextProps
+  children: ReactNode;
+  initialValue: DataTableContextProps;
 }
 
 export const DataTableProvider = ({ children, initialValue }: DataTableProviderProps) => {

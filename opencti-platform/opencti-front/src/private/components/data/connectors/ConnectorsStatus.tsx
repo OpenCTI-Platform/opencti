@@ -289,7 +289,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
 
         <div className="clearfix" />
         <Paper
-          className={'paper-for-grid'}
+          className="paper-for-grid"
           style={{
             padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
           }}
@@ -312,7 +312,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                 />
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: gridColumns,
@@ -326,7 +326,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                     <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     <SortConnectorsHeader field="is_managed" label={t_i18n('Manager deployment')} isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                   </div>
-                }
+                )}
               />
             </ListItem>
 
@@ -350,28 +350,28 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                       key={connector.id}
                       divider={true}
                       disablePadding
-                      secondaryAction={
+                      secondaryAction={(
                         <Security needs={[MODULES_MODMANAGE]}>
                           <>
                             {!isSensitive && (
-                            <Tooltip title={t_i18n('Reset the connector state')}>
-                              <span>
-                                <IconButton
-                                  onClick={() => {
-                                    setConnectorIdToReset(connector.id);
-                                    setConnectorMessages(connector.messages);
-                                  }}
-                                  aria-haspopup="true"
-                                  color="primary"
-                                  size="large"
-                                  disabled={!!connector.built_in}
-                                >
-                                  <PlaylistRemoveOutlined />
-                                </IconButton>
-                              </span>
-                            </Tooltip>
+                              <Tooltip title={t_i18n('Reset the connector state')}>
+                                <span>
+                                  <IconButton
+                                    onClick={() => {
+                                      setConnectorIdToReset(connector.id);
+                                      setConnectorMessages(connector.messages);
+                                    }}
+                                    aria-haspopup="true"
+                                    color="primary"
+                                    size="large"
+                                    disabled={!!connector.built_in}
+                                  >
+                                    <PlaylistRemoveOutlined />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
                             )}
-                            <Tooltip title={t_i18n('Clear this connector')} >
+                            <Tooltip title={t_i18n('Clear this connector')}>
                               <span>
                                 <IconButton
                                   onClick={() => {
@@ -388,7 +388,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                             </Tooltip>
                           </>
                         </Security>
-                      }
+                      )}
                     >
                       <ListItemButton
                         component={Link}
@@ -400,14 +400,14 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                         </ListItemIcon>
 
                         <ListItemText
-                          primary={
+                          primary={(
                             <div
                               style={{
                                 display: 'grid',
                                 gridTemplateColumns: gridColumns,
                               }}
                             >
-                              <Tooltip title={connector.title} placement={'top'}>
+                              <Tooltip title={connector.title} placement="top">
                                 <div className={classes.bodyItem}>
                                   {
                                     connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name
@@ -441,7 +441,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                 />
                               </div>
                             </div>
-                          }
+                          )}
                         />
                       </ListItemButton>
                     </ListItem>

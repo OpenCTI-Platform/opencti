@@ -9,10 +9,10 @@ import React, { FunctionComponent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 
 interface StixNestedRefRelationshipCreationFromKnowledgeGraphContentProps {
-  queryRef: PreloadedQuery<StixNestedRefRelationshipCreationResolveQuery>,
-  nestedRelationExist: boolean,
-  handleSetNestedRelationExist: (val: boolean) => void,
-  handleOpenCreateNested: () => void,
+  queryRef: PreloadedQuery<StixNestedRefRelationshipCreationResolveQuery>;
+  nestedRelationExist: boolean;
+  handleSetNestedRelationExist: (val: boolean) => void;
+  handleOpenCreateNested: () => void;
 }
 
 const StixNestedRefRelationshipCreationFromKnowledgeGraphContent: FunctionComponent<StixNestedRefRelationshipCreationFromKnowledgeGraphContentProps> = ({

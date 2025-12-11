@@ -1,6 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, } from '../../generated/graphql';
+import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
@@ -35,16 +35,16 @@ export const findVocabularyPaginated = (context: AuthContext, user: AuthUser, op
       filterGroup,
       'category',
       categories,
-      entityTypes.operator ?? undefined
+      entityTypes.operator ?? undefined,
     );
   }
   const args = {
     orderBy: ['order', 'name'], // Default orderBy if none
-    ...opts
+    ...opts,
   };
   return pageEntitiesConnection<BasicStoreEntityVocabulary>(context, user, [ENTITY_TYPE_VOCABULARY], {
     ...args,
-    filters
+    filters,
   });
 };
 
@@ -58,10 +58,10 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
       mode: FilterMode.And,
       filters: [
         { key: ['entity_type'], values: categoryDefinition.entity_types },
-        { key: categoryDefinition.fields.map((f) => f.key), values: [vocabulary.name] }
+        { key: categoryDefinition.fields.map((f) => f.key), values: [vocabulary.name] },
       ],
       filterGroups: [],
-    }
+    },
   });
 };
 
@@ -95,13 +95,13 @@ export const deleteVocabulary = async (context: AuthContext, user: AuthUser, voc
                       ...completeCategory.fields.map((f) => ({
                         match: {
                           [`${f.key}.keyword`]: {
-                            query: vocabulary.name
-                          }
-                        }
+                            query: vocabulary.name,
+                          },
+                        },
                       })),
                     ],
-                    minimum_should_match: 1
-                  }
+                    minimum_should_match: 1,
+                  },
                 },
                 {
                   bool: {
@@ -109,15 +109,15 @@ export const deleteVocabulary = async (context: AuthContext, user: AuthUser, voc
                       ...completeCategory.fields.map((f) => ({
                         exists: {
                           field: f.key,
-                        }
+                        },
                       })),
                     ],
-                    minimum_should_match: 1
-                  }
-                }
+                    minimum_should_match: 1,
+                  },
+                },
               ],
             },
-          }
+          },
         },
       });
     }

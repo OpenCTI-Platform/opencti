@@ -28,7 +28,7 @@ export const FINTEL_DESIGN_DEFINITION: ModuleDefinition<StoreEntityFintelDesign,
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: false
+      isFilterable: false,
     },
     { name: 'gradiantFromColor', label: 'Gradiant From Color', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'gradiantToColor', label: 'Gradiant To Color', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -38,7 +38,7 @@ export const FINTEL_DESIGN_DEFINITION: ModuleDefinition<StoreEntityFintelDesign,
   representative: (stix: StixFintelDesign) => {
     return stix.name;
   },
-  converter_2_1: convertFintelDesignToStix
+  converter_2_1: convertFintelDesignToStix,
 };
 
 registerDefinition(FINTEL_DESIGN_DEFINITION);

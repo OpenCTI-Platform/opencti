@@ -24,10 +24,10 @@ import { createRuleContent } from '../../rules/rules-utils';
 import { controlUserRestrictDeleteAgainstElement } from '../../utils/access';
 
 type ConfirmDeleteOptions = {
-  isRestoring?: boolean
+  isRestoring?: boolean;
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Utilities
 
 /**
@@ -68,7 +68,7 @@ const convertStoreEntityToInput = (element: BasicStoreObject, upsertedElements: 
   if (isStixObject(entity_type)) {
     return {
       ...directInputs,
-      ...refInputs
+      ...refInputs,
     };
   }
   if (isStixRelationship(entity_type)) {
@@ -202,7 +202,7 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
   //    which one (id+representative+entity_type, so frontend can display something useful)
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDeleteOperation>(context, user, id, ENTITY_TYPE_DELETE_OPERATION);
@@ -220,7 +220,7 @@ export const findOldDeleteOperations = (context: AuthContext, user: AuthUser, da
     orderMode: OrderingMode.Asc,
     mode: FilterMode.And,
     filters: [
-      { key: ['created_at'], values: [prepareDate(dateThreshold)], operator: FilterOperator.Lt }
+      { key: ['created_at'], values: [prepareDate(dateThreshold)], operator: FilterOperator.Lt },
     ],
     filterGroups: [],
   };

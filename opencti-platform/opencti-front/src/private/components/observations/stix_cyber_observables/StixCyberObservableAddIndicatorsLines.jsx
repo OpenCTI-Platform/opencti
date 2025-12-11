@@ -11,10 +11,10 @@ class StixCyberObservableAddIndicatorsLinesContainer extends Component {
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={stixCyberObservable}
-        relationshipType={'based-on'}
+        relationshipType="based-on"
         availableDatas={data?.indicators}
         existingDatas={stixCyberObservableIndicators}
-        updaterOptions={ { path: '__Pagination_stixCyberObservables_indicators_connection' } }
+        updaterOptions={{ path: '__Pagination_stixCyberObservables_indicators_connection' }}
         isRelationReversed={true}
       />
     );

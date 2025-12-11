@@ -66,10 +66,10 @@ const pirHistoryQuery = graphql`
 `;
 
 interface PirOverviewComponentProps {
-  pir: PirOverviewFragment$data
-  redisQueryRef: PreloadedQuery<PirOverviewRedisStreamQuery>
-  historyQueryRef: PreloadedQuery<PirOverviewHistoryQuery>
-  threatMapQueryRef: PreloadedQuery<PirOverviewThreatMapQuery>
+  pir: PirOverviewFragment$data;
+  redisQueryRef: PreloadedQuery<PirOverviewRedisStreamQuery>;
+  historyQueryRef: PreloadedQuery<PirOverviewHistoryQuery>;
+  threatMapQueryRef: PreloadedQuery<PirOverviewThreatMapQuery>;
 }
 
 const PirOverviewComponent = ({
@@ -84,14 +84,14 @@ const PirOverviewComponent = ({
 
   return (
     <Grid container spacing={3}>
-      <Grid size={{ xs: 12 }} container direction='column' spacing={3}>
+      <Grid size={{ xs: 12 }} container direction="column" spacing={3}>
         <PirOverviewDetails data={pir} dataStream={dataRedis} />
         <PirOverviewCounts data={pir} />
       </Grid>
-      <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
+      <Grid size={{ xs: 6 }} container direction="column" spacing={3}>
         <PirOverviewHistory dataHistory={dataHistory} dataPir={pir} />
       </Grid>
-      <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
+      <Grid size={{ xs: 6 }} container direction="column" spacing={3}>
         <PirThreatMap data={dataThreatMap} />
         <PirOverviewTopSources data={pir} />
         <PirOverviewCountFlagged data={pir} />
@@ -101,7 +101,7 @@ const PirOverviewComponent = ({
 };
 
 interface PirOverviewProps {
-  data: PirOverviewFragment$key
+  data: PirOverviewFragment$key;
 }
 
 const PirOverview = ({ data }: PirOverviewProps) => {

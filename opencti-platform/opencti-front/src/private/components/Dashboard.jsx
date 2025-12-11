@@ -450,12 +450,12 @@ const DefaultDashboard = ({ timeField }) => {
             style={{ height: 400 }}
           >
             <Suspense
-              fallback={
+              fallback={(
                 <LocationMiniMapTargets
                   center={[48.8566969, 2.3514616]}
                   zoom={2}
                 />
-              }
+              )}
             >
               <TargetedCountries timeField={timeField} />
             </Suspense>
@@ -465,7 +465,7 @@ const DefaultDashboard = ({ timeField }) => {
           <StixCoreObjectsList
             title={t_i18n('Latest reports')}
             height={410}
-            widgetId={'default_latest_reports_widget'}
+            widgetId="default_latest_reports_widget"
             dataSelection={[{
               filters: {
                 mode: 'and',

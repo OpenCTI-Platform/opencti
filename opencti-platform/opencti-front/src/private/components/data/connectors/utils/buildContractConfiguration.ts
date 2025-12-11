@@ -5,7 +5,7 @@ export type ManagedConnectorValues = {
   user_id?: string | FieldOption;
   automatic_user?: boolean;
   confidence_level?: string;
-  creator?: FieldOption
+  creator?: FieldOption;
 };
 
 const buildContractConfiguration = (values: ManagedConnectorValues) => {

@@ -27,13 +27,13 @@ import AlertsField from './AlertsField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 interface AlertDigestEditionProps {
-  handleClose: () => void
-  paginationOptions?: AlertingPaginationQuery$variables
-  queryRef: PreloadedQuery<AlertEditionQuery>
+  handleClose: () => void;
+  paginationOptions?: AlertingPaginationQuery$variables;
+  queryRef: PreloadedQuery<AlertEditionQuery>;
 }
 
 interface AlertDigestFormValues {
-  name?: string
+  name?: string;
   notifiers: FieldOption[];
   recipients: FieldOption[];
   trigger_ids: { value: string }[];
@@ -297,10 +297,11 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 onChange={(name, v) => handleSubmitField(name, v.map(({ value }) => value))}
               />
               <ObjectMembersField
-                label={'Recipients'}
+                label="Recipients"
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
-                multiple={true} name={'recipients'}
+                multiple={true}
+                name="recipients"
               />
             </Form>
           )}

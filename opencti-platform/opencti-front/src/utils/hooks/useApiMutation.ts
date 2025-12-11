@@ -11,9 +11,9 @@ const useApiMutation = <T extends MutationParameters>(
   query: GraphQLTaggedNode,
   fn?: (environment: IEnvironment, config: MutationConfig<T>) => Disposable,
   options?: {
-    errorMessage?: string | ReactNode,
-    errorMessageMap?: Record<string, string | ReactNode>,
-    successMessage?: string | ReactNode,
+    errorMessage?: string | ReactNode;
+    errorMessageMap?: Record<string, string | ReactNode>;
+    successMessage?: string | ReactNode;
   },
 ): [(args: UseMutationConfig<T>) => void, boolean] => {
   const [commit, inFlight] = useMutation(query, fn);

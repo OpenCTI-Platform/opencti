@@ -118,7 +118,7 @@ export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>
   return matchingCriteria;
 };
 
-const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir) => {
+const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPir) => {
   const parsedPir = parsePir(pir);
 
   return async (streamEvents: Array<SseEvent<DataEvent>>) => {
@@ -177,7 +177,7 @@ const pirManagerHandler = async () => {
         redisClient,
         pir.lastEventId,
         processStreamEventsForPir(context, pir),
-        { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE }
+        { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE },
       );
       // Update pir last event id.
       if (lastEventId !== pir.lastEventId) {
@@ -207,7 +207,7 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
     handler: pirManagerHandler,
     interval: PIR_MANAGER_INTERVAL,
     lockKey: PIR_MANAGER_LOCK_KEY,
-  }
+  },
 };
 
 // Automatically register manager on start.

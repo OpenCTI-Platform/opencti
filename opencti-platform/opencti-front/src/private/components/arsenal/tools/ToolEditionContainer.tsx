@@ -8,9 +8,9 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import { ToolEditionContainerQuery } from './__generated__/ToolEditionContainerQuery.graphql';
 
 interface ToolEditionContainerProps {
-  queryRef: PreloadedQuery<ToolEditionContainerQuery>
-  handleClose: () => void
-  open?: boolean
+  queryRef: PreloadedQuery<ToolEditionContainerQuery>;
+  handleClose: () => void;
+  open?: boolean;
   controlledDial?: DrawerControlledDialType;
 }
 

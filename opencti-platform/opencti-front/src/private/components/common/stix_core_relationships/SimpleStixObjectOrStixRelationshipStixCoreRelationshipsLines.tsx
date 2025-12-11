@@ -83,11 +83,11 @@ export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery =
 `;
 
 interface SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesProps {
-  queryRef: PreloadedQuery<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery>,
-  dataColumns: DataColumns,
-  stixObjectOrStixRelationshipId: string,
-  stixObjectOrStixRelationshipLink: string,
-  paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables,
+  queryRef: PreloadedQuery<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery>;
+  dataColumns: DataColumns;
+  stixObjectOrStixRelationshipId: string;
+  stixObjectOrStixRelationshipLink: string;
+  paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables;
 }
 
 const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = ({

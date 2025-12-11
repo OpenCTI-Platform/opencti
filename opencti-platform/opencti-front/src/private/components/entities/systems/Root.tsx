@@ -180,7 +180,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <SystemDeletion id={system.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -246,53 +246,53 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
             <Routes>
               <Route
                 path="/"
-                element={
+                element={(
                   <System
                     systemData={system}
                     viewAs={viewAs}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/entities/systems/${systemId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <SystemKnowledge
                       systemData={system}
                       viewAs={viewAs}
                     />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={system}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses/*"
-                element={
+                element={(
                   <SystemAnalysis
                     system={system}
                     viewAs={viewAs}
                   />
-                }
+                )}
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={system.id}
                     entityLink={link}
@@ -309,26 +309,26 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                       'System',
                     ]}
                   />
-                }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={systemId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={system}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
-                element={
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={systemId}
                   />
-                }
+                )}
               />
             </Routes>
           </div>
@@ -340,7 +340,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
   );
 };
 const Root = () => {
-  const { systemId } = useParams() as { systemId: string; };
+  const { systemId } = useParams() as { systemId: string };
   const queryRef = useQueryLoading<RootSystemQuery>(systemQuery, {
     id: systemId,
   });

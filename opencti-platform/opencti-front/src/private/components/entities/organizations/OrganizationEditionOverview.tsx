@@ -336,12 +336,12 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={(name: string, value: string | null) => handleSubmitField(name, (value === '' ? null : value))}
-            helperText={
+            helperText={(
               <SubscriptionFocus
                 context={context}
                 fieldName="x_opencti_score"
               />
-            }
+            )}
           />
           {organization.workflowEnabled && (
             <StatusField

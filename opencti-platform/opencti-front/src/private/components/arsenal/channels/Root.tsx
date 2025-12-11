@@ -109,7 +109,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element= {
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -128,7 +128,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                   ]}
                   data={channel}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -153,7 +153,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ChannelDeletion id={channel.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -228,31 +228,31 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <ChannelKnowledge channelData={channel} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={channel}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses/*"
-                element={
+                element={(
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={channel}
                   />
-                }
+                )}
               />
               <Route
                 path="/files"
-                element={ (
+                element={(
                   <FileManager
                     id={channelId}
                     connectorsImport={connectorsForImport}
@@ -263,7 +263,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={channelId}
                   />

@@ -37,7 +37,7 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
       type: 'TAXII',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: input.user_id
+      connector_user_id: input.user_id,
     });
     await publishUserAction({
       user,
@@ -45,16 +45,16 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
       event_scope: 'create',
       event_access: 'administration',
       message: `creates taxii ingestion \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_TAXII, input }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_TAXII, input },
     });
   }
   return element;
 };
 
 export interface TaxiiIngestionPatch {
-  current_state_cursor?: string | undefined,
-  last_execution_date?: string,
-  added_after_start?: string,
+  current_state_cursor?: string | undefined;
+  last_execution_date?: string;
+  added_after_start?: string;
 }
 
 export const patchTaxiiIngestion = async (context: AuthContext, user: AuthUser, id: string, patch: TaxiiIngestionPatch) => {
@@ -78,7 +78,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     const updatedAuthenticationValue = addAuthenticationCredentials(
       authentication_value,
       authenticationValueField?.value[0],
-      authentication_type
+      authentication_type,
     );
 
     const updatedInput = patchInput.map((editInput) => {
@@ -117,7 +117,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     type: 'TAXII',
     name: element.name,
     is_running: element.ingestion_running ?? false,
-    connector_user_id: element.user_id
+    connector_user_id: element.user_id,
   });
 
   await publishUserAction({
@@ -126,13 +126,13 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for taxii ingestion \`${element.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input },
   });
 
   const notif = await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return {
     ...notif,
-    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value)
+    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value),
   };
 };
 
@@ -145,7 +145,7 @@ export const ingestionDelete = async (context: AuthContext, user: AuthUser, inge
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes taxii ingestion \`${deleted.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: deleted }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: deleted },
   });
   return ingestionId;
 };
@@ -160,7 +160,7 @@ export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthU
     event_scope: 'update',
     event_access: 'administration',
     message: `reset state of taxii ingestion \`${ingestionUpdated.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: ingestionUpdated }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: ingestionUpdated },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestionUpdated, user);
 };

@@ -85,7 +85,7 @@ export const uploadImport = async (context, user, args) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'create',
-    context_data: contextData
+    context_data: contextData,
   });
   return up;
 };
@@ -113,7 +113,7 @@ export const uploadPending = async (context, user, args) => {
             o.id === entity.standard_id
               ? { ...entityAsStix, object_refs: o.object_refs }
               : o
-          ))
+          )),
         };
       }
     }
@@ -123,7 +123,7 @@ export const uploadPending = async (context, user, args) => {
     finalFile = {
       createReadStream: () => Readable.from(Buffer.from(json, 'utf-8')),
       filename: fileData.filename,
-      mimetype: fileData.mimetype
+      mimetype: fileData.mimetype,
     };
   }
 
@@ -135,7 +135,7 @@ export const uploadPending = async (context, user, args) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'create',
-    context_data: contextData
+    context_data: contextData,
   });
   return up;
 };
@@ -159,7 +159,7 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
         connectorId,
         configuration,
         validationMode,
-        forceValidation: true
+        forceValidation: true,
       })
     )));
   }
@@ -189,7 +189,7 @@ export const deleteImport = async (context, user, fileName) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'delete',
-    context_data: contextData
+    context_data: contextData,
   });
   return fileName;
 };

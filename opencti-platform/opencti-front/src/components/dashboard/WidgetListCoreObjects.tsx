@@ -5,12 +5,12 @@ import type { WidgetColumn } from '../../utils/widget/widget';
 
 interface WidgetListCoreObjectsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
-  publicWidget?: boolean
-  rootRef: DataTableProps['rootRef']
-  widgetId: string
-  pageSize: number
-  columns: WidgetColumn[]
+  data: any[];
+  publicWidget?: boolean;
+  rootRef: DataTableProps['rootRef'];
+  widgetId: string;
+  pageSize: number;
+  columns: WidgetColumn[];
 }
 
 const WidgetListCoreObjects = ({
@@ -26,15 +26,15 @@ const WidgetListCoreObjects = ({
 
     return columns
       .reduce<Record<string, Partial<DataTableColumn>>>(
-      (acc, { attribute, label }) => {
-        if (!attribute) {
+        (acc, { attribute, label }) => {
+          if (!attribute) {
+            return acc;
+          }
+          acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
           return acc;
-        }
-        acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
-        return acc;
-      },
-      {},
-    );
+        },
+        {},
+      );
   }, [columns]);
 
   return (

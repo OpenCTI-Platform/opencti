@@ -43,7 +43,7 @@ const inlineStyles = {
 
 type ItemCvssScoreProps = {
   score?: number | null;
-  style?: CSSProperties
+  style?: CSSProperties;
 };
 
 const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {

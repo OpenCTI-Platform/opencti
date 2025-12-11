@@ -6,10 +6,10 @@ import useGranted, { SETTINGS_SETMANAGEXTMHUB } from './useGranted';
 import useXtmHubUserPlatformToken from './useXtmHubUserPlatformToken';
 
 interface Props {
-  serviceInstanceId?: string
-  fileId?: string
-  onSuccess: (file: File) => void
-  onError: (error: unknown) => void
+  serviceInstanceId?: string;
+  fileId?: string;
+  onSuccess: (file: File) => void;
+  onError: (error: unknown) => void;
 }
 
 interface Return {

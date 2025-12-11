@@ -7,7 +7,7 @@ interface FilterIconButtonGlobalModeProps {
   handleSwitchGlobalMode?: () => void;
 }
 const FilterIconButtonGlobalMode: FunctionComponent<
-FilterIconButtonGlobalModeProps
+  FilterIconButtonGlobalModeProps
 > = ({
   classOperator,
   globalMode,

@@ -657,6 +657,7 @@ class DataTableToolBar extends Component {
     }
     this.setState({ actionsInputs });
   }
+
   handleLaunchRead(read) {
     const actions = [{
       type: 'REPLACE',
@@ -670,24 +671,28 @@ class DataTableToolBar extends Component {
       this.handleOpenTask();
     });
   }
+
   handleLaunchDelete() {
     const actions = [{ type: 'DELETE', context: null }];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
   }
+
   handleLaunchRemoveAuthMembers() {
     const actions = [{ type: 'REMOVE_AUTH_MEMBERS', context: null }];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
   }
+
   handleLaunchRemoveFromDraft() {
     const actions = [{ type: 'REMOVE_FROM_DRAFT', context: null }];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
   }
+
   handleLaunchRemove() {
     const actions = [
       {
@@ -839,17 +844,17 @@ class DataTableToolBar extends Component {
     const finalActions = taskScope === 'USER'
       ? this.getUserDatatableFinalActions(actions)
       : actions.map(
-        (n) => ({
-          type: n.type,
-          context: n.context
-            ? {
-              ...n.context,
-              values: n.context.values.map((o) => o.id || o.value || o),
-            }
-            : null,
-          containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
-        }),
-      );
+          (n) => ({
+            type: n.type,
+            context: n.context
+              ? {
+                  ...n.context,
+                  values: n.context.values.map((o) => o.id || o.value || o),
+                }
+              : null,
+            containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
+          }),
+        );
 
     if (selectAll) {
       commitMutation({
@@ -1742,7 +1747,7 @@ class DataTableToolBar extends Component {
             renderOption={(props, option) => (
               <li {...props}>
                 <div className={classes.icon}>
-                  <ItemIcon type={option.type}/>
+                  <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
               </li>
@@ -1778,7 +1783,7 @@ class DataTableToolBar extends Component {
             renderOption={(props, option) => (
               <li {...props}>
                 <div className={classes.icon}>
-                  <ItemIcon type={option.type}/>
+                  <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
               </li>
@@ -1941,13 +1946,13 @@ class DataTableToolBar extends Component {
       case 'x_opencti_detection':
         return (
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 onChange={(event) => this.handleChangeSwitchInput(i, 'values', event.target.checked)}
                 name={`actions-${i}-value`}
                 color="primary"
               />
-            }
+            )}
             label={t('Value')}
           />
         );
@@ -2064,7 +2069,7 @@ class DataTableToolBar extends Component {
             onChange={this.handleChangeDate.bind(this, i)}
             onAccept={this.handleAcceptDate.bind(this, i)}
             views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-            format='yyyy-MM-dd hh:mm:ss a'
+            format="yyyy-MM-dd hh:mm:ss a"
           />
         );
       default:
@@ -2166,27 +2171,27 @@ class DataTableToolBar extends Component {
             : selectedTypes;
           const typesAreDifferent = elementsTypes.filter((type) => !['Stix-Core-Object', 'Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type)).length > 1;
           const preventMerge = selectedTypes.at(0) === 'Vocabulary'
-              && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
+            && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
           // region update
           const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
-              || (entityTypeFilterValues.length === 1
-                  && notUpdatableTypes.includes(entityTypeFilterValues[0]));
+            || (entityTypeFilterValues.length === 1
+              && notUpdatableTypes.includes(entityTypeFilterValues[0]));
           // endregion
           // region rules
           const typesAreNotScannable = notScannableTypes.includes(selectedTypes[0])
-              || (entityTypeFilterValues.length === 1
-                  && notScannableTypes.includes(entityTypeFilterValues[0]));
+            || (entityTypeFilterValues.length === 1
+              && notScannableTypes.includes(entityTypeFilterValues[0]));
           // endregion
           // region enrich
           const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable', 'Stix-Domain-Object'].includes(st))).length === 1;
           const isAllEnrichSelect = selectAll
-              && entityTypeFilterValues.length === 1
-              && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
-              && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
+            && entityTypeFilterValues.length === 1
+            && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
+            && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
           const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
-              || (entityTypeFilterValues.length === 1
-                  && notEnrichableTypes.includes(entityTypeFilterValues[0]))
-              || (!isManualEnrichSelect && !isAllEnrichSelect);
+            || (entityTypeFilterValues.length === 1
+              && notEnrichableTypes.includes(entityTypeFilterValues[0]))
+            || (!isManualEnrichSelect && !isAllEnrichSelect);
           // endregion
           // region orgaSharing
           const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
@@ -2195,8 +2200,8 @@ class DataTableToolBar extends Component {
           const typesAreNotMergable = notMergableTypes.includes(selectedTypes[0]);
           const enableMerge = !typesAreNotMergable && !mergeDisable;
           const typesAreNotAddableInContainer = notAddableTypes.includes(selectedTypes[0])
-              || (entityTypeFilterValues.length === 1
-                  && notScannableTypes.includes(entityTypeFilterValues[0]));
+            || (entityTypeFilterValues.length === 1
+              && notScannableTypes.includes(entityTypeFilterValues[0]));
           const titleCopy = this.titleCopy();
           let keptElement = null;
           let newAliases = [];
@@ -2210,13 +2215,13 @@ class DataTableToolBar extends Component {
                 .filter((name) => name !== keptElement.name);
               const aliases = keptElement.aliases !== null
                 ? selectedElementsList
-                  .map((el) => el.aliases)
-                  .flat()
-                  .filter((alias) => alias !== null && alias !== undefined)
+                    .map((el) => el.aliases)
+                    .flat()
+                    .filter((alias) => alias !== null && alias !== undefined)
                 : selectedElementsList
-                  .map((el) => el.x_opencti_aliases)
-                  .flat()
-                  .filter((alias) => alias !== null && alias !== undefined);
+                    .map((el) => el.x_opencti_aliases)
+                    .flat()
+                    .filter((alias) => alias !== null && alias !== undefined);
 
               newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
             }
@@ -2254,7 +2259,7 @@ class DataTableToolBar extends Component {
           // endregion
           return (
             <>
-              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid='opencti-toolbar'>
+              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid="opencti-toolbar">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Typography
                     className={classes.title}
@@ -2321,7 +2326,7 @@ class DataTableToolBar extends Component {
                               || this.state.processing
                             }
                           >
-                            <LockOpenOutlined fontSize="small" color={'primary'} />
+                            <LockOpenOutlined fontSize="small" color="primary" />
                           </IconButton>
                         </Tooltip>
                       </Security>
@@ -2563,7 +2568,7 @@ class DataTableToolBar extends Component {
                               || this.state.processing
                             }
                           >
-                            <DeleteSweepOutlined fontSize="small" color={'primary'} />
+                            <DeleteSweepOutlined fontSize="small" color="primary" />
                           </IconButton>
                         </Tooltip>
                       </Security>
@@ -2591,9 +2596,9 @@ class DataTableToolBar extends Component {
                             <IconButton
                               aria-label="completeDelete"
                               disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
+                                numberOfSelectedElements === 0
+                                || this.state.processing
+                              }
                               onClick={this.handleLaunchCompleteDelete.bind(this)}
                               color={warning ? 'warning' : 'primary'}
                               size="small"
@@ -2679,11 +2684,11 @@ class DataTableToolBar extends Component {
                                   <span>
                                     <Chip
                                       classes={{ root: classes.filter }}
-                                      label={
+                                      label={(
                                         <div>
                                           <strong>{t('Search')}</strong>: {search}
                                         </div>
-                                      }
+                                      )}
                                     />
                                     {filters.filters.length > 0 && (
                                       <Chip
@@ -2699,15 +2704,15 @@ class DataTableToolBar extends Component {
                               <span>
                                 {mergingElement
                                   ? truncate(
-                                    R.join(', ', [
-                                      getMainRepresentative(mergingElement),
-                                    ]),
-                                    80,
-                                  )
+                                      R.join(', ', [
+                                        getMainRepresentative(mergingElement),
+                                      ]),
+                                      80,
+                                    )
                                   : truncate(
-                                    selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
-                                    80,
-                                  )}
+                                      selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
+                                      80,
+                                    )}
                               </span>
                             )}
                           </TableCell>
@@ -2901,7 +2906,7 @@ class DataTableToolBar extends Component {
                         key={element.id}
                         dense={true}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <Radio
                             checked={
                               keptEntityId
@@ -2916,7 +2921,7 @@ class DataTableToolBar extends Component {
                             name="keptEntityID"
                             inputProps={{ 'aria-label': 'keptEntityID' }}
                           />
-                        }
+                        )}
                       >
                         <ListItemIcon>
                           <ItemIcon type={element.entity_type} />
@@ -3067,7 +3072,7 @@ class DataTableToolBar extends Component {
                         key={connector.id}
                         dense={true}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <MuiSwitch
                             checked={this.state.enrichSelected.includes(
                               connector.id,
@@ -3078,7 +3083,7 @@ class DataTableToolBar extends Component {
                             )}
                             inputProps={{ 'aria-label': 'controlled' }}
                           />
-                      }
+                        )}
                       >
                         <ListItemIcon>
                           <CloudRefreshOutline />
@@ -3225,7 +3230,7 @@ class DataTableToolBar extends Component {
                   />
                   <FormControlLabel
                     style={{ marginTop: 20 }}
-                    control={
+                    control={(
                       <Checkbox
                         checked={
                           actionsInputs[0]?.options?.includeNeighbours || false
@@ -3236,7 +3241,7 @@ class DataTableToolBar extends Component {
                           'includeNeighbours',
                         )}
                       />
-                    }
+                    )}
                     label={t('Also include first neighbours')}
                   />
                   <IconButton

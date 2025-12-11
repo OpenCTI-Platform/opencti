@@ -119,7 +119,7 @@ const EntitiesDetailsRightsBar = () => {
       PaperProps={{ variant: 'outlined' }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
-      <Typography variant='h3' sx={{ marginBottom: 3 }}>
+      <Typography variant="h3" sx={{ marginBottom: 3 }}>
         {t_i18n('', {
           id: 'objects selected',
           values: {
@@ -177,7 +177,7 @@ const EntitiesDetailsRightsBar = () => {
         )}
         {detailsPreviewSelected.parent_types.includes('stix-relationship')
           && detailsPreviewSelected.entity_type !== 'basic-relationship' && (
-            <RelationshipDetails relation={detailsPreviewSelected as GraphLink} />
+          <RelationshipDetails relation={detailsPreviewSelected as GraphLink} />
         )}
         {detailsPreviewSelected.parent_types.includes('Stix-Core-Object') && (
           <EntityDetails entity={detailsPreviewSelected as GraphNode} />

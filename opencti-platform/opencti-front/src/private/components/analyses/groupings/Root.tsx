@@ -87,7 +87,7 @@ const groupingQuery = graphql`
 const RootGrouping = () => {
   const { groupingId } = useParams() as { groupingId: string };
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootReportSubscription>
+    GraphQLSubscriptionConfig<RootReportSubscription>
   >(
     () => ({
       subscription,
@@ -127,7 +127,7 @@ const RootGrouping = () => {
                         <GroupingEdition groupingId={grouping.id} />
                       </Security>
                     )}
-                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]} hasAccess={currentAccessRight.canEdit}>
                         <GroupingDeletion groupingId={grouping.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>
@@ -190,7 +190,7 @@ const RootGrouping = () => {
                     </Tabs>
                     {!isKnowledgeOrContent && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                        <AIInsights id={grouping.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+                        <AIInsights id={grouping.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={grouping.id} coverage={grouping.securityCoverage} />
                       </div>
                     )}
@@ -204,51 +204,52 @@ const RootGrouping = () => {
                     />
                     <Route
                       path="/entities"
-                      element={
+                      element={(
                         <ContainerStixDomainObjects
                           container={grouping}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/observables"
-                      element={
+                      element={(
                         <ContainerStixCyberObservables
                           container={grouping}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/content/*"
-                      element={
+                      element={(
                         <StixCoreObjectContentRoot
                           stixCoreObject={grouping}
                           isContainer={true}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/knowledge"
-                      element={
+                      element={(
                         <Navigate
                           replace={true}
                           to={`/dashboard/analyses/groupings/${groupingId}/knowledge/graph`}
-                        />}
+                        />
+                      )}
                     />
                     <Route
                       path="/knowledge/*"
-                      element={
+                      element={(
                         <GroupingKnowledge
                           grouping={grouping}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/files"
-                      element={
+                      element={(
                         <StixCoreObjectFilesAndHistory
                           id={groupingId}
                           connectorsExport={props.connectorsForExport}
@@ -257,7 +258,7 @@ const RootGrouping = () => {
                           withoutRelations={true}
                           bypassEntityId={true}
                         />
-                      }
+                      )}
                     />
                   </Routes>
                 </div>

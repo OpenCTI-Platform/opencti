@@ -66,7 +66,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -79,7 +79,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
               style={{ width: dataColumns.value.width }}
             >
               {getMainRepresentative(node)}
-              {node.draftVersion && (<DraftChip/>)}
+              {node.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}
@@ -108,7 +108,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItemButton>
   );
@@ -285,7 +285,7 @@ export const ContainerAddStixCoreObjecstLineDummy = ({ dataColumns }) => {
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -343,7 +343,7 @@ export const ContainerAddStixCoreObjecstLineDummy = ({ dataColumns }) => {
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

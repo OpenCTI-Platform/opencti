@@ -61,7 +61,7 @@ const retentionLinesFragment = graphql`
 `;
 
 interface RetentionLinesProps {
-  dataColumns: DataColumns,
+  dataColumns: DataColumns;
   paginationOptions: RetentionLinesPaginationQuery$variables;
   queryRef: PreloadedQuery<RetentionLinesPaginationQuery>;
 }
@@ -72,8 +72,8 @@ const RetentionLines: FunctionComponent<RetentionLinesProps> = ({
   queryRef,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  RetentionLinesPaginationQuery,
-  RetentionLines_data$key
+    RetentionLinesPaginationQuery,
+    RetentionLines_data$key
   >({
     linesQuery: RetentionLinesQuery,
     linesFragment: retentionLinesFragment,

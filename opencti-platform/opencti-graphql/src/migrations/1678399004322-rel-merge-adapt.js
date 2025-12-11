@@ -19,7 +19,7 @@ export const up = async (next) => {
     },
     noFiltersChecking: true,
     orderBy: 'created_at',
-    orderMode: 'asc'
+    orderMode: 'asc',
   });
   let currentProcessing = 0;
   const filteredElementsIds = R.uniq(mergedEvents.map((event) => event.context_data.id));
@@ -37,13 +37,13 @@ export const up = async (next) => {
       await elUpdate(data._index, mergedId, {
         script: {
           source: 'for (key in ctx._source.keySet()) { '
-                + "if (key.startsWith('rel_')) { "
-                    + 'ctx._source[key] = params[key];'
-                + '}'
+            + "if (key.startsWith('rel_')) { "
+            + 'ctx._source[key] = params[key];'
+            + '}'
             + '}',
           lang: 'painless',
           params,
-        }
+        },
       });
     }
     currentProcessing += 1;

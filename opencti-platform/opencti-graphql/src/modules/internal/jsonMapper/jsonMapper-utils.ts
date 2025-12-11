@@ -20,7 +20,7 @@ import {
   type JsonMapperParsed,
   type JsonMapperRepresentation,
   JsonMapperRepresentationType,
-  type JsonMapperResolved
+  type JsonMapperResolved,
 } from './jsonMapper-types';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_REFS } from '../../../domain/attribute-utils';
@@ -67,8 +67,8 @@ export const parseJsonMapperWithDefaultValues = async (context: AuthContext, use
     return representation.attributes.flatMap((attribute, j) => {
       if (
         attribute.default_values
-          && attribute.key !== 'objectMarking'
-          && refsDefinition.map((ref) => ref.name).includes(attribute.key)
+        && attribute.key !== 'objectMarking'
+        && refsDefinition.map((ref) => ref.name).includes(attribute.key)
       ) {
         refAttributesIndexes.push(`${i}-${j}`);
         return attribute.default_values;
@@ -92,10 +92,10 @@ export const parseJsonMapperWithDefaultValues = async (context: AuthContext, use
             id: val,
             name: refAttributesIndexes.includes(`${i}-${j}`) && representative
               ? representative
-              : val
+              : val,
           };
-        })
-      }))
+        }),
+      })),
     })),
   };
 };
@@ -145,14 +145,14 @@ export const validateJsonMapper = async (context: AuthContext, user: AuthUser, m
     ].map((def) => ({
       name: def.name,
       mandatory: def.mandatoryType === 'external',
-      multiple: def.multiple
+      multiple: def.multiple,
     }));
     const refsDefs = [
       ...schemaRelationsRefDefinition.getRelationsRef(representation.target.entity_type),
     ].map((def) => ({
       name: def.name,
       mandatory: def.mandatoryType === 'external',
-      multiple: def.multiple
+      multiple: def.multiple,
     }));
     [...attributesDefs, ...refsDefs].filter((schemaAttribute) => schemaAttribute.mandatory)
       .forEach((schemaAttribute) => {
@@ -169,7 +169,7 @@ export const validateJsonMapper = async (context: AuthContext, user: AuthUser, m
         if (isPathEmpty && isDefaultValueEmpty && isAttributeDefaultValueEmpty) {
           throw FunctionalError('Missing values for required attribute', {
             representation: representationLabel(idx, representation),
-            attribute: schemaAttribute.name
+            attribute: schemaAttribute.name,
           });
         }
       });

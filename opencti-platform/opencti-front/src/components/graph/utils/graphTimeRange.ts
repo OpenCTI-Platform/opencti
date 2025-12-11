@@ -3,12 +3,12 @@ import { dayEndDate, daysAfter, daysAgo, jsDate, minutesBefore, minutesBetweenDa
 import { GraphLink } from '../graph.types';
 
 export interface GraphTimeRange {
-  interval: [Date, Date]
+  interval: [Date, Date];
   values: {
-    index: number,
-    time: number,
-    value: number
-  }[]
+    index: number;
+    time: number;
+    value: number;
+  }[];
 }
 
 /**

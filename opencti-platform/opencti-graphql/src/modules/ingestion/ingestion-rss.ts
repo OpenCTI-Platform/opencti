@@ -11,7 +11,7 @@ const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIn
     id: 'ingestion-rss',
     name: ENTITY_TYPE_INGESTION_RSS,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
@@ -38,7 +38,7 @@ const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIn
       editDefault: false,
       multiple: false,
       upsert: true,
-      isFilterable: true
+      isFilterable: true,
     },
     { name: 'report_types', label: 'Report types', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: true, upsert: true, isFilterable: true },
     { name: 'created_by_ref', label: 'Created by', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: false },
@@ -51,7 +51,7 @@ const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIn
   representative: (stix: StixIngestionRss) => {
     return stix.name;
   },
-  converter_2_1: convertIngestionRssToStix
+  converter_2_1: convertIngestionRssToStix,
 };
 
 registerDefinition(INGESTION_RSS_DEFINITION);

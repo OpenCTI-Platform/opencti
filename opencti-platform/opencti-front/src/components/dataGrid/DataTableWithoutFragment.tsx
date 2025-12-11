@@ -7,29 +7,29 @@ import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
 
 type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
-| 'storageKey'
-| 'rootRef'
-| 'actions'
-| 'icon'
-| 'disableNavigation'
-| 'disableLineSelection'
-| 'disableToolBar'
-| 'removeSelectAll'
-| 'selectOnLineClick'
-| 'filtersComponent'
-| 'getComputeLink'
-| 'pageSize'
-| 'hideHeaders'
-| 'onLineClick'
-| 'isLocalStorageEnabled'
-| 'variant'> & {
-  data: unknown,
-  globalCount: number
-};
+  | 'storageKey'
+  | 'rootRef'
+  | 'actions'
+  | 'icon'
+  | 'disableNavigation'
+  | 'disableLineSelection'
+  | 'disableToolBar'
+  | 'removeSelectAll'
+  | 'selectOnLineClick'
+  | 'filtersComponent'
+  | 'getComputeLink'
+  | 'pageSize'
+  | 'hideHeaders'
+  | 'onLineClick'
+  | 'isLocalStorageEnabled'
+  | 'variant'> & {
+    data: unknown;
+    globalCount: number;
+  };
 
 interface DataTableWithoutFragmentInternalToolBarProps {
-  taskScope: string,
-  dataIds: string[],
+  taskScope: string;
+  dataIds: string[];
 }
 
 const DataTableWithoutFragmentInternalToolbar = ({ taskScope, dataIds }: DataTableWithoutFragmentInternalToolBarProps) => {
@@ -64,7 +64,7 @@ const DataTableWithoutFragmentInternalToolbar = ({ taskScope, dataIds }: DataTab
 };
 
 const DataTableWithoutFragment = (props: OCTIDataTableProps & {
-  taskScope?: string
+  taskScope?: string;
 }) => {
   const { data, taskScope } = props;
 
@@ -83,10 +83,12 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps & {
       initialValues={{}}
       disableLineSelection={!taskScope}
       dataTableToolBarComponent={taskScope
-        ? <DataTableWithoutFragmentInternalToolbar
-            dataIds={extractDataIds()}
-            taskScope={taskScope}
-          />
+        ? (
+            <DataTableWithoutFragmentInternalToolbar
+              dataIds={extractDataIds()}
+              taskScope={taskScope}
+            />
+          )
         : undefined
       }
     />

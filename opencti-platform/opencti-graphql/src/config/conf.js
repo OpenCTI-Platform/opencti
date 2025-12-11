@@ -197,14 +197,14 @@ if (appLogFileTransport) {
       dirname: logsDirname,
       level: 'error',
       maxFiles,
-    })
+    }),
   );
   appLogTransports.push(
     new DailyRotateFile({
       filename: 'opencti.log',
       dirname: logsDirname,
       maxFiles,
-    })
+    }),
   );
 }
 if (appLogConsoleTransport) {
@@ -245,7 +245,7 @@ if (auditLogFileTransport) {
       filename: 'audit.log',
       dirname,
       maxFiles,
-    })
+    }),
   );
 }
 if (auditLogConsoleTransport) {
@@ -268,7 +268,7 @@ const supportLogger = winston.createLogger({
     dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
     maxFiles: 3,
     maxSize: '10m',
-    level: 'warn'
+    level: 'warn',
   })],
 });
 
@@ -284,7 +284,9 @@ const telemetryLogTransports = [new DailyRotateFile({
 })];
 const telemetryLogger = winston.createLogger({
   level: 'info',
-  format: format.printf((info) => { return `${info.message}`; }),
+  format: format.printf((info) => {
+    return `${info.message}`;
+  }),
   transports: telemetryLogTransports,
 });
 
@@ -294,7 +296,7 @@ export const logS3Debug = {
   },
   info: (_message, _detail) => {},
   warn: (_message, _detail) => {},
-  error: (_message, _detail) => {}
+  error: (_message, _detail) => {},
 };
 
 export const logMigration = {
@@ -344,7 +346,7 @@ export const logFrontend = {
 export const logTelemetry = {
   log: (message) => {
     telemetryLogger.log('info', message);
-  }
+  },
 };
 
 export const PORT = nconf.get('app:port');
@@ -390,7 +392,7 @@ export const configureCA = (certificates) => {
   if (certificates && certificates.length > 0) {
     return { ca: certificates };
   }
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const cert of LINUX_CERTFILES) {
     try {
       if (lstatSync(cert).isFile()) {
@@ -465,7 +467,7 @@ export const getPlatformHttpProxies = () => {
     proxies['https:'] = {
       build: () => new HttpsProxyAgent(https, {
         rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
-        ...configureCA(proxyCA)
+        ...configureCA(proxyCA),
       }),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
@@ -528,7 +530,7 @@ export const computeAccountStatusChoices = () => {
   return {
     [ACCOUNT_STATUS_ACTIVE]: 'All good folks',
     [ACCOUNT_STATUS_EXPIRED]: 'Your account has expired. If you would like to reactivate your account, please contact your administrator.',
-    ...statusesDefinition
+    ...statusesDefinition,
   };
 };
 export const ACCOUNT_STATUSES = computeAccountStatusChoices();

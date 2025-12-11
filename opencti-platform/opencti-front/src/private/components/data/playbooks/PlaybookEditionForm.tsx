@@ -51,12 +51,12 @@ export const playbookMutationFieldPatch = graphql`
 `;
 
 interface PlaybookEditionFormData {
-  name: string
-  description: string | null | undefined
+  name: string;
+  description: string | null | undefined;
 }
 
 interface PlaybookEditionFormProps {
-  queryRef: PreloadedQuery<PlaybookEditionFormQuery>,
+  queryRef: PreloadedQuery<PlaybookEditionFormQuery>;
 }
 
 const PlaybookEditionForm: FunctionComponent<PlaybookEditionFormProps> = ({ queryRef }) => {

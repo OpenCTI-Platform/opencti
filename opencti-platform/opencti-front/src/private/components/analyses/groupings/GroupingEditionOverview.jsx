@@ -251,12 +251,12 @@ const GroupingEditionOverviewComponent = (props) => {
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={context}
                     fieldName="x_opencti_workflow_id"
                   />
-                }
+                )}
               />
             )}
             <CreatedByField
@@ -273,12 +273,12 @@ const GroupingEditionOverviewComponent = (props) => {
               name="objectMarking"
               required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldname="objectMarking"
                 />
-              }
+              )}
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />

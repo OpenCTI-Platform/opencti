@@ -21,7 +21,7 @@ import {
   type CsvMapperParsed,
   type CsvMapperRepresentation,
   type CsvMapperResolved,
-  ENTITY_TYPE_CSV_MAPPER
+  ENTITY_TYPE_CSV_MAPPER,
 } from '../internal/csvMapper/csvMapper-types';
 import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../parser/csv-bundler';
 import { findById as findCsvMapperById, transformCsvMapperConfig } from '../internal/csvMapper/csvMapper-domain';
@@ -87,7 +87,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
     };
   } else {
     finalInput = {
-      ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input))
+      ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
     };
   }
 
@@ -95,8 +95,8 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
     ...finalInput,
     csv_mapper: input.csv_mapper ? JSON.stringify({
       ...JSON.parse(input.csv_mapper),
-      id: uuid()
-    }) : input.csv_mapper
+      id: uuid(),
+    }) : input.csv_mapper,
   };
 
   const { element, isCreation } = await createEntity(
@@ -104,7 +104,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
     user,
     finalInput,
     ENTITY_TYPE_INGESTION_CSV,
-    { complete: true }
+    { complete: true },
   );
   if (isCreation) {
     await registerConnectorForIngestion(context, {
@@ -112,7 +112,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
       type: 'CSV',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: input.automatic_user ? onTheFlyCreatedUser.id : finalInput.user_id
+      connector_user_id: input.automatic_user ? onTheFlyCreatedUser.id : finalInput.user_id,
     });
     await publishUserAction({
       user,
@@ -120,7 +120,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
       event_scope: 'create',
       event_access: 'administration',
       message: `creates csv ingestion \`${finalInput.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_CSV, input: finalInput as unknown } // input was known as unknown
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_CSV, input: finalInput as unknown }, // input was known as unknown
     });
   }
   return element;
@@ -142,20 +142,20 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
         ...editInput,
         value: [JSON.stringify({
           ...parseEditInput,
-          id: parseEditInput.id ?? uuid()
-        })]
+          id: parseEditInput.id ?? uuid(),
+        })],
       };
     }
     if (editInput.key === 'authentication_value') {
       const { authentication_value, authentication_type } = await findById(context, user, ingestionId);
-      const authenticationValueField = input.find(((oldEditInput) => oldEditInput.key === 'authentication_value'));
+      const authenticationValueField = input.find((oldEditInput) => oldEditInput.key === 'authentication_value');
       if (authenticationValueField && authenticationValueField.value[0]) {
         verifyIngestionAuthenticationContent(authentication_type, authenticationValueField.value[0]);
       }
       const updatedAuthenticationValue = addAuthenticationCredentials(
         authentication_value,
         authenticationValueField?.value[0],
-        authentication_type
+        authentication_type,
       );
       return {
         ...editInput,
@@ -180,7 +180,7 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
     type: 'CSV',
     name: element.name,
     is_running: element.ingestion_running ?? false,
-    connector_user_id: element.user_id
+    connector_user_id: element.user_id,
   });
   await publishUserAction({
     user,
@@ -188,13 +188,13 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${parsedInput.map((i) => i.key).join(', ')}\` for csv ingestion \`${element.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: parsedInput as unknown }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: parsedInput as unknown },
   });
 
   const notif = await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return {
     ...notif,
-    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value)
+    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value),
   };
 };
 
@@ -215,7 +215,7 @@ export const ingestionCsvResetState = async (context: AuthContext, user: AuthUse
     event_scope: 'update',
     event_access: 'administration',
     message: `reset state of csv ingestion ${ingestionUpdated.name}`,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: ingestionUpdated }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: ingestionUpdated },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestionUpdated, user);
 };
@@ -229,14 +229,14 @@ export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, i
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes csv ingestion \`${deleted.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: deleted }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_CSV, input: deleted },
   });
   return ingestionId;
 };
 
 interface CsvResponseData {
-  csvLines: string[],
-  addedLast: string | undefined | null
+  csvLines: string[];
+  addedLast: string | undefined | null;
 }
 
 export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: BasicStoreEntityIngestionCsv, opts: { limit?: number } = {}): Promise<CsvResponseData> => {
@@ -262,7 +262,7 @@ export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: Bas
   const csvLines = dataLines
     .filter((line: string) => (
       (!!csvMapper.skipLineChar && !line.startsWith(csvMapper.skipLineChar))
-          || (!csvMapper.skipLineChar && !!line)
+      || (!csvMapper.skipLineChar && !!line)
     ))
     .slice(0, limit ?? dataLines.length);
   return { csvLines, addedLast: resultHeaders['x-csv-date-added-last'] };
@@ -277,16 +277,16 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
   const ingestion = {
     uri: input.uri,
     authentication_type: input.authentication_type,
-    authentication_value: input.authentication_value
+    authentication_value: input.authentication_value,
   } as BasicStoreEntityIngestionCsv;
   const { csvLines } = await fetchCsvFromUrl(parsedMapper, ingestion, { limit: 10 });
   if (parsedMapper.has_header) {
     removeHeaderFromFullFile(csvLines, parsedMapper.skipLineChar);
   }
 
-  const bundlerOpts : CsvBundlerTestOpts = {
+  const bundlerOpts: CsvBundlerTestOpts = {
     applicantUser: user,
-    csvMapper: parsedMapper
+    csvMapper: parsedMapper,
   };
   const allObjects = await getCsvTestObjects(context, csvLines, bundlerOpts);
 
@@ -337,7 +337,7 @@ export const csvFeedGetNewDuplicatedCsvMapper = async (context: AuthContext, use
 const getCsvMapper = async (context: AuthContext, ingestionCsv: BasicStoreEntityIngestionCsv) => {
   if (ingestionCsv.csv_mapper_type === 'inline') {
     return {
-      ...JSON.parse(ingestionCsv.csv_mapper!)
+      ...JSON.parse(ingestionCsv.csv_mapper!),
     };
   }
   const csvMapper = await findCsvMapperForIngestionById(context, context.user!, ingestionCsv.csv_mapper_id!);
@@ -353,7 +353,7 @@ const getCsvMapper = async (context: AuthContext, ingestionCsv: BasicStoreEntity
     has_header,
     separator,
     skipLineChar,
-    representations: JSON.parse(representations)
+    representations: JSON.parse(representations),
   };
 };
 
@@ -364,7 +364,7 @@ export const csvFeedMapperExport = async (context: AuthContext, user: AuthUser, 
     uri,
     authentication_type,
     markings,
-    scheduling_period
+    scheduling_period,
   } = ingestionCsv;
   const csv_mapper = await getCsvMapper(context, ingestionCsv);
   const parsedRepresentations: CsvMapperRepresentation[] = csv_mapper.representations;
@@ -385,8 +385,8 @@ export const csvFeedMapperExport = async (context: AuthContext, user: AuthUser, 
         configuration: {
           ...csv_mapper,
           representations: parsedRepresentations,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 };

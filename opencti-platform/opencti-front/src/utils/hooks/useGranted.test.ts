@@ -1,6 +1,6 @@
 import { DraftContext } from './useDraftContext';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import useGranted, { SETTINGS, BYPASS  } from './useGranted';
+import useGranted, { SETTINGS, BYPASS } from './useGranted';
 
 vi.mock('./useAuth', () => ({ default: vi.fn() }));
 
@@ -12,8 +12,8 @@ import useHelper from './useHelper';
 import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
 
 type MeUser = {
-  capabilities: RootMe_data$data['capabilities']
-  capabilitiesInDraft?: RootMe_data$data['capabilitiesInDraft']
+  capabilities: RootMe_data$data['capabilities'];
+  capabilitiesInDraft?: RootMe_data$data['capabilitiesInDraft'];
   draftContext?: Partial<DraftContext>;
 };
 
@@ -23,7 +23,7 @@ describe('useGranted', () => {
     name: 'Draft Test',
     draft_status: 'open',
   };
-  
+
   beforeEach(() => {
     vi.resetAllMocks();
   });
@@ -31,7 +31,7 @@ describe('useGranted', () => {
   const mockAuthMe = (me: MeUser) => {
     (useAuth as Mock).mockReturnValue({ me });
     // TODO remove when FF is deleted (CAPABILITIES_IN_DRAFT)
-    (useHelper as Mock).mockReturnValue({ isFeatureEnable: (feature: string) => feature === 'CAPABILITIES_IN_DRAFT'  });
+    (useHelper as Mock).mockReturnValue({ isFeatureEnable: (feature: string) => feature === 'CAPABILITIES_IN_DRAFT' });
   };
 
   it('should throws if SETTINGS capability is used', () => {
@@ -87,7 +87,7 @@ describe('useGranted', () => {
     mockAuthMe({
       draftContext: draftContext,
       capabilities: [{ name: 'KNOWLEDGE' }],
-      capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE' }]
+      capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE' }],
     });
 
     expect(useGranted(['KNOWLEDGE_KNUPDATE'])).toBe(true);
@@ -97,7 +97,7 @@ describe('useGranted', () => {
     mockAuthMe({
       draftContext: draftContext,
       capabilities: [{ name: 'KNOWLEDGE' }],
-      capabilitiesInDraft: [{ name: 'KNOWLEDGE' }, { name: 'KNOWLEDGE_KNUPDATE' }]
+      capabilitiesInDraft: [{ name: 'KNOWLEDGE' }, { name: 'KNOWLEDGE_KNUPDATE' }],
     });
 
     expect(useGranted(['KNOWLEDGE_KNUPDATE'])).toBe(true);
@@ -110,5 +110,4 @@ describe('useGranted', () => {
 
     expect(useGranted([])).toBe(false);
   });
-
 });

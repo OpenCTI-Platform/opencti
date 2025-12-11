@@ -12,7 +12,7 @@ import conf, {
   ENABLED_RULE_ENGINE,
   ENABLED_SYNC_MANAGER,
   ENABLED_TASK_SCHEDULER,
-  logApp
+  logApp,
 } from './config/conf';
 import httpServer from './http/httpServer';
 import expiredManager from './manager/expiredManager';

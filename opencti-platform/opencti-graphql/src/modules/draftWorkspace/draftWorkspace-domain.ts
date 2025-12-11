@@ -18,7 +18,7 @@ import {
   type QueryDraftWorkspaceEntitiesArgs,
   type QueryDraftWorkspaceRelationshipsArgs,
   type QueryDraftWorkspacesArgs,
-  type QueryDraftWorkspaceSightingRelationshipsArgs
+  type QueryDraftWorkspaceSightingRelationshipsArgs,
 } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
@@ -75,21 +75,21 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
   const draftContext = { ...context, draft_context: draft.id };
   const distributionResult = await elAggregationCount(draftContext, user, READ_INDEX_DRAFT_OBJECTS, opts);
   // TODO fix total to include only stix domain objects & SCO & stix core relationships & sightings & stix domain objects
-  const totalCount = computeSumOfList(distributionResult.map((r: { label: string, count: number }) => r.count));
+  const totalCount = computeSumOfList(distributionResult.map((r: { label: string; count: number }) => r.count));
   const entitiesCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixDomainObject(r.label) && !isStixDomainObjectContainer(r.label)).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixDomainObject(r.label) && !isStixDomainObjectContainer(r.label)).map((r: { count: number }) => r.count),
   );
   const observablesCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixCyberObservable(r.label)).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixCyberObservable(r.label)).map((r: { count: number }) => r.count),
   );
   const relationshipsCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixCoreRelationship(r.label)).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixCoreRelationship(r.label)).map((r: { count: number }) => r.count),
   );
   const sightingsCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixSightingRelationship(r.label)).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixSightingRelationship(r.label)).map((r: { count: number }) => r.count),
   );
   const containersCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixDomainObjectContainer(r.label)).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixDomainObjectContainer(r.label)).map((r: { count: number }) => r.count),
   );
   return {
     totalCount,
@@ -109,16 +109,16 @@ export const getProcessingCount = async (context: AuthContext, user: AuthUser, d
         key: 'draft_context',
         mode: 'or',
         operator: 'eq',
-        values: [draft.internal_id]
+        values: [draft.internal_id],
       },
       {
         key: 'status',
         mode: 'or',
         operator: 'eq',
-        values: ['wait', 'progress']
-      }
+        values: ['wait', 'progress'],
+      },
     ],
-    mode: 'and'
+    mode: 'and',
   };
   const worksOpts = {
     types: [ENTITY_TYPE_WORK],
@@ -132,16 +132,16 @@ export const getProcessingCount = async (context: AuthContext, user: AuthUser, d
         key: 'draft_context',
         mode: 'or',
         operator: 'eq',
-        values: [draft.internal_id]
+        values: [draft.internal_id],
       },
       {
         key: 'completed',
         mode: 'or',
         operator: 'eq',
-        values: ['false']
-      }
+        values: ['false'],
+      },
     ],
-    mode: 'and'
+    mode: 'and',
   };
   const tasksOpts = {
     types: [ENTITY_TYPE_BACKGROUND_TASK],
@@ -252,7 +252,7 @@ export const draftWorkspaceEditAuthorizedMembers = async (
 const findAllUsersWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {
   const listArgs = {
     indices: [READ_INDEX_INTERNAL_OBJECTS],
-    filters: { mode: FilterMode.And, filters: [{ key: ['draft_context'], values: [draftId] }], filterGroups: [] }
+    filters: { mode: FilterMode.And, filters: [{ key: ['draft_context'], values: [draftId] }], filterGroups: [] },
   };
   return fullEntitiesList(context, user, [ENTITY_TYPE_USER], listArgs);
 };
@@ -269,7 +269,7 @@ const deleteDraftContextFromUsers = async (context: AuthContext, user: AuthUser,
 const findAllWorksWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {
   const listArgs = {
     indices: [READ_INDEX_HISTORY],
-    filters: { mode: FilterMode.And, filters: [{ key: ['draft_context'], values: [draftId] }], filterGroups: [] }
+    filters: { mode: FilterMode.And, filters: [{ key: ['draft_context'], values: [draftId] }], filterGroups: [] },
   };
   return fullEntitiesList(context, user, [ENTITY_TYPE_WORK], listArgs);
 };

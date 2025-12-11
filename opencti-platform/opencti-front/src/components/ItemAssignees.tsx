@@ -46,7 +46,7 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
           <Chip
             key={assignee.id}
             variant="outlined"
-            icon={<PersonOutline color={'primary'} />}
+            icon={<PersonOutline color="primary" />}
             label={truncate(assignee.name, 25).toUpperCase()}
             style={{
               color: theme.palette.primary.main,
@@ -55,11 +55,11 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
               borderRadius: theme.borderRadius,
             }}
             onDelete={canUpdateKnowledge ? () => (handleRemoveAssignee(assignee.id)) : undefined}
-            deleteIcon={
+            deleteIcon={(
               <CancelOutlined
                 style={{ color: theme.palette.primary.main }}
               />
-            }
+            )}
           />
         </Tooltip>
       ))}

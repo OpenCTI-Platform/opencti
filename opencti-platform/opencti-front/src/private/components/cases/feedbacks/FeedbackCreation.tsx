@@ -43,21 +43,21 @@ const feedbackMutation = graphql`
 `;
 
 interface FormikFeedbackAddInput {
-  name: string
-  description: string
-  confidence: number | undefined
-  rating: number | null
-  objects: { value: string }[]
-  file: File | undefined
-  objectLabel: FieldOption[]
+  name: string;
+  description: string;
+  confidence: number | undefined;
+  rating: number | null;
+  objects: { value: string }[];
+  file: File | undefined;
+  objectLabel: FieldOption[];
 }
 
 const FEEDBACK_TYPE = 'Feedback';
 
 const FeedbackCreation: FunctionComponent<{
-  openDrawer: boolean
-  handleCloseDrawer: () => void
-  initialValue?: Partial<FormikFeedbackAddInput>
+  openDrawer: boolean;
+  handleCloseDrawer: () => void;
+  initialValue?: Partial<FormikFeedbackAddInput>;
 }> = ({ openDrawer, handleCloseDrawer, initialValue }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

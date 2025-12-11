@@ -77,7 +77,7 @@ const caseRftQuery = graphql`
 
 const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootCaseRftCaseSubscription>
+    GraphQLSubscriptionConfig<RootCaseRftCaseSubscription>
   >(
     () => ({
       subscription,
@@ -116,7 +116,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             <CaseRftEdition caseId={caseData.id} />
           </Security>
         )}
-        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+        DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <CaseRftDeletion id={caseData.id} isOpen={isOpen} handleClose={onClose} />
           </Security>
@@ -185,7 +185,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
       <Routes>
         <Route
           path="/"
-          element={<CaseRft caseRftData={caseData} enableReferences={enableReferences}/>}
+          element={<CaseRft caseRftData={caseData} enableReferences={enableReferences} />}
         />
         <Route
           path="/entities"
@@ -194,7 +194,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               container={caseData}
               enableReferences={enableReferences}
             />
-              )}
+          )}
         />
         <Route
           path="/observables"
@@ -203,33 +203,34 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               container={caseData}
               enableReferences={enableReferences}
             />
-              )}
+          )}
         />
         <Route
           path="/content/*"
-          element={
+          element={(
             <StixCoreObjectContentRoot
               stixCoreObject={caseData}
               isContainer={true}
             />
-              }
+          )}
         />
         <Route
           path="/knowledge"
-          element={
+          element={(
             <Navigate
               replace={true}
               to={`/dashboard/cases/rfts/${caseId}/knowledge/graph`}
             />
-                }
+          )}
         />
         <Route
           path="/knowledge/*"
           element={(
-            <CaseRftKnowledge caseData={caseData}
+            <CaseRftKnowledge
+              caseData={caseData}
               enableReferences={enableReferences}
             />
-              )}
+          )}
         />
         <Route
           path="/files"
@@ -242,14 +243,15 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               withoutRelations={true}
               bypassEntityId={true}
             />
-              )}
+          )}
         />
         <Route
           path="/history"
-          element={
+          element={(
             <StixCoreObjectHistory
               stixCoreObjectId={caseId}
-            />}
+            />
+          )}
         />
       </Routes>
     </div>

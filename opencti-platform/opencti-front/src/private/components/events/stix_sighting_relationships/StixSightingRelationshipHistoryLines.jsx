@@ -57,7 +57,7 @@ const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginat
     refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, FIVE_SECONDS);
   const logs = data?.logs.edges ?? [];
-  
+
   const handleOpen = (log) => {
     setSelectedLog(log);
     setOpen(true);
@@ -67,73 +67,76 @@ const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginat
     setSelectedLog(undefined);
   };
 
-    return (
-      <Paper style={{
+  return (
+    <Paper
+      style={{
         marginTop: theme.spacing(1),
         padding: '0 15px',
         borderRadius: 4,
-      }} className={'paper-for-grid'} variant="outlined"
-      >
-        {logs.length > 0 ? (
-          logs.map((logEdge) => {
-            const log = logEdge.node;
-            return (
-              <React.Fragment key={log.id}>
-                <ListItem
-                  dense={true}
-                  divider={true}
-                  disablePadding
-                  secondaryAction={
-                    <>
-                      <Tooltip title={t_i18n('Browse the link')}>
-                        <IconButton
-                          onClick={() => handleOpen(log)}
-                          size="large"
-                          color="primary"
-                        >
-                        </IconButton>
-                      </Tooltip>
-                    </>
-                }
+      }}
+      className="paper-for-grid"
+      variant="outlined"
+    >
+      {logs.length > 0 ? (
+        logs.map((logEdge) => {
+          const log = logEdge.node;
+          return (
+            <React.Fragment key={log.id}>
+              <ListItem
+                dense={true}
+                divider={true}
+                disablePadding
+                secondaryAction={(
+                  <>
+                    <Tooltip title={t_i18n('Browse the link')}>
+                      <IconButton
+                        onClick={() => handleOpen(log)}
+                        size="large"
+                        color="primary"
+                      >
+                      </IconButton>
+                    </Tooltip>
+                  </>
+                )}
+              >
+                <ListItemButton
+                  style={{ margin: 0, height: 60 }}
+                  onClick={() => handleOpen(log)}
                 >
-                  <ListItemButton
-                    style={{ margin: 0, height: 60 }}
-                    onClick={() => handleOpen(log)}
-                  >
-                    <StixCoreObjectHistoryLine
-                      key={log.id}
-                      node={log}
-                      isRelation={isRelationLog}
-                    />
-                  </ListItemButton>
-                  <HistoryDrawer
+                  <StixCoreObjectHistoryLine
                     key={log.id}
-                    open={open}
-                    onClose={handleClose}
-                    title={t_i18n('Sightings log details')}
-                    node={selectedLog}
+                    node={log}
+                    isRelation={isRelationLog}
                   />
-                </ListItem>
-              </React.Fragment>
-            );
-          })
-        ) : (
-          <div style={{ display: 'table', height: '100%', width: '100%' }}>
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {isRelationLog
-                ? t_i18n('No relations history about this relationship.')
-                : t_i18n('No history about this relationship.')}
-            </span>
-          </div>
-        )}
-      </Paper>
-    );
-  };
+                </ListItemButton>
+                <HistoryDrawer
+                  key={log.id}
+                  open={open}
+                  onClose={handleClose}
+                  title={t_i18n('Sightings log details')}
+                  node={selectedLog}
+                />
+              </ListItem>
+            </React.Fragment>
+          );
+        })
+      ) : (
+        <div style={{ display: 'table', height: '100%', width: '100%' }}>
+          <span
+            style={{
+              display: 'table-cell',
+              verticalAlign: 'middle',
+              textAlign: 'center',
+            }}
+          >
+            {isRelationLog
+              ? t_i18n('No relations history about this relationship.')
+              : t_i18n('No history about this relationship.')}
+          </span>
+        </div>
+      )}
+    </Paper>
+  );
+};
 
 export default StixSightingRelationshipHistoryLines;

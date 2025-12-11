@@ -33,8 +33,8 @@ const playbookQuery = graphql`
 `;
 
 interface RootPlaybookComponentProps {
-  playbookQueryRef: PreloadedQuery<RootPlaybookQuery>
-  playbookComponentsQueryRef: PreloadedQuery<PlaybookComponentsQuery>
+  playbookQueryRef: PreloadedQuery<RootPlaybookQuery>;
+  playbookComponentsQueryRef: PreloadedQuery<PlaybookComponentsQuery>;
 }
 
 const RootPlaybookComponent = ({
@@ -43,18 +43,18 @@ const RootPlaybookComponent = ({
 }: RootPlaybookComponentProps) => {
   const data = usePreloadedQuery(playbookQuery, playbookQueryRef);
   const { playbook } = data;
-  if (!playbook) return <ErrorNotFound/>;
+  if (!playbook) return <ErrorNotFound />;
 
   return (
     <Routes>
       <Route
         path="/"
-        element={
+        element={(
           <Playbook
             dataPlaybook={playbook}
             playbookComponentsQueryRef={playbookComponentsQueryRef}
           />
-        }
+        )}
       />
     </Routes>
   );
@@ -62,7 +62,7 @@ const RootPlaybookComponent = ({
 
 const RootPlaybook = () => {
   const { playbookId } = useParams();
-  if (!playbookId) return <ErrorNotFound/>;
+  if (!playbookId) return <ErrorNotFound />;
 
   const playbookComponentsQueryRef = useQueryLoading<PlaybookComponentsQuery>(
     playbookComponentsQuery,

@@ -58,11 +58,11 @@ export const subscribeToInstanceEvents = async (
   id: string,
   topics: string | string[],
   opts: {
-    preFn?: () => void,
-    cleanFn?: () => void,
-    notifySelf? : boolean,
-    type?: string | string[],
-  } = {}
+    preFn?: () => void;
+    cleanFn?: () => void;
+    notifySelf?: boolean;
+    type?: string | string[];
+  } = {},
 ): Promise<AsyncIterable<any>> => {
   const { preFn, cleanFn, notifySelf = false, type } = opts;
   if (preFn) preFn();
@@ -79,7 +79,7 @@ export const subscribeToInstanceEvents = async (
         return payload.user.id !== context.user.id && payload.instance.id === id;
       }
       return payload.instance.id === id;
-    }
+    },
   )(parent, { id }, context);
   if (cleanFn) {
     return withCancel(filtering, () => {

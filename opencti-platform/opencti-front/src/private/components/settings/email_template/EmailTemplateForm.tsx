@@ -20,7 +20,7 @@ export interface EmailTemplateFormInputs {
 export type EmailTemplateFormInputKeys = keyof EmailTemplateFormInputs;
 
 interface EmailTemplateFormProps {
-  onClose: () => void
+  onClose: () => void;
   onSubmit: (values: EmailTemplateFormInputs, helpers: FormikHelpers<EmailTemplateFormInputs>) => void;
   onSubmitField?: (field: EmailTemplateFormInputKeys, value: string) => void;
   defaultValues?: EmailTemplateFormInputs;
@@ -110,28 +110,28 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
             style={{ marginTop: theme.spacing(2) }}
           />
           {!isEdition && (
-          <div style={{ marginTop: theme.spacing(2), textAlign: 'right' }}>
-            <Button
-              variant="contained"
-              onClick={() => {
-                handleReset();
-                onClose();
-              }}
-              disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(2) }}
-            >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(2) }}
-            >
-              {t_i18n('Create')}
-            </Button>
-          </div>
+            <div style={{ marginTop: theme.spacing(2), textAlign: 'right' }}>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  handleReset();
+                  onClose();
+                }}
+                disabled={isSubmitting}
+                style={{ marginLeft: theme.spacing(2) }}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                style={{ marginLeft: theme.spacing(2) }}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </div>
           )}
         </>
       )}

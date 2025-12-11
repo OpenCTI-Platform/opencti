@@ -11,11 +11,11 @@ const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, 
     id: 'deleteOperation',
     name: ENTITY_TYPE_DELETE_OPERATION,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_DELETE_OPERATION]: () => uuidv4()
+      [ENTITY_TYPE_DELETE_OPERATION]: () => uuidv4(),
     },
   },
   attributes: [
@@ -37,7 +37,7 @@ const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, 
   representative: (stix: StixDeleteOperation) => {
     return stix.main_entity_name;
   },
-  converter_2_1: convertDeleteOperationToStix
+  converter_2_1: convertDeleteOperationToStix,
 };
 
 registerDefinition(DELETE_OPERATION_DEFINITION);

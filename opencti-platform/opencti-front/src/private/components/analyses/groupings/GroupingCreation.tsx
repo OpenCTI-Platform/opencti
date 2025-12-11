@@ -80,20 +80,20 @@ interface GroupingAddInput {
   externalReferences: { value: string }[];
   file: File | undefined;
   authorized_members: {
-    value: string,
-    accessRight: string,
+    value: string;
+    accessRight: string;
     groupsRestriction: {
-      label: string,
-      value: string,
-      type: string
-    }[] }[] | undefined;
+      label: string;
+      value: string;
+      type: string;
+    }[]; }[] | undefined;
 }
 
 interface GroupingFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null | undefined
+    response: { id: string; name: string } | null | undefined,
   ) => void;
   onClose?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -294,13 +294,13 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >
               <div style={fieldSpacingContainerStyle}>
-                <Accordion >
+                <Accordion>
                   <AccordionSummary id="accordion-panel">
                     <Typography>{t_i18n('Advanced options')}</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
                     <Field
-                      name={'authorized_members'}
+                      name="authorized_members"
                       component={AuthorizedMembersField}
                       containerstyle={{ marginTop: 20 }}
                       showAllMembersLine
@@ -360,7 +360,7 @@ const GroupingCreation = ({
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   const CreateGroupingControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Grouping' {...props} />
+    <CreateEntityControlledDial entityType="Grouping" {...props} />
   );
   return (
     <Drawer

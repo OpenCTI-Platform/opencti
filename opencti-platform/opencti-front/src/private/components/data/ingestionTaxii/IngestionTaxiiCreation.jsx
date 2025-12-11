@@ -61,7 +61,7 @@ const ingestionTaxiiCreationValidation = (t) => Yup.object().shape({
 
 const CreateIngestionTaxiiControlledDial = (props) => (
   <CreateEntityControlledDial
-    entityType='IngestionTaxii'
+    entityType="IngestionTaxii"
     {...props}
   />
 );
@@ -200,50 +200,50 @@ const IngestionTaxiiCreation = (props) => {
                 </MenuItem>
               </Field>
               {values.authentication_type === BASIC_AUTH && (
-              <>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="username"
-                  label={t('Username')}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-                <PasswordTextField
-                  name="password"
-                  label={t('Password')}
-                />
-              </>
+                <>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="username"
+                    label={t('Username')}
+                    fullWidth={true}
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <PasswordTextField
+                    name="password"
+                    label={t('Password')}
+                  />
+                </>
               )}
               {values.authentication_type === BEARER_AUTH && (
-              <PasswordTextField
-                name="authentication_value"
-                label={t('Token')}
-              />
+                <PasswordTextField
+                  name="authentication_value"
+                  label={t('Token')}
+                />
               )}
               {values.authentication_type === CERT_AUTH && (
-              <>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="cert"
-                  label={t('Certificate (base64)')}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-                <PasswordTextField
-                  name="key"
-                  label={t('Key (base64)')}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="ca"
-                  label={t('CA certificate (base64)')}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-              </>
+                <>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="cert"
+                    label={t('Certificate (base64)')}
+                    fullWidth={true}
+                    style={fieldSpacingContainerStyle}
+                  />
+                  <PasswordTextField
+                    name="key"
+                    label={t('Key (base64)')}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="ca"
+                    label={t('CA certificate (base64)')}
+                    fullWidth={true}
+                    style={fieldSpacingContainerStyle}
+                  />
+                </>
               )}
               <CreatorField
                 name="user_id"

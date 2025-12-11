@@ -9,7 +9,7 @@ import {
   csvMapperSchemaAttributes,
   getParsedRepresentations,
   csvMapperExport,
-  csvMapperAddInputFromImport
+  csvMapperAddInputFromImport,
 } from './csvMapper-domain';
 import { getCsvMapperErrorMessage } from './csvMapper-utils';
 
@@ -38,7 +38,7 @@ const csvMapperResolvers: Resolvers = {
     csvMapperFieldPatch: (_, { id, input }, context) => {
       return fieldPatchCsvMapper(context, context.user, id, input);
     },
-  }
+  },
 };
 
 export default csvMapperResolvers;

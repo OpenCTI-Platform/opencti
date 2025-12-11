@@ -21,12 +21,12 @@ const smallText = {
 };
 
 interface AuthorizedMembersFieldListItemProps {
-  authorizedMember: AuthorizedMemberOption
-  name: string
-  accessRights: { label: string, value: string }[]
-  onRemove?: () => void
-  onChange?: (val: AccessRight) => void
-  ownerId?: string
+  authorizedMember: AuthorizedMemberOption;
+  name: string;
+  accessRights: { label: string; value: string }[];
+  onRemove?: () => void;
+  onChange?: (val: AccessRight) => void;
+  ownerId?: string;
 }
 
 const AuthorizedMembersFieldListItem = ({
@@ -69,7 +69,7 @@ const AuthorizedMembersFieldListItem = ({
       </ListItemIcon>
 
       <ListItemText
-        primary={
+        primary={(
           <>
             {authorizedMember.label && authorizedMember.type ? (
               authorizedMember.label
@@ -101,7 +101,7 @@ const AuthorizedMembersFieldListItem = ({
               </>
             )}
           </>
-        }
+        )}
       />
 
       <Field
@@ -128,16 +128,16 @@ const AuthorizedMembersFieldListItem = ({
         authorizedMember.value !== me.id
         && !isGenericOption(authorizedMember.value)
       ) ? (
-        <IconButton
-          color="primary"
-          aria-label={t_i18n('Delete')}
-          onClick={() => onRemove?.()}
-        >
-          <Delete fontSize="small" />
-        </IconButton>
-        ) : (
-          <div style={{ width: 36 }}></div>
-        )}
+            <IconButton
+              color="primary"
+              aria-label={t_i18n('Delete')}
+              onClick={() => onRemove?.()}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+          ) : (
+            <div style={{ width: 36 }}></div>
+          )}
     </ListItem>
   );
 };

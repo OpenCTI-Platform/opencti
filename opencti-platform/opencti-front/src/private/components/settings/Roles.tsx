@@ -34,7 +34,7 @@ const Role = () => {
     LOCAL_STORAGE_KEY,
   );
   const classes = useStyles();
-  const [rolesState, setRolesState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [rolesState, setRolesState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
@@ -120,7 +120,7 @@ const Role = () => {
     orderMode: rolesState.orderAsc ? OrderMode.asc : OrderMode.desc,
   };
   return (
-    <div className={classes.container} data-testid='roles-settings-page'>
+    <div className={classes.container} data-testid="roles-settings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Roles'), current: true }]} />
       <AccessesMenu />
       {rolesState.view === 'lines' ? renderLines(paginationOptions) : ''}

@@ -23,7 +23,7 @@ export const addCountry = async (context, user, country) => {
     context,
     user,
     { ...country, x_opencti_location_type: ENTITY_TYPE_LOCATION_COUNTRY },
-    ENTITY_TYPE_LOCATION_COUNTRY
+    ENTITY_TYPE_LOCATION_COUNTRY,
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

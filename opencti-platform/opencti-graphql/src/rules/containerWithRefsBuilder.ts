@@ -39,7 +39,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       `${partOfTargetId}_ref`,
     ];
   };
-  type ArrayRefs = Array<{ partOfFromId: string, partOfId: string, partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
+  type ArrayRefs = Array<{ partOfFromId: string; partOfId: string; partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
   // eslint-disable-next-line max-len
   const createObjectRefsInferences = async (context: AuthContext, data: StixReport, addedTargets: ArrayRefs, deletedTargets: Array<BasicStoreRelation>): Promise<void> => {
     if (addedTargets.length === 0 && deletedTargets.length === 0) {

@@ -68,7 +68,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
                 {t('Linked entities')}
               </Typography>
               <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+              <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
                 <List>
                   {Array.from(Array(5), (e, i) => (
                     <ListItem key={i} divider={true}>
@@ -81,7 +81,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
                         />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
@@ -89,15 +89,15 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
                             height={15}
                             style={{ marginBottom: 10 }}
                           />
-                        }
-                        secondary={
+                        )}
+                        secondary={(
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
                             width="90%"
                             height={15}
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}

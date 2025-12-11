@@ -387,7 +387,7 @@ const PositionCreation = ({
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_positions', paginationOptions, 'positionAdd');
 
   const CreatePositionControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Position' {...props} />
+    <CreateEntityControlledDial entityType="Position" {...props} />
   );
   return (
     <Drawer

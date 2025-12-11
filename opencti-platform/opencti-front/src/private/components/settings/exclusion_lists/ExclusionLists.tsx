@@ -127,7 +127,7 @@ const ExclusionLists = () => {
   );
 
   const renderEnrichedTooltip = (exclusionListEntityTypes: readonly string[], firstEntityType: string) => (
-    <EnrichedTooltip title={
+    <EnrichedTooltip title={(
       <Grid container spacing={2} sx={{ marginBottom: '10px' }}>
         {exclusionListEntityTypes.map((type) => (
           <Grid item key={type} xs={6}>
@@ -135,7 +135,7 @@ const ExclusionLists = () => {
           </Grid>
         ))}
       </Grid>
-    }
+    )}
     >
       <div style={{ display: 'flex', margin: '10px 0' }}>
         <Badge variant="dot" color="primary">

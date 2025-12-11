@@ -10,11 +10,11 @@ import type { PublicManifestConfig } from './PublicManifest';
 import { buildDate } from '../../../utils/Time';
 
 interface PublicDashboardHeaderProps {
-  title: string
-  manifestConfig: PublicManifestConfig
-  onChangeRelativeDate: (value: string) => void
-  onChangeStartDate: (value: string | null) => void
-  onChangeEndDate: (value: string | null) => void
+  title: string;
+  manifestConfig: PublicManifestConfig;
+  onChangeRelativeDate: (value: string) => void;
+  onChangeStartDate: (value: string | null) => void;
+  onChangeEndDate: (value: string | null) => void;
 }
 
 const PublicDashboardHeader = ({

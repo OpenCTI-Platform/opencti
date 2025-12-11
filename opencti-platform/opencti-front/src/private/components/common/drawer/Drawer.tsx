@@ -84,8 +84,8 @@ interface DrawerProps {
   context?: readonly (GenericContext | null)[] | null;
   header?: React.ReactElement;
   controlledDial?: DrawerControlledDialType;
-  containerStyle?: CSSProperties
-  disabled?: boolean
+  containerStyle?: CSSProperties;
+  disabled?: boolean;
 }
 
 // eslint-disable-next-line react/display-name
@@ -138,7 +138,7 @@ const Drawer = forwardRef(({
       {variant && (
         <Fab
           onClick={() => setOpen(true)}
-          color={'primary'}
+          color="primary"
           aria-label={update ? 'Edit' : 'Add'}
           disabled={disabled}
           className={classNames({

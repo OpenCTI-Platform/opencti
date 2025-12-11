@@ -71,12 +71,12 @@ const contextualViewQuery = graphql`
 `;
 
 interface EntityStixCoreRelationshipsIndicatorsContextualViewProps {
-  queryRef: PreloadedQuery<EntityStixCoreRelationshipsIndicatorsContextualViewQuery>
-  entityId: string
-  localStorage: PaginationLocalStorage<PaginationOptions>
-  relationshipTypes: string[]
-  stixCoreObjectTypes: string[]
-  currentView: string
+  queryRef: PreloadedQuery<EntityStixCoreRelationshipsIndicatorsContextualViewQuery>;
+  entityId: string;
+  localStorage: PaginationLocalStorage<PaginationOptions>;
+  relationshipTypes: string[];
+  stixCoreObjectTypes: string[];
+  currentView: string;
 }
 
 const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComponent<EntityStixCoreRelationshipsIndicatorsContextualViewProps> = ({
@@ -91,8 +91,8 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
   const { t_i18n, n, nsdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
-  EntityStixCoreRelationshipsIndicatorsContextualViewQuery,
-  EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject$key
+    EntityStixCoreRelationshipsIndicatorsContextualViewQuery,
+    EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject$key
   >({
     queryDef: contextualViewQuery,
     fragmentDef: contextualViewFragment,
@@ -141,7 +141,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       isSortable: true,
       render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => {
         if (stixCoreObject.pattern_type) {
-          return <ItemPatternType variant="inList" label={stixCoreObject.pattern_type}/>;
+          return <ItemPatternType variant="inList" label={stixCoreObject.pattern_type} />;
         }
         return <></>;
       },
@@ -278,7 +278,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         }
       >
         {queryRef ? (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <EntityStixCoreRelationshipsIndicatorsContextualViewLines
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
@@ -290,7 +290,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
             />
           </React.Suspense>
         ) : (
-          <Loader variant={LoaderVariant.inElement}/>
+          <Loader variant={LoaderVariant.inElement} />
         )}
       </ListLines>
       <ToolBar
@@ -318,11 +318,11 @@ const EntityStixCoreRelationshipsIndicatorsContextualView: FunctionComponent<Omi
   );
 
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-      <EntityStixCoreRelationshipsIndicatorsContextualViewComponent {...props} queryRef={queryRef}/>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <EntityStixCoreRelationshipsIndicatorsContextualViewComponent {...props} queryRef={queryRef} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement}/>
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

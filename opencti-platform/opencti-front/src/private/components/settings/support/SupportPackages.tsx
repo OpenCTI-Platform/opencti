@@ -126,7 +126,7 @@ const SupportPackages = () => {
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Support packages')}
       </Typography>
-      <Tooltip title={
+      <Tooltip title={(
         <Alert
           severity="warning"
           variant="outlined"
@@ -136,7 +136,7 @@ const SupportPackages = () => {
             ? t_i18n('You cannot generate a support package while in draft mode. Make sure to be out of draft to generate one.')
             : t_i18n('We are doing our best to remove any sensitive information from support packages but we encourage you to check the content before sharing a support package depending on your security policy.')}
         </Alert>
-        }
+      )}
       >
         <span style={{ float: 'right', marginTop: '-34px', display: 'inline-block' }}>
           <Button
@@ -150,15 +150,18 @@ const SupportPackages = () => {
           </Button>
         </span>
       </Tooltip>
-      <div className="clearfix"/>
-      <Paper className="paper-for-grid" variant="outlined" sx={{
-        height: '100%',
-        maxHeight: '600px',
-        overflowY: 'auto',
-        margin: '10px 0 0 0',
-        padding: '0 15px 0 15px',
-        borderRadius: 1,
-      }}
+      <div className="clearfix" />
+      <Paper
+        className="paper-for-grid"
+        variant="outlined"
+        sx={{
+          height: '100%',
+          maxHeight: '600px',
+          overflowY: 'auto',
+          margin: '10px 0 0 0',
+          padding: '0 15px 0 15px',
+          borderRadius: 1,
+        }}
       >
         {renderLines()}
       </Paper>

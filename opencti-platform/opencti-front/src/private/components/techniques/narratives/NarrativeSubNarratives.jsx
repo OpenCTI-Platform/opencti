@@ -63,7 +63,7 @@ class NarrativeSubNarrativesComponent extends Component {
                 key={subNarrative.id}
                 dense={true}
                 divider={true}
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     aria-label="Remove"
                     onClick={this.removeSubNarrative.bind(
@@ -74,7 +74,7 @@ class NarrativeSubNarrativesComponent extends Component {
                   >
                     <LinkOff />
                   </IconButton>
-                }
+                )}
               >
                 <ListItemButton
                   component={Link}

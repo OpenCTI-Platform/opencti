@@ -197,7 +197,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <OrganizationDeletion id={organization.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -264,54 +264,54 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
             <Routes>
               <Route
                 path="/"
-                element={
+                element={(
                   <Organization
                     organizationData={organization}
                     viewAs={viewAs}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <OrganizationKnowledge
                       organizationData={organization}
                       viewAs={viewAs}
                     />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={organization}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
-                element={
+                element={(
                   <OrganizationAnalysis
                     organization={organization}
                     viewAs={viewAs}
                     onViewAs={handleChangeViewAs}
                   />
-                }
+                )}
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={organization.id}
                     entityLink={link}
@@ -328,26 +328,26 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                       'System',
                     ]}
                   />
-                }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={organizationId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={organization}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
-                element={
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={organizationId}
                   />
-                }
+                )}
               />
             </Routes>
           </div>
@@ -359,7 +359,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
   );
 };
 const Root = () => {
-  const { organizationId } = useParams() as { organizationId: string; };
+  const { organizationId } = useParams() as { organizationId: string };
   const queryRef = useQueryLoading<RootOrganizationQuery>(organizationQuery, {
     id: organizationId,
   });

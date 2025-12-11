@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // TODO Remove this when V6
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
@@ -82,7 +81,7 @@ const regionQuery = graphql`
 
 const RootRegionComponent = ({ queryRef, regionId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootCountriesSubscription>
+    GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
     () => ({
       subscription,
@@ -106,7 +105,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -127,7 +126,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   ]}
                   data={region}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -153,7 +152,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <RegionDeletion id={region.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -220,70 +219,70 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={region.id}/>
+                  <AIInsights id={region.id} />
                 </div>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
-                element={<Region regionData={region}/>}
+                element={<Region regionData={region} />}
               />
               <Route
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/regions/${regionId}/knowledge/overview`} replace={true} />
-              }
-              />
-              <Route
-                path="/knowledge/*"
-                element={
-                  <div key={forceUpdate}>
-                    <RegionKnowledge regionData={region} />
-                  </div>
                 }
               />
               <Route
+                path="/knowledge/*"
+                element={(
+                  <div key={forceUpdate}>
+                    <RegionKnowledge regionData={region} />
+                  </div>
+                )}
+              />
+              <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={region}
                   />
-              }
+                )}
               />
               <Route
                 path="/analyses"
                 element={
                   <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={region} />
-              }
+                }
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={region.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={regionId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={region}
                   />
-              }
+                )}
               />
               <Route
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={regionId} />
-              }
+                }
               />
             </Routes>
           </div>
