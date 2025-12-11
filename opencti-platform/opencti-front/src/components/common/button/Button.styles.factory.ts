@@ -1,22 +1,13 @@
 import type { SxProps, Theme } from '@mui/material/styles';
-import type { ColorDefinition } from './Button.types';
-import { createGradientSx, createTextGradientSx, getDisabledSx, getButtonContentSx } from './Button.styles.helpers';
+import type { ColorDefinition, GradientColor, SizeConfig } from './Button.types';
+import { getDisabledSx, createGradientSx, createTextGradientSx, getButtonContentSx } from './Button.utils';
 
 interface StyleFactoryParams {
   theme: Theme;
   currentColor: ColorDefinition;
-  gradientColors: { start: string; end: string };
+  gradientColors: GradientColor;
   gradientAngle: number;
-  sizeConfig: {
-    height: string;
-    padding: string;
-    minWidth: string;
-    width: string;
-    fontSize: string;
-    fontWeight: number;
-    lineHeight: string;
-    iconSize: string;
-  };
+  sizeConfig: SizeConfig;
 }
 
 // BASE STYLES
