@@ -225,7 +225,9 @@ export const validateInputUpdate = async (
     }
     // Convert input to record
     const instanceFromInputs: Record<string, unknown> = {};
-    editInputs.forEach((obj) => { instanceFromInputs[obj.key] = obj.value; });
+    editInputs.forEach((obj) => {
+ instanceFromInputs[obj.key] = obj.value; 
+});
     // Generic validator
     await validateFormatSchemaAttributes(context, user, instanceType, editInputs);
     await validateMandatoryAttributesOnUpdate(context, user, instanceFromInputs, entitySetting);

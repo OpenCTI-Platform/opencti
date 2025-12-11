@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
-import {AUTOMATION_MANAGER_USER,AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -613,7 +613,7 @@ const PLAYBOOK_SECURITY_COVERAGE_COMPONENT_SCHEMA: JSONSchemaType<SecurityCovera
         platforms_affinity: {
             type: 'array',
             uniqueItems: true,
-            default: ['windows','linux','macos'],
+            default: ['windows', 'linux', 'macos'],
             $ref: 'Platform(s) affinity',
             items: { type: 'string', oneOf: [] }
         }
@@ -644,7 +644,7 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
     executor: async ({ dataInstanceId, playbookNode, bundle }) => {
         const { all, auto_enrichment_disable, periodicity, duration, type_affinity, platforms_affinity } = playbookNode.configuration;
         const baseData = extractBundleBaseElement(dataInstanceId, bundle) as StixDomainObject;
-        if( SECURITY_COVERAGE_COMPATIBLE_TYPES.includes(baseData.type) ) {
+        if (SECURITY_COVERAGE_COMPATIBLE_TYPES.includes(baseData.type)) {
             const name = extractStixRepresentative(baseData);
             const securityCoverageData: Record<string, unknown> = {
                 name,
@@ -655,7 +655,7 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
                 type_affinity: type_affinity,
                 platforms_affinity: platforms_affinity,
                 [INPUT_COVERED]: { standard_id: baseData.id },
-                [INPUT_LABELS]: (baseData.labels ?? []).map((l) => ({ value: l})),
+                [INPUT_LABELS]: (baseData.labels ?? []).map((l) => ({ value: l })),
             };
             const standardId = generateStandardId(ENTITY_TYPE_SECURITY_COVERAGE, securityCoverageData);
             const storeSecurityCoverage = {
@@ -668,7 +668,7 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
             const securityCoverage = convertStoreToStix_2_1(storeSecurityCoverage) as StixSecurityCoverage;
             bundle.objects.push(securityCoverage);
         }
-        if( all ) {
+        if (all) {
             for (let index = 0; index < bundle.objects.length; index += 1) {
                 const element = bundle.objects[index] as StixDomainObject;
                 if (SECURITY_COVERAGE_COMPATIBLE_TYPES.includes(element.type)) {
@@ -681,7 +681,7 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
                         duration: duration,
                         type_affinity: type_affinity,
                         [INPUT_COVERED]: { standard_id: element.id },
-                        [INPUT_LABELS]: (element.labels ?? []).map((l) => ({ value: l})),
+                        [INPUT_LABELS]: (element.labels ?? []).map((l) => ({ value: l })),
                     };
                     const standardId = generateStandardId(ENTITY_TYPE_SECURITY_COVERAGE, securityCoverageData);
                     const storeContainer = {

@@ -262,7 +262,9 @@ const createSseMiddleware = () => {
       setDelay: (d) => {
         channel.delay = d;
       },
-      setLastEventId: (id) => { lastEventId = id; },
+      setLastEventId: (id) => {
+ lastEventId = id; 
+},
       connected: () => !res.finished,
       sendEvent: (eventId, topic, event) => {
         // Write on an already terminated response

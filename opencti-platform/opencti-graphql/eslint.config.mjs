@@ -74,8 +74,8 @@ export default defineConfig([
     },
 
     rules: {
-      '@stylistic/semi-spacing': 'off',
-      '@stylistic/curly-spacing': 'off',
+      // '@stylistic/semi-spacing': 'off',
+      // '@stylistic/curly-spacing': 'off',
       '@stylistic/key-spacing': 'off',
       '@stylistic/comma-style': 'off',
       '@stylistic/eol-last': 'off',
@@ -83,8 +83,6 @@ export default defineConfig([
       '@stylistic/type-annotation-spacing': 'off',
       '@stylistic/type-generic-spacing': 'off',
       '@stylistic/no-trailing-spaces': 'off',
-      '@stylistic/arrow-parens': 'off',
-      '@stylistic/brace-style': 'off',
       '@stylistic/indent': 'off',
       '@stylistic/lines-between-class-members': 'off',
       '@stylistic/no-extra-parens': 'off',
@@ -95,13 +93,15 @@ export default defineConfig([
       '@stylistic/member-delimiter-style': 'off',
       '@stylistic/max-statements-per-line': 'off',
       '@stylistic/multiline-ternary': 'off',
-      '@stylistic/quote-props': 'off',
 
       // =========
 
+      '@stylistic/brace-style': ['error', '1tbs'],
+      '@stylistic/arrow-parens': ['error', 'always'],
+      '@stylistic/space-before-blocks': 'error',
+      '@stylistic/quote-props': ['error', 'as-needed'],
       '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
       '@stylistic/semi': ['error', 'always'],
-      '@stylistic/no-multiple-empty-lines': ['error', { max: 1, maxEOF: 1 }],
       'import/extensions': [
         'error',
         'ignorePackages',

@@ -459,7 +459,7 @@ const createApp = async (app, schema) => {
         // For SAML, no session is required, referer will be send back through RelayState
         return passport.authenticate(
           provider, 
-          { additionalParams: { RelayState: referer }}, 
+          { additionalParams: { RelayState: referer } }, 
           (err) => {
             setCookieError(res, err?.message);
             next(err);
@@ -477,7 +477,6 @@ const createApp = async (app, schema) => {
           next(err);
         }
       )(req, res, next);
-
     } catch (e) {
       setCookieError(res, e.message);
       logApp.error('Error auth provider', { cause: e });

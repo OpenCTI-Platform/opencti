@@ -15,7 +15,9 @@ const basicObjectResolvers: Resolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    metrics(obj) { return obj.metrics ? obj.metrics : []; }
+    metrics(obj) {
+ return obj.metrics ? obj.metrics : []; 
+}
   }
 };
 

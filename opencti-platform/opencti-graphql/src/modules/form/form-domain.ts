@@ -282,7 +282,6 @@ const transformSpecialFields = async (
     const value = (fieldsSource as any)[attrName];
 
     if (!value) {
-       
       continue;
     }
 

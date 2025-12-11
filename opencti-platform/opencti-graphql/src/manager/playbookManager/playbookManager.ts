@@ -142,7 +142,7 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
     const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
     if (instance) {
       const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-      const data = await stixLoadById(context, RETENTION_MANAGER_USER, entityId)  as unknown as StixObject;
+      const data = await stixLoadById(context, RETENTION_MANAGER_USER, entityId) as unknown as StixObject;
       if (data) {
         try {
           const eventId = streamEventId();

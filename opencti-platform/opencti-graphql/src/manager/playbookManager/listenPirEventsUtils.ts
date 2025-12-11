@@ -173,7 +173,7 @@ export const listenPirEvents = async (
         AUTOMATION_MANAGER_USER, 
         data.source_ref, 
         ABSTRACT_STIX_CORE_OBJECT
-      ) as unknown as StixObject;;
+      ) as unknown as StixObject; ;
     } else if (isUpdateEvent) {
       // Event update on flagged entity.
       stixEntity = data;
@@ -184,7 +184,7 @@ export const listenPirEvents = async (
         AUTOMATION_MANAGER_USER,
         stixIdLinked,
         ABSTRACT_STIX_CORE_OBJECT
-      ) as unknown as StixObject;;
+      ) as unknown as StixObject; ;
     }
 
     // Having an entity means we have a matched PIR.

@@ -161,7 +161,7 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
 };
 
 // region Initialization of clients
-type RedisConnection = Cluster | Redis ;
+type RedisConnection = Cluster | Redis;
 interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub: RedisPubSub }
 
 let redisClients: RedisClients;

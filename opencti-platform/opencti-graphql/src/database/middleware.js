@@ -1310,7 +1310,9 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Prepare S3 file move
   // Merge files on S3 and update x_opencti_files path in source => it will be added to target by the merge operation.
   logApp.info('[OPENCTI] Copying files on S3 before merging x_opencti_files');
-  const sourceEntitiesWithFiles = sourceEntities.filter((entity) => { return entity.x_opencti_files ? entity.x_opencti_files.length > 0 : true; });
+  const sourceEntitiesWithFiles = sourceEntities.filter((entity) => {
+ return entity.x_opencti_files ? entity.x_opencti_files.length > 0 : true; 
+});
   for (let i = 0; i < sourceEntitiesWithFiles.length; i += 1) {
     const sourceEntity = sourceEntitiesWithFiles[i];
     if (sourceEntity.x_opencti_files && sourceEntity.x_opencti_files.length > 0) {
@@ -2060,7 +2062,7 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
 };
 
 const buildAttribute = (array) => {
-  return array.map((item) => (typeof item === 'object' ? (item && extractEntityRepresentativeName(item, 250)): item))
+  return array.map((item) => (typeof item === 'object' ? (item && extractEntityRepresentativeName(item, 250)) : item))
   .filter((item) => item !== null && item !== undefined);
 };
 
@@ -2085,16 +2087,16 @@ export const buildChanges = async (context, user, entityType, inputs) => {
     const valueArray = buildAttribute(valueArrayFull);
 
     if (isMultiple) {
-      let added  = [];
+      let added = [];
       let removed = [];
       let newValues = [];
-      if(operation === UPDATE_OPERATION_ADD){
+      if (operation === UPDATE_OPERATION_ADD) {
         added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
         newValues = previousArray.concat(valueArray);
-      } else if(operation === UPDATE_OPERATION_REMOVE){
+      } else if (operation === UPDATE_OPERATION_REMOVE) {
         removed = valueArray;
         newValues = previousArray.filter((valueItem) => !valueArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-      } else{
+      } else {
         // UPDATE_OPERATION_REPLACE or no operation is the same
         removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
         added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
@@ -2110,8 +2112,7 @@ export const buildChanges = async (context, user, entityType, inputs) => {
           removed,
         });
       }
-    }
-    else if (isMultiple === false) {
+    } else if (isMultiple === false) {
       const isStatusChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
       const platformStatuses = isStatusChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
       const resolvedValue = (array) => {
@@ -2131,7 +2132,7 @@ export const buildChanges = async (context, user, entityType, inputs) => {
       });
     } else {
       // This should not happen so better at least log at info level to be able to debug.
-      logApp.info('Changes cannot be computed', {inputs, entityType});
+      logApp.info('Changes cannot be computed', { inputs, entityType });
     }
   }
   return changes;
@@ -2506,7 +2507,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       // If entity is currently covered
       const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
       if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
-        const { element: securityCoverage }  = await updateAttribute(
+        const { element: securityCoverage } = await updateAttribute(
             context,
             user,
             data.updatedInstance[RELATION_COVERED],

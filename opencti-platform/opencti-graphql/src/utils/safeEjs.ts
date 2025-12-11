@@ -30,7 +30,7 @@ export type SafeOptions = {
 export type SafeRenderOptions = Options & SafeOptions;
 
 export const safeReservedPrefix = '____safe____';
-export const safeName = (name: 'statement' | 'property' | 'Object' ) => `${safeReservedPrefix}${name}`;
+export const safeName = (name: 'statement' | 'property' | 'Object') => `${safeReservedPrefix}${name}`;
 
 const forbiddenProperties = new Set([
   '__proto__',

@@ -26,7 +26,7 @@ export interface StixDataComponent extends StixDomainObject {
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension
     [STIX_EXT_MITRE]: {
-      'extension_type': 'new-sdo'
+      extension_type: 'new-sdo'
     }
   };
 }

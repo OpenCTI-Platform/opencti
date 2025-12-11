@@ -200,7 +200,6 @@ export const playbookReplaceNode = async (
   }
   const oldComponent = PLAYBOOK_COMPONENTS[oldComponentId];
   if (oldComponent.ports.length > relatedComponent.ports.length) {
-     
     for (let i = oldComponent.ports.length - 1; i >= relatedComponent.ports.length; i--) {
       // Find all links to the port
       const linksToDelete = definition.links.filter((n) => n.from.id === nodeId && n.from.port === oldComponent.ports[i].id);

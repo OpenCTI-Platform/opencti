@@ -26,7 +26,7 @@ export type StixBundle = {
 };
 
 interface StixMitreExtension {
-  'extension_type': 'property-extension' | 'new-sdo',
+  extension_type: 'property-extension' | 'new-sdo',
   id: string;
   detection: string;
   permissions_required: Array<string>;

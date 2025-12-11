@@ -570,7 +570,7 @@ export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, i
       logApp.error('[OPENCTI-MODULE] Issue when trying to call OpenCTI remote stream', { httpStatus: e.status, message: e.message, streamURI: uri });
       errorMessage = e.message;
     }
-    throw ValidationError('Error getting the streams from remote OpenCTI', 'uri', {cause: errorMessage});
+    throw ValidationError('Error getting the streams from remote OpenCTI', 'uri', { cause: errorMessage });
   }
 };
 export const registerSync = async (context: AuthContext, user: AuthUser, syncData: SynchronizerAddInput) => {
@@ -635,7 +635,9 @@ export const deleteQueues = async (context: AuthContext, user: AuthUser) => {
     const conn = platformConnectors[index];
     await unregisterConnector(conn.id);
   }
-  try { await unregisterExchanges(); } catch (_e) { /* nothing */ }
+  try {
+ await unregisterExchanges(); 
+} catch (_e) { /* nothing */ }
 };
 // endregion
 

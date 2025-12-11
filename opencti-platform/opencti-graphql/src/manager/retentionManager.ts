@@ -147,7 +147,9 @@ const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
   executionContext: 'retention_manager',
   cronSchedulerHandler: {
     handler: retentionHandler,
-    shutdown: () => { shutdown = true; },
+    shutdown: () => {
+ shutdown = true; 
+},
     interval: SCHEDULE_TIME,
     lockKey: RETENTION_MANAGER_KEY,
     lockInHandlerParams: true,

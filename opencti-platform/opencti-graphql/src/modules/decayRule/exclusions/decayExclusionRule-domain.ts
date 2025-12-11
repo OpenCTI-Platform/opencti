@@ -1,7 +1,7 @@
 import { isStixMatchFilterGroup } from '../../../utils/filtering/filtering-stix/stix-filtering';
 import { now } from '../../../utils/format';
 import { FunctionalError } from '../../../config/errors';
-import {deleteElementById, updateAttribute} from '../../../database/middleware';
+import { deleteElementById, updateAttribute } from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { BUS_TOPICS } from '../../../config/conf';
 import { pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
