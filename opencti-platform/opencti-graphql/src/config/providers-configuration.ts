@@ -21,12 +21,12 @@ export enum StrategyType {
 }
 
 interface ProviderConfiguration {
-  name: string,
-  type: AuthType,
-  strategy: StrategyType,
-  provider: string,
-  reqLoginHandler?: () => void,
-  logout_uri?: string,
+  name: string;
+  type: AuthType;
+  strategy: StrategyType;
+  provider: string;
+  reqLoginHandler?: () => void;
+  logout_uri?: string;
 }
 
 export const PROVIDERS: ProviderConfiguration[] = [];

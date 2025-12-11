@@ -90,8 +90,7 @@ export default defineConfig([
       // '@stylistic/comma-dangle': 'off',
       // '@stylistic/indent-binary-ops': 'off',
       // '@stylistic/spaced-comment': 'off',
-      '@stylistic/member-delimiter-style': 'off',
-      '@stylistic/max-statements-per-line': 'off',
+      // '@stylistic/max-statements-per-line': 'off',
       '@stylistic/multiline-ternary': 'off',
 
       // =========
@@ -101,6 +100,7 @@ export default defineConfig([
       '@stylistic/space-before-blocks': 'error',
       '@stylistic/quote-props': ['error', 'as-needed'],
       '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
+      '@stylistic/member-delimiter-style': ['error', { singleline: { requireLast: false } }],
       '@stylistic/semi': ['error', 'always'],
       'import/extensions': [
         'error',

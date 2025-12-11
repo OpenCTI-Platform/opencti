@@ -13,18 +13,18 @@ export const NOTIFIER_CONNECTOR_EMAIL = '6f5e30a8-56d5-4ff1-8b8d-f90243f771dc';
 export const NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL = '9f73d9f8-cc4c-432b-b5b0-be6b6d6c8d87';
 
 export interface NOTIFIER_CONNECTOR_EMAIL_INTERFACE {
-  title: string
-  template: string
-  url_suffix: string
+  title: string;
+  template: string;
+  url_suffix: string;
 }
 
 export interface NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE {
-  title: string
-  header: string
-  logo: string
-  footer: string
-  background_color: string
-  url_suffix: string
+  title: string;
+  header: string;
+  logo: string;
+  footer: string;
+  background_color: string;
+  url_suffix: string;
 }
 
 export const NOTIFIER_CONNECTOR_EMAIL_CONFIG: JSONSchemaType<NOTIFIER_CONNECTOR_EMAIL_INTERFACE> = {
@@ -53,11 +53,11 @@ export const NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_CONFIG: JSONSchemaType<NOTIFIER
 export const NOTIFIER_CONNECTOR_WEBHOOK = '08f9f00f-4e52-4466-ae27-be9fa9813a88';
 
 export interface NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE {
-  verb: string
-  url: string
-  template: string
-  params: { attribute: string, value: string }[],
-  headers: { attribute: string, value: string }[],
+  verb: string;
+  url: string;
+  template: string;
+  params: { attribute: string; value: string }[];
+  headers: { attribute: string; value: string }[];
 }
 
 export const NOTIFIER_CONNECTOR_WEBHOOK_CONFIG: JSONSchemaType<NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE> = {

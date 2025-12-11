@@ -1,6 +1,6 @@
 import type { AuthUser } from '../types/user';
 
-export interface InputSettingsData { key: string, value: [unknown] }
+export interface InputSettingsData { key: string; value: [unknown] }
 
 export const completeXTMHubDataForRegistration = (user: AuthUser, input: InputSettingsData[]) => {
   const tokenItem = input.find((item) => item.key === 'xtm_hub_token');

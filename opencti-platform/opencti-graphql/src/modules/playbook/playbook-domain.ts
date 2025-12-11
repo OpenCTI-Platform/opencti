@@ -160,7 +160,7 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const nodesPositions = JSON.parse(positions);
   definition.nodes = definition.nodes.map((n) => {
-    const position = nodesPositions.filter((o: { id: string, position: PositionInput }) => o.id === n.id).at(0);
+    const position = nodesPositions.filter((o: { id: string; position: PositionInput }) => o.id === n.id).at(0);
     if (position) {
       return {
         ...n,
@@ -381,12 +381,12 @@ export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, i
 };
 
 type PlaybookCreationType = {
-  name: string,
-  description?: string | null,
-  playbook_start?: string,
-  playbook_running?: boolean,
-  playbook_mode?: string,
-  playbook_definition?: string
+  name: string;
+  description?: string | null;
+  playbook_start?: string;
+  playbook_running?: boolean;
+  playbook_mode?: string;
+  playbook_definition?: string;
 };
 const createPlaybook = async (context: AuthContext, user: AuthUser, playbookCreationInput: PlaybookCreationType) => {
   await checkEnterpriseEdition(context);

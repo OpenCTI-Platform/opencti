@@ -29,16 +29,16 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types'
 export type typeAvailableSetting = boolean | string;
 
 export interface EntitySettingSchemaAttribute {
-  name: string
-  type: string
-  mandatory: boolean
-  mandatoryType: MandatoryType
-  multiple: boolean
-  editDefault: boolean
-  upsert: boolean
-  label?: string
-  defaultValues?: { id: string, name: string }[]
-  scale?: string
+  name: string;
+  type: string;
+  mandatory: boolean;
+  mandatoryType: MandatoryType;
+  multiple: boolean;
+  editDefault: boolean;
+  upsert: boolean;
+  label?: string;
+  defaultValues?: { id: string; name: string }[];
+  scale?: string;
 }
 
 export const defaultEntitySetting: Record<string, typeAvailableSetting> = {

@@ -17,19 +17,19 @@ function keyStep<V>(k: `step_${string}`, v: V): { [P in `step_${string}`]: V } {
 }
 
 type ObservationFn = {
-  message: string,
-  status: 'success' | 'error',
-  executionId: string,
-  playbookId: string,
-  start: string,
-  end: string,
-  diff: number,
-  previousStepId?: string,
-  stepId: string,
-  previousBundle?: StixBundle | null
-  bundle?: StixBundle | null
-  error?: string
-  forceBundleTracking: boolean
+  message: string;
+  status: 'success' | 'error';
+  executionId: string;
+  playbookId: string;
+  start: string;
+  end: string;
+  diff: number;
+  previousStepId?: string;
+  stepId: string;
+  previousBundle?: StixBundle | null;
+  bundle?: StixBundle | null;
+  error?: string;
+  forceBundleTracking: boolean;
 };
 
 const registerStepObservation = async (data: ObservationFn) => {
@@ -55,19 +55,19 @@ const registerStepObservation = async (data: ObservationFn) => {
 };
 
 type ExecutorFn = {
-  eventId: string,
-  executionId: string,
-  playbookId: string,
-  dataInstanceId: string,
-  definition: ComponentDefinition,
-  previousStep: PlaybookExecutionStep<object> | null
-  nextStep: PlaybookExecutionStep<object>,
-  previousStepBundle: StixBundle | null
-  bundle: StixBundle
-  event?: StreamDataEvent,
+  eventId: string;
+  executionId: string;
+  playbookId: string;
+  dataInstanceId: string;
+  definition: ComponentDefinition;
+  previousStep: PlaybookExecutionStep<object> | null;
+  nextStep: PlaybookExecutionStep<object>;
+  previousStepBundle: StixBundle | null;
+  bundle: StixBundle;
+  event?: StreamDataEvent;
   externalCallback?: {
-    externalStartDate: Date
-  }
+    externalStartDate: Date;
+  };
 };
 
 export const playbookExecutor = async ({

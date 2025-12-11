@@ -49,7 +49,7 @@ export interface StixTheme extends StixObject {
   theme_text_color: string;
   built_in: boolean;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }
 // endregion

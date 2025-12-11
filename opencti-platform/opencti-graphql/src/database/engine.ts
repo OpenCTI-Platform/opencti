@@ -389,7 +389,7 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
 };
 
 // Look for the engine version with OpenSearch client
-export const searchEngineVersion = async (): Promise<{ platform: string, version: string }> => {
+export const searchEngineVersion = async (): Promise<{ platform: string; version: string }> => {
   const engineToUse = engine as OpenClient;
   const searchInfo = await engineToUse.info()
     .then((info) => oebp(info).version)
@@ -510,7 +510,7 @@ export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[
   }, elRawSearchFn);
 };
 
-export const elRawGet = async (args: { id: string, index: string }) => {
+export const elRawGet = async (args: { id: string; index: string }) => {
   if (engine instanceof ElkClient) {
     const r = await engine.get(args);
     return oebp(r);
@@ -609,7 +609,7 @@ export const elUpdateByQueryForMigration = elOperationForMigration(elRawUpdateBy
 export const elDeleteByQueryForMigration = elOperationForMigration(elRawDeleteByQuery);
 export const elReindexByQueryForMigration = elOperationForMigration(elRawReindexByQuery);
 
-const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?: boolean | null, excludeEmptyAuthorizedMembers?: boolean }) => {
+const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?: boolean | null; excludeEmptyAuthorizedMembers?: boolean }) => {
   const { includeAuthorities = false, excludeEmptyAuthorizedMembers = false } = opts;
   const capabilities = user.capabilities.map((c) => c.name);
   if (includeAuthorities && capabilities.includes(BYPASS)) {
@@ -670,7 +670,7 @@ export const buildDataRestrictions = async (
   context: AuthContext,
   user: AuthUser,
   opts: { includeAuthorities?: boolean | null } | null | undefined = {},
-): Promise<{ must: any[], must_not: any[] }> => {
+): Promise<{ must: any[]; must_not: any[] }> => {
   const must: any[] = [];
   // eslint-disable-next-line camelcase
   const must_not: any[] = [];
@@ -810,7 +810,7 @@ export const elPlatformMapping = async (index: any): Promise<Record<string, any>
   const r_1 = await engine.indices.getMapping({ index });
   return oebp(r_1)[index].mappings.properties;
 };
-export const elIndexSetting = async (index: any): Promise<{ settings: any, rollover_alias: string }> => {
+export const elIndexSetting = async (index: any): Promise<{ settings: any; rollover_alias: string }> => {
   let settings;
   if (engine instanceof ElkClient) {
     const r = await engine.indices.getSettings({ index });
@@ -955,7 +955,7 @@ const attributeMappingGenerator = (entityAttribute: AttributeDefinition): any =>
       const mapping = entityAttribute.mappings[i];
       properties[mapping.name] = attributeMappingGenerator(mapping);
     }
-    const config: { dynamic: string, properties: any, type?: string } = { dynamic: 'strict', properties };
+    const config: { dynamic: string; properties: any; type?: string } = { dynamic: 'strict', properties };
     // Add nested option if needed
     if (entityAttribute.format === 'nested') {
       config.type = 'nested';
@@ -964,8 +964,8 @@ const attributeMappingGenerator = (entityAttribute: AttributeDefinition): any =>
   }
   throw UnsupportedError('Cant generated mapping', { type: entityAttribute.type });
 };
-const ruleMappingGenerator = (): Record<string, { dynamic: string, properties: any }> => {
-  const schemaProperties: Record<string, { dynamic: string, properties: any }> = {};
+const ruleMappingGenerator = (): Record<string, { dynamic: string; properties: any }> => {
+  const schemaProperties: Record<string, { dynamic: string; properties: any }> = {};
   for (let attrIndex = 0; attrIndex < rule_definitions.length; attrIndex += 1) {
     const rule = rule_definitions[attrIndex];
     schemaProperties[`i_rule_${rule.id}`] = {
@@ -980,14 +980,14 @@ const ruleMappingGenerator = (): Record<string, { dynamic: string, properties: a
   }
   return schemaProperties;
 };
-const denormalizeRelationsMappingGenerator = (): Record<string, { dynamic: string, properties: any }> => {
+const denormalizeRelationsMappingGenerator = (): Record<string, { dynamic: string; properties: any }> => {
   const databaseRelationshipsName = [
     STIX_SIGHTING_RELATIONSHIP,
     ...STIX_CORE_RELATIONSHIPS,
     ...INTERNAL_RELATIONSHIPS,
     ...schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP),
   ];
-  const schemaProperties: Record<string, { dynamic: string, properties: any }> = {};
+  const schemaProperties: Record<string, { dynamic: string; properties: any }> = {};
   for (let attrIndex = 0; attrIndex < databaseRelationshipsName.length; attrIndex += 1) {
     const relName = databaseRelationshipsName[attrIndex];
     schemaProperties[`rel_${relName}`] = {
@@ -1631,7 +1631,7 @@ const elBuildRelation = (type: string, connection: StoreConnection) => {
   };
 };
 const elMergeRelation = (
-  concept: { internal_id: string, base_type: string, entity_type: string },
+  concept: { internal_id: string; base_type: string; entity_type: string },
   fromConnection: StoreConnection | undefined,
   toConnection: StoreConnection | undefined,
 ) => {
@@ -1644,7 +1644,7 @@ const elMergeRelation = (
   to.target_ref = `${convertTypeToStixType(to.toType as string)}--temporary`;
   return R.mergeAll([concept, from, to]);
 };
-export const elRebuildRelation = (concept: { internal_id: string, base_type: string, entity_type: string }) => {
+export const elRebuildRelation = (concept: { internal_id: string; base_type: string; entity_type: string }) => {
   if (concept.base_type === BASE_TYPE_RELATION) {
     const { connections } = concept as BasicStoreRelation;
     const entityType = concept.entity_type;
@@ -1755,15 +1755,15 @@ export const specialElasticCharsEscape = (query: string) => {
   return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
 };
 type ElFindByIdsOpts = {
-  indices?: string[] | string | null,
-  baseData?: boolean | null,
-  baseFields?: string[],
-  withoutRels?: boolean | null,
-  toMap?: boolean,
-  mapWithAllIds?: boolean,
-  type?: string | string [] | null,
-  relCount?: boolean | null,
-  includeDeletedInDraft?: boolean | null
+  indices?: string[] | string | null;
+  baseData?: boolean | null;
+  baseFields?: string[];
+  withoutRels?: boolean | null;
+  toMap?: boolean;
+  mapWithAllIds?: boolean;
+  type?: string | string [] | null;
+  relCount?: boolean | null;
+  includeDeletedInDraft?: boolean | null;
 };
 const ids_attributes = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
 
@@ -1851,16 +1851,16 @@ export const elFindByIds = async <T extends BasicStoreBase> (
         script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD,
       };
     }
-    const _source: { excludes: string[], includes?: string[] } = { excludes: [] };
+    const _source: { excludes: string[]; includes?: string[] } = { excludes: [] };
     if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
     if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
     const query: {
-      size: number,
-      index: string,
-      _source: { excludes: string[], includes?: string[] },
-      body: any,
-      track_total_hits: boolean,
-      docvalue_fields?: string[]
+      size: number;
+      index: string;
+      _source: { excludes: string[]; includes?: string[] };
+      body: any;
+      track_total_hits: boolean;
+      docvalue_fields?: string[];
     } = {
       index: computedIndices,
       size: ES_MAX_PAGINATION,
@@ -1914,7 +1914,7 @@ export const elLoadById = async <T extends BasicStoreBase>(
 export const elBatchIds = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
-  elements: { id: string, type: string }[],
+  elements: { id: string; type: string }[],
 ) => {
   const ids = elements.map((e) => e.id);
   const types = elements.map((e) => e.type);
@@ -1924,7 +1924,7 @@ export const elBatchIds = async <T extends BasicStoreBase>(
 export const elBatchIdsWithRelCount = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
-  elements: { id: string, type: string }[],
+  elements: { id: string; type: string }[],
 ) => {
   const ids = elements.map((e) => e.id);
   const types = elements.map((e) => e.type);
@@ -2015,12 +2015,12 @@ const BASE_SEARCH_ATTRIBUTES = [
 ];
 
 type ProcessSearchArgs = {
-  useWildcardPrefix?: boolean
+  useWildcardPrefix?: boolean;
 };
 function processSearch(
   search: string,
   args: ProcessSearchArgs,
-): { exactSearch: string[], querySearch: string[] } {
+): { exactSearch: string[]; querySearch: string[] } {
   const { useWildcardPrefix = ES_DEFAULT_WILDCARD_PREFIX } = args;
   let decodedSearch;
   try {
@@ -2882,24 +2882,24 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
   },
 };
 type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
-  ids?: string[],
-  after?: string | null,
-  orderBy?: any,
-  orderMode?: 'asc' | 'desc' | null,
-  pirId?: string | null,
-  noSize?: boolean | null,
-  noSort?: boolean | null,
-  intervalInclude?: boolean | null,
-  relCount?: boolean | null,
-  first?: number | null,
-  types?: string[] | null,
-  search?: string | null,
-  filters?: FilterGroup | null,
-  noFiltersChecking?: boolean,
-  startDate?: any,
-  endDate?: any,
-  dateAttribute?: string | null,
-  includeAuthorities?: boolean | null
+  ids?: string[];
+  after?: string | null;
+  orderBy?: any;
+  orderMode?: 'asc' | 'desc' | null;
+  pirId?: string | null;
+  noSize?: boolean | null;
+  noSort?: boolean | null;
+  intervalInclude?: boolean | null;
+  relCount?: boolean | null;
+  first?: number | null;
+  types?: string[] | null;
+  search?: string | null;
+  filters?: FilterGroup | null;
+  noFiltersChecking?: boolean;
+  startDate?: any;
+  endDate?: any;
+  dateAttribute?: string | null;
+  includeAuthorities?: boolean | null;
 };
 const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
   const {
@@ -3061,21 +3061,21 @@ const buildSearchResult = <T extends BasicStoreBase>(
   return elements;
 };
 export type PaginateOpts = QueryBodyBuilderOpts & {
-  baseData?: boolean,
-  baseFields?: string[],
-  bypassSizeLimit?: boolean,
-  withoutRels?: boolean,
-  types?: string[] | string | null,
-  withResultMeta?: boolean,
-  first?: number,
-  filters?: FilterGroup | null,
-  connectionFormat?: boolean,
+  baseData?: boolean;
+  baseFields?: string[];
+  bypassSizeLimit?: boolean;
+  withoutRels?: boolean;
+  types?: string[] | string | null;
+  withResultMeta?: boolean;
+  first?: number;
+  filters?: FilterGroup | null;
+  connectionFormat?: boolean;
 };
 type PaginateResultWithMeta<T extends BasicStoreBase> = {
-  elements: T[] | BasicConnection<T>,
-  endCursor: string | null,
-  total: number,
-  filterCount: number
+  elements: T[] | BasicConnection<T>;
+  endCursor: string | null;
+  total: number;
+  filterCount: number;
 };
 export const elPaginate = async <T extends BasicStoreBase>(
   context: AuthContext,
@@ -3099,7 +3099,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     logApp.info('[SEARCH] Pagination limited to max result config', { size: body.size, max: ES_MAX_PAGINATION });
     body.size = ES_MAX_PAGINATION;
   }
-  const _source: { excludes: string[], includes?: string[] } = { excludes: [] };
+  const _source: { excludes: string[]; includes?: string[] } = { excludes: [] };
   if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
   if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
   const query: any = {
@@ -3135,9 +3135,9 @@ export const elPaginate = async <T extends BasicStoreBase>(
   }
 };
 type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
-  maxSize?: number,
-  logForMigration?: boolean,
-  callback?: (elements: T[], globalCount: number) => Promise<boolean | undefined>
+  maxSize?: number;
+  logForMigration?: boolean;
+  callback?: (elements: T[], globalCount: number) => Promise<boolean | undefined>;
 };
 const elRepaginate = async <T extends BasicStoreBase> (
   context: AuthContext,
@@ -3904,8 +3904,8 @@ export const elCount = async (
   return elRawCount(query);
 };
 type HistogramCountOpts = QueryBodyBuilderOpts & {
-  interval?: string,
-  field?: string
+  interval?: string;
+  field?: string;
 };
 export const elHistogramCount = async (
   context: AuthContext,
@@ -3967,17 +3967,17 @@ export const elHistogramCount = async (
   });
 };
 type AggregationCountOpts = QueryBodyBuilderOpts & {
-  field: string,
-  weightField?: string | null,
-  normalizeLabel?: boolean | null,
-  convertEntityTypeLabel?: boolean | null
+  field: string;
+  weightField?: string | null;
+  normalizeLabel?: boolean | null;
+  convertEntityTypeLabel?: boolean | null;
 };
 export const elAggregationCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
   options: AggregationCountOpts = { field: '' },
-): Promise<{ label: string, value: any, count: number }[]> => {
+): Promise<{ label: string; value: any; count: number }[]> => {
   const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
@@ -4050,7 +4050,7 @@ const buildAggregationRelationFilters = async (
   context: AuthContext,
   user: AuthUser,
   aggregationFilters?: { filter: FilterGroup },
-): Promise<{ bool: { must: any, must_not: any } }> => {
+): Promise<{ bool: { must: any; must_not: any } }> => {
   const aggBody = await elQueryBodyBuilder(context, user, { ...aggregationFilters, noSize: true, noSort: true });
   return {
     bool: {
@@ -4060,18 +4060,18 @@ const buildAggregationRelationFilters = async (
   };
 };
 type AggregationRelationsCount = {
-  types?: string[],
-  field?: string,
-  searchOptions?: QueryBodyBuilderOpts,
-  aggregationOptions?: { filter: FilterGroup },
-  aggregateOnConnections?: boolean
+  types?: string[];
+  field?: string;
+  searchOptions?: QueryBodyBuilderOpts;
+  aggregationOptions?: { filter: FilterGroup };
+  aggregateOnConnections?: boolean;
 };
 export const elAggregationRelationsCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | undefined,
   options: AggregationRelationsCount = {},
-): Promise<{ label: string, value: number }[]> => {
+): Promise<{ label: string; value: number }[]> => {
   const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true } = options;
   const aggregationFields = [
     'entity_type',
@@ -4176,15 +4176,15 @@ export const elAggregationRelationsCount = async (
     });
 };
 type AggregationNestedTermsWithFilterOpts = QueryBodyBuilderOpts & {
-  size?: number
+  size?: number;
 };
 export const elAggregationNestedTermsWithFilter = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
-  aggregation: { path: string, field: string, filter: any },
+  aggregation: { path: string; field: string; filter: any },
   opts: AggregationNestedTermsWithFilterOpts = {},
-): Promise<{ label: string, key: string, value: number }[]> => {
+): Promise<{ label: string; key: string; value: number }[]> => {
   const { types = [], size = ES_DEFAULT_PAGINATION } = opts;
   const { path, field, filter } = aggregation;
   const body = await elQueryBodyBuilder(context, user, { ...opts, noSize: true, noSort: true });
@@ -4225,16 +4225,16 @@ export const elAggregationNestedTermsWithFilter = async (
     });
 };
 type AggregationsListOpts = QueryBodyBuilderOpts & {
-  resolveToRepresentative?: boolean,
-  postResolveFilter?: (element: any) => Promise<any>
+  resolveToRepresentative?: boolean;
+  postResolveFilter?: (element: any) => Promise<any>;
 };
 export const elAggregationsList = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
-  aggregations: { field: string, name: string }[],
+  aggregations: { field: string; name: string }[],
   opts: AggregationsListOpts = {},
-): Promise<{ name: string, values: any }[]> => {
+): Promise<{ name: string; values: any }[]> => {
   const { types = [], resolveToRepresentative = true, postResolveFilter } = opts;
   const queryAggs: any = {};
   aggregations.forEach((agg) => {
@@ -4377,9 +4377,9 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
   return undefined;
 };
 type AttributeValues = {
-  orderMode?: string | null,
-  search?: string | null,
-  first?: number | null
+  orderMode?: string | null;
+  search?: string | null;
+  first?: number | null;
 };
 export const elAttributeValues = async (
   context: AuthContext,
@@ -4443,7 +4443,7 @@ export const elBulk = async (args: any) => {
 export const elIndex = async (
   indexName: string[] | string | undefined,
   documentBody: Record<string, any>,
-  opts: { refresh?: boolean, pipeline?: any } = {},
+  opts: { refresh?: boolean; pipeline?: any } = {},
 ) => {
   const { refresh = true, pipeline } = opts;
   const documentId = documentBody.internal_id;
@@ -4742,7 +4742,7 @@ export const elReindexElements = async (
   ids: string[],
   sourceIndex: string,
   destIndex: string,
-  opts: { dbId?: string, sourceUpdate?: any } = {},
+  opts: { dbId?: string; sourceUpdate?: any } = {},
 ) => {
   const { dbId, sourceUpdate = {} } = opts;
   const sourceCleanupScript = "ctx._source.remove('fromType'); ctx._source.remove('toType'); "
@@ -5385,8 +5385,8 @@ const createDeleteOperationElement = async (
   await elIndexElements(context, user, ENTITY_TYPE_DELETE_OPERATION, [element, ...(relations ?? [])]);
 };
 type DeleteElementsOpts = {
-  forceRefresh?: boolean,
-  forceDelete?: boolean
+  forceRefresh?: boolean;
+  forceDelete?: boolean;
 };
 export const elDeleteElements = async (
   context: AuthContext,

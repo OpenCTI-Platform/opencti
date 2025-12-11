@@ -74,7 +74,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 export const extractStixRepresentative = (
   stix: S.StixObject,
-  { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean, toRestricted: boolean } = { fromRestricted: false, toRestricted: false },
+  { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean; toRestricted: boolean } = { fromRestricted: false, toRestricted: false },
   withArrowForRelationships = false,
 ): string => {
   const entityType = stix.extensions[STIX_EXT_OCTI].type;

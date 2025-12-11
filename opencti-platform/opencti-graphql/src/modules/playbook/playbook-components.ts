@@ -101,7 +101,7 @@ import { ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, type StixSecurityCoverage
 
 // region built in playbook components
 interface LoggerConfiguration {
-  level: string
+  level: string;
 }
 const PLAYBOOK_LOGGER_COMPONENT_SCHEMA: JSONSchemaType<LoggerConfiguration> = {
   type: 'object',
@@ -139,10 +139,10 @@ const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
 };
 
 export interface StreamConfiguration {
-  create: boolean,
-  update: boolean,
-  delete: boolean,
-  filters: string
+  create: boolean;
+  update: boolean;
+  delete: boolean;
+  filters: string;
 }
 const PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA: JSONSchemaType<StreamConfiguration> = {
   type: 'object',
@@ -170,7 +170,7 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
 };
 
 export interface ManualTriggerConfiguration {
-  filters: string
+  filters: string;
 }
 const PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA: JSONSchemaType<ManualTriggerConfiguration> = {
   type: 'object',
@@ -195,11 +195,11 @@ const PLAYBOOK_INTERNAL_MANUAL_TRIGGER: PlaybookComponent<ManualTriggerConfigura
 };
 
 export interface CronConfiguration {
-  period: 'day' | 'hour' | 'minute' | 'month' | 'week',
-  triggerTime: string
-  onlyLast: boolean
-  includeAll: boolean
-  filters: string
+  period: 'day' | 'hour' | 'minute' | 'month' | 'week';
+  triggerTime: string;
+  onlyLast: boolean;
+  includeAll: boolean;
+  filters: string;
 }
 const PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA: JSONSchemaType<CronConfiguration> = {
   type: 'object',
@@ -254,8 +254,8 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
 };
 
 interface MatchConfiguration {
-  all: boolean
-  filters: string
+  all: boolean;
+  filters: string;
 }
 const PLAYBOOK_MATCHING_COMPONENT_SCHEMA: JSONSchemaType<MatchConfiguration> = {
   type: 'object',
@@ -297,7 +297,7 @@ export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> 
 };
 
 interface ReduceConfiguration {
-  filters: string
+  filters: string;
 }
 const PLAYBOOK_REDUCING_COMPONENT_SCHEMA: JSONSchemaType<ReduceConfiguration> = {
   type: 'object',
@@ -337,7 +337,7 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
 };
 
 interface ConnectorConfiguration {
-  connector: string
+  connector: string;
 }
 const PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA: JSONSchemaType<ConnectorConfiguration> = {
   type: 'object',
@@ -427,10 +427,10 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
 };
 
 interface ContainerWrapperConfiguration {
-  container_type: string
-  caseTemplates: { label: string, value: string }[]
-  all: boolean
-  newContainer: boolean
+  container_type: string;
+  caseTemplates: { label: string; value: string }[];
+  all: boolean;
+  newContainer: boolean;
 }
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapperConfiguration> = {
   type: 'object',
@@ -481,7 +481,7 @@ export const buildStixTaskFromTaskTemplate = (taskTemplate: BasicStoreEntityTask
 };
 
 export const addTaskFromCaseTemplates = async (
-  caseTemplates: { label: string, value: string }[],
+  caseTemplates: { label: string; value: string }[],
   container: StixContainer,
 ) => {
   const context = executionContext('playbook_components');
@@ -591,12 +591,12 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
 };
 
 interface SecurityCoverageConfiguration {
-  all: boolean,
-  auto_enrichment_disable: boolean,
-  periodicity: string,
-  duration: string,
-  type_affinity: string,
-  platforms_affinity: string[],
+  all: boolean;
+  auto_enrichment_disable: boolean;
+  periodicity: string;
+  duration: string;
+  type_affinity: string;
+  platforms_affinity: string[];
 }
 const PLAYBOOK_SECURITY_COVERAGE_COMPONENT_SCHEMA: JSONSchemaType<SecurityCoverageConfiguration> = {
   type: 'object',
@@ -701,8 +701,8 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
 };
 
 export interface SharingConfiguration {
-  organizations: string[] | { label: string, value: string }[]
-  all: boolean
+  organizations: string[] | { label: string; value: string }[];
+  all: boolean;
 }
 const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = {
   type: 'object',
@@ -752,8 +752,8 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
 };
 
 export interface UnsharingConfiguration {
-  organizations: string[] | { label: string, value: string }[]
-  all: boolean
+  organizations: string[] | { label: string; value: string }[];
+  all: boolean;
 }
 const PLAYBOOK_UNSHARING_COMPONENT_SCHEMA: JSONSchemaType<UnsharingConfiguration> = {
   type: 'object',
@@ -806,8 +806,8 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
 };
 
 export interface AccessRestrictionsConfiguration {
-  access_restrictions: { groupsRestriction: { label: string, value: string, type: string }[], accessRight: string, label: string, type: string, value: string }[]
-  all: boolean
+  access_restrictions: { groupsRestriction: { label: string; value: string; type: string }[]; accessRight: string; label: string; type: string; value: string }[];
+  all: boolean;
 }
 const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<AccessRestrictionsConfiguration> = {
   type: 'object',
@@ -899,7 +899,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
   },
 };
 export interface RemoveAccessRestrictionsConfiguration {
-  all: boolean
+  all: boolean;
 }
 const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<RemoveAccessRestrictionsConfiguration> = {
   type: 'object',
@@ -995,13 +995,13 @@ const attributePathMapping: any = {
   },
 };
 interface UpdateValueConfiguration {
-  label: string
-  value: string
-  patch_value: string
+  label: string;
+  value: string;
+  patch_value: string;
 }
 interface UpdateConfiguration {
-  actions: { op: 'add' | 'replace' | 'remove', attribute: string, value: UpdateValueConfiguration[] }[]
-  all: boolean
+  actions: { op: 'add' | 'replace' | 'remove'; attribute: string; value: UpdateValueConfiguration[] }[];
+  all: boolean;
 }
 const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfiguration> = {
   type: 'object',
@@ -1140,10 +1140,10 @@ const RESOLVE_CONTAINER_CONTAINING = 'resolve_containers_containing';
 
 type StixWithSeenDates = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
 const ENTITIES_DATE_SEEN_PREFIX = ['threat-actor--', 'campaign--', 'incident--', 'infrastructure--', 'malware--'];
-type SeenFilter = { element: StixWithSeenDates, isImpactedBefore: boolean, isImpactedAfter: boolean };
+type SeenFilter = { element: StixWithSeenDates; isImpactedBefore: boolean; isImpactedAfter: boolean };
 interface RuleConfiguration {
-  rule: string
-  inferences: boolean
+  rule: string;
+  inferences: boolean;
 }
 const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
   type: 'object',
@@ -1303,8 +1303,8 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
 };
 
 export interface NotifierConfiguration {
-  notifiers: string[]
-  authorized_members: object
+  notifiers: string[];
+  authorized_members: object;
 }
 const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> = {
   type: 'object',
@@ -1371,9 +1371,9 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
   },
 };
 interface CreateIndicatorConfiguration {
-  all: boolean
-  wrap_in_container: boolean
-  types: string[]
+  all: boolean;
+  wrap_in_container: boolean;
+  types: string[];
 }
 const PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA: JSONSchemaType<CreateIndicatorConfiguration> = {
   type: 'object',
@@ -1602,8 +1602,8 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
   },
 };
 interface CreateObservableConfiguration {
-  all: boolean
-  wrap_in_container: boolean
+  all: boolean;
+  wrap_in_container: boolean;
 }
 const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA: JSONSchemaType<CreateObservableConfiguration> = {
   type: 'object',

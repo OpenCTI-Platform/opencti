@@ -52,13 +52,13 @@ import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalR
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 
 export type FilterDefinition = {
-  filterKey: string
-  type: string // possible values: boolean, date, integer, float, string, id, vocabulary, text, enum, object, nested
-  label: string // filter key translation in English
-  multiple: boolean, // if the field can have multiple values
-  subEntityTypes: string[] // entity types that have the given type as parent and have this filter key in their schema
-  elementsForFilterValuesSearch: string[] // not empty if type = id, type = enum or type = vocabulary
-  subFilters?: FilterDefinition[]
+  filterKey: string;
+  type: string; // possible values: boolean, date, integer, float, string, id, vocabulary, text, enum, object, nested
+  label: string; // filter key translation in English
+  multiple: boolean; // if the field can have multiple values
+  subEntityTypes: string[]; // entity types that have the given type as parent and have this filter key in their schema
+  elementsForFilterValuesSearch: string[]; // not empty if type = id, type = enum or type = vocabulary
+  subFilters?: FilterDefinition[];
 };
 
 // build the FilterDefinition object that is saved in the filterKeysShema
@@ -520,9 +520,9 @@ export const generateFilterKeysSchema = async () => {
     elementsForFilterValuesSearch: [],
   }]]));
   // C. transform the filterKeysSchema map in { key, values }[]
-  const flattenFilterKeysSchema: { entity_type: string, filters_schema: { filterDefinition: FilterDefinition, filterKey: string }[] }[] = [];
+  const flattenFilterKeysSchema: { entity_type: string; filters_schema: { filterDefinition: FilterDefinition; filterKey: string }[] }[] = [];
   filterKeysSchema.forEach((filtersMap, entity_type) => {
-    const filters_schema: { filterDefinition: FilterDefinition, filterKey: string }[] = [];
+    const filters_schema: { filterDefinition: FilterDefinition; filterKey: string }[] = [];
     filtersMap.forEach((filterDefinition, filterKey) => {
       filters_schema.push({ filterDefinition, filterKey });
     });

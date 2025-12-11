@@ -2,12 +2,12 @@ import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 
 export interface PirStreamConfiguration {
-  create: boolean,
-  create_rel: boolean,
-  update: boolean,
-  delete: boolean,
-  inPirFilters: { value: string }[],
-  filters: string,
+  create: boolean;
+  create_rel: boolean;
+  update: boolean;
+  delete: boolean;
+  inPirFilters: { value: string }[];
+  filters: string;
 }
 
 const PLAYBOOK_DATA_STREAM_PIR_SCHEMA: JSONSchemaType<PirStreamConfiguration> = {

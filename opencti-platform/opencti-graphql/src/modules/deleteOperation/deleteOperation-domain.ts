@@ -24,7 +24,7 @@ import { createRuleContent } from '../../rules/rules-utils';
 import { controlUserRestrictDeleteAgainstElement } from '../../utils/access';
 
 type ConfirmDeleteOptions = {
-  isRestoring?: boolean
+  isRestoring?: boolean;
 };
 
 // ----------------------------------------------------------------------------------------------------------------------

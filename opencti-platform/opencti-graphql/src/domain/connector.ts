@@ -163,10 +163,10 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 interface RegisterOptions {
-  built_in?: boolean
-  active?: boolean
-  connector_user_id?: string | null,
-  connector_priority_group?: ConnectorPriorityGroup,
+  built_in?: boolean;
+  active?: boolean;
+  connector_user_id?: string | null;
+  connector_priority_group?: ConnectorPriorityGroup;
 }
 
 export const registerConnectorsManager = async (context: AuthContext, user: AuthUser, input: RegisterConnectorsManagerInput) => {
@@ -481,12 +481,12 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
 
 // region syncs
 interface ConnectorIngestionInput {
-  id: string,
-  type: 'RSS' | 'CSV' | 'TAXII' | 'TAXII-PUSH' | 'JSON' | 'FORM',
-  name: string,
-  connector_user_id?: string | null,
-  is_running: boolean,
-  connector_priority_group?: ConnectorPriorityGroup,
+  id: string;
+  type: 'RSS' | 'CSV' | 'TAXII' | 'TAXII-PUSH' | 'JSON' | 'FORM';
+  name: string;
+  connector_user_id?: string | null;
+  is_running: boolean;
+  connector_priority_group?: ConnectorPriorityGroup;
 }
 export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
 export const registerConnectorForIngestion = async (context: AuthContext, input: ConnectorIngestionInput) => {

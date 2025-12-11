@@ -7,8 +7,8 @@ import type { Attribute, QueryRuntimeAttributesArgs } from '../generated/graphql
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
 
 export interface DefaultValue {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 // -- ATTRIBUTES --

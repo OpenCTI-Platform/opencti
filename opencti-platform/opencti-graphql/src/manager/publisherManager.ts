@@ -363,7 +363,7 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
   await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage, usersMap);
 };
 
-const liveNotificationBufferPerEntity: Record<string, { timestamp: number, events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
+const liveNotificationBufferPerEntity: Record<string, { timestamp: number; events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
 
 const processBufferedEvents = async (
   context: AuthContext,
@@ -371,7 +371,7 @@ const processBufferedEvents = async (
   events: KnowledgeNotificationEvent[],
 ) => {
   const usersFromCache = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const notifDataPerUser: Record<string, { user: NotificationUser, data: NotificationData }[]> = {};
+  const notifDataPerUser: Record<string, { user: NotificationUser; data: NotificationData }[]> = {};
   // We process all events to transform them into notification data per user
   for (let i = 0; i < events.length; i += 1) {
     const event = events[i];

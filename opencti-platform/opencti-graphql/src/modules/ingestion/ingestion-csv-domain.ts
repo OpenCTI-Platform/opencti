@@ -235,8 +235,8 @@ export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, i
 };
 
 interface CsvResponseData {
-  csvLines: string[],
-  addedLast: string | undefined | null
+  csvLines: string[];
+  addedLast: string | undefined | null;
 }
 
 export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: BasicStoreEntityIngestionCsv, opts: { limit?: number } = {}): Promise<CsvResponseData> => {

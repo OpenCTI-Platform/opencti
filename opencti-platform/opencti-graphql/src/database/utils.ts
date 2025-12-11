@@ -284,7 +284,7 @@ export const buildPaginationFromEdges = <T>(
 export const buildPagination = <T> (
   limit: number,
   searchAfter: string | undefined | null,
-  instances: { node: T, sort?: SortResults, types?: string[] }[],
+  instances: { node: T; sort?: SortResults; types?: string[] }[],
   globalCount: number,
   filteredCount = 0,
 ): BasicConnection<T> => {

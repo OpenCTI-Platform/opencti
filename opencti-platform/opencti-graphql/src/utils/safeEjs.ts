@@ -20,10 +20,10 @@ export class VerifierProcessingQuotaExceededError extends VerifierError {
 }
 
 export type SafeOptions = {
-  maxExecutedStatementCount?: number | undefined,
-  maxExecutionDuration?: number | undefined,
-  yieldMethod?: (() => Promise<void>) | undefined,
-  useNotificationTool?: boolean | undefined,
+  maxExecutedStatementCount?: number | undefined;
+  maxExecutionDuration?: number | undefined;
+  yieldMethod?: (() => Promise<void>) | undefined;
+  useNotificationTool?: boolean | undefined;
 };
 
 export type SafeRenderOptions = Options & SafeOptions;

@@ -9,10 +9,10 @@ export enum StreamDataEventTypeEnum {
 }
 
 interface EventConfig {
-  create?: boolean
-  create_rel?: boolean
-  update?: boolean
-  delete?: boolean
+  create?: boolean;
+  create_rel?: boolean;
+  update?: boolean;
+  delete?: boolean;
 }
 
 export const isValidEventType = (eventType: StreamDataEventType, configuration: EventConfig) => {

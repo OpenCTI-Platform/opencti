@@ -117,7 +117,7 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
  */
 export const updatePirInformationOnEntity = async (context: AuthContext, user: AuthUser, entityId: string, pirId: string, score: number) => {
   const stixDomainObject = await internalLoadById(context, user, entityId);
-  let newInformation: { pir_id: string, pir_score: number, last_pir_score_date: Date }[] = [];
+  let newInformation: { pir_id: string; pir_score: number; last_pir_score_date: Date }[] = [];
   if (score > 0) {
     newInformation = [{ pir_id: pirId, pir_score: score, last_pir_score_date: new Date() }];
   }

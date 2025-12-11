@@ -78,7 +78,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
         return !isSub && a[RELATION_KILL_CHAIN_PHASE] && a[RELATION_KILL_CHAIN_PHASE].includes(killChainPhase.id);
       })
       .map((attackPattern) => {
-        const subAttackPatterns: { attack_pattern_id: string, name: string, description?: string }[] = [];
+        const subAttackPatterns: { attack_pattern_id: string; name: string; description?: string }[] = [];
         let subAttackPatternsSearchText: string = '';
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore

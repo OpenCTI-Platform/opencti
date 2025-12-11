@@ -27,48 +27,48 @@ import {
 const DECAY_FACTOR: number = 3.0;
 
 export interface DecayChartData {
-  live_score_serie: DecayHistoryChart[]
+  live_score_serie: DecayHistoryChart[];
 }
 
 export interface DecayModel {
-  decay_lifetime: number // in days
-  decay_pound: number // can be changed in other model when feature is ready.
-  decay_points: number[] // reactions points
-  decay_revoke_score: number // revoked when score is <= 20
+  decay_lifetime: number; // in days
+  decay_pound: number; // can be changed in other model when feature is ready.
+  decay_points: number[]; // reactions points
+  decay_revoke_score: number; // revoked when score is <= 20
 }
 
 export interface DecayRuleConfiguration extends DecayModel {
-  id?: string
-  name: string
-  description: string
-  decay_observable_types: string[] // x_opencti_main_observable_type
-  order: number // low priority = 0
-  active: boolean
+  id?: string;
+  name: string;
+  description: string;
+  decay_observable_types: string[]; // x_opencti_main_observable_type
+  order: number; // low priority = 0
+  active: boolean;
 }
 
 export interface ComputeDecayChartInput {
-  scoreList: number[],
-  decayBaseScore: number,
-  decayBaseScoreDate: Date,
-  decayRule: DecayModel,
-  decayHistory: DecayHistoryChart[],
+  scoreList: number[];
+  decayBaseScore: number;
+  decayBaseScoreDate: Date;
+  decayRule: DecayModel;
+  decayHistory: DecayHistoryChart[];
 }
 
 // for storage on elastic
 export interface DecayHistory {
-  updated_at: Date
-  score: number
-  updated_by: string
+  updated_at: Date;
+  score: number;
+  updated_by: string;
 }
 
 export interface DecayHistoryChart {
-  updated_at: Date
-  score: number
+  updated_at: Date;
+  score: number;
 }
 
 export interface DecayLiveDetails {
-  live_score: number
-  live_points: DecayHistoryChart[]
+  live_score: number;
+  live_points: DecayHistoryChart[];
 }
 
 export const dayToMs = (days: number) => {

@@ -10,8 +10,8 @@ import { sendEmailToUser } from '../../../domain/user';
 import { ACCOUNT_STATUS_ACTIVE, logApp } from '../../../config/conf';
 
 export interface SendEmailTemplateConfiguration {
-  email_template: string,
-  targets: object,
+  email_template: string;
+  targets: object;
 }
 const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA: JSONSchemaType<SendEmailTemplateConfiguration> = {
   type: 'object',

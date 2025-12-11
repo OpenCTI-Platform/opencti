@@ -1,10 +1,10 @@
 import type { StixCoreObject, StixId, StixRelationshipObject } from '../types/stix-2-1-common';
 
 export interface NotificationData {
-  notification_id: string
-  instance: StixCoreObject | StixRelationshipObject | Partial<{ id: string | StixId | null }>
-  type: string
-  message: string
+  notification_id: string;
+  instance: StixCoreObject | StixRelationshipObject | Partial<{ id: string | StixId | null }>;
+  type: string;
+  message: string;
 }
 const DEFAULT_NOTIFICATION: NotificationData = {
   notification_id: 'default_notification_id',

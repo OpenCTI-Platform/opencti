@@ -9,7 +9,7 @@ export const builtInOv = [
   'pattern_type_ov',
 ];
 
-export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string, aliases?: string[], order?: number }>> = {
+export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; description?: string; aliases?: string[]; order?: number }>> = {
   // A
   account_type_ov: [
     { key: 'facebook', description: 'Specifies a Facebook account' },

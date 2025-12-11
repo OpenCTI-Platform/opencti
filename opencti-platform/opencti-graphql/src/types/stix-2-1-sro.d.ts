@@ -30,7 +30,7 @@ export interface StixRelation extends StixRelationshipObject {
   start_time: StixDate;
   stop_time: StixDate;
   extensions: {
-    [STIX_EXT_OCTI]: RelationExtension
+    [STIX_EXT_OCTI]: RelationExtension;
   };
 }
 
@@ -59,6 +59,6 @@ export interface StixSighting extends StixRelationshipObject {
   where_sighted_refs: Array<StixId>;
   summary: string;
   extensions: {
-    [STIX_EXT_OCTI]: SightingExtension
+    [STIX_EXT_OCTI]: SightingExtension;
   };
 }

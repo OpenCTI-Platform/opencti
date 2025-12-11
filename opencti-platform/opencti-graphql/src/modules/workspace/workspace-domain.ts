@@ -299,8 +299,8 @@ configurationImportTypeValidation.set(
 );
 
 interface ConfigImportData {
-  type: string
-  openCTI_version: string
+  type: string;
+  openCTI_version: string;
 }
 
 export const checkConfigurationImport = (type: string, parsedData: ConfigImportData) => {
@@ -418,7 +418,7 @@ export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, i
 };
 
 interface WidgetConfigImportData extends ConfigImportData {
-  configuration?: string // widget definition in base64.
+  configuration?: string; // widget definition in base64.
 }
 
 export const workspaceImportWidgetConfiguration = async (

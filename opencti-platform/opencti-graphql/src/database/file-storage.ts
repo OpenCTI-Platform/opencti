@@ -649,18 +649,18 @@ export const streamConverter = (stream: Readable): Promise<string> => {
   });
 };
 export interface FileUploadOpts {
-  entity?: BasicStoreBase, // entity on which the file is uploaded
-  meta?: Record<string, any>,
-  noTriggerImport?: boolean,
-  errorOnExisting?: boolean,
-  file_markings?: string[],
-  importContextEntities?: BasicStoreEntity[], // entities used for import context
+  entity?: BasicStoreBase; // entity on which the file is uploaded
+  meta?: Record<string, any>;
+  noTriggerImport?: boolean;
+  errorOnExisting?: boolean;
+  file_markings?: string[];
+  importContextEntities?: BasicStoreEntity[]; // entities used for import context
 }
 
 export interface FileUploadData {
-  createReadStream: () => Readable,
-  filename: string,
-  mimeType?: string,
+  createReadStream: () => Readable;
+  filename: string;
+  mimeType?: string;
 }
 
 /**

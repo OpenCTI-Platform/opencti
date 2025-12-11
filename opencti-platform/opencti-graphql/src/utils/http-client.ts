@@ -9,20 +9,20 @@ import { fromBase64, isNotEmptyField } from '../database/utils';
 export class OpenCTIHeaders extends AxiosHeaders {}
 
 export interface Certificates {
-  cert: string,
-  key: string,
-  ca: string,
+  cert: string;
+  key: string;
+  ca: string;
 }
 export interface GetHttpClient {
-  baseURL?: string
-  rejectUnauthorized?: boolean
-  responseType: 'json' | 'arraybuffer' | 'text'
+  baseURL?: string;
+  rejectUnauthorized?: boolean;
+  responseType: 'json' | 'arraybuffer' | 'text';
   headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
-  certificates?: Certificates
+  certificates?: Certificates;
   auth?: {
-    username: string
-    password: string
-  }
+    username: string;
+    password: string;
+  };
 }
 
 const buildHttpAgentOpts = (uri: string, baseURL: string | undefined, defaultHttpAgent: HttpAgent, defaultHttpsAgent: HttpsAgent) => {

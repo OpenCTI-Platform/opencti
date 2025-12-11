@@ -8,12 +8,12 @@ import { getParentTypes } from './schemaUtils';
 import { isFeatureEnabled } from '../config/conf';
 
 export const depsKeysRegister = {
-  deps: [] as { src: string, types?: string[] }[],
+  deps: [] as { src: string; types?: string[] }[],
 
-  add(deps: { src: string, types?: string[] }[]) {
+  add(deps: { src: string; types?: string[] }[]) {
     this.deps = [...this.get(), ...deps];
   },
-  get(): { src: string, types?: string[] }[] {
+  get(): { src: string; types?: string[] }[] {
     return this.deps ?? [];
   },
 };

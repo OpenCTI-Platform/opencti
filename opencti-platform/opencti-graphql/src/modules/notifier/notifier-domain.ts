@@ -30,7 +30,7 @@ import { authorizedMembers } from '../../schema/attribute-definition';
 
 const ajv = new Ajv();
 
-const validateNotifier = (notifier: { notifier_connector_id: string, notifier_configuration: string }) => {
+const validateNotifier = (notifier: { notifier_connector_id: string; notifier_configuration: string }) => {
   const notifierConnector = BUILTIN_NOTIFIERS_CONNECTORS[notifier.notifier_connector_id];
   if (isEmptyField(notifierConnector) || isEmptyField(notifierConnector.connector_schema)) {
     throw UnsupportedError('Invalid notifier connector', { id: notifier.notifier_connector_id });
@@ -69,7 +69,7 @@ export const notifierEdit = async (context: AuthContext, user: AuthUser, notifie
   };
   validateNotifier(fieldsToValidate);
   const finalInput = input.map(({ key, value }) => {
-    const item: { key: string, value: unknown } = { key, value };
+    const item: { key: string; value: unknown } = { key, value };
     if (key === authorizedMembers.name) {
       item.value = value.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
     }

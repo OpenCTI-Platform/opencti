@@ -165,7 +165,7 @@ export const findIndicatorsForDecay = (context: AuthContext, user: AuthUser, max
 export const createObservablesFromIndicator = async (
   context: AuthContext,
   user: AuthUser,
-  input: { objectLabel?: string[] | null; objectMarking?: string[] | null; objectOrganization?: string[] | null; createdBy?: string | null; externalReferences?: string[] | null; },
+  input: { objectLabel?: string[] | null; objectMarking?: string[] | null; objectOrganization?: string[] | null; createdBy?: string | null; externalReferences?: string[] | null },
   indicator: StoreEntityIndicator,
 ) => {
   const { pattern } = indicator;
@@ -551,11 +551,11 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
 };
 
 export interface IndicatorPatch {
-  revoked?: boolean,
-  x_opencti_score?: number,
-  decay_history?: DecayHistory[],
-  decay_next_reaction_date?: Date,
-  x_opencti_detection?: boolean,
+  revoked?: boolean;
+  x_opencti_score?: number;
+  decay_history?: DecayHistory[];
+  decay_next_reaction_date?: Date;
+  x_opencti_detection?: boolean;
 }
 
 export const computeIndicatorDecayPatch = (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {

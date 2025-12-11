@@ -47,7 +47,7 @@ interface HistoryContext {
   pir_ids?: Array<string>;
   pir_score?: number;
   pir_match_from?: boolean;
-  changes?: Array<Change>
+  changes?: Array<Change>;
 }
 
 export interface HistoryData extends BasicStoreEntity {

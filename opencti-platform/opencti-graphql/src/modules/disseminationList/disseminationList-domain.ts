@@ -62,12 +62,12 @@ export const sendDisseminationEmail = async (
   user: AuthUser,
   disseminationListId: string,
   opts: {
-    useOctiTemplate: boolean,
-    object: string,
-    body: string,
-    emails: string[],
-    attachFileIds: string[],
-    htmlToBodyFileId: string | null | undefined,
+    useOctiTemplate: boolean;
+    object: string;
+    body: string;
+    emails: string[];
+    attachFileIds: string[];
+    htmlToBodyFileId: string | null | undefined;
   },
 ) => {
   const toEmail = conf.get('app:dissemination_list:to_email');

@@ -334,9 +334,9 @@ const platformPirs = (context: AuthContext) => {
 type SubEvent = { instance: StoreEntity | StoreRelation };
 
 const initCacheManager = () => {
-  let subscribeAdd: { topic: string; unsubscribe: () => void; };
-  let subscribeEdit: { topic: string; unsubscribe: () => void; };
-  let subscribeDelete: { topic: string; unsubscribe: () => void; };
+  let subscribeAdd: { topic: string; unsubscribe: () => void };
+  let subscribeEdit: { topic: string; unsubscribe: () => void };
+  let subscribeDelete: { topic: string; unsubscribe: () => void };
   const initCacheContent = () => {
     const context = executionContext('cache_manager');
     writeCacheForEntity(ENTITY_TYPE_SETTINGS, platformSettings(context));

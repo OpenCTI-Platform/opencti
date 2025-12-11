@@ -66,19 +66,19 @@ export enum ActionStatus {
 }
 
 export interface RequestAccessActionStatus {
-  rfiStatusId: string,
-  actionStatus: ActionStatus
+  rfiStatusId: string;
+  actionStatus: ActionStatus;
 }
 
 export interface RequestAccessAction {
-  reason?: string
-  entities?: string[]
-  members?: string[]
-  type?: string
-  status: string
-  applicant_id: string
-  executionDate?: Date
-  workflowMapping: RequestAccessActionStatus[],
+  reason?: string;
+  entities?: string[];
+  members?: string[];
+  type?: string;
+  status: string;
+  applicant_id: string;
+  executionDate?: Date;
+  workflowMapping: RequestAccessActionStatus[];
 }
 
 export const getPlatformOrganizationId = async (context: AuthContext, user: AuthUser) => {
@@ -460,7 +460,7 @@ export const notifyRequestAccessResult = async (
   status: ActionStatus,
 ) => {
   const applicant = await internalLoadById<any>(context, SYSTEM_USER, applicantId);
-  const targets: Array<{ user: NotificationUser, type: string, message: string }> = [{
+  const targets: Array<{ user: NotificationUser; type: string; message: string }> = [{
     user: {
       user_id: applicant.id,
       user_email: applicant.user_email,

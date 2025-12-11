@@ -116,7 +116,8 @@ export const stixIdOfLinkedEntity = (
     if (!pirList || pirList.length === 0) {
       if (source_ref_pir_refs && source_ref_pir_refs.length > 0) {
         return eventData.data.target_ref;
-      } if (target_ref_pir_refs && target_ref_pir_refs.length > 0) {
+      }
+      if (target_ref_pir_refs && target_ref_pir_refs.length > 0) {
         return eventData.data.source_ref;
       }
     } else if (source_ref_pir_refs && pirList.some((pirId) => source_ref_pir_refs.includes(pirId.value))) {
@@ -128,7 +129,7 @@ export const stixIdOfLinkedEntity = (
   return null;
 };
 
-export const formatFiltersForPirPlaybookComponent = (sourceFilters: string, inPirFilters?: { value: string; }[]) => {
+export const formatFiltersForPirPlaybookComponent = (sourceFilters: string, inPirFilters?: { value: string }[]) => {
   const filtersOnSource: FilterGroup | undefined = sourceFilters ? JSON.parse(sourceFilters) : undefined;
   if (!filtersOnSource) return undefined;
 

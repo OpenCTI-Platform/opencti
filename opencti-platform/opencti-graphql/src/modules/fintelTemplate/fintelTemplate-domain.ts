@@ -300,14 +300,14 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
 };
 
 type FintelTemplateWidgetFromImport = {
-  variable_name: string,
+  variable_name: string;
   widget: Widget & {
     dataSelection: WidgetDataSelection & {
-      filters: FilterGroup,
-      dynamicFrom: FilterGroup,
-      dynamicTo: FilterGroup,
-    }
-  }
+      filters: FilterGroup;
+      dynamicFrom: FilterGroup;
+      dynamicTo: FilterGroup;
+    };
+  };
 };
 
 export const fintelTemplateConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {

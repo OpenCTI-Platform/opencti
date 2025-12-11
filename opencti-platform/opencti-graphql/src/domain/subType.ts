@@ -44,7 +44,7 @@ const querySubType = async (subTypeId: string) => {
   }
   return null;
 };
-const querySubTypesPaginated = async (context: AuthContext, user: AuthUser, { type = null, search = null }: { type: string | null, search?: string | null }) => {
+const querySubTypesPaginated = async (context: AuthContext, user: AuthUser, { type = null, search = null }: { type: string | null; search?: string | null }) => {
   if (type === null) {
     return queryDefaultSubTypesPaginated(context, user, search);
   }
@@ -66,6 +66,6 @@ const querySubTypesPaginated = async (context: AuthContext, user: AuthUser, { ty
 
 export const findById = (subTypeId: string) => querySubType(subTypeId);
 
-export const findSubTypePaginated = (context: AuthContext, user: AuthUser, args: { type: string | null, search?: string | null }) => {
+export const findSubTypePaginated = (context: AuthContext, user: AuthUser, args: { type: string | null; search?: string | null }) => {
   return querySubTypesPaginated(context, user, args);
 };

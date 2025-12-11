@@ -14,12 +14,12 @@ import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-
 import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
 
 interface AttributeUpdate {
-  key: keyof BasicStoreSettings
-  value: unknown[]
+  key: keyof BasicStoreSettings;
+  value: unknown[];
 }
 
 export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUser): Promise<{
-  status: XtmHubRegistrationStatus
+  status: XtmHubRegistrationStatus;
 }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   await checkHubIfBackendIsReachable(context, user, settings);
@@ -67,7 +67,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   return { status: newRegistrationStatus };
 };
 
-export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, input: AutoRegisterInput): Promise<{ success: boolean; }> => {
+export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, input: AutoRegisterInput): Promise<{ success: boolean }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
   const licenseInfo = getEnterpriseEditionInfoFromPem(settings.internal_id, settings.enterprise_license);

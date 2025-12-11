@@ -16,8 +16,8 @@ import { isEventInPirRelationship } from '../../../manager/playbookManager/playb
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 
 export interface NotifierConfiguration {
-  notifiers: string[]
-  authorized_members: object
+  notifiers: string[];
+  authorized_members: object;
 }
 
 const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> = {

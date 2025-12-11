@@ -35,14 +35,14 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
 interface VocabularyDefinition {
-  description?: string,
-  entity_types: string[],
+  description?: string;
+  entity_types: string[];
   fields: {
-    key: string,
-    composite?: string,
-    required: boolean,
-    multiple: boolean,
-  }[]
+    key: string;
+    composite?: string;
+    required: boolean;
+    multiple: boolean;
+  }[];
 }
 
 export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinition> = {
@@ -508,10 +508,10 @@ export interface StoreEntityVocabulary extends StoreEntity {
 
 // region Stix type
 export interface StixVocabulary extends StixObject {
-  name: string
-  aliases: string[]
-  description?: string
-  category: VocabularyCategory
+  name: string;
+  aliases: string[];
+  description?: string;
+  category: VocabularyCategory;
 }
 
 // endregion

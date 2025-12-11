@@ -35,8 +35,8 @@ export const RETENTION_UNIT_VALUES = Object.values(RetentionUnit);
 let shutdown = false;
 
 interface DeleteOpts {
-  knowledgeType?: string
-  forceRefresh?: boolean
+  knowledgeType?: string;
+  forceRefresh?: boolean;
 }
 
 export const deleteElement = async (context: AuthContext, scope: string, nodeId: string, opts: DeleteOpts = {}) => {
@@ -127,7 +127,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
   await patchAttribute(context, RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
 };
 
-const retentionHandler = async (lock: { signal: AbortSignal, extend: () => Promise<void>, unlock: () => Promise<void> }) => {
+const retentionHandler = async (lock: { signal: AbortSignal; extend: () => Promise<void>; unlock: () => Promise<void> }) => {
   const context = executionContext('retention_manager');
   const retentionRules = await findRetentionRulesToExecute(context, RETENTION_MANAGER_USER);
   logApp.debug(`[OPENCTI] Retention manager execution for ${retentionRules.length} rules`);

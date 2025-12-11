@@ -84,9 +84,9 @@ const shouldExecuteIngestion = (ingestion: BasicStoreEntityIngestionRss | BasicS
 };
 
 interface UpdateInfo {
-  state?: any
-  buffering?: boolean
-  messages_size?: number
+  state?: any;
+  buffering?: boolean;
+  messages_size?: number;
 }
 const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string | undefined, id: string, opts: UpdateInfo = {}) => {
   // Patch the related connector
@@ -144,31 +144,31 @@ export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion
 type Getter = (uri: string) => Promise<object>;
 
 interface RssElement {
-  pubDate: { _: string }
-  lastBuildDate: { _: string }
-  updated: { _: string }
+  pubDate: { _: string };
+  lastBuildDate: { _: string };
+  updated: { _: string };
 }
 
 interface RssItem {
-  title: { _: string }
-  summary: { _: string }
-  description: { _: string }
-  link: { _: string, href?: string }
-  content: { _: string }
-  'content:encoded': { _: string }
-  category: { _: string } | { _: string }[]
-  pubDate: { _: string }
-  lastBuildDate: { _: string }
-  updated: { _: string }
+  title: { _: string };
+  summary: { _: string };
+  description: { _: string };
+  link: { _: string; href?: string };
+  content: { _: string };
+  'content:encoded': { _: string };
+  category: { _: string } | { _: string }[];
+  pubDate: { _: string };
+  lastBuildDate: { _: string };
+  updated: { _: string };
 }
 
 interface DataItem {
-  title: string
-  description: string
-  link: string | undefined
-  content: string
-  labels: string[]
-  pubDate: Moment
+  title: string;
+  description: string;
+  link: string | undefined;
+  content: string;
+  labels: string[];
+  pubDate: Moment;
 }
 
 const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, entry: RssItem): DataItem => {
@@ -335,14 +335,14 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
 
 // region Taxii ingestion
 export interface TaxiiResponseData {
-  data: { more: boolean | undefined, next: string | undefined, objects: StixObject[] },
-  addedLastHeader: string | undefined | null
+  data: { more: boolean | undefined; next: string | undefined; objects: StixObject[] };
+  addedLastHeader: string | undefined | null;
 }
 
 interface TaxiiGetParams {
-  next: string | undefined,
-  added_after: Date | undefined,
-  limit?: string | undefined
+  next: string | undefined;
+  added_after: Date | undefined;
+  limit?: string | undefined;
 }
 
 /**

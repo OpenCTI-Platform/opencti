@@ -95,7 +95,7 @@ const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUs
 const removeDraftDeleteLinkedRelations = async (
   context: AuthContext,
   user: AuthUser,
-  deleteLinkedRelations: { rel: any, dep: any }[],
+  deleteLinkedRelations: { rel: any; dep: any }[],
 ): Promise<void> => {
   // Reapply denormalized refs on elements impacted with deleteLinked rel removal
   const elementsToUpdate = deleteLinkedRelations.map((deleteLinkedRelToRemove) => {

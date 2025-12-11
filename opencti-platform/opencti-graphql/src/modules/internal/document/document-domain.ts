@@ -86,17 +86,17 @@ export const findById: DomainFindById<BasicStoreEntityDocument> = (context: Auth
 };
 
 interface FilesOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
-  entity_id?: string
-  entity_type?: string
-  modifiedSince?: string | null
-  notModifiedSince?: string | null
-  prefixMimeTypes?: string[]
-  maxFileSize?: number
-  isPending?: boolean
-  excludedPaths?: string[]
-  orderBy?: string
-  exact_path?: boolean
-  orderMode?: OrderingMode
+  entity_id?: string;
+  entity_type?: string;
+  modifiedSince?: string | null;
+  notModifiedSince?: string | null;
+  prefixMimeTypes?: string[];
+  maxFileSize?: number;
+  isPending?: boolean;
+  excludedPaths?: string[];
+  orderBy?: string;
+  exact_path?: boolean;
+  orderMode?: OrderingMode;
 }
 
 const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {

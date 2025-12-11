@@ -10,14 +10,14 @@ import { RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT_LABEL } from '../schema/st
 import { INPUT_EXTERNAL_REFS, INPUT_LABELS } from '../schema/general';
 
 type ObjectWithConfidence = {
-  id: string,
-  entity_type: string,
-  confidence?: number | null
+  id: string;
+  entity_type: string;
+  confidence?: number | null;
 };
 
 type ConfidenceSource = {
-  type: 'Group' | 'User' | 'Bypass',
-  object: Group | AuthUser | null
+  type: 'Group' | 'User' | 'Bypass';
+  object: Group | AuthUser | null;
 };
 
 type ConfidenceOverride = {
@@ -40,7 +40,7 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
   // otherwise we get all groups for this user, and select the highest max_confidence found
   let maxLevel = null;
   let source: ConfidenceSource | null = null;
-  const overridesMap = new Map<string, { max_confidence: number, source: ConfidenceSource }>();
+  const overridesMap = new Map<string, { max_confidence: number; source: ConfidenceSource }>();
   if (user.groups) {
     for (let i = 0; i < user.groups.length; i += 1) {
       // groups were not migrated when introducing group_confidence_level, so group_confidence_level might be null
@@ -179,8 +179,8 @@ export const controlUserConfidenceAgainstElement = <T extends ObjectWithConfiden
 };
 
 type UpdateInput = {
-  key: string | string[]
-  value: string[]
+  key: string | string[];
+  value: string[];
 };
 
 /**

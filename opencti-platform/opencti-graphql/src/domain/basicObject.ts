@@ -14,10 +14,10 @@ import { INTERNAL_USERS } from '../utils/access';
 import { SELF_ID, SELF_ID_VALUE } from '../utils/fintelTemplate/__fintelTemplateWidgets';
 
 interface FilterRepresentative {
-  id: string
-  value: string
-  entity_type: string | null
-  color: string | null
+  id: string;
+  value: string;
+  entity_type: string | null;
+  color: string | null;
 }
 
 // region filters representatives

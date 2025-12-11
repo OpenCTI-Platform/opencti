@@ -91,9 +91,9 @@ if (isFeatureEnabled('ACCESS_RESTRICTION_CAN_USE')) {
 }
 
 type ObjectWithCreators = {
-  id: string,
-  entity_type: string,
-  creator_id?: string | string[] | undefined
+  id: string;
+  entity_type: string;
+  creator_id?: string | string[] | undefined;
 };
 
 const administratorRoleId = uuidv4();
@@ -503,7 +503,7 @@ export const HUB_REGISTRATION_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
-export interface AuthorizedMember { id: string, access_right: string, groups_restriction_ids?: string[] | null }
+export interface AuthorizedMember { id: string; access_right: string; groups_restriction_ids?: string[] | null }
 
 class TracingContext {
   ctx: Context | undefined;
@@ -620,7 +620,7 @@ export const computeUserMemberAccessIds = (user: AuthUser) => {
 };
 
 // region entity access by user
-export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
   const userMemberAccessIds = computeUserMemberAccessIds(user);
   const userGroupsIds = user.groups.map((group) => group.internal_id);
   const foundAccessMembers = (element.restricted_members ?? []).filter((u) => (u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id))
@@ -640,7 +640,7 @@ export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted
   return MEMBER_ACCESS_RIGHT_VIEW;
 };
 
-export const getUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+export const getUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
   // if user is bypass, user has admin access (needed for data management usage)
   if (isBypassUser(user)) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
@@ -662,12 +662,12 @@ export const getUserAccessRight = (user: AuthUser, element: { restricted_members
   return getExplicitUserAccessRight(user, element);
 };
 
-export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
   const userAccessRight = getUserAccessRight(user, element);
   return !!userAccessRight;
 };
 
-export const isUserInAuthorizedMember = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+export const isUserInAuthorizedMember = (user: AuthUser, element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] }) => {
   const userAccessRight = getExplicitUserAccessRight(user, element);
   return !!userAccessRight;
 };
@@ -854,7 +854,7 @@ export const isDirectAdministrator = (user: AuthUser, element: any) => {
 
 const hasUserAccessToOperation = (
   user: AuthUser,
-  element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[]; },
+  element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[] },
   operation: AccessOperation,
 ) => {
   const userAccessRight = getUserAccessRight(user, element);
@@ -950,9 +950,9 @@ export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStor
 
 type ParticipantWithOrgIds = Participant & Creator & {
   representative?: {
-    main: string,
-    secondary: string
-  }
+    main: string;
+    secondary: string;
+  };
   [RELATION_PARTICIPATE_TO]?: string[];
   user_service_account?: boolean;
 };

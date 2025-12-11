@@ -23,27 +23,27 @@ export interface StixContainer extends StixDomainObject {
 }
 
 export interface StixReport extends StixContainer {
-  name: string
-  description: string
-  report_types: Array<string>
-  published: StixDate
+  name: string;
+  description: string;
+  report_types: Array<string>;
+  published: StixDate;
   x_opencti_reliability: string;
 }
 
 export interface StixNote extends StixContainer {
-  abstract: string
-  content: string
-  note_types: Array<string>
-  likelihood: number
+  abstract: string;
+  content: string;
+  note_types: Array<string>;
+  likelihood: number;
 }
 
 export interface StixObservedData extends StixContainer {
-  first_observed: StixDate
-  last_observed: StixDate
-  number_observed: number
+  first_observed: StixDate;
+  last_observed: StixDate;
+  number_observed: number;
 }
 
 export interface StixOpinion extends StixContainer {
-  explanation: string // optional
-  opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree'
+  explanation: string; // optional
+  opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree';
 }

@@ -83,7 +83,7 @@ const redisOptions = async (provider: string, autoReconnect = false): Promise<Re
 };
 
 // From "HOST:PORT" to { host, port }
-export const generateClusterNodes = (nodes: string[]): { host: string; port: number; }[] => {
+export const generateClusterNodes = (nodes: string[]): { host: string; port: number }[] => {
   return nodes.map((h: string) => {
     const [host, port] = h.split(':');
     return { host, port: parseInt(port, 10) };
@@ -91,8 +91,8 @@ export const generateClusterNodes = (nodes: string[]): { host: string; port: num
 };
 
 // From "HOST:PORT>HOST:PORT" to { ["HOST:PORT"]: { host, port } }
-export const generateNatMap = (mappings: string[]): Record<string, { host: string; port: number; }> => {
-  const natMap: Record<string, { host: string; port: number; }> = {};
+export const generateNatMap = (mappings: string[]): Record<string, { host: string; port: number }> => {
+  const natMap: Record<string, { host: string; port: number }> = {};
   for (let i = 0; i < mappings.length; i += 1) {
     const mapping = mappings[i];
     const [from, to] = mapping.split('>');
@@ -162,7 +162,7 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
 
 // region Initialization of clients
 type RedisConnection = Cluster | Redis;
-interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub: RedisPubSub }
+interface RedisClients { base: RedisConnection; lock: RedisConnection; pubsub: RedisPubSub }
 
 let redisClients: RedisClients;
 // Method reserved for lock child process
@@ -401,10 +401,10 @@ export const redisFetchLatestDeletions = async () => {
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
 interface LockOptions {
-  automaticExtension?: boolean,
-  retryCount?: number,
-  draftId?: string
-  child_operation?: string
+  automaticExtension?: boolean;
+  retryCount?: number;
+  draftId?: string;
+  child_operation?: string;
 }
 const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count'), draftId: '' };
 const getStackTrace = () => {
@@ -741,7 +741,7 @@ interface StreamOption {
   bufferTime?: number;
   autoReconnect?: boolean;
   streamName?: string;
-  streamBatchSize?: number
+  streamBatchSize?: number;
 }
 
 export const createStreamProcessor = <T extends BaseEvent> (
@@ -1061,7 +1061,7 @@ export const redisSetForgotPasswordOtp = async (
 export const redisGetForgotPasswordOtp = async (id: string) => {
   const keyName = `forgot_password_otp_${id}`;
   const str = await getClientBase().get(keyName) ?? '{}';
-  const values: { hashedOtp: string, email: string, mfa_activated: boolean, mfa_validated: boolean, userId: string } = JSON.parse(str);
+  const values: { hashedOtp: string; email: string; mfa_activated: boolean; mfa_validated: boolean; userId: string } = JSON.parse(str);
   const ttl = await getClientBase().ttl(keyName);
   return { ...values, ttl };
 };

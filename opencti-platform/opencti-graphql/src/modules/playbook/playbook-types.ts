@@ -22,95 +22,95 @@ import type { StreamDataEvent } from '../../types/event';
 export const ENTITY_TYPE_PLAYBOOK = 'Playbook';
 
 export interface BasicStoreEntityPlaybook extends BasicStoreEntity {
-  internal_id: string
-  name: string
-  description: string
-  playbook_start: string
-  playbook_mode: null | 'stream' | 'cron'
-  playbook_running: boolean
-  playbook_definition: string
+  internal_id: string;
+  name: string;
+  description: string;
+  playbook_start: string;
+  playbook_mode: null | 'stream' | 'cron';
+  playbook_running: boolean;
+  playbook_definition: string;
 }
 
 export interface StoreEntityPlaybook extends StoreEntity {
-  name: string
-  description: string
+  name: string;
+  description: string;
 }
 
 export interface StixPlaybook extends StixObject {
-  name: string
-  description: string
+  name: string;
+  description: string;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
+  };
 }
 
 export interface NodeInstance<T extends object> {
-  id: string
-  name: string,
-  component_id: string
-  configuration: T
+  id: string;
+  name: string;
+  component_id: string;
+  configuration: T;
 }
 
-export interface PlaybookExecution { output_port: string | undefined, forceBundleTracking?: boolean, bundle: StixBundle }
+export interface PlaybookExecution { output_port: string | undefined; forceBundleTracking?: boolean; bundle: StixBundle }
 
 export interface PlaybookExecutionStep<T extends object> {
-  component: PlaybookComponent<T>,
-  instance: NodeDefinition,
+  component: PlaybookComponent<T>;
+  instance: NodeDefinition;
 }
 
 export interface ExecutorParameters<T extends object> {
-  eventId: string
-  executionId: string
-  playbookId: string
-  dataInstanceId: string
-  previousPlaybookNodeId: string | undefined
-  playbookNode: NodeInstance<T>
-  previousStepBundle: StixBundle | null
-  bundle: StixBundle
-  event?: StreamDataEvent
+  eventId: string;
+  executionId: string;
+  playbookId: string;
+  dataInstanceId: string;
+  previousPlaybookNodeId: string | undefined;
+  playbookNode: NodeInstance<T>;
+  previousStepBundle: StixBundle | null;
+  bundle: StixBundle;
+  event?: StreamDataEvent;
 }
 
 export interface PlaybookComponent<T extends object> {
-  id: string
-  name: string
-  description: string
-  icon: string
-  is_entry_point: boolean
-  is_internal: boolean
-  ports: PortDefinition[]
-  configuration_schema: JSONSchemaType<T> | undefined
-  schema: () => Promise<JSONSchemaType<T>> | Promise<undefined>
-  executor: (parameters: ExecutorParameters<T>) => Promise<PlaybookExecution>
-  notify?: (parameters: ExecutorParameters<T>) => Promise<void>
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  is_entry_point: boolean;
+  is_internal: boolean;
+  ports: PortDefinition[];
+  configuration_schema: JSONSchemaType<T> | undefined;
+  schema: () => Promise<JSONSchemaType<T>> | Promise<undefined>;
+  executor: (parameters: ExecutorParameters<T>) => Promise<PlaybookExecution>;
+  notify?: (parameters: ExecutorParameters<T>) => Promise<void>;
 }
 
 export interface PortDefinition {
-  id: string
-  type: 'in' | 'out'
+  id: string;
+  type: 'in' | 'out';
 }
 
 export interface NodeDefinition {
-  id: string,
-  name: string,
-  position: { x: number, y: number },
-  component_id: string,
-  configuration: string // json
+  id: string;
+  name: string;
+  position: { x: number; y: number };
+  component_id: string;
+  configuration: string; // json
 }
 
 export interface LinkDefinition {
-  id: string,
+  id: string;
   from: {
-    port: string,
-    id: string
-  },
+    port: string;
+    id: string;
+  };
   to: {
-    id: string
-  }
+    id: string;
+  };
 }
 
 export interface ComponentDefinition {
-  nodes: NodeDefinition[]
-  links: LinkDefinition[]
+  nodes: NodeDefinition[];
+  links: LinkDefinition[];
 }
 
 export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {

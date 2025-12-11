@@ -28,43 +28,43 @@ export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
 // no = impossible to change to mandatory in the dynamic configuration
 
 type BasicDefinition = {
-  name: string // name in the database
-  label: string // label for front display
-  description?: string // Description of the attribute
-  multiple: boolean, // If attribute can have multiple values
-  mandatoryType: MandatoryType // If attribute is mandatory
-  upsert: boolean // If attribute can be upsert by the integration
-  upsert_force_replace?: boolean, // For multiple, if upsert will for a replacement instead of cumulate information
-  isFilterable: boolean // If attribute can be used as a filter key in the UI
-  editDefault: boolean // TO CHECK ?????
-  update?: boolean // If attribute can be updated (null = true)
-  featureFlag?: string // if attribute is on feature flag, null by default
+  name: string; // name in the database
+  label: string; // label for front display
+  description?: string; // Description of the attribute
+  multiple: boolean; // If attribute can have multiple values
+  mandatoryType: MandatoryType; // If attribute is mandatory
+  upsert: boolean; // If attribute can be upsert by the integration
+  upsert_force_replace?: boolean; // For multiple, if upsert will for a replacement instead of cumulate information
+  isFilterable: boolean; // If attribute can be used as a filter key in the UI
+  editDefault: boolean; // TO CHECK ?????
+  update?: boolean; // If attribute can be updated (null = true)
+  featureFlag?: string; // if attribute is on feature flag, null by default
 };
 
 export type MappingDefinition = AttributeDefinition & {
-  associatedFilterKeys?: { key: string, label: string }[] // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
+  associatedFilterKeys?: { key: string; label: string }[]; // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
 };
 
 export type BasicObjectDefinition = BasicDefinition & {
-  mappings: MappingDefinition[],
+  mappings: MappingDefinition[];
   // if the object attribute can be used for sorting, we need to know how
   sortBy?: {
-    path: string // path leading to the value that serves for sorting
-    type: string // type of this value, copied for convenience from corresponding mapping (checked at registration)
-  }
+    path: string; // path leading to the value that serves for sorting
+    type: string; // type of this value, copied for convenience from corresponding mapping (checked at registration)
+  };
 };
 export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
-export type NumericAttribute = { type: 'numeric', precision: 'integer' | 'long' | 'float', scalable?: boolean } & BasicDefinition;
-export type IdAttribute = { type: 'string', format: 'id', entityTypes: string[] } & BasicDefinition;
-export type TextAttribute = { type: 'string', format: 'short' | 'text' } & BasicDefinition;
-export type EnumAttribute = { type: 'string', format: 'enum', values: string[] } & BasicDefinition;
-export type VocabAttribute = { type: 'string', format: 'vocabulary', vocabularyCategory: string } & BasicDefinition;
-export type JsonAttribute = { type: 'string', format: 'json', multiple: false, schemaDef?: Record<string, any> } & BasicDefinition;
-export type FlatObjectAttribute = { type: 'object', format: 'flat' } & BasicDefinition;
-export type ObjectAttribute = { type: 'object', format: 'standard' } & BasicObjectDefinition;
-export type NestedObjectAttribute = { type: 'object', format: 'nested' } & BasicObjectDefinition;
-export type RefAttribute = { type: 'ref', databaseName: string, stixName: string, isRefExistingForTypes: Checker, datable?: boolean, toTypes: string[] } & BasicDefinition;
+export type NumericAttribute = { type: 'numeric'; precision: 'integer' | 'long' | 'float'; scalable?: boolean } & BasicDefinition;
+export type IdAttribute = { type: 'string'; format: 'id'; entityTypes: string[] } & BasicDefinition;
+export type TextAttribute = { type: 'string'; format: 'short' | 'text' } & BasicDefinition;
+export type EnumAttribute = { type: 'string'; format: 'enum'; values: string[] } & BasicDefinition;
+export type VocabAttribute = { type: 'string'; format: 'vocabulary'; vocabularyCategory: string } & BasicDefinition;
+export type JsonAttribute = { type: 'string'; format: 'json'; multiple: false; schemaDef?: Record<string, any> } & BasicDefinition;
+export type FlatObjectAttribute = { type: 'object'; format: 'flat' } & BasicDefinition;
+export type ObjectAttribute = { type: 'object'; format: 'standard' } & BasicObjectDefinition;
+export type NestedObjectAttribute = { type: 'object'; format: 'nested' } & BasicObjectDefinition;
+export type RefAttribute = { type: 'ref'; databaseName: string; stixName: string; isRefExistingForTypes: Checker; datable?: boolean; toTypes: string[] } & BasicDefinition;
 export type StringAttribute = IdAttribute | TextAttribute | EnumAttribute | VocabAttribute | JsonAttribute;
 export type ComplexAttribute = FlatObjectAttribute | ObjectAttribute | NestedObjectAttribute;
 export type ComplexAttributeWithMappings = ObjectAttribute | NestedObjectAttribute;

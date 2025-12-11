@@ -9,34 +9,34 @@ export const INPUT_COVERED = 'objectCovered';
 
 // region Database types
 export interface BasicStoreEntitySecurityCoverage extends BasicStoreEntity {
-  periodicity: string
-  duration: string
-  type_affinity: string
-  platforms_affinity: string[]
-  coverage_information: { coverage_name: string, coverage_score: number }[]
+  periodicity: string;
+  duration: string;
+  type_affinity: string;
+  platforms_affinity: string[];
+  coverage_information: { coverage_name: string; coverage_score: number }[];
 }
 
 export interface StoreEntitySecurityCoverage extends StoreEntity {
-  periodicity: string
-  duration: string
-  type_affinity: string
-  platforms_affinity: string[]
-  [INPUT_COVERED]: BasicStoreEntity
-  coverage_information: { coverage_name: string, coverage_score: number }[]
+  periodicity: string;
+  duration: string;
+  type_affinity: string;
+  platforms_affinity: string[];
+  [INPUT_COVERED]: BasicStoreEntity;
+  coverage_information: { coverage_name: string; coverage_score: number }[];
 }
 // endregion
 
 // region Stix type
 export interface StixSecurityCoverage extends StixDomainObject {
-  name: string // optional
-  description: string // optional
-  periodicity: string
-  duration: string
-  type_affinity: string
-  platforms_affinity: string[]
-  covered_ref: string
-  covered: boolean
-  coverage: { name: string, score: number }[]
+  name: string; // optional
+  description: string; // optional
+  periodicity: string;
+  duration: string;
+  type_affinity: string;
+  platforms_affinity: string[];
+  covered_ref: string;
+  covered: boolean;
+  coverage: { name: string; score: number }[];
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

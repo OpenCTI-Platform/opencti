@@ -97,7 +97,7 @@ const extractComplexPathFromJson = async (
     }
     return value;
   };
-  data.decisionMatrix = (value: any, defaultValue: any, matrix: { value: any, result: any }[]) => {
+  data.decisionMatrix = (value: any, defaultValue: any, matrix: { value: any; result: any }[]) => {
     for (let i = 0; i < matrix.length; i += 1) {
       const v = matrix[i];
       if (v.value === value) {

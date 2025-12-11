@@ -146,11 +146,11 @@ export const editAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
   args: {
-    entityId: string,
-    input: MemberAccessInput[] | undefined | null,
-    requiredCapabilities: string[],
-    entityType: string,
-    busTopicKey?: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
+    entityId: string;
+    input: MemberAccessInput[] | undefined | null;
+    requiredCapabilities: string[];
+    entityType: string;
+    busTopicKey?: keyof typeof BUS_TOPICS; // TODO improve busTopicKey types
   },
 ) => {
   const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
@@ -159,7 +159,7 @@ export const editAuthorizedMembers = async (
   const draftId = getDraftContext(context, user);
   if (draftId && draftId !== entityId) throw UnsupportedError('Cannot edit authorized members in draft');
 
-  let restricted_members: { id: string, access_right: string, groups_restriction_ids: string[] | null | undefined }[] | null = null;
+  let restricted_members: { id: string; access_right: string; groups_restriction_ids: string[] | null | undefined }[] | null = null;
 
   if (input) {
     // validate input (validate access right) remove duplicate

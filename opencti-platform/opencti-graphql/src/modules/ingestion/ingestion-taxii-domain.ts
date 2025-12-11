@@ -52,9 +52,9 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
 };
 
 export interface TaxiiIngestionPatch {
-  current_state_cursor?: string | undefined,
-  last_execution_date?: string,
-  added_after_start?: string,
+  current_state_cursor?: string | undefined;
+  last_execution_date?: string;
+  added_after_start?: string;
 }
 
 export const patchTaxiiIngestion = async (context: AuthContext, user: AuthUser, id: string, patch: TaxiiIngestionPatch) => {

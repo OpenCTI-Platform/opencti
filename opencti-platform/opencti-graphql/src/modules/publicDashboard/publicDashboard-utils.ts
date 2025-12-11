@@ -62,9 +62,9 @@ export const findWidgetsMaxMarkings = async (
 };
 
 interface WidgetArguments {
-  user: AuthUser,
-  dataSelection: PublicDashboardCachedWidget['dataSelection'],
-  parameters: PublicDashboardCachedWidget['parameters'],
+  user: AuthUser;
+  dataSelection: PublicDashboardCachedWidget['dataSelection'];
+  parameters: PublicDashboardCachedWidget['parameters'];
 }
 
 export const getWidgetArguments = async (

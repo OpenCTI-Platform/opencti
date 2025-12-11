@@ -16,20 +16,20 @@ import { isStixRelationshipExceptRef } from '../../../schema/stixRelationship';
 import { isStixObject } from '../../../schema/stixCoreObject';
 
 export interface CsvMapperSchemaAttribute {
-  name: string
-  type: string
-  mandatory: boolean
-  mandatoryType: MandatoryType
-  editDefault: boolean
-  multiple: boolean
-  defaultValues?: { id: string, name: string }[]
-  label: string
-  mappings?: CsvMapperSchemaAttribute[]
+  name: string;
+  type: string;
+  mandatory: boolean;
+  mandatoryType: MandatoryType;
+  editDefault: boolean;
+  multiple: boolean;
+  defaultValues?: { id: string; name: string }[];
+  label: string;
+  mappings?: CsvMapperSchemaAttribute[];
 }
 
 export interface CsvMapperSchemaAttributes {
-  name: string,
-  attributes: CsvMapperSchemaAttribute[]
+  name: string;
+  attributes: CsvMapperSchemaAttribute[];
 }
 
 // TS typeguard on CsvMapperRepresentation

@@ -22,9 +22,9 @@ export const xtmHubClient = {
     }
   },
   refreshRegistrationStatus: async ({ platformId, token, platformVersion }: {
-    platformId: string,
-    token: string,
-    platformVersion: string
+    platformId: string;
+    token: string;
+    platformVersion: string;
   }): Promise<RegistrationStatus> => {
     const query = `
       mutation RefreshPlatformRegistrationConnectivityStatus($input: RefreshPlatformRegistrationConnectivityStatusInput!) {
@@ -55,7 +55,7 @@ export const xtmHubClient = {
       return 'inactive';
     }
   },
-  autoRegister: async (platform: { platformId: string, platformToken: string, platformUrl: string, platformTitle: string }, enterpriseLicense: string): Promise<Success> => {
+  autoRegister: async (platform: { platformId: string; platformToken: string; platformUrl: string; platformTitle: string }, enterpriseLicense: string): Promise<Success> => {
     const query = `
        mutation AutoRegisterPlatform($platform: PlatformInput!) {
         autoRegisterPlatform(platform: $platform) {

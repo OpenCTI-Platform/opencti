@@ -24,13 +24,13 @@ const CSV_MAX_BUNDLE_SIZE_GENERATION = conf.get('app:csv_ingestion:max_bundle_si
 // region CSV actual Ingestion
 
 export interface CsvBundlerIngestionOpts {
-  workId: string,
-  applicantUser: AuthUser,
-  entity: BasicStoreBase | undefined,
-  csvMapper: CsvMapperParsed,
-  maxRecordNumber?: number,
-  connectorId: string,
-  draftId?: string,
+  workId: string;
+  applicantUser: AuthUser;
+  entity: BasicStoreBase | undefined;
+  csvMapper: CsvMapperParsed;
+  maxRecordNumber?: number;
+  connectorId: string;
+  draftId?: string;
 }
 
 const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngestionOpts) => {
@@ -154,9 +154,9 @@ export const generateAndSendBundleProcess = async (
 // ------------------------
 // region Test CSV Ingestion
 export interface CsvBundlerTestOpts {
-  applicantUser: AuthUser,
-  csvMapper: CsvMapperParsed,
-  maxRecordNumber?: number,
+  applicantUser: AuthUser;
+  csvMapper: CsvMapperParsed;
+  maxRecordNumber?: number;
 }
 
 /**
@@ -234,8 +234,8 @@ export const getTestBundleObjectsFromFile = async (
 
 // Deprecated region
 export interface BundleProcessOpts {
-  entity?: BasicStoreBase
-  maxRecordNumber?: number,
+  entity?: BasicStoreBase;
+  maxRecordNumber?: number;
 }
 
 /** @deprecated Will be removed when workbench are replaced by draft.

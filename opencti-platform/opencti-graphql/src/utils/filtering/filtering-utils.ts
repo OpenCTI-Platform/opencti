@@ -529,7 +529,7 @@ export const checkAndConvertFilters = async (
   inputFilterGroup: FilterGroup | null | undefined,
   userId: string,
   idsFinder: FiltersIdsFinder,
-  opts: { noFiltersChecking?: boolean, noFiltersConvert?: boolean } = {},
+  opts: { noFiltersChecking?: boolean; noFiltersConvert?: boolean } = {},
 ) => {
   if (!inputFilterGroup) {
     return undefined;

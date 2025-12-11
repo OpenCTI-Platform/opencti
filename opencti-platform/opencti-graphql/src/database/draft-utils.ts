@@ -25,7 +25,7 @@ export const isDraftFile = (fileKey: string, draftId: string, suffix = ''): bool
 };
 
 export type BuildDraftFilterOpts = {
-  includeDeletedInDraft?: boolean | null
+  includeDeletedInDraft?: boolean | null;
 };
 export const buildDraftFilter = (context: AuthContext, user: AuthUser, opts: BuildDraftFilterOpts = {}) => {
   const { includeDeletedInDraft = false } = opts;
@@ -76,10 +76,10 @@ export const isDraftSupportedEntity = (element: Record<string, any>): boolean =>
 
 export const FILES_UPDATE_KEY = files.name;
 type PatchValue = {
-  replaced_value: any[],
-  added_value: any[],
-  removed_value: any[],
-  initial_value: any[]
+  replaced_value: any[];
+  added_value: any[];
+  removed_value: any[];
+  initial_value: any[];
 };
 type UpdatePatch = Record<string, PatchValue>;
 // Transform a raw update patched stored in a draft_updates_patch to a list of reverse field patch inputs
