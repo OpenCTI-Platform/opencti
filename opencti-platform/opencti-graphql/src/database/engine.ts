@@ -1,9 +1,9 @@
-/* eslint-disable no-underscore-dangle */
+ 
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
-/* eslint-disable import/no-unresolved */
+ 
 import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
@@ -152,39 +152,40 @@ import { extractEntityRepresentativeName, extractRepresentative } from './entity
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { addFilter, checkAndConvertFilters, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
-  ALIAS_FILTER,
-  BULK_SEARCH_KEYWORDS_FILTER,
-  BULK_SEARCH_KEYWORDS_FILTER_KEYS,COMPUTED_RELIABILITY_FILTER,
-  IDS_FILTER,
-  INSTANCE_DYNAMIC_REGARDING_OF,
-  INSTANCE_REGARDING_OF,
-  INSTANCE_REGARDING_OF_DIRECTION_FORCED,
-  INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
-  INSTANCE_RELATION_FILTER,
-  INSTANCE_RELATION_TYPES_FILTER,
-  IS_INFERRED_FILTER,
-  isComplexConversionFilterKey,
-  LAST_PIR_SCORE_DATE_FILTER_PREFIX,
-  PIR_SCORE_FILTER_PREFIX,
-  RELATION_DYNAMIC_SUBFILTER,
-  RELATION_DYNAMIC_FROM_FILTER,
-  RELATION_DYNAMIC_TO_FILTER,
-  RELATION_FROM_FILTER,
-  RELATION_FROM_ROLE_FILTER,
-  RELATION_FROM_TYPES_FILTER,
-  RELATION_TO_FILTER,
-  RELATION_TO_ROLE_FILTER,
-  RELATION_TO_SIGHTING_FILTER,
-  RELATION_TO_TYPES_FILTER,
-  RELATION_TYPE_FILTER,
-  SOURCE_RELIABILITY_FILTER,
-  TYPE_FILTER,
-  USER_SERVICE_ACCOUNT_FILTER,
-  WORKFLOW_FILTER,
-  X_OPENCTI_WORKFLOW_ID,
-  ID_SUBFILTER,
-  RELATION_TYPE_SUBFILTER,
-  RELATION_INFERRED_SUBFILTER,
+ALIAS_FILTER,
+BULK_SEARCH_KEYWORDS_FILTER,
+BULK_SEARCH_KEYWORDS_FILTER_KEYS,
+COMPUTED_RELIABILITY_FILTER,
+IDS_FILTER,
+INSTANCE_DYNAMIC_REGARDING_OF,
+INSTANCE_REGARDING_OF,
+INSTANCE_REGARDING_OF_DIRECTION_FORCED,
+INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
+INSTANCE_RELATION_FILTER,
+INSTANCE_RELATION_TYPES_FILTER,
+IS_INFERRED_FILTER,
+isComplexConversionFilterKey,
+LAST_PIR_SCORE_DATE_FILTER_PREFIX,
+PIR_SCORE_FILTER_PREFIX,
+RELATION_DYNAMIC_SUBFILTER,
+RELATION_DYNAMIC_FROM_FILTER,
+RELATION_DYNAMIC_TO_FILTER,
+RELATION_FROM_FILTER,
+RELATION_FROM_ROLE_FILTER,
+RELATION_FROM_TYPES_FILTER,
+RELATION_TO_FILTER,
+RELATION_TO_ROLE_FILTER,
+RELATION_TO_SIGHTING_FILTER,
+RELATION_TO_TYPES_FILTER,
+RELATION_TYPE_FILTER,
+SOURCE_RELIABILITY_FILTER,
+TYPE_FILTER,
+USER_SERVICE_ACCOUNT_FILTER,
+WORKFLOW_FILTER,
+X_OPENCTI_WORKFLOW_ID,
+ID_SUBFILTER,
+RELATION_TYPE_SUBFILTER,
+RELATION_INFERRED_SUBFILTER
 } from '../utils/filtering/filtering-constants';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
 import {
@@ -673,7 +674,7 @@ export const buildDataRestrictions = async (
   opts: { includeAuthorities?: boolean | null } | null | undefined = {}
 ): Promise<{ must: any[], must_not: any[] }> => {
   const must: any[] = [];
-  // eslint-disable-next-line camelcase
+   
   const must_not: any[] = [];
   // If internal users of the system, we cancel rights checking
   if (INTERNAL_USERS[user.id]) {
@@ -2234,7 +2235,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
           nestedShould.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
         }
       } else { // nested key !== internal_id
-        // eslint-disable-next-line no-lonely-if
+         
         if (nestedOperator === FilterOperator.Within) {
           nestedShould.push({
             range: {
@@ -2787,7 +2788,7 @@ const buildSubQueryForFilterGroup = (
   return null;
 };
 const getRuntimeEntities = async (context: AuthContext, user: AuthUser, entityType: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+   
   const elements = await elPaginate<BasicStoreEntity>(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     types: [entityType],
     first: MAX_RUNTIME_RESOLUTION_SIZE,
@@ -3041,7 +3042,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   } : convertedFilters;
   // Handle filters
   if (isFilterGroupNotEmpty(completeFilters)) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+     
     const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
     const filtersSubQuery = buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
@@ -3202,7 +3203,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     const globalCount = data.hits.total.value;
     const elements = await elConvertHits<T>(data.hits.hits);
     // If filters contains an "in regards of" filter a post-security filtering is needed
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+     
     const regardingOfFilter = elements.length === 0 ? undefined : await buildRegardingOfFilter<T>(context, user, elements, filters);
     const filteredElements = regardingOfFilter ? await asyncFilter(elements, regardingOfFilter) : elements;
     const filterCount = elements.length - filteredElements.length;
@@ -4387,7 +4388,7 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
       return (element: (T & { regardingOfTypes?: string })) => {
         const accepted = targetValidatedIds.has(element.id);
         if (accepted) {
-          // eslint-disable-next-line no-param-reassign
+           
           element.regardingOfTypes = sideIdManualInferred.get(element.id);
         }
         return accepted;
