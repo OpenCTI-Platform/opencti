@@ -117,10 +117,10 @@ export const loadFile = async (
     }
     // 01.1. Check if user as enough capability to load import / export / template knowledge files
     if ((fileS3Path.startsWith(IMPORT_STORAGE_PATH)
-        || fileS3Path.startsWith(EMBEDDED_STORAGE_PATH)
-        || fileS3Path.startsWith(EXPORT_STORAGE_PATH)
-        || fileS3Path.startsWith(FROM_TEMPLATE_STORAGE_PATH))
-      && !isUserHasCapability(user, KNOWLEDGE)) {
+      || fileS3Path.startsWith(EMBEDDED_STORAGE_PATH)
+      || fileS3Path.startsWith(EXPORT_STORAGE_PATH)
+      || fileS3Path.startsWith(FROM_TEMPLATE_STORAGE_PATH))
+    && !isUserHasCapability(user, KNOWLEDGE)) {
       if (opts.dontThrow) {
         return undefined;
       }

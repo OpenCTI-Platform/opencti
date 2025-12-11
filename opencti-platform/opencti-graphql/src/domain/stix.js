@@ -278,7 +278,7 @@ export const addOrganizationRestriction = async (context, user, fromId, organiza
   const organizationsNotCurrentlyGranted = organizationIds.filter((o) => !currentGrants.includes(o));
   // If entity is not sharable or if entity is already shared with organizations, we can return without doing anything
   if (!objectOrganization.isRefExistingForTypes(from.entity_type, ENTITY_TYPE_IDENTITY_ORGANIZATION)
-      || organizationsNotCurrentlyGranted.length === 0
+    || organizationsNotCurrentlyGranted.length === 0
   ) {
     return from;
   }
@@ -305,7 +305,7 @@ export const removeOrganizationRestriction = async (context, user, fromId, organ
   const organizationsCurrentlyGranted = organizationIds.filter((o) => currentGrants.includes(o));
   // If entity is not sharable or if entity is already shared with organizations, we can return without doing anything
   if (!objectOrganization.isRefExistingForTypes(from.entity_type, ENTITY_TYPE_IDENTITY_ORGANIZATION)
-      || organizationsCurrentlyGranted.length === 0
+    || organizationsCurrentlyGranted.length === 0
   ) {
     return from;
   }

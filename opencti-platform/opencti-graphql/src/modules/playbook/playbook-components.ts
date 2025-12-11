@@ -1500,16 +1500,16 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           // Resolve relationships in the bundle
           const stixRelationshipsInBundle = bundle.objects.filter((r) => r.type === 'relationship') as StixRelation[];
           const stixRelationships = stixRelationshipsInBundle.filter((r) => r.relationship_type === 'related-to'
-              && r.source_ref === baseData.id
-              && (
-                r.target_ref.startsWith('threat-actor')
-                  || r.target_ref.startsWith('intrusion-set')
-                  || r.target_ref.startsWith('campaign')
-                  || r.target_ref.startsWith('malware')
-                  || r.target_ref.startsWith('incident')
-                  || r.target_ref.startsWith('tool')
-                  || r.target_ref.startsWith('attack-pattern')
-              ));
+            && r.source_ref === baseData.id
+            && (
+              r.target_ref.startsWith('threat-actor')
+              || r.target_ref.startsWith('intrusion-set')
+              || r.target_ref.startsWith('campaign')
+              || r.target_ref.startsWith('malware')
+              || r.target_ref.startsWith('incident')
+              || r.target_ref.startsWith('tool')
+              || r.target_ref.startsWith('attack-pattern')
+            ));
           for (let indexStixRelationships = 0; indexStixRelationships < stixRelationships.length; indexStixRelationships += 1) {
             const stixRelationship = stixRelationships[indexStixRelationships] as StixRelation;
             const relationIndicatesBaseData = {

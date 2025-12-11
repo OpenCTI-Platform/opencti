@@ -27,7 +27,7 @@ type ConfirmDeleteOptions = {
   isRestoring?: boolean
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Utilities
 
 /**
@@ -202,7 +202,7 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
   //    which one (id+representative+entity_type, so frontend can display something useful)
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDeleteOperation>(context, user, id, ENTITY_TYPE_DELETE_OPERATION);

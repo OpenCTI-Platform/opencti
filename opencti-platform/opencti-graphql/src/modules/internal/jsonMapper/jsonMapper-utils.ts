@@ -67,8 +67,8 @@ export const parseJsonMapperWithDefaultValues = async (context: AuthContext, use
     return representation.attributes.flatMap((attribute, j) => {
       if (
         attribute.default_values
-          && attribute.key !== 'objectMarking'
-          && refsDefinition.map((ref) => ref.name).includes(attribute.key)
+        && attribute.key !== 'objectMarking'
+        && refsDefinition.map((ref) => ref.name).includes(attribute.key)
       ) {
         refAttributesIndexes.push(`${i}-${j}`);
         return attribute.default_values;

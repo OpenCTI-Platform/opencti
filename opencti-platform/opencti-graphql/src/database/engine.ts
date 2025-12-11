@@ -1445,8 +1445,8 @@ export const initializeSchema = async () => {
   const isInternalIndexExists = await elIndexExists(INDEX_INTERNAL_OBJECTS);
   if (isInternalIndexExists) {
     throw ConfigurationError('Fail initialize schema, index already exists, previous initialization fail '
-        + 'because you kill the platform before the end of the initialization. Please remove your '
-        + 'elastic/opensearch data and restart.');
+      + 'because you kill the platform before the end of the initialization. Please remove your '
+      + 'elastic/opensearch data and restart.');
   }
   // Create default indexes
   await elCreateIndices();
@@ -3286,7 +3286,7 @@ const adaptFilterToWorkflowFilterKey = async (context: AuthContext, user: AuthUs
 const adaptFilterValueToIsInferredFilter = (value: any, operator: FilterOperator | null | undefined = FilterOperator.Eq) => {
   const equivalentBooleanValueIsTrue = value === 'true';
   const wildcardOperator = (operator === 'eq' && equivalentBooleanValueIsTrue)
-  || (operator === 'not_eq' && !equivalentBooleanValueIsTrue)
+    || (operator === 'not_eq' && !equivalentBooleanValueIsTrue)
     ? 'wildcard'
     : 'not_wildcard';
   return {
@@ -3720,8 +3720,8 @@ const completeSpecialFilterKeys = async (
         }
       }
       if (filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER
-          || filterKey === RELATION_TO_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER
-          || filterKey === RELATION_TO_SIGHTING_FILTER) {
+        || filterKey === RELATION_TO_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER
+        || filterKey === RELATION_TO_SIGHTING_FILTER) {
         const isDynamic = filterKey === RELATION_DYNAMIC_FROM_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER;
         const dynamicIds = [];
         if (isDynamic) {
@@ -3819,7 +3819,7 @@ const completeSpecialFilterKeys = async (
             finalFilterGroups.push(newFilterGroup);
           }
         } else if ((values.includes('false') && operator === FilterOperator.Eq)
-            || (values.includes('true') && operator === FilterOperator.NotEq)) {
+          || (values.includes('true') && operator === FilterOperator.NotEq)) {
           // if user_service_account = false, return also users with with null user_service_account
           const newFilterGroup = {
             mode: FilterMode.Or,
@@ -5289,7 +5289,7 @@ export const elIndexElements = async (
 export const elUpdateRelationConnections = async (elements: any[]) => {
   if (elements.length > 0) {
     const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
-        + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
+      + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
     const bodyUpdate = elements.flatMap((doc) => [
       { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
@@ -5338,7 +5338,7 @@ export const elUpdateEntityConnections = async (elements: any[]) => {
 
 const elUpdateConnectionsOfElement = async (documentId: string, documentBody: any) => {
   const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
-      + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
+    + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
   return elRawUpdateByQuery({
     index: READ_RELATIONSHIPS_INDICES,
     refresh: true,

@@ -20,8 +20,8 @@ const updateCaseEntity = async (fromCase, toType, standardId) => {
     script: {
       params: { toType, standardId, original: 'Case' },
       source: 'ctx._source.entity_type = params.toType; '
-          + 'ctx._source.standard_id = params.standardId; '
-          + 'if (!ctx._source.parent_types.contains(params.original)) { ctx._source.parent_types.add(params.original); }',
+        + 'ctx._source.standard_id = params.standardId; '
+        + 'if (!ctx._source.parent_types.contains(params.original)) { ctx._source.parent_types.add(params.original); }',
     },
     query: {
       term: { 'internal_id.keyword': { value: fromCase.internal_id } },
@@ -42,10 +42,10 @@ const updateCaseRelationships = async (fromCase, toType) => {
     script: {
       params: { toType, toId: fromCase.internal_id },
       source: 'for(def connection : ctx._source.connections) {'
-          + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
-          + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
-          + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
-          + '}',
+        + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
+        + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
+        + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
+        + '}',
     },
     query: {
       nested: {

@@ -60,7 +60,7 @@ export const STIX_RESOLUTION_MAP_PATHS: Record<string, string | string[]> = {
   [CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER]: 'id', // instance trigger --> resolve with the standard id (which is the stix.id)
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Resolve some of the filter values according to a resolution map.
@@ -131,7 +131,7 @@ export const resolveFilterGroup = async (
   };
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Build a resolution map thanks to the cache
@@ -192,7 +192,7 @@ export const buildResolutionMapForFilterGroup = async (
   return mergeMaps<string, string>([mergeMaps<string, string>(filtersMaps), mergeMaps<string, string>(filterGroupsMaps)]);
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Extract all filter values (ids) that might require a resolution from cache "Resolved-Filters"

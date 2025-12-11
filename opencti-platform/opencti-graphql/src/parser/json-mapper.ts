@@ -334,7 +334,7 @@ const computeOrderedRepresentations = (representations: JsonMapperRepresentation
     });
     return isEntity && entityHasRefToRelations;
   }).sort((r1, r2) => r1.attributes.filter((attr) => attr.mode === 'base' && attr.based_on).length
-      - r2.attributes.filter((attr) => attr.mode === 'base' && attr.based_on).length);
+    - r2.attributes.filter((attr) => attr.mode === 'base' && attr.based_on).length);
   // representations thar are not in representationEntitiesWithoutBasedOnRelationships
   const basedOnEntities = representations
     .filter((r) => r.type === JsonMapperRepresentationType.Entity && !baseEntities.some((r1) => r1.id === r.id));

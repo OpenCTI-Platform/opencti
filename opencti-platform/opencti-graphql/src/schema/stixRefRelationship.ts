@@ -763,10 +763,10 @@ export const objectOrganization: RefAttribute = {
   upsert: true,
   isRefExistingForTypes(this, fromType, toType) {
     return !(fromType === ENTITY_TYPE_EVENT
-        || fromType === ENTITY_TYPE_IDENTITY_ORGANIZATION
-        || fromType === ENTITY_TYPE_IDENTITY_SECTOR
-        || isStixDomainObjectLocation(fromType))
-      && this.toTypes.includes(toType);
+      || fromType === ENTITY_TYPE_IDENTITY_ORGANIZATION
+      || fromType === ENTITY_TYPE_IDENTITY_SECTOR
+      || isStixDomainObjectLocation(fromType))
+    && this.toTypes.includes(toType);
   },
   datable: false,
   isFilterable: true,

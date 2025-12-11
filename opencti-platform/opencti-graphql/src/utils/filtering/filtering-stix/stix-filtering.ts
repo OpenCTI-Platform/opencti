@@ -11,7 +11,7 @@ import { buildResolutionMapForFilterGroup, resolveFilterGroup } from '../filteri
 import { UnsupportedError } from '../../../config/errors';
 import { checkFiltersFormat } from '../filtering-utils';
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * check a FilterGroup's keys validity in stix filtering
@@ -42,7 +42,7 @@ export const validateFilterGroupForStixMatch = (filterGroup: FilterGroup) => {
   checkFiltersKeysForStixMatch(filterGroup);
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // STIX MATCH
 
 /**

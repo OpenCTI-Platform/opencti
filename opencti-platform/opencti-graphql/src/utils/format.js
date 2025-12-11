@@ -25,7 +25,7 @@ import { ValidationError } from '../config/errors';
 
 const DEFAULT_TRUNCATE_LIMIT = 64;
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Scheduling period formatting
 export const schedulingPeriodToMs = (scheduling_period) => {
   let schedulingPeriod;
@@ -58,7 +58,7 @@ export const schedulingPeriodToMs = (scheduling_period) => {
   return schedulingPeriod;
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Date formatting
 
 const moment = extendMoment(Moment);
@@ -180,7 +180,7 @@ export const sanitizeForMomentParsing = (date) => date
   .replace('CEST', '+0200'); // reported in RSS feeds
   // add more if needed.
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 export const truncate = (str, limit = DEFAULT_TRUNCATE_LIMIT, withPoints = true) => {
   if (str === undefined || str === null || str.length <= limit) {
@@ -323,6 +323,6 @@ export const runtimeFieldObservableValueScript = () => {
   `;
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 export const mergeDeepRightAll = R.unapply(R.reduce(R.mergeDeepRight, {}));

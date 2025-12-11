@@ -398,10 +398,10 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   const authorized_members = await computeAuthorizedMembersForRequestAccess(context, user, elementData);
   const mainRepresentative = extractEntityRepresentativeName(elementData);
   const humanDescription = 'Access requested:\n'
-      + ` - by user: ${user.name} \n`
-      + ` - for organization: ${organizationData.name} \n`
-      + ` - for entity: ${elementData.entity_type} ${mainRepresentative} ${elementData.id}\n\n`
-      + `Reason: ${input.request_access_reason}`;
+    + ` - by user: ${user.name} \n`
+    + ` - for organization: ${organizationData.name} \n`
+    + ` - for entity: ${elementData.entity_type} ${mainRepresentative} ${elementData.id}\n\n`
+    + `Reason: ${input.request_access_reason}`;
   const allActionStatuses = await getRFIStatusMap(context, user);
   const action: RequestAccessAction = {
     reason: input.request_access_reason || 'no reason',

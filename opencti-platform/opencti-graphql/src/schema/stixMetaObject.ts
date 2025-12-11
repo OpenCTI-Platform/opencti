@@ -11,4 +11,4 @@ const STIX_META_OBJECT = [...STIX_EMBEDDED_OBJECT, ENTITY_TYPE_MARKING_DEFINITIO
 schemaTypesDefinition.register(ABSTRACT_STIX_META_OBJECT, STIX_META_OBJECT);
 
 export const isStixMetaObject = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_META_OBJECT)
-|| type === ABSTRACT_STIX_META_OBJECT;
+  || type === ABSTRACT_STIX_META_OBJECT;

@@ -63,11 +63,11 @@ export const testGenericFilter = <T extends string | number | boolean>(
       || (op === 'search' && adaptedFilterValues.every((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string'
         && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contains at least one of the filter values words
 
-      // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
-      || (op === 'lt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c < v)))
-      || (op === 'lte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c <= v)))
-      || (op === 'gt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c > v)))
-      || (op === 'gte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c >= v)));
+    // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
+        || (op === 'lt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c < v)))
+        || (op === 'lte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c <= v)))
+        || (op === 'gt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c > v)))
+        || (op === 'gte' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c >= v)));
   }
 
   if (operationMode === 'or') {
@@ -83,11 +83,11 @@ export const testGenericFilter = <T extends string | number | boolean>(
       || (op === 'search' && adaptedFilterValues.some((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string'
         && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contains at least one of the filter values words
 
-      // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
-      || (op === 'lt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c < v)))
-      || (op === 'lte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c <= v)))
-      || (op === 'gt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c > v)))
-      || (op === 'gte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c >= v)));
+    // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
+        || (op === 'lt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c < v)))
+        || (op === 'lte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c <= v)))
+        || (op === 'gt' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c > v)))
+        || (op === 'gte' && adaptedFilterValues.some((v) => stixCandidates.some((c) => c >= v)));
   }
 
   return false;
@@ -169,7 +169,7 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
   return false;
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 // generic representation of a tester function
 // its implementations are dependent on the data model, to find the information requested by the filter

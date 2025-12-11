@@ -28,7 +28,7 @@ export const INTERNAL_RELATIONSHIPS = [
 schemaTypesDefinition.register(ABSTRACT_INTERNAL_RELATIONSHIP, INTERNAL_RELATIONSHIPS);
 
 export const isInternalRelationship = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_INTERNAL_RELATIONSHIP)
-|| type === ABSTRACT_INTERNAL_RELATIONSHIP;
+  || type === ABSTRACT_INTERNAL_RELATIONSHIP;
 
 export const isStoreRelationPir = (instance: StoreCommon): instance is StoreRelationPir => {
   return (instance as StoreRelationPir).entity_type === RELATION_IN_PIR;

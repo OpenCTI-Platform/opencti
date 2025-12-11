@@ -37,9 +37,9 @@ export const up = async (next) => {
       await elUpdate(data._index, mergedId, {
         script: {
           source: 'for (key in ctx._source.keySet()) { '
-                + "if (key.startsWith('rel_')) { "
-                    + 'ctx._source[key] = params[key];'
-                + '}'
+            + "if (key.startsWith('rel_')) { "
+            + 'ctx._source[key] = params[key];'
+            + '}'
             + '}',
           lang: 'painless',
           params,

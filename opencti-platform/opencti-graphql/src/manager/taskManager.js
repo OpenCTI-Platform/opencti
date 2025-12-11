@@ -136,15 +136,15 @@ const throwErrorInDraftContext = (context, user, actionType) => {
     return;
   }
   if (actionType === ACTION_TYPE_COMPLETE_DELETE
-      || actionType === ACTION_TYPE_RESTORE
-      || actionType === ACTION_TYPE_RULE_APPLY
-      || actionType === ACTION_TYPE_RULE_CLEAR
-      || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
-      || actionType === ACTION_TYPE_SHARE
-      || actionType === ACTION_TYPE_UNSHARE
-      || actionType === ACTION_TYPE_SHARE_MULTIPLE
-      || actionType === ACTION_TYPE_UNSHARE_MULTIPLE
-      || actionType === ACTION_TYPE_SEND_EMAIL) {
+    || actionType === ACTION_TYPE_RESTORE
+    || actionType === ACTION_TYPE_RULE_APPLY
+    || actionType === ACTION_TYPE_RULE_CLEAR
+    || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
+    || actionType === ACTION_TYPE_SHARE
+    || actionType === ACTION_TYPE_UNSHARE
+    || actionType === ACTION_TYPE_SHARE_MULTIPLE
+    || actionType === ACTION_TYPE_UNSHARE_MULTIPLE
+    || actionType === ACTION_TYPE_SEND_EMAIL) {
     throw FunctionalError('Cannot execute this task type in draft', { actionType });
   }
 };

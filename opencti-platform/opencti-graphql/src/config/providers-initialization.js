@@ -34,7 +34,7 @@ export const initializeAdminUser = async (context) => {
     const adminPassword = conf.get('app:admin:password');
     const adminToken = conf.get('app:admin:token');
     if (isEmptyField(adminEmail) || isEmptyField(adminPassword) || isEmptyField(adminToken)
-        || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE
+      || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE
     ) {
       throw ConfigurationError('You need to configure the environment vars');
     } else {

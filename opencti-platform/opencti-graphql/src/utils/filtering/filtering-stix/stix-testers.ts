@@ -55,7 +55,7 @@ import type { AuthUser } from '../../../types/user';
 import { UnsupportedError } from '../../../config/errors';
 import type { PirInformation } from '../../../modules/pir/pir-types';
 
-//-----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
 // Testers for each possible filter.
 // The stix object format is sometimes very different from what we store internally
 // and in our filters, so we need extra, specific steps.

@@ -138,8 +138,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     // and the user has the right to modify them (= notifications are the ones of the user OR the user has SET_ACCESS capability)
     if (taskType === TASK_TYPE_QUERY) {
       const isNotifications = entityTypeFilters.length === 1
-          && entityTypeFilters[0].values.length === 1
-          && entityTypeFilters[0].values[0] === 'Notification';
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === 'Notification';
       if (!isNotifications) {
         throw ForbiddenAccess('The targeted ids are not notifications.');
       }
@@ -175,8 +175,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     // Check the targeted entities are User
     if (taskType === TASK_TYPE_QUERY) {
       const isUsers = entityTypeFilters.length === 1
-          && entityTypeFilters[0].values.length === 1
-          && entityTypeFilters[0].values[0] === 'User';
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === 'User';
       if (!isUsers) {
         throw ForbiddenAccess('The targeted ids are not users.');
       }
@@ -210,8 +210,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     if (taskType === TASK_TYPE_QUERY) {
       const isWorkspaces = entityTypeFilters.length === 1
-          && entityTypeFilters[0].values.length === 1
-          && entityTypeFilters[0].values[0] === ENTITY_TYPE_WORKSPACE;
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === ENTITY_TYPE_WORKSPACE;
       const typeValues = extractFilterGroupValues(baseFilterObject, 'type');
       const isDashboards = typeValues.length === 1 && typeValues[0] === 'dashboard';
       if (!isWorkspaces || !isDashboards) {
@@ -233,8 +233,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     if (taskType === TASK_TYPE_QUERY) {
       const isWorkspaces = entityTypeFilters.length === 1
-          && entityTypeFilters[0].values.length === 1
-          && entityTypeFilters[0].values[0] === ENTITY_TYPE_WORKSPACE;
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === ENTITY_TYPE_WORKSPACE;
       const typeValues = extractFilterGroupValues(baseFilterObject, 'type');
       const isInvestigations = typeValues.length === 1 && typeValues[0] === 'investigation';
       if (!isWorkspaces || !isInvestigations) {
@@ -256,8 +256,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     if (taskType === TASK_TYPE_QUERY) {
       const isPublicDashboards = entityTypeFilters.length === 1
-          && entityTypeFilters[0].values.length === 1
-          && entityTypeFilters[0].values[0] === ENTITY_TYPE_PUBLIC_DASHBOARD;
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === ENTITY_TYPE_PUBLIC_DASHBOARD;
       if (!isPublicDashboards) {
         throw ForbiddenAccess('The targeted ids are not public dashboards.');
       }

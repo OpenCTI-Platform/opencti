@@ -185,9 +185,9 @@ export const getConsolidatedUpdatePatch = (currentUpdatePatch: UpdatePatch, upda
 export const getDraftChanges = (initialInstance: BasicStoreBase, updatedInputs: InternalEditInput[]): DraftChange => {
   const currentDraftChanges = initialInstance.draft_change ?? { draft_operation: DRAFT_OPERATION_UPDATE };
   if (updatedInputs.length === 0
-      || currentDraftChanges?.draft_operation === DRAFT_OPERATION_CREATE
-      || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE
-      || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
+    || currentDraftChanges?.draft_operation === DRAFT_OPERATION_CREATE
+    || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE
+    || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
     return currentDraftChanges;
   }
 

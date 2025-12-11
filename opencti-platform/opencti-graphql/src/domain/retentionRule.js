@@ -33,7 +33,7 @@ export const checkRetentionRule = async (context, input) => {
   }
   if (scope === 'file' || scope === 'workbench') { // don't delete progress files or files with works in progress
     result.edges = result.edges.filter((e) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
-        && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
+      && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
   }
   return result.edges.length;
 };

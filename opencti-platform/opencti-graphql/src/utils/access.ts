@@ -624,7 +624,7 @@ export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted
   const userMemberAccessIds = computeUserMemberAccessIds(user);
   const userGroupsIds = user.groups.map((group) => group.internal_id);
   const foundAccessMembers = (element.restricted_members ?? []).filter((u) => (u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id))
-      && (!u.groups_restriction_ids || u.groups_restriction_ids.length === 0 || u.groups_restriction_ids.every((g) => userGroupsIds.includes(g))));
+    && (!u.groups_restriction_ids || u.groups_restriction_ids.length === 0 || u.groups_restriction_ids.every((g) => userGroupsIds.includes(g))));
   if (!foundAccessMembers.length) { // user has no access
     return null;
   }

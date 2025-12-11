@@ -502,12 +502,12 @@ export const updateCvssVector = (
     }
   });
   const updatedVector = (prefix || '')
-      + ordered
-        .filter((k) => parts.has(k))
-        .map((k) => (version === 'cvss2'
-          ? `${cvss2OutputKeyCase[k] || k}:${parts.get(k)}`
-          : `${k}:${parts.get(k)}`))
-        .join('/');
+    + ordered
+      .filter((k) => parts.has(k))
+      .map((k) => (version === 'cvss2'
+        ? `${cvss2OutputKeyCase[k] || k}:${parts.get(k)}`
+        : `${k}:${parts.get(k)}`))
+      .join('/');
   let scores: any = null;
   if (version === 'cvss3') {
     scores = new Cvss3P1(updatedVector).calculateScores();

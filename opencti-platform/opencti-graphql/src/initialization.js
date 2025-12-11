@@ -104,8 +104,8 @@ const platformInit = async (withMarkings = true) => {
       await initializeSchema();
       if (ES_IS_INIT_MIGRATION) {
         logApp.warn(`Templates and indices created with ${ES_INIT_MAPPING_MIGRATION} compatible mapping protection. `
-            + 'This is only used to help indices reindex and migration. For retro option, please reindex, restart and then '
-            + 'trigger a rollover to secure the new indices');
+          + 'This is only used to help indices reindex and migration. For retro option, please reindex, restart and then '
+          + 'trigger a rollover to secure the new indices');
         process.exit(1);
       }
       await initializeMigration(context);

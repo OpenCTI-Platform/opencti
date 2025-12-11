@@ -46,7 +46,7 @@ export const emptyFilterGroup: FilterGroup = {
   filterGroups: [],
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
 
 export const isFilterFormatCorrect = (filter: Filter) => {
@@ -300,7 +300,7 @@ export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKe
   };
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Filter adaptation
 
 // map of the special filtering keys that should be converted

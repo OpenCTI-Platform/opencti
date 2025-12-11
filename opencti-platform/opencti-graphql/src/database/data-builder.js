@@ -123,7 +123,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
       // For organizations management
       if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
         if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
-            && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
+          && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
           relToCreate.push(...buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
         } else if (!context.user_inside_platform_organization) {
           // If user is not part of the platform organization, put its own organizations
@@ -277,7 +277,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   if (isStixRelationshipExceptRef(relationshipType)) {
     // We need to link the data to organization sharing, only for core and sightings.
     if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
-        && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
+      && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
       relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
     } else if (!context.user_inside_platform_organization) {
       // If user is not part of the platform organization, put its own organizations

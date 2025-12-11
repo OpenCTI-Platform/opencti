@@ -262,7 +262,7 @@ export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: Bas
   const csvLines = dataLines
     .filter((line: string) => (
       (!!csvMapper.skipLineChar && !line.startsWith(csvMapper.skipLineChar))
-          || (!csvMapper.skipLineChar && !!line)
+      || (!csvMapper.skipLineChar && !!line)
     ))
     .slice(0, limit ?? dataLines.length);
   return { csvLines, addedLast: resultHeaders['x-csv-date-added-last'] };

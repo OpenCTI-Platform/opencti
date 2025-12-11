@@ -557,7 +557,7 @@ const createApp = async (app, schema) => {
       const data = await readFile(`${__dirname}/../public/index.html`, 'utf8');
       const settingsTitle = settings?.platform_title;
       const description = 'OpenCTI is an open source platform allowing organizations'
-          + ' to manage their cyber threat intelligence knowledge and observables.';
+        + ' to manage their cyber threat intelligence knowledge and observables.';
       const settingFavicon = settings?.platform_favicon;
       const withOptionValued = data
         .replace(/%BASE_PATH%/g, basePath)
