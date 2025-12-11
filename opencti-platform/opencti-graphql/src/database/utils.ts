@@ -243,7 +243,7 @@ export const fromBase64 = (base64String: string | null | undefined): string | un
   return buff.toString('utf-8');
 };
 
-export const emptyPaginationResult = <T extends BasicStoreCommon>() : BasicConnection<T> => {
+export const emptyPaginationResult = <T extends BasicStoreCommon>(): BasicConnection<T> => {
   return {
     edges: [],
     pageInfo: {
@@ -411,8 +411,7 @@ export const isObjectPathTargetMultipleAttribute = (instance: BasicStoreCommon, 
 
 export const asyncListTransformation = async <T> (
   elements: StoreCommon[],
-  preparatoryFunction: (instance: StoreCommon) => T)
-: Promise<T[]> => {
+  preparatoryFunction: (instance: StoreCommon) => T): Promise<T[]> => {
   const preparedElements = [];
   for (let n = 0; n < elements.length; n += 1) {
     await doYield();

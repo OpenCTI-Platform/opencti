@@ -19,7 +19,7 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
   const csvMapperParsed = parseCsvMapper(parsedConfiguration);
   const csvLines = await parseReadableToLines(Readable.from([content]), 100);
 
-  const bundlerOpts : CsvBundlerTestOpts = {
+  const bundlerOpts: CsvBundlerTestOpts = {
     applicantUser: user,
     csvMapper: csvMapperParsed
   };

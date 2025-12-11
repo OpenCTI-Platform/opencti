@@ -284,7 +284,7 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
     removeHeaderFromFullFile(csvLines, parsedMapper.skipLineChar);
   }
 
-  const bundlerOpts : CsvBundlerTestOpts = {
+  const bundlerOpts: CsvBundlerTestOpts = {
     applicantUser: user,
     csvMapper: parsedMapper
   };

@@ -183,7 +183,7 @@ export const generateTestBundle = async (
  * @param csvLines
  * @param skipLineChar
  */
-export const removeHeaderFromFullFile = (csvLines:string[], skipLineChar: string) => {
+export const removeHeaderFromFullFile = (csvLines: string[], skipLineChar: string) => {
   if (skipLineChar && skipLineChar.length === 1) {
     let isACommentLine: boolean = true;
     while (isACommentLine) {

@@ -3071,7 +3071,7 @@ export type PaginateOpts = QueryBodyBuilderOpts & {
   filters?: FilterGroup | null,
   connectionFormat?: boolean,
 };
-type PaginateResultWithMeta <T extends BasicStoreBase> = {
+type PaginateResultWithMeta<T extends BasicStoreBase> = {
   elements: T[] | BasicConnection<T>,
   endCursor: string | null,
   total: number,
@@ -3134,7 +3134,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
   }
 };
-type RepaginateOpts <T extends BasicStoreBase> = PaginateOpts & {
+type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
   maxSize?: number,
   logForMigration?: boolean,
   callback?: (elements: T[], globalCount: number) => Promise<boolean | undefined>
@@ -4068,9 +4068,9 @@ type AggregationRelationsCount = {
 };
 export const elAggregationRelationsCount = async (
   context: AuthContext,
-  user:AuthUser,
+  user: AuthUser,
   indexName: string | string[] | undefined,
-  options:AggregationRelationsCount = {}
+  options: AggregationRelationsCount = {}
 ): Promise<{ label: string, value: number }[]> => {
   const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true } = options;
   const aggregationFields = [
@@ -4422,7 +4422,7 @@ export const elAttributeValues = async (
   const query = { index: [READ_DATA_INDICES], body };
   const data = await elRawSearch(context, user, field, query);
   const { buckets } = data.aggregations.values;
-  const values = (buckets ?? []).map((n: { key: any }) => n.key).filter((val : string[]) => (search ? val.includes(search.toLowerCase()) : true));
+  const values = (buckets ?? []).map((n: { key: any }) => n.key).filter((val: string[]) => (search ? val.includes(search.toLowerCase()) : true));
   const nodeElements = values.map((val: any) => ({ node: { id: val, key: field, value: val } }));
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };
@@ -4619,7 +4619,7 @@ export const elRemoveRelationConnection = async (
     const dataIds = await elFindByIds(context, user, idsToResolve, { baseData: true, baseFields: ['pir_information'] }) as BasicStoreEntity[];
     // Build cache for rest of execution
     const elIdsCache: Record<string, string> = {};
-    const indexCache: Record< string, string> = {};
+    const indexCache: Record<string, string> = {};
     const pirInformationCache: Record<string, any> = {};
     for (let idIndex = 0; idIndex < dataIds.length; idIndex += 1) {
       await doYield();

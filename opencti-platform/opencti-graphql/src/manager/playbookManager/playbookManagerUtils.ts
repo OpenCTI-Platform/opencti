@@ -37,7 +37,7 @@ export const isValidEventType = (eventType: StreamDataEventType, configuration: 
  * @param eventData The event.
  * @returns True if the event concerns a relationship in-pir.
  */
-export const isEventInPirRelationship = (eventData : StreamDataEvent) => {
+export const isEventInPirRelationship = (eventData: StreamDataEvent) => {
   const { data, scope } = eventData;
   return scope === 'internal' && isStixRelation(data) && data.relationship_type === RELATION_IN_PIR;
 };
@@ -47,7 +47,7 @@ export const isEventInPirRelationship = (eventData : StreamDataEvent) => {
  * @param eventData The event.
  * @returns True if the event is an update of entity.
  */
-export const isEventUpdateOnEntity = (eventData : StreamDataEvent) => {
+export const isEventUpdateOnEntity = (eventData: StreamDataEvent) => {
   const { data, type } = eventData;
   return type === StreamDataEventTypeEnum.UPDATE && !isStixRelation(data);
 };

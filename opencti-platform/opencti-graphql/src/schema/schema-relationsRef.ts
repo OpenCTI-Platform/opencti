@@ -153,7 +153,7 @@ export const schemaRelationsRefDefinition = {
     return this.stixNameToInputNameCache.get(this.selectEntityType(entityType))?.get(stixName) ?? null;
   },
 
-  isDatable(entityType: string, databaseName: string) : boolean | undefined {
+  isDatable(entityType: string, databaseName: string): boolean | undefined {
     const name = this.convertDatabaseNameToInputName(entityType, databaseName);
     if (!name) {
       throw UnsupportedError('Relation Ref not found');
@@ -161,7 +161,7 @@ export const schemaRelationsRefDefinition = {
     return this.getRelationRef(entityType, name)?.datable;
   },
 
-  getDatables() : string[] {
+  getDatables(): string[] {
     usageProtection = true;
     return Array.from(this.relationsRefCacheArray.values()).flat()
       .filter((rel) => rel.datable)

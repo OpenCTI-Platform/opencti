@@ -67,7 +67,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   return { status: newRegistrationStatus };
 };
 
-export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, input: AutoRegisterInput): Promise<{ success: boolean; } > => {
+export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, input: AutoRegisterInput): Promise<{ success: boolean; }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
   const licenseInfo = getEnterpriseEditionInfoFromPem(settings.internal_id, settings.enterprise_license);

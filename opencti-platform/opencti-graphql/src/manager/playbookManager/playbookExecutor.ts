@@ -82,7 +82,7 @@ export const playbookExecutor = async ({
   bundle,
   event,
   externalCallback
-} : ExecutorFn) => {
+}: ExecutorFn) => {
   const isExternalCallback = externalCallback !== undefined;
   const start = isExternalCallback ? externalCallback.externalStartDate : utcDate();
   const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };

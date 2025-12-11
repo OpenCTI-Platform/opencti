@@ -112,7 +112,7 @@ const checkRequestAccessEnabled = async (context: AuthContext, user: AuthUser) =
   }
 };
 
-export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser, action:ActionStatus) => {
+export const getRFIStatusForAction = async (context: AuthContext, user: AuthUser, action: ActionStatus) => {
   const rfiEntitySettings = await getRfiEntitySettings(context, user);
   const requestAccessWorkflow = rfiEntitySettings?.request_access_workflow;
   if (requestAccessWorkflow) {
@@ -153,7 +153,7 @@ export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUs
 export const getRFIStatusMap = async (context: AuthContext, user: AuthUser) => {
   const rfiEntitySettings = await getRfiEntitySettings(context, user);
   const requestAccessWorkflow = rfiEntitySettings?.request_access_workflow;
-  const result : RequestAccessActionStatus[] = [];
+  const result: RequestAccessActionStatus[] = [];
   if (requestAccessWorkflow) {
     if (requestAccessWorkflow.approved_workflow_id) {
       result.push({
@@ -522,7 +522,7 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
     executionDate: new Date(),
     workflowMapping: allActionStatuses
   };
-  const RFIFieldPatch :EditInput[] = [
+  const RFIFieldPatch: EditInput[] = [
     { key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] },
     { key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] }
   ];
@@ -557,7 +557,7 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
     executionDate: new Date(),
     workflowMapping: allActionStatuses
   };
-  const RFIFieldPatch :EditInput[] = [
+  const RFIFieldPatch: EditInput[] = [
     { key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] },
     { key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] }
   ];

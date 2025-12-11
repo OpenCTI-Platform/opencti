@@ -284,7 +284,7 @@ export const authorizedMembers: AttributeDefinition = {
   ]
 };
 
-export const authorizedMembersActivationDate : AttributeDefinition = {
+export const authorizedMembersActivationDate: AttributeDefinition = {
   name: 'authorized_members_activation_date',
   label: 'Authorized members activation date',
   type: 'date',

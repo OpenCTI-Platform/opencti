@@ -22,7 +22,7 @@ export const depsKeysRegister = {
 
 const isMandatoryAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
 const isDateAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.type === 'date';
-const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition) : schemaDef is ComplexAttributeWithMappings => { // handy typeguard
+const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
   return schemaDef.type === 'object' && schemaDef.format !== 'flat';
 };
 

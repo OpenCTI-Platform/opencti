@@ -9,6 +9,6 @@ export const registerEntityValidator = (type: string, validators: { validatorCre
 export const getEntityValidatorCreation = (type: string): ValidatorFn | undefined => {
   return entityValidators.get(type)?.validatorCreation;
 };
-export const getEntityValidatorUpdate = (type: string):ValidatorFn | undefined => {
+export const getEntityValidatorUpdate = (type: string): ValidatorFn | undefined => {
   return entityValidators.get(type)?.validatorUpdate;
 };

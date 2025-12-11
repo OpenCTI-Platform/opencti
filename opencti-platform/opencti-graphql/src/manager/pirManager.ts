@@ -118,7 +118,7 @@ export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>
   return matchingCriteria;
 };
 
-const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir) => {
+const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPir) => {
   const parsedPir = parsePir(pir);
 
   return async (streamEvents: Array<SseEvent<DataEvent>>) => {

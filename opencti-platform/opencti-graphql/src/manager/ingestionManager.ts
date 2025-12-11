@@ -435,7 +435,7 @@ export const handleConfidenceToScoreTransformation = (ingestion: BasicStoreEntit
   return objects;
 };
 
-export const processTaxiiResponse = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse:TaxiiResponseData) => {
+export const processTaxiiResponse = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse: TaxiiResponseData) => {
   const { data, addedLastHeader } = taxiResponse;
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
@@ -538,7 +538,7 @@ export const processCsvLines = async (
     }
     logApp.info(`[OPENCTI-MODULE] INGESTION - ingesting ${csvLines.length} csv lines`);
     const work = await createWorkForIngestion(context, ingestion);
-    const bundlerOpts : CsvBundlerIngestionOpts = {
+    const bundlerOpts: CsvBundlerIngestionOpts = {
       workId: work.id,
       applicantUser: ingestionUser as AuthUser,
       entity: undefined, // TODO is it possible to ingest in entity context ?

@@ -992,7 +992,7 @@ export const SUPPORT_NODE_STATUS_IN_ERROR = 100;
  * @param nodeId
  * @param nodeStatus one of SUPPORT_NODE_STATUS_IN_PROGRESS, SUPPORT_NODE_STATUS_READY, SUPPORT_NODE_STATUS_IN_ERROR
  */
-export const redisStoreSupportPackageNodeStatus = (supportPackageId:string, nodeId: string, nodeStatus: number) => {
+export const redisStoreSupportPackageNodeStatus = (supportPackageId: string, nodeId: string, nodeStatus: number) => {
   const setKeyId = `support:${supportPackageId}`;
   // redis score =  nodeStatus
   // redis member = nodeId

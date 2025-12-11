@@ -469,7 +469,7 @@ export const testPirScore = (stix: any, filter: Filter) => {
     : stix.extensions[STIX_EXT_OCTI].pir_information?.filter((pir: PirInformation) => pirIds.includes(pir.pir_id));
 
   // If at least one of the PIR matches the score filter then it's True.
-  const stixValues: number[] = pirInformation?.map((pir:PirInformation) => pir.pir_score) ?? [];
+  const stixValues: number[] = pirInformation?.map((pir: PirInformation) => pir.pir_score) ?? [];
   return stixValues.some((stixValue) => testNumericFilter(pirScoreFilter, stixValue));
 };
 

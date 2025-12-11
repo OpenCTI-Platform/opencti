@@ -48,7 +48,7 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
   if (csvMapperParsed.has_header) {
     removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
   }
-  const bundlerOpts : CsvBundlerTestOpts = {
+  const bundlerOpts: CsvBundlerTestOpts = {
     applicantUser: user,
     csvMapper: csvMapperParsed
   };

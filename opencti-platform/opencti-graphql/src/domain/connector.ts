@@ -180,7 +180,7 @@ export const registerConnectorsManager = async (context: AuthContext, user: Auth
   return createEntity(context, user, managerToCreate, ENTITY_TYPE_CONNECTOR_MANAGER);
 };
 
-export const updateConnectorManagerStatus = async (context: AuthContext, user:AuthUser, input: UpdateConnectorManagerStatusInput) => {
+export const updateConnectorManagerStatus = async (context: AuthContext, user: AuthUser, input: UpdateConnectorManagerStatusInput) => {
   const patch: any = { last_sync_execution: now() };
   const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
   return element;
@@ -188,7 +188,7 @@ export const updateConnectorManagerStatus = async (context: AuthContext, user:Au
 
 export const managedConnectorEdit = async (
   context: AuthContext,
-  user:AuthUser,
+  user: AuthUser,
   input: EditManagedConnectorInput
 ) => {
   const conn: any = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR);
@@ -223,7 +223,7 @@ export const managedConnectorEdit = async (
 
 export const managedConnectorAdd = async (
   context: AuthContext,
-  user:AuthUser,
+  user: AuthUser,
   input: AddManagedConnectorInput
 ) => {
   // Get contract
@@ -306,7 +306,7 @@ export const managedConnectorAdd = async (
 
 export const registerConnector = async (
   context: AuthContext,
-  user:AuthUser,
+  user: AuthUser,
   connectorData: RegisterConnectorInput,
   opts: RegisterOptions = {}
 ) => {
@@ -374,7 +374,7 @@ export const registerConnector = async (
   return completeConnector(createdConnector);
 };
 
-export const connectorDelete = async (context: AuthContext, user:AuthUser, connectorId: string) => {
+export const connectorDelete = async (context: AuthContext, user: AuthUser, connectorId: string) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
   const { element } = await internalDeleteElementById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
@@ -540,7 +540,7 @@ export const computeStreamRemoteUrl = (inputUri: string) => {
   return `${sanitizeUri.endsWith('/') ? sanitizeUri.slice(0, -1) : sanitizeUri}/graphql`;
 };
 
-export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, input:SynchronizerFetchInput) => {
+export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, input: SynchronizerFetchInput) => {
   const { token, uri, ssl_verify } = input;
   try {
     const query = `

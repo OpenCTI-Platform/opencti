@@ -137,7 +137,7 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   };
 };
 
-export const buildHistoryElementsFromEvents = async (context:AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
+export const buildHistoryElementsFromEvents = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   // load all markings to resolve object_marking_refs
   const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   // resolve granted_refs

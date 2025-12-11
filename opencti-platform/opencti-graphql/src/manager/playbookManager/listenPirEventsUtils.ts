@@ -150,7 +150,7 @@ export const formatFiltersForPirPlaybookComponent = (sourceFilters: string, inPi
 
 export const listenPirEvents = async (
   context: AuthContext,
-  streamEvent : SseEvent<StreamDataEvent>,
+  streamEvent: SseEvent<StreamDataEvent>,
   instance: NodeDefinition,
   playbook: BasicStoreEntityPlaybook
 ) => {

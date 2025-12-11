@@ -19,7 +19,7 @@ export interface GetHttpClient {
   responseType: 'json' | 'arraybuffer' | 'text'
   headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
   certificates?: Certificates
-  auth? : {
+  auth?: {
     username: string
     password: string
   }

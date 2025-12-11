@@ -1049,19 +1049,19 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
     const cacheIds = await getEntitiesMapFromCache(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_MARKING_DEFINITION);
     const { actions, all } = playbookNode.configuration;
     // Compute if the attribute is defined as multiple in schema definition
-    const isAttributeMultiple = (entityType:string, attribute: string) => {
+    const isAttributeMultiple = (entityType: string, attribute: string) => {
       const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
       if (baseAttribute) return baseAttribute.multiple;
       const relationRef = schemaRelationsRefDefinition.getRelationRef(entityType, attribute);
       if (relationRef) return relationRef.multiple;
       return undefined;
     };
-    const getAttributeType = (entityType:string, attribute: string) => {
+    const getAttributeType = (entityType: string, attribute: string) => {
       const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
       return baseAttribute?.type ?? 'string';
     };
     // Compute the access path for the attribute in the static matrix
-    const computeAttributePath = (entityType:string, attribute: string) => {
+    const computeAttributePath = (entityType: string, attribute: string) => {
       if (attributePathMapping[attribute]) {
         if (attributePathMapping[attribute][entityType]) {
           return attributePathMapping[attribute][entityType];

@@ -279,7 +279,7 @@ export const addFilter = (filterGroup: FilterGroup | undefined | null, newKey: s
   } as FilterGroup;
 };
 
-const replaceFilterKeyInFilter = (filter: Filter, oldKey: string, newKey: string) : Filter => {
+const replaceFilterKeyInFilter = (filter: Filter, oldKey: string, newKey: string): Filter => {
   return {
     ...filter,
     key: filter.key.map((k) => (k === oldKey ? newKey : k)),
@@ -292,7 +292,7 @@ const replaceFilterKeyInFilter = (filter: Filter, oldKey: string, newKey: string
  * @param oldKey
  * @param newKey
  */
-export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKey: string) : FilterGroup => {
+export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKey: string): FilterGroup => {
   return {
     ...filterGroup,
     filters: filterGroup.filters.map((f) => replaceFilterKeyInFilter(f, oldKey, newKey)),
@@ -502,7 +502,7 @@ const computeFilterLabelMap = async (
   const labelFilterValues = extractFilterKeyValues(LABEL_FILTER, inputFilterGroup);
   const isLabelsByText = labelFilterValues.filter((val) => !isInternalId(val)).length > 0;
   const isForceLabel = (label: string) => label.startsWith(BASE_FORCE_LABEL);
-  const prepareLabel = (label:string) => {
+  const prepareLabel = (label: string) => {
     return label.startsWith(BASE_FORCE_LABEL) ? label.substring(BASE_FORCE_LABEL.length) : label;
   };
   const generateId = (val: string) => idLabel(prepareLabel(val), isForceLabel(val));

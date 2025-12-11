@@ -16,12 +16,12 @@ import { validateMarking } from '../utils/access';
 
 type BusTopicsKeyType = keyof typeof BUS_TOPICS;
 
-export const findById = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser, id: string) : Promise<T> => {
+export const findById = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser, id: string): Promise<T> => {
   return await elLoadById(context, user, id, { indices: READ_PLATFORM_INDICES }) as unknown as T;
 };
 
 export const findStixObjectOrRelationshipsPaginated = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser,
-  args: EntityOptions<BasicStoreCommon>) : Promise<BasicConnection<T>> => {
+  args: EntityOptions<BasicStoreCommon>): Promise<BasicConnection<T>> => {
   return await pageEntitiesOrRelationsConnection(context, user, [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args) as unknown as BasicConnection<T>;
 };
 
