@@ -6,7 +6,7 @@ Decay rules are used to update automatically indicators score in order to repres
 
 Decay rules can be configured in the "Settings > Customization > Decay rule" menu.
 
-![Decay rules](./assets/decay-rules.png)
+![Decay rules](./assets/decay-exclusion-rule-decay-rule.png)
 
 There are built-in decay rules that can't be modified and are applied by default to indicators depending on their main observable type.
 Decay rules are applied from highest to lowest order (the lowest being 0).
