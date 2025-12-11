@@ -62,15 +62,30 @@ jobs:
           -v ${{ github.workspace }}:/home/workspace \
           -e OPENCTI_API_URL=http://opencti-pycti-start:4100 \
           -e OPENCTI_API_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
-         python:${{ matrix.python-version }} \
-          sh -c 'set -ex;
-            cd /home/workspace/client-python
-            pip3 install -r requirements.txt --user
-            pip3 install -r test-requirements.txt --user
-            sleep 180
-            python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
-            '
+        python:${{ matrix.python-version }} \
+        sh -c 'set -ex;
+          cd /home/workspace/client-python
+          pip3 install -r requirements.txt --user
+          pip3 install -r test-requirements.txt --user
+          sleep 180
+          python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+          '
 
+    - name: Run pycti example tests
+      run: |
+        docker run --network runner-docker-network \
+          --name pycti-example-tests \
+          -v ${{ github.workspace }}:/home/workspace \
+          -e OPENCTI_API_URL=http://opencti-pycti-start:4100 \
+          -e OPENCTI_API_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+        python:${{ matrix.python-version }} \
+        sh -c 'set -ex;
+          cd /home/workspace/client-python
+          pip3 install -r test-requirements.txt --user
+          pip3 install .
+          cd examples/
+          /bin/bash run_all.sh
+          '
 
     - name: Logs opencti-pycti-start
       if: always()

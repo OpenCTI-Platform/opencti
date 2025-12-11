@@ -280,6 +280,7 @@ steps:
       - client-test-311
 
   # always run the examples last since they don't clean up
+  # ---------> already done in Github Actions
   - name: pycti-example-tests
     image: python:3.12
     environment:
@@ -290,7 +291,7 @@ steps:
       - pip3 install -r requirements.txt --user
       - pip3 install .
       - cd examples/
-       - /bin/bash run_all.sh
+        - /bin/bash run_all.sh
     depends_on:
       - client-test-312
 
