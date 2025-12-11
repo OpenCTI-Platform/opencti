@@ -28,10 +28,14 @@ import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HOSTNAME,
+  ENTITY_ICCID,
+  ENTITY_IMEI,
+  ENTITY_IMSI,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
   ENTITY_MAC_ADDR,
   ENTITY_MEDIA_CONTENT,
+  ENTITY_PHONE_NUMBER,
   ENTITY_SOFTWARE,
   ENTITY_TEXT,
   ENTITY_URL,
@@ -1073,6 +1077,47 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
+  ],
+  // endregion
+  // region ICCID
+  [`${ENTITY_ICCID}_${ENTITY_IMEI}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_ICCID}_${ENTITY_IMSI}`]: [
+    { name: RELATION_HAS, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_ICCID}_${ENTITY_PHONE_NUMBER}`]: [
+    { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN }
+  ],
+  // endregion
+  // region IMEI
+  [`${ENTITY_IMEI}_${ENTITY_ICCID}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_IMEI}_${ENTITY_IMSI}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_IMEI}_${ENTITY_MAC_ADDR}`]: [
+    { name: RELATION_HAS, type: REL_BUILT_IN }
+  ],
+  // endregion
+  // region IMSI
+  [`${ENTITY_IMSI}_${ENTITY_IMEI}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_IMSI}_${ENTITY_ICCID}`]: [
+    { name: RELATION_HAS, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_IMSI}_${ENTITY_PHONE_NUMBER}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  // endregion
+  // region PHONE_NUMBER
+  [`${ENTITY_PHONE_NUMBER}_${ENTITY_IMSI}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_PHONE_NUMBER}_${ENTITY_ICCID}`]: [
+    { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN }
   ],
   // endregion
   // region IPV4_ADDR

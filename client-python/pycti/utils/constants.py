@@ -47,6 +47,9 @@ class StixCyberObservableTypes(Enum):
     SIMPLE_OBSERVABLE = "Simple-Observable"
     PERSONA = "Persona"
     SSH_KEY = "SSH-Key"
+    IMEI = "IMEI"
+    ICCID = "ICCID"
+    IMSI = "IMSI"
 
     @classmethod
     def has_value(cls, value: str) -> bool:
@@ -494,5 +497,65 @@ class CustomObservablePersona:
 )
 class CustomObservableCryptographicKey:
     """Cryptographic-Key observable."""
+
+    pass
+
+
+@CustomObservable(
+    "imei",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableIMEI:
+    """IMEI observable."""
+
+    pass
+
+
+@CustomObservable(
+    "iccid",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableICCID:
+    """ICCID observable."""
+
+    pass
+
+
+@CustomObservable(
+    "imsi",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableIMSI:
+    """IMSI observable."""
 
     pass

@@ -333,6 +333,54 @@ export interface StixPaymentCard extends StixCyberObject {
   }
 }
 
+// Custom object extension - IMEI
+// value
+export interface StixIMEI extends StixCyberObject {
+  value: string;
+  description: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+  }
+}
+
+// Custom object extension - ICCID
+// value
+export interface StixICCID extends StixCyberObject {
+  value: string;
+  description: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+  }
+}
+
+// Custom object extension - IMSI
+// value
+export interface StixIMSI extends StixCyberObject {
+  value: string;
+  description: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined,
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+  }
+}
+
 type StixExtendedObservable = StixCryptographicKey | StixHostname | StixText | StixUserAgent | StixEmailBodyMultipart | StixWindowsRegistryValueType;
 
 // IPv4 Address Object Specific Properties

@@ -312,6 +312,12 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             or type.lower() == "x-opencti-cryptographic-key"
         ):
             type = "Cryptographic-Key"
+        elif type.lower() == "imei" or type.lower() == "x-opencti-imei":
+            type = "IMEI"
+        elif type.lower() == "iccid" or type.lower() == "x-opencti-iccid":
+            type = "ICCID"
+        elif type.lower() == "imsi" or type.lower() == "x-opencti-imsi":
+            type = "IMSI"
         elif type.lower() == "text" or type.lower() == "x-opencti-text":
             type = "Text"
 
@@ -423,6 +429,9 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     $Persona: PersonaAddInput
                     $MediaContent: MediaContentAddInput
                     $SSHKey: SSHKeyAddInput
+                    $IMEI: IMEIAddInput
+                    $ICCID: ICCIDAddInput
+                    $IMSI: IMSIAddInput
                 ) {
                     stixCyberObservableAdd(
                         type: $type,
@@ -469,6 +478,9 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         Persona: $Persona
                         MediaContent: $MediaContent
                         SSHKey: $SSHKey
+                        IMEI: $IMEI
+                        ICCID: $ICCID
+                        IMSI: $IMSI
                     ) {
                         id
                         standard_id
@@ -1231,6 +1243,24 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 type == "Tracking-Number" or type.lower() == "x-opencti-tracking-number"
             ):
                 input_variables["TrackingNumber"] = {
+                    "value": (
+                        observable_data["value"] if "value" in observable_data else None
+                    ),
+                }
+            elif type == "IMEI" or type.lower() == "x-opencti-imei":
+                input_variables["IMEI"] = {
+                    "value": (
+                        observable_data["value"] if "value" in observable_data else None
+                    ),
+                }
+            elif type == "ICCID" or type.lower() == "x-opencti-iccid":
+                input_variables["ICCID"] = {
+                    "value": (
+                        observable_data["value"] if "value" in observable_data else None
+                    ),
+                }
+            elif type == "IMSI" or type.lower() == "x-opencti-imsi":
+                input_variables["IMSI"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),

@@ -146,6 +146,9 @@ export const macAddrChecker = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
 export const ipv4Checker = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
 export const cpeChecker = /^cpe:\/\/[a-zA-Z0-9_./:-]+|^cpe:\/[a-zA-Z0-9_./:-]+$/;
 export const fintelTemplateVariableNameChecker = /^[A-Za-z0-9_-]+$/;
+export const imeiChecker = /(^[0-9]{15,16})$/;
+export const iccidChecker = /(^[0-9]{18,22})$/;
+export const imsiChecker = /(^[0-9]{14,15})$/;
 
 export const checkObservableSyntax = (observableType, observableData) => {
   switch (observableType) {
@@ -191,6 +194,15 @@ export const checkObservableSyntax = (observableType, observableData) => {
       break;
     case C.ENTITY_SOFTWARE:
       if (!observableData.name && !cpeChecker.test(observableData.cpe) && !observableData.swid) return 'Valid Software attributes';
+      break;
+    case C.ENTITY_IMEI:
+      if (!imeiChecker.test(observableData.value)) return 'Valid IMEI';
+      break;
+    case C.ENTITY_ICCID:
+      if (!iccidChecker.test(observableData.value)) return 'Valid ICCID';
+      break;
+    case C.ENTITY_IMSI:
+      if (!imsiChecker.test(observableData.value)) return 'Valid IMSI';
       break;
     default:
       return true;

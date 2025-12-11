@@ -131,6 +131,9 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_MEDIA_CONTENT]: [{ src: 'url' }],
     [C.ENTITY_SSH_KEY]: [{ src: 'fingerprint_sha256' }],
     [C.ENTITY_PERSONA]: [{ src: 'persona_name' }, { src: 'persona_type' }],
+    [C.ENTITY_IMEI]: [{ src: 'value' }],
+    [C.ENTITY_ICCID]: [{ src: 'value' }],
+    [C.ENTITY_IMSI]: [{ src: 'value' }],
     // Types embedded
     [C.ENTITY_EMAIL_MIME_PART_TYPE]: [], // ALL
     [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [], // ALL

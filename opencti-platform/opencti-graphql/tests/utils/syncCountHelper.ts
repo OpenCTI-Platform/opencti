@@ -26,7 +26,10 @@ testCreatedCounter['external-reference'] = 17;
 testCreatedCounter.feedback = 1;
 testCreatedCounter.file = 10;
 testCreatedCounter.grouping = 1;
+testCreatedCounter.iccid = 1;
 testCreatedCounter.identity = 40;
+testCreatedCounter.imei = 1;
+testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 2;
 testCreatedCounter.indicator = 46;
 testCreatedCounter['intrusion-set'] = 3;
@@ -87,6 +90,9 @@ testUpdatedCounter.sighting = 4;
 testUpdatedCounter['threat-actor'] = 17;
 testUpdatedCounter.vocabulary = 3;
 testUpdatedCounter.vulnerability = 3;
+testUpdatedCounter.iccid = 1;
+testUpdatedCounter.imei = 1;
+testUpdatedCounter.imsi = 1;
 
 export const testMergedCounter: Record<string, number> = {};
 testMergedCounter['threat-actor'] = 1;
@@ -130,6 +136,9 @@ testDeletedCounter.tool = 2;
 testDeletedCounter.sighting = 1;
 testDeletedCounter.vulnerability = 1;
 testDeletedCounter['ssh-key'] = 1;
+testDeletedCounter.iccid = 1;
+testDeletedCounter.imei = 1;
+testDeletedCounter.imsi = 1;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);

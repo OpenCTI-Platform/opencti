@@ -263,6 +263,9 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'Email-Mime-Part-Type':
     case 'StixFile':
     case 'X509-Certificate':
+    case 'ICCID':
+    case 'IMEI':
+    case 'IMSI':  
     case 'IPv4-Addr':
     case 'IPv6-Addr':
     case 'Mac-Addr':
