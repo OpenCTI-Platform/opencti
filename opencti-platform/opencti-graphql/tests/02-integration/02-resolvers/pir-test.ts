@@ -7,15 +7,14 @@ import { SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById, pageEntitiesConnection, pageRelationsConnection } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
-import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../src/schema/general';
-import { LAST_PIR_SCORE_DATE_FILTER_PREFIX, PIR_SCORE_FILTER_PREFIX } from '../../../src/utils/filtering/filtering-constants';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { type BasicStoreRelationPir, ENTITY_TYPE_PIR } from '../../../src/modules/pir/pir-types';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { connectorsForWorker } from '../../../src/database/repository';
 import { pirRelationshipsDistribution, pirRelationshipsMultiTimeSeries } from '../../../src/modules/pir/pir-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { LAST_PIR_SCORE_DATE_FILTER, PIR_SCORE_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -406,17 +405,46 @@ describe('PIR resolver standard behavior', () => {
 
   it('should filter entities by a pir score', async () => {
     // return no entities if the pir id matches no PIR
-    const filtersWithFakePirId = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.fakeId}`, ['50'], 'gt');
+    const filtersWithFakePirId = {
+      mode: FilterMode.And,
+      filters: [{
+        key: [PIR_SCORE_FILTER],
+        values: [
+          { key: 'score', values: ['50'], operator: 'gt' },
+          { key: 'pir_ids', values: ['fakeId'] },
+        ],
+      }],
+      filterGroups: [],
+    };
     await expect(async () => {
       await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithFakePirId });
     }).rejects.toThrowError('No PIR found');
-    // return error if the filter key is not in a correct format
-    const filtersInIncorrectFormat = addFilter(undefined, PIR_SCORE_FILTER_PREFIX, ['50'], 'gt');
+    // return error if no pir id is provided
+    const filtersInIncorrectFormat = {
+      mode: FilterMode.And,
+      filters: [{
+        key: [PIR_SCORE_FILTER],
+        values: [
+          { key: 'score', values: ['50'], operator: 'gt' },
+        ],
+      }],
+      filterGroups: [],
+    };
     await expect(async () => {
       await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
-    }).rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
+    }).rejects.toThrowError('This filter should be related to at least 1 Pir');
     // return error if the pir is not accessible for the user
-    const filtersWithGtOperator = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.${pirInternalId1}`, ['50'], 'gt');
+    const filtersWithGtOperator = {
+      mode: FilterMode.And,
+      filters: [{
+        key: [PIR_SCORE_FILTER],
+        values: [
+          { key: 'score', values: ['50'], operator: 'gt' },
+          { key: 'pir_ids', values: [pirInternalId1] },
+        ],
+      }],
+      filterGroups: [],
+    };
     await expect(async () => {
       await pageEntitiesConnection(testContext, userUpdate, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
     }).rejects.toThrowError('Unauthorized Pir access');
@@ -425,38 +453,107 @@ describe('PIR resolver standard behavior', () => {
     expect(stixDomainObjects1.edges.length).toEqual(1);
     expect(stixDomainObjects1.edges[0].node.internal_id).toEqual(flaggedElementId);
     // fetch entities with a score < 50 for a given PIR
-    const filtersWithLtOperator = addFilter(undefined, `${PIR_SCORE_FILTER_PREFIX}.${pirInternalId1}`, ['50'], 'lt');
+    const filtersWithLtOperator = {
+      mode: FilterMode.And,
+      filters: [{
+        key: [PIR_SCORE_FILTER],
+        values: [
+          { key: 'score', values: ['50'], operator: 'lt' },
+          { key: 'pir_ids', values: [pirInternalId1] },
+        ],
+      }],
+      filterGroups: [],
+    };
     const stixDomainObjects2 = await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithLtOperator });
     expect(stixDomainObjects2.edges.length).toEqual(0);
   });
 
   it('should filter entities by last pir score date', async () => {
     // return no entities if the pir id matches no PIR
-    const filtersWithFakePirId = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.fakeId}`, [now().toString()], 'lt');
+    const filtersWithFakePirId = {
+      mode: FilterMode.And,
+      filters: [{
+        key: [LAST_PIR_SCORE_DATE_FILTER],
+        values: [
+          { key: 'date', values: [now().toString()], operator: 'lt' },
+          { key: 'pir_ids', values: ['fakeId'] },
+        ],
+      }],
+      filterGroups: [],
+    };
     await expect(async () => {
       await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithFakePirId });
     }).rejects.toThrowError('No PIR found');
-    // return error if the filter key is not in a correct format
-    const filtersInIncorrectFormat = addFilter(undefined, LAST_PIR_SCORE_DATE_FILTER_PREFIX, [now().toString()], 'lt');
+    // return error if no pir id is provided
+    const filtersInIncorrectFormat = {
+      mode: FilterMode.And,
+      filters: [{
+        key: [LAST_PIR_SCORE_DATE_FILTER],
+        values: [
+          { key: 'date', values: [now().toString()], operator: 'lt' },
+        ],
+      }],
+      filterGroups: [],
+    };
     await expect(async () => {
       await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersInIncorrectFormat });
-    }).rejects.toThrowError('The filter key should be followed by a dot and the Pir ID');
+    }).rejects.toThrowError('This filter should be related to at least 1 Pir');
     // fetch entities scored before now for the pir
-    const filtersWithGtOperator = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId1}`, [now().toString()], 'lt');
-    const stixDomainObjects1 = await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
+    const filtersWithLtOperator = {
+      mode: FilterMode.And,
+      filters: [{
+        key: [LAST_PIR_SCORE_DATE_FILTER],
+        values: [
+          { key: 'date', values: [now().toString()], operator: 'lt' },
+          { key: 'pir_ids', values: [pirInternalId1] },
+        ],
+      }],
+      filterGroups: [],
+    };
+    const stixDomainObjects1 = await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithLtOperator });
     expect(stixDomainObjects1.edges.length).toEqual(1);
     expect(stixDomainObjects1.edges[0].node.internal_id).toEqual(flaggedElementId);
     // fetch entities scored after now for the pir
-    const filtersWithLtOperator = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId1}`, [now().toString()], 'gt');
-    const stixDomainObjects2 = await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithLtOperator });
+    const filtersWithGtOperator = {
+      mode: FilterMode.And,
+      filters: [{
+        key: [LAST_PIR_SCORE_DATE_FILTER],
+        values: [
+          { key: 'date', values: [now().toString()], operator: 'gt' },
+          { key: 'pir_ids', values: [pirInternalId1] },
+        ],
+      }],
+      filterGroups: [],
+    };
+    const stixDomainObjects2 = await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithGtOperator });
     expect(stixDomainObjects2.edges.length).toEqual(0);
     // fetch entities scored today
-    const filtersWithinToday = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId1}`, ['now-1d', 'now'], 'within');
+    const filtersWithinToday = {
+      mode: FilterMode.And,
+      filters: [{
+        key: [LAST_PIR_SCORE_DATE_FILTER],
+        values: [
+          { key: 'date', values: ['now-1d', 'now'], operator: 'within' },
+          { key: 'pir_ids', values: [pirInternalId1] },
+        ],
+      }],
+      filterGroups: [],
+    };
     const stixDomainObjects3 = await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithinToday });
     expect(stixDomainObjects3.edges.length).toEqual(1);
     expect(stixDomainObjects3.edges[0].node.internal_id).toEqual(flaggedElementId);
     // fetch entities scored tomorrow
-    const filtersWithinTomorrow = addFilter(undefined, `${LAST_PIR_SCORE_DATE_FILTER_PREFIX}.${pirInternalId1}`, ['now', 'now+1d'], 'within');
+    const filtersWithinTomorrow = {
+      mode: FilterMode.And,
+      filters: [{
+        key: [LAST_PIR_SCORE_DATE_FILTER],
+        values: [
+          { key: 'date', values: ['now', 'now+1d'], operator: 'within' },
+          { key: 'pir_ids', values: [pirInternalId1] },
+        ],
+      }],
+      filterGroups: [],
+    };
     const stixDomainObjects4 = await pageEntitiesConnection(testContext, SYSTEM_USER, [ABSTRACT_STIX_DOMAIN_OBJECT], { filters: filtersWithinTomorrow });
     expect(stixDomainObjects4.edges.length).toEqual(0);
   });

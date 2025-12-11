@@ -23,7 +23,7 @@ import {
   PirKnowledgeEntitiesSourcesFlaggedListQuery$variables,
 } from './__generated__/PirKnowledgeEntitiesSourcesFlaggedListQuery.graphql';
 import { PirKnowledgeEntities_SourceFlaggedFragment$data } from './__generated__/PirKnowledgeEntities_SourceFlaggedFragment.graphql';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { formatFiltersInPirContext, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -176,7 +176,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       },
     ],
     filterGroups: filters && isFilterGroupNotEmpty(filters)
-      ? [filters]
+      ? [formatFiltersInPirContext(filters, pirId)]
       : [],
   };
   const queryPaginationOptions = {
@@ -262,7 +262,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
             return computeLink(e);
           }}
           additionalHeaderButtons={additionalHeaderButtons}
-          additionalFilterKeys={[`pir_score.${pirId}`, `last_pir_score_date.${pirId}`]}
+          additionalFilterKeys={['pir_score', 'last_pir_score_date']}
         />
       )}
     </>
