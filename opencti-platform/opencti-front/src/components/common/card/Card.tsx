@@ -1,11 +1,11 @@
-import { JSX, PropsWithChildren, ReactNode } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
 import { Stack, SxProps, Card as CardMui } from '@mui/material';
 import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';
 
 interface CardProps extends PropsWithChildren {
-  title?: JSX.Element
+  title?: ReactNode
   action?: ReactNode
   noPadding?: boolean
   sx?: SxProps

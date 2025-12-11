@@ -19,8 +19,8 @@ import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectsDonut from '@components/common/stix_core_objects/StixCoreObjectsDonut';
 import PirRelationshipsDonut from '@components/pir/PirRelationshipsDonut';
 import { PirOverviewTopSourcesFragment$key } from './__generated__/PirOverviewTopSourcesFragment.graphql';
-import Paper from '../../../../components/Paper';
 import { useFormatter } from '../../../../components/i18n';
+import Card from '../../../../components/common/card/Card';
 
 const topSourcesFragment = graphql`
   fragment PirOverviewTopSourcesFragment on Pir {
@@ -68,7 +68,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 6 }}>
-        <Paper title={t_i18n('Top authors of threat entities')}>
+        <Card title={t_i18n('Top authors of threat entities')}>
           <StixCoreObjectsDonut
             dataSelection={flaggedEntitiesTopSourcesDataSelection}
             variant="inLine"
@@ -78,10 +78,10 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
             isReadOnly
             withoutTitle
           />
-        </Paper>
+        </Card>
       </Grid>
       <Grid size={{ xs: 6 }}>
-        <Paper title={t_i18n('Top authors of relationships from threats')}>
+        <Card title={t_i18n('Top authors of relationships from threats')}>
           <PirRelationshipsDonut
             dataSelection={relationshipsTopSourcesDataSelection}
             variant="inLine"
@@ -91,7 +91,7 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
             isReadOnly
             withoutTitle
           />
-        </Paper>
+        </Card>
       </Grid>
     </Grid>
   );
