@@ -289,7 +289,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
         opts
       );
     }
-    throw FunctionalError('Cannot update url when payload_bin is present.');
+    throw FunctionalError('Cannot update url when payload_bin is present.', { stixCyberObservableId });
   } else if (isNotEmptyField(originalStixCyberObservable.url) && payloadBinInput) {
     if (isNotEmptyField(originalStixCyberObservable.payload_bin)) {
       await updateAttribute(
@@ -301,7 +301,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
         opts
       );
     }
-    throw FunctionalError('Cannot update payload_bin when url is present.');
+    throw FunctionalError('Cannot update payload_bin when url is present.', { stixCyberObservableId });
   }
   const { element: stixCyberObservable } = await updateAttribute(
     context,

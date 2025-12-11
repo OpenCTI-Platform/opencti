@@ -9,6 +9,8 @@ import { RootPositionQuery } from '@components/locations/positions/__generated__
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootPositionsSubscription } from '@components/locations/positions/__generated__/RootPositionsSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Position from './Position';
 import PositionKnowledge from './PositionKnowledge';
@@ -54,6 +56,7 @@ const positionQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Position_position
       ...PositionKnowledge_position
@@ -99,7 +102,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
   const paddingRight = getPaddingRight(location.pathname, positionId, '/dashboard/locations/positions');
 
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {position ? (
         <>
           <Routes>
@@ -142,6 +145,13 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <PositionEdition positionId={position.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={position}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -286,7 +296,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {

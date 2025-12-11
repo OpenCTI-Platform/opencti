@@ -101,6 +101,9 @@ const settingsOrganizationFragment = graphql`
             capabilities {
               name
             }
+            capabilitiesInDraft {
+              name
+            }
           }
         }
       }

@@ -68,9 +68,8 @@ const RootDashboard = () => {
                     element={
                       <Dashboard
                         data={props.workspace}
-                        settings={props.settings}
                       />
-                        }
+                    }
                   />
                 </Routes>
               );

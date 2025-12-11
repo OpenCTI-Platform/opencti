@@ -1,33 +1,31 @@
-import type { AuthContext, AuthUser } from '../../types/user';
+import { BUS_TOPICS, logApp } from '../../config/conf';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
+import { buildUpdateFieldPatch } from '../../database/draft-utils';
+import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } from '../../database/engine';
+import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
+import { pushToWorkerForConnector } from '../../database/rabbitmq';
+import { notify } from '../../database/redis';
+import { buildStixBundle } from '../../database/stix-2-1-converter';
+import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
   type DraftWorkspaceAddInput,
   FilterMode,
+  FilterOperator,
+  type MemberAccessInput,
   type QueryDraftWorkspaceEntitiesArgs,
   type QueryDraftWorkspaceRelationshipsArgs,
   type QueryDraftWorkspacesArgs,
   type QueryDraftWorkspaceSightingRelationshipsArgs
 } from '../../generated/graphql';
-import { now } from '../../utils/format';
-import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from './draftWorkspace-types';
-import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
-import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../../database/middleware';
-import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
+import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
-import { isStixCoreObject } from '../../schema/stixCoreObject';
-import { BUS_TOPICS, logApp } from '../../config/conf';
-import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
-import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } from '../../database/engine';
-import { buildStixBundle } from '../../database/stix-2-1-converter';
-import { pushToWorkerForConnector } from '../../database/rabbitmq';
-import { SYSTEM_USER } from '../../utils/access';
-import { buildUpdateFieldPatch } from '../../database/draft-utils';
-import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
-import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
+import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
@@ -36,10 +34,17 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { deleteAllDraftFiles } from '../../database/file-storage';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { getUserAccessRight, SYSTEM_USER } from '../../utils/access';
+import { editAuthorizedMembers } from '../../utils/authorizedMembers';
+import { getDraftContext } from '../../utils/draftContext';
+import { addFilter } from '../../utils/filtering/filtering-utils';
+import { now } from '../../utils/format';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
-import { notify } from '../../database/redis';
-import { publishUserAction } from '../../listener/UserActionListener';
-import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
+import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
+import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from './draftWorkspace-types';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -47,6 +52,16 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findDraftWorkspacePaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
+};
+
+export const findDraftWorkspaceRestrictedPaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
+  const filters = addFilter(args.filters, `${authorizedMembers.name}.id`, [], FilterOperator.NotNil);
+
+  return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
+    ...args,
+    includeAuthorities: true,
+    filters,
+  });
 };
 
 export const getObjectsCount = async (context: AuthContext, user: AuthUser, draft: BasicStoreEntityDraftWorkspace) => {
@@ -136,6 +151,14 @@ export const getProcessingCount = async (context: AuthContext, user: AuthUser, d
   return draftIncompleteTasksCount + draftIncompleteWorksCount;
 };
 
+export const getCurrentUserAccessRight = async (
+  context: AuthContext,
+  user: AuthUser,
+  draft: BasicStoreEntityDraftWorkspace,
+) => {
+  return getUserAccessRight(user, draft);
+};
+
 export const listDraftObjects = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
   let types: string[] = [];
   const { draftId, ...listArgs } = args;
@@ -207,6 +230,23 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].ADDED_TOPIC, createdDraftWorkspace, user);
+};
+
+export const draftWorkspaceEditAuthorizedMembers = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspaceId: string,
+  input: MemberAccessInput[] | undefined | null,
+) => {
+  const args = {
+    entityId: workspaceId,
+    input,
+    requiredCapabilities: ['EXPLORE_EXUPDATE_EXDELETE'],
+    entityType: ENTITY_TYPE_DRAFT_WORKSPACE,
+    busTopicKey: ENTITY_TYPE_DRAFT_WORKSPACE,
+  };
+  // @ts-expect-error TODO improve busTopicKey types to avoid this
+  return editAuthorizedMembers(context, user, args);
 };
 
 const findAllUsersWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {

@@ -115,17 +115,7 @@ import {
   isStixCyberObservable
 } from '../schema/stixCyberObservable';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-2-1-extensions';
-import {
-  INPUT_ASSIGNEE,
-  INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
-  INPUT_GRANTED_REFS,
-  INPUT_IN_PIR,
-  INPUT_KILLCHAIN,
-  INPUT_LABELS,
-  INPUT_MARKINGS,
-  INPUT_PARTICIPANT
-} from '../schema/general';
+import { INPUT_ASSIGNEE, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_PARTICIPANT } from '../schema/general';
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
@@ -208,7 +198,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     workflow_id: instance.x_opencti_workflow_id,
     labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id).filter((id) => isNotEmptyField(id)),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
-    pir_refs_ids: (instance[INPUT_IN_PIR] ?? []).map((m) => m.internal_id),
+    pir_information: instance.pir_information ?? [],
     metrics: instance.metrics ?? []
   };
   return cleanObject(octiExtensions);

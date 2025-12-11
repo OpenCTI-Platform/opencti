@@ -76,11 +76,11 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
-import { extractEntityRepresentativeName } from '../database/entity-representative';
+import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
 import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
-import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
+import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator } from '../generated/graphql';
@@ -110,6 +110,7 @@ import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
+import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -162,6 +163,56 @@ export const globalSearchPaginated = async (context, user, args) => {
   const context_data = { input: args, search: args.search };
   await publishUserAction({ user, event_type: 'command', event_scope: 'search', event_access: 'extended', context_data });
   return findStixCoreObjectPaginated(context, user, args);
+};
+
+export const findUnknownStixCoreObjects = async (context, user, args) => {
+  const { values: inputValues, orderBy, orderMode } = args;
+  if (inputValues.length === 0) {
+    return [];
+  }
+  const values = [...new Set(inputValues)]; // uniq values only
+  const filters = {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', values: [ABSTRACT_STIX_CORE_OBJECT] },
+      { key: BULK_SEARCH_KEYWORDS_FILTER, values },
+    ],
+    filterGroups: [],
+  };
+  const knownScos = await globalSearchPaginated(context, user, { filters, first: 5000 });
+  const knownNodes = knownScos.edges.map((n) => n.node) ?? [];
+
+  const isStixObjectMatchWithSearchValue = (stixObject, value) => {
+    const representativeMatch = value.toLowerCase() === extractRepresentative(stixObject).main.toLowerCase();
+    if (!representativeMatch) {
+      // try to find in hashes
+      if (stixObject.hashes) {
+        const hashMatch = Object.values(stixObject.hashes).filter((h) => !!h).some((h) => h === value);
+        if (hashMatch) return hashMatch;
+      }
+      // try to find in attributes of bulk search filter
+      return BULK_SEARCH_KEYWORDS_FILTER_KEYS.some((key) => {
+        const stixObjectValue = stixObject[key];
+        if (!stixObjectValue) return false;
+        return Array.isArray(stixObjectValue)
+          ? stixObjectValue.includes(value)
+          : stixObjectValue === value;
+      });
+    }
+    return representativeMatch;
+  };
+
+  // post filtering
+  const unknownValues = values.filter((value) => {
+    const resolvedScos = knownNodes.filter((o) => isStixObjectMatchWithSearchValue(o, value)) ?? [];
+    return resolvedScos.length === 0;
+  });
+  // order unknown values
+  if (orderBy && orderBy === 'value') {
+    const orderFactor = orderMode === 'desc' ? -1 : 1;
+    return unknownValues.sort((a, b) => orderFactor * a.localeCompare(b));
+  }
+  return unknownValues;
 };
 
 export const findStixCoreObjectRestrictedPaginated = async (context, user, args) => {
@@ -302,7 +353,7 @@ export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObject
 export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
   const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
-    throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
+    throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.', { stixCoreObjectId });
   }
   await deleteElementById(context, user, stixCoreObjectId, stixCoreObject.entity_type);
   return stixCoreObjectId;
@@ -311,7 +362,7 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
 export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjectId) => {
   const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT, { includeDeletedInDraft: true });
   if (!stixCoreObject) {
-    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Object cannot be found.');
+    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Object cannot be found.', { stixCoreObjectId });
   }
   // TODO currently not locked, but might need to be
   await elRemoveElementFromDraft(context, user, stixCoreObject);
@@ -322,7 +373,7 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
   const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
   const element = await storeLoadByIdWithRefs(context, user, enrichedId);
   if (!element) {
-    throw FunctionalError('Cannot enrich the object, element cannot be found.');
+    throw FunctionalError('Cannot enrich the object, element cannot be found.', { enrichedId });
   }
   // If we are in a draft, specify it in work message and send draft_id in message
   const draftContext = getDraftContext(context, user);
@@ -785,7 +836,9 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
   }
   // check entity access
-  if (!validateUserAccessOperation(user, previous, 'edit')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, previous, AccessOperation.EDIT, draft)) {
     throw ForbiddenAccess();
   }
   const participantIds = getInstanceIds(previous);
@@ -928,7 +981,9 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     throw UnsupportedError('Cant delete a file of none existing element', { entityId });
   }
   // check entity access
-  if (!validateUserAccessOperation(user, previous, 'edit')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, previous, AccessOperation.EDIT, draft)) {
     throw ForbiddenAccess();
   }
   let lock;

@@ -248,6 +248,25 @@ export const files: AttributeDefinition = {
   ]
 };
 
+export const changes: AttributeDefinition = {
+  name: 'changes',
+  label: 'Detail changes',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: false,
+  isFilterable: false,
+  mappings: [
+    { name: 'field', label: 'Field', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: true, upsert: true, isFilterable: false },
+    { name: 'added', label: 'Added value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'removed', label: 'Removed value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'previous', label: 'Previous value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'new', label: 'New value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+  ]
+};
+
 export const authorizedMembers: AttributeDefinition = {
   name: 'restricted_members',
   label: 'Authorized members',

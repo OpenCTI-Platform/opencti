@@ -1,6 +1,5 @@
 import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import useHelper from '../../../utils/hooks/useHelper';
 import { boundaryWrapper } from '../Error';
 import useGranted, {
   AUTOMATION_AUTMANAGE,
@@ -40,12 +39,9 @@ const IngestionCatalogConnector = lazy(() => import('./IngestionCatalog/Ingestio
 const Playbooks = lazy(() => import('./Playbooks'));
 const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
-const Management = lazy(() => import('./Management'));
+const Management = lazy(() => import('./restriction/Root'));
 
 const Root = () => {
-  const { isFeatureEnable } = useHelper();
-  const isRightMenuManagementEnable = isFeatureEnable('DATA_MANAGEMENT_RIGHT_MENU');
-
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
@@ -239,12 +235,6 @@ const Root = () => {
             </Security>
           }
         />
-        {isRightMenuManagementEnable && (
-        <Route
-          path="/restriction"
-          element={<Navigate to="/dashboard/data/restriction/restricted" replace={true} />}
-        />
-        )}
         <Route
           path="/restriction/*"
           element={boundaryWrapper(Management)}

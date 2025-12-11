@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import { useFormatter } from '../../../../components/i18n';
 import { Role_role$data, Role_role$key } from './__generated__/Role_role.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -19,6 +20,7 @@ import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import type { Theme } from '../../../../components/Theme';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -34,6 +36,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginTop: theme.spacing(1),
     padding: '15px',
     borderRadius: 4,
+    height: 'auto',
   },
 }));
 
@@ -46,6 +49,11 @@ const roleFragment = graphql`
     created_at
     updated_at
     capabilities {
+      id
+      name
+      description
+    }
+    capabilitiesInDraft {
       id
       name
       description
@@ -63,6 +71,8 @@ const Role = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isCapabilitiesInDraftEnabled = isFeatureEnable('CAPABILITIES_IN_DRAFT');
 
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
@@ -84,7 +94,7 @@ const Role = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
@@ -123,21 +133,42 @@ const Role = ({
             </Grid>
           </Paper>
         </Grid>
-        <Grid item xs={6}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Capabilities')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            <Grid container={true} spacing={3}>
-              <Grid item xs={12} style={{ paddingTop: 10 }}>
-                {queryRef && (
-                  <React.Suspense>
-                    <CapabilitiesList queryRef={queryRef} role={role} />
-                  </React.Suspense>
-                )}
+        <Grid container={true} item xs={12} spacing={3}>
+          <Grid item xs={6}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t_i18n('Capabilities')}
+            </Typography>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
+              <Grid container={true} spacing={3}>
+                <Grid item xs={12} style={{ paddingTop: 10 }}>
+                  {queryRef && (
+                    <React.Suspense>
+                      <CapabilitiesList queryRef={queryRef} role={role} />
+                    </React.Suspense>
+                  )}
+                </Grid>
               </Grid>
+            </Paper>
+          </Grid>
+          {isCapabilitiesInDraftEnabled &&
+            <Grid item xs={6}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t_i18n('Capabilities in Draft')}
+                <EEChip feature={t_i18n('Capabilities in Draft')} />
+              </Typography>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
+                <Grid container={true} spacing={3}>
+                  <Grid item xs={12} style={{ paddingTop: 10 }}>
+                    {queryRef && (
+                      <React.Suspense>
+                        <CapabilitiesList queryRef={queryRef} role={role} isCapabilitiesInDraft />
+                      </React.Suspense>
+                    )}
+                  </Grid>
+                </Grid>
+              </Paper>
             </Grid>
-          </Paper>
+          }
         </Grid>
       </Grid>
     </div>

@@ -4,8 +4,10 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import RoleEditionOverview from './RoleEditionOverview';
 import RoleEditionCapabilities, { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -13,6 +15,7 @@ import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEdi
 import { RoleEdition_role$key } from './__generated__/RoleEdition_role.graphql';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import { RootRoleEditionQuery$data } from './__generated__/RootRoleEditionQuery.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const RoleEditionFragment = graphql`
   fragment RoleEdition_role on Role {
@@ -41,9 +44,12 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isCapabilitiesInDraftEnabled = isFeatureEnable('CAPABILITIES_IN_DRAFT');
   const [currentTab, setCurrentTab] = useState(0);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(roleEditionCapabilitiesLinesSearch);
   const role = useFragment<RoleEdition_role$key>(RoleEditionFragment, roleRef);
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const UpdateRoleControlledDial = (props: DrawerControlledDialProps) => (
     <EditEntityControlledDial
@@ -67,11 +73,25 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
           <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
             <Tab label={t_i18n('Overview')} />
             <Tab label={t_i18n('Capabilities')} />
+            {isCapabilitiesInDraftEnabled &&
+              <Tab
+                disabled={!isEnterpriseEdition}
+                label={
+                  <Box>
+                    {t_i18n('Capabilities in Draft')}
+                    <EEChip clickable={false} />
+                  </Box>
+                }
+              />
+            }
           </Tabs>
         </Box>
         {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
         {currentTab === 1 && queryRef && (
           <RoleEditionCapabilities role={role} queryRef={queryRef} />
+        )}
+        {currentTab === 2 && queryRef && (
+          <RoleEditionCapabilities role={role} queryRef={queryRef} isCapabilitiesInDraft />
         )}
       </>)
         : (<Loader />)}

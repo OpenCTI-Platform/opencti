@@ -45,12 +45,12 @@ import {
 import {
   elAggregationCount,
   elAggregationRelationsCount,
+  elConnection,
   elDeleteElements,
   elFindByIds,
   elHistogramCount,
   elIndexElements,
   elList,
-  elConnection,
   elMarkElementsAsDraftDelete,
   elPaginate,
   elUpdateElement,
@@ -155,6 +155,7 @@ import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepare
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
+  AccessOperation,
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
@@ -179,13 +180,13 @@ import {
   buildAggregationRelationFilter,
   buildEntityFilters,
   buildThingsFilters,
+  fullEntitiesThroughRelationsToList,
+  fullRelationsList,
   internalFindByIds,
   internalLoadById,
-  fullRelationsList,
-  fullEntitiesThroughRelationsToList,
+  storeLoadById,
   topEntitiesList,
-  topRelationsList,
-  storeLoadById
+  topRelationsList
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
@@ -199,7 +200,7 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, MAX_OPERATIONS_FOR_MESSAGE, MAX_PATCH_ELEMENTS_FOR_MESSAGE } from './generate-message';
+import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, getKeyName, getKeyValuesFromPatchElements } from './generate-message';
 import {
   authorizedMembers,
   authorizedMembersActivationDate,
@@ -223,7 +224,7 @@ import {
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
-import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage, storeFileConverter } from './file-storage';
+import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
@@ -238,7 +239,8 @@ import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
 import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
-import {ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED} from '../modules/securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -645,7 +647,7 @@ export const timeSeriesRelations = async (context, user, args) => {
 export const distributionHistory = async (context, user, types, args) => {
   const { limit = 10, order = 'desc', field } = args;
   if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
-    throw FunctionalError('Distribution entities does not support relation aggregation field');
+    throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
   }
   let finalField = field;
   if (field.includes('.') && !field.includes('context_data') && !field.includes('opinions_metrics')) {
@@ -684,7 +686,7 @@ export const distributionEntities = async (context, user, types, args) => {
     && !field.endsWith('internal_id')
     && !field.includes('opinions_metrics');
   if (aggregationNotSupported) {
-    throw FunctionalError('Distribution entities does not support relation aggregation field');
+    throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
   }
   let finalField = field;
   if (field.includes('.') && !field.includes('opinions_metrics')) {
@@ -776,7 +778,7 @@ export const validateCreatedBy = async (context, user, createdById) => {
   }
 };
 
-const inputResolveRefs = async (context, user, input, type, entitySetting) => {
+export const inputResolveRefs = async (context, user, input, type, entitySetting) => {
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map();
     const expectedIds = [];
@@ -973,7 +975,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const inputCreatedBy = inputResolved[INPUT_CREATED_BY];
     if (inputCreatedBy) {
       if (!isStixDomainObjectIdentity(inputCreatedBy.entity_type)) {
-        throw FunctionalError('CreatedBy relation must be an Identity entity');
+        throw FunctionalError('CreatedBy relation must be an Identity entity', { entityType: inputCreatedBy.entity_type });
       }
     }
     return inputResolved;
@@ -1446,7 +1448,6 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       const groupedAddOperations = R.groupBy((s) => s.relationType, addOperations);
       const operations = Object.entries(groupedAddOperations)
         .map(([key, vals]) => {
-           
           const { _index, entity_type } = R.head(vals);
           const ids = vals.map((v) => v.data.internal_id);
           return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
@@ -1517,7 +1518,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
       updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
     }
   }
-   
+
   const data = await updateAttributeRaw(context, user, targetEntity, updateAttributes);
   const { impactedInputs } = data;
   // region Update elasticsearch
@@ -2017,13 +2018,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   };
 };
 
-const getKeyValuesFromPatchElements = (patchElements, keyName) => {
-  return patchElements.slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).flatMap(([,operations]) => {
-    return operations.slice(0, MAX_OPERATIONS_FOR_MESSAGE).flatMap(({ key, value }) => {
-      return key === keyName ? (value ?? []) : [];
-    });
-  });
-};
 export const generateUpdateMessage = async (context, user, entityType, inputs) => {
   const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
   const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
@@ -2065,6 +2059,84 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
 
+const buildAttribute = (array) => {
+  return array.map((item) => (typeof item === 'object' ? (item && extractEntityRepresentativeName(item, 250)): item))
+  .filter((item) => item !== null && item !== undefined);
+};
+
+export const buildChanges = async (context, user, entityType, inputs) => {
+  const changes = [];
+  for (const input of inputs) {
+    const { key, previous, value, operation } = input;
+    if (!key) continue;
+    const field = getKeyName(entityType, key);
+    const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
+    const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
+    let isMultiple = false;
+    if (attributeDefinition) {
+      isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
+    } else if (relationsRefDefinition) {
+      isMultiple = relationsRefDefinition.multiple;
+    }
+
+    const previousArrayFull = Array.isArray(previous) ? previous : [previous];
+    const valueArrayFull = Array.isArray(value) ? value : [value];
+    const previousArray = buildAttribute(previousArrayFull);
+    const valueArray = buildAttribute(valueArrayFull);
+
+    if (isMultiple) {
+      let added  = [];
+      let removed = [];
+      let newValues = [];
+      if(operation === UPDATE_OPERATION_ADD){
+        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+        newValues = previousArray.concat(valueArray);
+      } else if(operation === UPDATE_OPERATION_REMOVE){
+        removed = valueArray;
+        newValues = previousArray.filter((valueItem) => !valueArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+      } else{
+        // UPDATE_OPERATION_REPLACE or no operation is the same
+        removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+        newValues = valueArray;
+      }
+
+      if (added.length > 0 || removed.length > 0) {
+        changes.push({
+          field,
+          previous: previousArray,
+          new: newValues,
+          added,
+          removed,
+        });
+      }
+    }
+    else if (isMultiple === false) {
+      const isStatusChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
+      const platformStatuses = isStatusChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
+      const resolvedValue = (array) => {
+        if (field === 'Workflow status') {
+          // we want the status name and not its internal id
+          const statusId = array[0];
+          const status = statusId ? platformStatuses.find((p) => p.id === statusId) : statusId;
+          return status ? [status.name] : null;
+        }
+        return array;
+      };
+
+      changes.push({
+        field,
+        previous: resolvedValue(previousArray),
+        new: resolvedValue(valueArray),
+      });
+    } else {
+      // This should not happen so better at least log at info level to be able to debug.
+      logApp.info('Changes cannot be computed', {inputs, entityType});
+    }
+  }
+  return changes;
+};
+
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
@@ -2080,16 +2152,16 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !bypassIndividualUpdate) {
     const isIndividualUser = await isIndividualAssociatedToUser(context, initial);
     if (isIndividualUser) {
-      throw FunctionalError('Cannot update an individual corresponding to a user');
+      throw FunctionalError('Cannot update an individual corresponding to a user', { id: initial.internal_id });
     }
   }
   if (updates.length === 0) {
     return { element: initial };
   }
   // Check user access update
-  let accessOperation = 'edit';
+  let accessOperation = AccessOperation.EDIT;
   if (updates.some((e) => e.key === authorizedMembers.name)) {
-    accessOperation = 'manage-access';
+    accessOperation = AccessOperation.MANAGE_ACCESS;
     if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
       && (!initial.restricted_members || initial.restricted_members.length === 0)
       && updates.some((e) => e.key === authorizedMembers.name && e.value?.length > 0)) {
@@ -2109,9 +2181,11 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
 
   if (updates.some((e) => e.key === 'authorized_authorities')) {
-    accessOperation = 'manage-authorities-access';
+    accessOperation = AccessOperation.MANAGE_AUTHORITIES_ACCESS;
   }
-  if (!validateUserAccessOperation(user, initial, accessOperation)) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, initial, accessOperation, draft)) {
     throw ForbiddenAccess();
   }
   // Split attributes and meta
@@ -2405,6 +2479,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
       const message = await generateUpdateMessage(context, user, updatedInstance.entity_type, updatedInputs);
+      const changes = await buildChanges(context, user, updatedInstance.entity_type, updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -2418,6 +2493,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         initial,
         updatedInstance,
         message,
+        changes,
         {
           ...opts,
           commit,
@@ -2733,6 +2809,21 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
     }
   }
+
+  // If a decay exclusion rule is already applied, we must not apply a new decay rule or a new decay exclusion rule
+  if (resolvedElement.decay_exclusion_applied_rule) {
+    if (basePatch.decay_applied_rule) {
+      delete basePatch.decay_next_reaction_date;
+      delete basePatch.decay_base_score;
+      delete basePatch.decay_base_score_date;
+      delete basePatch.decay_applied_rule;
+      delete basePatch.decay_history;
+    }
+    if (basePatch.decay_exclusion_applied_rule) {
+      delete basePatch.decay_exclusion_applied_rule;
+    }
+  }
+
   const confidenceForUpsert = controlUpsertInputWithUserConfidence(user, basePatch, resolvedElement);
 
   const updatePatch = buildUpdatePatchForUpsert(user, resolvedElement, type, basePatch, confidenceForUpsert);
@@ -2834,7 +2925,11 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   }
 
   // check if user has "edit" access on from and to
-  if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  const canEditFrom = validateUserAccessOperation(user, from, AccessOperation.EDIT, draft);
+  const canEditTo = validateUserAccessOperation(user, to, AccessOperation.EDIT, draft);
+  if (!canEditFrom || !canEditTo) {
     throw ForbiddenAccess();
   }
 
@@ -3002,7 +3097,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
     fromRule: ruleContent.field,
     bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
   };
-   
+
   const { fromId, toId, relationship_type } = input;
   // In some cases, we can try to create with the same from and to, ignore
   if (fromId === toId) {
@@ -3060,9 +3155,16 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   }
   delete input.authorized_members; // always remove authorized_members input, even if empty
   // endregion
+
+  // validate user access to create the entity in draft
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, input, AccessOperation.EDIT, draft)) {
+    throw ForbiddenAccess();
+  }
   // validate authorized members access (when creating a new entity with authorized members)
   if (input.restricted_members?.length > 0) {
-    if (!validateUserAccessOperation(user, input, 'manage-access')) {
+    if (!validateUserAccessOperation(user, input, AccessOperation.MANAGE_ACCESS, draft)) {
       throw ForbiddenAccess();
     }
     if (schemaAttributesDefinition.getAttribute(type, authorizedMembersActivationDate.name)) {
@@ -3324,7 +3426,13 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
     throw AlreadyDeletedError({ id });
   }
 
-  if (getDraftContext(context, user)) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, element, AccessOperation.DELETE, draft)) {
+    throw ForbiddenAccess();
+  }
+
+  if (draftId) {
     return draftInternalDeleteElement(context, user, element);
   }
   // region confidence control
@@ -3343,9 +3451,6 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   // Prevent organization deletion if platform orga or has members
   if (element.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
     await verifyCanDeleteOrganization(context, user, element);
-  }
-  if (!validateUserAccessOperation(user, element, 'delete')) {
-    throw ForbiddenAccess();
   }
   // Check inference operation
   checkIfInferenceOperationIsValid(user, element);
@@ -3490,7 +3595,11 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
 export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, relationshipType, scopeType, opts = {}) => {
   //* v8 ignore if */
   if (R.isNil(scopeType) || R.isNil(fromId) || R.isNil(toId)) {
-    throw FunctionalError('You need to specify a scope type when deleting a relation with from and to');
+    throw FunctionalError('You need to specify a scope type and both IDs when deleting a relation with from and to', {
+      type: scopeType,
+      from: fromId,
+      to: toId
+    });
   }
   const fromThing = await internalLoadById(context, user, fromId, opts);
   // Check mandatory attribute
@@ -3503,7 +3612,12 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
     }
   }
   const toThing = await internalLoadById(context, user, toId, opts);// check if user has "edit" access on from and to
-  if (!validateUserAccessOperation(user, fromThing, 'edit') || !validateUserAccessOperation(user, toThing, 'edit')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  const canEditFrom = validateUserAccessOperation(user, fromThing, AccessOperation.EDIT, draft);
+  const canEditTo = validateUserAccessOperation(user, toThing, AccessOperation.EDIT, draft);
+
+  if (!canEditFrom || !canEditTo) {
     throw ForbiddenAccess();
   }
   // Looks like the caller doesn't give the correct from, to currently

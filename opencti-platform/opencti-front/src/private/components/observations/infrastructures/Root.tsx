@@ -11,6 +11,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
@@ -57,6 +59,7 @@ const infrastructureQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...Infrastructure_infrastructure
       ...InfrastructureKnowledge_infrastructure
       ...FileImportViewer_entity
@@ -96,10 +99,11 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
     return 0;
   };
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {infrastructure ? (
         <div
           style={{ paddingRight: paddingRightValue() }}
+          data-testid="infrastructure-details-page"
         >
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
@@ -113,6 +117,13 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             EditComponent={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <InfrastructureEdition infrastructureId={infrastructure.id} />
+              </Security>
+            )}
+            RelateComponent={(
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCoreRelationshipCreationFromEntityHeader
+                  data={infrastructure}
+                />
               </Security>
             )}
             DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -226,7 +237,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
       ) : (
         <ErrorNotFound/>
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

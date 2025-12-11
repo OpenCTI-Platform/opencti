@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
-import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
+import { createEntity, createRelation, distributionEntities, inputResolveRefs, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
@@ -56,6 +56,8 @@ import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
+import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
+import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
@@ -271,23 +273,45 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
   checkScore(indicatorBaseScore);
 
-  const isDecayActivated: boolean = await isDecayEnabled();
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
+
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
-  const indicatorToCreate = R.pipe(
-    R.dissoc('createObservables'),
-    R.dissoc('basedOn'),
-    R.assoc('pattern', formattedPattern),
-    R.assoc('x_opencti_main_observable_type', observableType),
-    R.assoc(X_SCORE, indicatorBaseScore),
-    R.assoc('x_opencti_detection', indicator.x_opencti_detection ?? false),
-    R.assoc('valid_from', validFrom.toISOString()),
-    R.assoc('valid_until', validUntil.toISOString()),
-    R.assoc('revoked', revoked),
-  )(indicator);
+
+  const baseIndicator = {
+    ...indicator,
+    pattern: formattedPattern,
+    x_opencti_main_observable_type: observableType,
+    [X_SCORE]: indicatorBaseScore,
+    x_opencti_detection: indicator.x_opencti_detection ?? false,
+    valid_from: validFrom.toISOString(),
+    valid_until: validUntil.toISOString(),
+    revoked,
+  };
+  delete baseIndicator.basedOn;
+  delete baseIndicator.createObservables;
+
+  const isDecayActivated: boolean = await isDecayEnabled();
+
+  const activeDecayExclusionRuleList = await getActiveDecayExclusionRules(context, user);
+  const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
+  const resolvedIndicator = await inputResolveRefs(context, user, baseIndicator, ENTITY_TYPE_INDICATOR, entitySetting);
+  const exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
+  const indicatorToCreate = { ...resolvedIndicator };
+
   let finalIndicatorToCreate;
-  if (isDecayActivated && !revoked) {
+
+  if (isDecayActivated && exclusionRule) {
+    finalIndicatorToCreate = {
+      ...indicatorToCreate,
+      decay_exclusion_applied_rule: {
+        decay_exclusion_id: exclusionRule.id,
+        decay_exclusion_name: exclusionRule.name,
+        decay_exclusion_created_at: exclusionRule.created_at,
+        decay_exclusion_filters: exclusionRule.decay_exclusion_filters,
+      }
+    };
+  } else if (isDecayActivated && !revoked) {
     const indicatorDecayRule = {
       decay_rule_id: decayRule.id,
       decay_lifetime: decayRule.decay_lifetime,
@@ -315,6 +339,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   } else {
     finalIndicatorToCreate = { ...indicatorToCreate };
   }
+
   // create the linked observables
   let observablesToLink: string[] = [];
   if (indicator.basedOn) {
@@ -392,7 +417,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   // Region Validation
   const indicatorBeforeUpdate = await findById(context, user, id);
   if (!indicatorBeforeUpdate) {
-    throw FunctionalError('Cannot edit the field, Indicator cannot be found.');
+    throw FunctionalError('Cannot edit the field, Indicator cannot be found.', { id });
   }
   // validation check because according to STIX 2.1 specification the valid_until must be greater than the valid_from
   let { valid_from, valid_until } = indicatorBeforeUpdate;

@@ -496,6 +496,13 @@ type LogEdge {
   cursor: String!
   node: Log!
 }
+type Change {
+  field: String!
+  previous: [String!]
+  new: [String!]
+  added: [String!]
+  removed: [String!]
+}
 type ContextData {
   entity_id: String
   entity_name: String
@@ -509,6 +516,7 @@ type ContextData {
   pir_ids: [String!] @auth(for: [PIRAPI])
   pir_score: Int @auth(for: [PIRAPI])
   pir_match_from: Boolean @auth(for: [PIRAPI])
+  changes: [Change]
 }
 type Log {
   id: ID!
@@ -1371,36 +1379,29 @@ type PublicProvider {
     provider: String!
 }
 
-interface ThemeSettings {
-    platform_title: String
-    platform_favicon: String
-    platform_theme: String
-    platform_theme_dark_background: String
-    platform_theme_dark_paper: String
-    platform_theme_dark_nav: String
-    platform_theme_dark_primary: String
-    platform_theme_dark_secondary: String
-    platform_theme_dark_accent: String
-    platform_theme_dark_logo: String
-    platform_theme_dark_logo_collapsed: String
-    platform_theme_dark_logo_login: String
-    platform_theme_light_background: String
-    platform_theme_light_paper: String
-    platform_theme_light_nav: String
-    platform_theme_light_primary: String
-    platform_theme_light_secondary: String
-    platform_theme_light_accent: String
-    platform_theme_light_logo: String
-    platform_theme_light_logo_collapsed: String
-    platform_theme_light_logo_login: String
-}
-
 interface IntlSettings {
     platform_language: String
     platform_translations: String
 }
 
-type PublicSettings implements ThemeSettings & IntlSettings {
+type MetricAttributes {
+  attribute: String!
+  name: String!
+  description: String
+}
+
+type MetricDefinition {
+  entity_type: String!
+  metrics: [MetricAttributes!]
+}
+
+interface ThemeSettings {
+  platform_title: String
+  platform_favicon: String
+  platform_theme: Theme
+}
+
+type PublicSettings implements IntlSettings & ThemeSettings {
     id: ID!
     platform_title: String
     platform_favicon: String
@@ -1409,31 +1410,12 @@ type PublicSettings implements ThemeSettings & IntlSettings {
     platform_consent_confirm_text: String
     platform_banner_text: String
     platform_banner_level: String
-    platform_theme: String
-    platform_theme_dark_background: String
-    platform_theme_dark_paper: String
-    platform_theme_dark_nav: String
-    platform_theme_dark_primary: String
-    platform_theme_dark_secondary: String
-    platform_theme_dark_accent: String
-    platform_theme_dark_logo: String
-    platform_theme_dark_logo_collapsed: String
-    platform_theme_dark_logo_login: String
-    platform_theme_light_background: String
-    platform_theme_light_paper: String
-    platform_theme_light_nav: String
-    platform_theme_light_primary: String
-    platform_theme_light_secondary: String
-    platform_theme_light_accent: String
-    platform_theme_light_logo: String
-    platform_theme_light_logo_collapsed: String
-    platform_theme_light_logo_login: String
+    platform_theme: Theme
     platform_map_tile_server_dark: String
     platform_map_tile_server_light: String
     platform_whitemark: Boolean
     platform_language: String
     platform_translations: String
-
     platform_providers: [PublicProvider!]!
     platform_enterprise_edition_license_validated: Boolean!
     playground_enabled: Boolean!
@@ -1477,25 +1459,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_providers: [Provider!]!
   platform_user_statuses: [UserStatus!]!
   platform_language: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
+  platform_theme: Theme
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_openaev_url: String
@@ -1794,6 +1758,7 @@ type User implements BasicObject & InternalObject {
     orderMode: OrderingMode
   ): [Role!]!
   capabilities: [Capability]!
+  capabilitiesInDraft: [Capability]!
   default_hidden_types: [String!]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
@@ -1851,6 +1816,7 @@ type MeUser implements BasicObject & InternalObject {
   personal_notifiers: [Notifier!]
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
+  capabilitiesInDraft: [Capability!]!
   default_hidden_types: [String]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
@@ -1972,6 +1938,7 @@ type Role implements BasicObject & InternalObject {
   updated_at: DateTime!
   refreshed_at: DateTime
   capabilities: [Capability]
+  capabilitiesInDraft: [Capability]
   editContext: [EditUserContext!]
   can_manage_sensitive_config: Boolean
 }
@@ -2732,6 +2699,11 @@ input KillChainPhaseAddInput {
 type Representative {
   main: String!
   secondary: String
+}
+
+enum UnknownStixCoreObjectsOrdering {
+  value
+  entity_type
 }
 
 enum StixCoreObjectsOrdering {
@@ -12969,6 +12941,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Status
   | PublicDashboard
   | Pir
+  | Theme
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -13137,6 +13110,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | ManagerConfiguration
   | Workspace
   | PublicDashboard
+  | Theme
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -13713,6 +13687,7 @@ type Query {
   sessions: [UserSession] @auth(for: [SETTINGS_SETACCESSES])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
+  capabilitiesInDraft(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   connector(id: String!): Connector @auth(for: [MODULES])
   connectors: [Connector!]! @auth(for: [MODULES])
   connectorManager(managerId: ID!): ConnectorManager! @auth(for: [MODULES])
@@ -13908,6 +13883,11 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  unknownStixCoreObjects(
+    values: [String!]!
+    orderBy: UnknownStixCoreObjectsOrdering
+    orderMode: OrderingMode
+  ): [String!]! @auth(for: [KNOWLEDGE])
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixCoreObjectsTimeSeries(
     authorId: String
@@ -13970,7 +13950,10 @@ type Query {
     order: String
     distributionParameters: StixCoreObjectsDistributionParameters
   ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
+  filtersRepresentatives(
+    filters: FilterGroup!
+    isMeValueForbidden: Boolean
+  ): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 
@@ -15310,8 +15293,8 @@ type Mutation {
   uploadImport(file: Upload!, fileMarkings: [String]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean): File
-  @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  createDraftAndAskJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean,  authorized_members: [MemberAccessInput!]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   resetFileIndexing: Boolean @auth(for: [SETTINGS_FILEINDEXING])
 
   ### SYNC

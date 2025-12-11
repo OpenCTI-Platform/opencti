@@ -9,6 +9,8 @@ import { RootIndicatorQuery } from '@components/observations/indicators/__genera
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootIndicatorSubscription } from '@components/observations/indicators/__generated__/RootIndicatorSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import Indicator from './Indicator';
@@ -56,6 +58,7 @@ const indicatorQuery = graphql`
       entity_type
       name
       pattern
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...Indicator_indicator
       ...IndicatorDetails_indicator
       ...FileImportViewer_entity
@@ -99,7 +102,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
   const link = `/dashboard/observations/indicators/${indicatorId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, indicatorId, '/dashboard/observations/indicators', false);
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {indicator ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
@@ -114,6 +117,13 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
             EditComponent={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IndicatorEdition indicatorId={indicator.id} />
+              </Security>
+            )}
+            RelateComponent={(
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCoreRelationshipCreationFromEntityHeader
+                  data={indicator}
+                />
               </Security>
             )}
             DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -275,7 +285,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

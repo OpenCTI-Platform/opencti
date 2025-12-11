@@ -455,8 +455,15 @@ export const topEntitiesList = async <T extends BasicStoreEntity>(context: AuthC
   return asyncMap(data.edges, (edge) => edge.node);
 };
 
-export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, connectedEntityId: string,
-  relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<BasicConnection<T>> => {
+export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  connectedEntityId: string | null,
+  relationType: string,
+  entityType: string | string[],
+  reverse_relation: boolean,
+  args: EntityOptions<T> = {}
+): Promise<BasicConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {
     throw UnsupportedError('List connected entities paginated cant be used', { type: entityType });
@@ -467,7 +474,7 @@ export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity
       {
         key: [INSTANCE_REGARDING_OF],
         values: [
-          { key: ID_FILTER, values: [connectedEntityId] },
+          ...(connectedEntityId === null ? [] : [{ key: ID_FILTER, values: [connectedEntityId] }]),
           { key: RELATION_TYPE_FILTER, values: [relationType] },
           { key: INSTANCE_REGARDING_OF_DIRECTION_FORCED, values: [true] },
           { key: INSTANCE_REGARDING_OF_DIRECTION_REVERSE, values: [reverse_relation] },
@@ -570,7 +577,7 @@ export const internalLoadById = async <T extends BasicStoreBase>(
 
 export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string, type: string | string[], opts = {}): Promise<T> => {
   if (R.isNil(type) || R.isEmpty(type)) {
-    throw FunctionalError('You need to specify a type when loading a element');
+    throw FunctionalError('You need to specify a type when loading an element', { id });
   }
   const data = await internalLoadById<T>(context, user, id, { ...opts, type });
   if (data) {
@@ -589,7 +596,7 @@ export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthCon
 
 export const storeLoadByIds = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, ids: string[], type: string): Promise<T[]> => {
   if (R.isNil(type) || R.isEmpty(type)) {
-    throw FunctionalError('You need to specify a type when loading a element');
+    throw FunctionalError('You need to specify a type when loading elements', { ids });
   }
   const hits = await elFindByIds(context, user, ids, { type, indices: READ_DATA_INDICES });
   return ids.map((id) => (hits as T[]).find((h: T) => h.internal_id === id)) as T[];

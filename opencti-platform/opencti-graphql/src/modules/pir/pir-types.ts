@@ -89,3 +89,9 @@ export interface BasicStoreRelationPir extends BasicStoreRelation {
 
 export interface StoreRelationPir extends StoreRelation, BasicStoreRelationPir {
 }
+
+export interface PirInformation {
+  pir_id: string
+  pir_score: number
+  last_pir_score_date: string
+}

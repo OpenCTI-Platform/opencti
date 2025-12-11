@@ -22,6 +22,9 @@ import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
 import { ConfigurationError } from '../config/errors';
+import { initDefaultTheme } from '../modules/theme/theme-domain';
+import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
+import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -407,14 +410,17 @@ export const initializeData = async (context, withMarkings = true) => {
     logApp.warn(`[INIT] Platform identifier forced to [${platformId}]`);
   }
 
+  const darkTheme = await initDefaultTheme(context);
+
   await addSettings(context, SYSTEM_USER, {
     internal_id: platformId,
     platform_title: 'OpenCTI - Cyber Threat Intelligence Platform',
     platform_email: 'admin@opencti.io',
-    platform_theme: 'dark',
+    platform_theme: darkTheme.id,
     platform_language: 'auto',
     view_all_users: false,
   });
+
   await initCreateEntitySettings(context, SYSTEM_USER);
   await initManagerConfigurations(context, SYSTEM_USER);
   await initDecayRules(context, SYSTEM_USER);
@@ -422,6 +428,7 @@ export const initializeData = async (context, withMarkings = true) => {
   await createInitialRequestAccessFlow(context);
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
+  await addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT, false);
   if (withMarkings) {
     await createMarkingDefinitions(context);
   }

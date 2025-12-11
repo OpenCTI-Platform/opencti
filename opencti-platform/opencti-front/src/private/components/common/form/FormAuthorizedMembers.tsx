@@ -28,6 +28,7 @@ interface FormAuthorizedMembersProps {
   showAllMembersLine?: boolean;
   isCanUseEnable?: boolean;
   customInfoMessage?: string;
+  isDraftEntity?: boolean;
 }
 
 const FormAuthorizedMembers = ({
@@ -40,6 +41,7 @@ const FormAuthorizedMembers = ({
   showAllMembersLine,
   isCanUseEnable,
   customInfoMessage,
+  isDraftEntity,
 }: FormAuthorizedMembersProps) => {
   const { t_i18n } = useFormatter();
 
@@ -77,6 +79,7 @@ const FormAuthorizedMembers = ({
                   addMeUserWithAdminRights
                   isCanUseEnable={isCanUseEnable}
                   customInfoMessage={customInfoMessage}
+                  isDraftEntity={isDraftEntity}
                 />
               )}
             </Form>

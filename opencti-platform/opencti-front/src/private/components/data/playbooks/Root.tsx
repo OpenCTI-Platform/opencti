@@ -13,70 +13,75 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-
-import React from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
-import { graphql } from 'react-relay';
-import { QueryRenderer } from '../../../../relay/environment';
-import { RootPlaybookQuery$data } from './__generated__/RootPlaybookQuery.graphql';
-import Playbook from './Playbook';
+import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import { RootPlaybookQuery } from './__generated__/RootPlaybookQuery.graphql';
+import { PlaybookComponentsQuery } from './__generated__/PlaybookComponentsQuery.graphql';
+import Playbook, { playbookComponentsQuery } from './Playbook';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 const playbookQuery = graphql`
   query RootPlaybookQuery($id: String!) {
     playbook(id: $id) {
-      id
       ...Playbook_playbook
-    }
-    playbookComponents {
-      id
-      name
-      description
-      icon
-      is_entry_point
-      is_internal
-      configuration_schema
-      ports {
-        id
-        type
-      }
     }
   }
 `;
 
+interface RootPlaybookComponentProps {
+  playbookQueryRef: PreloadedQuery<RootPlaybookQuery>
+  playbookComponentsQueryRef: PreloadedQuery<PlaybookComponentsQuery>
+}
+
+const RootPlaybookComponent = ({
+  playbookQueryRef,
+  playbookComponentsQueryRef,
+}: RootPlaybookComponentProps) => {
+  const data = usePreloadedQuery(playbookQuery, playbookQueryRef);
+  const { playbook } = data;
+  if (!playbook) return <ErrorNotFound/>;
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Playbook
+            dataPlaybook={playbook}
+            playbookComponentsQueryRef={playbookComponentsQueryRef}
+          />
+        }
+      />
+    </Routes>
+  );
+};
+
 const RootPlaybook = () => {
   const { playbookId } = useParams();
+  if (!playbookId) return <ErrorNotFound/>;
+
+  const playbookComponentsQueryRef = useQueryLoading<PlaybookComponentsQuery>(
+    playbookComponentsQuery,
+  );
+
+  const [playbookQueryRef, loadPlaybookQuery] = useQueryLoader<RootPlaybookQuery>(playbookQuery);
+  useEffect(() => {
+    loadPlaybookQuery({ id: playbookId }, { fetchPolicy: 'network-only' });
+  }, [playbookId]);
+
   return (
-    <QueryRenderer
-      query={playbookQuery}
-      variables={{ id: playbookId }}
-      render={({ props }: { props: RootPlaybookQuery$data }) => {
-        if (props) {
-          if (props.playbook && props.playbookComponents) {
-            return (
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <Playbook
-                      playbook={props.playbook}
-                      playbookComponents={props.playbookComponents}
-                    />
-                  }
-                />
-              </Routes>
-            );
-          }
-          return <ErrorNotFound />;
-        }
-        return <Loader />;
-      }}
-    />
+    <Suspense fallback={<Loader />}>
+      {playbookQueryRef && playbookComponentsQueryRef && (
+        <RootPlaybookComponent
+          playbookQueryRef={playbookQueryRef}
+          playbookComponentsQueryRef={playbookComponentsQueryRef}
+        />
+      )}
+    </Suspense>
   );
 };
 

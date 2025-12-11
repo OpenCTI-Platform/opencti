@@ -31,6 +31,7 @@ import {
   ConnectorPriorityGroup,
   ConnectorType,
   type CurrentConnectorStatusInput,
+  type DraftWorkspaceAddInput,
   type EditContext,
   type EditInput,
   type EditManagedConnectorInput,
@@ -58,6 +59,7 @@ import { computeConnectorTargetContract, getSupportedContractsByImage } from '..
 import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
 import { createOnTheFlyUser } from '../modules/user/user-domain';
+import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import type { Work } from '../types/work';
 import { AxiosError } from 'axios';
 import { URL } from 'node:url';
@@ -191,7 +193,7 @@ export const managedConnectorEdit = async (
 ) => {
   const conn: any = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR);
   if (isEmptyField(conn)) {
-    throw UnsupportedError('Connector not found');
+    throw UnsupportedError('Connector not found', { id: input.id });
   }
   const contractsMap = getSupportedContractsByImage();
   const targetContract: any = contractsMap.get(conn.manager_contract_image);
@@ -254,7 +256,7 @@ export const managedConnectorAdd = async (
   }
   const connectorUser = await storeLoadById(context, user, finalUserId, ENTITY_TYPE_USER);
   if (isEmptyField(connectorUser)) {
-    throw UnsupportedError('Connector user not found');
+    throw UnsupportedError('Connector user not found', { id: finalUserId });
   }
   // Sanitize name
   const sanitizedName = sanitizeContainerName(input.name);
@@ -457,11 +459,11 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
     throw FunctionalError('Cant find element to update', { id: connectorId, type: ENTITY_TYPE_CONNECTOR });
   }
   if (!['INTERNAL_ENRICHMENT', 'INTERNAL_IMPORT_FILE'].includes(conn.connector_type)) {
-    throw FunctionalError('Update is only possible on internal enrichment or import file connectors types');
+    throw FunctionalError('Update is only possible on internal enrichment or import file connectors types', { connectorId });
   }
   const supportedInputKeys = ['connector_trigger_filters'];
   if (input.some((item) => !supportedInputKeys.includes(item.key))) {
-    throw FunctionalError(`Update is only possible on these input keys: ${supportedInputKeys.join(', ')}`);
+    throw FunctionalError(`Update is only possible on these input keys: ${supportedInputKeys.join(', ')}`, { connectorId });
   }
   const filtersItem: EditInput | undefined = input.find((item: EditInput) => item.key === 'connector_trigger_filters');
   if (filtersItem && filtersItem.value.length > 0) {
@@ -731,4 +733,45 @@ export const askJobImport = async (
     context_data: contextData,
   });
   return file;
+};
+
+export const createDraftAndAskJobImport = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: {
+    authorized_members?: DraftWorkspaceAddInput['authorized_members'];
+    entity_id?: string;
+    fileName: string;
+    connectorId?: string;
+    configuration?: string;
+    bypassEntityId?: string;
+    bypassValidation?: boolean;
+    validationMode?: ValidationMode;
+    forceValidation?: boolean;
+  },
+) => {
+  const {
+    authorized_members,
+    fileName,
+    connectorId,
+    configuration,
+    validationMode = defaultValidationMode,
+    entity_id,
+    bypassEntityId,
+  } = args;
+  const { id } = await addDraftWorkspace(context, user, { name: fileName, authorized_members, entity_id });
+
+  return askJobImport(
+    { ...context, draft_context: id },
+    user,
+    {
+      fileName,
+      connectorId,
+      configuration,
+      bypassEntityId,
+      validationMode,
+      bypassValidation: true,
+      forceValidation: false,
+    }
+  );
 };

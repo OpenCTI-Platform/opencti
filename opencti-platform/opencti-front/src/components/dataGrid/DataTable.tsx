@@ -15,6 +15,8 @@ import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
 import { FilterSearchContext, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
+import useDraftContext from '../../utils/hooks/useDraftContext';
+import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
 | 'contextFilters'
@@ -115,6 +117,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
 > & {
   taskScope?: string
   globalSearch?: string;
+  displayEditButtons?: boolean
 };
 
 const DataTableInternalToolbar = ({
@@ -126,6 +129,7 @@ const DataTableInternalToolbar = ({
   removeFromDraftEnabled,
   markAsReadEnabled,
   entityTypes,
+  displayEditButtons,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -164,6 +168,7 @@ const DataTableInternalToolbar = ({
         removeAuthMembersEnabled={removeAuthMembersEnabled}
         removeFromDraftEnabled={removeFromDraftEnabled}
         markAsReadEnabled={markAsReadEnabled}
+        displayEditButtons={displayEditButtons}
       />
     </div>
   );
@@ -239,6 +244,11 @@ const DataTable = (props: OCTIDataTableProps) => {
     availableFilterKeys = availableFilterKeys.concat(additionalFilterKeys);
   }
 
+  // Remove toolbar in Draft context without the minimal right access "canEdit"
+  const draftContext = useDraftContext();
+  const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const hasAuthorizedMembersCanEdit = !draftContext || currentAccessRight.canEdit;
+
   return (
     <>
       <DataTableComponent
@@ -261,7 +271,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             exportContext={exportContext}
             searchContextFinal={computedSearchContextFinal}
           />
-      )}
+        )}
         dataTableToolBarComponent={(
           <DataTableInternalToolbar
             entityTypes={entityTypes}
@@ -272,6 +282,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             removeAuthMembersEnabled={removeAuthMembersEnabled}
             removeFromDraftEnabled={removeFromDraftEnabled}
             markAsReadEnabled={markAsReadEnabled}
+            displayEditButtons={hasAuthorizedMembersCanEdit}
           />
       )}
       />

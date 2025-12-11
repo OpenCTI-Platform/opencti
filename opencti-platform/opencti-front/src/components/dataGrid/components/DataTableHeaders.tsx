@@ -7,6 +7,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover/Popover';
 import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
+import { UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY } from '@components/SearchBulkUnknownEntities';
 import { DataTableColumn, DataTableColumns, DataTableHeadersProps } from '../dataTableTypes';
 import DataTableHeader, { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import type { Theme } from '../../Theme';
@@ -37,6 +38,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
     },
+    storageKey,
   } = useDataTableContext();
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -67,7 +69,8 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     minWidth: startColumnWidth,
   };
 
-  const showToolbar = numberOfSelectedElements > 0 && !disableToolBar;
+  const showToolbar = (numberOfSelectedElements > 0 && !disableToolBar)
+    || (storageKey === UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY && selectAll); // case of DataTableWithoutFragment
 
   return (
     <div ref={containerRef} style={{ display: 'flex', height: 42 }}>

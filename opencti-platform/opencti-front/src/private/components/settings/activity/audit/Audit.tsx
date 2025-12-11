@@ -84,6 +84,13 @@ export const AuditCSVQuery = graphql`
             entity_type
             entity_name
             message
+            changes{
+              field
+              previous
+              new
+              added
+              removed
+            }
           }
         }
       }

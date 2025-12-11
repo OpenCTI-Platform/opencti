@@ -27,6 +27,7 @@ import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
+import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -52,6 +53,18 @@ const draftRootFragment = graphql`
       totalCount
     }
     draft_status
+    currentUserAccessRight
+    authorizedMembers {
+      id
+      name
+      entity_type
+      access_right
+      member_id
+      groups_restriction {
+        id
+        name
+      }
+    }
     validationWork {
       name
       received_time
@@ -76,6 +89,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
+  const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
 
   const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
   if (!draftWorkspace) {
@@ -204,7 +218,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
           />
-          {!isDraftReadOnly && (
+          {!isDraftReadOnly && canAskImportKnowledge && (
           <Tab
             component={Link}
             to={`/dashboard/data/import/draft/${draftId}/files`}

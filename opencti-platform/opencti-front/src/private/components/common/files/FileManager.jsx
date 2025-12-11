@@ -14,6 +14,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import DraftWorkspaceViewer from './draftWorkspace/DraftWorkspaceViewer';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from './FileExportViewer';
@@ -62,6 +63,30 @@ export const fileManagerAskJobImportMutation = graphql`
       bypassValidation: $bypassValidation
       forceValidation: $forceValidation
       validationMode: $validationMode
+    ) {
+      ...FileLine_file
+    }
+  }
+`;
+
+export const fileManagerCreateDraftAskJobImportMutation = graphql`
+  mutation FileManagerCreateDraftAskJobImportMutation(
+    $fileName: ID!
+    $connectorId: String
+    $configuration: String
+    $bypassValidation: Boolean
+    $forceValidation: Boolean
+    $validationMode: ValidationMode
+    $authorized_members: [MemberAccessInput!]
+  ) {
+    createDraftAndAskJobImport(
+      fileName: $fileName
+      connectorId: $connectorId
+      configuration: $configuration
+      bypassValidation: $bypassValidation
+      forceValidation: $forceValidation
+      validationMode: $validationMode
+      authorized_members: $authorized_members
     ) {
       ...FileLine_file
     }
@@ -140,6 +165,8 @@ const FileManager = ({
   isArtifact,
   directDownload = false,
 }) => {
+  useInitCreateRelationshipContext();
+
   const { t_i18n } = useFormatter();
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);

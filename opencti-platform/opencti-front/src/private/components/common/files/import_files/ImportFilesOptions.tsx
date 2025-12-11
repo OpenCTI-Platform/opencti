@@ -7,11 +7,13 @@ import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectsField from '@components/common/form/StixCoreObjectsField';
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { InformationOutline } from 'mdi-material-ui';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import { useFormatter } from '../../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { DraftContext } from '../../../../../utils/hooks/useDraftContext';
+import useAuth from '../../../../../utils/hooks/useAuth';
 
 interface ImportFilesOptionsProps {
   optionsFormikContext: FormikContextType<OptionsFormValues>;
@@ -23,6 +25,8 @@ const ImportFilesOptions = ({
   draftContext,
 }: ImportFilesOptionsProps) => {
   const { t_i18n } = useFormatter();
+  const { me: owner, settings } = useAuth();
+  const showAllMembersLine = !settings.platform_organization?.id;
   const { importMode, entityId, files } = useImportFilesContext();
   const isWorkbenchEnabled = files.length === 1;
 
@@ -61,8 +65,19 @@ const ImportFilesOptions = ({
                 component={SelectField}
                 variant="standard"
                 name="validationMode"
-                label={t_i18n('Validation mode')}
-                containerstyle={{ marginTop: 16, width: '100%' }}
+                containerstyle={{ marginTop: 16, width: '100%', marginRight: 10 }}
+                label={<>
+                  {t_i18n('Validation mode')}
+                  <Tooltip
+                    title={t_i18n('Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.')}
+                  >
+                    <InformationOutline
+                      style={{ display: 'flex', marginTop: -22, marginLeft: 115 }}
+                      fontSize="small"
+                      color="primary"
+                    />
+                  </Tooltip>
+                </>}
               >
                 <MenuItem
                   key={'draft'}
@@ -78,23 +93,27 @@ const ImportFilesOptions = ({
                   {t_i18n('Workbench')}
                 </MenuItem>
               </Field>
-              <Tooltip
-                title={t_i18n('Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.')}
-              >
-                <InformationOutline
-                  style={{ position: 'absolute', marginLeft: 16, marginTop: 40 }}
-                  fontSize="small"
-                  color="primary"
-                />
-              </Tooltip>
             </div>
             {optionsFormikContext.values.validationMode === 'draft' && (
-              <Field
-                name="name"
-                label={t_i18n('Draft name')}
-                component={TextField}
-                variant="standard"
-              />
+              <>
+                <Field
+                  name="name"
+                  label={t_i18n('Draft name')}
+                  component={TextField}
+                  variant="standard"
+                />
+                <Field
+                  name="authorizedMembers"
+                  component={AuthorizedMembersField}
+                  owner={owner}
+                  showAllMembersLine={showAllMembersLine}
+                  canDeactivate={true}
+                  addMeUserWithAdminRights
+                  isCanUseEnable
+                  enableAccesses
+                  applyAccesses
+                />
+              </>
             )}
           </>
         )}

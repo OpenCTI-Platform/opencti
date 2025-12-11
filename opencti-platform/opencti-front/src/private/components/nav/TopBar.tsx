@@ -133,6 +133,12 @@ interface TopBarProps {
 const topBarQuery = graphql`
   query TopBarQuery {
     myUnreadNotificationsCount
+    settings {
+      platform_theme {
+        theme_logo
+        theme_logo_collapsed
+      }
+    }
   }
 `;
 
@@ -191,6 +197,10 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
+
+  const platformTheme = data.settings?.platform_theme;
+  const logo = navOpen ? platformTheme?.theme_logo || theme.logo : platformTheme?.theme_logo_collapsed || theme.logo_collapsed;
+
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -289,7 +299,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
           <Link to="/dashboard">
             <img
-              src={navOpen ? theme.logo : theme.logo_collapsed}
+              src={logo}
               alt="logo"
               className={navOpen ? classes.logo : classes.logoCollapsed}
             />

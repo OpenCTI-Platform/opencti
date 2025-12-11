@@ -4,7 +4,6 @@ import Alert from '@mui/material/Alert';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import CustomizationMenu from '../CustomizationMenu';
 import DecayRuleCreation from './DecayRuleCreation';
 import { DecayRulesLineDummy } from './DecayRulesLine';
 import DecayRulesLines, { decayRulesLinesQuery } from './DecayRulesLines';
@@ -16,7 +15,6 @@ import { DecayRulesLinesPaginationQuery, DecayRulesLinesPaginationQuery$variable
 import { DecayRulesLine_node$data } from './__generated__/DecayRulesLine_node.graphql';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { INDICATOR_DECAY_MANAGER } from '../../../../utils/platformModulesHelper';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'view-decay-rules';
@@ -130,26 +128,26 @@ const DecayRules = () => {
         )}
       >
         {queryRef && (
-        <React.Suspense
-          fallback={
-            <>
-              {Array(20)
-                .fill(0)
-                .map((_, idx) => (
-                  <DecayRulesLineDummy
-                    key={idx}
-                    dataColumns={dataColumns}
-                  />
-                ))}
-            </>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <DecayRulesLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
+                  ))}
+              </>
             }
-        >
-          <DecayRulesLines
-            queryRef={queryRef}
-            paginationOptions={paginationOptions}
-            dataColumns={dataColumns}
-          />
-        </React.Suspense>
+          >
+            <DecayRulesLines
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+            />
+          </React.Suspense>
         )}
       </ListLines>
     );
@@ -157,8 +155,6 @@ const DecayRules = () => {
 
   return (
     <div className={classes.container} data-testid="decay-rules-page">
-      <CustomizationMenu />
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Decay rules'), current: true }]} />
       {renderLines()}
     </div>
   );

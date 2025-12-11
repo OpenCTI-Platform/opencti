@@ -123,6 +123,7 @@ import {
   executionContext,
   INTERNAL_USERS,
   isBypassUser,
+  isServiceAccountUser,
   isUserHasCapability,
   MEMBER_ACCESS_ALL,
   PIRAPI,
@@ -152,6 +153,8 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { addFilter, checkAndConvertFilters, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
+  BULK_SEARCH_KEYWORDS_FILTER,
+  BULK_SEARCH_KEYWORDS_FILTER_KEYS,
   COMPUTED_RELIABILITY_FILTER,
   ID_FILTER,
   IDS_FILTER,
@@ -648,11 +651,14 @@ const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?
   if (!excludeEmptyAuthorizedMembers) {
     shouldConditions.push(emptyAuthorizedMembers);
   }
+
+  const bypassAuthorizedMembers = isServiceAccountUser(user);
   const nestedQuery = {
     nested: {
       path: authorizedMembers.name,
       query: {
-        bool: { should: authorizedFilters }
+        // For service accounts, bypass authorized members restrictions
+        bool: { should: bypassAuthorizedMembers ? [] : authorizedFilters }
       }
     }
   };
@@ -3827,6 +3833,14 @@ const completeSpecialFilterKeys = async (
         } else {
           finalFilters.push(filter); // nothing to modify
         }
+      }
+
+      if (filterKey === BULK_SEARCH_KEYWORDS_FILTER) {
+        const newFilter = {
+          ...filter,
+          key: BULK_SEARCH_KEYWORDS_FILTER_KEYS,
+        };
+        finalFilters.push(newFilter);
       }
 
       if (isMetricsName(filterKey)) {

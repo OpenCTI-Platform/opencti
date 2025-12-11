@@ -57,6 +57,7 @@ import type { windows_integrity_level_enum, ssh_key_type_enum, windows_service_s
 import { RELATION_MEMBER_OF, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { AuthorizedMember } from '../utils/access';
 import type { Metric } from '../modules/metrics/metrics';
+import type { PirInformation } from '../modules/pir/pir-types';
 
 interface Representative {
   main: string
@@ -130,6 +131,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   representative: Representative
   restricted_members?: Array<AuthorizedMember>;
   metrics?: Array<Metric>;
+  pir_information?: Array<PirInformation>
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {
@@ -445,7 +447,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   // CVSS4
   x_opencti_cvss_v4_base_score: number;
   // PIR
-  pir_information: Array<{ pir_id: string, pir_score: number, last_pir_score_date: Date }>;
+  pir_information?: Array<PirInformation>;
 }
 
 interface StoreEntity extends BasicStoreEntity, StoreCommon {

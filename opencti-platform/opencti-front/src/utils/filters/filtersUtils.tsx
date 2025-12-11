@@ -50,7 +50,7 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
-const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'];
+const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids', 'bulkSearchKeywords'];
 
 const pirScoreFilterDefinition = (pirId: string) => ({
   filterKey: `pir_score.${pirId}`,
@@ -114,6 +114,7 @@ export const stixFilters = [
   'confidence',
   'indicator_types',
   'pattern_type',
+  'pattern',
   'x_opencti_main_observable_type',
   'fromId',
   'toId',
@@ -379,7 +380,12 @@ export const useBuildFiltersForTemplateWidgets = () => {
 };
 
 // return the i18n label corresponding to a filter value
-export const filterValue = (filterKey: string, value?: string | null, filterType?: string, filterOperator?: string) => {
+export const filterValue = (
+  filterKey: string,
+  value?: string | null,
+  filterType?: string,
+  filterOperator?: string,
+  ) => {
   const { t_i18n, nsd, smhd } = useFormatter();
   if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf' || filterKey === 'dynamic' || filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return JSON.stringify(value);

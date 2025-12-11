@@ -1,29 +1,30 @@
-import * as R from 'ramda';
-import { v4 as uuidv4 } from 'uuid';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
-import { OPENCTI_SYSTEM_UUID } from '../schema/general';
-import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { AuthContext, AuthUser, UserRole } from '../types/user';
-import type { BasicStoreCommon } from '../types/store';
-import type { StixObject } from '../types/stix-2-1-common';
-import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
-import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
-import { telemetry } from '../config/tracing';
-import type { BasicStoreSettings } from '../types/settings';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import * as R from 'ramda';
+import { v4 as uuidv4 } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError, UnsupportedError } from '../config/errors';
+import { telemetry } from '../config/tracing';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
-import { isStixObject } from '../schema/stixCoreObject';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import type { UpdateEvent } from '../types/event';
-import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
+import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
+import { OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
+import { isStixObject } from '../schema/stixCoreObject';
+import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import type { UpdateEvent } from '../types/event';
+import type { BasicStoreSettings } from '../types/settings';
+import type { StixObject } from '../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import type { BasicStoreCommon } from '../types/store';
+import type { AuthContext, AuthUser, UserRole } from '../types/user';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -38,10 +39,15 @@ export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const INGESTION_SETINGESTIONS = 'INGESTION_SETINGESTIONS';
 export const CSVMAPPERS = 'CSVMAPPERS';
 export const KNOWLEDGE = 'KNOWLEDGE';
+export const KNOWLEDGE_KNPARTICIPATE = 'KNOWLEDGE_KNPARTICIPATE';
 export const KNOWLEDGE_KNUPDATE = 'KNOWLEDGE_KNUPDATE';
 export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT';
+export const KNOWLEDGE_KNUPDATE_KNDELETE = 'KNOWLEDGE_KNUPDATE_KNDELETE';
+export const KNOWLEDGE_KNUPDATE_KNMERGE = 'KNOWLEDGE_KNUPDATE_KNMERGE';
 export const KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS';
+export const KNOWLEDGE_KNUPLOAD = 'KNOWLEDGE_KNUPLOAD';
 export const KNOWLEDGE_KNASKIMPORT = 'KNOWLEDGE_KNASKIMPORT';
+export const KNOWLEDGE_KNENRICHMENT = 'KNOWLEDGE_KNENRICHMENT';
 export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
@@ -65,6 +71,13 @@ export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
 export const RESTRICTED_USER_UUID = '27d2b0af-4d1e-42ae-a50c-9691bf57f35d';
 const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
+
+export enum AccessOperation {
+  EDIT = 'edit',
+  DELETE = 'delete',
+  MANAGE_ACCESS = 'manage-access',
+  MANAGE_AUTHORITIES_ACCESS = 'manage-authorities-access',
+}
 
 export const MEMBER_ACCESS_ALL = 'ALL';
 export const MEMBER_ACCESS_CREATOR = 'CREATOR';
@@ -560,12 +573,24 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER
 };
 
+export const isInternalUser = (user: AuthUser): boolean => {
+  return INTERNAL_USERS[user.id] !== undefined;
+};
+
 export const isBypassUser = (user: AuthUser): boolean => {
   return R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
 };
 
+export const isServiceAccountUser = (user: AuthUser): boolean => {
+  return user.user_service_account === true;
+};
+
 export const isUserHasCapability = (user: AuthUser, capability: string): boolean => {
-  return isBypassUser(user) || (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
+  const isInDraftContext = !!user.draft_context;
+  const isIncludedInCapabilities = (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
+  const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => s.name.includes(capability));
+  
+  return isBypassUser(user) || isIncludedInCapabilities || (isInDraftContext && isIncludedInDraftCapabilities);
 };
 
 export const isUserHasCapabilities = (user: AuthUser, capabilities: string[] = []) => {
@@ -629,6 +654,11 @@ export const getUserAccessRight = (user: AuthUser, element: { restricted_members
   if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
+
+  if (isServiceAccountUser(user)) {
+    return MEMBER_ACCESS_RIGHT_EDIT;
+  }
+
   return getExplicitUserAccessRight(user, element);
 };
 
@@ -822,22 +852,11 @@ export const isDirectAdministrator = (user: AuthUser, element: any) => {
   return elementAccessIds.some((a: string) => userMemberAccessIds.includes(a));
 };
 
-// ensure that user can access the element (operation: edit / delete / manage-access)
-export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access' | 'manage-authorities-access') => {
-  if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    return true;
-  }
-  if (isStixObject(element.entity_type)
-    && operation === 'manage-access'
-    && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
-  ) {
-    return false;
-  }
-  if (operation === 'manage-authorities-access'
-    && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
-  ) {
-    return false;
-  }
+const hasUserAccessToOperation = (
+  user: AuthUser,
+  element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[]; },
+  operation: AccessOperation
+) => {
   const userAccessRight = getUserAccessRight(user, element);
   if (!userAccessRight) { // user has no access
     return false;
@@ -849,6 +868,37 @@ export const validateUserAccessOperation = (user: AuthUser, element: any, operat
     return userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN;
   }
   return true;
+};
+
+// Ensure that user can access the element (operation: edit / delete / manage-access)
+export const validateUserAccessOperation = (user: AuthUser, element: any, operation: AccessOperation, draft?: BasicStoreEntityDraftWorkspace | null) => {
+  // 1. Check draft authorized members permissions
+  if (draft && !hasUserAccessToOperation(user, draft, operation)) {
+    return false;
+  }
+  
+  // 2. Internal objects management
+  if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    return true;
+  }
+
+  // 3. Specific STIX object management restrictions
+  if (isStixObject(element.entity_type)
+    && operation === 'manage-access'
+    && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)
+  ) {
+    return false;
+  }
+
+  // 4. General access management restrictions
+  if (operation === 'manage-authorities-access'
+    && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)
+  ) {
+    return false;
+  }
+
+  // 5. Check access to the element (entity, container, etc.)
+  return hasUserAccessToOperation(user, element, operation);
 };
 
 export const isValidMemberAccessRight = (accessRight: string) => {
@@ -996,3 +1046,17 @@ export const applyOrganizationRestriction = async (
   }
   return args;
 };
+
+export const CAPABILITIES_IN_DRAFT_NAMES = [
+  KNOWLEDGE,
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  KNOWLEDGE_KNUPDATE_KNMERGE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
+  KNOWLEDGE_KNUPLOAD,
+  KNOWLEDGE_KNASKIMPORT,
+  KNOWLEDGE_KNENRICHMENT,
+  SETTINGS_SETLABELS,
+];

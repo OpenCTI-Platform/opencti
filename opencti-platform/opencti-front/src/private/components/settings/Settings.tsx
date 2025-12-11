@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Grid from '@mui/material/Grid2';
 import Button from '@mui/material/Button';
@@ -11,13 +11,15 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/styles';
-import { Switch, Box } from '@mui/material';
+import { Box, Switch } from '@mui/material';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
+import ThemeManager, { refetchableThemesQuery } from '@components/settings/themes/ThemeManager';
+import { ThemeManager_themes$key } from '@components/settings/themes/__generated__/ThemeManager_themes.graphql';
 import { SettingsFieldPatchMutation$data } from '@components/settings/__generated__/SettingsFieldPatchMutation.graphql';
 import getEEWarningMessage from '@components/settings/EEActivation';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
@@ -27,7 +29,6 @@ import { SubscriptionFocus } from '../../../components/Subscription';
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/fields/SelectField';
-import ColorPickerField from '../../../components/ColorPickerField';
 import HiddenTypesField from './hidden_types/HiddenTypesField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import SettingsMessages from './settings_messages/SettingsMessages';
@@ -53,31 +54,16 @@ const settingsQuery = graphql`
       platform_favicon
       platform_email
       platform_email_configurable
-      platform_theme
+      platform_theme {
+        id
+        name
+      }
       platform_language
       platform_type
       platform_whitemark
       platform_login_message
       platform_banner_text
       platform_banner_level
-      platform_theme_dark_background
-      platform_theme_dark_paper
-      platform_theme_dark_nav
-      platform_theme_dark_primary
-      platform_theme_dark_secondary
-      platform_theme_dark_accent
-      platform_theme_dark_logo
-      platform_theme_dark_logo_collapsed
-      platform_theme_dark_logo_login
-      platform_theme_light_background
-      platform_theme_light_paper
-      platform_theme_light_nav
-      platform_theme_light_primary
-      platform_theme_light_secondary
-      platform_theme_light_accent
-      platform_theme_light_logo
-      platform_theme_light_logo_collapsed
-      platform_theme_light_logo_login
       platform_map_tile_server_dark
       platform_map_tile_server_light
       platform_ai_enabled
@@ -127,6 +113,7 @@ const settingsQuery = graphql`
         version
       }
     }
+    ...ThemeManager_themes
   }
 `;
 
@@ -143,25 +130,10 @@ export const settingsMutationFieldPatch = graphql`
         platform_favicon
         platform_email
         platform_email_configurable
-        platform_theme
-        platform_theme_dark_background
-        platform_theme_dark_paper
-        platform_theme_dark_nav
-        platform_theme_dark_primary
-        platform_theme_dark_secondary
-        platform_theme_dark_accent
-        platform_theme_dark_logo
-        platform_theme_dark_logo_collapsed
-        platform_theme_dark_logo_login
-        platform_theme_light_background
-        platform_theme_light_paper
-        platform_theme_light_nav
-        platform_theme_light_primary
-        platform_theme_light_secondary
-        platform_theme_light_accent
-        platform_theme_light_logo
-        platform_theme_light_logo_collapsed
-        platform_theme_light_logo_login
+        platform_theme {
+          id
+          name
+        }
         platform_language
         platform_whitemark
         platform_enterprise_edition {
@@ -209,37 +181,28 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   const { setTitle } = useConnectedDocumentModifier();
 
   const { settings, about } = usePreloadedQuery<SettingsQuery>(settingsQuery, queryRef);
+
+  const data = usePreloadedQuery<SettingsQuery>(settingsQuery, queryRef);
+  const [{ themes }, refetch] = useRefetchableFragment<SettingsQuery, ThemeManager_themes$key>(
+    refetchableThemesQuery,
+    data,
+  );
+
   const { id, editContext } = settings;
+
   const initialValues = {
     platform_title: settings.platform_title,
     platform_favicon: settings.platform_favicon,
     platform_email: settings.platform_email,
-    platform_theme: settings.platform_theme,
+    platform_theme: settings.platform_theme?.id,
     platform_language: settings.platform_language,
     platform_login_message: settings.platform_login_message,
     platform_banner_text: settings.platform_banner_text,
     platform_banner_level: settings.platform_banner_level,
-    platform_theme_dark_background: settings.platform_theme_dark_background,
-    platform_theme_dark_paper: settings.platform_theme_dark_paper,
-    platform_theme_dark_nav: settings.platform_theme_dark_nav,
-    platform_theme_dark_primary: settings.platform_theme_dark_primary,
-    platform_theme_dark_secondary: settings.platform_theme_dark_secondary,
-    platform_theme_dark_accent: settings.platform_theme_dark_accent,
-    platform_theme_dark_logo: settings.platform_theme_dark_logo,
-    platform_theme_dark_logo_collapsed: settings.platform_theme_dark_logo_collapsed,
-    platform_theme_dark_logo_login: settings.platform_theme_dark_logo_login,
-    platform_theme_light_background: settings.platform_theme_light_background,
-    platform_theme_light_paper: settings.platform_theme_light_paper,
-    platform_theme_light_nav: settings.platform_theme_light_nav,
-    platform_theme_light_primary: settings.platform_theme_light_primary,
-    platform_theme_light_secondary: settings.platform_theme_light_secondary,
-    platform_theme_light_accent: settings.platform_theme_light_accent,
-    platform_theme_light_logo: settings.platform_theme_light_logo,
-    platform_theme_light_logo_collapsed: settings.platform_theme_light_logo_collapsed,
-    platform_theme_light_logo_login: settings.platform_theme_light_logo_login,
     platform_map_tile_server_dark: settings.platform_map_tile_server_dark,
     platform_map_tile_server_light: settings.platform_map_tile_server_light,
   };
+
   const modules = settings.platform_modules;
   const { version, dependencies } = about || { version: '', dependencies: [] };
   const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
@@ -255,24 +218,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       .required(t_i18n('This field is required'))
       .email(t_i18n('The value must be an email address')),
     platform_theme: Yup.string().nullable(),
-    platform_theme_dark_background: Yup.string().nullable(),
-    platform_theme_dark_paper: Yup.string().nullable(),
-    platform_theme_dark_nav: Yup.string().nullable(),
-    platform_theme_dark_primary: Yup.string().nullable(),
-    platform_theme_dark_secondary: Yup.string().nullable(),
-    platform_theme_dark_accent: Yup.string().nullable(),
-    platform_theme_dark_logo: Yup.string().nullable(),
-    platform_theme_dark_logo_collapsed: Yup.string().nullable(),
-    platform_theme_dark_logo_login: Yup.string().nullable(),
-    platform_theme_light_background: Yup.string().nullable(),
-    platform_theme_light_paper: Yup.string().nullable(),
-    platform_theme_light_nav: Yup.string().nullable(),
-    platform_theme_light_primary: Yup.string().nullable(),
-    platform_theme_light_secondary: Yup.string().nullable(),
-    platform_theme_light_accent: Yup.string().nullable(),
-    platform_theme_light_logo: Yup.string().nullable(),
-    platform_theme_light_logo_collapsed: Yup.string().nullable(),
-    platform_theme_light_logo_login: Yup.string().nullable(),
     platform_language: Yup.string().nullable(),
     platform_whitemark: Yup.string().nullable(),
     enterprise_license: Yup.string().nullable(),
@@ -282,8 +227,14 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     analytics_google_analytics_v4: Yup.string().nullable(),
   });
 
+  const handleRefetch = () => refetch(
+    {},
+    { fetchPolicy: 'network-only' },
+  );
+
   const [commitSettingsFocus] = useApiMutation(settingsFocus);
   const [commitField] = useApiMutation(settingsMutationFieldPatch);
+
   const handleChangeFocus = (name: string) => {
     commitSettingsFocus({
       variables: {
@@ -295,7 +246,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     });
   };
   const isLtsPlatform = settings.platform_type === 'LTS';
-  const handleSubmitField = (name: string, value: string | boolean) => {
+  const handleSubmitField = async (name: string, value: string | boolean) => {
     let finalValue = value;
     if (
       typeof finalValue === 'string'
@@ -340,6 +291,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       })
       .catch(() => false);
   };
+
   return (
     <div style={{ height: '100vh', overflow: 'auto', scrollbarWidth: 'none' }} data-testid="setting-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
@@ -526,7 +478,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         </Grid>
       </Grid>
       )}
-      <Grid container={true} spacing={3} style={{ marginBottom: 60 }}>
+
+      <Grid container={true} spacing={3} sx={{ marginBottom: 10 }}>
         <Grid size={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Configuration')}
@@ -597,25 +550,36 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       />
                       }
                   />
+
                   <Field
                     component={SelectField}
                     variant="standard"
                     name="platform_theme"
-                    label={t_i18n('Theme')}
+                    label={t_i18n('Default theme')}
                     fullWidth
                     containerstyle={fieldSpacingContainerStyle}
                     onFocus={(name: string) => handleChangeFocus(name)}
-                    onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                    onChange={(name: string, value: string) => {
+                      handleSubmitField(name, value);
+                    }}
                     helpertext={
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme"
                       />
-                      }
+                    }
                   >
-                    <MenuItem value="dark">{t_i18n('Dark')}</MenuItem>
-                    <MenuItem value="light">{t_i18n('Light')}</MenuItem>
+                    {themes?.edges?.filter((node) => !!node).map(({ node }) => (
+                      <MenuItem
+                        key={node.id}
+                        value={node.id}
+                        data-testid={`${node.name}-li`}
+                      >
+                        {node.name}
+                      </MenuItem>
+                    ))}
                   </Field>
+
                   <Field
                     component={SelectField}
                     variant="standard"
@@ -643,6 +607,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             </Formik>
           </Paper>
         </Grid>
+
         <Grid size={6}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h4" gutterBottom={true}>
@@ -765,6 +730,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             </Formik>
           </Paper>
         </Grid>
+
         <Grid size={8}>
           <SettingsMessages settings={settings}/>
         </Grid>
@@ -776,432 +742,15 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             isEnterpriseEdition={isEnterpriseEditionValid}
           />
         </Grid>
-        <Grid size={4}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Dark theme')}
-          </Typography>
-          <Paper
-            style={{
-              marginTop: theme.spacing(1),
-              padding: 20,
-              borderRadius: 4,
-              height: '100%',
-            }}
-            className={'paper-for-grid'}
-            variant="outlined"
-          >
-            <Formik
-              onSubmit={() => {
-              }}
-              enableReinitialize={true}
-              initialValues={initialValues}
-              validationSchema={settingsValidation()}
-            >
-              {() => (
-                <Form>
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_dark_background"
-                    label={t_i18n('Background color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_dark_background"
-                      />
-                      }
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_dark_paper"
-                    label={t_i18n('Paper color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_dark_paper"
-                      />
-                      }
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_dark_nav"
-                    label={t_i18n('Navigation color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_dark_nav"
-                      />
-                      }
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_dark_primary"
-                    label={t_i18n('Primary color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_dark_primary"
-                      />
-                      }
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_dark_secondary"
-                    label={t_i18n('Secondary color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_dark_secondary"
-                      />
-                      }
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_dark_accent"
-                    label={t_i18n('Accent color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_dark_accent"
-                      />
-                      }
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="platform_theme_dark_logo"
-                    label={t_i18n('Logo URL')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_dark_logo"
-                      />
-                      }
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="platform_theme_dark_logo_collapsed"
-                    label={t_i18n('Logo URL (collapsed)')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_dark_logo_collapsed"
-                      />
-                      }
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="platform_theme_dark_logo_login"
-                    label={t_i18n('Logo URL (login)')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_dark_logo_login"
-                      />
-                      }
-                  />
-                </Form>
-              )}
-            </Formik>
-          </Paper>
+
+        <Grid size={6}>
+          <ThemeManager
+            handleRefetch={handleRefetch}
+            defaultTheme={settings.platform_theme}
+          />
         </Grid>
-        <Grid size={4}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Light theme')}
-          </Typography>
-          <Paper
-            style={{
-              marginTop: theme.spacing(1),
-              padding: 20,
-              borderRadius: 4,
-              height: '100%',
-            }}
-            className={'paper-for-grid'}
-            variant="outlined"
-          >
-            <Formik
-              onSubmit={() => {
-              }}
-              enableReinitialize={true}
-              initialValues={initialValues}
-              validationSchema={settingsValidation()}
-            >
-              {() => (
-                <Form>
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_light_background"
-                    label={t_i18n('Background color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_light_background"
-                      />
-                      }
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_light_paper"
-                    label={t_i18n('Paper color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_light_paper"
-                      />
-                      }
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_light_nav"
-                    label={t_i18n('Navigation color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_light_nav"
-                      />
-                      }
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_light_primary"
-                    label={t_i18n('Primary color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_light_primary"
-                      />
-                      }
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_light_secondary"
-                    label={t_i18n('Secondary color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_light_secondary"
-                      />
-                      }
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="platform_theme_light_accent"
-                    label={t_i18n('Accent color')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    variant="standard"
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_light_accent"
-                      />
-                      }
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="platform_theme_light_logo"
-                    label={t_i18n('Logo URL')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_light_logo"
-                      />
-                      }
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="platform_theme_light_logo_collapsed"
-                    label={t_i18n('Logo URL (collapsed)')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_light_logo_collapsed"
-                      />
-                      }
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="platform_theme_light_logo_login"
-                    label={t_i18n('Logo URL (login)')}
-                    placeholder={t_i18n('Default')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                    onFocus={(name: string) => handleChangeFocus(name)}
-                    onSubmit={(name: string, value: string) => handleSubmitField(name, value)
-                      }
-                    helperText={
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme_light_logo_login"
-                      />
-                      }
-                  />
-                </Form>
-              )}
-            </Formik>
-          </Paper>
-        </Grid>
-        <Grid size={4}>
+
+        <Grid size={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Tools')}
           </Typography>

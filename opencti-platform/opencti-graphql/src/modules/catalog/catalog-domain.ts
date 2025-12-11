@@ -40,10 +40,10 @@ const buildCatalogMap = (): Record<string, CatalogType> => {
           logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
         } else {
           if (isEmptyField(contract.container_image)) {
-            throw UnsupportedError('Contract must defined container_image field');
+            throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
           }
           if (isEmptyField(contract.container_type)) {
-            throw UnsupportedError('Contract must defined container_type field');
+            throw UnsupportedError('Contract must define container_type field', { contractTitle: contract.title });
           }
 
           if (contract.config_schema) {
@@ -118,10 +118,10 @@ const getCatalogs = (): Record<string, CatalogType> => {
         const contract = catalog.contracts[contractIndex];
         if (contract.manager_supported) {
           if (isEmptyField(contract.container_image)) {
-            throw UnsupportedError('Contract must defined container_image field');
+            throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
           }
           if (isEmptyField(contract.container_type)) {
-            throw UnsupportedError('Contract must defined container_type field');
+            throw UnsupportedError('Contract must define container_type field', { contractTitle: contract.title });
           }
 
           if (contract.config_schema) {

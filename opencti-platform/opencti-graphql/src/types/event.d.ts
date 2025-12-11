@@ -42,13 +42,23 @@ interface StreamNotifEvent extends BaseEvent {
   type: 'live' | 'digest' | 'action';
 }
 
+export type StreamDataEventType = 'update' | 'create' | 'delete';
+
 interface StreamDataEvent extends BaseEvent {
   scope: 'internal' | 'external';
-  type: 'update' | 'create' | 'delete';
+  type: StreamDataEventType;
   origin: Partial<UserOrigin>;
   message: string;
   data: StixCoreObject
   noHistory?: boolean;
+}
+
+interface Change {
+  field: string;
+  previous?: Array<string>;
+  new?: Array<string>;
+  added?: Array<string>;
+  removed?: Array<string>;
 }
 
 interface UpdateEvent extends StreamDataEvent {
@@ -58,7 +68,8 @@ interface UpdateEvent extends StreamDataEvent {
     patch: Array<Operation>;
     reverse_patch: Array<Operation>;
     related_restrictions?: { markings: string[] };
-    pir_ids?: string[]
+    pir_ids?: string[];
+    changes: Change[];
   };
 }
 

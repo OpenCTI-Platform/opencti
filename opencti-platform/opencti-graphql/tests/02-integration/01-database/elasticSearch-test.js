@@ -444,6 +444,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Software')).toBe(entitiesCounter.Software);
     expect(entityTypeMap.get('Status')).toBe(entitiesCounter.Status);
     expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.StatusTemplate);
+    expect(entityTypeMap.get('Theme')).toBe(entitiesCounter.Theme);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(entitiesCounter.ThreatActorIndividual);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(entitiesCounter.ThreatActorGroup);
     expect(entityTypeMap.get('Tracking-Number')).toBe(entitiesCounter.TrackingNumber);
@@ -592,12 +593,14 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Software')).toBe(entitiesCounter.Software);
     expect(entityTypeMap.get('Status')).toBe(entitiesCounter.Status);
     expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.StatusTemplate);
+    expect(entityTypeMap.get('Theme')).toBe(entitiesCounter.Theme);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(entitiesCounter.ThreatActorIndividual);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(entitiesCounter.ThreatActorGroup);
     expect(entityTypeMap.get('Tracking-Number')).toBe(entitiesCounter.TrackingNumber);
     expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
-    expect(data.edges.length).toEqual(207 + entitiesCounter.Vocabulary);
+    expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
+    expect(data.edges.length).toEqual(210 + entitiesCounter.Vocabulary);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -710,6 +713,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Organization')).toBe(entitiesCounter.Organization);
     expect(entityTypeMap.get('Marking-Definition')).toBe(entitiesCounter.MarkingDefinition);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(entitiesCounter.AttackPattern);
+    expect(entityTypeMap.get('Theme')).toBe(entitiesCounter.Theme);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(entitiesCounter.ThreatActorIndividual);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(entitiesCounter.ThreatActorGroup);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(entitiesCounter.CourseOfAction);
@@ -734,7 +738,8 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(entitiesCounter.Label);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(entitiesCounter.KillChainPhase);
     expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
-    expect(data.edges.length).toEqual(218 + entitiesCounter.Vocabulary);
+    expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
+    expect(data.edges.length).toEqual(221 + entitiesCounter.Vocabulary);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {

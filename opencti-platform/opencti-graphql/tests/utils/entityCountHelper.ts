@@ -38,11 +38,13 @@ export const entitiesCounter = {
   Status: 7,
   StatusTemplate: 8,
   StixFile: 1,
+  Theme: 2,
   ThreatActorGroup: 1,
   ThreatActorIndividual: 2,
   TrackingNumber: 1,
   User: TESTING_USERS.length + 1,
   Vocabulary: 354,
+  EmailTemplate: 1,
 };
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);

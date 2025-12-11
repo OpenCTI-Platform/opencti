@@ -215,7 +215,7 @@ const Playbooks: FunctionComponent = () => {
               )}
               createButton={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <PlaybookCreation paginationOptions={queryPaginationOptions} />
+                  <PlaybookCreation />
                 </Security>
               }
             />

@@ -3,21 +3,26 @@ import {
   addDraftWorkspace,
   deleteDraftWorkspace,
   findDraftWorkspacePaginated,
+  findDraftWorkspaceRestrictedPaginated,
   findById,
+  getCurrentUserAccessRight,
   getObjectsCount,
   getProcessingCount,
   listDraftObjects,
   listDraftRelations,
   listDraftSightingRelations,
-  validateDraftWorkspace
+  validateDraftWorkspace,
+  draftWorkspaceEditAuthorizedMembers,
 } from './draftWorkspace-domain';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
 import { filterMembersWithUsersOrgs } from '../../utils/access';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
     draftWorkspace: (_, { id }, context) => findById(context, context.user, id),
     draftWorkspaces: (_, args, context) => findDraftWorkspacePaginated(context, context.user, args),
+    draftWorkspacesRestricted: (_, args, context) => findDraftWorkspaceRestrictedPaginated(context, context.user, args),
     draftWorkspaceEntities: (_, args, context) => listDraftObjects(context, context.user, args),
     draftWorkspaceRelationships: async (_, args, context) => {
       context.changeDraftContext(args.draftId);
@@ -42,10 +47,15 @@ const draftWorkspaceResolvers: Resolvers = {
       return worksForDraft(context, context.user, draft.id, args) as unknown as any;
     },
     validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) as any : null),
+    authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
+    currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
   },
   Mutation: {
     draftWorkspaceAdd: (_, { input }, context) => {
       return addDraftWorkspace(context, context.user, input);
+    },
+    draftWorkspaceEditAuthorizedMembers: (_, { id, input }, context) => {
+      return draftWorkspaceEditAuthorizedMembers(context, context.user, id, input);
     },
     draftWorkspaceValidate: (_, { id }, context) => {
       return validateDraftWorkspace(context, context.user, id);

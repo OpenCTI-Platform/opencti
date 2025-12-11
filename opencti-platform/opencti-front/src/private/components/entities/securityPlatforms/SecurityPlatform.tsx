@@ -4,6 +4,7 @@ import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
 import { SecurityPlatform_securityPlatform$key } from '@components/entities/securityPlatforms/__generated__/SecurityPlatform_securityPlatform.graphql';
 import SecurityPlatformDetails from '@components/entities/securityPlatforms/SecurityPlatformDetails';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
@@ -69,7 +70,11 @@ interface SecurityPlatformProps {
   securityPlatformData: SecurityPlatform_securityPlatform$key;
 }
 
-const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformData }) => {
+const SecurityPlatform: React.FC<SecurityPlatformProps> = ({
+  securityPlatformData,
+}) => {
+  useInitCreateRelationshipContext();
+
   const securityPlatform = useFragment<SecurityPlatform_securityPlatform$key>(
     securityPlatformFragment,
     securityPlatformData,
