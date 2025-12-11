@@ -14,7 +14,7 @@ const caseResolvers: Resolvers = {
     cases: (_, args, context) => findCasesPaginated(context, context.user, args),
   },
   Case: {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     __resolveType(obj) {
       if (obj.entity_type) {

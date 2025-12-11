@@ -883,7 +883,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const eventFile = storeFileConverter(user, up);
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
     const nonResolvedFiles = files.map((f) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line @typescript-eslint/no-unused-vars
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
@@ -1009,7 +1009,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
       return;
     }
     const nonResolvedFiles = files.map((f) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line @typescript-eslint/no-unused-vars
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
@@ -1188,17 +1188,17 @@ export const aiActivityForThreats = async (context, user, stixCoreObject, langua
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
     topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topCountries = {};
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
     topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topRegions = {};
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
     topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
@@ -1304,17 +1304,17 @@ export const aiForecastForThreats = async (context, user, stixCoreObject, langua
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
     topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topCountries = {};
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
     topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topRegions = {};
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
     topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
@@ -1377,12 +1377,12 @@ export const aiActivityForVictims = async (context, user, stixCoreObject, langua
   const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topIntrusionSets = {};
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
     topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topMalwares = {};
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
     topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
@@ -1484,12 +1484,12 @@ export const aiForecastForVictims = async (context, user, stixCoreObject, langua
   const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topIntrusionSets = {};
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
     topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topMalwares = {};
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < 8; i++) {
     topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }

@@ -5,7 +5,7 @@ import { booleanConf, logApp } from './config/conf';
 
 const isPyroscopeEnable = booleanConf('app:telemetry:pyroscope:enabled', false);
 if (isPyroscopeEnable) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // oxlint-disable-next-line @typescript-eslint/no-require-imports
   const Pyroscope = require('@pyroscope/nodejs');
   const node = nconf.get('app:telemetry:pyroscope:identifier') ?? 'opencti';
   const exporter = nconf.get('app:telemetry:pyroscope:exporter');

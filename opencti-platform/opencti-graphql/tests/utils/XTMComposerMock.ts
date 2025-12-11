@@ -88,16 +88,16 @@ export class XTMComposerMock {
 
     switch (level) {
       case 'info':
-        console.log(formattedMessage); // eslint-disable-line no-console
+        console.log(formattedMessage); // oxlint-disable-line no-console
         break;
       case 'warn':
-        console.warn(formattedMessage); // eslint-disable-line no-console
+        console.warn(formattedMessage); // oxlint-disable-line no-console
         break;
       case 'debug':
-        console.debug(formattedMessage); // eslint-disable-line no-console
+        console.debug(formattedMessage); // oxlint-disable-line no-console
         break;
       default:
-        console.log(formattedMessage); // eslint-disable-line no-console
+        console.log(formattedMessage); // oxlint-disable-line no-console
     }
   }
 
@@ -296,7 +296,7 @@ export class XTMComposerMock {
     this.connectorLogLevels.set(connectorId, logLevel);
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   async stopConnector(connectorId: string) {
     // 1. Update logs
     await XTMComposerMock.updateConnectorLogs(connectorId, [
@@ -345,7 +345,7 @@ export class XTMComposerMock {
   }
 
   // Method to simulate a reboot loop scenario
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   async simulateRebootLoop(connectorId: string, restartCount: number = 5) {
     await XTMComposerMock.updateConnectorHealth(connectorId, {
       restart_count: restartCount,
@@ -360,17 +360,17 @@ export class XTMComposerMock {
   }
 
   // Wrapper methods for backward compatibility
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   async updateConnectorLogs(connectorId: string, logs: string[]): Promise<string> {
     return XTMComposerMock.updateConnectorLogs(connectorId, logs);
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   async updateConnectorCurrentStatus(connectorId: string, status: string): Promise<any> {
     return XTMComposerMock.updateConnectorCurrentStatus(connectorId, status);
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   async getConnectorsForManagers(): Promise<any[]> {
     return XTMComposerMock.getConnectorsForManagers();
   }

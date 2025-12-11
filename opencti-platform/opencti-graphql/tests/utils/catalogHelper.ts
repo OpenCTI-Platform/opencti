@@ -85,7 +85,7 @@ class CatalogHelper {
     return this.catalog.contracts.filter((contract) => contract.manager_supported);
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   getMinimalConfig(connector: ConnectorContract, overrides: Record<string, any> = {}): Array<{ key: string; value: string }> {
     const config: Array<{ key: string; value: string }> = [];
 
@@ -128,17 +128,17 @@ class CatalogHelper {
     return config;
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   getRequiredFields(connector: ConnectorContract): string[] {
     return connector.config_schema.required || [];
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   isManagerSupported(connector: ConnectorContract): boolean {
     return connector.manager_supported === true;
   }
 
-  // eslint-disable-next-line class-methods-use-this
+  // oxlint-disable-next-line class-methods-use-this
   getConnectorType(connector: ConnectorContract): string {
     return connector.container_type;
   }

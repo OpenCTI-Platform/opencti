@@ -73,7 +73,7 @@ export const up = async (next) => {
   };
 
   const linkedToRefRelationsDuplicatesIds = [];
-  // eslint-disable-next-line no-plusplus
+  // oxlint-disable-next-line no-plusplus
   for (let i = 0; i < linkedToRefRelations.length; i++) {
     const linkedToRef = linkedToRefRelations[i];
     const hasDuplicate = await searchRelatedToDuplicateFn(linkedToRef.fromId, linkedToRef.toId);

@@ -3594,6 +3594,62 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@oxlint/darwin-arm64@npm:1.31.0":
+  version: 1.31.0
+  resolution: "@oxlint/darwin-arm64@npm:1.31.0"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@oxlint/darwin-x64@npm:1.31.0":
+  version: 1.31.0
+  resolution: "@oxlint/darwin-x64@npm:1.31.0"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@oxlint/linux-arm64-gnu@npm:1.31.0":
+  version: 1.31.0
+  resolution: "@oxlint/linux-arm64-gnu@npm:1.31.0"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@oxlint/linux-arm64-musl@npm:1.31.0":
+  version: 1.31.0
+  resolution: "@oxlint/linux-arm64-musl@npm:1.31.0"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@oxlint/linux-x64-gnu@npm:1.31.0":
+  version: 1.31.0
+  resolution: "@oxlint/linux-x64-gnu@npm:1.31.0"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@oxlint/linux-x64-musl@npm:1.31.0":
+  version: 1.31.0
+  resolution: "@oxlint/linux-x64-musl@npm:1.31.0"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@oxlint/win32-arm64@npm:1.31.0":
+  version: 1.31.0
+  resolution: "@oxlint/win32-arm64@npm:1.31.0"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@oxlint/win32-x64@npm:1.31.0":
+  version: 1.31.0
+  resolution: "@oxlint/win32-x64@npm:1.31.0"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -4694,6 +4750,15 @@ __metadata:
     "@types/keygrip": "npm:*"
     "@types/node": "npm:*"
   checksum: 10c0/75f00c83d50998b610d4fe2ddb2544fde7eb6dc683f5e68831a4ecb458b465260b8e2df4e369880a67c5b946558322c4627403781eb076ff72ca16c7ab8c47dd
+  languageName: node
+  linkType: hard
+
+"@types/cross-spawn@npm:^6.0.6":
+  version: 6.0.6
+  resolution: "@types/cross-spawn@npm:6.0.6"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/e3d476bb6b3a54a8934a97fe6ee4bd13e2e5eb29073929a4be76a52466602ffaea420b20774ffe8503f9fa24f3ae34817e95e7f625689fb0d1c10404f5b2889c
   languageName: node
   linkType: hard
 
@@ -7631,6 +7696,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-oxlint@npm:1.31.0":
+  version: 1.31.0
+  resolution: "eslint-plugin-oxlint@npm:1.31.0"
+  dependencies:
+    jsonc-parser: "npm:^3.3.1"
+  checksum: 10c0/02c4edfe3ead70471a19d676b53eb0d2088ce0c03c0a0b6760f44dfcfb620f7fba001a788955b8b1aeace4dd0f82d43a01f2e4f6198d63361760b62bfa4ae593
+  languageName: node
+  linkType: hard
+
 "eslint-scope@npm:^8.4.0":
   version: 8.4.0
   resolution: "eslint-scope@npm:8.4.0"
@@ -9639,6 +9713,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsonc-parser@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "jsonc-parser@npm:3.3.1"
+  checksum: 10c0/269c3ae0a0e4f907a914bf334306c384aabb9929bd8c99f909275ebd5c2d3bc70b9bcd119ad794f339dec9f24b6a4ee9cd5a8ab2e6435e730ad4075388fc2ab6
+  languageName: node
+  linkType: hard
+
 "jsonfile@npm:^6.0.1":
   version: 6.2.0
   resolution: "jsonfile@npm:6.2.0"
@@ -10902,6 +10983,7 @@ __metadata:
     eslint-import-resolver-typescript: "npm:4.4.4"
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-import-newlines: "npm:1.4.0"
+    eslint-plugin-oxlint: "npm:1.31.0"
     eventsource: "npm:2.0.2"
     express: "npm:5.2.1"
     express-rate-limit: "npm:8.2.1"
@@ -10946,6 +11028,7 @@ __metadata:
     openid-client: "npm:5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:12.0.1"
+    oxlint: "npm:1.31.0"
     passport: "npm:0.7.0"
     passport-facebook: "npm:3.0.0"
     passport-github: "npm:1.1.0"
@@ -10966,6 +11049,7 @@ __metadata:
     uuid: "npm:11.1.0"
     uuid-time: "npm:1.0.0"
     validator: "npm:13.15.23"
+    vite-plugin-oxlint: "npm:1.5.0"
     vitest: "npm:4.0.15"
     winston: "npm:3.18.3"
     winston-daily-rotate-file: "npm:5.0.0"
@@ -11051,6 +11135,47 @@ __metadata:
   languageName: node
   linkType: hard
 
+"oxlint@npm:1.31.0, oxlint@npm:^1.29.0":
+  version: 1.31.0
+  resolution: "oxlint@npm:1.31.0"
+  dependencies:
+    "@oxlint/darwin-arm64": "npm:1.31.0"
+    "@oxlint/darwin-x64": "npm:1.31.0"
+    "@oxlint/linux-arm64-gnu": "npm:1.31.0"
+    "@oxlint/linux-arm64-musl": "npm:1.31.0"
+    "@oxlint/linux-x64-gnu": "npm:1.31.0"
+    "@oxlint/linux-x64-musl": "npm:1.31.0"
+    "@oxlint/win32-arm64": "npm:1.31.0"
+    "@oxlint/win32-x64": "npm:1.31.0"
+  peerDependencies:
+    oxlint-tsgolint: ">=0.8.1"
+  dependenciesMeta:
+    "@oxlint/darwin-arm64":
+      optional: true
+    "@oxlint/darwin-x64":
+      optional: true
+    "@oxlint/linux-arm64-gnu":
+      optional: true
+    "@oxlint/linux-arm64-musl":
+      optional: true
+    "@oxlint/linux-x64-gnu":
+      optional: true
+    "@oxlint/linux-x64-musl":
+      optional: true
+    "@oxlint/win32-arm64":
+      optional: true
+    "@oxlint/win32-x64":
+      optional: true
+  peerDependenciesMeta:
+    oxlint-tsgolint:
+      optional: true
+  bin:
+    oxc_language_server: bin/oxc_language_server
+    oxlint: bin/oxlint
+  checksum: 10c0/f8555b2549e8b93d5a7d628bc696220c7b82d243db8fecb7947fb2797b71e3c8caffe48a15d9ed370aff745aea5be7c72cfa49ec5a9c3f7c2e142b1cc5b89f49
+  languageName: node
+  linkType: hard
+
 "p-finally@npm:^1.0.0":
   version: 1.0.0
   resolution: "p-finally@npm:1.0.0"
@@ -11125,6 +11250,13 @@ __metadata:
   version: 1.0.1
   resolution: "package-json-from-dist@npm:1.0.1"
   checksum: 10c0/62ba2785eb655fec084a257af34dbe24292ab74516d6aecef97ef72d4897310bc6898f6c85b5cd22770eaa1ce60d55a0230e150fb6a966e3ecd6c511e23d164b
+  languageName: node
+  linkType: hard
+
+"package-manager-detector@npm:^1.5.0":
+  version: 1.6.0
+  resolution: "package-manager-detector@npm:1.6.0"
+  checksum: 10c0/6419d0b840be64fd45bcdcb7a19f09b81b65456d5e7f7a3daac305a4c90643052122f6ac0308afe548ffee75e36148532a2002ea9d292754f1e385aa2e1ea03b
   languageName: node
   linkType: hard
 
@@ -13465,6 +13597,20 @@ __metadata:
     core-util-is: "npm:1.0.2"
     extsprintf: "npm:^1.2.0"
   checksum: 10c0/293fb060a4c9b07965569a0c3e45efa954127818707995a8a4311f691b5d6687be99f972c759838ba6eecae717f9af28e3c49d2afc7bbdf5f0b675238f1426e8
+  languageName: node
+  linkType: hard
+
+"vite-plugin-oxlint@npm:1.5.0":
+  version: 1.5.0
+  resolution: "vite-plugin-oxlint@npm:1.5.0"
+  dependencies:
+    "@types/cross-spawn": "npm:^6.0.6"
+    cross-spawn: "npm:^7.0.6"
+    oxlint: "npm:^1.29.0"
+    package-manager-detector: "npm:^1.5.0"
+  peerDependencies:
+    vite: ^7.2.2
+  checksum: 10c0/47e4a0de9cf2990e161f0499b5df8af9acff3db6df7b5340199a262d3461948e94d9e09df6e33d89e898aea11ed6c14719d3b39202af60e02498ad94b887d490
   languageName: node
   linkType: hard
 

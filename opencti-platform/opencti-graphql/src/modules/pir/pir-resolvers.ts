@@ -50,7 +50,7 @@ const pirResolvers: Resolvers = {
       }
       return filterMembersWithUsersOrgs(context, context.user, creators);
     },
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir, args),
     authorizedMembers: (pir, _, context) => getAuthorizedMembers(context, context.user, pir),

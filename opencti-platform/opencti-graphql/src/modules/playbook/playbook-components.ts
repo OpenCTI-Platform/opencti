@@ -227,7 +227,7 @@ export const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> =
   }
 };
 
-// eslint-disable-next-line  @typescript-eslint/no-empty-object-type
+// oxlint-disable-next-line  @typescript-eslint/no-empty-object-type
 interface IngestionConfiguration {}
 const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = {
   id: 'PLAYBOOK_INGESTION_COMPONENT',
@@ -890,7 +890,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
           entityType: internalType,
           busTopicKey: ABSTRACT_STIX_DOMAIN_OBJECT,
         };
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         await editAuthorizedMembers(context, AUTOMATION_MANAGER_USER, args);
       }
@@ -932,7 +932,7 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
           entityType: internalType,
           busTopicKey: ABSTRACT_STIX_DOMAIN_OBJECT,
         };
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         await editAuthorizedMembers(context, AUTOMATION_MANAGER_USER, args);
       }

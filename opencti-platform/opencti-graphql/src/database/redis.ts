@@ -169,7 +169,7 @@ let redisClients: RedisClients;
 export const initializeOnlyRedisLockClient = async () => {
   const lock = await createRedisClient('lock', true);
   // Disable typescript check for this specific use case.
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   redisClients = { lock, base: null, pubsub: null };
 };

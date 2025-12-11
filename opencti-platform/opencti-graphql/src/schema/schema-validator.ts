@@ -50,7 +50,7 @@ export const validateAndFormatSchemaAttribute = (
     }
     // This is reference change to trim the input and prevent unuseful stream events
     // TODO Find a better way to rework the data
-    // eslint-disable-next-line no-param-reassign
+    // oxlint-disable-next-line no-param-reassign
     editInput.value = values;
     // Special validation for json
     if (attributeDefinition.format === 'json' && attributeDefinition.schemaDef) {

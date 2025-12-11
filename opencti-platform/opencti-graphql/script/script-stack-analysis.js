@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* oxlint-disable no-console */
 import { readFileSync } from 'fs';
 import { SourceMapConsumer } from 'source-map';
 

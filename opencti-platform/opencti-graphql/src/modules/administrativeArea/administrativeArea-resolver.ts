@@ -16,7 +16,7 @@ const administrativeAreaResolvers: Resolvers = {
     administrativeAreas: (_, args, context) => findAdministrativeAreaPaginated(context, context.user, args),
   },
   AdministrativeArea: {
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    /* oxlint-disable @typescript-eslint/ban-ts-comment */
     // @ts-ignore
     country: (administrativeArea, _, context) => locatedAtCountry(context, context.user, administrativeArea.id),
   },

@@ -307,7 +307,7 @@ export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order
     return file;
   });
   const nonResolvedFiles = files.map((f) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // oxlint-disable-next-line @typescript-eslint/no-unused-vars
     const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
     return nonResolvedFile;
   });

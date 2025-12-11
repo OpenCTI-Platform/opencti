@@ -27,9 +27,6 @@ export default defineConfig([
     ],
   },
 
-  // Oxlint rules
-  ...oxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
-
   // Base JS rules
   eslint.configs.recommended,
 

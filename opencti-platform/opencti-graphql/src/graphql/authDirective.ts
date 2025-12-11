@@ -1,5 +1,5 @@
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-// eslint-disable-next-line import/extensions
+// oxlint-disable-next-line import/extensions
 import { defaultFieldResolver } from 'graphql/index.js';
 import type { GraphQLFieldConfig, GraphQLSchema } from 'graphql';
 import { AuthRequired, ForbiddenAccess, LtsRequiredActivation, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';

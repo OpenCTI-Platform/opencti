@@ -1,7 +1,7 @@
 import https from 'node:https';
 import http from 'node:http';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
-// eslint-disable-next-line import/extensions
+// oxlint-disable-next-line import/extensions
 import nconf from 'nconf';
 import express from 'express';
 import { expressMiddleware } from '@as-integrations/express5';

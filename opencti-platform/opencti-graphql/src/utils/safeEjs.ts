@@ -1,4 +1,4 @@
-// eslint-disable-next-line max-classes-per-file
+// oxlint-disable-next-line max-classes-per-file
 import { parser as jsParser } from '@lezer/javascript';
 import type { Data, Options } from 'ejs';
 import { render } from 'ejs';
@@ -130,7 +130,7 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
               if (key.startsWith(safeReservedPrefix) || forbiddenProperties.has(key)) {
                 throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName: key })}`);
               }
-              // eslint-disable-next-line no-param-reassign
+              // oxlint-disable-next-line no-param-reassign
               target[key] = value;
             });
           });

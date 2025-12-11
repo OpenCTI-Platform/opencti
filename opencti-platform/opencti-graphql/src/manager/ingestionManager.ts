@@ -418,11 +418,11 @@ export const handleConfidenceToScoreTransformation = (ingestion: BasicStoreEntit
           if (indicator.extensions && indicator.extensions[STIX_EXT_OCTI]) {
             indicator.extensions[STIX_EXT_OCTI].score = indicator.confidence;
           } else if (indicator.extensions) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-expect-error
             indicator.extensions[STIX_EXT_OCTI] = { score: indicator.confidence };
           } else {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-expect-error
             indicator.extensions = { [STIX_EXT_OCTI]: { score: indicator.confidence } };
           }

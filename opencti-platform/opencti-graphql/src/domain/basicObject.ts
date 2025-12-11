@@ -43,7 +43,7 @@ export const findFiltersRepresentatives = async (
   if (idsToResolve.filter((e) => internalUsersIds.includes(e)).length > 0) {
     for (let index = 0; index < idsToResolve.length; index += 1) {
       if (internalUsersIds.includes(idsToResolve[index])) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         resolvedEntities[index] = INTERNAL_USERS[idsToResolve[index]] ?? undefined;
       }
