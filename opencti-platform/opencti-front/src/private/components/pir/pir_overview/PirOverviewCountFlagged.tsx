@@ -18,9 +18,9 @@ import React from 'react';
 import Grid from '@mui/material/Grid2';
 import { PirOverviewCountFlaggedFragment$key } from './__generated__/PirOverviewCountFlaggedFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import Paper from '../../../../components/Paper';
 import { monthsAgo } from '../../../../utils/Time';
 import PirRelationshipsMultiAreaChart from '../PirRelationshipsMultiAreaChart';
+import Card from '../../../../components/common/card/Card';
 
 const countFlaggedFragment = graphql`
   fragment PirOverviewCountFlaggedFragment on Pir {
@@ -45,7 +45,7 @@ const PirOverviewCountFlagged = ({ data }: PirOverviewCountFlaggedProps) => {
 
   return (
     <Grid size={{ xs: 12 }}>
-      <Paper title={t_i18n('Number of threats over time')}>
+      <Card title={t_i18n('Number of threats over time')}>
         <PirRelationshipsMultiAreaChart
           relationshipTypes={['in-pir']}
           dataSelection={dataSelection}
@@ -57,7 +57,7 @@ const PirOverviewCountFlagged = ({ data }: PirOverviewCountFlaggedProps) => {
           withoutTitle
           isReadOnly
         />
-      </Paper>
+      </Card>
     </Grid>
   );
 };

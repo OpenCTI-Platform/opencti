@@ -470,7 +470,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         stop_time: parse(values.stop_time).format(),
       };
       try {
-        // eslint-disable-next-line no-await-in-loop
+         
         await commit(finalValues);
       } catch (_error) {
         setSubmitting(false);
@@ -893,8 +893,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
       </Formik>
     );
   };
-
-  // eslint-disable-next-line
+   
   const renderLoader = () => {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -918,8 +917,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
           color="primary"
           aria-label="Label"
           onClick={handleOpen}
-          style={{ float: 'left', margin: '-15px 0 0 -2px', zIndex: 1 }}
-          size="large"
+          size="small"
         >
           <Add fontSize="small" />
         </IconButton>

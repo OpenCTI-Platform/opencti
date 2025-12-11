@@ -658,8 +658,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           coverage_score: typeof c.coverage_score === 'string' ? parseInt(c.coverage_score, 10) : c.coverage_score,
         }))) : R.identity,
       )(values);
-      try {
-        // eslint-disable-next-line no-await-in-loop
+      try {     
         await commit(finalValues);
       } catch (error) {
         setSubmitting(false);
@@ -820,7 +819,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     let fromEntities = [sourceEntity];
     let toEntities = targetEntities;
     if (isRelationReversed) {
-      // eslint-disable-next-line prefer-destructuring
       fromEntities = targetEntities;
       toEntities = [sourceEntity];
     }
@@ -928,14 +926,12 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
 
   return (
     <>
-      {/* eslint-disable-next-line no-nested-ternary */}
       {variant === 'inLine' && (
         <IconButton
           color="primary"
           aria-label="Label"
           onClick={() => setOpen(true)}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large"
+          size="small"
         >
           <Add fontSize="small" />
         </IconButton>

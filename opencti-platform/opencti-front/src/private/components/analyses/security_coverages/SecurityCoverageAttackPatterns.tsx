@@ -6,13 +6,12 @@ import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
 import React, { useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import StixCoreRelationshipPopover from '@components/common/stix_core_relationships/StixCoreRelationshipPopover';
-import { Box, ListItemButton } from '@mui/material';
+import { Box, ListItemButton, Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -26,6 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
+import Card from '../../../../components/common/card/Card';
 
 const securityCoverageAttackPatternsFragment = graphql`
   fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
@@ -128,12 +128,10 @@ const SecurityCoverageAttackPatterns = ({
   }, [killChains.length, selectedKillChain]); // Use killChains.length instead of killChains to avoid dependency array issues
 
   return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 15, justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant="h4" style={{ whiteSpace: 'nowrap', marginRight: 10 }}>
-            {t_i18n('Attack patterns coverage')}
-          </Typography>
+    <Card 
+      title={t_i18n('Attack patterns coverage')}
+      action={(
+        <Stack direction='row' spacing={1}>
           <StixCoreRelationshipCreationFromEntity
             entityId={securityCoverage.id}
             objectId={securityCoverage.id}
@@ -148,8 +146,6 @@ const SecurityCoverageAttackPatterns = ({
             isCoverage={true}
             variant="inLine"
           />
-        </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <ToggleButtonGroup
             size="small"
             value={viewMode}
@@ -182,47 +178,40 @@ const SecurityCoverageAttackPatterns = ({
             </ToggleButton>
           </ToggleButtonGroup>
           {showKillChainSelector && viewMode === 'matrix' && (
-            <FormControl size="small" style={{ width: 194, height: 30 }}>
-              <Select
-                value={selectedKillChain}
-                onChange={handleKillChainChange}
-                variant="outlined"
-                displayEmpty
-                style={{ height: 30 }}
-              >
-                {killChains.map((chain) => (
-                  <MenuItem key={chain} value={chain}>
-                    {(() => {
-                      if (chain === 'mitre-attack') return 'MITRE ATT&CK';
-                      if (chain === 'capec') return 'CAPEC';
-                      if (chain === 'disarm') return 'DISARM';
-                      return chain.toUpperCase();
-                    })()}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
+          <FormControl size="small" style={{ width: 194, height: 30 }}>
+            <Select
+              value={selectedKillChain}
+              onChange={handleKillChainChange}
+              variant="outlined"
+              displayEmpty
+              style={{ height: 30 }}
+            >
+              {killChains.map((chain) => (
+                <MenuItem key={chain} value={chain}>
+                  {(() => {
+                        if (chain === 'mitre-attack') return 'MITRE ATT&CK';
+                        if (chain === 'capec') return 'CAPEC';
+                        if (chain === 'disarm') return 'DISARM';
+                        return chain.toUpperCase();
+                      })()}
+                </MenuItem>
+                  ))}
+            </Select>
+          </FormControl>
+            )}
           <SearchInput
             variant="thin"
             onSubmit={setSearchTerm}
           />
-        </div>
-      </div>
-      <Paper
-        variant="outlined"
-        style={{
-          padding: 15,
-          borderRadius: 4,
-        }}
-        className="paper-for-grid"
-      >
-        {viewMode === 'matrix' ? (
-          <SecurityCoverageAttackPatternsMatrix
-            securityCoverage={securityCoverage}
-            searchTerm={searchTerm}
-            selectedKillChain={selectedKillChain}
-          />
+        </Stack>
+        )}
+    >
+      {viewMode === 'matrix' ? (
+        <SecurityCoverageAttackPatternsMatrix
+          securityCoverage={securityCoverage}
+          searchTerm={searchTerm}
+          selectedKillChain={selectedKillChain}
+        />
         ) : (
           <>
             <div className="clearfix" />
@@ -276,8 +265,7 @@ const SecurityCoverageAttackPatterns = ({
             </List>
           </>
         )}
-      </Paper>
-    </div>
+    </Card>
   );
 };
 

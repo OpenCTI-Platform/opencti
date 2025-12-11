@@ -39,6 +39,7 @@ import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import AddNotesFunctionalComponent from './AddNotesFunctionalComponent';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import CardTitle from '../../../../components/common/card/CardTitle';
 
 export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipNotesCardsQuery(
@@ -139,6 +140,31 @@ type HeaderProps = {
 } & Pick<StixCoreObjectOrStixCoreRelationshipNotesCardsProps, 'paginationOptions' | 'title'>;
 
 const Header = ({ title, id, data, paginationOptions, onToggleWrite }: HeaderProps) => {
+  const actions = (
+    <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
+      <Box>
+        <IconButton
+          color="primary"
+          onClick={onToggleWrite}
+          size="small"
+        >
+          <EditOutlined fontSize="small" />
+        </IconButton>
+
+        <AddNotesFunctionalComponent
+          stixCoreObjectOrStixCoreRelationshipId={id}
+          stixCoreObjectOrStixCoreRelationshipNotes={data}
+          paginationOptions={paginationOptions}
+        />
+      </Box>
+    </Security>
+  );
+
+  return (
+    <CardTitle action={actions}>
+      {title}
+    </CardTitle>
+  );
   return (
     <Stack direction="row" flex={1}>
       <Typography variant="h4">{title}</Typography>
@@ -428,8 +454,8 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
         title={title}
       />
 
-      {
-        notes.map(({ node }) => {
+      <Stack spacing={2}>
+        {notes.map(({ node }) => {
           return (
             <StixCoreObjectOrStixCoreRelationshipNoteCard
               key={node.id}
@@ -438,42 +464,42 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
               paginationOptions={paginationOptions}
             />
           );
-        })
-      }
-
-      <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
-        <Accordion
-          expanded={open}
-          variant="outlined"
-          sx={{
+        })}
+        
+        <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
+          <Accordion
+            expanded={open}
+            variant="outlined"
+            sx={{
             spacing: 1,
             borderBottomLeftRadius: '4px!important', // override mui theme accordion
             borderBottomRightRadius: '4px!important',
             borderRadius: 1,
             '&:before': { backgroundColor: 'transparent' },
           }}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreOutlined />}
-            onClick={handleToggleWrite}
-            sx={{ spacing: 1 }}
           >
-            <Stack direction="row" spacing={1}>
-              <RateReviewOutlined />
-              <Typography>{t_i18n('Write a note')}</Typography>
-            </Stack>
-          </AccordionSummary>
+            <AccordionSummary
+              expandIcon={<ExpandMoreOutlined />}
+              onClick={handleToggleWrite}
+              sx={{ spacing: 1 }}
+            >
+              <Stack direction="row" spacing={1}>
+                <RateReviewOutlined />
+                <Typography>{t_i18n('Write a note')}</Typography>
+              </Stack>
+            </AccordionSummary>
 
-          <AccordionDetails>
-            <NoteForm
-              defaultMarkings={defaultMarkings}
-              onToggleWrite={handleToggleWrite}
-              onToggleMore={handleMore}
-              onSubmit={onSubmit}
-            />
-          </AccordionDetails>
-        </Accordion>
-      </Security>
+            <AccordionDetails>
+              <NoteForm
+                defaultMarkings={defaultMarkings}
+                onToggleWrite={handleToggleWrite}
+                onToggleMore={handleMore}
+                onSubmit={onSubmit}
+              />
+            </AccordionDetails>
+          </Accordion>
+        </Security>
+      </Stack>
     </div>
   );
 };
