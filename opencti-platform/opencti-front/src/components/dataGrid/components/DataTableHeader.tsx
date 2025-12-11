@@ -33,6 +33,11 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
         visibility: 'visible',
       },
     },
+    textTransform: 'lowercase',
+  },
+  title: {'&::first-letter': {
+      textTransform: 'uppercase',
+    },
   },
   label: {
     paddingLeft: theme.spacing(1),
@@ -108,7 +113,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
     >
       <div className={classes.label} onClick={throttleSortColumn}>
         <Tooltip title={t_i18n(column.label)}>
-          <span>{t_i18n(column.label).toUpperCase()}</span>
+          <span className={classes.title}>{t_i18n(column.label)}</span>
         </Tooltip>
         {sortBy && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
       </div>
