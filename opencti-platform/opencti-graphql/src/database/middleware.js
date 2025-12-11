@@ -2061,8 +2061,16 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
 
 const buildAttribute = async (context, user, key, array) => {
   const results = await Promise.all(array.map(async (item) => {
+    if(!item){
+      return item;
+    }
     if (typeof item === 'object') {
-      return extractEntityRepresentativeName(item, 250);
+      if(item?.entity_type !== undefined)
+      {
+        return extractEntityRepresentativeName(item, 250);
+      } else {
+        return item?.toString();
+      }
     } else if (typeof item === 'string' && key === creatorsAttribute.name) {
       const users = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_USER);
       const creator = users.get(item);
