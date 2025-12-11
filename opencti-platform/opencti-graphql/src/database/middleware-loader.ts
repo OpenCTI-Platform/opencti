@@ -29,12 +29,12 @@ import { type Filter, type FilterGroup, FilterMode, FilterOperator, type InputMa
 import {
   ASSIGNEE_FILTER,
   CREATOR_FILTER,
-  ID_FILTER,
+  ID_SUBFILTER,
   INSTANCE_REGARDING_OF,
   INSTANCE_REGARDING_OF_DIRECTION_FORCED,
   INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
   PARTICIPANT_FILTER,
-  RELATION_TYPE_FILTER
+  RELATION_TYPE_SUBFILTER,
 } from '../utils/filtering/filtering-constants';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
@@ -474,8 +474,8 @@ export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity
       {
         key: [INSTANCE_REGARDING_OF],
         values: [
-          ...(connectedEntityId === null ? [] : [{ key: ID_FILTER, values: [connectedEntityId] }]),
-          { key: RELATION_TYPE_FILTER, values: [relationType] },
+          ...(connectedEntityId === null ? [] : [{ key: ID_SUBFILTER, values: [connectedEntityId] }]),
+          { key: RELATION_TYPE_SUBFILTER, values: [relationType] },
           { key: INSTANCE_REGARDING_OF_DIRECTION_FORCED, values: [true] },
           { key: INSTANCE_REGARDING_OF_DIRECTION_REVERSE, values: [reverse_relation] },
         ]
