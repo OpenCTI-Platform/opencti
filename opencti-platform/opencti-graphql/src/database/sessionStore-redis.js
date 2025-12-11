@@ -64,11 +64,11 @@ class RedisStore extends Store {
       if (cachedTouch) {
         return done(null, 'OK');
       }
-      return extendSession(key, this.ttl).then(((ret) => {
+      return extendSession(key, this.ttl).then((ret) => {
         if (ret !== 1) return done(null, 'EXPIRED');
         touchCache.set(`touch-${key}`, 'touched');
         return done(null, 'OK');
-      }));
+      });
     };
     this.locker.acquire(key, sessionExtender, (error, result) => {
       return cb(error, result);

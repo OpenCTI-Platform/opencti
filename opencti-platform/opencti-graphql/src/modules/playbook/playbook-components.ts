@@ -358,7 +358,7 @@ const extendsBundleElementsWithExtensions = (bundle: StixBundle): StixBundle => 
       data.extensions[STIX_EXT_OCTI] = { extension_type: 'property-extension', type: openctiType } as StixOpenctiExtension;
     }
     if (isStixCyberObservable(openctiType)) {
-      const cyberObject = (data as StixCyberObject);
+      const cyberObject = data as StixCyberObject;
       if (isEmptyField(cyberObject.extensions[STIX_EXT_OCTI_SCO])) {
         cyberObject.extensions[STIX_EXT_OCTI_SCO] = { extension_type: 'property-extension' } as CyberObjectExtension;
       }

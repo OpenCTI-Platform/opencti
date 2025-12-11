@@ -296,7 +296,7 @@ export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKe
   return {
     ...filterGroup,
     filters: filterGroup.filters.map((f) => replaceFilterKeyInFilter(f, oldKey, newKey)),
-    filterGroups: filterGroup.filterGroups.map(((fg) => replaceFilterKey(fg, oldKey, newKey)))
+    filterGroups: filterGroup.filterGroups.map((fg) => replaceFilterKey(fg, oldKey, newKey))
   };
 };
 

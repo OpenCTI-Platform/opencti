@@ -148,7 +148,7 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
     }
     if (editInput.key === 'authentication_value') {
       const { authentication_value, authentication_type } = await findById(context, user, ingestionId);
-      const authenticationValueField = input.find(((oldEditInput) => oldEditInput.key === 'authentication_value'));
+      const authenticationValueField = input.find((oldEditInput) => oldEditInput.key === 'authentication_value');
       if (authenticationValueField && authenticationValueField.value[0]) {
         verifyIngestionAuthenticationContent(authentication_type, authenticationValueField.value[0]);
       }

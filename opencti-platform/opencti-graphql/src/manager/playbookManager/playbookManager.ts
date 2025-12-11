@@ -269,7 +269,7 @@ const initPlaybookManager = () => {
         const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
         if (instance && instance.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
           const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-          const cronConfiguration = (JSON.parse(instance.configuration ?? '{}') as CronConfiguration);
+          const cronConfiguration = JSON.parse(instance.configuration ?? '{}') as CronConfiguration;
           if (shouldTriggerNow(cronConfiguration, baseDate) && cronConfiguration.filters) {
             logApp.info(`[OPENCTI-MODULE] Running playbook ${instance.name} for cron ${cronConfiguration.period} (${cronConfiguration.triggerTime})`);
             const jsonFilters = JSON.parse(cronConfiguration.filters);
