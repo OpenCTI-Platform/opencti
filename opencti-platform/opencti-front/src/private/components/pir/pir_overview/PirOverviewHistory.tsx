@@ -28,7 +28,7 @@ import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { PirOverviewHistoryPirFragment$key } from './__generated__/PirOverviewHistoryPirFragment.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
-import Paper from '../../../../components/Paper';
+import Card from '../../../../components/common/card/Card';
 
 const pirFragment = graphql`
   fragment PirOverviewHistoryPirFragment on Pir {
@@ -86,9 +86,10 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
   const history = (pirLogs?.edges ?? []).flatMap((e) => e?.node ?? []);
 
   return (
-    <Paper
+    <Card
+      fullHeight={false}
       title={t_i18n('News feed')}
-      style={{ maxHeight: '899px', overflow: 'auto' }}
+      sx={{ maxHeight: '899px', overflow: 'auto' }}
     >
       <div style={{ display: 'flex', gap: theme.spacing(0.5), flexDirection: 'column' }}>
         {history.length === 0 && (
@@ -125,7 +126,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
                   </div>
                 </Tooltip>
                 <div>
-                  <Typography variant="body2" color={theme.palette.text?.secondary}>
+                  <Typography variant="body2" color={theme.palette.text?.light}>
                     {nsdt(timestamp)}
                   </Typography>
                   <PirHistoryMessage
@@ -138,7 +139,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
           );
         })}
       </div>
-    </Paper>
+    </Card>
   );
 };
 

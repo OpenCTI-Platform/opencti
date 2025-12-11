@@ -1,10 +1,9 @@
-import { CSSProperties, ReactNode } from 'react';
-import { Typography } from '@mui/material';
+import { CSSProperties, PropsWithChildren, ReactNode } from 'react';
+import { Stack, SxProps, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../Theme';
 
-interface CardLabelProps {
-  children: ReactNode,
+interface CardTitleProps extends PropsWithChildren {
   action?: ReactNode,
   style?: CSSProperties,
 }
@@ -13,20 +12,16 @@ const CardTitle = ({
   children,
   action,
   style = {},
-}: CardLabelProps) => {
+}: CardTitleProps) => {
   const theme = useTheme<Theme>();
 
-  const containerStyle: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
+  const containerSx: SxProps = {
     height: '19px',
-    justifyContent: 'space-between',
     marginBottom: theme.spacing(1),
     ...style,
   };
 
-  const titleStyle: CSSProperties = {
+  const titleSx: SxProps = {
     marginBottom: 0,
     textTransform: 'capitalize',
     color: theme.palette.text.light,
@@ -34,12 +29,17 @@ const CardTitle = ({
   };
 
   return (
-    <div style={containerStyle}>
-      <Typography variant="body2" style={titleStyle}>
+    <Stack 
+      direction='row'
+      justifyContent='space-between'
+      alignItems='end'
+      sx={containerSx}
+    >
+      <Typography variant="body2" sx={titleSx}>
         {children}
       </Typography>
       {action}
-    </div>
+    </Stack>
   );
 };
 
