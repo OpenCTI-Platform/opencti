@@ -51,7 +51,7 @@ export const findWorkPaginated = (context, user, args = {}) => {
   const finalArgs = R.pipe(
     R.assoc('type', ENTITY_TYPE_WORK),
     R.assoc('orderBy', args.orderBy || 'timestamp'),
-    R.assoc('orderMode', args.orderMode || 'desc')
+    R.assoc('orderMode', args.orderMode || 'desc'),
   )(args);
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
@@ -78,7 +78,7 @@ export const worksForDraft = async (context, user, draftId, args = {}) => {
         key: 'draft_context',
         values: [draftId],
         operator: 'eq',
-        mode: 'or'
+        mode: 'or',
       },
     ],
     filterGroups: [],
@@ -132,7 +132,7 @@ export const deleteWork = async (context, user, workId) => {
       event_scope: 'delete',
       event_access: 'administration',
       message: `deletes Connector Work \`${work.name}\``,
-      context_data: { id: workId, entity_type: ENTITY_TYPE_WORK, input: work }
+      context_data: { id: workId, entity_type: ENTITY_TYPE_WORK, input: work },
     });
   }
   return workId;
@@ -169,7 +169,7 @@ export const deleteWorkForConnector = async (context, user, connectorId) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `cleans \`all works\` for connector \`${connector.name}\``,
-    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: { id: connectorId } }
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: { id: connectorId } },
   });
   return true;
 };
@@ -191,10 +191,10 @@ export const deleteWorkForSource = async (sourceId) => {
         bool: {
           must: [
             { term: { 'entity_type.keyword': { value: ENTITY_TYPE_WORK } } },
-            { term: { 'event_source_id.keyword': { value: sourceId } } }
+            { term: { 'event_source_id.keyword': { value: sourceId } } },
           ],
-        }
-      }
+        },
+      },
     },
   }).catch((err) => {
     throw DatabaseError('[SEARCH] Error deleting all works ', { sourceId, cause: err });
@@ -228,7 +228,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     completed_number: 0,
     messages: [],
     errors: [],
-    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: [...fileMarkings]
+    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: [...fileMarkings],
   };
   if (draftContext) {
     work.draft_context = draftContext;

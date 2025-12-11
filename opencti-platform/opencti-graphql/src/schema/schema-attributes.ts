@@ -141,7 +141,7 @@ export const schemaAttributesDefinition = {
       if (directAttributes.has(attribute.name)) {
         throw UnsupportedError('You can\'t register two attributes with the same name on an entity', {
           attributeName: attribute.name,
-          entityType
+          entityType,
         });
       }
       // Check sortBy on object
@@ -150,7 +150,7 @@ export const schemaAttributesDefinition = {
         if (correspondingMapping.type !== attribute.sortBy.type) {
           throw UnsupportedError('You can\'t define a sortBy with path and type that do not match the corresponding mapping', {
             attributeName: attribute.name,
-            entityType
+            entityType,
           });
         }
       }
@@ -268,7 +268,7 @@ export const schemaAttributesDefinition = {
       throw FunctionalError(`Cannot resolve path [${path}], missing schema definition for attribute [${pathTokens[0]}}]`);
     }
     return getAttributeMappingFromPath(path, schemaDef);
-  }
+  },
 };
 
 // -- TYPE --

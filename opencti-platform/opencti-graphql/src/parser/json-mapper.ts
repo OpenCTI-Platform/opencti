@@ -24,7 +24,7 @@ import {
   type JsonMapperRepresentation,
   JsonMapperRepresentationType,
   type RepresentationAttribute,
-  type SimpleAttributePath
+  type SimpleAttributePath,
 } from '../modules/internal/jsonMapper/jsonMapper-types';
 import type { StixObject } from '../types/stix-2-1-common';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
@@ -68,7 +68,7 @@ const extractComplexPathFromJson = async (
   metaData: Record<string, any>,
   record: JSON,
   attribute: ComplexAttributePath,
-  attrDef?: AttributeDefinition
+  attrDef?: AttributeDefinition,
 ) => {
   const { variables, formula } = attribute;
   const data: any = { ...metaData };
@@ -79,7 +79,7 @@ const extractComplexPathFromJson = async (
       path: variable.path,
       json: onBase ? base : record,
       wrap: attrDef?.multiple ?? false,
-      flatten: true
+      flatten: true,
     });
   }
   data.patternFromValue = (k: string, value: string) => {
@@ -110,7 +110,7 @@ const extractComplexPathFromJson = async (
     delimiter: '?',
     async: true,
     maxExecutedStatementCount: 10000,
-    maxExecutionDuration: 5000
+    maxExecutionDuration: 5000,
   });
   return attrDef ? format(val, attrDef, attribute) : val;
 };
@@ -127,7 +127,7 @@ const extractSimpleMultiPathFromJson = (
     path,
     json: onBase ? base : record,
     wrap: attrDef.multiple ?? false,
-    flatten: true
+    flatten: true,
   });
   if (Array.isArray(val)) {
     const formattedValues = val.map((value) => {
@@ -285,13 +285,13 @@ const handleBasedOnAttribute = async (
         if (attribute.key === 'from') {
           input.__froms = entities.map((e) => ({
             from: e,
-            fromType: e[entityType.name]
+            fromType: e[entityType.name],
           }));
         }
         if (attribute.key === 'to') {
           input.__tos = entities.map((e) => ({
             to: e,
-            toType: e[entityType.name]
+            toType: e[entityType.name],
           }));
         }
         // Is relation ref

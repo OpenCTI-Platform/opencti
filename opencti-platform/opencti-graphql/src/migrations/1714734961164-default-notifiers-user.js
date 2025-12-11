@@ -15,15 +15,15 @@ export const up = async (next) => {
           { term: { 'entity_type.keyword': { value: 'User' } } },
         ],
         must_not: [
-          { exists: { field: 'personal_notifiers' } }
-        ]
+          { exists: { field: 'personal_notifiers' } },
+        ],
       },
     },
   };
   await elUpdateByQueryForMigration(
     message,
     [READ_INDEX_INTERNAL_OBJECTS],
-    updateQuery
+    updateQuery,
   );
   next();
 };

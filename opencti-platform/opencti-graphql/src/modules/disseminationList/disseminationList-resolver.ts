@@ -20,7 +20,7 @@ import {
   fieldPatchDisseminationList,
   findDisseminationListPaginated,
   findById,
-  sendToDisseminationList
+  sendToDisseminationList,
 } from './disseminationList-domain';
 
 const disseminationListResolvers: Resolvers = {
@@ -41,8 +41,8 @@ const disseminationListResolvers: Resolvers = {
     },
     disseminationListSend: (_, { id, input }, context) => {
       return sendToDisseminationList(context, context.user, id, input);
-    }
-  }
+    },
+  },
 };
 
 export default disseminationListResolvers;

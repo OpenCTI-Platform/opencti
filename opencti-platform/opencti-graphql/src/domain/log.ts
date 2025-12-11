@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { elCount, elPaginate, type PaginateOpts } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
 import { distributionHistory, timeSeriesHistory } from '../database/middleware';
-import { INDEX_HISTORY, READ_INDEX_HISTORY, } from '../database/utils';
+import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';

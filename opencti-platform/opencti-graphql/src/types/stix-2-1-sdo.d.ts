@@ -6,7 +6,7 @@ import type {
   StixKillChainPhase,
   StixOpenctiExtension,
   StixMitreExtension,
-  StixContainerExtension
+  StixContainerExtension,
 } from './stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from './stix-2-1-extensions';
 

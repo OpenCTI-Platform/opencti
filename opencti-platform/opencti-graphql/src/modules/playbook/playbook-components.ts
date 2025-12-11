@@ -33,7 +33,7 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_PARTICIPANT,
-  OPENCTI_ADMIN_UUID
+  OPENCTI_ADMIN_UUID,
 } from '../../schema/general';
 import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
@@ -49,7 +49,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_TOOL,
   isStixDomainObjectContainer,
-  STIX_DOMAIN_OBJECT_CONTAINER_CASES
+  STIX_DOMAIN_OBJECT_CONTAINER_CASES,
 } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
@@ -114,8 +114,8 @@ const PLAYBOOK_LOGGER_COMPONENT_SCHEMA: JSONSchemaType<LoggerConfiguration> = {
         { const: 'debug', title: 'debug' },
         { const: 'info', title: 'info' },
         { const: 'warn', title: 'warn' },
-        { const: 'error', title: 'error' }
-      ]
+        { const: 'error', title: 'error' },
+      ],
     },
   },
   required: ['level'],
@@ -135,7 +135,7 @@ const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
       logApp._log(playbookNode.configuration.level, '[PLAYBOOK MANAGER] Logger component output', { bundle });
     }
     return { output_port: 'out', bundle, forceBundleTracking: true };
-  }
+  },
 };
 
 export interface StreamConfiguration {
@@ -166,7 +166,7 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   schema: async () => PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA,
   executor: async ({ bundle }) => {
     return ({ output_port: 'out', bundle, forceBundleTracking: true });
-  }
+  },
 };
 
 export interface ManualTriggerConfiguration {
@@ -191,7 +191,7 @@ const PLAYBOOK_INTERNAL_MANUAL_TRIGGER: PlaybookComponent<ManualTriggerConfigura
   schema: async () => PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA,
   executor: async ({ bundle }) => {
     return ({ output_port: 'out', bundle, forceBundleTracking: true });
-  }
+  },
 };
 
 export interface CronConfiguration {
@@ -224,7 +224,7 @@ export const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> =
   schema: async () => PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA,
   executor: async ({ bundle }) => {
     return ({ output_port: 'out', bundle, forceBundleTracking: true });
-  }
+  },
 };
 
 // eslint-disable-next-line  @typescript-eslint/no-empty-object-type
@@ -250,7 +250,7 @@ const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = 
       update: false,
     });
     return { output_port: undefined, bundle, forceBundleTracking: true };
-  }
+  },
 };
 
 interface MatchConfiguration {
@@ -293,7 +293,7 @@ export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> 
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters);
     return { output_port: isMatch ? 'out' : 'no-match', bundle };
-  }
+  },
 };
 
 interface ReduceConfiguration {
@@ -333,7 +333,7 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     }
     const newBundle = { ...bundle, objects: matchedElements };
     return { output_port: 'out', bundle: newBundle };
-  }
+  },
 };
 
 interface ConnectorConfiguration {
@@ -401,11 +401,11 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
           },
           applicant_id: AUTOMATION_MANAGER_USER.id, // System user is responsible for the automation
           trigger: isNotEmptyField(baseData.extensions?.[STIX_EXT_OCTI]?.id) ? 'create' : 'update',
-          mode: 'auto'
+          mode: 'auto',
         },
         event: {
           entity_id: dataInstanceId,
-          bundle
+          bundle,
         },
       };
       await pushToConnector(playbookNode.configuration.connector, message);
@@ -423,7 +423,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
     //   }
     // }
     return { output_port: 'out', bundle: stixBundle };
-  }
+  },
 };
 
 interface ContainerWrapperConfiguration {
@@ -441,7 +441,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapp
       uniqueItems: true,
       default: [],
       $ref: 'Case templates',
-      items: { type: 'string', oneOf: [] }
+      items: { type: 'string', oneOf: [] },
     },
     all: { type: 'boolean', $ref: 'Wrap all elements included in the bundle', default: false },
     newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false },
@@ -541,7 +541,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         standard_id: standardId,
         entity_type: container_type,
         parent_types: getParentTypes(container_type),
-        ...containerData
+        ...containerData,
       } as StoreCommon;
       const container = convertStoreToStix_2_1(storeContainer) as StixReport | StixCaseIncident;
       // add all objects in the container if requested in the playbook config
@@ -587,7 +587,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       bundle.objects.push(container);
     }
     return { output_port: 'out', bundle };
-  }
+  },
 };
 
 interface SecurityCoverageConfiguration {
@@ -608,15 +608,15 @@ const PLAYBOOK_SECURITY_COVERAGE_COMPONENT_SCHEMA: JSONSchemaType<SecurityCovera
     type_affinity: {
       type: 'string',
       $ref: 'Type affinity',
-      default: 'ENDPOINT'
+      default: 'ENDPOINT',
     },
     platforms_affinity: {
       type: 'array',
       uniqueItems: true,
       default: ['windows', 'linux', 'macos'],
       $ref: 'Platform(s) affinity',
-      items: { type: 'string', oneOf: [] }
-    }
+      items: { type: 'string', oneOf: [] },
+    },
   },
   required: ['periodicity', 'duration', 'type_affinity', 'platforms_affinity'],
 };
@@ -663,7 +663,7 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
         standard_id: standardId,
         entity_type: ENTITY_TYPE_SECURITY_COVERAGE,
         parent_types: getParentTypes(ENTITY_TYPE_SECURITY_COVERAGE),
-        ...securityCoverageData
+        ...securityCoverageData,
       } as StoreEntitySecurityCoverage;
       const securityCoverage = convertStoreToStix_2_1(storeSecurityCoverage) as StixSecurityCoverage;
       bundle.objects.push(securityCoverage);
@@ -689,7 +689,7 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
             standard_id: standardId,
             entity_type: ENTITY_TYPE_SECURITY_COVERAGE,
             parent_types: getParentTypes(ENTITY_TYPE_SECURITY_COVERAGE),
-            ...securityCoverageData
+            ...securityCoverageData,
           } as StoreCommon;
           const securityCoverage = convertStoreToStix_2_1(storeContainer) as StixSecurityCoverage;
           bundle.objects.push(securityCoverage);
@@ -697,7 +697,7 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
       }
     }
     return { output_port: 'out', bundle };
-  }
+  },
 };
 
 export interface SharingConfiguration {
@@ -712,7 +712,7 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
       uniqueItems: true,
       default: [],
       $ref: 'Target organizations',
-      items: { type: 'string', oneOf: [] }
+      items: { type: 'string', oneOf: [] },
     },
     all: { type: 'boolean', $ref: 'Share all elements included in the bundle', default: false },
   },
@@ -735,7 +735,7 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
     const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsValues, {
       type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
       baseData: true,
-      baseFields: ['standard_id']
+      baseFields: ['standard_id'],
     });
     if (organizationsByIds.length === 0) {
       return { output_port: 'out', bundle }; // nothing to do since organizations are empty
@@ -748,7 +748,7 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
       }
     }
     return { output_port: 'out', bundle };
-  }
+  },
 };
 
 export interface UnsharingConfiguration {
@@ -763,7 +763,7 @@ const PLAYBOOK_UNSHARING_COMPONENT_SCHEMA: JSONSchemaType<UnsharingConfiguration
       uniqueItems: true,
       default: [],
       $ref: 'Target organizations',
-      items: { type: 'string', oneOf: [] }
+      items: { type: 'string', oneOf: [] },
     },
     all: { type: 'boolean', $ref: 'Unshare all elements included in the bundle', default: false },
   },
@@ -786,7 +786,7 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
     const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsValues, {
       type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
       baseData: true,
-      baseFields: ['standard_id']
+      baseFields: ['standard_id'],
     });
     if (organizationsByIds.length === 0) {
       return { output_port: 'out', bundle }; // nothing to do since organizations are empty
@@ -802,7 +802,7 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
       }
     }
     return { output_port: 'out', bundle };
-  }
+  },
 };
 
 export interface AccessRestrictionsConfiguration {
@@ -823,7 +823,7 @@ const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<AccessRestri
         groupsRestriction: [],
       }],
       $ref: 'Access restrictions',
-      items: { type: 'object', oneOf: [] }
+      items: { type: 'object', oneOf: [] },
     },
     all: { type: 'boolean', $ref: 'Apply access restrictions on all elements included in the bundle', default: false },
   },
@@ -896,7 +896,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
       }
     }
     return { output_port: 'out', bundle };
-  }
+  },
 };
 export interface RemoveAccessRestrictionsConfiguration {
   all: boolean
@@ -938,7 +938,7 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
       }
     }
     return { output_port: 'out', bundle };
-  }
+  },
 };
 
 const attributePathMapping: any = {
@@ -991,7 +991,7 @@ const attributePathMapping: any = {
     [ENTITY_TYPE_INDICATOR]: '/kill_chain_phases',
   },
   x_mitre_platforms: {
-    [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_MITRE}/platforms`
+    [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_MITRE}/platforms`,
   },
 };
 interface UpdateValueConfiguration {
@@ -1021,14 +1021,14 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
               properties: {
                 label: { type: 'string' },
                 value: { type: 'string' },
-                patch_value: { type: 'string' }
+                patch_value: { type: 'string' },
               },
               required: ['label', 'value', 'patch_value'],
-            }
+            },
           },
         },
         required: ['op', 'attribute', 'value'],
-      }
+      },
     },
     all: { type: 'boolean', $ref: 'Manipulate all elements included in the bundle', default: false },
   },
@@ -1128,7 +1128,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
       }
     }
     return { output_port: 'unmodified', bundle };
-  }
+  },
 };
 
 const DATE_SEEN_RULE = 'seen_dates';
@@ -1158,7 +1158,7 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
         { const: RESOLVE_CONTAINER, title: 'Resolve container references (add in bundle)' },
         { const: RESOLVE_NEIGHBORS, title: 'Resolve neighbors relations and entities (add in bundle)' },
         { const: RESOLVE_CONTAINER_CONTAINING, title: 'Resolve containers containing the entity (add in bundle)' },
-      ]
+      ],
     },
     inferences: { type: 'boolean', $ref: 'Include inferred objects', default: false },
   },
@@ -1263,8 +1263,8 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
     if (rule === RESOLVE_CONTAINER_CONTAINING) {
       const filters = {
         mode: FilterMode.And,
-        filters: [{ key: ['objects'], values: [id], }],
-        filterGroups: []
+        filters: [{ key: ['objects'], values: [id] }],
+        filterGroups: [],
       };
       const containers = await fullEntitiesList(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_CONTAINER], { filters, baseData: true });
       const containersToResolve = containers.map((container) => container.id);
@@ -1279,13 +1279,13 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         context,
         AUTOMATION_MANAGER_USER,
         ABSTRACT_STIX_CORE_RELATIONSHIP,
-        { fromOrToId: id, baseData: true, indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED }
+        { fromOrToId: id, baseData: true, indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED },
       ) as StoreRelation[];
       let idsToResolve = R.uniq(
         [
           ...relations.map((r) => r.id),
-          ...relations.map((r) => (id === r.fromId ? r.toId : r.fromId))
-        ]
+          ...relations.map((r) => (id === r.fromId ? r.toId : r.fromId)),
+        ],
       );
       // In case of relation, we also resolve the from and to
       const baseDataRelation = baseData as StixRelation;
@@ -1299,7 +1299,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       }
     }
     return { output_port: 'unmodified', bundle };
-  }
+  },
 };
 
 export interface NotifierConfiguration {
@@ -1314,7 +1314,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> 
       uniqueItems: true,
       default: [],
       $ref: 'Notifiers',
-      items: { type: 'string', oneOf: [] }
+      items: { type: 'string', oneOf: [] },
     },
     authorized_members: { type: 'object' },
   },
@@ -1360,7 +1360,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
           instance: stixObject,
           type: 'create', // TODO Improve that with type event follow up
           message: generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }) === '-' ? playbookNode.name : generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }),
-        }))
+        })),
       };
       notificationsCall.push(storeNotificationEvent(context, notificationEvent));
     }
@@ -1368,7 +1368,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
       await Promise.all(notificationsCall);
     }
     return { output_port: undefined, bundle };
-  }
+  },
 };
 interface CreateIndicatorConfiguration {
   all: boolean
@@ -1382,7 +1382,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA: JSONSchemaType<CreateIndicator
       type: 'array',
       default: [],
       $ref: 'Types',
-      items: { type: 'string', oneOf: [] }
+      items: { type: 'string', oneOf: [] },
     },
     all: { type: 'boolean', $ref: 'Create indicators from all observables in the bundle', default: false },
     wrap_in_container: { type: 'boolean', $ref: 'If main entity is a container, wrap indicators in container', default: false },
@@ -1441,8 +1441,8 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
                 type: ENTITY_TYPE_INDICATOR,
                 main_observable_type: type,
                 score,
-              }
-            }
+              },
+            },
           };
           const indicatorStandardId = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorData);
           const storeIndicator = {
@@ -1450,7 +1450,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             standard_id: indicatorStandardId,
             entity_type: ENTITY_TYPE_INDICATOR,
             parent_types: getParentTypes(ENTITY_TYPE_INDICATOR),
-            ...indicatorData
+            ...indicatorData,
           } as StoreCommon;
           const indicator = convertStoreToStix_2_1(storeIndicator) as StixIndicator;
           if (observable.object_marking_refs) {
@@ -1488,9 +1488,9 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
             extensions: {
               [STIX_EXT_OCTI]: {
                 extension_type: 'property-extension',
-                type: RELATION_BASED_ON
-              }
-            }
+                type: RELATION_BASED_ON,
+              },
+            },
           } as StixRelation;
           if (granted_refs) {
             relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
@@ -1528,9 +1528,9 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
               extensions: {
                 [STIX_EXT_OCTI]: {
                   extension_type: 'property-extension',
-                  type: RELATION_INDICATES
-                }
-              }
+                  type: RELATION_INDICATES,
+                },
+              },
             } as StixRelation;
             if (granted_refs) {
               relationshipIndicates.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
@@ -1552,11 +1552,11 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
                   ENTITY_TYPE_MALWARE,
                   ENTITY_TYPE_INCIDENT,
                   ENTITY_TYPE_TOOL,
-                  ENTITY_TYPE_ATTACK_PATTERN
+                  ENTITY_TYPE_ATTACK_PATTERN,
                 ],
                 baseData: true,
-                indices: READ_RELATIONSHIPS_INDICES
-              }
+                indices: READ_RELATIONSHIPS_INDICES,
+              },
             ) as StoreRelation[];
             const idsToResolve = R.uniq(relationsOfObservables.map((r) => r.toId));
             const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve);
@@ -1578,9 +1578,9 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
                 extensions: {
                   [STIX_EXT_OCTI]: {
                     extension_type: 'property-extension',
-                    type: RELATION_INDICATES
-                  }
-                }
+                    type: RELATION_INDICATES,
+                  },
+                },
               } as StixRelation;
               if (granted_refs) {
                 relationshipIndicates.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
@@ -1599,7 +1599,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
       return { output_port: 'out', bundle: { ...bundle, objects: bundle.objects.map((n) => (n.id === baseData.id ? baseData : n)) } };
     }
     return { output_port: 'unmodified', bundle };
-  }
+  },
 };
 interface CreateObservableConfiguration {
   all: boolean
@@ -1654,8 +1654,8 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
                 extension_type: 'property-extension',
                 score,
                 description,
-              }
-            }
+              },
+            },
           };
           const observableStandardId = generateStandardId(observable.type, observableData);
           const storeObservable = {
@@ -1663,7 +1663,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
             standard_id: observableStandardId,
             entity_type: observable.type,
             parent_types: getParentTypes(observable.type),
-            ...observableData
+            ...observableData,
           } as StoreCommon;
           const stixObservable = convertStoreToStix_2_1(storeObservable) as StixCyberObject;
           if (indicator.object_marking_refs) {
@@ -1701,9 +1701,9 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
             extensions: {
               [STIX_EXT_OCTI]: {
                 extension_type: 'property-extension',
-                type: RELATION_BASED_ON
-              }
-            }
+                type: RELATION_BASED_ON,
+              },
+            },
           } as StixRelation;
           if (granted_refs) {
             relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
@@ -1720,7 +1720,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
       return { output_port: 'out', bundle: { ...bundle, objects: bundle.objects.map((n) => (n.id === baseData.id ? baseData : n)) } };
     }
     return { output_port: 'unmodified', bundle };
-  }
+  },
 };
 // endregion
 
@@ -1746,5 +1746,5 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_CREATE_INDICATOR_COMPONENT.id]: PLAYBOOK_CREATE_INDICATOR_COMPONENT,
   [PLAYBOOK_REDUCING_COMPONENT.id]: PLAYBOOK_REDUCING_COMPONENT,
   [PLAYBOOK_CREATE_OBSERVABLE_COMPONENT.id]: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT,
-  [PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT.id]: PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT
+  [PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT.id]: PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT,
 };

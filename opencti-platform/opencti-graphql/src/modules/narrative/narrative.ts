@@ -12,11 +12,11 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
     id: 'narratives',
     name: ENTITY_TYPE_NARRATIVE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: true
+    aliased: true,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_NARRATIVE]: [{ src: NAME_FIELD }]
+      [ENTITY_TYPE_NARRATIVE]: [{ src: NAME_FIELD }],
     },
     resolvers: {
       name(data: object) {
@@ -43,22 +43,22 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
       name: RELATION_SUBNARRATIVE_OF,
       targets: [
         { name: ENTITY_TYPE_NARRATIVE, type: REL_NEW },
-      ]
+      ],
     },
     {
       name: RELATION_DERIVED_FROM,
       targets: [
         { name: ENTITY_TYPE_NARRATIVE, type: REL_BUILT_IN },
-      ]
-    }
+      ],
+    },
   ],
   relationsRefs: [
-    { ...objectOrganization, isFilterable: false }
+    { ...objectOrganization, isFilterable: false },
   ],
   representative: (stix: StixNarrative) => {
     return stix.name;
   },
-  converter_2_1: convertNarrativeToStix
+  converter_2_1: convertNarrativeToStix,
 };
 
 registerDefinition(NARRATIVE_DEFINITION);

@@ -40,7 +40,7 @@ const scaleConfig: JSONSchemaType<ScaleConfig> = {
           label: { type: 'string', minLength: 1 },
         },
         required: ['value', 'color', 'label'],
-      }
+      },
     },
   },
   required: ['min', 'max'],
@@ -55,18 +55,18 @@ const attributeConfiguration: JSONSchemaType<AttributeConfiguration[]> = {
       default_values: {
         type: 'array',
         nullable: true,
-        items: { type: 'string' }
+        items: { type: 'string' },
       },
       scale: {
         type: 'object',
         properties: {
-          local_config: scaleConfig
+          local_config: scaleConfig,
         },
         nullable: true,
         required: ['local_config'],
-      }
+      },
     },
-    required: ['name']
+    required: ['name'],
   },
 };
 
@@ -75,11 +75,11 @@ export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySettin
     id: 'entitysettings',
     name: ENTITY_TYPE_ENTITY_SETTING,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_ENTITY_SETTING]: [{ src: TARGET_TYPE }]
+      [ENTITY_TYPE_ENTITY_SETTING]: [{ src: TARGET_TYPE }],
     },
     resolvers: {
       target_type(data: object) {
@@ -114,12 +114,12 @@ export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySettin
   relations: [],
   validators: {
     validatorCreation: validateEntitySettingCreation,
-    validatorUpdate: validateEntitySettingUpdate
+    validatorUpdate: validateEntitySettingUpdate,
   },
   representative: (stix: StixEntitySetting) => {
     return stix.target_type;
   },
-  converter_2_1: convertEntitySettingToStix
+  converter_2_1: convertEntitySettingToStix,
 };
 
 registerDefinition(ENTITY_SETTING_DEFINITION);

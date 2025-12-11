@@ -135,7 +135,7 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for decay rule \`${element.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_DECAY_RULE, input }
+    context_data: { id, entity_type: ENTITY_TYPE_DECAY_RULE, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_DECAY_RULE].EDIT_TOPIC, element, user);
 };
@@ -155,7 +155,7 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes decay rule \`${deleted.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_DECAY_RULE, input: deleted }
+    context_data: { id, entity_type: ENTITY_TYPE_DECAY_RULE, input: deleted },
   });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, decayRule, user);
   return id;
@@ -169,10 +169,10 @@ export const countAppliedIndicators = async (context: AuthContext, user: AuthUse
       filters: [
         { key: ['entity_type'], values: ['Indicator'] }, // TODO fix cyclic dep with ENTITY_TYPE_INDICATOR
         { key: ['revoked'], values: ['false'] },
-        { key: ['decay_applied_rule.decay_rule_id'], values: [decayRule.id] }
+        { key: ['decay_applied_rule.decay_rule_id'], values: [decayRule.id] },
       ],
       filterGroups: [],
-    }
+    },
   });
 };
 
@@ -278,7 +278,7 @@ export const BUILT_IN_DECAY_RULE_FILE_ARTEFACT: DecayRuleConfiguration = {
   decay_revoke_score: 20,
   decay_observable_types: [
     ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-    ENTITY_HASHED_OBSERVABLE_ARTIFACT
+    ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ],
   order: 1,
   active: true,
@@ -308,7 +308,7 @@ export const BUILT_IN_DECAY_RULE_DOMAIN_NAME: DecayRuleConfiguration = {
   decay_points: [80, 50],
   decay_revoke_score: 20,
   decay_observable_types: [
-    ENTITY_DOMAIN_NAME
+    ENTITY_DOMAIN_NAME,
   ],
   order: 1,
   active: true,
@@ -332,7 +332,7 @@ export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
       mode: 'and' as FilterMode,
       filters: [{ key: ['built_in'], values: [true] }],
       filterGroups: [],
-    }
+    },
   };
   const currentBuiltInDecayRules = await fullEntitiesList<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
   if (currentBuiltInDecayRules.length === 0) {

@@ -37,8 +37,8 @@ const convertThreatActorIndividualToStix = (instance: StoreEntityThreatActorIndi
         weight: instance.weight,
         born_in_ref: instance[INPUT_BORN_IN]?.standard_id,
         ethnicity_ref: instance[INPUT_ETHNICITY]?.standard_id,
-      })
-    }
+      }),
+    },
   };
 };
 

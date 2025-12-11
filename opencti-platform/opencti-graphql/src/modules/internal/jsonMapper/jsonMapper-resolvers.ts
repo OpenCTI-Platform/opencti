@@ -23,7 +23,7 @@ import {
   getParsedRepresentations,
   jsonMapperExport,
   jsonMapperImport,
-  jsonMapperTest
+  jsonMapperTest,
 } from './jsonMapper-domain';
 import { getJsonMapperErrorMessage } from './jsonMapper-utils';
 
@@ -53,7 +53,7 @@ const jsonMapperResolvers: Resolvers = {
     jsonMapperFieldPatch: (_, { id, input }, context) => {
       return fieldPatchJsonMapper(context, context.user, id, input);
     },
-  }
+  },
 };
 
 export default jsonMapperResolvers;

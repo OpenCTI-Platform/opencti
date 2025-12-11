@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { createInferredRelation, deleteInferredRuleElement, stixLoadById, } from '../../database/middleware';
+import { createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import def from './ObserveSightingDefinition';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../schema/stixDomainObject';
@@ -30,7 +30,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
     observableId: string,
     organizationId: string,
     baseOnId: string,
-    indicatorId: string
+    indicatorId: string,
   ) => {
     return [
       // Observed data dependencies
@@ -70,7 +70,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
             observableId,
             organizationId,
             baseOnId,
-            indicatorId
+            indicatorId,
           );
           // Create the sighting between the indicator and the organization
           const input = { fromId: indicatorId, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };
@@ -113,7 +113,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
             observableId,
             organization.internal_id,
             baseOnId,
-            indicatorId
+            indicatorId,
           );
           // Create the sighting between the indicator and the organization
           const input = { fromId: indicatorId, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };

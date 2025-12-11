@@ -19,7 +19,7 @@ export const up = async (next) => {
     },
     noFiltersChecking: true,
     orderBy: 'created_at',
-    orderMode: 'asc'
+    orderMode: 'asc',
   });
   let currentProcessing = 0;
   const filteredElementsIds = R.uniq(mergedEvents.map((event) => event.context_data.id));
@@ -43,7 +43,7 @@ export const up = async (next) => {
             + '}',
           lang: 'painless',
           params,
-        }
+        },
       });
     }
     currentProcessing += 1;

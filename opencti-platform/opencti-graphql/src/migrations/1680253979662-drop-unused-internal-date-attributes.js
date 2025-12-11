@@ -28,17 +28,17 @@ export const up = async (next) => {
   const shouldArray = buildStatsDateAttributes.map((attr) => {
     return {
       exists: {
-        field: attr
-      }
+        field: attr,
+      },
     };
   });
   const updateQuery = {
     script: { source },
     query: {
       bool: {
-        should: shouldArray
-      }
-    }
+        should: shouldArray,
+      },
+    },
   };
 
   await elUpdateByQueryForMigration('[MIGRATION] Dropping unused split date attributes', READ_DATA_INDICES, updateQuery);

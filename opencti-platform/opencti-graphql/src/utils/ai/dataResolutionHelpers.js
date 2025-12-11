@@ -7,7 +7,7 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_LOCATION
+  ENTITY_TYPE_LOCATION,
 } from '../../schema/general';
 import { extractEntityRepresentativeName, extractRepresentativeDescription } from '../../database/entity-representative';
 import { fullEntitiesThroughRelationsToList } from '../../database/middleware-loader';
@@ -21,7 +21,7 @@ import {
   RELATION_INDICATES,
   RELATION_LOCATED_AT,
   RELATION_TARGETS,
-  RELATION_USES
+  RELATION_USES,
 } from '../../schema/stixCoreRelationship';
 import { isNotEmptyField, READ_INDEX_HISTORY } from '../../database/utils';
 import { FROM_START_STR, UNTIL_END_STR } from '../format';
@@ -46,16 +46,16 @@ export const getContainersStats = async (context, user, id, startDate, endDate) 
   const filters = { mode: 'and',
     filters: [
       { key: 'entity_type', values: [ENTITY_TYPE_CONTAINER] },
-      { key: 'objects', values: [id] }
+      { key: 'objects', values: [id] },
     ],
-    filterGroups: []
+    filterGroups: [],
   };
   return timeSeriesEntities(context, user, [ABSTRACT_STIX_DOMAIN_OBJECT], {
     field: 'created',
     startDate,
     endDate,
     interval: 'month',
-    filters
+    filters,
   });
 };
 
@@ -66,18 +66,18 @@ export const getIndicatorsStats = async (context, user, id, startDate, endDate) 
       { key: INSTANCE_REGARDING_OF,
         values: [
           { key: 'relationship_type', values: [RELATION_INDICATES] },
-          { key: 'id', values: [id] }
+          { key: 'id', values: [id] },
         ],
       },
     ],
-    filterGroups: []
+    filterGroups: [],
   };
   return timeSeriesEntities(context, user, [ABSTRACT_STIX_DOMAIN_OBJECT], {
     field: 'created',
     startDate,
     endDate,
     interval: 'month',
-    filters
+    filters,
   });
 };
 
@@ -89,14 +89,14 @@ export const getVictimologyStats = async (context, user, id, startDate, endDate)
       { key: 'fromId', values: [id] },
       { key: 'toTypes', values: [ENTITY_TYPE_LOCATION, ENTITY_TYPE_IDENTITY] },
     ],
-    filterGroups: []
+    filterGroups: [],
   };
   return timeSeriesRelations(context, user, {
     field: 'created',
     startDate,
     endDate,
     interval: 'month',
-    filters
+    filters,
   });
 };
 
@@ -108,7 +108,7 @@ export const getTopThreats = async (context, user, id, types, startDate, endDate
       { key: 'fromTypes', values: types },
       { key: 'toId', values: [id] },
     ],
-    filterGroups: []
+    filterGroups: [],
   };
   const distribution = await distributionRelations(context, user, {
     relationship_type: [ABSTRACT_STIX_RELATIONSHIP],
@@ -119,7 +119,7 @@ export const getTopThreats = async (context, user, id, types, startDate, endDate
     operation: 'count',
     filters,
     startDate,
-    endDate
+    endDate,
   });
   return distribution.map((n) => ({ label: extractEntityRepresentativeName(n.entity), value: n.value }));
 };
@@ -132,7 +132,7 @@ export const getTopVictims = async (context, user, id, types, startDate, endDate
       { key: 'fromId', values: [id] },
       { key: 'toTypes', values: types },
     ],
-    filterGroups: []
+    filterGroups: [],
   };
   const distribution = await distributionRelations(context, user, {
     relationship_type: [ABSTRACT_STIX_RELATIONSHIP],
@@ -143,7 +143,7 @@ export const getTopVictims = async (context, user, id, types, startDate, endDate
     operation: 'count',
     filters,
     startDate,
-    endDate
+    endDate,
   });
   return distribution.map((n) => ({ label: extractEntityRepresentativeName(n.entity), value: n.value }));
 };
@@ -165,14 +165,14 @@ export const getTargetingStats = async (context, user, id, startDate, endDate) =
         ] },
       { key: 'toId', values: [id] },
     ],
-    filterGroups: []
+    filterGroups: [],
   };
   return timeSeriesRelations(context, user, {
     field: 'created',
     startDate,
     endDate,
     interval: 'month',
-    filters
+    filters,
   });
 };
 
@@ -189,10 +189,10 @@ export const getHistory = (context, user, id) => {
           'create',
           'update',
           'delete',
-          'merge'
-        ]
-      }
-    ]
+          'merge',
+        ],
+      },
+    ],
   };
   const args = { types: [ENTITY_TYPE_HISTORY], filters, first: 200, orderBy: 'timestamp', orderMode: 'desc', connectionFormat: false };
   return elPaginate(context, user, READ_INDEX_HISTORY, args);
@@ -222,7 +222,7 @@ export const getContainerKnowledge = async (context, user, id) => {
     RELATION_COMPROMISES,
     RELATION_COOPERATES_WITH,
     RELATION_LOCATED_AT,
-    RELATION_HAS
+    RELATION_HAS,
   ];
   const relationshipsSentences = relationships.filter((n) => meaningfulRelationships.includes(n.relationship_type)).map((n) => {
     const from = indexedEntities[n.fromId];
@@ -250,7 +250,7 @@ export const resolveFiles = async (context, user, stixCoreObject) => {
     first: 1,
     prefixMimeTypes: undefined,
     entity_id: stixCoreObject.id,
-    entity_type: stixCoreObject.entity_type
+    entity_type: stixCoreObject.entity_type,
   };
   const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
   const fileIds = importFiles.edges.map((n) => n.node.id);
@@ -262,7 +262,7 @@ export const resolveFiles = async (context, user, stixCoreObject) => {
     fileIds,
     connectionFormat: false,
     excludeFields: [],
-    includeContent: true
+    includeContent: true,
   });
   return files;
 };

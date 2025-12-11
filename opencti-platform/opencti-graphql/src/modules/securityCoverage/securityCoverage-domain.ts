@@ -17,7 +17,7 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_VULNERABILITY
+  ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
@@ -78,7 +78,7 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
   await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
     fromId: objectCovered.id,
     toTypes: [ENTITY_TYPE_VULNERABILITY, ENTITY_TYPE_ATTACK_PATTERN],
-    callback: relationsCallback
+    callback: relationsCallback,
   });
   if (targetIds.size > 0) {
     const targets = await storeLoadByIdsWithRefs(context, user, Array.from(targetIds));

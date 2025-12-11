@@ -75,7 +75,7 @@ const publishFileDownload = async (executeContext, auth, file) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'download',
-    context_data: data
+    context_data: data,
   });
 };
 
@@ -88,7 +88,7 @@ const publishFileRead = async (executeContext, auth, file) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'read',
-    context_data: data
+    context_data: data,
   });
 };
 
@@ -401,7 +401,7 @@ const createApp = async (app, schema) => {
           event_type: 'authentication',
           event_access: 'administration',
           event_scope: 'logout',
-          context_data: undefined
+          context_data: undefined,
         });
         await delUserContext(user);
         res.clearCookie(OPENCTI_SESSION);
@@ -463,7 +463,7 @@ const createApp = async (app, schema) => {
           (err) => {
             setCookieError(res, err?.message);
             next(err);
-          }
+          },
         )(req, res, next);
       }
 
@@ -475,7 +475,7 @@ const createApp = async (app, schema) => {
         (err) => {
           setCookieError(res, err?.message);
           next(err);
-        }
+        },
       )(req, res, next);
     } catch (e) {
       setCookieError(res, e.message);

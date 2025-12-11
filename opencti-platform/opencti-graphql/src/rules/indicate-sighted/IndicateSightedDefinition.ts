@@ -46,11 +46,11 @@ const filtersSighting = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTIT
 const filtersIndicates = {
   types: [RELATION_INDICATES],
   fromTypes: [ENTITY_TYPE_INDICATOR],
-  toTypes: [ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT]
+  toTypes: [ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT],
 };
 const scopes = [
   { filters: filtersSighting, attributes: [] },
-  { filters: filtersIndicates, attributes: [] }
+  { filters: filtersIndicates, attributes: [] },
 ];
 
 const definition: RuleDefinition = { id, name, description, scan, scopes, category, display };

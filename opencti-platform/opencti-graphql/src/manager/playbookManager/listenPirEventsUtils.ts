@@ -54,7 +54,7 @@ export const isEventInPirRelationshipMatchPir = async (
   context: AuthContext,
   eventData: StreamDataEvent,
   config: PirStreamConfiguration,
-  pirList?: { value: string }[]
+  pirList?: { value: string }[],
 ) => {
   if (isEventInPirRelationship(eventData) && (config.create || config.delete)) {
     // If entity is flagged and no PIR filtering set, it matches.
@@ -65,7 +65,7 @@ export const isEventInPirRelationshipMatchPir = async (
       context,
       AUTOMATION_MANAGER_USER,
       eventData.data,
-      filtersOnInPirRel
+      filtersOnInPirRel,
     );
   }
   // By default, does not match.
@@ -83,7 +83,7 @@ export const isEventInPirRelationshipMatchPir = async (
 export const isUpdateEventMatchPir = (
   eventData: StreamDataEvent,
   config: PirStreamConfiguration,
-  pirList?: { value: string }[]
+  pirList?: { value: string }[],
 ) => {
   if (isEventUpdateOnEntity(eventData) && config.update) {
     const entityPirList = getEntityPirIds(eventData.data);
@@ -138,8 +138,8 @@ export const formatFiltersForPirPlaybookComponent = (sourceFilters: string, inPi
         key: [PIR_SCORE_FILTER],
         values: [
           { ...filter, key: 'score' },
-          { key: 'pir_ids', values: (inPirFilters ?? []).map((pir) => pir.value) }
-        ]
+          { key: 'pir_ids', values: (inPirFilters ?? []).map((pir) => pir.value) },
+        ],
       };
     }
     return filter;
@@ -152,7 +152,7 @@ export const listenPirEvents = async (
   context: AuthContext,
   streamEvent: SseEvent<StreamDataEvent>,
   instance: NodeDefinition,
-  playbook: BasicStoreEntityPlaybook
+  playbook: BasicStoreEntityPlaybook,
 ) => {
   const { id: eventId, data: { data, type } } = streamEvent;
   const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
@@ -172,7 +172,7 @@ export const listenPirEvents = async (
         context,
         AUTOMATION_MANAGER_USER,
         data.source_ref,
-        ABSTRACT_STIX_CORE_OBJECT
+        ABSTRACT_STIX_CORE_OBJECT,
       ) as unknown as StixObject; ;
     } else if (isUpdateEvent) {
       // Event update on flagged entity.
@@ -183,7 +183,7 @@ export const listenPirEvents = async (
         context,
         AUTOMATION_MANAGER_USER,
         stixIdLinked,
-        ABSTRACT_STIX_CORE_OBJECT
+        ABSTRACT_STIX_CORE_OBJECT,
       ) as unknown as StixObject; ;
     }
 
@@ -199,7 +199,7 @@ export const listenPirEvents = async (
           id: uuidv4(),
           spec_version: STIX_SPEC_VERSION,
           type: 'bundle',
-          objects: [stixEntity]
+          objects: [stixEntity],
         };
         await playbookExecutor({
           eventId,
@@ -214,7 +214,7 @@ export const listenPirEvents = async (
           // Data
           previousStepBundle: null,
           bundle,
-          event: streamEvent.data
+          event: streamEvent.data,
         });
       }
     }

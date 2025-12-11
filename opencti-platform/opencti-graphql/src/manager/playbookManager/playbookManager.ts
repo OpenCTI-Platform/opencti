@@ -81,7 +81,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                 const connector = PLAYBOOK_COMPONENTS[instance.component_id];
                 const configuration = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
                 const {
-                  filters
+                  filters,
                 } = configuration;
                 const jsonFilters = filters ? JSON.parse(filters) : null;
 
@@ -95,7 +95,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                     id: uuidv4(),
                     spec_version: STIX_SPEC_VERSION,
                     type: 'bundle',
-                    objects: [data]
+                    objects: [data],
                   };
                   await playbookExecutor({
                     eventId,
@@ -110,7 +110,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                     // Data
                     previousStepBundle: null,
                     bundle,
-                    event: streamEvent.data
+                    event: streamEvent.data,
                   });
                 }
               }
@@ -151,7 +151,7 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
             id: uuidv4(),
             spec_version: STIX_SPEC_VERSION,
             type: 'bundle',
-            objects: [data]
+            objects: [data],
           };
           playbookExecutor({
             eventId,
@@ -281,7 +281,7 @@ const initPlaybookManager = () => {
             }
             const queryOptions = await convertFiltersToQueryOptions(convertedFilters, conversionOpts);
             if (cronConfiguration.includeAll) {
-              const opts = { ...queryOptions, };
+              const opts = { ...queryOptions };
               const results = await stixLoadByFilters(context, AUTOMATION_MANAGER_USER, null, opts);
               if (results && results.length > 0) {
                 try {
@@ -291,7 +291,7 @@ const initPlaybookManager = () => {
                     id: uuidv4(),
                     spec_version: STIX_SPEC_VERSION,
                     type: 'bundle',
-                    objects: results
+                    objects: results,
                   };
                   await playbookExecutor({
                     eventId,
@@ -327,7 +327,7 @@ const initPlaybookManager = () => {
                       id: uuidv4(),
                       spec_version: STIX_SPEC_VERSION,
                       type: 'bundle',
-                      objects: [data]
+                      objects: [data],
                     };
                     await playbookExecutor({
                       eventId,
@@ -432,7 +432,7 @@ export const playbookStepExecution = async (context: AuthContext, user: AuthUser
     bundle,
     externalCallback: {
       externalStartDate: args.execution_start,
-    }
+    },
   }).then(() => true);
 };
 

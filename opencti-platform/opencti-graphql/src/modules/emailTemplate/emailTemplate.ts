@@ -24,7 +24,7 @@ const EMAIL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityEmailTemplate, Stix
     id: 'emailTemplate',
     name: ENTITY_TYPE_EMAIL_TEMPLATE,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
@@ -42,7 +42,7 @@ const EMAIL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityEmailTemplate, Stix
   representative: (stix: StixEmailTemplate) => {
     return stix.name;
   },
-  converter_2_1: convertEmailTemplateToStix
+  converter_2_1: convertEmailTemplateToStix,
 };
 
 registerDefinition(EMAIL_TEMPLATE_DEFINITION);

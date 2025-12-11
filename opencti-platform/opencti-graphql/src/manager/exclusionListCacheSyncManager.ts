@@ -26,7 +26,7 @@ const EXCLUSION_LIST_CACHE_SYNC_MANAGER: ManagerDefinition = {
   cronSchedulerHandler: {
     handler: exclusionListCacheSyncHandler,
     interval: SCHEDULE_TIME,
-    lockKey: EXCLUSION_LIST_CACHE_SYNC_MANAGER_LOCK_KEY
+    lockKey: EXCLUSION_LIST_CACHE_SYNC_MANAGER_LOCK_KEY,
   },
   enabledByConfig: true,
   enabledToStart(): boolean {
@@ -34,7 +34,7 @@ const EXCLUSION_LIST_CACHE_SYNC_MANAGER: ManagerDefinition = {
   },
   enabled(): boolean {
     return this.enabledByConfig;
-  }
+  },
 };
 
 registerManager(EXCLUSION_LIST_CACHE_SYNC_MANAGER);

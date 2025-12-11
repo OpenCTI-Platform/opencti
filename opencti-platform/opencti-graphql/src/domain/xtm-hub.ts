@@ -58,7 +58,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
     user,
     settings.id,
     ENTITY_TYPE_SETTINGS,
-    attributeUpdates
+    attributeUpdates,
   );
 
   const updatedSettings = await getSettings(context);
@@ -80,9 +80,9 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
       platformId: settings.id,
       platformToken: input.platform_token,
       platformUrl: settings.platform_url,
-      platformTitle: settings.platform_title ?? ''
+      platformTitle: settings.platform_title ?? '',
     },
-    licenseInfo.license_type
+    licenseInfo.license_type,
   );
   if (!response.success) {
     return { success: false };
@@ -93,8 +93,8 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
     settings.id,
     [
       { key: 'xtm_hub_token', value: [input.platform_token] },
-      { key: 'xtm_hub_registration_status', value: ['registered'] }
-    ]
+      { key: 'xtm_hub_registration_status', value: ['registered'] },
+    ],
   );
   return { success: true };
 };
@@ -103,28 +103,28 @@ const resetRegistration = async (context: AuthContext, user: AuthUser, settings:
   const attributeUpdates: AttributeUpdate[] = [
     {
       key: 'xtm_hub_token',
-      value: []
+      value: [],
     },
     {
       key: 'xtm_hub_registration_status',
-      value: [XtmHubRegistrationStatus.Unregistered]
+      value: [XtmHubRegistrationStatus.Unregistered],
     },
     {
       key: 'xtm_hub_registration_user_id',
-      value: []
+      value: [],
     },
     {
       key: 'xtm_hub_registration_user_name',
-      value: []
+      value: [],
     },
     {
       key: 'xtm_hub_registration_date',
-      value: []
+      value: [],
     },
     {
       key: 'xtm_hub_last_connectivity_check',
-      value: []
-    }
+      value: [],
+    },
   ];
 
   await updateAttribute(
@@ -132,7 +132,7 @@ const resetRegistration = async (context: AuthContext, user: AuthUser, settings:
     user,
     settings.id,
     ENTITY_TYPE_SETTINGS,
-    attributeUpdates
+    attributeUpdates,
   );
 
   const updatedSettings = await getSettings(context);
@@ -147,7 +147,7 @@ const checkHubIfBackendIsReachable = async (context: AuthContext, user: AuthUser
     user,
     settings.id,
     ENTITY_TYPE_SETTINGS,
-    [{ key: 'xtm_hub_backend_is_reachable', value: [isReachable] }]
+    [{ key: 'xtm_hub_backend_is_reachable', value: [isReachable] }],
   );
 
   if (!isReachable) {

@@ -6,7 +6,7 @@ import {
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
   READ_RELATIONSHIPS_INDICES,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
 } from './utils';
 import {
   computeQueryIndices,
@@ -19,7 +19,7 @@ import {
   elLoadById,
   elPaginate,
   ES_DEFAULT_PAGINATION,
-  UNIMPACTED_ENTITIES_ROLE
+  UNIMPACTED_ENTITIES_ROLE,
 } from './engine';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -34,7 +34,7 @@ import {
   INSTANCE_REGARDING_OF_DIRECTION_FORCED,
   INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
   PARTICIPANT_FILTER,
-  RELATION_TYPE_FILTER
+  RELATION_TYPE_FILTER,
 } from '../utils/filtering/filtering-constants';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
@@ -330,7 +330,7 @@ export const buildThingsFilters = <T extends BasicStoreCommon>(thingTypes: strin
 const entitiesAggregations = [
   { name: CREATOR_FILTER, field: 'creator_id.keyword' },
   { name: ASSIGNEE_FILTER, field: 'rel_object-assignee.internal_id.keyword' },
-  { name: PARTICIPANT_FILTER, field: 'rel_object-participant.internal_id.keyword' }
+  { name: PARTICIPANT_FILTER, field: 'rel_object-participant.internal_id.keyword' },
 ];
 export const fullEntitiesThoughAggregationConnection = async (context: AuthContext, user: AuthUser, filter: string, type: string, args = {}) => {
   const aggregation = entitiesAggregations.find((agg) => agg.name === filter);
@@ -379,7 +379,7 @@ export const fullEntitiesListThroughRelations = async <T extends BasicStoreCommo
     nested: [
       { key: 'internal_id', values: fromOrToIds },
       { key: 'role', values: [`*_${relation.sourceSide}`], operator: FilterOperator.Wildcard },
-    ]
+    ],
   };
   // Filter the other side of the relation to have expected toEntityType
   const oppositeTypeFilter: FiltersWithNested = {
@@ -421,7 +421,7 @@ export const fullEntitiesThroughRelationsToList = async <T extends BasicStoreCom
     fromOrToType: toType,
     sourceSide: 'from',
     withInferences: opts.withInferences ?? false,
-    filters: opts.filters
+    filters: opts.filters,
   };
   return fullEntitiesListThroughRelations(context, user, rel);
 };
@@ -433,7 +433,7 @@ export const fullEntitiesThroughRelationsFromList = async <T extends BasicStoreE
     fromOrToType: fromType,
     sourceSide: 'to',
     withInferences: opts.withInferences ?? false,
-    filters: opts.filters
+    filters: opts.filters,
   };
   return fullEntitiesListThroughRelations(context, user, rel);
 };
@@ -462,7 +462,7 @@ export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity
   relationType: string,
   entityType: string | string[],
   reverse_relation: boolean,
-  args: EntityOptions<T> = {}
+  args: EntityOptions<T> = {},
 ): Promise<BasicConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {
@@ -478,8 +478,8 @@ export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity
           { key: RELATION_TYPE_FILTER, values: [relationType] },
           { key: INSTANCE_REGARDING_OF_DIRECTION_FORCED, values: [true] },
           { key: INSTANCE_REGARDING_OF_DIRECTION_REVERSE, values: [reverse_relation] },
-        ]
-      }
+        ],
+      },
     ],
     filterGroups: args.filters && isFilterGroupNotEmpty(args.filters) ? [args.filters] : [],
   };
@@ -492,7 +492,7 @@ export const findEntitiesIdsWithRelations = async (
   connectedEntitiesIds: string[],
   relationType: string,
   entityType: string | string[],
-  reverse_relation: boolean
+  reverse_relation: boolean,
 ) => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   const connectionRole = reverse_relation ? `${relationType}_to` : `${relationType}_from`;
@@ -512,7 +512,7 @@ export const findEntitiesIdsWithRelations = async (
   };
   // add a filter on role for aggregation to return only matching connections for the right role
   const aggFilter = {
-    bool: { filter: [{ term: { 'connections.role.keyword': connectionRole } }] }
+    bool: { filter: [{ term: { 'connections.role.keyword': connectionRole } }] },
   };
   const aggSize = connectedEntitiesIds.length;
   const args = { filters: connectionsFilters, types: [relationType], size: aggSize };
@@ -545,7 +545,7 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
     toMap?: boolean,
     mapWithAllIds?: boolean,
     baseFields?: string[]
-  } & Record<string, string | string[] | boolean>
+  } & Record<string, string | string[] | boolean>,
 ) => {
   return await elFindByIds(context, user, ids, args) as unknown as T[];
 };
@@ -561,7 +561,7 @@ export const internalFindByIdsMapped = async <T extends BasicStoreObject>(
     baseData?: boolean,
     mapWithAllIds?: boolean,
     baseFields?: string[]
-  } & Record<string, string | string[] | boolean>
+  } & Record<string, string | string[] | boolean>,
 ) => {
   return await elFindByIds(context, user, ids, { ...(args ?? {}), toMap: true }) as unknown as Record<string, T>;
 };

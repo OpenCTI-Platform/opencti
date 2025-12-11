@@ -21,7 +21,7 @@ export const csvMapperTest = async (context: AuthContext, user: AuthUser, config
 
   const bundlerOpts: CsvBundlerTestOpts = {
     applicantUser: user,
-    csvMapper: csvMapperParsed
+    csvMapper: csvMapperParsed,
   };
   const allObjects = await getCsvTestObjects(context, csvLines, bundlerOpts);
 

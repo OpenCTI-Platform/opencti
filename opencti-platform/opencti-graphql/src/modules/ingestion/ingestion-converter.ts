@@ -11,7 +11,7 @@ import type {
   StoreEntityIngestionJson,
   StoreEntityIngestionRss,
   StoreEntityIngestionTaxii,
-  StoreEntityIngestionTaxiiCollection
+  StoreEntityIngestionTaxiiCollection,
 } from './ingestion-types';
 import { cleanObject } from '../../database/stix-converter-utils';
 import type { CsvMapperRepresentationResolved, CsvMapperResolved } from '../internal/csvMapper/csvMapper-types';
@@ -29,8 +29,8 @@ export const convertIngestionRssToStix = (instance: StoreEntityIngestionRss): St
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 
@@ -47,8 +47,8 @@ export const convertIngestionTaxiiToStix = (instance: StoreEntityIngestionTaxii)
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 
@@ -64,8 +64,8 @@ export const convertIngestionTaxiiCollectionToStix = (instance: StoreEntityInges
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 
@@ -82,8 +82,8 @@ export const convertIngestionCsvToStix = (instance: StoreEntityIngestionCsv): St
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 
@@ -100,8 +100,8 @@ export const convertIngestionJsonToStix = (instance: StoreEntityIngestionJson): 
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 
@@ -124,9 +124,9 @@ export const regenerateCsvMapperUUID = (csvMapper: CsvMapperResolved): CsvMapper
               based_on: {
                 ...attribute.based_on,
                 representations: attribute.based_on.representations.map(
-                  (oldId) => uuidMap[oldId] || oldId
-                )
-              }
+                  (oldId) => uuidMap[oldId] || oldId,
+                ),
+              },
             };
           }
           return attribute;
@@ -136,8 +136,8 @@ export const regenerateCsvMapperUUID = (csvMapper: CsvMapperResolved): CsvMapper
       return {
         ...representation,
         id: uuidMap[representation.id],
-        attributes
+        attributes,
       } as CsvMapperRepresentationResolved;
-    })
+    }),
   };
 };

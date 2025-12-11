@@ -61,7 +61,7 @@ export const findFiltersRepresentatives = async (
       id: idsToResolve[index],
       value: (entity ? extractEntityRepresentativeName(entity) : null),
       entity_type: entity?.entity_type ?? null,
-      color: entity?.color || entity?.x_opencti_color || null
+      color: entity?.color || entity?.x_opencti_color || null,
     });
   }
   // resolve SELF_ID differently
@@ -95,7 +95,7 @@ export const findFiltersRepresentatives = async (
     id,
     value: id,
     entity_type: null,
-    color: null
+    color: null,
   })));
 };
 // endregion

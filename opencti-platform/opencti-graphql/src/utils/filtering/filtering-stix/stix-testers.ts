@@ -45,7 +45,7 @@ import {
   TYPE_FILTER,
   WORKFLOW_FILTER,
   PATTERN_TYPE_FILTER,
-  PIR_SCORE_FILTER
+  PIR_SCORE_FILTER,
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';

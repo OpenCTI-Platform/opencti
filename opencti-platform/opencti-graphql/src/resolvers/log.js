@@ -32,7 +32,7 @@ const logResolvers = {
   ContextData: {
     external_references: (data, _, context) => {
       const refPromises = Promise.all(
-        (data.references || []).map((id) => storeLoadById(context, context.user, id, ENTITY_TYPE_EXTERNAL_REFERENCE))
+        (data.references || []).map((id) => storeLoadById(context, context.user, id, ENTITY_TYPE_EXTERNAL_REFERENCE)),
       ).then((refs) => refs.filter((element) => element !== undefined));
       return Promise.resolve(data.external_references ?? [])
         .then((externalReferences) => refPromises.then((refs) => externalReferences.concat(refs)));

@@ -21,6 +21,6 @@ export const stixCoreObjectOptions = {
     opinions_metrics_mean: 'opinions_metrics.mean',
     opinions_metrics_max: 'opinions_metrics.max',
     opinions_metrics_min: 'opinions_metrics.min',
-    opinions_metrics_total: 'opinions_metrics.total'
-  }
+    opinions_metrics_total: 'opinions_metrics.total',
+  },
 };

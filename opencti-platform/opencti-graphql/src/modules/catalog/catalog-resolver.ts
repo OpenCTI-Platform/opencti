@@ -11,7 +11,7 @@ const catalogResolver: Resolvers = {
     },
     contract: (_, { slug }, context) => {
       return findContractBySlug(context, context.user, slug);
-    }
+    },
   },
 };
 

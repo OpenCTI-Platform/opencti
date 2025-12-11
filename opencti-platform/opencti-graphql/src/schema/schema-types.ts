@@ -22,6 +22,6 @@ export const schemaTypesDefinition = {
   },
   hasChildren(type: string): boolean {
     return this.types[type]?.size > 0;
-  }
+  },
 
 };

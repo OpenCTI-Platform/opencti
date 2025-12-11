@@ -6,7 +6,7 @@ export const up = async (next) => {
   await addCapability(context, SYSTEM_USER, {
     name: 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
     description: 'Manage authorized members',
-    attribute_order: 310
+    attribute_order: 310,
   });
   next();
 };

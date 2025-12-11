@@ -19,7 +19,7 @@ import {
   ENTITY_SSH_KEY,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
 } from '../schema/stixCyberObservable';
 import { ValidationError } from '../config/errors';
 

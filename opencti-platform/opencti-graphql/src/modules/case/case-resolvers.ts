@@ -29,7 +29,7 @@ const caseResolvers: Resolvers = {
         return [];
       }
       return filterMembersWithUsersOrgs(context, context.user, participants);
-    }
+    },
   },
   CasesOrdering: {
     creator: 'creator_id',
@@ -42,7 +42,7 @@ const caseResolvers: Resolvers = {
       await BluePromise.map(caseTemplatesId, (caseTemplateId) => upsertTemplateForCase(context, context.user, id, caseTemplateId));
       return findById(context, context.user, id);
     },
-  }
+  },
 };
 
 export default caseResolvers;

@@ -8,7 +8,7 @@ export const shortMapping = {
     keyword: {
       type: 'keyword',
       ignore_above: 512,
-      normalizer: 'string_normalizer'
+      normalizer: 'string_normalizer',
     },
   },
 };
@@ -94,7 +94,7 @@ export const id: AttributeDefinition = {
   editDefault: false,
   upsert: false,
   isFilterable: false,
-  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
+  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
 };
 
 export const draftIds: AttributeDefinition = {
@@ -137,7 +137,7 @@ export const draftChange: AttributeDefinition = {
   mappings: [
     { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'enum', values: getDraftOperations(), mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'draft_updates_patch', label: 'Draft update patch', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-  ]
+  ],
 };
 
 export const iAttributes: AttributeDefinition = {
@@ -156,7 +156,7 @@ export const iAttributes: AttributeDefinition = {
     { name: 'updated_at', label: 'Updated at', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'confidence', label: 'Confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'user_id', label: 'Last modifier', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
-  ]
+  ],
 };
 
 export const internalId: AttributeDefinition = {
@@ -170,7 +170,7 @@ export const internalId: AttributeDefinition = {
   multiple: false,
   upsert: false,
   isFilterable: false,
-  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP]
+  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
 };
 
 export const creators: AttributeDefinition = {
@@ -245,7 +245,7 @@ export const files: AttributeDefinition = {
     { name: 'inCarousel', label: 'Include in carousel', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'order', label: 'Order in carousel', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'file_markings', label: 'Markings', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
-  ]
+  ],
 };
 
 export const changes: AttributeDefinition = {
@@ -264,7 +264,7 @@ export const changes: AttributeDefinition = {
     { name: 'removed', label: 'Removed value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'previous', label: 'Previous value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'new', label: 'New value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-  ]
+  ],
 };
 
 export const authorizedMembers: AttributeDefinition = {
@@ -281,7 +281,7 @@ export const authorizedMembers: AttributeDefinition = {
     id,
     { name: 'access_right', label: 'Access right', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'groups_restriction_ids', label: 'Groups restriction IDs', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_GROUP], editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-  ]
+  ],
 };
 
 export const authorizedMembersActivationDate: AttributeDefinition = {
@@ -320,7 +320,7 @@ export const metrics: AttributeDefinition = {
   mappings: [
     { name: 'name', label: 'Metric name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
     { name: 'value', label: 'Metric value', type: 'numeric', precision: 'float', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-  ]
+  ],
 };
 
 // -- ENTITY TYPE --
@@ -419,7 +419,7 @@ export const errors: AttributeDefinition = {
     { name: 'error', label: 'Error', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     { name: 'source', label: 'Source', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
-  ]
+  ],
 };
 
 export const coverageInformation: AttributeDefinition = {
@@ -436,7 +436,7 @@ export const coverageInformation: AttributeDefinition = {
   mappings: [
     { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
-  ]
+  ],
 };
 
 export const opinionsMetrics: AttributeDefinition = {
@@ -454,7 +454,7 @@ export const opinionsMetrics: AttributeDefinition = {
     { name: 'max', label: 'Opinions max', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
     { name: 'min', label: 'Opinions min', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
     { name: 'total', label: 'Opinions total number', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-  ]
+  ],
 };
 
 // -- STIX DOMAIN OBJECT --

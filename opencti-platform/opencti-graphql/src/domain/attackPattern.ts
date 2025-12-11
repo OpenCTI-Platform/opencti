@@ -14,7 +14,7 @@ import {
   fullRelationsList,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
-  storeLoadById
+  storeLoadById,
 } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreRelation } from '../types/store';
@@ -61,7 +61,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
   const attackPatternsArgs = {
     withoutRels: false, // Must be replace by relation queries
     indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
-    filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] }
+    filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] },
   };
   const allAttackPatterns = await fullEntitiesList(context, user, [ENTITY_TYPE_ATTACK_PATTERN], attackPatternsArgs);
   const allAttackPatternsById = new Map(allAttackPatterns.map((a) => [a.id, a]));
@@ -91,7 +91,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
                 subAttackPatterns.push({
                   attack_pattern_id: subAttackPattern.id,
                   name: subAttackPattern.name,
-                  description: subAttackPattern.description
+                  description: subAttackPattern.description,
                 });
                 subAttackPatternsSearchText += `${subAttackPattern.x_mitre_id} ${subAttackPattern.name} ${subAttackPattern.description} | `;
               }

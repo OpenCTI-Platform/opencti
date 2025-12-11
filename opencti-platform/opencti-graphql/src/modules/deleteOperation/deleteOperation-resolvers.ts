@@ -13,7 +13,7 @@ const deleteOperationResolvers: Resolvers = {
   Mutation: {
     deleteOperationRestore: (_, { id }, context) => restoreDelete(context, context.user, id),
     deleteOperationConfirm: (_, { id }, context) => confirmDelete(context, context.user, id),
-  }
+  },
 };
 
 export default deleteOperationResolvers;

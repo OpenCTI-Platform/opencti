@@ -6,7 +6,7 @@ import {
   READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_INDEX_STIX_META_OBJECTS,
-  READ_INDEX_STIX_META_RELATIONSHIPS
+  READ_INDEX_STIX_META_RELATIONSHIPS,
 } from '../database/utils';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -31,13 +31,13 @@ async function removeInvestigationsReferencesFromInvestigatedEntities(investigat
       script: {
         source: 'ctx._source.remove(params.field)',
         params: {
-          field: 'rel_has-reference.internal_id'
-        }
+          field: 'rel_has-reference.internal_id',
+        },
       },
       query: {
-        terms: { 'rel_has-reference.internal_id.keyword': investigationIds }
-      }
-    }
+        terms: { 'rel_has-reference.internal_id.keyword': investigationIds },
+      },
+    },
   );
 }
 
@@ -50,11 +50,11 @@ async function deleteInvestigationsInternalRelations() {
         bool: {
           must: [
             { term: { 'fromType.keyword': { value: 'Workspace' } } },
-            { term: { 'relationship_type.keyword': { value: 'has-reference' } } }
-          ]
-        }
-      }
-    }
+            { term: { 'relationship_type.keyword': { value: 'has-reference' } } },
+          ],
+        },
+      },
+    },
   );
 }
 
@@ -67,17 +67,17 @@ async function updateInvestigationsField(oldField, newField) {
         source: ''
           + 'ctx._source[params.newField] = ctx._source[params.oldField];'
           + 'ctx._source.remove(params.oldField)',
-        params: { oldField, newField }
+        params: { oldField, newField },
       },
       query: {
         bool: {
           must: [
             { term: { 'entity_type.keyword': { value: 'Workspace' } } },
-            { term: { 'type.keyword': { value: 'investigation' } } }
-          ]
-        }
-      }
-    }
+            { term: { 'type.keyword': { value: 'investigation' } } },
+          ],
+        },
+      },
+    },
   );
 }
 

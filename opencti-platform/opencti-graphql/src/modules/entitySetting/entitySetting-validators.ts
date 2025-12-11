@@ -23,7 +23,7 @@ const optionsValidation = async (targetType: string, input: BasicStoreEntityEnti
     if (keyAvailableSetting.includes(key) && !settings.includes(key)) {
       throw UnsupportedError('This setting is not available for this entity', {
         setting: key,
-        entity: targetType
+        entity: targetType,
       });
     }
   });
@@ -34,7 +34,7 @@ export const validateSetting = (typeId: string, setting: string) => {
   if (!settings.includes(setting)) {
     throw UnsupportedError('This setting is not available for this entity', {
       setting,
-      entity: typeId
+      entity: typeId,
     });
   }
 };

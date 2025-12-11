@@ -5,7 +5,7 @@ import { isStixRelation } from '../../schema/stixRelationship';
 export enum StreamDataEventTypeEnum {
   UPDATE = 'update',
   DELETE = 'delete',
-  CREATE = 'create'
+  CREATE = 'create',
 }
 
 interface EventConfig {
@@ -20,7 +20,7 @@ export const isValidEventType = (eventType: StreamDataEventType, configuration: 
     update,
     create,
     create_rel,
-    delete: deletion
+    delete: deletion,
   } = configuration;
 
   let validEventType = false;

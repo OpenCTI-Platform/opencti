@@ -172,7 +172,7 @@ const globalResolvers = {
       throw new GraphQLError('Any serialization unsupported.');
     },
     parseValue: (value) => value,
-    parseLiteral: (ast) => parseAst(ast)
+    parseLiteral: (ast) => parseAst(ast),
   }),
 };
 const schemaResolvers = [
@@ -271,7 +271,7 @@ export const registerGraphqlSchema = ({ schema, resolver }) => {
 const { rateLimitDirectiveTypeDefs, rateLimitDirectiveTransformer } = rateLimitDirective({
   onLimit: () => {
     throw FunctionalError('Too many requests');
-  }
+  },
 });
 schemaTypeDefs.push(rateLimitDirectiveTypeDefs);
 

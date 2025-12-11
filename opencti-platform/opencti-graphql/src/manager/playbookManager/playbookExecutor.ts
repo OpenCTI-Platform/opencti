@@ -43,13 +43,13 @@ const registerStepObservation = async (data: ObservationFn) => {
     out_timestamp: data.end,
     duration: data.diff,
     error: data.error,
-    ...bundlePatch
+    ...bundlePatch,
   };
   const envelop: ExecutionEnvelop = {
     playbook_execution_id: data.executionId,
     playbook_id: data.playbookId,
     last_execution_step: data.stepId,
-    ...keyStep(`step_${data.stepId}`, step)
+    ...keyStep(`step_${data.stepId}`, step),
   };
   await redisPlaybookUpdate(envelop);
 };
@@ -81,7 +81,7 @@ export const playbookExecutor = async ({
   previousStepBundle,
   bundle,
   event,
-  externalCallback
+  externalCallback,
 }: ExecutorFn) => {
   const isExternalCallback = externalCallback !== undefined;
   const start = isExternalCallback ? externalCallback.externalStartDate : utcDate();
@@ -99,7 +99,7 @@ export const playbookExecutor = async ({
         previousPlaybookNodeId: previousStep?.instance.id,
         previousStepBundle,
         playbookNode: instanceWithConfig,
-        bundle
+        bundle,
       });
       // Execution was done correctly, log the step
       // For internal component, register directly the observability
@@ -118,7 +118,7 @@ export const playbookExecutor = async ({
         playbookId,
         previousBundle: baseBundle,
         bundle: execution.bundle,
-        forceBundleTracking: execution.forceBundleTracking ?? false
+        forceBundleTracking: execution.forceBundleTracking ?? false,
       };
       await registerStepObservation(observation);
     } catch (error) {
@@ -141,7 +141,7 @@ export const playbookExecutor = async ({
         playbookId,
         bundle: baseBundle,
         error: JSON.stringify(logError, null, 2),
-        forceBundleTracking: false
+        forceBundleTracking: false,
       };
       await registerStepObservation(observation);
       return;
@@ -169,7 +169,7 @@ export const playbookExecutor = async ({
           previousStep: { component: fromConnector, instance: fromInstance },
           nextStep: { component: nextConnector, instance: nextInstance },
           previousStepBundle,
-          bundle: execution.bundle
+          bundle: execution.bundle,
         });
       }
     }
@@ -189,7 +189,7 @@ export const playbookExecutor = async ({
         previousPlaybookNodeId: previousStep?.instance.id,
         playbookNode: instanceWithConfig,
         previousStepBundle,
-        bundle
+        bundle,
       });
     } catch (_notifyError) {
       // For now any problem sending in notification will not be tracked

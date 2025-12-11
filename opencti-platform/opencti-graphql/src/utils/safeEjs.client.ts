@@ -92,7 +92,7 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
           // Preserve worker error if it exists, otherwise report timeout
           reject(workerError ?? new Error(`Rendering timeout after ${timeout}ms`));
         }, timeout);
-      })
+      }),
     ]);
 
     return result;

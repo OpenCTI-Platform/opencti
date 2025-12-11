@@ -150,15 +150,15 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
     mainEntityLookup: { type: 'boolean' },
     mainEntityFieldMode: {
       type: 'string',
-      enum: ['multiple', 'parsed']
+      enum: ['multiple', 'parsed'],
     },
     mainEntityParseField: {
       type: 'string',
-      enum: ['text', 'textarea']
+      enum: ['text', 'textarea'],
     },
     mainEntityParseMode: {
       type: 'string',
-      enum: ['comma', 'line']
+      enum: ['comma', 'line'],
     },
     mainEntityParseFieldMapping: { type: 'string' },
     mainEntityAutoConvertToStixPattern: { type: 'boolean' },
@@ -181,15 +181,15 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
           lookup: { type: 'boolean' },
           fieldMode: {
             type: 'string',
-            enum: ['multiple', 'parsed']
+            enum: ['multiple', 'parsed'],
           },
           parseField: {
             type: 'string',
-            enum: ['text', 'textarea']
+            enum: ['text', 'textarea'],
           },
           parseMode: {
             type: 'string',
-            enum: ['comma', 'line']
+            enum: ['comma', 'line'],
           },
           parseFieldMapping: { type: 'string' },
           autoConvertToStixPattern: { type: 'boolean' },
@@ -237,8 +237,8 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
               { type: 'boolean' },
               { type: 'object' },
               { type: 'array' },
-              { type: 'null' }
-            ]
+              { type: 'null' },
+            ],
           },
           options: {
             type: 'array',

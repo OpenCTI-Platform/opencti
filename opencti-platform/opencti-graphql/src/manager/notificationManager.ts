@@ -16,7 +16,7 @@ import {
   type BasicStoreEntityDigestTrigger,
   type BasicStoreEntityLiveTrigger,
   type BasicStoreEntityTrigger,
-  ENTITY_TYPE_TRIGGER
+  ENTITY_TYPE_TRIGGER,
 } from '../modules/notification/notification-types';
 import { resolveFiltersMapForUser } from '../utils/filtering/filtering-resolution';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
@@ -112,7 +112,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
       { key: ['objectAssignee'], values: [user.internal_id], operator: 'eq', mode: 'or' },
       { key: ['objectParticipant'], values: [user.internal_id], operator: 'eq', mode: 'or' },
     ],
-    filterGroups: []
+    filterGroups: [],
   };
   return {
     internal_id: `default-trigger-${user.id}`,
@@ -153,7 +153,7 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
       { key: ['entity_type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI], operator: 'eq', mode: 'or' },
       { key: ['information_types'], values: [REQUEST_SHARE_ACCESS_INFO_TYPE], operator: 'eq', mode: 'or' },
     ],
-    filterGroups: []
+    filterGroups: [],
   };
   return {
     internal_id: `default-rfi-trigger-${user.id}`,
@@ -164,7 +164,7 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
     notifiers: user.personal_notifiers,
     raw_filters: filters,
     instance_trigger: false,
-    restricted_members: []
+    restricted_members: [],
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
@@ -628,7 +628,7 @@ const handleDigestNotifications = async (context: AuthContext) => {
               instance: n.data,
               message: await generateNotificationMessageForInstance(context, user, n.data),
               origin: n.origin,
-              streamMessage: n.streamMessage
+              streamMessage: n.streamMessage,
             });
           });
           const data = await Promise.all(dataPromises);

@@ -48,7 +48,7 @@ const migrationStorage = {
       SYSTEM_USER,
       migrationId,
       RELATION_MIGRATES,
-      ENTITY_TYPE_MIGRATION_REFERENCE
+      ENTITY_TYPE_MIGRATION_REFERENCE,
     );
     logMigration.info(`[MIGRATION] Read ${dbMigrations.length} migrations from the database`);
     const migrationStatus = {
@@ -60,7 +60,7 @@ const migrationStorage = {
           title: record.title,
           timestamp: record.timestamp,
         }),
-        dbMigrations
+        dbMigrations,
       ),
     };
     return fn(null, migrationStatus);

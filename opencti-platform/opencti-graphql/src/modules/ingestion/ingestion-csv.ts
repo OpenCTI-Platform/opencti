@@ -12,7 +12,7 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
     id: 'ingestion-csv',
     name: ENTITY_TYPE_INGESTION_CSV,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
@@ -45,7 +45,7 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
   representative: (stix: StixIngestionCsv) => {
     return stix.name;
   },
-  converter_2_1: convertIngestionCsvToStix
+  converter_2_1: convertIngestionCsvToStix,
 };
 
 registerDefinition(INGESTION_CSV_DEFINITION);

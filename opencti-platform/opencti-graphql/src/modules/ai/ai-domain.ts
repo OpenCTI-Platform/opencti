@@ -227,7 +227,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
       first: 20,
       prefixMimeTypes: undefined,
       entity_id: stixCoreObject.id,
-      entity_type: stixCoreObject.entity_type
+      entity_type: stixCoreObject.entity_type,
     };
     const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
     finalFilesIds = importFiles.edges.map((n) => n.node.id);
@@ -238,7 +238,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
         first: 20,
         prefixMimeTypes: undefined,
         entity_id: ref,
-        entity_type: 'External-Reference'
+        entity_type: 'External-Reference',
       };
       const importRefFiles = await paginatedForPathWithEnrichment(context, user, `import/External-Reference/${ref}`, ref, optsRef);
       const refFilesIds = importRefFiles.edges.map((n) => n.node.id);
@@ -253,7 +253,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
     fileIds: finalFilesIds,
     connectionFormat: false,
     excludeFields: [],
-    includeContent: true
+    includeContent: true,
   });
   const filesContent = files.map((n: BasicStoreEntityDocument) => n.content);
   const prompt = `
@@ -284,7 +284,7 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
       first: 20,
       prefixMimeTypes: undefined,
       entity_id: stixCoreObject.id,
-      entity_type: stixCoreObject.entity_type
+      entity_type: stixCoreObject.entity_type,
     };
     const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
     finalFilesIds = importFiles.edges.map((n) => n.node.id);
@@ -297,7 +297,7 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
     fileIds: finalFilesIds,
     connectionFormat: false,
     excludeFields: [],
-    includeContent: true
+    includeContent: true,
   });
   const filesContent = files.map((n: BasicStoreEntityDocument) => n.content);
   const prompt = `
@@ -382,18 +382,18 @@ export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUs
     .map((f) => ({
       filterKey: f.filterKey,
       entityTypes: f.elementsForFilterValuesSearch,
-      valuesToResolve: extractFilterGroupValues(filters, f.filterKey)
+      valuesToResolve: extractFilterGroupValues(filters, f.filterKey),
     }))
     .filter((f) => f.valuesToResolve.length > 0);
   const idsFilterKeys = scoIdsFilterKeys.concat(
-    idsFilterResolutionsForOtherTypes.map((n) => n.filterKey)
+    idsFilterResolutionsForOtherTypes.map((n) => n.filterKey),
   );
   // 03. create a map of the values to resolve and their potential corresponding id, and list the not resolved values
   const { mapContent: scosMapContent, notResolvedValues: notResolvedScos } = await resolveValuesIdsMapForEntityTypes(
     context,
     user,
     scoValuesIdsToResolve,
-    [ABSTRACT_STIX_CORE_OBJECT]
+    [ABSTRACT_STIX_CORE_OBJECT],
   );
   const otherIdsResolution = await Promise.all(idsFilterResolutionsForOtherTypes.map((n) => resolveValuesIdsMapForEntityTypes(
     context,

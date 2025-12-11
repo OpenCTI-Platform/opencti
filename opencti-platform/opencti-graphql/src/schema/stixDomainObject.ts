@@ -7,7 +7,7 @@ import {
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
-  ENTITY_TYPE_THREAT_ACTOR
+  ENTITY_TYPE_THREAT_ACTOR,
 } from './general';
 import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_WORK } from './internalObject';
 import { aliases, type AttributeDefinition, xOpenctiAliases } from './attribute-definition';

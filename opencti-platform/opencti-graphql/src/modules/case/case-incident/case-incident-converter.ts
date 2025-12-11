@@ -21,8 +21,8 @@ export const convertCaseIncidentToStix_2_1 = (instance: StoreEntityCaseIncident)
       [STIX_EXT_OCTI]: cleanObject({
         ...caseIncident.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 

@@ -141,7 +141,7 @@ export const updatePirInformationOnEntity = async (context: AuthContext, user: A
  */
 export const arePirExplanationsEqual = (
   explanation1: PirExplanation,
-  explanation2: PirExplanation
+  explanation2: PirExplanation,
 ) => {
   const sameRelationships = explanation1.dependencies.map((d1) => d1.element_id)
     .every((d) => explanation2.dependencies.map((d2) => d2.element_id).includes(d));
@@ -161,7 +161,7 @@ export const arePirExplanationsEqual = (
  */
 export const diffPirExplanations = (
   explanations: PirExplanation[],
-  baseExplanations: PirExplanation[]
+  baseExplanations: PirExplanation[],
 ) => {
   return explanations.filter((explanation) => {
     // For each explanation, check it is different from all explanations in base.
@@ -188,7 +188,7 @@ export const updatePirExplanationsArray = (
         return !sameRelationships;
       });
     }),
-    ...newExplanations
+    ...newExplanations,
   ];
 };
 
@@ -213,7 +213,7 @@ export const updatePirExplanations = async (
   lockIds: string[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
-  const inPirRels = await pageRelationsConnection<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
+  const inPirRels = await pageRelationsConnection<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId });
   if (inPirRels.edges.length === 0) {
     // If = 0 then the in-pir relationship does not exist.
     throw FunctionalError('Relation between the entity and a Pir not found', { sourceId, pirId, inPirRels });

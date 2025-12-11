@@ -141,7 +141,7 @@ const internalGenerateBundles = async (
 export const generateAndSendBundleProcess = async (
   context: AuthContext,
   lines: string[],
-  opts: CsvBundlerIngestionOpts
+  opts: CsvBundlerIngestionOpts,
 ) => {
   logApp.info(`${LOG_PREFIX} generate and push bundles for a bulk of ${lines.length}.`);
   const { bundleCount, objectCount } = await internalGenerateBundles(context, lines, opts, true);
@@ -168,7 +168,7 @@ export interface CsvBundlerTestOpts {
 export const generateTestBundle = async (
   context: AuthContext,
   lines: string[],
-  opts: CsvBundlerTestOpts
+  opts: CsvBundlerTestOpts,
 ) => {
   const testOpts = { ...opts, workId: '', connectorId: '', entity: undefined };
   const { allBundlesToSend } = await internalGenerateBundles(context, lines, testOpts, false);
@@ -200,7 +200,7 @@ export const removeHeaderFromFullFile = (csvLines: string[], skipLineChar: strin
 export const getCsvTestObjects = async (
   context: AuthContext,
   lines: string[],
-  opts: CsvBundlerTestOpts
+  opts: CsvBundlerTestOpts,
 ) => {
   const bundlesBuilder = await generateTestBundle(context, lines, opts);
   let allObjects: StixObject[] = [];
@@ -215,7 +215,7 @@ export const getTestBundleObjectsFromFile = async (
   context: AuthContext,
   user: AuthUser,
   filePath: string,
-  mapper: CsvMapperParsed
+  mapper: CsvMapperParsed,
 ) => {
   const csvLines = await parseReadableToLines(fs.createReadStream(filePath));
   if (mapper.has_header) {
@@ -245,7 +245,7 @@ export const bundleProcess = async (
   user: AuthUser,
   lines: string[],
   mapper: CsvMapperParsed,
-  opts: BundleProcessOpts = {}
+  opts: BundleProcessOpts = {},
 ) => {
   const { entity, maxRecordNumber } = opts;
   await validateCsvMapper(context, user, mapper);

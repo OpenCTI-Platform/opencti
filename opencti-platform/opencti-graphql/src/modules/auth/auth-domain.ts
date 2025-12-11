@@ -176,7 +176,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
   try {
     const authUser = await findById(context, SYSTEM_USER, userId);
     await userEditField(context, SYSTEM_USER, authUser.id, [
-      { key: 'password', value: [input.newPassword] }
+      { key: 'password', value: [input.newPassword] },
     ]);
     await killUserSessions(authUser.id);
     await redisDelForgotPassword(input.transactionId, email);

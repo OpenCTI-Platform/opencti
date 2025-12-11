@@ -30,8 +30,8 @@ export const buildElasticSortingForAttributeCriteria = async (
           term: {
             'pir_information.pir_id.keyword': pirId,
           },
-        }
-      }
+        },
+      },
     } };
   }
   if (orderCriteria.includes('.') && !orderCriteria.endsWith('*')) {

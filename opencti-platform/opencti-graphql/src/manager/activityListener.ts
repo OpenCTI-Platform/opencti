@@ -94,7 +94,7 @@ const initActivityManager = () => {
       type: event.type,
       event_scope: event.event_scope,
       event_access: event.event_access,
-      data: event.data
+      data: event.data,
     };
     // In admin case put that to logs/console
     if (auditLogTypes.includes(action.event_access)) {
@@ -248,7 +248,7 @@ const initActivityManager = () => {
           await activityLogger(action, action.message);
         }
       }
-    }
+    },
   };
   let handler: ActionHandler;
   return {

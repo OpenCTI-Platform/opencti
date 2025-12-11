@@ -99,7 +99,7 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string 
       run_and_terminate: false,
       buffering: opts.buffering ?? false,
       queue_threshold: 0,
-      queue_messages_size: (opts.messages_size ?? 0) / 1000000 // In Mb
+      queue_messages_size: (opts.messages_size ?? 0) / 1000000, // In Mb
     },
     connector_user_id: user_id,
   };
@@ -134,7 +134,7 @@ export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion
     applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
     content,
     work_id: work.id,
-    update: true
+    update: true,
   });
   return work.id;
 };
@@ -208,7 +208,7 @@ const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement,
 const rssHttpGetter = (): Getter => {
   const httpClientOptions: GetHttpClient = {
     responseType: 'text',
-    headers: { 'User-Agent': RSS_FEED_USER_AGENT }
+    headers: { 'User-Agent': RSS_FEED_USER_AGENT },
   };
   const httpClient = getHttpClient(httpClientOptions);
   return async (uri: string) => {
@@ -264,7 +264,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
         report.external_references = [{
           source_name: item.title,
           description: `${ingestion.name} ${item.title}. Retrieved ${item.pubDate.toISOString()}.`,
-          url: item.link
+          url: item.link,
         }];
       }
       return report;
@@ -391,7 +391,7 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
     request: {
       params,
       url,
-    }
+    },
   });
   const { data, headers, status } = await httpClient.get(url, { params });
   logApp.info('[OPENCTI-MODULE] Taxii HTTP Get done.', {
@@ -456,7 +456,7 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
       const state = {
         current_state_cursor: undefined,
         added_after_start: addedLastHeader ? utcDate(addedLastHeader).toISOString() : now(),
-        last_execution_date: now()
+        last_execution_date: now(),
       };
       const ingestionUpdate = await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
       const connectorState = { current_state_cursor: ingestionUpdate.current_state_cursor, added_after_start: ingestionUpdate.added_after_start };
@@ -471,7 +471,7 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
       more: data.more,
       addedLastHeader,
       ingestionId: ingestion.id,
-      ingestionName: ingestion.name
+      ingestionName: ingestion.name,
     });
   }
 };
@@ -481,7 +481,7 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
   await processTaxiiResponse(context, ingestion, taxiResponse);
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
-  [TaxiiVersion.V21]: taxiiV21DataHandler
+  [TaxiiVersion.V21]: taxiiV21DataHandler,
 };
 const taxiiExecutor = async (context: AuthContext) => {
   const filters = {
@@ -522,7 +522,7 @@ export const processCsvLines = async (
   ingestion: BasicStoreEntityIngestionCsv,
   csvMapperParsed: CsvMapperParsed,
   csvLines: string[],
-  addedLast: string | undefined | null
+  addedLast: string | undefined | null,
 ) => {
   const linesContent = csvLines.join('');
   const hashedIncomingData = hashSHA256(linesContent);

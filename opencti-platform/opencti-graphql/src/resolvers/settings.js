@@ -14,7 +14,7 @@ import {
   settingEditMessage,
   settingsCleanContext,
   settingsEditContext,
-  settingsEditField
+  settingsEditField,
 } from '../domain/settings';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
@@ -68,7 +68,7 @@ const settingsResolvers = {
   },
   AppInfo: {
     memory: getMemoryStatistics(),
-    dependencies: (_, __, context) => getApplicationDependencies(context)
+    dependencies: (_, __, context) => getApplicationDependencies(context),
   },
   SettingsMessage: {
     recipients: (message, _, context) => internalFindByIds(context, context.user, message.recipients),
@@ -98,7 +98,7 @@ const settingsResolvers = {
       subscribe: /* v8 ignore next */ async (_, __, context) => {
         return subscribeToPlatformSettingsEvents(context);
       },
-    }
+    },
   },
 };
 

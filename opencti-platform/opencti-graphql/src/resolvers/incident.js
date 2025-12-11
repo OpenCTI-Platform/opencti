@@ -32,7 +32,7 @@ const incidentResolvers = {
         return [];
       }
       return filterMembersWithUsersOrgs(context, context.user, participants);
-    }
+    },
   },
   IncidentsOrdering: {
     objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
@@ -43,14 +43,14 @@ const incidentResolvers = {
       fieldPatch: ({
         input,
         commitMessage,
-        references
+        references,
       }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
       relationDelete: ({
         toId,
-        relationship_type: relationshipType
+        relationship_type: relationshipType,
       }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
     incidentAdd: (_, { input }, context) => addIncident(context, context.user, input),

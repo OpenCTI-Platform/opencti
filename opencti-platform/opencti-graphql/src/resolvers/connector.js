@@ -28,7 +28,7 @@ import {
   testSync,
   updateConnectorCurrentStatus,
   updateConnectorManagerStatus,
-  updateConnectorRequestedStatus
+  updateConnectorRequestedStatus,
 } from '../domain/connector';
 import {
   addDraftContext,
@@ -43,7 +43,7 @@ import {
   updateExpectationsNumber,
   updateProcessedTime,
   updateReceivedTime,
-  worksForConnector
+  worksForConnector,
 } from '../domain/work';
 import { now, sinceNowInMinutes } from '../utils/format';
 import {
@@ -60,7 +60,7 @@ import {
   connectorsForImport,
   connectorsForManagers,
   connectorsForNotification,
-  connectorsForWorker
+  connectorsForWorker,
 } from '../database/repository';
 import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
@@ -117,7 +117,7 @@ const connectorResolvers = {
   },
   ConnectorManager: {
     active: (cm) => sinceNowInMinutes(cm.last_sync_execution) < 5,
-    about_version: () => PLATFORM_VERSION
+    about_version: () => PLATFORM_VERSION,
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
@@ -126,7 +126,7 @@ const connectorResolvers = {
   },
   Synchronizer: {
     user: (sync, _, context) => context.batch.creatorBatchLoader.load(sync.user_id),
-    queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id)
+    queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id),
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),

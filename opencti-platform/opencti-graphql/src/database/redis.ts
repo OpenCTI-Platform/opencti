@@ -24,7 +24,7 @@ import type {
   SseEvent,
   StreamDataEvent,
   UpdateEvent,
-  UpdateEventOpts
+  UpdateEventOpts,
 } from '../types/event';
 import type { StixCoreObject, StixObject } from '../types/stix-2-1-common';
 import type { EditContext } from '../generated/graphql';
@@ -186,8 +186,8 @@ export const initializeRedisClients = async () => {
       subscriber,
       connectionListener: (err) => {
         logApp.info('[REDIS] Redis pubsub client closed', { error: err });
-      }
-    })
+      },
+    }),
   };
 };
 export const shutdownRedisClients = () => {
@@ -434,7 +434,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         extension = extend();
       },
-      lock.expiration - Date.now() - 2 * automaticExtensionThreshold
+      lock.expiration - Date.now() - 2 * automaticExtensionThreshold,
     );
   };
   const extend = async () => {
@@ -541,7 +541,7 @@ const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: 
       patch: jsonpatch.compare(previousStix, currentStix),
       reverse_patch: jsonpatch.compare(currentStix, previousStix),
       sources: await asyncListTransformation<StixObject>(sourceEntities, convertStoreToStix_2_1) as StixCoreObject[],
-    }
+    },
   };
 };
 export const storeMergeEvent = async (
@@ -594,8 +594,8 @@ export const buildStixUpdateEvent = (
       reverse_patch: previousPatch,
       related_restrictions: opts.related_restrictions,
       pir_ids: opts.pir_ids,
-      changes
-    }
+      changes,
+    },
   };
 };
 export const publishStixToStream = async (context: AuthContext, user: AuthUser, event: StreamDataEvent) => {
@@ -614,7 +614,7 @@ export const storeUpdateEvent = async (
   instance: StoreObject,
   message: string,
   changes: Change[],
-  opts: UpdateEventOpts = {}
+  opts: UpdateEventOpts = {},
 ) => {
   try {
     if (isStixExportableInStreamData(instance)) {
@@ -682,7 +682,7 @@ export const buildDeleteEvent = async (
     scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
     message,
     origin: user.origin,
-    data: stix
+    data: stix,
   };
 };
 export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, opts: EventOpts = {}) => {
@@ -748,7 +748,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
   _user: AuthUser,
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
-  opts: StreamOption = {}
+  opts: StreamOption = {},
 ): StreamProcessor => {
   let client: Cluster | Redis;
   let startEventId: string;
@@ -771,7 +771,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
         STREAM_BATCH_TIME,
         'STREAMS',
         streamName,
-        startEventId
+        startEventId,
       ) as any[];
       // Process the event results
       if (streamResult && streamResult.length > 0) {
@@ -975,7 +975,7 @@ export const getLastPlaybookExecutions = async (playbookId: string) => {
       id: e.playbook_execution_id,
       playbook_id: e.playbook_id,
       execution_start: steps[0].in_timestamp,
-      steps
+      steps,
     };
   });
 };
@@ -1051,7 +1051,7 @@ export const OTP_TTL = conf.get('app:forgot_password:otp_ttl_second') || 600;
 export const redisSetForgotPasswordOtp = async (
   transactionId: string,
   data: { email: string; hashedOtp: string; mfa_activated: boolean; mfa_validated: boolean; userId: string },
-  ttl: number = OTP_TTL
+  ttl: number = OTP_TTL,
 ) => {
   const forgotPasswordOtpKeyName = `forgot_password_otp_${transactionId}`;
   const pointerKey = `forgot_password_transactionId_${data.email}`;

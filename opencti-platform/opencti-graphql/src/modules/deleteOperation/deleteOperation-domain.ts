@@ -68,7 +68,7 @@ const convertStoreEntityToInput = (element: BasicStoreObject, upsertedElements: 
   if (isStixObject(entity_type)) {
     return {
       ...directInputs,
-      ...refInputs
+      ...refInputs,
     };
   }
   if (isStixRelationship(entity_type)) {
@@ -220,7 +220,7 @@ export const findOldDeleteOperations = (context: AuthContext, user: AuthUser, da
     orderMode: OrderingMode.Asc,
     mode: FilterMode.And,
     filters: [
-      { key: ['created_at'], values: [prepareDate(dateThreshold)], operator: FilterOperator.Lt }
+      { key: ['created_at'], values: [prepareDate(dateThreshold)], operator: FilterOperator.Lt },
     ],
     filterGroups: [],
   };

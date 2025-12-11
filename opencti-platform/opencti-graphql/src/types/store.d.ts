@@ -35,7 +35,7 @@ import {
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  RELATION_OBJECT_PARTICIPANT
+  RELATION_OBJECT_PARTICIPANT,
 } from '../schema/stixRefRelationship';
 import {
   INPUT_ASSIGNEE,
@@ -49,7 +49,7 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_OBJECTS,
-  INPUT_PARTICIPANT
+  INPUT_PARTICIPANT,
 } from '../schema/general';
 import type { StixId } from './stix-2-1-common';
 import { type EditOperation, type PageInfo, StatusScope } from '../generated/graphql';

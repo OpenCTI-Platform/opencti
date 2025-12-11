@@ -16,8 +16,8 @@ const convertSupportPackageToStix = (instance: StoreEntitySupportPackage): StixS
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 

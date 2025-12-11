@@ -21,7 +21,7 @@ export const findThreatActorIndividualPaginated = (context: AuthContext, user: A
 export const addThreatActorIndividual = async (context: AuthContext, user: AuthUser, input: ThreatActorIndividualAddInput) => {
   const threatActor = pipe(
     assoc('first_seen', isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen),
-    assoc('last_seen', isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen)
+    assoc('last_seen', isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen),
   )(input);
   const created = await createEntity(context, user, threatActor, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

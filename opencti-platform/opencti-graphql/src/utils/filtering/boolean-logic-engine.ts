@@ -34,7 +34,7 @@ export const toValidArray = <T = unknown>(v: T) => {
 export const testGenericFilter = <T extends string | number | boolean>(
   { mode = FilterMode.Or, operator = FilterOperator.Eq }: FilterLogic,
   adaptedFilterValues: T[],
-  stixCandidates: T[]
+  stixCandidates: T[],
 ) => {
   const op = operator ?? 'eq';
   const operationMode = mode ?? 'and';

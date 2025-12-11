@@ -12,11 +12,11 @@ const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, St
     id: 'draftWorkspace',
     name: ENTITY_TYPE_DRAFT_WORKSPACE,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_DRAFT_WORKSPACE]: () => uuidv4()
+      [ENTITY_TYPE_DRAFT_WORKSPACE]: () => uuidv4(),
     },
   },
   attributes: [
@@ -34,7 +34,7 @@ const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, St
   representative: (stix: StixDraftWorkspace) => {
     return stix.name;
   },
-  converter_2_1: convertDraftWorkspaceToStix
+  converter_2_1: convertDraftWorkspaceToStix,
 };
 
 registerDefinition(DRAFT_WORKSPACE_DEFINITION);

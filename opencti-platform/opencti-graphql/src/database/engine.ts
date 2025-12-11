@@ -47,7 +47,7 @@ import {
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
   waitInSec,
-  WRITE_PLATFORM_INDICES
+  WRITE_PLATFORM_INDICES,
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
 import {
@@ -60,7 +60,7 @@ import {
   LockTimeoutError,
   ResourceNotFoundError,
   TYPE_LOCK_ERROR,
-  UnsupportedError
+  UnsupportedError,
 } from '../config/errors';
 import {
   isStixRefRelationship,
@@ -74,7 +74,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
   RELATION_OBJECT_PARTICIPANT,
-  STIX_REF_RELATIONSHIP_TYPES
+  STIX_REF_RELATIONSHIP_TYPES,
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -91,9 +91,9 @@ import {
   IDS_STIX,
   isAbstract,
   REL_INDEX_PREFIX,
-  RULE_PREFIX
+  RULE_PREFIX,
 } from '../schema/general';
-import { isModifiedObject, isUpdatedAtObject, } from '../schema/fieldDataAdapter';
+import { isModifiedObject, isUpdatedAtObject } from '../schema/fieldDataAdapter';
 import { generateInternalType, getParentTypes, keepMostRestrictiveTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
@@ -110,7 +110,7 @@ import {
   ENTITY_TYPE_LOCATION_REGION,
   isStixDomainObject,
   STIX_ORGANIZATIONS_RESTRICTED,
-  STIX_ORGANIZATIONS_UNRESTRICTED
+  STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
@@ -128,9 +128,9 @@ import {
   MEMBER_ACCESS_ALL,
   PIRAPI,
   SYSTEM_USER,
-  userFilterStoreElements
+  userFilterStoreElements,
 } from '../utils/access';
-import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
+import { isSingleRelationsRef } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
@@ -145,7 +145,7 @@ import {
   isObjectAttribute,
   isObjectFlatAttribute,
   schemaAttributesDefinition,
-  validateDataBeforeIndexing
+  validateDataBeforeIndexing,
 } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-2-1-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
@@ -183,7 +183,7 @@ import {
   TYPE_FILTER,
   USER_SERVICE_ACCOUNT_FILTER,
   WORKFLOW_FILTER,
-  X_OPENCTI_WORKFLOW_ID
+  X_OPENCTI_WORKFLOW_ID,
 } from '../utils/filtering/filtering-constants';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
 import {
@@ -203,7 +203,7 @@ import {
   shortStringFormats,
   standardId,
   textMapping,
-  xOpenctiStixIds
+  xOpenctiStixIds,
 } from '../schema/attribute-definition';
 import { connections as connectionsAttribute } from '../modules/attributes/basicRelationship-registrationAttributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
@@ -241,7 +241,7 @@ import type {
   StoreConnection,
   StoreMarkingDefinition,
   StoreObject,
-  StoreRelation
+  StoreRelation,
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
 
@@ -354,10 +354,10 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
         {
           attachment: {
             field: 'file_data',
-            remove_binary: true
-          }
-        }
-      ]
+            remove_binary: true,
+          },
+        },
+      ],
     }).catch((e) => {
       logApp.error('Engine attachment processor configuration fail', { cause: e });
       success = false;
@@ -370,16 +370,16 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
         processors: [
           {
             attachment: {
-              field: 'file_data'
-            }
+              field: 'file_data',
+            },
           },
           {
             remove: {
-              field: 'file_data'
-            }
-          }
-        ]
-      }
+              field: 'file_data',
+            },
+          },
+        ],
+      },
     }).catch((e) => {
       logApp.error('Engine attachment processor configuration fail', { cause: e });
       success = false;
@@ -396,7 +396,7 @@ export const searchEngineVersion = async (): Promise<{ platform: string, version
     .catch(
       /* v8 ignore next */ (e) => {
         throw ConfigurationError('Search engine seems down', { cause: e });
-      }
+      },
     );
   const searchPlatform = searchInfo.distribution || ELK_ENGINE; // openSearch or elasticSearch
   const searchVersion = searchInfo.number;
@@ -427,7 +427,7 @@ export const searchEngineInit = async (): Promise<boolean> => {
     tls: { // For Elastic 8+
       ca,
       rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
-    }
+    },
   };
   elkSearchConfiguration.auth = await enrichWithRemoteCredentials('elasticsearch', elkSearchConfiguration.auth);
   const openSearchConfiguration = {
@@ -437,11 +437,11 @@ export const searchEngineInit = async (): Promise<boolean> => {
       service: conf.get('opensearch:service') || 'es',
       getCredentials: () => {
         const credentialsProvider = defaultProvider({
-          roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({ region })
+          roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({ region }),
         });
         return credentialsProvider();
-      }
-    }) : {})
+      },
+    }) : {}),
   };
   // Select the correct engine
   let engineVersion;
@@ -585,7 +585,7 @@ const elOperationForMigration = (operation: (query: any) => Promise<any>): (mess
       ...(index ? { index } : {}),
       refresh: true,
       wait_for_completion: false,
-      body
+      body,
     }).catch((err) => {
       throw DatabaseError('Async engine bulk migration fail', { migration: message, cause: err });
     });
@@ -631,16 +631,16 @@ const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?
             [`${authorizedMembers.name}.groups_restriction_ids.keyword`]: {
               terms: userGroupsIds,
               minimum_should_match_script: {
-                source: `doc['${authorizedMembers.name}.groups_restriction_ids.keyword'].length`
-              }
-            }
-          }
-        }
-      ]
-    }
+                source: `doc['${authorizedMembers.name}.groups_restriction_ids.keyword'].length`,
+              },
+            },
+          },
+        },
+      ],
+    },
   };
   const authorizedFilters = [
-    { bool: { must: [authorizedMembersIdsTerms, groupRestrictionCondition] } }
+    { bool: { must: [authorizedMembersIdsTerms, groupRestrictionCondition] } },
   ];
   const shouldConditions = [];
   if (includeAuthorities) {
@@ -658,9 +658,9 @@ const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?
       path: authorizedMembers.name,
       query: {
         // For service accounts, bypass authorized members restrictions
-        bool: { should: bypassAuthorizedMembers ? [] : authorizedFilters }
-      }
-    }
+        bool: { should: bypassAuthorizedMembers ? [] : authorizedFilters },
+      },
+    },
   };
   shouldConditions.push(nestedQuery);
   return [{ bool: { should: shouldConditions } }];
@@ -669,7 +669,7 @@ const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?
 export const buildDataRestrictions = async (
   context: AuthContext,
   user: AuthUser,
-  opts: { includeAuthorities?: boolean | null } | null | undefined = {}
+  opts: { includeAuthorities?: boolean | null } | null | undefined = {},
 ): Promise<{ must: any[], must_not: any[] }> => {
   const must: any[] = [];
   // eslint-disable-next-line camelcase
@@ -701,8 +701,8 @@ export const buildDataRestrictions = async (
       // If use have marking, he can access to data with no marking && data with according marking
       const mustNotMarkingTerms = [{
         terms: {
-          [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: mustNotHaveOneOf
-        }
+          [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: mustNotHaveOneOf,
+        },
       }];
       const markingBool = {
         bool: {
@@ -733,19 +733,19 @@ export const buildDataRestrictions = async (
       bool: {
         must: [
           {
-            bool: { must_not: [{ terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_RESTRICTED } }] }
+            bool: { must_not: [{ terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_RESTRICTED } }] },
           },
           {
             bool: {
               should: [
                 { terms: { 'parent_types.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } },
-                { terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } }
+                { terms: { 'entity_type.keyword': STIX_ORGANIZATIONS_UNRESTRICTED } },
               ],
-              minimum_should_match: 1
-            }
-          }
-        ]
-      }
+              minimum_should_match: 1,
+            },
+          },
+        ],
+      },
     };
     if (settings.platform_organization) {
       if (context.user_inside_platform_organization) {
@@ -845,16 +845,16 @@ const elCreateLifecyclePolicy = async () => {
               actions: {
                 rollover: {
                   max_primary_shard_size: ES_PRIMARY_SHARD_SIZE,
-                  max_docs: ES_MAX_DOCS
+                  max_docs: ES_MAX_DOCS,
                 },
                 set_priority: {
-                  priority: 100
-                }
-              }
-            }
-          }
-        }
-      }
+                  priority: 100,
+                },
+              },
+            },
+          },
+        },
+      },
     }).catch((e) => {
       throw DatabaseError('Creating lifecycle policy fail', { cause: e });
     });
@@ -873,17 +873,17 @@ const elCreateLifecyclePolicy = async () => {
                 {
                   rollover: {
                     min_primary_shard_size: ES_PRIMARY_SHARD_SIZE,
-                    min_doc_count: ES_MAX_DOCS
-                  }
+                    min_doc_count: ES_MAX_DOCS,
+                  },
                 }],
-              transitions: []
+              transitions: [],
             }],
           ism_template: {
             index_patterns: [`${ES_INDEX_PREFIX}*`],
-            priority: 100
-          }
-        }
-      }
+            priority: 100,
+          },
+        },
+      },
     }).catch((e) => {
       throw DatabaseError('Creating lifecycle policy fail', { cause: e });
     });
@@ -975,7 +975,7 @@ const ruleMappingGenerator = (): Record<string, { dynamic: string, properties: a
         dependencies: shortMapping,
         hash: shortMapping,
         data: { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' },
-      }
+      },
     };
   }
   return schemaProperties;
@@ -985,7 +985,7 @@ const denormalizeRelationsMappingGenerator = (): Record<string, { dynamic: strin
     STIX_SIGHTING_RELATIONSHIP,
     ...STIX_CORE_RELATIONSHIPS,
     ...INTERNAL_RELATIONSHIPS,
-    ...schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP)
+    ...schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP),
   ];
   const schemaProperties: Record<string, { dynamic: string, properties: any }> = {};
   for (let attrIndex = 0; attrIndex < databaseRelationshipsName.length; attrIndex += 1) {
@@ -995,7 +995,7 @@ const denormalizeRelationsMappingGenerator = (): Record<string, { dynamic: strin
       properties: {
         internal_id: shortMapping,
         inferred_id: shortMapping,
-      }
+      },
     };
   }
   return schemaProperties;
@@ -1020,17 +1020,17 @@ const computeIndexSettings = (rolloverAlias: string | null | undefined): any => 
       lifecycle: {
         name: `${ES_INDEX_PREFIX}-ilm-policy`,
         rollover_alias: rolloverAlias,
-      }
+      },
     } : {};
     return {
       index: {
         mapping: {
           total_fields: {
             limit: ES_MAX_MAPPINGS,
-          }
+          },
         },
-        ...cycle
-      }
+        ...cycle,
+      },
     };
   }
   // Rollover alias can be undefined for platform initialized <= 5.8
@@ -1038,16 +1038,16 @@ const computeIndexSettings = (rolloverAlias: string | null | undefined): any => 
     plugins: {
       index_state_management: {
         rollover_alias: rolloverAlias,
-      }
-    }
+      },
+    },
   } : {};
   return {
     mapping: {
       total_fields: {
         limit: ES_MAX_MAPPINGS,
-      }
+      },
     },
-    ...cycle
+    ...cycle,
   };
 };
 
@@ -1247,7 +1247,7 @@ const getRetroCompatibleMappings = (): any => {
         messages: { type: flattenedType },
         errors: { type: flattenedType },
       },
-    }
+    },
   };
 };
 
@@ -1263,21 +1263,21 @@ const updateIndexTemplate = async (name: string, mapping_properties: Record<stri
       template: {
         settings: computeIndexSettings(name),
         mappings: ES_IS_OLD_MAPPING ? {
-          properties: getRetroCompatibleMappings()
+          properties: getRetroCompatibleMappings(),
         } : {
           // Global option to prevent elastic to try any magic
           dynamic: 'strict' as const,
           date_detection: false,
           numeric_detection: false,
           properties: mapping_properties,
-        }
+        },
       },
       composed_of: [`${ES_INDEX_PREFIX}-core-settings`],
       version: 3,
       _meta: {
         description: 'To generate opencti expected index mappings',
       },
-    }
+    },
   };
   if (engine instanceof ElkClient) {
     return engine.indices.putIndexTemplate(putIndexTemplateArg).catch((e) => {
@@ -1475,7 +1475,7 @@ export const elDeleteIndices = async (indexesToDelete: string[]): Promise<any[]>
             logApp.error('Indices deletion fail', { cause: err });
           }
         });
-    })
+    }),
   );
 };
 const getRuntimeUsers = async (context: AuthContext, user: AuthUser) => {
@@ -1495,7 +1495,7 @@ const withInferencesRels = (indices: string[], withInferences: boolean) => {
 export const computeQueryIndices = (
   indices: string[] | string | undefined | null,
   typeOrTypes: string[] | string | undefined | null,
-  withInferences = true
+  withInferences = true,
 ): string[] | string | undefined | null => {
   const types = (Array.isArray(typeOrTypes) || isEmptyField(typeOrTypes)) ? typeOrTypes : [typeOrTypes] as string[];
   // If indices are explicitly defined, just rely on the definition
@@ -1600,8 +1600,8 @@ const REL_COUNT_SCRIPT_FIELD = {
             }
           }
           return totalElements;
-        `
-  }
+        `,
+  },
 };
 const BASE_FIELDS = [
   '_index',
@@ -1633,7 +1633,7 @@ const elBuildRelation = (type: string, connection: StoreConnection) => {
 const elMergeRelation = (
   concept: { internal_id: string, base_type: string, entity_type: string },
   fromConnection: StoreConnection | undefined,
-  toConnection: StoreConnection | undefined
+  toConnection: StoreConnection | undefined,
 ) => {
   if (!fromConnection || !toConnection) {
     throw DatabaseError('Reconstruction of the relation fail', concept.internal_id);
@@ -1664,7 +1664,7 @@ const elDataConverter = <T>(esHit: any): T => {
     id: elementData.internal_id,
     sort: esHit.sort,
     ...elRebuildRelation(elementData),
-    ...(isNotEmptyField(esHit.fields) ? esHit.fields : {})
+    ...(isNotEmptyField(esHit.fields) ? esHit.fields : {}),
   };
   const entries = Object.entries(data);
   const ruleInferences = [];
@@ -1704,7 +1704,7 @@ const elDataConverter = <T>(esHit: any): T => {
 // endregion
 export const elConvertHitsToMap = async <T extends BasicStoreBase>(
   elements: T[],
-  opts: { mapWithAllIds?: boolean } = {}
+  opts: { mapWithAllIds?: boolean } = {},
 ): Promise<Record<string, T>> => {
   const { mapWithAllIds = false } = opts;
   const convertedHitsMap: Record<string, T> = {};
@@ -1773,7 +1773,7 @@ export const elFindByIds = async <T extends BasicStoreBase> (
   context: AuthContext,
   user: AuthUser,
   ids: string[] | string,
-  opts: ElFindByIdsOpts = {}
+  opts: ElFindByIdsOpts = {},
 ): Promise<T[] | Record<string, T>> => {
   const {
     indices,
@@ -1819,7 +1819,7 @@ export const elFindByIds = async <T extends BasicStoreBase> (
         bool: {
           should: [
             { terms: { 'entity_type.keyword': types } },
-            { terms: { 'parent_types.keyword': types } }
+            { terms: { 'parent_types.keyword': types } },
           ],
           minimum_should_match: 1,
         },
@@ -1842,13 +1842,13 @@ export const elFindByIds = async <T extends BasicStoreBase> (
               must: [...mustTerms, ...draftMust],
               must_not: markingRestrictions.must_not,
             },
-          }]
-        }
+          }],
+        },
       },
     };
     if (relCount) {
       body.script_fields = {
-        script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
+        script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD,
       };
     }
     const _source: { excludes: string[], includes?: string[] } = { excludes: [] };
@@ -1898,7 +1898,7 @@ export const elLoadById = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   id: string,
-  opts: { ignoreDuplicates?: boolean } & ElFindByIdsOpts = {}
+  opts: { ignoreDuplicates?: boolean } & ElFindByIdsOpts = {},
 ) => {
   const hits = await elFindByIds<T>(context, user, id, { ...opts, withoutRels: false }) as T[];
   //* v8 ignore if */
@@ -1914,7 +1914,7 @@ export const elLoadById = async <T extends BasicStoreBase>(
 export const elBatchIds = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
-  elements: { id: string, type: string }[]
+  elements: { id: string, type: string }[],
 ) => {
   const ids = elements.map((e) => e.id);
   const types = elements.map((e) => e.type);
@@ -1924,7 +1924,7 @@ export const elBatchIds = async <T extends BasicStoreBase>(
 export const elBatchIdsWithRelCount = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
-  elements: { id: string, type: string }[]
+  elements: { id: string, type: string }[],
 ) => {
   const ids = elements.map((e) => e.id);
   const types = elements.map((e) => e.type);
@@ -2019,7 +2019,7 @@ type ProcessSearchArgs = {
 };
 function processSearch(
   search: string,
-  args: ProcessSearchArgs
+  args: ProcessSearchArgs,
 ): { exactSearch: string[], querySearch: string[] } {
   const { useWildcardPrefix = ES_DEFAULT_WILDCARD_PREFIX } = args;
   let decodedSearch;
@@ -2054,7 +2054,7 @@ function processSearch(
   }
   return {
     exactSearch,
-    querySearch
+    querySearch,
   };
 }
 export const elGenerateFullTextSearchShould = (search: string, args: ProcessSearchArgs = {}) => {
@@ -2092,7 +2092,7 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
           },
         },
       },
-    ]).flat()
+    ]).flat(),
   );
   // Build the search for all other fields
   const searchPhrase = R.uniq(querySearch).join(' ');
@@ -2139,7 +2139,7 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
 export const elGenerateFieldTextSearchShould = (
   search: string,
   arrayKeys: string[],
-  args: ProcessSearchArgs = {}
+  args: ProcessSearchArgs = {},
 ) => {
   const { exactSearch, querySearch } = processSearch(search, args);
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|http?:/g, '')));
@@ -2153,8 +2153,8 @@ export const elGenerateFieldTextSearchShould = (
           lenient: true,
           fields: arrayKeys,
         },
-      }
-    ]).flat()
+      },
+    ]).flat(),
   );
   // Build the search for all other fields
   const searchPhrase = R.uniq(querySearch).join(' ');
@@ -2174,7 +2174,7 @@ export const elGenerateFieldTextSearchShould = (
           lenient: true,
           fields: arrayKeys,
         },
-      }
+      },
     ]);
   }
 
@@ -2215,14 +2215,14 @@ export const buildLocalMustFilter = (validFilter: any) => {
       if (nestedOperator === 'nil') {
         nestedMustNot.push({
           exists: {
-            field: nestedFieldKey
-          }
+            field: nestedFieldKey,
+          },
         });
       } else if (nestedOperator === 'not_nil') {
         nestedShould.push({
           exists: {
-            field: nestedFieldKey
-          }
+            field: nestedFieldKey,
+          },
         });
       }
       // other operators
@@ -2237,8 +2237,8 @@ export const buildLocalMustFilter = (validFilter: any) => {
         if (nestedOperator === FilterOperator.Within) {
           nestedShould.push({
             range: {
-              [nestedFieldKey]: { gte: nestedValues[0], lte: nestedValues[1] }
-            }
+              [nestedFieldKey]: { gte: nestedValues[0], lte: nestedValues[1] },
+            },
           });
         } else if (isNotEmptyField(nestedValues)) {
           for (let i = 0; i < nestedValues.length; i += 1) {
@@ -2250,20 +2250,20 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 multi_match: {
                   fields: buildFieldForQuery(nestedFieldKey),
                   query: nestedSearchValue.toString(),
-                }
+                },
               });
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
               nestedShould.push({
                 range: {
-                  [nestedFieldKey]: { [nestedOperator]: nestedSearchValue }
-                }
+                  [nestedFieldKey]: { [nestedOperator]: nestedSearchValue },
+                },
               });
             } else { // nestedOperator = 'eq'
               nestedShould.push({
                 multi_match: {
                   fields: buildFieldForQuery(nestedFieldKey),
                   query: nestedSearchValue.toString(),
-                }
+                },
               });
             }
           }
@@ -2295,10 +2295,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
       bool: {
         must_not: {
           exists: {
-            field: headKey
-          }
-        }
-      }
+            field: headKey,
+          },
+        },
+      },
     };
     if (filterDefinition?.type === 'string') {
       if (filterDefinition?.format === 'text') { // text filters: use wildcard
@@ -2306,10 +2306,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
           bool: {
             must_not: {
               wildcard: {
-                [headKey]: '*'
-              }
+                [headKey]: '*',
+              },
             },
-          }
+          },
         };
       } else { // string filters: nil <-> (field doesn't exist) OR (field = empty string)
         valueFiltering = {
@@ -2319,10 +2319,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 bool: {
                   must_not: {
                     exists: {
-                      field: headKey
-                    }
-                  }
-                }
+                      field: headKey,
+                    },
+                  },
+                },
               },
               {
                 term: {
@@ -2331,7 +2331,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
               },
             ],
             minimum_should_match: 1,
-          }
+          },
         };
       }
     } else if (filterDefinition?.type === 'date') { // date filters: nil <-> (field doesn't exist) OR (date <= epoch) OR (date >= 5138)
@@ -2342,16 +2342,16 @@ export const buildLocalMustFilter = (validFilter: any) => {
               bool: {
                 must_not: {
                   exists: {
-                    field: headKey
-                  }
-                }
-              }
+                    field: headKey,
+                  },
+                },
+              },
             },
             { range: { [headKey]: { lte: '1970-01-01T01:00:00.000Z' } } },
-            { range: { [headKey]: { gte: '5138-11-16T09:46:40.000Z' } } }
+            { range: { [headKey]: { gte: '5138-11-16T09:46:40.000Z' } } },
           ],
           minimum_should_match: 1,
-        }
+        },
       };
     }
     valuesFiltering.push(valueFiltering);
@@ -2359,8 +2359,8 @@ export const buildLocalMustFilter = (validFilter: any) => {
     const filterDefinition = schemaAttributesDefinition.getAttributeByName(headKey);
     let valueFiltering: any = { // classic filters: field exists
       exists: {
-        field: headKey
-      }
+        field: headKey,
+      },
     };
     if (filterDefinition?.type === 'string') {
       if (filterDefinition?.format === 'text') { // text filters: use wildcard
@@ -2368,10 +2368,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
           bool: {
             must: {
               wildcard: {
-                [headKey]: '*'
-              }
+                [headKey]: '*',
+              },
             },
-          }
+          },
         };
       } else { // other filters: not_nil <-> (field exists) AND (field != empty string)
         valueFiltering = {
@@ -2379,8 +2379,8 @@ export const buildLocalMustFilter = (validFilter: any) => {
             must: [
               {
                 exists: {
-                  field: headKey
-                }
+                  field: headKey,
+                },
               },
               {
                 bool: {
@@ -2389,10 +2389,10 @@ export const buildLocalMustFilter = (validFilter: any) => {
                       [headKey === '_id' ? headKey : `${headKey}.keyword`]: { value: '' },
                     },
                   },
-                }
-              }
+                },
+              },
             ],
-          }
+          },
         };
       }
     } else if (filterDefinition?.type === 'date') { // date filters: not_nil <-> (field exists) AND (date > epoch) AND (date < 5138)
@@ -2401,13 +2401,13 @@ export const buildLocalMustFilter = (validFilter: any) => {
           must: [
             {
               exists: {
-                field: headKey
-              }
+                field: headKey,
+              },
             },
             { range: { [headKey]: { gt: '1970-01-01T01:00:00.000Z' } } },
-            { range: { [headKey]: { lt: '5138-11-16T09:46:40.000Z' } } }
+            { range: { [headKey]: { lt: '5138-11-16T09:46:40.000Z' } } },
           ],
-        }
+        },
       };
     }
     valuesFiltering.push(valueFiltering);
@@ -2430,16 +2430,16 @@ export const buildLocalMustFilter = (validFilter: any) => {
         if (operator === 'eq') {
           for (let i = 0; i < arrayKeys.length; i += 1) {
             valuesFiltering.push({
-              terms: { [`${arrayKeys[i]}.keyword`]: values }
+              terms: { [`${arrayKeys[i]}.keyword`]: values },
             });
           }
         } else {
           valuesFiltering.push({
             bool: {
               must_not: arrayKeys.map((k) => ({
-                terms: { [`${k}.keyword`]: values }
+                terms: { [`${k}.keyword`]: values },
               })),
-            }
+            },
           });
         }
       } else {
@@ -2509,7 +2509,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
           } else if (operator === 'script') {
             valuesFiltering.push({
               script: {
-                script: values[i].toString()
+                script: values[i].toString(),
               },
             });
           } else if (operator === 'search') {
@@ -2527,8 +2527,8 @@ export const buildLocalMustFilter = (validFilter: any) => {
             }
             valuesFiltering.push({
               range: {
-                [headKey]: { [operator]: values[i] }
-              }
+                [headKey]: { [operator]: values[i] },
+              },
             });
           }
         }
@@ -2549,8 +2549,8 @@ export const buildLocalMustFilter = (validFilter: any) => {
       bool: {
         should: noValuesFiltering.map((o) => ({
           bool: {
-            must_not: [o]
-          }
+            must_not: [o],
+          },
         })),
         minimum_should_match: localFilterMode === 'or' ? 1 : noValuesFiltering.length,
       },
@@ -2582,7 +2582,7 @@ const adaptFilterToEntityTypeFilterKey = (filter: any) => {
         {
           ...filter,
           key: ['parent_types'],
-        }
+        },
       ],
       filterGroups: [],
     };
@@ -2620,7 +2620,7 @@ const adaptFilterToEntityTypeFilterKey = (filter: any) => {
       mode: operator === 'eq' ? FilterMode.Or : FilterMode.And,
       filters: [
         { ...filter, key: ['entity_type'], values },
-        { ...filter, key: ['parent_types'], values }
+        { ...filter, key: ['parent_types'], values },
       ],
       filterGroups: [],
     };
@@ -2668,7 +2668,7 @@ export const adaptFilterToIdsFilterKey = (filter: Filter) => {
 const buildSubQueryForFilterGroup = (
   context: AuthContext,
   user: AuthUser,
-  inputFilters: any
+  inputFilters: any,
 ) => {
   const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
   const localMustFilters: any = [];
@@ -2696,7 +2696,7 @@ const buildSubQueryForFilterGroup = (
       bool: {
         should: localMustFilters,
         minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
-      }
+      },
     };
   }
   return null;
@@ -2734,7 +2734,7 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
           emit('Unknown')
         }
     `,
-    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeEntities(context, user, ENTITY_TYPE_IDENTITY)
+    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeEntities(context, user, ENTITY_TYPE_IDENTITY),
   },
   deletedBy: {
     field: 'deletedBy.keyword',
@@ -2770,7 +2770,7 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
         emit('Unknown')
       }
     `,
-    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY)
+    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY),
   },
   ethnicity: {
     field: 'ethnicity.keyword',
@@ -2788,7 +2788,7 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
         emit('Unknown')
       }
     `,
-    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY)
+    getParams: async (context: AuthContext, user: AuthUser) => getRuntimeEntities(context, user, ENTITY_TYPE_LOCATION_COUNTRY),
   },
   creator: {
     field: 'creator.keyword',
@@ -2920,7 +2920,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
     startDate = null,
     endDate = null,
     dateAttribute = null,
-    includeAuthorities = false
+    includeAuthorities = false,
   } = options;
   const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
     return elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
@@ -3024,7 +3024,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   };
   if (relCount) {
     body.script_fields = {
-      script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
+      script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD,
     };
   }
   if (!noSize) {
@@ -3052,7 +3052,7 @@ const buildSearchResult = <T extends BasicStoreBase>(
   searchAfter: string | undefined | null,
   globalCount: number,
   filterCount: number,
-  connectionFormat: boolean
+  connectionFormat: boolean,
 ) => {
   if (connectionFormat) {
     const nodeHits = elements.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }));
@@ -3081,7 +3081,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | undefined | null,
-  options: PaginateOpts = {}
+  options: PaginateOpts = {},
 ): Promise<BasicConnection<T> | T[] | PaginateResultWithMeta<T>> => {
   const {
     baseData = false,
@@ -3144,13 +3144,13 @@ const elRepaginate = async <T extends BasicStoreBase> (
   user: AuthUser,
   indexName: string | string[] | undefined | null,
   connectionFormat: boolean,
-  opts: RepaginateOpts<T> = {}
+  opts: RepaginateOpts<T> = {},
 ) => {
   const {
     first = ES_DEFAULT_PAGINATION,
     maxSize = undefined,
     logForMigration = false,
-    callback
+    callback,
   } = opts;
   let batch = 0;
   let emitSize = 0;
@@ -3198,7 +3198,7 @@ export const elConnection = async <T extends BasicStoreBase> (
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | null | undefined,
-  opts: RepaginateOpts<T> = {}
+  opts: RepaginateOpts<T> = {},
 ) => {
   const { elements, totalCount } = await elRepaginate<T>(context, user, indexName, true, opts);
   return buildPaginationFromEdges<T>(opts.first, opts.after, elements as BasicNodeEdge<T>[], totalCount);
@@ -3208,7 +3208,7 @@ export const elList = async <T extends BasicStoreBase> (
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | undefined | null,
-  opts: RepaginateOpts<T> = {}
+  opts: RepaginateOpts<T> = {},
 ) => {
   const data = await elRepaginate<T>(context, user, indexName, false, opts);
   return data.elements as T[];
@@ -3220,7 +3220,7 @@ export const elLoadBy = async <T extends BasicStoreBase> (
   field: string,
   value: any,
   type = null,
-  indices: string[] = READ_DATA_INDICES
+  indices: string[] = READ_DATA_INDICES,
 ) => {
   const filters = {
     mode: FilterMode.And,
@@ -3311,7 +3311,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context: AuthContext, use
   const authorTypes = [
     ENTITY_TYPE_IDENTITY_INDIVIDUAL,
     ENTITY_TYPE_IDENTITY_ORGANIZATION,
-    ENTITY_TYPE_IDENTITY_SYSTEM
+    ENTITY_TYPE_IDENTITY_SYSTEM,
   ];
   const reliabilityFilter = {
     mode: FilterMode.And,
@@ -3392,11 +3392,11 @@ const adaptFilterToFromOrToFilterKeys = (filter: Filter) => {
     const filterGroupsForValues = values.map((val) => {
       const nestedFrom = [
         { key: nestedKey, operator, values: [val] },
-        { key: 'role', operator: FilterOperator.Wildcard, values: ['*_from'] }
+        { key: 'role', operator: FilterOperator.Wildcard, values: ['*_from'] },
       ];
       const nestedTo = [
         { key: nestedKey, operator, values: [val] },
-        { key: 'role', operator: FilterOperator.Wildcard, values: ['*_to'] }
+        { key: 'role', operator: FilterOperator.Wildcard, values: ['*_to'] },
       ];
       return {
         mode: globalMode,
@@ -3412,11 +3412,11 @@ const adaptFilterToFromOrToFilterKeys = (filter: Filter) => {
   } else if (operator === 'nil' || operator === 'not_nil') {
     const nestedFrom = [
       { key: nestedKey, operator, values: [] },
-      { key: 'role', operator: 'wildcard', values: ['*_from'] }
+      { key: 'role', operator: 'wildcard', values: ['*_from'] },
     ];
     const nestedTo = [
       { key: nestedKey, operator, values: [] },
-      { key: 'role', operator: 'wildcard', values: ['*_to'] }
+      { key: 'role', operator: 'wildcard', values: ['*_to'] },
     ];
     const innerFilters = [{ key: ['connections'], nested: nestedFrom, mode, values: [] }, { key: ['connections'], nested: nestedTo, mode, values: [] }];
     newFilterGroup = {
@@ -3445,7 +3445,7 @@ const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, 
     nested: [
       { ...filter, key: pirKey },
       { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
-    ]
+    ],
   };
   return { newFilter, newFilterGroup: undefined };
 };
@@ -3458,7 +3458,7 @@ const adaptFilterForMetricsFilterKeys = async (filter: Filter) => {
       { key: 'name', values: [filter.key], operator: FilterOperator.Eq },
       { key: 'value', values: filter.values, operator: filter.operator, mode: filter.mode },
     ],
-    values: []
+    values: [],
   };
   return { newFilter, newFilterGroup: undefined };
 };
@@ -3480,7 +3480,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
   const { newFilter: sourceReliabilityFilter, newFilterGroup: sourceReliabilityFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(
     context,
     user,
-    { ...filter, key: [SOURCE_RELIABILITY_FILTER] }
+    { ...filter, key: [SOURCE_RELIABILITY_FILTER] },
   );
   const isConditionAdditional = operator === 'not_eq' || operator === 'nil'; // if we have one of these operators, the condition on reliability and the condition on source reliability should be both respected
   // else, (the condition on reliability should be respected) OR (reliability is empty and the condition should be respected on source_reliability)
@@ -3521,7 +3521,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
             values: [],
             operator: FilterOperator.Nil,
             mode: FilterMode.Or,
-          }
+          },
         ],
         filterGroups: sourceReliabilityFilterGroup ? [sourceReliabilityFilterGroup] : [],
       }],
@@ -3536,7 +3536,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
           ...filter,
           key: ['x_opencti_reliability'],
         },
-        sourceReliabilityFilter
+        sourceReliabilityFilter,
       ],
       filterGroups: [],
     } : {
@@ -3564,7 +3564,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
 const completeSpecialFilterKeys = async (
   context: AuthContext,
   user: AuthUser,
-  inputFilters: FilterGroup
+  inputFilters: FilterGroup,
 ): Promise<FilterGroup> => {
   const { filters = [], filterGroups = [] } = inputFilters;
   const finalFilters = [];
@@ -3742,7 +3742,7 @@ const completeSpecialFilterKeys = async (
         const side = filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER ? 'from' : 'to';
         const nested = [
           { key: 'internal_id', operator: filter.operator, values: isDynamic ? dynamicIds : filter.values },
-          { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+          { key: 'role', operator: 'wildcard', values: [`*_${side}`] },
         ];
         finalFilters.push({ key: ['connections'], nested, mode: filter.mode, values: [] });
       }
@@ -3750,7 +3750,7 @@ const completeSpecialFilterKeys = async (
         const side = filterKey === RELATION_FROM_TYPES_FILTER ? 'from' : 'to';
         const nested = [
           { key: 'types', operator: filter.operator, values: filter.values },
-          { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+          { key: 'role', operator: 'wildcard', values: [`*_${side}`] },
         ];
         finalFilters.push({ key: ['connections'], nested, mode: filter.mode, values: [] });
       }
@@ -3861,7 +3861,7 @@ const completeSpecialFilterKeys = async (
             const filterKeys = Array.isArray(v.key) ? v.key : [v.key];
             return { ...v, key: filterKeys.map((k: any) => `${k}.${v.key}`) };
           }),
-          filterGroups: []
+          filterGroups: [],
         });
       } else if (definition.format === 'nested') {
         finalFilters.push({ key, operator: filter.operator, nested: filter.values, mode: filter.mode, values: [] });
@@ -3896,7 +3896,7 @@ export const elCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | undefined,
-  options = {}
+  options = {},
 ): Promise<number> => {
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   const query = { index: getIndicesToQuery(context, user, indexName), body };
@@ -3911,7 +3911,7 @@ export const elHistogramCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | undefined,
-  options: HistogramCountOpts = {}
+  options: HistogramCountOpts = {},
 ) => {
   const { interval, field, types = null } = options;
   const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
@@ -3976,7 +3976,7 @@ export const elAggregationCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
-  options: AggregationCountOpts = { field: '' }
+  options: AggregationCountOpts = { field: '' },
 ): Promise<{ label: string, value: any, count: number }[]> => {
   const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
@@ -4049,7 +4049,7 @@ const extractNestedQueriesFromBool = (boolQueryArray: { bool: any }[], nestedPat
 const buildAggregationRelationFilters = async (
   context: AuthContext,
   user: AuthUser,
-  aggregationFilters?: { filter: FilterGroup }
+  aggregationFilters?: { filter: FilterGroup },
 ): Promise<{ bool: { must: any, must_not: any } }> => {
   const aggBody = await elQueryBodyBuilder(context, user, { ...aggregationFilters, noSize: true, noSort: true });
   return {
@@ -4070,7 +4070,7 @@ export const elAggregationRelationsCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | undefined,
-  options: AggregationRelationsCount = {}
+  options: AggregationRelationsCount = {},
 ): Promise<{ label: string, value: number }[]> => {
   const { types = [], field = null, searchOptions, aggregationOptions, aggregateOnConnections = true } = options;
   const aggregationFields = [
@@ -4083,7 +4083,7 @@ export const elAggregationRelationsCount = async (
     'x_opencti_workflow_id',
     'rel_created-by.internal_id',
     'pir_explanation.dependencies.author_id',
-    null
+    null,
   ];
   if (!aggregationFields.includes(field)) {
     throw FunctionalError('Aggregation computing use an unsupported field', { field });
@@ -4183,7 +4183,7 @@ export const elAggregationNestedTermsWithFilter = async (
   user: AuthUser,
   indexName: string[] | string | undefined,
   aggregation: { path: string, field: string, filter: any },
-  opts: AggregationNestedTermsWithFilterOpts = {}
+  opts: AggregationNestedTermsWithFilterOpts = {},
 ): Promise<{ label: string, key: string, value: number }[]> => {
   const { types = [], size = ES_DEFAULT_PAGINATION } = opts;
   const { path, field, filter } = aggregation;
@@ -4198,11 +4198,11 @@ export const elAggregationNestedTermsWithFilter = async (
           aggs: {
             termsAgg: {
               terms: { field, size },
-            }
+            },
           },
         },
-      }
-    }
+      },
+    },
   };
   const query = {
     index: getIndicesToQuery(context, user, indexName),
@@ -4233,7 +4233,7 @@ export const elAggregationsList = async (
   user: AuthUser,
   indexName: string[] | string | undefined,
   aggregations: { field: string, name: string }[],
-  opts: AggregationsListOpts = {}
+  opts: AggregationsListOpts = {},
 ): Promise<{ name: string, values: any }[]> => {
   const { types = [], resolveToRepresentative = true, postResolveFilter } = opts;
   const queryAggs: any = {};
@@ -4242,12 +4242,12 @@ export const elAggregationsList = async (
       terms: {
         field: agg.field,
         size: 500, // Aggregate on top 500 should get all needed results
-      }
+      },
     };
   });
   const body: any = {
     aggs: queryAggs,
-    size: 0 // No limit on the search
+    size: 0, // No limit on the search
   };
   if (types?.length) {
     // handle options for entity context (entity types)
@@ -4291,7 +4291,7 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
   context: AuthContext,
   user: AuthUser,
   elements: T[],
-  filters: FilterGroup | undefined | null
+  filters: FilterGroup | undefined | null,
 ) => {
   // First check if there is an "in regards of" filter
   // If its case we need to ensure elements are filtered according to denormalization rights.
@@ -4339,7 +4339,7 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
             filters: [],
             filterGroups: [
               { mode: FilterMode.And, filterGroups: [], filters: filterTo },
-              { mode: FilterMode.And, filterGroups: [], filters: filterFrom }]
+              { mode: FilterMode.And, filterGroups: [], filters: filterFrom }],
           };
         }
         const relationships = await elList<BasicStoreRelation>(context, user, READ_RELATIONSHIPS_INDICES, paginateArgs);
@@ -4385,7 +4385,7 @@ export const elAttributeValues = async (
   context: AuthContext,
   user: AuthUser,
   field: string,
-  opts: AttributeValues = {}
+  opts: AttributeValues = {},
 ) => {
   const { orderMode = 'asc', search } = opts;
   const first = opts.first ?? ES_DEFAULT_PAGINATION;
@@ -4443,7 +4443,7 @@ export const elBulk = async (args: any) => {
 export const elIndex = async (
   indexName: string[] | string | undefined,
   documentBody: Record<string, any>,
-  opts: { refresh?: boolean, pipeline?: any } = {}
+  opts: { refresh?: boolean, pipeline?: any } = {},
 ) => {
   const { refresh = true, pipeline } = opts;
   const documentId = documentBody.internal_id;
@@ -4476,7 +4476,7 @@ export const elUpdate = async (
   indexName: string,
   documentId: string,
   documentBody: any,
-  retry = ES_RETRY_ON_CONFLICT
+  retry = ES_RETRY_ON_CONFLICT,
 ) => {
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   const updateRequest = {
@@ -4499,7 +4499,7 @@ export const elUpdate = async (
 export const elReplace = async (
   indexName: string,
   documentId: string,
-  documentBody: any
+  documentBody: any,
 ) => {
   const doc = R.dissoc('_index', documentBody.doc);
   const entries = Object.entries(doc);
@@ -4541,13 +4541,13 @@ const getRelatedRelations = async (
   elements: BasicStoreRelation[],
   level: number,
   cache: Map<string, string>,
-  opts: RepaginateOpts<BasicStoreRelation> = {}
+  opts: RepaginateOpts<BasicStoreRelation> = {},
 ) => {
   const fromOrToIds = Array.isArray(targetIds) ? targetIds : [targetIds];
   const filtersContent = [{
     key: ['connections'],
     nested: [{ key: 'internal_id', values: fromOrToIds }],
-    values: []
+    values: [],
   }];
   const filters = {
     mode: FilterMode.And,
@@ -4580,7 +4580,7 @@ export const getRelationsToRemove = async <T extends BasicStoreBase> (
   context: AuthContext,
   user: AuthUser,
   elements: T[],
-  opts: RepaginateOpts<BasicStoreRelation> = {}
+  opts: RepaginateOpts<BasicStoreRelation> = {},
 ) => {
   const relationsToRemoveMap: Map<string, string> = new Map();
   const relationsToRemove: BasicStoreRelation[] = [];
@@ -4590,7 +4590,7 @@ export const getRelationsToRemove = async <T extends BasicStoreBase> (
 };
 export const elDeleteInstances = async <T extends BasicStoreBase> (
   instances: T[],
-  opts: { forceRefresh?: boolean } = {}
+  opts: { forceRefresh?: boolean } = {},
 ) => {
   const { forceRefresh = true } = opts;
   // If nothing to delete, return immediately to prevent elastic to delete everything
@@ -4610,7 +4610,7 @@ export const elRemoveRelationConnection = async (
   context: AuthContext,
   user: AuthUser,
   elementsImpact: any,
-  opts: { forceRefresh?: boolean } = {}
+  opts: { forceRefresh?: boolean } = {},
 ) => {
   const { forceRefresh = true } = opts;
   const impacts: [string, any][] = Object.entries(elementsImpact);
@@ -4695,7 +4695,7 @@ export const elRemoveRelationConnection = async (
 export const computeDeleteElementsImpacts = async (
   cleanupRelations: BasicStoreRelation[],
   toBeRemovedIds: string[],
-  relationsToRemoveMap: Map<string, string>
+  relationsToRemoveMap: Map<string, string>,
 ) => {
   // Update all rel connections that will remain
   const elementsImpact: Record<string, Record<string, string[]>> = {};
@@ -4742,7 +4742,7 @@ export const elReindexElements = async (
   ids: string[],
   sourceIndex: string,
   destIndex: string,
-  opts: { dbId?: string, sourceUpdate?: any } = {}
+  opts: { dbId?: string, sourceUpdate?: any } = {},
 ) => {
   const { dbId, sourceUpdate = {} } = opts;
   const sourceCleanupScript = "ctx._source.remove('fromType'); ctx._source.remove('toType'); "
@@ -4767,19 +4767,19 @@ export const elReindexElements = async (
         index: sourceIndex,
         query: {
           ids: {
-            values: ids
-          }
-        }
+            values: ids,
+          },
+        },
       },
       dest: {
-        index: destIndex
+        index: destIndex,
       },
       script: { // remove old fields that are not mapped anymore but can be present in DB
         params: { changes: sourceUpdate, replaceId: !!dbId, newId: dbId },
         source,
       },
     },
-    refresh: true
+    refresh: true,
   };
   if (engine instanceof ElkClient) {
     return engine.reindex(reindexParams).catch((err) => {
@@ -4795,7 +4795,7 @@ export const elRemoveDraftIdFromElements = async (
   context: AuthContext,
   user: AuthUser,
   draftId: string,
-  elementsIds: string[]
+  elementsIds: string[],
 ) => {
   const revertDraftIdSource = `
     if (ctx._source.containsKey('draft_ids')) { 
@@ -4816,8 +4816,8 @@ export const elRemoveDraftIdFromElements = async (
         script: { source: revertDraftIdSource, params: { draftId } },
         query: {
           terms: {
-            'id.keyword': elementsIds
-          }
+            'id.keyword': elementsIds,
+          },
         },
       },
     }).catch((err) => {
@@ -4827,7 +4827,7 @@ export const elRemoveDraftIdFromElements = async (
 };
 export const elListExistingDraftWorkspaces = async (context: AuthContext, user: AuthUser) => {
   const listArgs = {
-    filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_DRAFT_WORKSPACE] }], filterGroups: [] }
+    filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_DRAFT_WORKSPACE] }], filterGroups: [] },
   };
   return elList(context, user, READ_INDEX_INTERNAL_OBJECTS, listArgs);
 };
@@ -4836,7 +4836,7 @@ export const copyLiveElementToDraft = async (
   context: AuthContext,
   user: AuthUser,
   element: BasicStoreBase,
-  draftOperation = DRAFT_OPERATION_UPDATE_LINKED
+  draftOperation = DRAFT_OPERATION_UPDATE_LINKED,
 ) => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext || isDraftIndex(element._index)) return element;
@@ -4865,8 +4865,8 @@ export const copyLiveElementToDraft = async (
         else 
           {ctx._source.draft_ids = ['${draftContext}']}
       `,
-      params: { allDraftIds }
-    }
+      params: { allDraftIds },
+    },
   };
   await elUpdate(element._index, element.internal_id, addDraftIdScript);
 
@@ -4878,7 +4878,7 @@ const draftCopyLockPrefix = 'draft_copy';
 export const loadDraftElement = async (
   context: AuthContext,
   user: AuthUser,
-  element: BasicStoreBase
+  element: BasicStoreBase,
 ) => {
   if (isDraftIndex(element._index) || !isDraftSupportedEntity(element)) return element;
 
@@ -4905,7 +4905,7 @@ export const loadDraftElement = async (
 const elCopyRelationsTargetsToDraft = async (
   context: AuthContext,
   user: AuthUser,
-  elements: BasicStoreBase[]
+  elements: BasicStoreBase[],
 ) => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext) {
@@ -5137,7 +5137,7 @@ export const elIndexElements = async (
   context: AuthContext,
   user: AuthUser,
   indexingType: string | undefined,
-  elements: Record<string, any>[]
+  elements: Record<string, any>[],
 ) => {
   validateElementsToIndex(context, user, elements);
   const elIndexElementsFn = async () => {
@@ -5187,7 +5187,7 @@ export const elIndexElements = async (
         return impacts;
       }),
       R.flatten,
-      R.groupBy((i) => i.from)
+      R.groupBy((i) => i.from),
     )(elements);
     const elementsToUpdate = Object.keys(impactedEntities).map((entityId) => {
       const entity = cache[entityId];
@@ -5326,7 +5326,7 @@ export const elUpdateEntityConnections = async (elements: any[]) => {
             params: {
               key: buildRefRelationKey(doc.relationType, refField),
               from: doc.toReplace,
-              to: addMultipleFormat(doc)
+              to: addMultipleFormat(doc),
             },
           },
         },
@@ -5366,7 +5366,7 @@ const createDeleteOperationElement = async (
   context: AuthContext,
   user: AuthUser,
   mainElement: StoreObject,
-  deletedElements: BasicStoreBase[]
+  deletedElements: BasicStoreBase[],
 ) => {
   // We currently only handle deleteOperations of 1 element
   const deleteOperationDeletedElements = deletedElements.map((e) => ({ id: e.internal_id, source_index: e._index }));
@@ -5392,7 +5392,7 @@ export const elDeleteElements = async (
   context: AuthContext,
   user: AuthUser,
   elements: BasicStoreBase[],
-  opts: DeleteElementsOpts = {}
+  opts: DeleteElementsOpts = {},
 ) => {
   if (elements.length === 0) return;
   if (getDraftContext(context, user)) {

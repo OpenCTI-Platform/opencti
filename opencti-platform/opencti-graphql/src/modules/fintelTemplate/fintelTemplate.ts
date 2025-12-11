@@ -10,7 +10,7 @@ export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTempl
     id: 'fintelTemplates',
     name: ENTITY_TYPE_FINTEL_TEMPLATE,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
@@ -30,7 +30,7 @@ export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTempl
   representative: (stix: StixFintelTemplate) => {
     return stix.name;
   },
-  converter_2_1: convertFintelTemplateToStix
+  converter_2_1: convertFintelTemplateToStix,
 };
 
 registerDefinition(FINTEL_TEMPLATE_DEFINITION);

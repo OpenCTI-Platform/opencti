@@ -127,9 +127,9 @@ export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
             type: 'object',
             properties: {
               x: { type: 'number' },
-              y: { type: 'number' }
+              y: { type: 'number' },
             },
-            required: ['x', 'y']
+            required: ['x', 'y'],
           },
           component_id: { type: 'string' },
           configuration: { type: 'string' },
@@ -149,14 +149,14 @@ export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
               id: { type: 'string' },
               port: { type: 'string' },
             },
-            required: ['id', 'port']
+            required: ['id', 'port'],
           },
           to: {
             type: 'object',
             properties: {
               id: { type: 'string' },
             },
-            required: ['id']
+            required: ['id'],
           },
         },
         required: ['id', 'from', 'to'],

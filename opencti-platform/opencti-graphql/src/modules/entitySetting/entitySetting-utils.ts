@@ -5,7 +5,7 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ENTITY_TYPE_CONTAINER,
   INPUT_AUTHORIZED_MEMBERS,
-  INPUT_MARKINGS
+  INPUT_MARKINGS,
 } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
@@ -69,7 +69,7 @@ export const defaultScale = JSON.stringify({
       { value: 60, color: '#92f81c', label: '2 - Probably True' },
       { value: 80, color: '#4caf50', label: '1 - Confirmed by other sources' },
     ],
-  }
+  },
 });
 
 // Available settings works by override.

@@ -24,14 +24,14 @@ const updateCaseEntity = async (fromCase, toType, standardId) => {
           + 'if (!ctx._source.parent_types.contains(params.original)) { ctx._source.parent_types.add(params.original); }',
     },
     query: {
-      term: { 'internal_id.keyword': { value: fromCase.internal_id } }
+      term: { 'internal_id.keyword': { value: fromCase.internal_id } },
     },
   };
   await elRawUpdateByQuery({
     index: [READ_INDEX_STIX_DOMAIN_OBJECTS],
     refresh: true,
     wait_for_completion: true,
-    body: updateEntityQuery
+    body: updateEntityQuery,
   }).catch((err) => {
     throw DatabaseError('Error updating elastic', { cause: err });
   });
@@ -45,22 +45,22 @@ const updateCaseRelationships = async (fromCase, toType) => {
           + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
           + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
           + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
-          + '}'
+          + '}',
     },
     query: {
       nested: {
         path: 'connections',
         query: {
-          term: { 'connections.internal_id.keyword': { value: fromCase.internal_id } }
-        }
-      }
+          term: { 'connections.internal_id.keyword': { value: fromCase.internal_id } },
+        },
+      },
     },
   };
   return elRawUpdateByQuery({
     index: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     refresh: true,
     wait_for_completion: true,
-    body: updateRelationsQuery
+    body: updateRelationsQuery,
   }).catch((err) => {
     throw DatabaseError('Error updating elastic', { cause: err });
   });
@@ -103,7 +103,7 @@ export const up = async (next) => {
       description: description ?? '',
       aliases: aliases ?? [],
       category,
-      builtIn: false
+      builtIn: false,
     });
   }
   // endregion

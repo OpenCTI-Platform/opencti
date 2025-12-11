@@ -26,7 +26,7 @@ export const convertIpv6ToBinary = (ipv6: string, isRange?: boolean, range?: num
     test = [
       ...test.slice(0, emptyFieldIndex + 1),
       ...Array(8 - test.length).fill('0'),
-      ...test.slice(emptyFieldIndex + 1)
+      ...test.slice(emptyFieldIndex + 1),
     ];
   }
 

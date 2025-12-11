@@ -36,14 +36,14 @@ export const schemaRelationsRefDefinition = {
       // Check name collision with STIX_CORE_RELATIONSHIP
       if (STIX_CORE_RELATIONSHIPS.includes(relationRefDefinition.name)) {
         throw UnsupportedError('You can\'t register a relations ref with an existing stix-core-relationship name', {
-          relationRef: relationRefDefinition.name
+          relationRef: relationRefDefinition.name,
         });
       }
       // Check duplicate relations ref
       if (directRefs.has(relationRefDefinition.name)) {
         throw UnsupportedError('You can\'t register two relations ref with the same name on an entity', {
           relationRef: relationRefDefinition.name,
-          entityType
+          entityType,
         });
       }
       // Check different refs have different labels
@@ -178,5 +178,5 @@ export const schemaRelationsRefDefinition = {
     return this.getAllInputNames()
       .map((name) => this.getDatabaseName(name))
       .filter((n) => n !== undefined) as string[];
-  }
+  },
 };

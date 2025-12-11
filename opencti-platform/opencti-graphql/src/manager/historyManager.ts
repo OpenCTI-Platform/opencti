@@ -208,7 +208,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
     // add Pir context data for concerned events
     contextData = {
       ...contextData,
-      ...generatePirContextData(event)
+      ...generatePirContextData(event),
     };
     // history type is different for events concerning pir relationships
     const eventData = event.data.data;
@@ -327,7 +327,7 @@ const initHistoryManager = () => {
           filters: [{ key: ['event_access'], values: [], operator: FilterOperator.Nil }],
           filterGroups: [],
         },
-        noFiltersChecking: true
+        noFiltersChecking: true,
       });
       let lastEventId = '0-0';
       if (histoElements.length > 0) {

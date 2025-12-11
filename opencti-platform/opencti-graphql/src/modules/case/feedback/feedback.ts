@@ -12,11 +12,11 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
     id: 'feedback',
     name: ENTITY_TYPE_CONTAINER_FEEDBACK,
     category: ENTITY_TYPE_CONTAINER_CASE,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CONTAINER_FEEDBACK]: [{ src: NAME_FIELD }, { src: 'created' }]
+      [ENTITY_TYPE_CONTAINER_FEEDBACK]: [{ src: NAME_FIELD }, { src: 'created' }],
     },
     resolvers: {
       name(data: object) {
@@ -47,7 +47,7 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
   representative: (stix: StixFeedback) => {
     return stix.name;
   },
-  converter_2_1: convertFeedbackToStix_2_1
+  converter_2_1: convertFeedbackToStix_2_1,
 };
 
 registerDefinition(FEEDBACK_DEFINITION);

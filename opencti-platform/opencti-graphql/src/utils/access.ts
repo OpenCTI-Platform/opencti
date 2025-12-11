@@ -101,7 +101,7 @@ export const ADMINISTRATOR_ROLE: UserRole = {
   id: administratorRoleId,
   entity_type: 'Role',
   internal_id: administratorRoleId,
-  name: ROLE_ADMINISTRATOR
+  name: ROLE_ADMINISTRATOR,
 };
 
 const defaultRoleId = uuidv4();
@@ -109,7 +109,7 @@ export const DEFAULT_ROLE: UserRole = {
   id: defaultRoleId,
   entity_type: 'Role',
   internal_id: defaultRoleId,
-  name: ROLE_DEFAULT
+  name: ROLE_DEFAULT,
 };
 
 export const SYSTEM_USER: AuthUser = {
@@ -543,7 +543,7 @@ export const executionContext = (source: string, auth?: AuthUser, draftContext?:
     source,
     tracing,
     user: auth ?? undefined,
-    draft_context: draftContext ?? undefined
+    draft_context: draftContext ?? undefined,
   };
 };
 
@@ -558,7 +558,7 @@ export const INTERNAL_USERS = {
   [REDACTED_USER.id]: REDACTED_USER,
   [RESTRICTED_USER.id]: RESTRICTED_USER,
   [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
-  [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER
+  [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
 };
 
 export const INTERNAL_USERS_WITHOUT_REDACTED = {
@@ -570,7 +570,7 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [EXPIRATION_MANAGER_USER.id]: EXPIRATION_MANAGER_USER,
   [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
   [PIR_MANAGER_USER.id]: PIR_MANAGER_USER,
-  [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER
+  [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER,
 };
 
 export const isInternalUser = (user: AuthUser): boolean => {
@@ -732,7 +732,7 @@ export const checkUserFilterStoreElements = (
   user: AuthUser,
   element: BasicStoreCommon,
   authorizedMarkings: string[],
-  hasPlatformOrg: boolean
+  hasPlatformOrg: boolean,
 ) => {
   // 1. Check markings
   if (!isMarkingAllowed(element, authorizedMarkings)) {
@@ -855,7 +855,7 @@ export const isDirectAdministrator = (user: AuthUser, element: any) => {
 const hasUserAccessToOperation = (
   user: AuthUser,
   element: { restricted_members?: AuthorizedMember[]; authorized_authorities?: string[]; },
-  operation: AccessOperation
+  operation: AccessOperation,
 ) => {
   const userAccessRight = getUserAccessRight(user, element);
   if (!userAccessRight) { // user has no access
@@ -959,7 +959,7 @@ type ParticipantWithOrgIds = Participant & Creator & {
 
 export enum FilterMembersMode {
   RESTRICT = 'restrict',
-  EXCLUDE = 'exclude'
+  EXCLUDE = 'exclude',
 }
 export const filterMembersWithUsersOrgs = async (
   context: AuthContext,
@@ -989,8 +989,8 @@ export const filterMembersWithUsersOrgs = async (
               user_email: RESTRICTED_USER.user_email,
               representative: {
                 main: RESTRICTED_USER.name,
-                secondary: RESTRICTED_USER.name
-              }
+                secondary: RESTRICTED_USER.name,
+              },
             };
             resultMembers.push(restrictedMember);
           }

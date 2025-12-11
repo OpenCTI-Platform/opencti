@@ -8,7 +8,7 @@ import {
   queryDefaultValuesAttributesForSetting,
   queryEntitySettingSchemaAttributes,
   queryMandatoryAttributesForSetting,
-  queryScaleAttributesForSetting
+  queryScaleAttributesForSetting,
 } from './entitySetting-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
@@ -48,7 +48,7 @@ const entitySettingResolvers: Resolvers = {
         return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_ENTITY_SETTING, notifySelf: true });
       },
     },
-  }
+  },
 };
 
 export default entitySettingResolvers;

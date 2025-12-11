@@ -19,7 +19,7 @@ export const findIntrusionSetPaginated = (context, user, args) => {
 export const addIntrusionSet = async (context, user, intrusionSet) => {
   const intrusionSetToCreate = pipe(
     assoc('first_seen', isNil(intrusionSet.first_seen) ? new Date(FROM_START) : intrusionSet.first_seen),
-    assoc('last_seen', isNil(intrusionSet.last_seen) ? new Date(UNTIL_END) : intrusionSet.last_seen)
+    assoc('last_seen', isNil(intrusionSet.last_seen) ? new Date(UNTIL_END) : intrusionSet.last_seen),
   )(intrusionSet);
   const created = await createEntity(context, user, intrusionSetToCreate, ENTITY_TYPE_INTRUSION_SET);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

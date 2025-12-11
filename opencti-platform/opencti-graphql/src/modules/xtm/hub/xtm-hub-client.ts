@@ -39,12 +39,12 @@ export const xtmHubClient = {
         platformId,
         token,
         platformVersion,
-        platformIdentifier: HUB_OPENCTI_IDENTIFIER
-      }
+        platformIdentifier: HUB_OPENCTI_IDENTIFIER,
+      },
     };
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
-      responseType: 'json'
+      responseType: 'json',
     });
 
     try {
@@ -70,8 +70,8 @@ export const xtmHubClient = {
         url: platform.platformUrl,
         title: platform.platformTitle,
         contract: enterpriseLicense,
-        version: PLATFORM_VERSION
-      }
+        version: PLATFORM_VERSION,
+      },
     };
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
@@ -79,7 +79,7 @@ export const xtmHubClient = {
       headers: {
         'Content-Type': 'application/json',
         'XTM-Hub-Platform-Token': platform.platformToken,
-        'XTM-Hub-Platform-Id': platform.platformId
+        'XTM-Hub-Platform-Id': platform.platformId,
       },
     });
 
@@ -95,5 +95,5 @@ export const xtmHubClient = {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return { success: false };
     }
-  }
+  },
 };

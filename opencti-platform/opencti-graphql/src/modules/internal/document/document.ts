@@ -52,7 +52,7 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'analysis_content_source', label: 'Analysis content source', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'analysis_content_type', label: 'Analysis content type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'analysis_type', label: 'Analysis type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    ]
+    ],
   },
   // TODO MOVE THAT PART TO A SPECIFIC Place
   // !! Attachment file plugin !!
@@ -87,7 +87,7 @@ const attributes: Array<AttributeDefinition> = [
       { name: 'modifier', label: 'Modifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'print_date', label: 'Print date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
       { name: 'title', label: 'Title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    ]
+    ],
   },
   { name: 'uploaded_at', label: 'Upload date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'file_id', label: 'File identifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },

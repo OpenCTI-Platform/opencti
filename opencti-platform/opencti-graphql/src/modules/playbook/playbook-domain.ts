@@ -75,7 +75,7 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
         const newFilters = {
           mode: FilterMode.And,
           filters: findFiltersFromKey(jsonFilters?.filters ?? [], 'entity_type'),
-          filterGroups: []
+          filterGroups: [],
         };
         const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, stixEntity, newFilters);
         if (isMatch) {
@@ -164,7 +164,7 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
     if (position) {
       return {
         ...n,
-        position: position.position
+        position: position.position,
       };
     }
     return n;
@@ -178,7 +178,7 @@ export const playbookReplaceNode = async (
   user: AuthUser,
   id: string,
   nodeId: string,
-  input: PlaybookAddNodeInput
+  input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
@@ -233,7 +233,7 @@ export const playbookInsertNode = async (
   parentNodeId: string,
   parentPortId: string,
   childNodeId: string,
-  input: PlaybookAddNodeInput
+  input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
@@ -253,7 +253,7 @@ export const playbookInsertNode = async (
     name: input.name,
     position: input.position,
     component_id: input.component_id,
-    configuration: input.configuration ?? '{}' // TODO Check valid json
+    configuration: input.configuration ?? '{}', // TODO Check valid json
   });
   // Replace node with new position
   definition.nodes = definition.nodes.map((n) => {
@@ -263,7 +263,7 @@ export const playbookInsertNode = async (
         position: {
           x: n.position.x,
           y: n.position.y + 150,
-        }
+        },
       };
     }
     return n;
@@ -278,8 +278,8 @@ export const playbookInsertNode = async (
       port: parentPortId,
     },
     to: {
-      id: nodeId
-    }
+      id: nodeId,
+    },
   });
   // Replace the link
   if (relatedComponent.ports.length > 0) {
@@ -292,8 +292,8 @@ export const playbookInsertNode = async (
             port: relatedComponent.ports.at(0)?.id ?? 'out',
           },
           to: {
-            id: childNodeId
-          }
+            id: childNodeId,
+          },
         };
       }
       return n;
@@ -359,11 +359,11 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
     id: linkId,
     from: {
       id: input.from_node,
-      port: input.from_port
+      port: input.from_port,
     },
     to: {
-      id: input.to_node
-    }
+      id: input.to_node,
+    },
   });
   const patch = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
@@ -426,7 +426,7 @@ export const playbookExport = async (playbook: BasicStoreEntityPlaybook) => {
       playbook_mode,
       playbook_start,
       playbook_definition,
-    }
+    },
   });
 };
 

@@ -124,7 +124,7 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_REPORTS_TO,
   RELATION_SUPPORTS,
   RELATION_SHOULD_COVER,
-  RELATION_HAS_COVERED
+  RELATION_HAS_COVERED,
 ];
 
 schemaTypesDefinition.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
@@ -132,5 +132,5 @@ export const isStixCoreRelationship = (type: string): boolean => schemaTypesDefi
  || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 
 export const stixCoreRelationshipOptions = {
-  StixCoreRelationshipsOrdering: {}
+  StixCoreRelationshipsOrdering: {},
 };

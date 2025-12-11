@@ -15,11 +15,11 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
     id: 'dataComponents',
     name: ENTITY_TYPE_DATA_COMPONENT,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_DATA_COMPONENT]: [{ src: NAME_FIELD }]
+      [ENTITY_TYPE_DATA_COMPONENT]: [{ src: NAME_FIELD }],
     },
     resolvers: {
       name(data: object) {
@@ -46,16 +46,16 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
       targets: [
         {
           name: ENTITY_TYPE_ATTACK_PATTERN,
-          type: REL_EXTENDED
-        }
-      ]
+          type: REL_EXTENDED,
+        },
+      ],
     },
     {
       name: RELATION_DERIVED_FROM,
       targets: [
         { name: ENTITY_TYPE_DATA_COMPONENT, type: REL_BUILT_IN },
-      ]
-    }
+      ],
+    },
   ],
   relationsRefs: [
     {
@@ -74,12 +74,12 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
       isFilterable: true,
       toTypes: [ENTITY_TYPE_DATA_SOURCE],
     },
-    objectOrganization
+    objectOrganization,
   ],
   representative: (stix: StixDataComponent) => {
     return stix.name;
   },
-  converter_2_1: convertDataComponentToStix
+  converter_2_1: convertDataComponentToStix,
 };
 
 registerDefinition(DATA_COMPONENT_DEFINITION);

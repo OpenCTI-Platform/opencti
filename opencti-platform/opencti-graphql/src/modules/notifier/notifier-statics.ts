@@ -78,7 +78,7 @@ export const NOTIFIER_CONNECTOR_WEBHOOK_CONFIG: JSONSchemaType<NOTIFIER_CONNECTO
             type: 'string',
           },
         },
-        required: ['attribute', 'value']
+        required: ['attribute', 'value'],
       },
     },
     headers: {
@@ -93,7 +93,7 @@ export const NOTIFIER_CONNECTOR_WEBHOOK_CONFIG: JSONSchemaType<NOTIFIER_CONNECTO
             type: 'string',
           },
         },
-        required: ['attribute', 'value']
+        required: ['attribute', 'value'],
       },
     },
   },
@@ -115,7 +115,7 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
         'ui:options': {
           rows: 20,
         },
-      }
+      },
     }),
   },
   [NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL]: {
@@ -127,7 +127,7 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
     connector_schema_ui: JSON.stringify({
       logo: {
         'ui:widget': 'file',
-        'ui:options': { accept: 'image/*' } // Because of an open bug: this is not working yet https://github.com/rjsf-team/react-jsonschema-form/issues/3577
+        'ui:options': { accept: 'image/*' }, // Because of an open bug: this is not working yet https://github.com/rjsf-team/react-jsonschema-form/issues/3577
       },
       background_color: {
         'ui:widget': 'color', // Same, for now we can't have fully customized components, we will need to investigate in the future
@@ -146,9 +146,9 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
         'ui:options': {
           rows: 20,
         },
-      }
+      },
     }),
-  }
+  },
 };
 
 export const STATIC_NOTIFIER_UI = 'f4ee7b33-006a-4b0d-b57d-411ad288653d';
@@ -375,9 +375,9 @@ ${HEADER_TEMPLATE}
       </table>
    </body>
 </html>
-      `
-    })
-  }
+      `,
+    }),
+  },
 ];
 
 export const SIMPLIFIED_EMAIL_TEMPLATE = `
@@ -664,7 +664,7 @@ export const DEFAULT_TEAM_MESSAGE = {
       "url": "https://YOUR_DOMAIN.webhook.office.com/YOUR_ENDPOINT",
       "verb": "POST"
     }
-  `
+  `,
 };
 
 export const DEFAULT_TEAM_DIGEST_MESSAGE = {
@@ -677,5 +677,5 @@ export const DEFAULT_TEAM_DIGEST_MESSAGE = {
       "url": "https://YOUR_DOMAIN.webhook.office.com/YOUR_ENDPOINT",
       "verb": "POST"
     }
-  `
+  `,
 };

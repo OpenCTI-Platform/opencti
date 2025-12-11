@@ -83,7 +83,7 @@ export const fintelDesignEditField = async (
       id: element.id,
       entity_type: ENTITY_TYPE_FINTEL_DESIGN,
       input,
-    }
+    },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_DESIGN].EDIT_TOPIC, element, user);
 };

@@ -12,7 +12,7 @@ import {
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_LOCATION_REGION,
-  ENTITY_TYPE_TOOL
+  ENTITY_TYPE_TOOL,
 } from '../../schema/stixDomainObject';
 import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_MEDIA_CONTENT } from '../../schema/stixCyberObservable';
@@ -23,11 +23,11 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
   type: {
     id: 'organization',
     name: ENTITY_TYPE_IDENTITY_ORGANIZATION,
-    category: ENTITY_TYPE_IDENTITY
+    category: ENTITY_TYPE_IDENTITY,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_IDENTITY_ORGANIZATION]: [{ src: NAME_FIELD }, { src: 'identity_class' }]
+      [ENTITY_TYPE_IDENTITY_ORGANIZATION]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
     },
     resolvers: {
       name(data: object) {
@@ -57,7 +57,7 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
       targets: [
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_NEW },
         { name: ENTITY_TYPE_IDENTITY_SECTOR, type: REL_NEW },
-      ]
+      ],
     },
     {
       name: RELATION_LOCATED_AT,
@@ -67,36 +67,36 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
         { name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_LOCATION_REGION, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_USES,
       targets: [
         { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
-      ]
+      ],
     },
     {
       name: RELATION_PUBLISHES,
       targets: [
         { name: ENTITY_MEDIA_CONTENT, type: REL_NEW },
-      ]
+      ],
     },
     {
       name: RELATION_DERIVED_FROM,
       targets: [
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_SHOULD_COVER,
       targets: [
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
-      ]
-    }
+      ],
+    },
   ],
   representative: (stix: StixOrganization) => {
     return stix.name;
   },
-  converter_2_1: convertOrganizationToStix
+  converter_2_1: convertOrganizationToStix,
 };
 registerDefinition(ORGANIZATION_DEFINITION);

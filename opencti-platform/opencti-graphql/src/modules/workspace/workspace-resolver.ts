@@ -15,7 +15,7 @@ import {
   workspaceEditContext,
   workspaceEditField,
   workspaceImportConfiguration,
-  workspaceImportWidgetConfiguration
+  workspaceImportWidgetConfiguration,
 } from './workspace-domain';
 import { fetchEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -41,7 +41,7 @@ const workspaceResolvers: Resolvers = {
     toStixReportBundle: (workspace, _, context) => toStixReportBundle(context, context.user, workspace),
     toConfigurationExport: (workspace, _, context) => generateWorkspaceExportConfiguration(context, context.user, workspace),
     toWidgetExport: (workspace, { widgetId }, context) => generateWidgetExportConfiguration(context, context.user, workspace, widgetId),
-    isShared: (workspace, _, context) => isDashboardShared(context, workspace)
+    isShared: (workspace, _, context) => isDashboardShared(context, workspace),
   },
   Mutation: {
     workspaceAdd: (_, { input }, context) => {

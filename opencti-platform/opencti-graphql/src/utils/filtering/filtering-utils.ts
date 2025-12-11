@@ -27,7 +27,7 @@ import {
   RELATION_DYNAMIC_FROM_FILTER,
   RELATION_DYNAMIC_TO_FILTER,
   SIGHTED_BY_FILTER,
-  SPECIAL_FILTER_KEYS
+  SPECIAL_FILTER_KEYS,
 } from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
@@ -272,7 +272,7 @@ export const addFilter = (filterGroup: FilterGroup | undefined | null, newKey: s
         key: keyArray,
         values: valuesArray,
         operator,
-        mode: localMode
+        mode: localMode,
       },
     ],
     filterGroups: filterGroup && isFilterGroupNotEmpty(filterGroup) ? [filterGroup] : [],
@@ -296,7 +296,7 @@ export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKe
   return {
     ...filterGroup,
     filters: filterGroup.filters.map((f) => replaceFilterKeyInFilter(f, oldKey, newKey)),
-    filterGroups: filterGroup.filterGroups.map((fg) => replaceFilterKey(fg, oldKey, newKey))
+    filterGroups: filterGroup.filterGroups.map((fg) => replaceFilterKey(fg, oldKey, newKey)),
   };
 };
 
@@ -496,7 +496,7 @@ const computeFilterLabelMap = async (
   context: AuthContext,
   user: AuthUser,
   inputFilterGroup: FilterGroup,
-  idsFinder: (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>
+  idsFinder: (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>,
 ) => {
   const resolvedLabels: Record<string, string> = {};
   const labelFilterValues = extractFilterKeyValues(LABEL_FILTER, inputFilterGroup);
@@ -529,7 +529,7 @@ export const checkAndConvertFilters = async (
   inputFilterGroup: FilterGroup | null | undefined,
   userId: string,
   idsFinder: FiltersIdsFinder,
-  opts: { noFiltersChecking?: boolean, noFiltersConvert?: boolean } = {}
+  opts: { noFiltersChecking?: boolean, noFiltersConvert?: boolean } = {},
 ) => {
   if (!inputFilterGroup) {
     return undefined;

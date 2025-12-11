@@ -4,7 +4,7 @@ export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__'
 export enum AuthType {
   AUTH_SSO = 'SSO',
   AUTH_REQ = 'REQ',
-  AUTH_FORM = 'FORM'
+  AUTH_FORM = 'FORM',
 }
 
 export enum StrategyType {
@@ -17,7 +17,7 @@ export enum StrategyType {
   STRATEGY_SAML = 'SamlStrategy',
   STRATEGY_GOOGLE = 'GoogleStrategy',
   STRATEGY_GITHUB = 'GithubStrategy',
-  STRATEGY_AUTH0 = 'Auth0Strategy'
+  STRATEGY_AUTH0 = 'Auth0Strategy',
 }
 
 interface ProviderConfiguration {

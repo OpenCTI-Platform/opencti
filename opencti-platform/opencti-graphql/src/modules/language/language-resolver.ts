@@ -6,7 +6,7 @@ import {
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField
+  stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
 
 const languageResolvers: Resolvers = {

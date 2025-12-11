@@ -58,8 +58,8 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
         vars: {
           ...req.body?.overrideConfig?.vars,
           ...vars,
-        }
-      }
+        },
+      },
     };
 
     // Repost the request to Flowise with enhanced headers and body

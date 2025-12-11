@@ -77,7 +77,7 @@ export const INDEX_DRAFT_OBJECTS = `${ES_INDEX_PREFIX}_draft_objects`;
 export const READ_INDEX_DRAFT_OBJECTS = `${INDEX_DRAFT_OBJECTS}*`;
 
 export const isInferredIndex = (
-  index: string | undefined | null
+  index: string | undefined | null,
 ): boolean => !!index && (index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS));
 export const isDraftIndex = (index: string | undefined | null): boolean => !!index && index.startsWith(INDEX_DRAFT_OBJECTS);
 
@@ -117,7 +117,7 @@ export const READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED = [
 export const READ_DATA_INDICES_WITHOUT_INFERRED = [
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_INTERNAL_RELATIONSHIPS,
-  ...READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED
+  ...READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
 ];
 export const READ_DATA_INDICES_INFERRED = [
   READ_INDEX_INFERRED_ENTITIES,
@@ -125,11 +125,11 @@ export const READ_DATA_INDICES_INFERRED = [
 ];
 export const READ_DATA_INDICES_WITHOUT_INTERNAL = [
   ...READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
-  ...READ_DATA_INDICES_INFERRED
+  ...READ_DATA_INDICES_INFERRED,
 ];
 export const READ_DATA_INDICES = [
   ...READ_DATA_INDICES_WITHOUT_INFERRED,
-  ...READ_DATA_INDICES_INFERRED
+  ...READ_DATA_INDICES_INFERRED,
 ];
 
 export const READ_STIX_DATA_WITH_INFERRED = [
@@ -252,7 +252,7 @@ export const emptyPaginationResult = <T extends BasicStoreCommon>(): BasicConnec
       hasNextPage: false,
       hasPreviousPage: false,
       globalCount: 0,
-    }
+    },
   };
 };
 
@@ -261,7 +261,7 @@ export const buildPaginationFromEdges = <T>(
   searchAfter: string | undefined | null,
   edges: BasicNodeEdge<T>[],
   globalCount: number,
-  filteredCount = 0
+  filteredCount = 0,
 ): BasicConnection<T> => {
   // Because of stateless approach its difficult to know if its finish
   // this test could lead to an extra round trip sometimes
@@ -286,7 +286,7 @@ export const buildPagination = <T> (
   searchAfter: string | undefined | null,
   instances: { node: T, sort?: SortResults, types?: string[] }[],
   globalCount: number,
-  filteredCount = 0
+  filteredCount = 0,
 ): BasicConnection<T> => {
   // TODO Make this transformation async
   const edges = instances.map((record) => {

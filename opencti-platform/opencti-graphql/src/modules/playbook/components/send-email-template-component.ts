@@ -21,7 +21,7 @@ const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA: JSONSchemaType<SendEmailTem
     },
     targets: { type: 'object' },
   },
-  required: ['email_template']
+  required: ['email_template'],
 };
 export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmailTemplateConfiguration> = {
   id: 'PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT',
@@ -62,9 +62,9 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
       await BluePromise.map(
         sendEmailUserIds,
         (user_id) => emailSend(user_id),
-        { concurrency: 3 }
+        { concurrency: 3 },
       );
     }
     return { output_port: undefined, bundle };
-  }
+  },
 };

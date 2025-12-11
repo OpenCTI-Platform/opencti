@@ -3,7 +3,7 @@ import { BUS_TOPICS } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { internalFindByIds, fullEntitiesList, pageEntitiesConnection, storeLoadById, } from '../../database/middleware-loader';
+import { internalFindByIds, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import { isEmptyField } from '../../database/utils';
 import type { EditInput, NotifierAddInput, NotifierConnector, NotifierTestInput, QueryNotifiersArgs } from '../../generated/graphql';
@@ -22,7 +22,7 @@ import {
   DEFAULT_TEAM_MESSAGE,
   NOTIFIER_CONNECTOR_EMAIL,
   NOTIFIER_CONNECTOR_UI,
-  STATIC_NOTIFIERS
+  STATIC_NOTIFIERS,
 } from './notifier-statics';
 import type { BasicStoreEntityNotifier } from './notifier-types';
 import { ENTITY_TYPE_NOTIFIER } from './notifier-types';
@@ -53,7 +53,7 @@ export const addNotifier = async (context: AuthContext, user: AuthUser, notifier
     event_scope: 'create',
     event_access: 'administration',
     message: `creates notifier \`${created.name}\` for connector  \`${created.notifier_connector_id}\``,
-    context_data: { id: created.id, entity_type: ENTITY_TYPE_NOTIFIER, input: created }
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_NOTIFIER, input: created },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFIER].ADDED_TOPIC, created, user);
 };
@@ -82,7 +82,7 @@ export const notifierEdit = async (context: AuthContext, user: AuthUser, notifie
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for notifier \`${updatedElem.name}\``,
-    context_data: { id: notifierId, entity_type: ENTITY_TYPE_NOTIFIER, input }
+    context_data: { id: notifierId, entity_type: ENTITY_TYPE_NOTIFIER, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFIER].EDIT_TOPIC, updatedElem, user);
 };

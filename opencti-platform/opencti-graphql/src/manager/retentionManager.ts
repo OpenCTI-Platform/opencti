@@ -153,7 +153,7 @@ const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
     interval: SCHEDULE_TIME,
     lockKey: RETENTION_MANAGER_KEY,
     lockInHandlerParams: true,
-    dynamicSchedule: true
+    dynamicSchedule: true,
   },
   enabledByConfig: RETENTION_MANAGER_ENABLED,
   enabledToStart(): boolean {
@@ -161,7 +161,7 @@ const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
   },
   enabled(): boolean {
     return this.enabledByConfig;
-  }
+  },
 };
 
 registerManager(RETENTION_MANAGER_DEFINITION);

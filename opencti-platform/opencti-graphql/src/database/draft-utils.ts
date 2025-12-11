@@ -36,17 +36,17 @@ export const buildDraftFilter = (context: AuthContext, user: AuthUser, opts: Bui
       bool: {
         must_not: [
           { term: { _index: READ_INDEX_DRAFT_OBJECTS } },
-          { term: { 'draft_ids.keyword': draftContext } }
-        ]
-      }
+          { term: { 'draft_ids.keyword': draftContext } },
+        ],
+      },
     };
     const mustDraft = {
       bool: {
         must: [
           { term: { _index: READ_INDEX_DRAFT_OBJECTS } },
-          { term: { 'draft_ids.keyword': draftContext } }
-        ]
-      }
+          { term: { 'draft_ids.keyword': draftContext } },
+        ],
+      },
     };
     const draftBool = {
       bool: {
@@ -61,8 +61,8 @@ export const buildDraftFilter = (context: AuthContext, user: AuthUser, opts: Bui
         bool: {
           must_not: [
             { terms: { 'draft_change.draft_operation.keyword': [DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED] } },
-          ]
-        }
+          ],
+        },
       };
       draftMust.push(excludeDeletedDraft);
     }

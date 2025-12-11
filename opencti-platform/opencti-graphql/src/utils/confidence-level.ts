@@ -49,7 +49,7 @@ export const computeUserEffectiveConfidenceLevel = (user: AuthUser) => {
         maxLevel = groupLevel;
         source = {
           type: 'Group',
-          object: user.groups[i]
+          object: user.groups[i],
         };
       }
       const groupOverrides = user.groups[i].group_confidence_level?.overrides ?? [];
@@ -138,7 +138,7 @@ export const controlUpsertInputWithUserConfidence = <T extends ObjectWithConfide
   return {
     confidenceLevelToApply,
     isConfidenceMatch,
-    isConfidenceUpper
+    isConfidenceUpper,
   };
 };
 
@@ -210,7 +210,7 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
       hasConfidenceInput = true;
       return {
         ...input,
-        value: [Math.min(overrideMaxConfidence, newValue).toString()]
+        value: [Math.min(overrideMaxConfidence, newValue).toString()],
       };
     }
     return input;

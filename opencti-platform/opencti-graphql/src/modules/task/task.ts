@@ -10,7 +10,7 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
   type: {
     id: 'task',
     name: ENTITY_TYPE_CONTAINER_TASK,
-    category: ENTITY_TYPE_CONTAINER
+    category: ENTITY_TYPE_CONTAINER,
   },
   identifier: {
     definition: {
@@ -41,11 +41,11 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
     { ...createdBy, mandatoryType: 'no' },
     objectOrganization,
     { ...objectAssignee, mandatoryType: 'no' },
-    objectParticipant
+    objectParticipant,
   ],
   representative: (stix: StixTask) => {
     return stix.name;
   },
-  converter_2_1: convertCaseTaskToStix_2_1
+  converter_2_1: convertCaseTaskToStix_2_1,
 };
 registerDefinition(CASE_TASK_DEFINITION);

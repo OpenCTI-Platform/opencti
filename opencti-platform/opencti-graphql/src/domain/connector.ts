@@ -20,7 +20,7 @@ import {
   redisGetWork,
   redisSetConnectorHealthMetrics,
   redisSetConnectorLogs,
-  setEditContext
+  setEditContext,
 } from '../database/redis';
 import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
@@ -45,7 +45,7 @@ import {
   type SynchronizerAddInput,
   type SynchronizerFetchInput,
   type UpdateConnectorManagerStatusInput,
-  ValidationMode
+  ValidationMode,
 } from '../generated/graphql';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
@@ -110,7 +110,7 @@ export const updateConnectorWithConnectorInfo = async (
   user: AuthUser,
   connectorEntity: BasicStoreEntityConnector,
   state: string,
-  connectorInfo: ConnectorInfo
+  connectorInfo: ConnectorInfo,
 ) => {
   // Patch the updated_at and the state if needed
   let connectorPatch;
@@ -157,7 +157,7 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
     event_scope: 'update',
     event_access: 'administration',
     message: `resets \`state\` and purge queues for ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch }
+    context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch },
   });
   await purgeConnectorQueues(element);
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
@@ -189,7 +189,7 @@ export const updateConnectorManagerStatus = async (context: AuthContext, user: A
 export const managedConnectorEdit = async (
   context: AuthContext,
   user: AuthUser,
-  input: EditManagedConnectorInput
+  input: EditManagedConnectorInput,
 ) => {
   const conn: any = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR);
   if (isEmptyField(conn)) {
@@ -209,7 +209,7 @@ export const managedConnectorEdit = async (
     input.manager_contract_configuration,
     targetContract,
     currentManager.public_key,
-    conn.manager_contract_configuration
+    conn.manager_contract_configuration,
   );
   const patch: any = {
     name: input.name,
@@ -224,7 +224,7 @@ export const managedConnectorEdit = async (
 export const managedConnectorAdd = async (
   context: AuthContext,
   user: AuthUser,
-  input: AddManagedConnectorInput
+  input: AddManagedConnectorInput,
 ) => {
   // Get contract
   const contractsMap = getSupportedContractsByImage();
@@ -250,7 +250,7 @@ export const managedConnectorAdd = async (
     const onTheFlyCreatedUser = await createOnTheFlyUser(
       context,
       user,
-      { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level ? parseInt(input.confidence_level, 10) : null }
+      { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level ? parseInt(input.confidence_level, 10) : null },
     );
     finalUserId = onTheFlyCreatedUser.id;
   }
@@ -282,7 +282,7 @@ export const managedConnectorAdd = async (
     manager_contract_configuration: contractConfigurations,
     manager_requested_status: 'stopped',
     connector_state_timestamp: now(),
-    built_in: false
+    built_in: false,
   };
 
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
@@ -295,7 +295,7 @@ export const managedConnectorAdd = async (
     event_scope: 'create',
     event_access: 'administration',
     message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
-    context_data: { id: createdConnector.internal_id, entity_type: ENTITY_TYPE_CONNECTOR, input }
+    context_data: { id: createdConnector.internal_id, entity_type: ENTITY_TYPE_CONNECTOR, input },
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
@@ -308,7 +308,7 @@ export const registerConnector = async (
   context: AuthContext,
   user: AuthUser,
   connectorData: RegisterConnectorInput,
-  opts: RegisterOptions = {}
+  opts: RegisterOptions = {},
 ) => {
   const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
   const { auto = null, auto_update = null, enrichment_resolution = null } = connectorData;
@@ -366,7 +366,7 @@ export const registerConnector = async (
     event_scope: 'create',
     event_access: 'administration',
     message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: connectorData }
+    context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: connectorData },
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
@@ -384,7 +384,7 @@ export const connectorDelete = async (context: AuthContext, user: AuthUser, conn
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
-    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: element }
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: element },
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
@@ -399,7 +399,7 @@ const updateConnector = async (context: AuthContext, user: AuthUser, connectorId
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for connector \`${element.name}\``,
-    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input }
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input },
   });
   // Notify configuration change for caching system
   return notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
@@ -416,7 +416,7 @@ export const connectorUpdateHealth = async (_context: AuthContext, _user: AuthUs
     restart_count: input.restart_count,
     started_at: input.started_at,
     is_in_reboot_loop: input.is_in_reboot_loop,
-    last_update: new Date().toISOString()
+    last_update: new Date().toISOString(),
   };
   await redisSetConnectorHealthMetrics(input.id, metrics);
   return input.id;
@@ -499,11 +499,11 @@ export const registerConnectorForIngestion = async (context: AuthContext, input:
     auto_update: false,
     scope: ['application/stix+json;version=2.1'],
     only_contextual: false,
-    playbook_compatible: false
+    playbook_compatible: false,
   }, {
     built_in: true,
     active: input.is_running,
-    connector_user_id: input.connector_user_id
+    connector_user_id: input.connector_user_id,
   });
 };
 
@@ -586,7 +586,7 @@ export const registerSync = async (context: AuthContext, user: AuthUser, syncDat
       event_scope: 'create',
       event_access: 'administration',
       message: `creates synchronizer \`${syncData.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_SYNC, input: data }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_SYNC, input: data },
     });
   }
   return element;
@@ -599,7 +599,7 @@ export const syncEditField = async (context: AuthContext, user: AuthUser, syncId
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for synchronizer \`${element.name}\``,
-    context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input }
+    context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, element, user);
 };
@@ -612,7 +612,7 @@ export const syncDelete = async (context: AuthContext, user: AuthUser, syncId: s
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes synchronizer \`${deleted.name}\``,
-    context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input: deleted }
+    context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input: deleted },
   });
   return syncId;
 };
@@ -700,7 +700,7 @@ export const askJobImport = async (
     configuration,
     bypassValidation,
     validationMode,
-    forceValidation
+    forceValidation,
   };
   const entity = await internalLoadById(context, user, entityId ?? undefined) as BasicStoreCommon;
   // This is a manual request for import, we have to check confidence and throw on error
@@ -724,7 +724,7 @@ export const askJobImport = async (
     file_mime: file.metaData.mimetype ?? 'application/octet-stream',
     connectors: connectorsForFile.map((c: BasicStoreEntityConnector) => c.name),
     entity_name: entityName,
-    entity_type: entityType
+    entity_type: entityType,
   };
   const contextData = completeContextDataForEntity(baseData, entity);
   await publishUserAction({
@@ -774,6 +774,6 @@ export const createDraftAndAskJobImport = async (
       validationMode,
       bypassValidation: true,
       forceValidation: false,
-    }
+    },
   );
 };

@@ -37,13 +37,13 @@ const DEFAULT_ACTIVITY = {
       {
         key: 'name',
         value: [
-          'Some name'
-        ]
+          'Some name',
+        ],
       },
-    ]
+    ],
   },
   type: 'update',
-  message: '`admin` updates `name` for report `Some Name`'
+  message: '`admin` updates `name` for report `Some Name`',
 };
 
 export const MOCK_NOTIFICATIONS: Record<string, NotificationData[]> = {

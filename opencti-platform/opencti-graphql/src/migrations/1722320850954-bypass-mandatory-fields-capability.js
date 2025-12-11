@@ -12,7 +12,7 @@ export const up = async (next) => {
   await addCapability(context, SYSTEM_USER, {
     name: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
     description: 'Bypass mandatory fields',
-    attribute_order: 330
+    attribute_order: 330,
   });
 
   logApp.info(`${message} > done`);

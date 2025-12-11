@@ -12,7 +12,7 @@ import {
   MEMBER_ACCESS_RIGHT_ADMIN,
   SETTINGS_SET_ACCESSES,
   SETTINGS_SETLABELS,
-  SYSTEM_USER
+  SYSTEM_USER,
 } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
@@ -269,9 +269,9 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
           filters: {
             mode: FilterMode.And,
             filters: [{ key: ['type'], values: ['dashboard'] }],
-            filterGroups: []
-          }
-        }
+            filterGroups: [],
+          },
+        },
       );
       // This check is because we base our control on authorized members of the
       // associated custom dashboards and not the public dashboard entity itself.
@@ -415,7 +415,7 @@ export const createListTask = async (context, user, input) => {
     event_scope: 'create',
     event_access: 'extended',
     message: 'creates `background task`',
-    context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: listTask }
+    context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: listTask },
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);
   return listTask;
