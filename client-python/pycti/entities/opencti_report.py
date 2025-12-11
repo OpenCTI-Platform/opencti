@@ -724,7 +724,7 @@ class Report:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
-        upsert_operations = kwargs.get("opencti_upsert_operations", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None and published is not None:
             self.opencti.app_logger.info("Creating Report", {"name": name})
