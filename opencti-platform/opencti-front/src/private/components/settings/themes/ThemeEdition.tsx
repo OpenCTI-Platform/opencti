@@ -29,9 +29,9 @@ const editThemeMutation = graphql`
 `;
 
 interface ThemeEditionProps {
-  theme: ThemeType;
-  open: boolean;
-  handleClose: () => void;
+  theme: ThemeType
+  open: boolean
+  handleClose: () => void
 }
 
 const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({

@@ -31,11 +31,11 @@ const relationshipCreationFromEntityFragment = graphql`
 `;
 
 interface StixCoreRelationshipCreationFromEntityHeaderProps {
-  data: StixCoreRelationshipCreationFromEntityHeader_stixCoreObject$key;
+  data: StixCoreRelationshipCreationFromEntityHeader_stixCoreObject$key
 }
 
 const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<
-StixCoreRelationshipCreationFromEntityHeaderProps
+  StixCoreRelationshipCreationFromEntityHeaderProps
 > = ({ data }) => {
   const { t_i18n } = useFormatter();
   const stixCoreObject = useFragment(relationshipCreationFromEntityFragment, data);
@@ -73,7 +73,7 @@ StixCoreRelationshipCreationFromEntityHeaderProps
       {/* The controlled dial to open the drawer */}
       <Button
         onClick={handleOpen}
-        variant='outlined'
+        variant="outlined"
         style={{ marginLeft: '6px' }}
       >
         {t_i18n('Create Relationship')}
@@ -99,24 +99,24 @@ StixCoreRelationshipCreationFromEntityHeaderProps
       >
         {step === 0
           ? (
-            <StixCoreRelationshipCreationSelectEntityStage
-              handleNextStep={() => setStep(1)}
-              storageKey={storageKey}
-              data={stixCoreObject}
-              targetEntities={targetEntities}
-              setTargetEntities={setTargetEntities}
-              virtualEntityTypes={stixCoreObjectTypes}
-              handleClose={handleClose}
-              setSearchPaginationOptions={setSearchPaginationOptions}
-            />
-          ) : (
-            <StixCoreRelationshipCreationFormStage
-              targetEntities={targetEntities}
-              handleResetSelection={handleResetSelection}
-              handleClose={handleClose}
-              data={stixCoreObject}
-            />
-          )
+              <StixCoreRelationshipCreationSelectEntityStage
+                handleNextStep={() => setStep(1)}
+                storageKey={storageKey}
+                data={stixCoreObject}
+                targetEntities={targetEntities}
+                setTargetEntities={setTargetEntities}
+                virtualEntityTypes={stixCoreObjectTypes}
+                handleClose={handleClose}
+                setSearchPaginationOptions={setSearchPaginationOptions}
+              />
+            ) : (
+              <StixCoreRelationshipCreationFormStage
+                targetEntities={targetEntities}
+                handleResetSelection={handleResetSelection}
+                handleClose={handleClose}
+                data={stixCoreObject}
+              />
+            )
         }
       </Drawer>
     </>

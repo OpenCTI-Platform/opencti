@@ -106,11 +106,11 @@ const themesLineFragment = graphql`
 `;
 
 interface ThemeManagerProps {
-  handleRefetch: () => Disposable;
+  handleRefetch: () => Disposable
   defaultTheme?: {
     id: string
     name: string
-  } | null;
+  } | null
 }
 
 const ThemeManager: FunctionComponent<ThemeManagerProps> = ({

@@ -31,12 +31,12 @@ const deleteThemeMutation = graphql`
 `;
 
 interface ThemePopoverProps {
-  themeData: ThemeManager_data$data;
-  handleRefetch: () => Disposable;
-  paginationOptions: ThemeManagerQuery$variables;
-  canDelete: boolean;
+  themeData: ThemeManager_data$data
+  handleRefetch: () => Disposable
+  paginationOptions: ThemeManagerQuery$variables
+  canDelete: boolean
   defaultTheme?: {
-    id: string,
+    id: string
     name: string
   } | null
 }

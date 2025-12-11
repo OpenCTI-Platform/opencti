@@ -19,10 +19,10 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { StixCoreRelationshipCreationFormStage_stixCoreObject$key } from './__generated__/StixCoreRelationshipCreationFormStage_stixCoreObject.graphql';
 
 interface StixCoreRelationshipCreationFormStageProps {
-  targetEntities: TargetEntity[];
-  data: StixCoreRelationshipCreationFormStage_stixCoreObject$key;
-  handleResetSelection: () => void;
-  handleClose: () => void;
+  targetEntities: TargetEntity[]
+  data: StixCoreRelationshipCreationFormStage_stixCoreObject$key
+  handleResetSelection: () => void
+  handleClose: () => void
 }
 
 const fragment = graphql`

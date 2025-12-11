@@ -18,8 +18,8 @@ const themesQuery = graphql`
 `;
 
 interface ThemeDetectDuplicateProps {
-  themeName: string;
-  themeId?: string;
+  themeName: string
+  themeId?: string
 }
 
 const ThemeDetectDuplicate: FunctionComponent<ThemeDetectDuplicateProps> = ({

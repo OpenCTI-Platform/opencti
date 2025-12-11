@@ -6,15 +6,15 @@ import StixCyberObservableCreation from '../../observations/stix_cyber_observabl
 import { PaginationOptions } from '../../../../components/list_lines';
 
 interface StixCoreRelationshipCreationHeaderButtonsProps {
-  show: boolean;
-  showSDOs: boolean;
-  showSCOs: boolean;
-  actualTypeFilterValues: string[];
-  searchPaginationOptions: PaginationOptions;
+  show: boolean
+  showSDOs: boolean
+  showSCOs: boolean
+  actualTypeFilterValues: string[]
+  searchPaginationOptions: PaginationOptions
 }
 
 const StixCoreRelationshipCreationHeaderButtons: FunctionComponent<
-StixCoreRelationshipCreationHeaderButtonsProps
+  StixCoreRelationshipCreationHeaderButtonsProps
 > = ({
   show,
   showSDOs,
@@ -58,7 +58,7 @@ StixCoreRelationshipCreationHeaderButtonsProps
       {showSCOs && (
         <Button
           onClick={handleOpenCreateObservable}
-          variant='contained'
+          variant="contained"
           style={{ marginRight: '10px' }}
         >
           {t_i18n('Create an observable')}

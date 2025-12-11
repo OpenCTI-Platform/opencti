@@ -27,16 +27,16 @@ const decayExclusionRuleCreationFormAddMutation = graphql`
 `;
 
 type DecayExclusionRuleCreationFormProps = {
-  updater: (store: RecordSourceSelectorProxy, rootField: string) => void,
-  onReset: () => void;
-  onCompleted: () => void;
+  updater: (store: RecordSourceSelectorProxy, rootField: string) => void
+  onReset: () => void
+  onCompleted: () => void
 };
 
 type DecayExclusionRuleCreationFormData = {
-  name: string;
-  description: string;
-  decay_exclusion_filters: string;
-  active: boolean;
+  name: string
+  description: string
+  decay_exclusion_filters: string
+  active: boolean
 };
 
 const decayExclusionRuleCreationValidator = (t: (value: string) => string) => {
@@ -112,7 +112,7 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
-              name='name'
+              name="name"
               label={t_i18n('Name')}
               fullWidth
               required

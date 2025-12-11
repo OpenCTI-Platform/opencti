@@ -254,7 +254,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
               <div>
                 {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
                 <br />
-                {refreshingQueueDetails 
+                {refreshingQueueDetails
                   ? t_i18n('Loading current message count...')
                   : t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
               </div>

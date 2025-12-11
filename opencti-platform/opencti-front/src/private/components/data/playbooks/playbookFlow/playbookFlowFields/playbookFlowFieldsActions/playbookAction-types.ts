@@ -20,7 +20,7 @@ export interface PlaybookUpdateAction {
     label?: string
     value?: string
     patch_value?: string | {
-      kill_chain_name: string,
+      kill_chain_name: string
       phase_name: string
     }
   }[]
@@ -38,5 +38,5 @@ export const attributesMultiple = [
   'objectParticipant',
   'killChainPhases',
   'indicator_types',
-  'x_mitre_platforms'
+  'x_mitre_platforms',
 ];

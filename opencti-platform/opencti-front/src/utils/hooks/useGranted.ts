@@ -63,7 +63,7 @@ export const getCapabilitiesName = (capabilities: readonly { name: string }[]) =
   return (capabilities ?? []).map((capability) => capability?.name);
 };
 
-export const isBypassUser = (me: { id: string; capabilities: readonly { name: string }[] }) => {
+export const isBypassUser = (me: { id: string, capabilities: readonly { name: string }[] }) => {
   const userCapabilities = getCapabilitiesName(me.capabilities);
   return userCapabilities.includes(BYPASS);
 };
@@ -80,18 +80,18 @@ const useGranted = (capabilities: string[], matchAll = false): boolean => {
 
   let userCapabilities: string[] = [];
   const userBaseCapabilities = getCapabilitiesName(me.capabilities);
-  
+
   if (isBypassUser(me)) {
     return true;
   }
 
-  // If the user is in draft mode, add capabilities in draft to the base capabilities 
+  // If the user is in draft mode, add capabilities in draft to the base capabilities
   if (isCapabilitiesInDraftEnabled && me.draftContext) {
     const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
     userCapabilities = Array.from(new Set([...userBaseCapabilities, ...userCapabilitiesInDraft]));
   } else {
     userCapabilities = userBaseCapabilities;
-  } 
+  }
 
   // Check if any of the user capabilities includes the requested capability as a substring
   const capabilityMatches = (requestedCapability: string) =>

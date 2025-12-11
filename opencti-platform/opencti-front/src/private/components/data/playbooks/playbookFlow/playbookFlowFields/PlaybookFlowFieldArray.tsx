@@ -38,10 +38,10 @@ const PlaybookFlowFieldArray = ({
   multiple = false,
 }: PlaybookFlowFieldArrayProps) => {
   const { translateEntityType } = useEntityTranslation();
-  const fieldOptions = options.map(o => o.const);
+  const fieldOptions = options.map((o) => o.const);
 
   const findOption = (value: string) => {
-    return options.find(o => o.const === value);
+    return options.find((o) => o.const === value);
   };
 
   return (

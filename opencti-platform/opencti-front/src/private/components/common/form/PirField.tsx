@@ -23,14 +23,14 @@ const pirsQuery = graphql`
 `;
 
 interface PirFieldProps {
-  name: string;
-  label?: string;
-  multiple?: boolean;
-  onChange?: (name: string, value: FieldOption[]) => void;
-  helpertext?: string;
-  disabled?: boolean;
-  required?: boolean;
-  style?: CSSProperties,
+  name: string
+  label?: string
+  multiple?: boolean
+  onChange?: (name: string, value: FieldOption[]) => void
+  helpertext?: string
+  disabled?: boolean
+  required?: boolean
+  style?: CSSProperties
 }
 
 const PirField = ({
@@ -90,7 +90,8 @@ const PirField = ({
             flexGrow: 1,
             marginLeft: 10,
           }}
-          >{option.label}</div>
+          >{option.label}
+          </div>
         </li>
       )}
     />

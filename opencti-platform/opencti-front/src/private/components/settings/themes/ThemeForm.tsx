@@ -11,26 +11,26 @@ import TextField from '../../../../components/TextField';
 
 interface ThemeFormProps {
   values: {
-    name: string;
-    theme_background: string;
-    theme_paper: string;
-    theme_nav: string;
-    theme_primary: string;
-    theme_secondary: string;
-    theme_accent: string;
-    theme_text_color: string;
-    theme_logo?: string | null;
-    theme_logo_collapsed?: string | null;
-    theme_logo_login?: string | null;
-  };
-  errors?: Record<string, string>;
-  isSubmitting: boolean;
-  isSystemDefault?: boolean | null;
-  themeId?: string;
-  onSubmit: () => void;
-  onCancel: () => void;
-  onChange?: () => void;
-  submitLabel?: string;
+    name: string
+    theme_background: string
+    theme_paper: string
+    theme_nav: string
+    theme_primary: string
+    theme_secondary: string
+    theme_accent: string
+    theme_text_color: string
+    theme_logo?: string | null
+    theme_logo_collapsed?: string | null
+    theme_logo_login?: string | null
+  }
+  errors?: Record<string, string>
+  isSubmitting: boolean
+  isSystemDefault?: boolean | null
+  themeId?: string
+  onSubmit: () => void
+  onCancel: () => void
+  onChange?: () => void
+  submitLabel?: string
   withButtons?: boolean
 }
 

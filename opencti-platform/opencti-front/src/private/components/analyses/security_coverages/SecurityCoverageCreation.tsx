@@ -748,7 +748,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                   multiple={true}
                 />
               </>
-              )}
+            )}
             <Field
               component={SwitchField}
               type="checkbox"

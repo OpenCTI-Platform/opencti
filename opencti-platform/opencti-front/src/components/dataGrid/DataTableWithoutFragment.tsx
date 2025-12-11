@@ -28,8 +28,8 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   };
 
 interface DataTableWithoutFragmentInternalToolBarProps {
-  taskScope: string,
-  dataIds: string[],
+  taskScope: string
+  dataIds: string[]
 }
 
 const DataTableWithoutFragmentInternalToolbar = ({ taskScope, dataIds }: DataTableWithoutFragmentInternalToolBarProps) => {
@@ -83,10 +83,12 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps & {
       initialValues={{}}
       disableLineSelection={!taskScope}
       dataTableToolBarComponent={taskScope
-        ? <DataTableWithoutFragmentInternalToolbar
-            dataIds={extractDataIds()}
-            taskScope={taskScope}
-          />
+        ? (
+            <DataTableWithoutFragmentInternalToolbar
+              dataIds={extractDataIds()}
+              taskScope={taskScope}
+            />
+          )
         : undefined
       }
     />

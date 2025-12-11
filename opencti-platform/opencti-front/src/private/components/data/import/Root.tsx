@@ -10,7 +10,7 @@ import useHasOnlyAccessToImportDraftTab from '../../../../utils/hooks/useHasOnly
 const Root = () => {
   const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const hasOnlyAccessToImportDraftTab = useHasOnlyAccessToImportDraftTab();
-  
+
   const restrictAccessToDraftOnly = canAskImportKnowledge || !hasOnlyAccessToImportDraftTab;
   return (
     <Routes>

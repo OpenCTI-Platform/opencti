@@ -50,7 +50,7 @@ const PlaybookFlowSelectComponent = ({
             onClick={() => onSelect(component.id)}
           >
             <ListItemIcon>
-              <ItemIcon type={component.icon}/>
+              <ItemIcon type={component.icon} />
             </ListItemIcon>
             <ListItemText
               primary={t_i18n(component.name)}

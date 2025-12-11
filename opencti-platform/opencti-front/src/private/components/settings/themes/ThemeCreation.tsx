@@ -20,10 +20,10 @@ export const createThemeMutation = graphql`
 `;
 
 interface ThemeCreationProps {
-  open: boolean;
-  handleClose: () => void;
-  handleRefetch: () => Disposable;
-  paginationOptions: ThemeManagerQuery$variables;
+  open: boolean
+  handleClose: () => void
+  handleRefetch: () => Disposable
+  paginationOptions: ThemeManagerQuery$variables
 }
 
 const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({

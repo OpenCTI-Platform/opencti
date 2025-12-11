@@ -12,19 +12,19 @@ export interface PlaybookConfig {
 }
 
 export interface PlaybookDefinitionNode {
-  id: string,
-  name: string,
-  component_id: string,
+  id: string
+  name: string
+  component_id: string
   configuration: string // json
-  position: XYPosition,
+  position: XYPosition
 }
 
 export interface PlaybookDefinitionEdge {
-  id: string,
+  id: string
   from: {
-    port: string,
+    port: string
     id: string
-  },
+  }
   to: {
     id: string
   }

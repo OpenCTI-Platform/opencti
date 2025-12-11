@@ -385,7 +385,7 @@ export const filterValue = (
   value?: string | null,
   filterType?: string,
   filterOperator?: string,
-  ) => {
+) => {
   const { t_i18n, nsd, smhd } = useFormatter();
   if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf' || filterKey === 'dynamic' || filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return JSON.stringify(value);

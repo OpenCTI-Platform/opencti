@@ -1,9 +1,9 @@
 export type ValidationWork = {
-  id?: string;
+  id?: string
   tracking?: {
-    import_expected_number?: number | null;
-    import_processed_number?: number | null;
-  } | null;
+    import_expected_number?: number | null
+    import_processed_number?: number | null
+  } | null
 } | null | undefined;
 
 export const computeValidationProgress = <T extends ValidationWork>(validationWork: T) => {

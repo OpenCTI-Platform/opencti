@@ -127,7 +127,7 @@ const SettingsMessages = ({
   const handleCloseCreate = () => setDisplayCreate(false);
   return (
     <>
-      <Stack direction={'row'} alignItems={'center'}>
+      <Stack direction="row" alignItems="center">
         <Typography variant="h4" gutterBottom={true} sx={{ margin: 0 }}>
           {t_i18n('Platform announcement')}
         </Typography>

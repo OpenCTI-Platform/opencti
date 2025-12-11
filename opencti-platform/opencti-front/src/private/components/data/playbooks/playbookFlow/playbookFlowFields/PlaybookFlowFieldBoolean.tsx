@@ -26,7 +26,7 @@ interface PlaybookFlowFieldBooleanProps {
 const PlaybookFlowFieldBoolean = ({
   name,
   label,
-  helperText
+  helperText,
 }: PlaybookFlowFieldBooleanProps) => {
   return (
     <Field
