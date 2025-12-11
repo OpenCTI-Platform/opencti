@@ -104,8 +104,8 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   const variables = isEmptyField(ingestion.ingestion_json_state) ? buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
   const headerVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'header');
   Object.entries(headerVariables).forEach(([k, v]) => {
- headers[k] = String(v); 
-});
+    headers[k] = String(v);
+  });
   if (ingestion.authentication_type === IngestionAuthType.Basic) {
     const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
     headers.Authorization = `Basic ${auth}`;

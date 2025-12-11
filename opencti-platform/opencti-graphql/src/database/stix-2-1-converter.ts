@@ -172,19 +172,19 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     aliases: instance.x_opencti_aliases ?? [],
     files: (instance.x_opencti_files ?? []).map((file: StoreFileWithRefs) => (isNotEmptyField(file.data)
       ? {
-        name: file.name,
-        version: file.version,
-        mime_type: file.mime_type,
-        object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
-        data: file.data,
-        uri: 'unknown'
-      } : {
-        name: file.name,
-        uri: `/storage/get/${file.id}`,
-        version: file.version,
-        mime_type: file.mime_type,
-        object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
-      })),
+          name: file.name,
+          version: file.version,
+          mime_type: file.mime_type,
+          object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
+          data: file.data,
+          uri: 'unknown'
+        } : {
+          name: file.name,
+          uri: `/storage/get/${file.id}`,
+          version: file.version,
+          mime_type: file.mime_type,
+          object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
+        })),
     stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
     is_inferred: isInferredIndex(instance._index),
     // Refs

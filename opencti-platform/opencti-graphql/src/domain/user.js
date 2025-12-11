@@ -241,23 +241,23 @@ export const findUserPaginated = async (context, user, args) => {
 export const findCreators = (context, user, args) => {
   const { entityTypes = [] } = args;
   const creatorsFilter = async (creators) => {
- return filterMembersWithUsersOrgs(context, user, creators, FilterMembersMode.EXCLUDE); 
-};
+    return filterMembersWithUsersOrgs(context, user, creators, FilterMembersMode.EXCLUDE);
+  };
   return fullEntitiesThoughAggregationConnection(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: creatorsFilter });
 };
 
 export const findAssignees = (context, user, args) => {
   const { entityTypes = [] } = args;
   const assigneesFilter = async (assignees) => {
- return filterMembersWithUsersOrgs(context, user, assignees, FilterMembersMode.EXCLUDE); 
-};
+    return filterMembersWithUsersOrgs(context, user, assignees, FilterMembersMode.EXCLUDE);
+  };
   return fullEntitiesThoughAggregationConnection(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: assigneesFilter });
 };
 export const findParticipants = (context, user, args) => {
   const { entityTypes = [] } = args;
   const participantsFilter = async (participants) => {
- return filterMembersWithUsersOrgs(context, user, participants, FilterMembersMode.EXCLUDE); 
-};
+    return filterMembersWithUsersOrgs(context, user, participants, FilterMembersMode.EXCLUDE);
+  };
   return fullEntitiesThoughAggregationConnection(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: participantsFilter });
 };
 
@@ -486,10 +486,10 @@ export const findRolesWithCapabilityInDraft = async (context, user, args) => {
       context,
       user,
       RELATION_HAS_CAPABILITY_IN_DRAFT, {
-      ...args,
-      fromTypes: [ENTITY_TYPE_ROLE],
-      toTypes: [ENTITY_TYPE_CAPABILITY],
-    })
+        ...args,
+        fromTypes: [ENTITY_TYPE_ROLE],
+        toTypes: [ENTITY_TYPE_CAPABILITY],
+      })
   );
 };
 
@@ -1032,7 +1032,7 @@ export const bookmarks = async (context, user, args) => {
     bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
   }
   const filteredBookmarks = [];
-   
+
   for (const bookmark of bookmarkList) {
     const loadedBookmark = await storeLoadById(context, user, bookmark.id, bookmark.type);
     if (isNotEmptyField(loadedBookmark)) {

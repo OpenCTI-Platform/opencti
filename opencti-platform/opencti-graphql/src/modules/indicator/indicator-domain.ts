@@ -450,8 +450,8 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   // Region Decay and {Score, Valid until, Revoke} computation
   // We keep everything EXCEPT fields that can be changed by decay computation
   const finalInput = input.filter((editInput) => {
- return editInput.key !== VALID_UNTIL && editInput.key !== X_SCORE && editInput.key !== REVOKED; 
-});
+    return editInput.key !== VALID_UNTIL && editInput.key !== X_SCORE && editInput.key !== REVOKED;
+  });
 
   const isDecayEnabledOnIndicator: boolean = indicatorBeforeUpdate.decay_applied_rule !== undefined && indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score !== undefined;
 

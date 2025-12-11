@@ -174,7 +174,7 @@ interface StoreConnection {
 }
 
 interface StoreRawRule {
-   
+
   inferred: any;
   explanation: string[];
 }

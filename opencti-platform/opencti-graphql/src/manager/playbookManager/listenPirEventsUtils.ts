@@ -169,9 +169,9 @@ export const listenPirEvents = async (
     if (isInPirRel && isStixRelation(data)) {
       // Event on relationship in-pir.
       stixEntity = await stixLoadById(
-        context, 
-        AUTOMATION_MANAGER_USER, 
-        data.source_ref, 
+        context,
+        AUTOMATION_MANAGER_USER,
+        data.source_ref,
         ABSTRACT_STIX_CORE_OBJECT
       ) as unknown as StixObject; ;
     } else if (isUpdateEvent) {

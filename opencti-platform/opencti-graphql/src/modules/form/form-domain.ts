@@ -276,7 +276,7 @@ const transformSpecialFields = async (
   const fieldsSource = isRelationship && data.fields ? data.fields : data;
 
   // Find special fields that need transformation
-   
+
   for (const field of fields) {
     const attrName = field.attributeMapping.attributeName;
     const value = (fieldsSource as any)[attrName];
@@ -303,7 +303,7 @@ const transformSpecialFields = async (
     } else if (field.type === 'objectMarking' && Array.isArray(value)) {
       // Transform objectMarking from array of internal_ids
       const markings = [];
-       
+
       for (const markingId of value) {
         if (typeof markingId === 'string') {
           const markingEntity = await internalLoadById(context, user, markingId);
@@ -347,7 +347,7 @@ const transformSpecialFields = async (
     } else if (field.type === 'externalReferences' && Array.isArray(value)) {
       // Transform external references
       const references = [];
-       
+
       for (const refId of value) {
         if (typeof refId === 'string') {
           const refEntity = await internalLoadById(context, user, refId);

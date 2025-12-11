@@ -28,7 +28,7 @@ export const findFiltersRepresentatives = async (
   user: AuthUser,
   inputFilters: FilterGroup,
   opts?: { isMeValueForbidden?: boolean | null },
-  ) => {
+) => {
   const filtersRepresentatives: FilterRepresentative[] = [];
   // extract the ids to resolve from inputFilters
   const keysToResolve = schemaRelationsRefDefinition.getAllInputNames()

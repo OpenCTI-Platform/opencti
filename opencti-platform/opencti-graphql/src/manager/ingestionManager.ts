@@ -177,7 +177,7 @@ const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, en
   const link = entry.link?.href?.trim() ?? '';
   // Use link as fallback if title is missing, or 'Untitled' as last resort
   const title = entry.title?._ || link || 'Untitled';
-  
+
   return {
     title,
     description: turndownService.turndown(entry.summary?._ ?? ''),
@@ -194,7 +194,7 @@ const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement,
   const link = item.link?._?.trim() ?? '';
   // Use link as fallback if title is missing, or 'Untitled' as last resort
   const title = item.title?._ || link || 'Untitled';
-  
+
   return {
     title,
     description: turndownService.turndown(item.description?._ ?? ''),

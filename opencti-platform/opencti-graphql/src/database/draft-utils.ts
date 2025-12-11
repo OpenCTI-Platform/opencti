@@ -137,8 +137,8 @@ export const getConsolidatedUpdatePatch = (currentUpdatePatch: UpdatePatch, upda
   const newUpdatePatch = currentUpdatePatch;
   const nonResolvedInput = updatedInputsResolved
     .map((i) => {
- return { key: i.key, value: i.value?.map((v) => ((v && typeof v !== 'string' && v.standard_id) ? v.standard_id : v)), operation: i.operation ?? UPDATE_OPERATION_REPLACE, previous: i.previous ?? [] }; 
-});
+      return { key: i.key, value: i.value?.map((v) => ((v && typeof v !== 'string' && v.standard_id) ? v.standard_id : v)), operation: i.operation ?? UPDATE_OPERATION_REPLACE, previous: i.previous ?? [] };
+    });
   for (let i = 0; i < nonResolvedInput.length; i += 1) {
     const currentNonResolvedInput = nonResolvedInput[i];
     const currentUpdates = currentUpdatePatch[currentNonResolvedInput.key];

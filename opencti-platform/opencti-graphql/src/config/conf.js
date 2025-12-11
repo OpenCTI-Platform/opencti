@@ -285,7 +285,7 @@ const telemetryLogTransports = [new DailyRotateFile({
 const telemetryLogger = winston.createLogger({
   level: 'info',
   format: format.printf((info) => {
-    return `${info.message}`; 
+    return `${info.message}`;
   }),
   transports: telemetryLogTransports,
 });
@@ -392,7 +392,7 @@ export const configureCA = (certificates) => {
   if (certificates && certificates.length > 0) {
     return { ca: certificates };
   }
-   
+
   for (const cert of LINUX_CERTFILES) {
     try {
       if (lstatSync(cert).isFile()) {

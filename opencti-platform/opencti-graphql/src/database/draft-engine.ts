@@ -38,8 +38,8 @@ import type { BasicStoreCommon, BasicStoreRelation, InternalEditInput, StoreRela
 const completeDeleteElementsFromDraft = async (context: AuthContext, user: AuthUser, elements: BasicStoreCommon[]): Promise<void> => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext) {
- return; 
-}
+    return;
+  }
   await elDeleteInstances(elements);
   const elementsIds = elements.map((e) => e.internal_id);
   await elRemoveDraftIdFromElements(context, user, draftContext, elementsIds);

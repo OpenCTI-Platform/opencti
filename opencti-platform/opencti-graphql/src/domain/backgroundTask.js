@@ -115,11 +115,11 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
   const opts = enable
     ? buildEntityFilters(scan.types, scan)
     : { filters: {
-      mode: 'and',
-      filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
-      filterGroups: [],
-    }
-    };
+        mode: 'and',
+        filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
+        filterGroups: [],
+      }
+      };
   const queryData = await elPaginate(context, user, READ_DATA_INDICES, { ...opts, first: 1 });
   const countExpected = queryData.pageInfo.globalCount;
   const task = await createDefaultTask(context, user, input, TASK_TYPE_RULE, countExpected);

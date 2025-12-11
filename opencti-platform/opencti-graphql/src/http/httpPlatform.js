@@ -1,4 +1,4 @@
- import { URL } from 'node:url';
+import { URL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import express from 'express';
@@ -55,7 +55,7 @@ const extractRefererPathFromReq = (req) => {
   if (isEmptyField(req.headers.referer)) {
     return undefined;
   }
-  
+
   try {
     const refererUrl = new URL(req.headers.referer);
     // Keep only the pathname and search to prevent OPEN REDIRECT CWE-601
@@ -458,20 +458,20 @@ const createApp = async (app, schema) => {
       if (strategy._saml) {
         // For SAML, no session is required, referer will be send back through RelayState
         return passport.authenticate(
-          provider, 
-          { additionalParams: { RelayState: referer } }, 
+          provider,
+          { additionalParams: { RelayState: referer } },
           (err) => {
             setCookieError(res, err?.message);
             next(err);
           }
         )(req, res, next);
-      } 
+      }
 
       // For openid / oauth, session is required so we can use it
       req.session.referer = referer;
       return passport.authenticate(
-        provider, 
-        {}, 
+        provider,
+        {},
         (err) => {
           setCookieError(res, err?.message);
           next(err);

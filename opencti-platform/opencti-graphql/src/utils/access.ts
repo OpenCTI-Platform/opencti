@@ -589,7 +589,7 @@ export const isUserHasCapability = (user: AuthUser, capability: string): boolean
   const isInDraftContext = !!user.draft_context;
   const isIncludedInCapabilities = (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
   const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => s.name.includes(capability));
-  
+
   return isBypassUser(user) || isIncludedInCapabilities || (isInDraftContext && isIncludedInDraftCapabilities);
 };
 
@@ -876,7 +876,7 @@ export const validateUserAccessOperation = (user: AuthUser, element: any, operat
   if (draft && !hasUserAccessToOperation(user, draft, operation)) {
     return false;
   }
-  
+
   // 2. Internal objects management
   if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     return true;

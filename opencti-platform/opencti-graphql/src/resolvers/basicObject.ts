@@ -16,8 +16,8 @@ const basicObjectResolvers: Resolvers = {
       return 'Unknown';
     },
     metrics(obj) {
- return obj.metrics ? obj.metrics : []; 
-}
+      return obj.metrics ? obj.metrics : [];
+    }
   }
 };
 

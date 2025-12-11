@@ -169,8 +169,8 @@ const globalResolvers = {
     name: 'Any',
     description: 'Arbitrary object',
     serialize: () => {
- throw new GraphQLError('Any serialization unsupported.'); 
-},
+      throw new GraphQLError('Any serialization unsupported.');
+    },
     parseValue: (value) => value,
     parseLiteral: (ast) => parseAst(ast)
   }),

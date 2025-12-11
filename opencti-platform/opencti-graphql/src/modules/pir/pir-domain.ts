@@ -180,10 +180,10 @@ export const findPirContainers = async (
   };
   const filters = opts?.filters && isFilterGroupNotEmpty(opts.filters)
     ? {
-      mode: FilterMode.And,
-      filters: [],
-      filterGroups: [containsFilter, opts.filters],
-    }
+        mode: FilterMode.And,
+        filters: [],
+        filterGroups: [containsFilter, opts.filters],
+      }
     : containsFilter;
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_CONTAINER], { ...opts, filters });
 };

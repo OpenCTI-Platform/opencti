@@ -2648,8 +2648,8 @@ export const adaptFilterToIdsFilterKey = (filter: Filter) => {
 
   if (operator === 'nil' || operator === 'not_nil') { // nil and not_nil operators must have a single key
     const filters = idsArray.map((idKey) => {
- return { ...filter, key: [idKey] }; 
-});
+      return { ...filter, key: [idKey] };
+    });
     newFilterGroup = {
       mode: FilterMode.And,
       filters,

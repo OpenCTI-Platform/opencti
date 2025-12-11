@@ -376,14 +376,14 @@ const initCacheManager = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping cache manager');
       try {
- subscribeAdd.unsubscribe(); 
-} catch { /* dont care */ }
+        subscribeAdd.unsubscribe();
+      } catch { /* dont care */ }
       try {
- subscribeEdit.unsubscribe(); 
-} catch { /* dont care */ }
+        subscribeEdit.unsubscribe();
+      } catch { /* dont care */ }
       try {
- subscribeDelete.unsubscribe(); 
-} catch { /* dont care */ }
+        subscribeDelete.unsubscribe();
+      } catch { /* dont care */ }
       return true;
     }
   };
