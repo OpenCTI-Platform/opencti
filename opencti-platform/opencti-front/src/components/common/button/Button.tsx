@@ -1,9 +1,9 @@
 import React from 'react';
-import { Button as MuiButton } from '@mui/material';
+import { Button as MuiButton, ButtonProps as MuiButtonProps } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import type { SxProps, Theme } from '@mui/material/styles';
-import type { CustomButtonProps } from './Button.types';
-import { getColorDefinitions, getGradientColors } from './Button.utils';
+import type { ButtonIntent, ButtonSize, GradientVariant } from './Button.types';
+import { getColorDefinitions, getGradientColors, getSizeConfig } from './Button.utils';
 import {
   createBaseStyles,
   createPrimaryGradientStyles,
@@ -14,7 +14,38 @@ import {
   createTertiarySolidStyles,
   createExtraStyles,
 } from './Button.styles.factory';
-import { getSizeConfig } from './Button.constants';
+
+type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'extra';
+
+interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'size'> {
+  variant?: ButtonVariant;
+  intent?: ButtonIntent;
+  size?: ButtonSize;
+  gradient?: boolean;
+  gradientVariant?: GradientVariant;
+  gradientStartColor?: string;
+  gradientEndColor?: string;
+  gradientAngle?: number;
+  startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
+  fullWidth?: boolean;
+  iconOnly?: boolean;
+  component?: React.ElementType;
+  to?: string
+}
+
+type RestrictedIntentButtonProps = BaseButtonProps & {
+  intent: 'destructive' | 'ai';
+  variant?: Exclude<ButtonVariant, 'primary'>;
+};
+
+// Default buttons can use any variant
+type DefaultIntentButtonProps = BaseButtonProps & {
+  intent?: 'default';
+  variant?: ButtonVariant;
+};
+
+export type CustomButtonProps = RestrictedIntentButtonProps | DefaultIntentButtonProps;
 
 const Button: React.FC<CustomButtonProps> = ({
   variant = 'primary',
@@ -48,7 +79,7 @@ const Button: React.FC<CustomButtonProps> = ({
     gradientEndColor
   );
 
-  const sizeConfig = getSizeConfig(size, iconOnly);
+  const sizeConfig = getSizeConfig(theme, size, iconOnly);
 
   const styleParams = {
     theme,
