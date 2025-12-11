@@ -36,7 +36,14 @@ import { getChatbotProxy } from './httpChatbotProxy';
 import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
 
 export const sanitizeReferer = (refererToSanitize) => {
-  if (!refererToSanitize) return '/';
+  // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
+  // Ternary Operator (?): Defaults if basePath is undefined, null, "" (empty string), 0, etc (falsy values).
+  // basePath is trimmed in '../config/conf.js' to prevent a user from setting it to something like '       '
+  // NOTE: Do NOT use Nullish Coalescing (??): Would only default if basePath is undefined or null. 
+  // It might be set to an empty string and would fail to set properly in base2return var in next line 
+  const base2return = basePath ? basePath : '/';
+  // In some odd configurations refererToSanitize will be the string('undefined') versus value(undefined)
+  if (!refererToSanitize || refererToSanitize === 'undefined') return base2return;
   const base = getBaseUrl();
   const resolvedUrl = new URL(refererToSanitize, base).toString();
   if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
@@ -48,7 +55,7 @@ export const sanitizeReferer = (refererToSanitize) => {
     return resolvedUrl;
   }
   logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
-  return '/';
+  return base2return;
 };
 
 const extractRefererPathFromReq = (req) => {
