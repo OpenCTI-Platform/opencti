@@ -167,14 +167,12 @@ const AskArianeButton = React.forwardRef((props, ref) => {
         )}
       </EETooltip>
       {isEnterpriseEdition && isChatbotAiEnabled() ? (
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         <filigran-chatbot
           ref={chatbotRef}
           open={isChatbotOpen}
           left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
-          agentic-url={chatbotProxyUrl}
-          theme={JSON.stringify(chatBotTheme)}
+          agenticUrl={chatbotProxyUrl}
+          theme={chatBotTheme}
         />
       ) : null}
 
