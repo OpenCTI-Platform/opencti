@@ -2,6 +2,8 @@ directive @auth(for: [Capabilities] = [], and: Boolean = false) on OBJECT | FIEL
 
 directive @public on OBJECT | FIELD_DEFINITION
 
+directive @allowUnprotectedOTP on OBJECT | FIELD_DEFINITION
+
 directive @allowUnlicensedLTS on OBJECT | FIELD_DEFINITION
 
 directive @constraint(minLength: Int, maxLength: Int, startsWith: String, endsWith: String, notContains: String, pattern: String, format: String, min: Int, max: Int, exclusiveMin: Int, exclusiveMax: Int, multipleOf: Int) on INPUT_FIELD_DEFINITION
