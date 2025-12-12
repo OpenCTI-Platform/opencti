@@ -90,60 +90,60 @@ Example: `manager.logger.level` becomes `MANAGER__LOGGER__LEVEL`
     Composer caches registry authentication tokens to reduce the number of login requests.  
     Tokens are refreshed automatically when expired.
 
-#### OpenBAS (Coming Soon)
+#### OpenAEV (Coming Soon)
 
-!!! note "OpenBAS Integration"
+!!! note "OpenAEV Integration"
     
-    OpenBAS module is not yet implemented. These configuration options are reserved for future use.
+    Openaev module is not yet implemented. These configuration options are reserved for future use.
 
-| Parameter                       | Environment variable             | Default value                  | Description                                          |
-|:--------------------------------|:---------------------------------|:-------------------------------|:-----------------------------------------------------|
-| openbas:enable                 | OPENBAS__ENABLE                  | `false`                        | Enable OpenBAS integration (Coming Soon)             |
-| openbas:url                    | OPENBAS__URL                     | http://host.docker.internal:4000 | OpenBAS platform URL (Coming Soon)                   |
-| openbas:token                  | OPENBAS__TOKEN                   | ChangeMe                       | OpenBAS API authentication token (Coming Soon)       |
-| openbas:unsecured_certificate  | OPENBAS__UNSECURED_CERTIFICATE   | `false`                        | Allow self-signed SSL certificates (Coming Soon)     |
-| openbas:with_proxy             | OPENBAS__WITH_PROXY              | `false`                        | Use system proxy settings (Coming Soon)              |
-| openbas:logs_schedule          | OPENBAS__LOGS_SCHEDULE           | 10                             | Log report interval in seconds (Coming Soon)         |
+| Parameter                        | Environment variable              | Default value                       | Description                                      |
+|:---------------------------------|:----------------------------------|:------------------------------------|:-------------------------------------------------|
+| openaev:enable                   | OPENAEV__ENABLE                   | `false`                             | Enable OpenAEV integration (Coming Soon)         |
+| openaev:url                      | OPENAEV__URL                      | http://host.docker.internal:4000    | OpenAEV platform URL (Coming Soon)               |
+| openaev:token                    | OPENAEV__TOKEN                    | ChangeMe                            | OpenAEV API authentication token (Coming Soon)   |
+| openaev:unsecured_certificate    | OPENAEV__UNSECURED_CERTIFICATE    | `false`                             | Allow self-signed SSL certificates (Coming Soon) |
+| openaev:with_proxy               | OPENAEV__WITH_PROXY               | `false`                             | Use system proxy settings (Coming Soon)          |
+| openaev:logs_schedule            | OPENAEV__LOGS_SCHEDULE            | 10                                  | Log report interval in seconds (Coming Soon)     |
 
 ### Orchestration
 
 #### General settings
 
-| Parameter                                        | Environment variable                                | Default value | Description                                                        |
-|:-------------------------------------------------|:----------------------------------------------------|:--------------|:-------------------------------------------------------------------|
-| `{opencti\|openbas}`:daemon:selector             | `{OPENCTI\|OPENBAS}`__DAEMON__SELECTOR             | kubernetes    | Container orchestration platform (`kubernetes`, `docker`, `portainer`) |
+| Parameter                                        | Environment variable                                 | Default value | Description                                                        |
+|:-------------------------------------------------|:-----------------------------------------------------|:--------------|:-------------------------------------------------------------------|
+| `{opencti\|openaev}`:daemon:selector             | `{OPENCTI\|OPENAEV}`__DAEMON__SELECTOR               | kubernetes    | Container orchestration platform (`kubernetes`, `docker`, `portainer`) |
 
 #### Kubernetes
 
-| Parameter                                                    | Environment variable                                               | Default value | Description                                               |
-|:-------------------------------------------------------------|:-------------------------------------------------------------------|:--------------|:----------------------------------------------------------|
-| `{opencti\|openbas}`:daemon:kubernetes:image_pull_policy     | `{OPENCTI\|OPENBAS}`__DAEMON__KUBERNETES__IMAGE_PULL_POLICY       | IfNotPresent  | Image pull policy (`Always`, `IfNotPresent`, `Never`)     |
-| `{opencti\|openbas}`:daemon:kubernetes:base_deployment       | Not supported for complex objects                                  |               | Base Kubernetes Deployment manifest template              |
-| `{opencti\|openbas}`:daemon:kubernetes:base_deployment_json  | `{OPENCTI\|OPENBAS}`__DAEMON__KUBERNETES__BASE_DEPLOYMENT_JSON    |               | Base Deployment manifest as JSON string                   |
+| Parameter                                                    | Environment variable                                                | Default value | Description                                               |
+|:-------------------------------------------------------------|:--------------------------------------------------------------------|:--------------|:----------------------------------------------------------|
+| `{opencti\|openaev}`:daemon:kubernetes:image_pull_policy     | `{OPENCTI\|OPENAEV}`__DAEMON__KUBERNETES__IMAGE_PULL_POLICY         | IfNotPresent  | Image pull policy (`Always`, `IfNotPresent`, `Never`)     |
+| `{opencti\|openaev}`:daemon:kubernetes:base_deployment       | Not supported for complex objects                                   |               | Base Kubernetes Deployment manifest template              |
+| `{opencti\|openaev}`:daemon:kubernetes:base_deployment_json  | `{OPENCTI\|OPENAEV}`__DAEMON__KUBERNETES__BASE_DEPLOYMENT_JSON      |               | Base Deployment manifest as JSON string                   |
 
 #### Docker
 
-| Parameter                                              | Environment variable                                         | Default value | Description                                                    |
-|:-------------------------------------------------------|:-------------------------------------------------------------|:--------------|:---------------------------------------------------------------|
-| `{opencti\|openbas}`:daemon:docker:network_mode        | `{OPENCTI\|OPENBAS}`__DAEMON__DOCKER__NETWORK_MODE          | bridge        | Docker network mode (`bridge`, `host`, `none`, or custom)      |
-| `{opencti\|openbas}`:daemon:docker:extra_hosts         | `{OPENCTI\|OPENBAS}`__DAEMON__DOCKER__EXTRA_HOSTS           |               | Additional hosts entries for containers (array)                |
-| `{opencti\|openbas}`:daemon:docker:dns                 | `{OPENCTI\|OPENBAS}`__DAEMON__DOCKER__DNS                   |               | Custom DNS servers for containers (array)                      |
-| `{opencti\|openbas}`:daemon:docker:privileged          | `{OPENCTI\|OPENBAS}`__DAEMON__DOCKER__PRIVILEGED            | `false`       | Run containers in privileged mode                              |
-| `{opencti\|openbas}`:daemon:docker:cap_add             | `{OPENCTI\|OPENBAS}`__DAEMON__DOCKER__CAP_ADD               |               | Linux capabilities to add (array)                              |
-| `{opencti\|openbas}`:daemon:docker:cap_drop            | `{OPENCTI\|OPENBAS}`__DAEMON__DOCKER__CAP_DROP              |               | Linux capabilities to drop (array)                             |
-| `{opencti\|openbas}`:daemon:docker:shm_size            | `{OPENCTI\|OPENBAS}`__DAEMON__DOCKER__SHM_SIZE              |               | Shared memory size in bytes                                    |
+| Parameter                                              | Environment variable                                          | Default value | Description                                                    |
+|:-------------------------------------------------------|:--------------------------------------------------------------|:--------------|:---------------------------------------------------------------|
+| `{opencti\|openaev}`:daemon:docker:network_mode        | `{OPENCTI\|OPENAEV}`__DAEMON__DOCKER__NETWORK_MODE            | bridge        | Docker network mode (`bridge`, `host`, `none`, or custom)      |
+| `{opencti\|openaev}`:daemon:docker:extra_hosts         | `{OPENCTI\|OPENAEV}`__DAEMON__DOCKER__EXTRA_HOSTS             |               | Additional hosts entries for containers (array)                |
+| `{opencti\|openaev}`:daemon:docker:dns                 | `{OPENCTI\|OPENAEV}`__DAEMON__DOCKER__DNS                     |               | Custom DNS servers for containers (array)                      |
+| `{opencti\|openaev}`:daemon:docker:privileged          | `{OPENCTI\|OPENAEV}`__DAEMON__DOCKER__PRIVILEGED              | `false`       | Run containers in privileged mode                              |
+| `{opencti\|openaev}`:daemon:docker:cap_add             | `{OPENCTI\|OPENAEV}`__DAEMON__DOCKER__CAP_ADD                 |               | Linux capabilities to add (array)                              |
+| `{opencti\|openaev}`:daemon:docker:cap_drop            | `{OPENCTI\|OPENAEV}`__DAEMON__DOCKER__CAP_DROP                |               | Linux capabilities to drop (array)                             |
+| `{opencti\|openaev}`:daemon:docker:shm_size            | `{OPENCTI\|OPENAEV}`__DAEMON__DOCKER__SHM_SIZE                |               | Shared memory size in bytes                                    |
 
 #### Portainer
 
-| Parameter                                              | Environment variable                                         | Default value                    | Description                                          |
-|:-------------------------------------------------------|:-------------------------------------------------------------|:---------------------------------|:-----------------------------------------------------|
-| `{opencti\|openbas}`:daemon:portainer:api              | `{OPENCTI\|OPENBAS}`__DAEMON__PORTAINER__API                | https://host.docker.internal:9443 | Portainer API endpoint URL                           |
-| `{opencti\|openbas}`:daemon:portainer:api_key          | `{OPENCTI\|OPENBAS}`__DAEMON__PORTAINER__API_KEY            | ChangeMe                         | Portainer API authentication key                     |
-| `{opencti\|openbas}`:daemon:portainer:env_id           | `{OPENCTI\|OPENBAS}`__DAEMON__PORTAINER__ENV_ID             | 3                                | Portainer environment ID                             |
-| `{opencti\|openbas}`:daemon:portainer:env_type         | `{OPENCTI\|OPENBAS}`__DAEMON__PORTAINER__ENV_TYPE           | docker                           | Portainer environment type (`docker`, `kubernetes`)   |
-| `{opencti\|openbas}`:daemon:portainer:api_version      | `{OPENCTI\|OPENBAS}`__DAEMON__PORTAINER__API_VERSION        | v1.41                            | Docker API version for Portainer                     |
-| `{opencti\|openbas}`:daemon:portainer:stack            | `{OPENCTI\|OPENBAS}`__DAEMON__PORTAINER__STACK              |                                  | Portainer stack name for deployment                  |
-| `{opencti\|openbas}`:daemon:portainer:network_mode     | `{OPENCTI\|OPENBAS}`__DAEMON__PORTAINER__NETWORK_MODE       |                                  | Network mode for Portainer-managed containers        |
+| Parameter                                              | Environment variable                                          | Default value                    | Description                                          |
+|:-------------------------------------------------------|:--------------------------------------------------------------|:---------------------------------|:-----------------------------------------------------|
+| `{opencti\|openaev}`:daemon:portainer:api              | `{OPENCTI\|OPENAEV}`__DAEMON__PORTAINER__API                  | https://host.docker.internal:9443 | Portainer API endpoint URL                           |
+| `{opencti\|openaev}`:daemon:portainer:api_key          | `{OPENCTI\|OPENAEV}`__DAEMON__PORTAINER__API_KEY              | ChangeMe                         | Portainer API authentication key                     |
+| `{opencti\|openaev}`:daemon:portainer:env_id           | `{OPENCTI\|OPENAEV}`__DAEMON__PORTAINER__ENV_ID               | 3                                | Portainer environment ID                             |
+| `{opencti\|openaev}`:daemon:portainer:env_type         | `{OPENCTI\|OPENAEV}`__DAEMON__PORTAINER__ENV_TYPE             | docker                           | Portainer environment type (`docker`, `kubernetes`)   |
+| `{opencti\|openaev}`:daemon:portainer:api_version      | `{OPENCTI\|OPENAEV}`__DAEMON__PORTAINER__API_VERSION          | v1.41                            | Docker API version for Portainer                     |
+| `{opencti\|openaev}`:daemon:portainer:stack            | `{OPENCTI\|OPENAEV}`__DAEMON__PORTAINER__STACK                |                                  | Portainer stack name for deployment                  |
+| `{opencti\|openaev}`:daemon:portainer:network_mode     | `{OPENCTI\|OPENAEV}`__DAEMON__PORTAINER__NETWORK_MODE         |                                  | Network mode for Portainer-managed containers        |
 
 ## Environment configuration
 
@@ -179,7 +179,7 @@ opencti:
     kubernetes:
       image_pull_policy: IfNotPresent
 
-openbas:
+openaev:
   enable: false  # Coming Soon
 ```
 

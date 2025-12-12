@@ -139,14 +139,14 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### XTM Suite
 
-| Parameter                       | Environment variable             | Default value | Description                                                                                                  |
-|:--------------------------------|:---------------------------------|:--------------|:-------------------------------------------------------------------------------------------------------------|
-| xtm:openbas_url                 | XTM__OPENBAS_URL                 |               | OpenBAS URL                                                                                                  |
-| xtm:openbas_api_url             | XTM__OPENBAS_API_URL             |               | If sets, overrides the API base URL used for the OpenBAS integration                                         |
-| xtm:openbas_token               | XTM__OPENBAS_TOKEN               |               | OpenBAS token                                                                                                |
-| xtm:openbas_reject_unauthorized | XTM__OPENBAS_REJECT_UNAUTHORIZED | false         | Enable TLS certificate check                                                                                 |
-| xtm:openbas_disable_display     | XTM__OPENBAS_DISABLE_DISPLAY     | false         | Disable OpenBAS posture in the UI                                                                            |
-| xtm:xtmhub_url                  | XTM__XTMHUB_URL                  | https://xtmhub.filigran.io              | XTM Hub URL. If set to an empty string, integration of XTM Hub features into OpenCTI will be removed from UI |
+| Parameter                           | Environment variable             | Default value           | Description                                                                                                  |
+|:------------------------------------|:---------------------------------|:------------------------|:-------------------------------------------------------------------------------------------------------------|
+| xtm:openaev_url                     | XTM__OPENAEV_URL                 |                         | OpenAEV URL                                                                                                  |
+| xtm:openaev_api_url                 | XTM__OPENAEV_API_URL             |                         | If sets, overrides the API base URL used for the OpenAEV integration                                         |
+| xtm:openaev_token                   | XTM__OPENAEV_TOKEN               |                         | OpenAEV token                                                                                                |
+| xtm:openaev_reject_unauthorized     | XTM__OPENAEV_REJECT_UNAUTHORIZED | false                   | Enable TLS certificate check                                                                                 |
+| xtm:openaev_disable_display         | XTM__OPENAEV_DISABLE_DISPLAY     | false                   | Disable OpenAEV posture in the UI                                                                            |
+| xtm:xtmhub_url                      | XTM__XTMHUB_URL                  | https://hub.filigran.io | XTM Hub URL. If set to an empty string, integration of XTM Hub features into OpenCTI will be removed from UI |
  
 
 #### ElasticSearch

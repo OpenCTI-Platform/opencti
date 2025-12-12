@@ -51,7 +51,7 @@ Regardless of environment, verify:
 
 1. **RSA Key**: Ensure the private key is properly mounted and accessible
 2. **Configuration**: Confirm configuration files are loaded correctly
-3. **Network**: Test connectivity to OpenCTI/OpenBAS instances
+3. **Network**: Test connectivity to OpenCTI/OpenAEV instances
 4. **Logs**: Check for any error messages or warnings
 
 ## Connection issues

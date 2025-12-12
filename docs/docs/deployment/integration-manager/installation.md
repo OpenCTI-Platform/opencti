@@ -18,7 +18,7 @@
 
 - **RSA Private Key**: 4096-bit RSA private key for authentication
 - **Network Access**: 
-  - Connectivity to OpenCTI/OpenBAS instances
+  - Connectivity to OpenCTI/OpenAEV instances
   - Access to container orchestration API
 - **Permissions**: 
   - Production: Kubernetes service account with appropriate RBAC
@@ -309,5 +309,5 @@ For common issues and their solutions, see the [Troubleshooting Guide](troublesh
 ## Next steps
 
 1. Configure XTM Composer - See [Configuration Reference](configuration.md)
-2. Connect to OpenCTI/OpenBAS - See [Quick Start](quick-start.md)
+2. Connect to OpenCTI/OpenAEV - See [Quick Start](quick-start.md)
 3. Verify integration management functionality

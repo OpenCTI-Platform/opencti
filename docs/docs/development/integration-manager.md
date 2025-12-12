@@ -134,7 +134,7 @@ xtm-composer/
 │   ├── main.rs              # Application entry point
 │   ├── api/                 # External API integrations
 │   │   ├── opencti/         # OpenCTI API client
-│   │   └── openbas/         # OpenBAS API client (Coming Soon)
+│   │   └── openaev/         # OpenAEV API client (Coming Soon)
 │   ├── config/              # Configuration management
 │   │   ├── mod.rs
 │   │   └── settings.rs      # Settings structure definitions
