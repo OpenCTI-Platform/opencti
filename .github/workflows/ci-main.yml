@@ -6,23 +6,27 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  wf-build-image:
-      name: Build image
+  wf-build-image-testing:
+      name: Build image for CI
       uses: ./.github/workflows/ci-docker-build.yml
       with:
+        # If the workflow is triggered by a push on a branch, use the commit sha
+        # If the workflow is triggered by pull request action, use the merge to base branch
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-        dockerfile_platform: Dockerfile.testing
-        build_context_platform: "."
-        dockerfile_worker: Dockerfile.testing
-        build_context_worker: "."
+        dockerfile_platform: Dockerfile_featurebranch
+        dockerfile_worker: Dockerfile
+        dockerfile_target: "testing"
+        image_tag: ${{ github.sha }}-testing
+        client_python_release: false
       secrets: inherit
 
   wf-api-test:
       name: API test
       uses: ./.github/workflows/ci-test-api.yml
-      needs: wf-build-image
+      needs: wf-build-image-testing
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+        image_tag: ${{ github.sha }}-testing
       secrets: inherit
 
   wf-frontend-test:
@@ -35,9 +39,10 @@ jobs:
   wf-client-python-test:
       name: Client Python
       uses: ./.github/workflows/ci-test-client-python.yml
-      needs: wf-build-image
+      needs: wf-build-image-testing
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+        image_tag: ${{ github.sha }}-testing
       secrets: inherit
 
   wf-license-check:
@@ -46,3 +51,57 @@ jobs:
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
+
+  wf-build-image-to-deploy:
+      name: Build image to deploy
+      if: ${{ github.ref_name == 'master' ||  github.ref_name == 'release/current' || github.ref_name == 'issues/13571_handle_client_python' }}
+      uses: ./.github/workflows/ci-docker-build.yml
+      needs: wf-build-image-testing
+      with:
+        client_python_release: false
+        dockerfile_platform: Dockerfile_featurebranch
+        dockerfile_worker: Dockerfile
+        dockerfile_target: "app"
+        image_tag: ${{ github.sha }}
+      secrets: inherit
+
+
+  tag-image-to-deploy:
+      name: Tag image to deploy
+      needs: [wf-build-image-to-deploy, wf-client-python-test, wf-api-test, wf-frontend-test]
+      if: ${{ github.ref_name == 'master' ||  github.ref_name == 'release/current' || github.ref_name == 'issues/13571_handle_client_python' }}
+      runs-on: ubuntu-latest
+      steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Tag existing image
+        run: |
+          IMAGE_NAME_PLAFORM="filigran/platform"
+          IMAGE_NAME_WORKER="filigran/worker"
+          SOURCE_TAG="${{ steps.wf-build-image-testing.outputs.image-tag-cleaned }}"   
+          BRANCH="${{ github.ref_name }}"
+          echo "Debug: Source tag: $SOURCE_TAG, Branch $BRANCH"
+      
+          if [ "$BRANCH" = "master" ]; then
+            TARGET_TAG="rolling-new"
+          elif [ "$BRANCH" = "release" ]; then
+            TARGET_TAG="prerelease-new"
+          elif [ "$BRANCH" = "issues/13571_handle_client_python" ]; then
+            TARGET_TAG="test-issues-13571"
+          else
+            echo "Branch '$BRANCH' does not match an expected branch name — skipping tag."
+            exit 0
+          fi
+      
+          echo "Tagging $IMAGE_NAME_PLAFORM:${{ github.sha }} as $IMAGE_NAME_PLAFORM:$TARGET_TAG"
+          docker tag "$IMAGE_NAME_PLAFORM:${{ github.sha }}" "$IMAGE_NAME_PLAFORM:$TARGET_TAG"
+          docker push "$IMAGE_NAME_PLAFORM:$TARGET_TAG"
+          
+          echo "Tagging $IMAGE_NAME_WORKER:${{ github.sha }} as $IMAGE_NAME_WORKER:$TARGET_TAG"
+          docker tag "$IMAGE_NAME_WORKER:${{ github.sha }}" "$IMAGE_NAME_WORKER:$TARGET_TAG"
+          docker push "$IMAGE_NAME_WORKER:$TARGET_TAG"
+          

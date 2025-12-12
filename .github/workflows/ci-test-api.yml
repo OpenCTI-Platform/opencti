@@ -7,6 +7,10 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
+      image_tag:
+        description: "Image Tag"
+        type: string
+        default: ${{ github.sha }}
 
 jobs:
   run-opencti-integration-test:
@@ -36,7 +40,7 @@ jobs:
       run: |
          set -ex
          cd scripts/ci
-         export TAG=${{ github.sha }}
+         export TAG=${{ inputs.image_tag }}
          docker network create runner-docker-network
          docker compose --profile "*" up -d
 
@@ -146,7 +150,7 @@ jobs:
       run: |
          set -ex
          cd scripts/ci
-         export TAG=${{ github.sha }}
+         export TAG=${{ inputs.image_tag }}
          docker network create runner-docker-network
          docker compose --profile "backend" --profile ci-test-api up -d
 
@@ -159,7 +163,7 @@ jobs:
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
-          filigran/platform:${{ github.sha }} \
+          filigran/platform:${{ inputs.image_tag }} \
           sh -c 'NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
         '
 
