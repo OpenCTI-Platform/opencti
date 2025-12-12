@@ -38,7 +38,7 @@ import { ForbiddenAccess, FunctionalError, ResourceNotFoundError, UnsupportedErr
 import { ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI, ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../modules/organization/organization-types';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ID_INFERRED, ID_INTERNAL, IDS_ATTRIBUTES } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ID_INFERRED, ID_INTERNAL } from '../../schema/general';
 import { addFilter } from './filtering-utils';
 import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
 import { getPirWithAccessCheck } from '../../modules/pir/pir-checkPirAccess';
@@ -53,6 +53,7 @@ import { uniqAsyncMap } from '../data-processing';
 import { ENTITY_TYPE_PIR } from '../../modules/pir/pir-types';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
+import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 
 export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter) => {
   const { key: filterKey } = filter;

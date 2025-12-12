@@ -73,7 +73,6 @@ import {
   ID_INFERRED,
   ID_INTERNAL,
   ID_STANDARD,
-  IDS_ATTRIBUTES,
   IDS_STIX,
   isAbstract,
   REL_INDEX_PREFIX,
@@ -193,6 +192,7 @@ import type {
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
 import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
+import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
