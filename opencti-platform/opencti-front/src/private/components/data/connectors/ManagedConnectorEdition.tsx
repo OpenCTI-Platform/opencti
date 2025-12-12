@@ -29,6 +29,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from '../IngestionCatalog/utils/JsonFormVerticalLayout';
+import JsonFormTimestampRenderer, { jsonFormTimestampTester } from '../IngestionCatalog/utils/JsonTimestampRenderer';
 
 type ManagerContractProperty = [string, IngestionTypedProperty];
 
@@ -57,6 +58,7 @@ const customRenderers = [
   { tester: jsonFormVerticalLayoutTester, renderer: JsonFormVerticalLayout },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
+  { tester: jsonFormTimestampTester, renderer: JsonFormTimestampRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
 ];
 
