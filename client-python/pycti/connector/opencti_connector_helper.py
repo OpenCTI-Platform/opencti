@@ -5,6 +5,7 @@ import datetime
 import json
 import os
 import queue
+import re
 import sched
 import signal
 import ssl
@@ -101,6 +102,51 @@ def get_config_variable(
         return default
 
     return result
+
+
+def normalize_email_prefix(email: str) -> str:
+    """
+    Normalize the prefix (local part) of an email address by replacing
+    invalid characters with hyphens.
+
+    Valid characters in email prefix: a-z, A-Z, 0-9, and special chars: . _ + -
+    All other characters are replaced with '-'
+
+    Args:
+        email: Email address to normalize
+
+    Returns:
+        Normalized email address
+
+    Examples:
+        >>> normalize_email_prefix("john.doe@example.com")
+        'john.doe@example.com'
+        >>> normalize_email_prefix("john@doe@example.com")
+        'john-doe@example.com'
+        >>> normalize_email_prefix("user!name#test@example.com")
+        'user-name-test@example.com'
+    """
+    if "@" not in email:
+        raise ValueError("Invalid email: missing '@' symbol")
+
+    # Split email into prefix and domain
+    parts = email.split("@")
+    if len(parts) != 2:
+        # Multiple @ signs - treat first @ as the separator
+        prefix = parts[0]
+        domain = "@".join(parts[1:])
+    else:
+        prefix, domain = parts
+
+    # Replace invalid characters with hyphen
+    # Valid chars: alphanumeric, dot, underscore, plus, hyphen
+    normalized_prefix = re.sub(r"[^a-zA-Z0-9._+-]", "-", prefix)
+
+    # Optional: Remove consecutive hyphens and leading/trailing hyphens
+    normalized_prefix = re.sub(r"-+", "-", normalized_prefix)
+    normalized_prefix = normalized_prefix.strip("-")
+
+    return f"{normalized_prefix}@{domain}"
 
 
 def is_memory_certificate(certificate):
@@ -1038,6 +1084,19 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.connect_id = get_config_variable(
             "CONNECTOR_ID", ["connector", "id"], config
         )
+        self.connect_auto_create_service_account = get_config_variable(
+            "CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT",
+            ["connector", "auto_create_service_account"],
+            config,
+            default=False,
+        )
+        self.connect_auto_create_service_account_confidence_level = get_config_variable(
+            "CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL",
+            ["connector", "auto_create_service_account_confidence_level"],
+            config,
+            default=50,
+            isNumber=True,
+        )
         self.listen_protocol = get_config_variable(
             "CONNECTOR_LISTEN_PROTOCOL",
             ["connector", "listen_protocol"],
@@ -1213,6 +1272,54 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # Initialize ConnectorInfo instance
         self.connector_info = ConnectorInfo()
         # Initialize configuration
+
+        # If auto create service account
+        if self.connect_auto_create_service_account:
+            temp_api = OpenCTIApiClient(
+                self.opencti_url,
+                self.opencti_token,
+                self.log_level,
+                self.opencti_ssl_verify,
+                json_logging=self.opencti_json_logging,
+                custom_headers=self.opencti_custom_headers,
+                bundle_send_to_queue=self.bundle_send_to_queue,
+            )
+            # Resolve connectors group
+            groups = temp_api.group.list(
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "name", "values": ["Connectors"]}],
+                    "filterGroups": [],
+                }
+            )
+            if len(groups) > 0:
+                user_email = normalize_email_prefix(
+                    self.connect_name.lower() + "@connector.octi.filigran.io"
+                )
+                # Resolve user
+                user = temp_api.user.read(
+                    filters={
+                        "mode": "and",
+                        "filters": [{"key": "user_email", "values": [user_email]}],
+                        "filterGroups": [],
+                    },
+                    include_token=True,
+                )
+                if user is None:
+                    user = temp_api.user.create(
+                        name="[C] " + self.connect_name,
+                        user_email=user_email,
+                        user_confidence_level={
+                            "max_confidence": self.connect_auto_create_service_account_confidence_level,
+                            "overrides": [],
+                        },
+                        groups=[groups[0]["id"]],
+                        include_token=True,
+                        user_service_account=True,
+                    )
+                if user is not None:
+                    self.opencti_token = user["api_token"]
+
         # - Classic API that will be directly attached to the connector rights
         self.api = OpenCTIApiClient(
             self.opencti_url,
