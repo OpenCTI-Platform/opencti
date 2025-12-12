@@ -224,7 +224,7 @@ steps:
       - node script/verify-translation.js
   
   - name: client-test-39
-    image: python:3.9
+    image: python:3.14
     environment:
       OPENCTI_API_URL: http://opencti-pycti-start:4600
       OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -238,7 +238,7 @@ steps:
       - dependencies-checkout
 
   - name: client-test-310
-    image: python:3.10
+    image: python:3.14
     environment:
       OPENCTI_API_URL: http://opencti-pycti-start:4600
       OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -252,7 +252,7 @@ steps:
       - client-test-39
 
   - name: client-test-311
-    image: python:3.11
+    image: python:3.14
     environment:
       OPENCTI_API_URL: http://opencti-pycti-start:4600
       OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -266,7 +266,7 @@ steps:
       - client-test-310
 
   - name: client-test-312
-    image: python:3.12
+    image: python:3.14
     environment:
       OPENCTI_API_URL: http://opencti-pycti-start:4600
       OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -282,7 +282,7 @@ steps:
   # always run the examples last since they don't clean up
   # ---------> already done in Github Actions
   - name: pycti-example-tests
-    image: python:3.12
+    image: python:3.14
     environment:
       OPENCTI_API_URL: http://opencti-pycti-start:4600
       OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
