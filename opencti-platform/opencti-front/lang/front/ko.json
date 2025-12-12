@@ -1551,7 +1551,6 @@
   "entity_Stix-Meta-Objects": "메타 엔터티",
   "entity_stix-sighting-relationship": "목격",
   "entity_StixFile": "파일",
-  "entity_Stixfile": "파일",
   "entity_StreamCollection": "라이브 스트림",
   "entity_Synchronizer": "OpenCTI 스트림",
   "entity_System": "시스템",

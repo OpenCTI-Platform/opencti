@@ -38,7 +38,13 @@ const PlaybookFlowFieldArray = ({
   multiple = false,
 }: PlaybookFlowFieldArrayProps) => {
   const { translateEntityType } = useEntityTranslation();
-  const fieldOptions = options.map(o => o.const);
+  const fieldOptions = [...options]
+    .sort((a, b) =>
+      translateEntityType(a?.title ?? '').localeCompare(
+        translateEntityType(b?.title ?? '')
+      )
+    )
+    .map(o => o.const);
 
   const findOption = (value: string) => {
     return options.find(o => o.const === value);
@@ -64,7 +70,7 @@ const PlaybookFlowFieldArray = ({
           <Tooltip
             {...props}
             key={option.const}
-            title={option.title}
+            title={translateEntityType(option.title)}
             placement="bottom-start"
           >
             <MenuItem value={option.const}>

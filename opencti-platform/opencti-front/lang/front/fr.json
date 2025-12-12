@@ -1551,7 +1551,6 @@
   "entity_Stix-Meta-Objects": "Meta entités",
   "entity_stix-sighting-relationship": "Détections",
   "entity_StixFile": "Fichier",
-  "entity_Stixfile": "Fichier",
   "entity_StreamCollection": "Flux en direct",
   "entity_Synchronizer": "Flux OpenCTI",
   "entity_System": "Système",
