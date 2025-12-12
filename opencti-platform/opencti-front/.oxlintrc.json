@@ -101,6 +101,15 @@
     "no-useless-catch": "error",
     "no-useless-escape": "error",
     "no-with": "error",
+    "sort-keys": "off",
+    "sort-imports": "off",
+    "id-length": [
+      "warn",
+      {
+        "min": 2,
+        "exceptions": ["i", "_", "x", "y", "z"]
+      }
+    ],
     "require-yield": "error",
     "use-isnan": "error",
     "valid-typeof": "error",
@@ -151,7 +160,6 @@
     "typescript/consistent-type-definitions":"off",
     "consistent-type-import": "off",
     "no-ternary": "off",
-    "sort-keys": "off",
     "no-unassigned-import": [
       "warn",
       {
@@ -161,7 +169,9 @@
     "no-const-enums": "off",
     "only-export-components": "off",
     "no-async-await": "off",
+    "oxc/no-rest-spread-properties": "off",
     "import/no-named-export": "off",
+    "no-magic-numbers": "off",
     "no-undefined": "off",
     "no-rest-spread-properties": "off",
     "no-optional-chaining": "off",

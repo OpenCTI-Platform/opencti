@@ -67,6 +67,7 @@
     "no-invalid-regexp": "error",
     "no-irregular-whitespace": "error",
     "no-loss-of-precision": "error",
+    "no-magic-numbers": "off",
     "no-new-native-nonconstructor": "error",
     "no-nonoctal-decimal-escape": "error",
     "no-obj-calls": "error",
@@ -91,7 +92,17 @@
     "no-useless-catch": "error",
     "no-useless-escape": "error",
     "no-with": "error",
+    "sort-keys": "off",
+    "sort-imports": "off",
+    "id-length": [
+      "warn",
+      {
+        "min": 2,
+        "exceptions": ["i", "_", "x", "y", "z"]
+      }
+    ],
     "oxc/no-async-await": "off",
+    "oxc/no-rest-spread-properties": "off",
     "require-yield": "error",
     "use-isnan": "error",
     "valid-typeof": "error",
@@ -114,6 +125,7 @@
     "@typescript-eslint/prefer-as-const": "error",
     "@typescript-eslint/prefer-namespace-keyword": "error",
     "@typescript-eslint/triple-slash-reference": "error",
+    "import/max-dependencies": "off"
   },
   "overrides": [
     {
@@ -180,8 +192,6 @@
     {
       "files": ["*.json", "*.mjs"],
       "rules": {
-        "sort-keys": "off",
-        "sort-imports": "off",
         "import/no-default-export ": "off"
       }
     }
