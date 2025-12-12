@@ -9,7 +9,7 @@
  *
  * If there is some missing entries, you can check txt files in test-result folder.
  */
-import { VOCABULARY_NUMBERS } from '../04-sync/sync-utils';
+import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 3;
