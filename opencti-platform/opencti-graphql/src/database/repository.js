@@ -24,7 +24,15 @@ export const completeConnector = (connector) => {
     const completed = { ...connector };
     completed.title = connector.title ? connector.title : connector.name;
     completed.is_managed = isNotEmptyField(connector.catalog_id);
-    completed.connector_scope = connector.connector_scope ? connector.connector_scope.split(',') : [];
+
+    if (Array.isArray(connector.connector_scope)) {
+      completed.connector_scope = connector.connector_scope;
+    } else if (connector.connector_scope) {
+      completed.connector_scope = connector.connector_scope.split(',');
+    } else {
+      completed.connector_scope = [];
+    }
+
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
     completed.active = connector.built_in ? (connector.active ?? true) : (sinceNowInMinutes(connector.updated_at) < 5);
     return completed;
@@ -41,6 +49,7 @@ export const connector = async (context, user, id) => {
     const conn = await builtInConnector(context, user, id);
     return completeConnector(conn);
   }
+
   return element;
 };
 
