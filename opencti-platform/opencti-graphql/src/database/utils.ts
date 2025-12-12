@@ -265,7 +265,29 @@ export const buildPaginationFromEdges = <T>(
 ): BasicConnection<T> => {
   // Because of stateless approach its difficult to know if its finish
   // this test could lead to an extra round trip sometimes
-  const hasNextPage = (edges.length + filteredCount) === limit;
+  //
+  // Previous implementation was relying only on (edges.length + filteredCount) === limit
+  // which can incorrectly report no next page when a whole batch of hits is
+  // filtered out, even if more data exists after the current cursor.
+  let hasNextPage = false;
+  if (limit && limit > 0) {
+    const pageSize = edges.length + filteredCount;
+    if (pageSize >= limit) {
+      // We received at least the requested page size (including filtered out hits),
+      // so it is safe to assume there might be more data.
+      hasNextPage = true;
+    } else if (pageSize < limit
+      && filteredCount > 0
+      && globalCount > pageSize
+      && searchAfter !== undefined
+      && searchAfter !== null) {
+      // We received fewer usable edges than the requested limit, but some hits
+      // were filtered out and the global count indicates there are still more
+      // results in the index. In this situation, we allow another round-trip
+      // so that subsequent pages can surface remaining matching entities.
+      hasNextPage = true;
+    }
+  }
   // For same reason its difficult to know if a previous page exists.
   // Considering for now that if user specific an offset, it should exists a previous page.
   const hasPreviousPage = searchAfter !== undefined && searchAfter !== null;
