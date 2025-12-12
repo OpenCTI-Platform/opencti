@@ -27,7 +27,7 @@ jobs:
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Set up Python environment for flake8 lint
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
