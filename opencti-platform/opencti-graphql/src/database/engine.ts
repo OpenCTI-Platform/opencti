@@ -173,7 +173,7 @@ import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../sc
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
-import { asyncFilter, asyncMap } from '../utils/data-processing';
+import { asyncMap } from '../utils/data-processing';
 import { doYield } from '../utils/eventloop-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -191,7 +191,7 @@ import type {
   StoreRelation
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
-import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
+import { completeSpecialFilterKeys, type TaggedFilter, type TaggedFilterGroup } from '../utils/filtering/filtering-completeSpecialFilterKeys';
 import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
 
 const ELK_ENGINE = 'elk';
@@ -3724,13 +3724,13 @@ const buildRegardingOfFilter = async <T extends BasicStoreBase> (
     }
     let relationshipIndices = READ_RELATIONSHIPS_INDICES;
     if (inferredParameterValues.length > 0) {
-        if (inferredParameterValues.includes('true')) {
-            relationshipIndices = [READ_INDEX_INFERRED_RELATIONSHIPS];
-        } else if (inferredParameterValues.includes('false')) {
-            relationshipIndices = READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
-        };
-    };
-    const relationships = await elList<BasicStoreRelation>(context, user, READ_RELATIONSHIPS_INDICES, paginateArgs);
+      if (inferredParameterValues.includes('true')) {
+        relationshipIndices = [READ_INDEX_INFERRED_RELATIONSHIPS];
+      } else if (inferredParameterValues.includes('false')) {
+        relationshipIndices = READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
+      }
+    }
+    const relationships = await elList<BasicStoreRelation>(context, user, relationshipIndices, paginateArgs);
     // compute side ids
     const addTypeSide = (sideId: string, sideType: string) => {
       targetValidatedIds.add(sideId);

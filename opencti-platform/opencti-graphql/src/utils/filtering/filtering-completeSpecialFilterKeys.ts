@@ -681,8 +681,8 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
 
   return { newFilterGroup };
 };
-type TaggedFilter = Filter & { postFilteringTag?: string };
-type TaggedFilterGroup = {
+export type TaggedFilter = Filter & { postFilteringTag?: string };
+export type TaggedFilterGroup = {
   mode: FilterMode,
   filters: TaggedFilter[],
   filterGroups: TaggedFilterGroup[]
