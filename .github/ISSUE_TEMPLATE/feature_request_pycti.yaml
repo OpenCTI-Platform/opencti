@@ -1,0 +1,47 @@
+---
+name: Client Python feature request
+description: Request a new feature for the Client Python (Pycti) package.
+title: "[FEATURE] <short summary>"
+labels:
+  - needs triage
+  - client-python
+assignees: []
+body:
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: "Describe the use case for which you need a solution."
+      placeholder: "Explain the scenario or need driving this feature request."
+
+  - type: textarea
+    id: current-workaround
+    attributes:
+      label: Current Workaround
+      description: "How are you currently solving or working around this limitation?"
+      placeholder: "Describe your current workaround, if any."
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: "Describe the solution you would like OpenCTI to provide."
+      placeholder: "Explain the ideal behavior or implementation."
+
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Additional Information
+      description: "Add any additional information, logs, screenshots, or videos. You may drag & drop files here."
+      placeholder: "Include screenshots, examples, references, etc."
+
+  - type: dropdown
+    id: willing-to-submit-pr
+    attributes:
+      label: If the feature request is approved, would you be willing to submit a PR?
+      options:
+        - "Yes"
+        - "No"
+      description: "Let us know whether you would be willing to contribute a PR. Assistance can be provided if needed."
+
+---
