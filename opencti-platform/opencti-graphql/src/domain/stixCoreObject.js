@@ -239,7 +239,7 @@ export const batchInternalRels = async (context, user, elements) => {
   const relTypes = new Set();
   for (let index = 0; index < elements.length; index += 1) {
     const { element, definition } = elements[index];
-    if (isNotEmptyField(element[definition.databaseName])) {
+    if (isNotEmptyField(element[definition?.databaseName])) {
       const ids = Array.isArray(element[definition.databaseName]) ? element[definition.databaseName] : [element[definition.databaseName]];
       ids.filter((id) => isNotEmptyField(id)).forEach(relIds.add, relIds);
       definition.toTypes.forEach(relTypes.add, relTypes);
