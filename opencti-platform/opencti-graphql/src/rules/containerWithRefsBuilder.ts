@@ -16,10 +16,11 @@ import type { RelationCreation, UpdateEvent } from '../types/event';
 import { READ_DATA_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import type { AuthContext } from '../types/user';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
-import { buildStixUpdateEvent, publishStixToStream } from '../database/redis';
+import { publishStixToStream } from '../database/stream/stream-handler';
 import { INPUT_DOMAIN_TO, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { asyncFilter } from '../utils/data-processing';
+import { buildStixUpdateEvent } from '../database/stream/stream-utils';
 
 const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: string, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;

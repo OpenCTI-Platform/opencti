@@ -3,7 +3,7 @@ import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as cache from '../../../../src/database/cache';
 import * as utils from '../../../../src/utils/access';
 import * as playbookUtils from '../../../../src/modules/playbook/playbook-utils';
-import * as redis from '../../../../src/database/redis';
+import * as streamHandler from '../../../../src/database/stream/stream-handler';
 import * as notificationManager from '../../../../src/manager/notificationManager';
 import * as schemaUtils from '../../../../src/schema/schemaUtils';
 import * as generateMessage from '../../../../src/database/generate-message';
@@ -48,7 +48,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
     vi.spyOn(schemaUtils, 'convertStixToInternalTypes').mockReturnValue('Indicator');
     vi.spyOn(generateMessage, 'generateCreateMessage').mockReturnValue('generated create message');
     vi.spyOn(generateMessage, 'generateDeleteMessage').mockReturnValue('generated delete message');
-    vi.spyOn(redis, 'storeNotificationEvent').mockResolvedValue(undefined);
+    vi.spyOn(streamHandler, 'storeNotificationEvent').mockResolvedValue(undefined);
     vi.spyOn(entityRepresentative, 'extractEntityRepresentativeName').mockReturnValue('name');
   });
 
@@ -82,7 +82,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         event: mockEventPirDelete
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
-      expect(redis.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
+      expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
       expect(result).toEqual({ output_port: undefined, bundle: mockBundle });
     });
 
@@ -114,7 +114,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         event: mockEventUpdate
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
-      expect(redis.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
+      expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
       expect(result).toEqual({ output_port: undefined, bundle: mockBundle });
     });
 
@@ -147,7 +147,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         event: mockEventCreate
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
-      expect(redis.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
+      expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
     });
 
     it('should call storeNotificationEvent with generetad delete message if event type is deleted and not in pir', async () => {
@@ -179,7 +179,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         event: mockEventDelete
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
-      expect(redis.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
+      expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
     });
 
     it('should call storeNotificationEvent with generetad message if event in undefined', async () => {
@@ -207,7 +207,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         event: undefined
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
-      expect(redis.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
+      expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
     });
   });
 });

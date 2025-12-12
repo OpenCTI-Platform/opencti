@@ -16,7 +16,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment/moment';
-import { createStreamProcessor, type StreamProcessor } from '../../database/redis';
+import { createStreamProcessor } from '../../database/stream/stream-handler';
+import { type StreamProcessor } from '../../database/stream/stream-utils';
 import { lockResources } from '../../lock/master-lock';
 import conf, { booleanConf, logApp } from '../../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../../config/errors';
@@ -199,7 +200,7 @@ const initPlaybookManager = () => {
       lock = await lockResources([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running playbook manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Playbook manager', playbookStreamHandler, { withInternal: true });
+      streamProcessor = createStreamProcessor('Playbook manager', playbookStreamHandler, { withInternal: true });
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
