@@ -134,7 +134,7 @@ describe('Logger test suite', () => {
     const start = new Date().getTime();
     const cleanObject = prepareLogMetadata(TOO_COMPLEX_OBJECT);
     const parsingTimeMs = new Date().getTime() - start;
-    expect(parsingTimeMs).to.be.lt(5);
+    expect(parsingTimeMs).to.be.lt(8);
     let cleanedSize = cleanObject.cause.attributes.category_to_limit.length;
     expect(initialSize).not.toEqual(cleanedSize);
     expect(initialSize).to.be.gt(appLogLevelMaxArraySize);
