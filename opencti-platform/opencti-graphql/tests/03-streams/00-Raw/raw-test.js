@@ -22,10 +22,10 @@ describe('Raw streams tests', () => {
   it(
     'Should stream correctly formatted',
     async () => {
-      const startTime = Date.getTime();
+      const startTime = new Date().getTime();
       // Read all events from the beginning.
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
-      logApp.info(`[TEST][TIME] time to fetch event: ${Date.getTime() - startTime}`);
+      logApp.info(`[TEST][TIME] time to fetch event: ${new Date().getTime() - startTime}`);
 
       writeTestDataToFile(JSON.stringify(events), 'raw-test-all-event.json');
 
@@ -42,7 +42,7 @@ describe('Raw streams tests', () => {
       const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       dumpEventByTypeToFile('delete', deleteEventsByTypes);
 
-      logApp.info(`[TEST][TIME] time to dump event in files: ${Date.getTime() - startTime}`);
+      logApp.info(`[TEST][TIME] time to dump event in files: ${new Date().getTime() - startTime}`);
 
       // 01 - CHECK CREATE EVENTS.
       const allExpectedCounterKeys = Object.keys(testCreatedCounter);
@@ -60,7 +60,7 @@ describe('Raw streams tests', () => {
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
       }
-      logApp.info(`[TEST][TIME] time to check created events: ${Date.getTime() - startTime}`);
+      logApp.info(`[TEST][TIME] time to check created events: ${new Date().getTime() - startTime}`);
       // 02 - CHECK UPDATE EVENTS.
       const allUpdatedCounterKeys = Object.keys(testUpdatedCounter);
       for (let i = 0; i < allUpdatedCounterKeys.length; i += 1) {
@@ -82,7 +82,7 @@ describe('Raw streams tests', () => {
         expect(patch).toBeDefined();
         expect(reverse_patch).toBeDefined();
       }
-      logApp.info(`[TEST][TIME] time to check updated events: ${Date.getTime() - startTime}`);
+      logApp.info(`[TEST][TIME] time to check updated events: ${new Date().getTime() - startTime}`);
       // 03 - CHECK DELETE EVENTS
       const allDeletedCounterKeys = Object.keys(testDeletedCounter);
       for (let i = 0; i < allDeletedCounterKeys.length; i += 1) {
@@ -101,7 +101,7 @@ describe('Raw streams tests', () => {
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
       }
-      logApp.info(`[TEST][TIME] time to check deleted events: ${Date.getTime() - startTime}`);
+      logApp.info(`[TEST][TIME] time to check deleted events: ${new Date().getTime() - startTime}`);
       // 04 - CHECK MERGE EVENTS
       const mergeEvents = events.filter((e) => e.type === EVENT_TYPE_MERGE);
       const mergeEventsByTypes = R.groupBy((e) => e.data.data.type, mergeEvents);
@@ -129,7 +129,7 @@ describe('Raw streams tests', () => {
           checkStreamData(EVENT_TYPE_MERGE, source);
         }
       }
-      logApp.info(`[TEST][TIME] time to check merged events: ${Date.getTime() - startTime}`);
+      logApp.info(`[TEST][TIME] time to check merged events: ${new Date().getTime() - startTime}`);
       expect(events.length).toBe(RAW_EVENTS_SIZE);
     },
     FIVE_MINUTES
