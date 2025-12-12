@@ -136,9 +136,9 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
     const keys = isEmptyField(types)
       ? buildRefRelationKey('*', '*')
       : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
-    regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids });
+    regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids, postFilteringTag });
   }
-  return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [], postFilteringTag } };
+  return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [] } };
 };
 
 export const adaptFilterToIdsFilterKey = (filter: Filter) => {
