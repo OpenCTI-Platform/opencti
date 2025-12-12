@@ -6,7 +6,7 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import { buildCreateEvent, createStreamProcessor, EVENT_CURRENT_VERSION, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
+import { createEntity, createInferredRelation, createInferredEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
@@ -15,7 +15,7 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { internalLoadById, fullRelationsList } from '../database/middleware-loader';
-import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
+import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction, RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
@@ -159,7 +159,14 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>, rules: Ar
   await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, opts);
 };
 
-export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, events: Array<DataEvent>, forRules: Array<RuleRuntime> = []) => {
+export const rulesApplyHandler = async (
+  context: AuthContext,
+  user: AuthUser,
+  events: Array<DataEvent>,
+  forRules: Array<RuleRuntime> = [],
+  createInferredEntityCallback: CreateInferredEntityCallbackFunction = createInferredEntity,
+  createInferredRelationCallback: CreateInferredRelationCallbackFunction = createInferredRelation
+) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
@@ -174,7 +181,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
         const mergeEvent = event as MergeEvent;
         const mergeEvents = await ruleMergeHandler(mergeEvent);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        await rulesApplyHandler(context, user, mergeEvents);
+        await rulesApplyHandler(context, user, mergeEvents, forRules, createInferredEntityCallback, createInferredRelationCallback);
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
@@ -210,7 +217,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           const rule = rules[ruleIndex];
           const isImpactedElement = isMatchRuleFilters(rule, data);
           if (isImpactedElement) {
-            await rule.insert(data);
+            await rule.insert(data, createInferredEntityCallback, createInferredRelationCallback);
           }
         }
       }
@@ -341,22 +348,36 @@ const initRuleManager = () => {
 };
 const ruleEngine = initRuleManager();
 
-export const executeRuleApply = async (context: AuthContext, user: AuthUser, rule: RuleRuntime, id: string) => {
+export const executeRuleApply = async (
+  context: AuthContext,
+  user: AuthUser,
+  rule: RuleRuntime,
+  id: string,
+  createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+  createInferredRelationCallback: CreateInferredRelationCallbackFunction
+) => {
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, id);
   if (!instance) {
     throw FunctionalError('Cant find element to scan', { id });
   }
   const event = buildCreateEvent(user, instance, '-');
-  await rulesApplyHandler(context, user, [event], [rule]);
+  await rulesApplyHandler(context, user, [event], [rule], createInferredEntityCallback, createInferredRelationCallback);
 };
 
-export const ruleApply = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
+export const ruleApply = async (
+  context: AuthContext,
+  user: AuthUser,
+  elementId: string,
+  ruleId: string,
+  createInferredEntityCallback: CreateInferredEntityCallbackFunction = createInferredEntity,
+  createInferredRelationCallback: CreateInferredRelationCallbackFunction = createInferredRelation,
+) => {
   const rule = await getRule(context, user, ruleId) as RuleRuntime;
   if (!rule) {
     throw FunctionalError('Cant find rule to scan', { id: ruleId });
   }
-  return executeRuleApply(context, user, rule, elementId);
+  return executeRuleApply(context, user, rule, elementId, createInferredEntityCallback, createInferredRelationCallback);
 };
 
 export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
@@ -403,7 +424,9 @@ export const executeRuleElementRescan = async (context: AuthContext, user: AuthU
 export const rulesRescan = async (context: AuthContext, user: AuthUser, elementId: string) => {
   const elem = await internalLoadById(context, user, elementId, { baseData: true });
   if (elem) {
-    await executeRuleElementRescan(context, user, elem);
+    executeRuleElementRescan(context, user, elem).catch((e) => {
+      logApp.warn('RULE RESCAN - Unexpected error during rule rescan', { elementId, cause: e });
+    });
     return true;
   }
   return false;
