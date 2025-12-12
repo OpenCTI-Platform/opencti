@@ -55,8 +55,8 @@ import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 
-export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter) => {
-  const { key: filterKey } = filter;
+export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, user: AuthUser, filter: TaggedFilter) => {
+  const { key: filterKey, postFilteringTag } = filter;
   const regardingFilters = [];
   const idParameter = filter.values.find((i) => i.key === ID_SUBFILTER);
   const typeParameter = filter.values.find((i) => i.key === RELATION_TYPE_SUBFILTER);
@@ -130,7 +130,7 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
       ? buildRefRelationKey('*', '*')
       : types.map((t: string) => buildRefRelationKey(t, '*'));
     keys.forEach((relKey: string) => {
-      regardingFilters.push({ key: [relKey], operator: filter.operator, values: ['EXISTS'] });
+      regardingFilters.push({ key: [relKey], operator: filter.operator, values: ['EXISTS'], postFilteringTag });
     });
   } else {
     const keys = isEmptyField(types)
@@ -138,7 +138,7 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
       : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
     regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids });
   }
-  return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [] } };
+  return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [], postFilteringTag } };
 };
 
 export const adaptFilterToIdsFilterKey = (filter: Filter) => {
@@ -681,6 +681,12 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
 
   return { newFilterGroup };
 };
+type TaggedFilter = Filter & { postFilteringTag?: string };
+type TaggedFilterGroup = {
+  mode: FilterMode,
+  filters: TaggedFilter[],
+  filterGroups: TaggedFilterGroup[]
+};
 /**
  * Complete the filter if needed for several special filter keys
  * Some keys need this preprocessing before building the query:
@@ -694,11 +700,11 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
 export const completeSpecialFilterKeys = async (
   context: AuthContext,
   user: AuthUser,
-  inputFilters: FilterGroup
-): Promise<FilterGroup> => {
+  inputFilters: TaggedFilterGroup
+): Promise<TaggedFilterGroup> => {
   const { filters = [], filterGroups = [] } = inputFilters;
   const finalFilters = [];
-  const finalFilterGroups: FilterGroup[] = [];
+  const finalFilterGroups: TaggedFilterGroup[] = [];
   for (let index = 0; index < filterGroups.length; index += 1) {
     const filterGroup = filterGroups[index];
     const newFilterGroup = await completeSpecialFilterKeys(context, user, filterGroup);

@@ -139,7 +139,7 @@ import {
   RELATION_TYPE_SUBFILTER,
   TYPE_FILTER,
 } from '../utils/filtering/filtering-constants';
-import { type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
+import {type Filter, type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
 import {
   type AttributeDefinition,
   authorizedMembers,
@@ -2993,12 +2993,6 @@ const buildPostFiltersTagMaps = (
     }
   }
   return result;
-};
-type TaggedFilter = Filter & { postFilteringTag?: string };
-type TaggedFilterGroup = {
-  mode: FilterMode,
-  filters: TaggedFilter[],
-  filterGroups: TaggedFilterGroup[]
 };
 const applyTagToFilters = (
   filters: FilterGroup | undefined | null,
