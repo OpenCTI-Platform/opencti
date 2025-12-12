@@ -30,6 +30,7 @@ jobs:
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
           sh -c 'set -ex;
+             exit 1
              echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
              apk add build-base git libffi-dev cargo
              pip3 install --upgrade setuptools
@@ -56,7 +57,6 @@ jobs:
              cp /home/workspace/opencti-platform/.yarnrc.yml .
              yarn install
              yarn verify-licenses
-             exit 1
             '
 
     - name: Generate license
