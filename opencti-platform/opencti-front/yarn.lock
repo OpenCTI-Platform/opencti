@@ -5,7 +5,7 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"3d-force-graph@npm:^1.73":
+"3d-force-graph@npm:^1.79":
   version: 1.79.0
   resolution: "3d-force-graph@npm:1.79.0"
   dependencies:
@@ -12585,7 +12585,7 @@ __metadata:
     react-dom: "npm:19.2.1"
     react-draggable: "npm:4.5.0"
     react-force-graph-2d: "npm:1.29.0"
-    react-force-graph-3d: "npm:1.24.4"
+    react-force-graph-3d: "npm:1.29.0"
     react-grid-layout: "npm:1.5.3"
     react-intl: "npm:7.1.14"
     react-leaflet: "npm:5.0.0"
@@ -13308,16 +13308,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-force-graph-3d@npm:1.24.4":
-  version: 1.24.4
-  resolution: "react-force-graph-3d@npm:1.24.4"
+"react-force-graph-3d@npm:1.29.0":
+  version: 1.29.0
+  resolution: "react-force-graph-3d@npm:1.29.0"
   dependencies:
-    3d-force-graph: "npm:^1.73"
+    3d-force-graph: "npm:^1.79"
     prop-types: "npm:15"
-    react-kapsule: "npm:2"
+    react-kapsule: "npm:^2.5"
   peerDependencies:
     react: "*"
-  checksum: 10c0/acd174a7c2904e75e38eea73b2bf83f4cfe46d774af66916e0c6e1f5fa8289f5014046553a12add98bdc8c01493d9bb09aba8ce44d416559610db228f7f70d25
+  checksum: 10c0/c6ba6828486da968325b78be50a6da3cea8c69ff34f647a1917e85014fc1b6233de5e5e966079bce514532452a7848ee5f6a99d4883313774b29d042be8c3a3b
   languageName: node
   linkType: hard
 
@@ -13388,7 +13388,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-kapsule@npm:2, react-kapsule@npm:^2.5":
+"react-kapsule@npm:^2.5":
   version: 2.5.7
   resolution: "react-kapsule@npm:2.5.7"
   dependencies:

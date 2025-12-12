@@ -98,7 +98,7 @@
     "react-dom": "19.2.1",
     "react-draggable": "4.5.0",
     "react-force-graph-2d": "1.29.0",
-    "react-force-graph-3d": "1.24.4",
+    "react-force-graph-3d": "1.29.0",
     "react-grid-layout": "1.5.3",
     "react-intl": "7.1.14",
     "react-leaflet": "5.0.0",
