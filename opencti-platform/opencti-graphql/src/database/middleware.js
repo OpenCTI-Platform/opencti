@@ -113,13 +113,14 @@ import {
 } from '../schema/general';
 import { isAnId, isValidDate } from '../schema/schemaUtils';
 import {
-  isStixRefRelationship,
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_GRANTED_TO,
-  RELATION_OBJECT,
-  RELATION_OBJECT_MARKING,
-  STIX_REF_RELATIONSHIP_TYPES
+isStixRefRelationship,
+objectOrganization,
+RELATION_CREATED_BY,
+RELATION_EXTERNAL_REFERENCE,
+RELATION_GRANTED_TO,
+RELATION_OBJECT,
+RELATION_OBJECT_MARKING,
+STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
@@ -241,6 +242,7 @@ import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
+import {publishUserAction} from '../listener/UserActionListener';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2506,6 +2508,20 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       } : undefined;
       const relatedRestrictions = extractObjectsRestrictionsFromInputs(updatedInputs, initial.entity_type);
       const { pir_ids } = extractObjectsPirsFromInputs(updatedInputs, initial.entity_type);
+      const isSecurityUpdate = () => {
+        return updatedInputs.some((input) => input.key === objectOrganization.name || input.key === authorizedMembers.name);
+      };
+      const securityUpdate = isSecurityUpdate();
+      if (securityUpdate) {
+        await publishUserAction({
+          user,
+          event_type: 'mutation',
+          event_scope: 'update',
+          event_access: 'administration',
+          message,
+          context_data: { id: updatedInstance.id, entity_type: updatedInstance.entity_type, input: updatedInputs }
+        });
+      }
       const event = await storeUpdateEvent(
         context,
         user,
@@ -2515,6 +2531,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         changes,
         {
           ...opts,
+          noHistory: securityUpdate,
           commit,
           related_restrictions: relatedRestrictions,
           pir_ids
