@@ -65,7 +65,7 @@ describe('Raw streams tests', () => {
       const allUpdatedCounterKeys = Object.keys(testUpdatedCounter);
       for (let i = 0; i < allUpdatedCounterKeys.length; i += 1) {
         const key = allUpdatedCounterKeys[i];
-        expect(createEventsByTypes[key], `Updated ${key} expected but missing from events`).toBeTruthy();
+        expect(updateEventsByTypes[key], `Updated ${key} expected but missing from events`).toBeTruthy();
         expect(
           updateEventsByTypes[key].length,
           `Updated ${key} count should be ${testUpdatedCounter[key]} but got ${updateEventsByTypes[key].length} ${JSON.stringify(updateEventsByTypes[key])}`
@@ -88,7 +88,7 @@ describe('Raw streams tests', () => {
       for (let i = 0; i < allDeletedCounterKeys.length; i += 1) {
         const key = allDeletedCounterKeys[i];
 
-        expect(createEventsByTypes[key], `Deleted ${key} expected but missing from events`).toBeTruthy();
+        expect(deleteEventsByTypes[key], `Deleted ${key} expected but missing from events`).toBeTruthy();
         expect(
           deleteEventsByTypes[key].length,
           `Deleted ${key} count should be ${testDeletedCounter[key]} but got ${deleteEventsByTypes[key].length}`
