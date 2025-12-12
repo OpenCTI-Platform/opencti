@@ -13,6 +13,7 @@ import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RU
 import { createInternalObject } from '../../../domain/internalObject';
 import { getEntitiesListFromCache } from '../../../database/cache';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
+import { convertTypeToStixType } from '../../../database/stix-2-1-converter';
 
 export type ResolvedDecayExclusionRule = Record<string, any>;
 
@@ -36,6 +37,7 @@ export const checkDecayExclusionRules = async (
 ): Promise<BasicStoreEntityDecayExclusionRule | null> => {
   const formattedIndicator = {
     ...resolvedIndicator,
+    type: convertTypeToStixType(resolvedIndicator.entity_type),
     object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map((marking: MarkingDefinition) => marking.standard_id),
     created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
     labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.value),
