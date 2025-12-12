@@ -91,15 +91,22 @@ const ThemeLight = (
       fontSize: 22,
       fontFamily: '"Geologica", sans-serif',
       color: text_color,
+      textTransform: 'lowercase',
+      '&::first-letter': {
+        textTransform: 'uppercase',
+      },
     },
     h2: {
       margin: '0 0 10px 0',
       padding: 0,
       fontWeight: 500,
       fontSize: 16,
-      textTransform: 'uppercase',
       fontFamily: '"Geologica", sans-serif',
       color: text_color,
+      textTransform: 'lowercase',
+      '&::first-letter': {
+        textTransform: 'uppercase',
+      },
     },
     h3: {
       margin: '0 0 10px 0',
@@ -108,33 +115,51 @@ const ThemeLight = (
       fontWeight: 400,
       fontSize: 13,
       fontFamily: '"Geologica", sans-serif',
+      textTransform: 'lowercase',
+      '&::first-letter': {
+        textTransform: 'uppercase',
+      },
     },
     h4: {
       height: 15,
       margin: '0 0 10px 0',
       padding: 0,
-      textTransform: 'uppercase',
       fontSize: 12,
       fontWeight: 500,
       color: text_color,
+      textTransform: 'lowercase',
+      '&::first-letter': {
+        textTransform: 'uppercase',
+      },
     },
     h5: {
       fontWeight: 400,
       fontSize: 13,
-      textTransform: 'uppercase',
       marginTop: -4,
       color: text_color,
+      textTransform: 'lowercase',
+      '&::first-letter': {
+        textTransform: 'uppercase',
+      },
     },
     h6: {
       fontWeight: 400,
       fontSize: 18,
       color: text_color,
       fontFamily: '"Geologica", sans-serif',
+      textTransform: 'lowercase',
+      '&::first-letter': {
+        textTransform: 'uppercase',
+      },
     },
     subtitle2: {
       fontWeight: 400,
       fontSize: 18,
       color: text_color,
+      textTransform: 'lowercase',
+      '&::first-letter': {
+        textTransform: 'uppercase',
+      },
     },
   },
   components: {
@@ -369,6 +394,17 @@ const ThemeLight = (
       styleOverrides: {
         root: {
           color: text_color,
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          textTransform: 'lowercase',
+          display: 'inline-block',
+          '&::first-letter': {
+            textTransform: 'uppercase',
+          },
         },
       },
     },
