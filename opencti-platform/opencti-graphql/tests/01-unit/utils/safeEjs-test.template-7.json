@@ -39,10 +39,4 @@
         }
     ],
    "dataString": <%-JSON.stringify(notification)%>
-   "dataStringWithArrayTest": <%- JSON.stringify(data, function(key, value) {
-        if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
-            return value;
-        }
-        return JSON.stringify(value, null, 2);
-        }, 2) %>
 }
