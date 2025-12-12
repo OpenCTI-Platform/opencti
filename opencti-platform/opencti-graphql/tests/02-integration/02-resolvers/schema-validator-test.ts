@@ -130,6 +130,21 @@ describe('Create and Update Validation', () => {
 
   it('should check mandatory attributes at update for standard users', async () => {
     await updateEntitySetting([{ name: 'description', mandatory: false }]);
+
+    const entitySettingUpdated = await queryAsAdmin({
+      query: gql`
+        query entitySettingsByTargetType($targetType: String!) {
+          entitySettingByType(targetType: $targetType) {
+            id
+              attributes_configuration
+          }
+        }
+      `,
+      variables: { targetType: ENTITY_TYPE_DATA_COMPONENT }
+    });
+
+    expect(entitySettingUpdated?.data?.entitySettingByType?.attributes_configuration).toBe('[{"name":"description","mandatory":false}]');
+
     await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: CREATE_DATA_COMPONENT_QUERY,
       variables: { input: { name: 'entity name', stix_id: dataComponentStixId } }
