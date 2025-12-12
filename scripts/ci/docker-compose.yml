@@ -15,7 +15,7 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms2G -Xmx2G"
+      - "ES_JAVA_OPTS=-Xms4G -Xmx4G"
     restart: unless-stopped
     ulimits:
       memlock:
