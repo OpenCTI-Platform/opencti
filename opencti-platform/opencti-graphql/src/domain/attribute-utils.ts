@@ -24,6 +24,8 @@ import {
   xOpenctiType,
 } from '../schema/attribute-definition';
 
+export const IDS_ATTRIBUTES = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
+
 export const INTERNAL_ATTRIBUTES = [
   // ID
   id.name,
