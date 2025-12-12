@@ -17,6 +17,10 @@ Welcome to the OpenCTI Documentation space. Here you will be able to find all do
 
 OpenCTI is an open source platform allowing organizations to manage their cyber threat intelligence knowledge and observables. It has been created in order to structure, store, organize and visualize technical and non-technical information about cyber threats.
 
+!!! info "Docker deployment of the full XTM suite (OpenCTI - OpenAEV - OpenGRC)"
+
+    If you're looking for information about the deployment of the full eXtended Threat Management (XTM) suite using Docker, please refer [to this repository and documentation](https://github.com/FiligranHQ/xtm-docker).
+
 ## Getting started
 
 <div class="grid cards" markdown>

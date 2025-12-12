@@ -2,6 +2,10 @@
 
 Before starting the installation, let's discover how OpenCTI is working, which dependencies are needed and what are the minimal requirements to deploy it in production.
 
+!!! info "Docker deployment of the full XTM suite (OpenCTI - OpenAEV - OpenGRC)"
+
+    If you're looking for information about the deployment of the full eXtended Threat Management (XTM) suite using Docker, please refer [to this repository and documentation](https://github.com/FiligranHQ/xtm-docker).
+
 ## Architecture
 
 The OpenCTI platform relies on several external databases and services in order to work.
