@@ -3802,6 +3802,8 @@
   "text/markdown": "текст/маркдаун",
   "text/plain": "текст/plain",
   "Textarea": "Textarea",
+  "Thank you!": "Спасибо!",
+  "Thank you for reaching out, we'll get back to you shortly.": "Спасибо за обращение, мы скоро вам ответим.",
   "The alias has been added": "Псевдоним был добавлен",
   "The alias has been removed": "Псевдоним был удален",
   "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.": "Количество результатов может отличаться в зависимости от данных/отношений, поскольку для этого виджета учитывается каждое появление предполагаемого отношения.",

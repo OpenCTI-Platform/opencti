@@ -3802,6 +3802,8 @@
   "text/markdown": "MD",
   "text/plain": "TXT",
   "Textarea": "Textarea",
+  "Thank you!": "Thank you!",
+  "Thank you for reaching out, we'll get back to you shortly.": "Thank you for reaching out, we'll get back to you shortly.",
   "The alias has been added": "The alias has been added",
   "The alias has been removed": "The alias has been removed",
   "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.": "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.",
