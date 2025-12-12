@@ -108,7 +108,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
     >
       <div className={classes.label} onClick={throttleSortColumn}>
         <Tooltip title={t_i18n(column.label)}>
-          <span>{t_i18n(column.label).toUpperCase()}</span>
+          <span>{t_i18n(column.label)}</span>
         </Tooltip>
         {sortBy && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
       </div>
