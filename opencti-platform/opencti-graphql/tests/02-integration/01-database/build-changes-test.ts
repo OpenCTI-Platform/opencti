@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {buildChanges} from '../../../src/database/middleware';
 import {ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE} from '../../../src/schema/stixDomainObject';
-import {ADMIN_USER, testContext} from '../../utils/testQuery';
+import {ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR, USER_SECURITY} from '../../utils/testQuery';
 import {findByType} from '../../../src/domain/status';
 
 describe('buildChanges standard behavior', async () => {
@@ -522,6 +522,17 @@ describe('buildChanges standard behavior', async () => {
     }];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Workflow status',previous:[statuses[0].name],new:[statuses[1].name]}]);
+  });
+  it('should build changes for creator add', async () => {
+    const securityId = await getUserIdByEmail(USER_SECURITY.email);
+    const editorId = await getUserIdByEmail(USER_EDITOR.email);
+    const inputs = [{
+      key:'creator_id',
+      previous:[securityId],
+      value:[securityId, editorId]
+    }];
+    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{field:'Creators',previous:['security@opencti.io'],new:['security@opencti.io','editor@opencti.io'],added:['editor@opencti.io'],removed:[]}]);
   });
 });
 

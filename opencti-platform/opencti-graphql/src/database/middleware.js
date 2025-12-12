@@ -2059,9 +2059,28 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
 
-const buildAttribute = (array) => {
-  return array.map((item) => (typeof item === 'object' ? (item && extractEntityRepresentativeName(item, 250)): item))
-  .filter((item) => item !== null && item !== undefined);
+const buildAttribute = async (context, user, key, array) => {
+  const results = await Promise.all(array.map(async (item) => {
+    if(!item){
+      return item;
+    }
+    if (typeof item === 'object') {
+      if(item?.entity_type !== undefined)
+      {
+        return extractEntityRepresentativeName(item, 250);
+      } else {
+        return item?.toString();
+      }
+    } else if (typeof item === 'string' && key === creatorsAttribute.name) {
+      const users = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_USER);
+      const creator = users.get(item);
+      if (creator) {
+        return extractEntityRepresentativeName(creator, 250);
+      }
+    }
+    return item;
+  }));
+  return results.filter((item) => item !== null && item !== undefined);
 };
 
 export const buildChanges = async (context, user, entityType, inputs) => {
@@ -2081,8 +2100,8 @@ export const buildChanges = async (context, user, entityType, inputs) => {
 
     const previousArrayFull = Array.isArray(previous) ? previous : [previous];
     const valueArrayFull = Array.isArray(value) ? value : [value];
-    const previousArray = buildAttribute(previousArrayFull);
-    const valueArray = buildAttribute(valueArrayFull);
+    const previousArray = await buildAttribute(context, user, key, previousArrayFull);
+    const valueArray = await buildAttribute(context, user,key, valueArrayFull);
 
     if (isMultiple) {
       let added  = [];
