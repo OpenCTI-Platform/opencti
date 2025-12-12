@@ -3006,7 +3006,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
     }
     if (!existingRelationship) {
       // We do not use default values on upsert.
-      resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
+      resolvedInput = fillDefaultValues(context, user, resolvedInput, entitySetting);
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, relationshipType, entitySetting, opts);
@@ -3233,7 +3233,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     existingEntities.push(...R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
     // region - Pre-Check
     if (existingEntities.length === 0) { // We do not use default values on upsert.
-      resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
+      resolvedInput = fillDefaultValues(context, user, resolvedInput, entitySetting);
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, type, entitySetting, opts);
