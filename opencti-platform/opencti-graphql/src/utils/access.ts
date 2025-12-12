@@ -7,8 +7,8 @@ import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
-import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
+import { buildPaginationFromEdges, extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
+import { type Creator, type FilterGroup, FilterMode, FilterOperator, type Participant } from '../generated/graphql';
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
@@ -20,10 +20,15 @@ import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import type { UpdateEvent } from '../types/event';
+import { fullEntitiesList, pageEntitiesConnection } from '../database/middleware-loader';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { addFilter, isFilterGroupNotEmpty } from './filtering/filtering-utils';
+import { MEMBERS_ENTITY_TYPES } from '../domain/user';
+import { ES_DEFAULT_PAGINATION } from '../database/engine';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { BasicStoreCommon } from '../types/store';
+import type { BasicConnection, BasicStoreCommon, BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
@@ -52,6 +57,7 @@ export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
+export const SETTINGS_SETCUSTOMIZATION = 'SETTINGS_SETCUSTOMIZATION';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 export const PIRAPI = 'PIRAPI';
 export const AUTOMATION = 'AUTOMATION';
@@ -589,7 +595,7 @@ export const isUserHasCapability = (user: AuthUser, capability: string): boolean
   const isInDraftContext = !!user.draft_context;
   const isIncludedInCapabilities = (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
   const isIncludedInDraftCapabilities = (user.capabilitiesInDraft || []).some((s) => s.name.includes(capability));
-  
+
   return isBypassUser(user) || isIncludedInCapabilities || (isInDraftContext && isIncludedInDraftCapabilities);
 };
 
@@ -876,7 +882,7 @@ export const validateUserAccessOperation = (user: AuthUser, element: any, operat
   if (draft && !hasUserAccessToOperation(user, draft, operation)) {
     return false;
   }
-  
+
   // 2. Internal objects management
   if (isInternalObject(element.entity_type) && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     return true;
@@ -1008,43 +1014,92 @@ interface ListArgs {
   [key: string]: any;
 }
 
-export const applyOrganizationRestriction = async (
+export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup) => {
+  return {
+    mode: FilterMode.And,
+    filters: [
+      {
+        key: ['regardingOf'],
+        operator: FilterOperator.Eq,
+        values: [
+          {
+            key: 'relationship_type',
+            values: ['participate-to'],
+          },
+          {
+            key: 'id',
+            values: ids,
+          },
+          {
+            key: 'is_inferred',
+            values: ['false'],
+          },
+        ],
+      },
+    ],
+    filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
+  };
+};
+
+export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity>(
   context: AuthContext,
   user: AuthUser,
-  args: ListArgs,
+  args: ListArgs = {},
+  isResultConnection = false,
 ) => {
-  const { filters: argsFilters } = args;
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
-
-  if (!userInPlatformOrg) {
-    const userOrgIds = (user.organizations || []).map((org) => org.id);
-    const membersFilters = {
-      key: ['participate-to'],
-      values: userOrgIds,
-      operator: 'eq',
-    };
-    const userTypeFilters = {
-      key: ['entity_type'],
-      values: [ENTITY_TYPE_USER],
-      operator: 'not_eq',
-    };
-    const userMembersFilter = {
-      mode: FilterMode.Or,
-      filters: [membersFilters, userTypeFilters],
-      filterGroups: [],
-    };
-    const filters = {
-      mode: FilterMode.And,
-      filters: [],
-      filterGroups: argsFilters ? [argsFilters, userMembersFilter] : [userMembersFilter],
-    };
-    return {
-      ...args,
-      filters,
-    };
+  const membersFetchFunction = isResultConnection ? pageEntitiesConnection : fullEntitiesList;
+  const { entityTypes = null, filters = undefined } = args;
+  if (entityTypes && entityTypes.some((t) => !MEMBERS_ENTITY_TYPES.includes(t))) {
+    throw FunctionalError('Members types can only be User, Organization and Group', { entityTypes });
   }
-  return args;
+  const types = entityTypes || MEMBERS_ENTITY_TYPES;
+  if (types.includes(ENTITY_TYPE_USER)) { // add organization restriction for users if necessary
+    const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
+    const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+    // case 1. no orga restriction on user visibility
+    if (userCanViewAllUsers || !platformSettings.platform_organization || platformSettings.view_all_users) {
+      return membersFetchFunction(context, user, types, args);
+    }
+
+    // case 2. add orga restriction on user visibility
+    // fetch organizations directly linked to the user to construct the filter
+    const userDirectOrganizations = await pageEntitiesConnection(
+      context,
+      user,
+      [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+      { filters: buildRegardingOfDirectParticipateToFilters([user.id], undefined) },
+    );
+    const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
+    const userDirectOrganizationsFilters = buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, filters);
+    // list the users that are in the user direct organizations
+    const usersWithinUserOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userDirectOrganizationsFilters });
+    // list the users in no organizations
+    const userNoOrganizationFilters = addFilter(filters, RELATION_PARTICIPATE_TO, [], 'nil');
+    const usersWithNoOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userNoOrganizationFilters });
+    // list organizations and groups
+    const typesWithoutUser = types.filter((t) => t !== ENTITY_TYPE_USER);
+    let groupsAndOrganizations: BasicConnection<T> | T[] = [];
+    if (typesWithoutUser.length > 0) {
+      groupsAndOrganizations = await membersFetchFunction(context, user, typesWithoutUser, args);
+    }
+    // concat users, organizations and groups (cant be done in one query for now because 'or' global mode not working with regardingOf filter)
+    if (isResultConnection) {
+      const typedUsersWithinUserOrga = usersWithinUserOrga as BasicConnection<T>;
+      const typedUsersWithNoOrga = usersWithNoOrga as BasicConnection<T>;
+      const typedGroupsAndOrganizations = groupsAndOrganizations as BasicConnection<T>;
+      const concatedMembersNodes = [...typedUsersWithinUserOrga.edges, ...typedUsersWithNoOrga.edges, ...typedGroupsAndOrganizations.edges];
+      const totalCount = typedUsersWithinUserOrga.pageInfo.globalCount + typedUsersWithNoOrga.pageInfo.globalCount + typedGroupsAndOrganizations.pageInfo.globalCount;
+      return buildPaginationFromEdges(args.first ?? ES_DEFAULT_PAGINATION, args.after, concatedMembersNodes, totalCount);
+    } else {
+      const typedUsersWithinUserOrga = usersWithinUserOrga as T[];
+      const typedUsersWithNoOrga = usersWithNoOrga as T[];
+      const typedGroupsAndOrganizations = groupsAndOrganizations as T[];
+      return [...typedUsersWithinUserOrga, ...typedUsersWithNoOrga, ...typedGroupsAndOrganizations];
+    }
+  } else { // case 3. no users to fetch, so no special restriction user visibility
+    return membersFetchFunction(context, user, types, args);
+  }
 };
 
 export const CAPABILITIES_IN_DRAFT_NAMES = [

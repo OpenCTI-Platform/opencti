@@ -19,12 +19,12 @@ import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache }
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
-  internalFindByIds,
-  internalLoadById,
   fullEntitiesList,
   fullEntitiesThoughAggregationConnection,
-  fullRelationsList,
   fullEntitiesThroughRelationsToList,
+  fullRelationsList,
+  internalFindByIds,
+  internalLoadById,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById
@@ -50,10 +50,11 @@ import {
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import {
-  applyOrganizationRestriction,
+  buildRegardingOfDirectParticipateToFilters,
   BYPASS,
   CAPABILITIES_IN_DRAFT_NAMES,
   executionContext,
+  fetchMembersWithOrgaRestriction,
   FilterMembersMode,
   filterMembersWithUsersOrgs,
   INTERNAL_USERS,
@@ -73,7 +74,7 @@ import { defaultMarkingDefinitionsFromGroups, findGroupPaginated as findGroups }
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { addFilter, extractFilterKeys, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, extractFilterKeys } from '../utils/filtering/filtering-utils';
 import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
 import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
@@ -176,7 +177,6 @@ const extractInfoFromBasicAuth = (authorization) => {
 const extractTokenFromBasicAuth = async (authorization) => {
   const { username, password } = extractInfoFromBasicAuth(authorization);
   if (username && password) {
-     
     const { api_token: tokenUUID } = await login(username, password);
     return tokenUUID;
   }
@@ -200,42 +200,24 @@ export const findById = async (context, user, userId) => {
   return buildCompleteUser(context, withoutPassword);
 };
 
-const buildUserOrganizationRestrictedFilters = (user, filters) => {
+// build user organization restriction filters
+// for the list of users in Settings
+const buildUserOrganizationRestrictedFiltersForSettings = (user, filters) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    // If user is not a set access administrator, user can only see attached organization users
+    // If user is not a set access administrator, user can only see directly attached organization users
     const organizationIds = user.administrated_organizations.map((organization) => organization.id);
-    return {
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'relationship_type',
-              values: ['participate-to'],
-            },
-            {
-              key: 'id',
-              values: organizationIds,
-            },
-          ],
-          mode: 'or',
-        },
-      ],
-      filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
-    };
+    return buildRegardingOfDirectParticipateToFilters(organizationIds, filters);
   }
   return filters;
 };
 
 export const findAllUser = async (context, user, args) => {
-  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
+  const filters = buildUserOrganizationRestrictedFiltersForSettings(user, args.filters);
   return fullEntitiesList(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
 
 export const findUserPaginated = async (context, user, args) => {
-  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
+  const filters = buildUserOrganizationRestrictedFiltersForSettings(user, args.filters);
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
 
@@ -257,17 +239,11 @@ export const findParticipants = (context, user, args) => {
 };
 
 export const findMembersPaginated = async (context, user, args) => {
-  const { entityTypes = null } = args;
-  const types = entityTypes || MEMBERS_ENTITY_TYPES;
-  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return pageEntitiesConnection(context, user, types, restrictedArgs);
+  return fetchMembersWithOrgaRestriction(context, user, args, true);
 };
 
 export const findAllMembers = async (context, user, args) => {
-  const { entityTypes = null } = args;
-  const types = entityTypes || MEMBERS_ENTITY_TYPES;
-  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return fullEntitiesList(context, user, types, restrictedArgs);
+  return fetchMembersWithOrgaRestriction(context, user, args);
 };
 
 export const findUserWithCapabilities = async (context, user, capabilities) => {
@@ -1027,7 +1003,7 @@ export const bookmarks = async (context, user, args) => {
     bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
   }
   const filteredBookmarks = [];
-   
+
   for (const bookmark of bookmarkList) {
     const loadedBookmark = await storeLoadById(context, user, bookmark.id, bookmark.type);
     if (isNotEmptyField(loadedBookmark)) {
