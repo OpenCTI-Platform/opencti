@@ -53,6 +53,7 @@ const authorizeGlobals = {
   Object: safeName('Object'),
   Boolean: true,
   Number: true,
+  Array: true,
   BigInt: true,
   Date: true,
   RegExp: true,
