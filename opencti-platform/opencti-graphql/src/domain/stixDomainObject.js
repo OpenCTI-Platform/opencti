@@ -212,23 +212,11 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
  * @param {string | string[]} stixDomainObjectType - Required entity type(s) for validation
  */
 export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, stixDomainObjectType) => {
-  const allowedTypes = Array.isArray(stixDomainObjectType) ? stixDomainObjectType : [stixDomainObjectType];
-  
-  // Validate all types are valid STIX Domain Objects
-  for (const type of allowedTypes) {
-    if (!isStixDomainObject(type)) {
-      throw FunctionalError(
-        `Invalid stixDomainObjectType: ${type} is not a STIX Domain Object`,
-        { invalidType: type }
-      );
-    }
-  }
-  
   const stixDomainObject = await storeLoadById(
     context,
     user,
     stixDomainObjectId,
-    allowedTypes,
+    stixDomainObjectType,
     { includeDeletedInDraft: true }
   );
   
