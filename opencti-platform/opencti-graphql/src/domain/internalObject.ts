@@ -41,7 +41,7 @@ export const editInternalObject = async <T extends StoreEntity>(
   if (!internalObject) {
     throw FunctionalError(`${entityType} ${id} cant be found`);
   }
-  const { element } = await updateAttribute(context, user, id, entityType, input);
+  const { element } = await updateAttribute<StoreEntity>(context, user, id, entityType, input);
   const { auditLogEnabled = true } = opts;
   if (auditLogEnabled) {
     await publishUserAction({
@@ -67,7 +67,7 @@ export const deleteInternalObject = async (
   if (!internalObject) {
     throw FunctionalError(`${entityType} ${id} cant be found`);
   }
-  const deleted = await deleteElementById(context, user, id, entityType);
+  const deleted = await deleteElementById<StoreEntity>(context, user, id, entityType);
   await publishUserAction({
     user,
     event_type: 'mutation',

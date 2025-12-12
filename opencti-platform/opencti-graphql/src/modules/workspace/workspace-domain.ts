@@ -110,10 +110,11 @@ export const objects = async (
   }
   const filters = addFilter(args.filters, 'internal_id', investigated_entities_ids);
   const finalArgs = { ...args, filters };
+  const finalTypes = args.types?.filter((t) => t) as string[] | undefined;
   if (args.all) {
-    return fullEntitiesOrRelationsConnection(context, user, args.types, finalArgs);
+    return fullEntitiesOrRelationsConnection(context, user, finalTypes, finalArgs);
   }
-  return await pageEntitiesOrRelationsConnection(context, user, args.types, finalArgs) as BasicConnection<BasicStoreBase>;
+  return await pageEntitiesOrRelationsConnection(context, user, finalTypes, finalArgs) as BasicConnection<BasicStoreBase>;
 };
 
 const checkInvestigatedEntitiesInputs = async (
@@ -186,7 +187,7 @@ export const workspaceDelete = async (
   user: AuthUser,
   workspaceId: string,
 ) => {
-  const deleted = await deleteElementById(
+  const deleted = await deleteElementById<StoreEntityWorkspace>(
     context,
     user,
     workspaceId,
@@ -460,7 +461,7 @@ export const workspaceImportWidgetConfiguration = async (
     },
   };
   const updatedManifest = toB64(updatedObjects);
-  const { element } = await updateAttribute(
+  const { element } = await updateAttribute<StoreEntityWorkspace>(
     context,
     user,
     workspaceId,

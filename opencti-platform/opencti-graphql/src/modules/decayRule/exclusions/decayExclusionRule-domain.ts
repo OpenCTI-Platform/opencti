@@ -70,7 +70,7 @@ export const fieldPatchDecayExclusionRule = async (context: AuthContext, user: A
     throw FunctionalError(`Decay exclusion rule ${id} cannot be found`);
   }
 
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DECAY_EXCLUSION_RULE, input);
+  const { element } = await updateAttribute<StoreEntityDecayExclusionRule>(context, user, id, ENTITY_TYPE_DECAY_EXCLUSION_RULE, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -88,7 +88,7 @@ export const deleteDecayExclusionRule = async (context: AuthContext, user: AuthU
     throw FunctionalError(`Decay exclusion rule ${id} cannot be found`);
   }
 
-  const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
+  const deleted = await deleteElementById<StoreEntityDecayExclusionRule>(context, user, id, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
   await publishUserAction({
     user,
     event_type: 'mutation',

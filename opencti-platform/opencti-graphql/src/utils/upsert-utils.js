@@ -179,7 +179,7 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: resolvedElement });
     const convertedFile = storeFileConverter(user, file);
     // The impact in the database is the completion of the files
-    const fileImpact = { key: 'x_opencti_files', value: [...(resolvedElement.x_opencti_files ?? []), convertedFile] };
+    const fileImpact = { key: ['x_opencti_files'], value: [...(resolvedElement.x_opencti_files ?? []), convertedFile] };
     return [fileImpact];
   }
   return [];

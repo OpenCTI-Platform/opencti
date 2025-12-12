@@ -31,8 +31,9 @@ export const fieldPatchSavedFilter = async (context: AuthContext, user: AuthUser
   const { id, input } = args;
   const savedFilter = await findById(context, user, id);
   if (!savedFilter) throw FunctionalError('Saved filter cannot be found', { id });
+  if (!input) throw FunctionalError('No input given for field patch', { input });
 
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SAVED_FILTER, input);
+  const { element } = await updateAttribute<StoreEntitySavedFilter>(context, user, id, ENTITY_TYPE_SAVED_FILTER, input);
 
   await publishUserAction({
     user,

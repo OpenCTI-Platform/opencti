@@ -1,8 +1,8 @@
-import { uniq } from 'ramda';
-import { buildRefRelationKey, REL_INDEX_PREFIX, RULE_PREFIX } from '../../schema/general';
-import { schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
+import {uniq} from 'ramda';
+import {buildRefRelationKey, REL_INDEX_PREFIX, RULE_PREFIX} from '../../schema/general';
+import {schemaAttributesDefinition} from '../../schema/schema-attributes';
+import {schemaRelationsRefDefinition} from '../../schema/schema-relationsRef';
+import {type Filter, type FilterGroup, FilterMode, FilterOperator} from '../../generated/graphql';
 import {
   CONTEXT_CREATED_BY_FILTER,
   CONTEXT_CREATOR_FILTER,
@@ -29,16 +29,16 @@ import {
   SIGHTED_BY_FILTER,
   SPECIAL_FILTER_KEYS
 } from './filtering-constants';
-import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
-import { UnsupportedError } from '../../config/errors';
-import { isNotEmptyField } from '../../database/utils';
-import { isInternalId, isValidDate } from '../../schema/schemaUtils';
-import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreObject } from '../../types/store';
-import { idLabel } from '../../schema/schema-labels';
-import { INTERNAL_RELATIONSHIPS } from '../../schema/internalRelationship';
-import { getMetricsAttributesNames } from '../../modules/metrics/metrics-utils';
+import {STIX_SIGHTING_RELATIONSHIP} from '../../schema/stixSightingRelationship';
+import {STIX_CORE_RELATIONSHIPS} from '../../schema/stixCoreRelationship';
+import {UnsupportedError} from '../../config/errors';
+import {isNotEmptyField} from '../../database/utils';
+import {isInternalId, isValidDate} from '../../schema/schemaUtils';
+import type {AuthContext, AuthUser} from '../../types/user';
+import type {BasicStoreObject} from '../../types/store';
+import {idLabel} from '../../schema/schema-labels';
+import {INTERNAL_RELATIONSHIPS} from '../../schema/internalRelationship';
+import {getMetricsAttributesNames} from '../../modules/metrics/metrics-utils';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -266,7 +266,7 @@ export const addFilter = (filterGroup: FilterGroup | undefined | null, newKey: s
     valuesArray = Array.isArray(newValues) ? newValues : [newValues];
   }
   return {
-    mode: 'and',
+    mode: FilterMode.And,
     filters: [
       {
         key: keyArray,
