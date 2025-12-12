@@ -2,13 +2,14 @@
 
 In OpenCTI, you have access to different capabilities to be able to search for knowledge in the platform. In most cases, a search by keyword can be refined with additional filters for instance on the type of object, the author etc.
 
+> **Note:**
+> OpenCTI automatically cleans and normalizes indicator search terms, including common defanged patterns (such as `[.]`, `hxxp://`, etc). This means you can safely paste indicators as you receive them—no need to manually "refang" before searching.
+
 ## Global search
 
 The global search is always available in the top bar of the platform.
 
-<figure markdown>
-  ![Search bar](assets/search-bar.png)
-</figure>
+![Search bar](assets/search-bar.png)
 
 This search covers all [STIX Domain Objects (SDOs)](data-model.md#stix-model-section) and [STIX Cyber Observables (SCOs)](data-model.md#stix-model-section) in the platform. The search results are sorted according to the following behaviour:
 
@@ -102,5 +103,3 @@ The search keyword used here is taken into account if you decide to export the c
 Some other screens can contain search bars for specific purposes. For instance, in the graph views to filter the nodes displayed on the graph:
 
 ![Search in graph](assets/search-graph.png)
-
-

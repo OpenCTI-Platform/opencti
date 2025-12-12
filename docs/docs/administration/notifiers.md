@@ -1,6 +1,13 @@
 # Custom notifiers
 
-Leveraging the platform's built-in connectors, users can create custom notifiers tailored to their unique needs. OpenCTI features three built-in connectors: a webhook connector, a simple mailer connector, and a platform mailer connector. These connectors operate based on registered schemas that describe their interaction methods.
+Leveraging the platform's built-in connectors, users can create custom notifiers tailored to their unique needs, under Platform > Customization > Notifiers.
+OpenCTI features three built-in connectors:
+
+- a webhook connector,
+- a simple mailer connector,
+- and a platform mailer connector.
+
+These connectors operate based on registered schemas that describe their interaction methods.
 
 ![Notifier connectors](assets/notifier-connectors.png)
 
@@ -13,6 +20,15 @@ This notifier connector enables customization of notifications raised within the
 
 - Title: The title for the platform notification.
 - Template: Specifies the message template for the notification.
+
+![Platform email notifier](assets/platform-email-notifier.png)
+
+In the message template, you can insert attributes of the concerned data.
+For instance, for the entity name, use: `<%=data[0].instance.name%>`
+
+You can use the `octi.markdownToHtml` function to convert markdown data to html data.
+For instance, to display properly the entity description, use: `<%-octi.markdownToHtml(data[0].instance.description)%>`;
+
 
 #### Simple mailer
 
