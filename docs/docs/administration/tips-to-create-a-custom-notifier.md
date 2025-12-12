@@ -287,26 +287,7 @@ Labels:
 2. Avoid heavy computation in templates.
 3. Escape output if sending to HTML/Email to avoid injection issues.
 
-# Additional information
-
-## Restricted EJS functions
-
-OpenCTI restricts the use of certain EJS functions within notifier templates to enhance security. By default, only the following functions are permitted:
-
-- `if`
-- `for`
-- `forEach`
-- `while`
-- `stringify`
-- `Date`
-- `toLocaleString`
-- `isArray`
-- `keys`
-- `function`
-
-If you require additional functions, they can be enabled by configuring the `APP__NOTIFIER_AUTHORIZED_FUNCTIONS` parameter in your OpenCTI platform settings. Please refer to the OpenCTI configuration documentation: https://docs.opencti.io/latest/deployment/configuration/#network-and-security
-
-## External resources
+# External resources
 
 To go further, please explore the following resources:
 
