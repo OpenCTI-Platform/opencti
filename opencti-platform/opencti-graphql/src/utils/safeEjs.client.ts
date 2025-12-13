@@ -54,48 +54,48 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
   });
 
   try {
-    // Track worker error to preserve it in case of timeout
-    let workerError: Error | undefined;
+    let timer: NodeJS.Timeout;
+    let done = false;
+
+    const once = (fn: () => unknown) => {
+      if(!done) {
+        done = true;
+        if (timer) {
+          clearTimeout(timer);
+        }
+        fn();
+      }
+    };
 
     // Race between rendering and timeout
-    const result = await Promise.race([
+    return await Promise.race([
       // Rendering promise
       new Promise<string>((resolve, reject) => {
         worker.on('message', (message: WorkerReply) => {
-          if (message.success && message.result !== undefined) {
-            resolve(message.result);
+          const data = message.success ? message.result : undefined;
+          if (data !== undefined) {
+            once(() => resolve(data));
           } else {
-            const error = new Error(message.error || 'Unknown worker error');
-            workerError = error;
-            reject(error);
+            once(() => reject(new Error(message.error || 'Unknown worker error')));
           }
         });
 
         worker.on('error', (error) => {
-          const workerErr = new Error(`Worker error: ${error.message}`);
-          workerError = workerErr;
-          reject(workerErr);
+          once(() => reject(new Error(`Worker error: ${error.message}`)));
         });
 
         worker.on('exit', (code) => {
-          if (code !== 0 && code !== null) {
-            const exitError = new Error(`Worker stopped with exit code ${code}`);
-            workerError = exitError;
-            reject(exitError);
-          }
+          once(() => reject(new Error(`Worker stopped with exit code ${code}`)));
         });
       }),
 
       // Timeout promise
       new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          // Preserve worker error if it exists, otherwise report timeout
-          reject(workerError ?? new Error(`Rendering timeout after ${timeout}ms`));
+        timer = setTimeout(() => {
+          once(() => reject(new Error(`Rendering timeout after ${timeout}ms`)));
         }, timeout);
       }),
     ]);
-
-    return result;
   } catch (error) {
     // Enhance error messages
     if (!(error instanceof Error)) {
@@ -107,6 +107,10 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
     throw error;
   } finally {
     // Clean termination
-    await worker.terminate();
+    try {
+      await worker.terminate();
+    } catch {
+      // ignore
+    }
   }
 };
