@@ -15,10 +15,16 @@ import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
 import { logApp } from '../config/conf';
 import { internalLoadById } from '../database/middleware-loader';
+import { getEntityFromCache } from '../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { SYSTEM_USER } from '../utils/access';
 
-export const workToExportFile = (work) => {
+
+export const workToExportFile = async (context, work) => {
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const exportTimeout = settings.platform_export_timeout || 20; 
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
-  const isWorkActive = lastModifiedSinceMin < 20; // Timeout if no activity during 20 minutes
+  const isWorkActive = lastModifiedSinceMin < exportTimeout;
   return {
     id: work.internal_id,
     name: work.name || 'Unknown',
@@ -112,7 +118,7 @@ export const worksForSource = async (context, user, sourceId, args = {}) => {
 export const loadExportWorksAsProgressFiles = async (context, user, sourceId) => {
   const works = await worksForSource(context, user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
   const filterSuccessCompleted = works.filter((w) => w.status !== 'complete' || w.errors.length > 0);
-  return filterSuccessCompleted.map((item) => workToExportFile(item));
+  return Promise.all(filterSuccessCompleted.map((item) => workToExportFile(context, item)));
 };
 
 export const deleteWorksRaw = async (works) => {
