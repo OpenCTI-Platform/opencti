@@ -5,6 +5,7 @@ import {ADMIN_USER, testContext} from '../../utils/testQuery';
 import {stixDomainObjectDelete, stixDomainObjectEditField} from '../../../src/domain/stixDomainObject';
 import {awaitUntilCondition, queryAsAdminWithSuccess} from '../../utils/testQueryHelper';
 import {utcDate} from '../../../src/utils/format';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 
 const READ_QUERY = gql`
   query Logs($first: Int, $filters: FilterGroup) {
@@ -42,7 +43,7 @@ describe('Log resolver standard behavior', async () => {
   });
 
   afterAll(async() => {
-    await stixDomainObjectDelete(testContext, ADMIN_USER, reportInternalId);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
   });
   it('should log previous and value for description update', async () => {
     // Update description

@@ -20,7 +20,7 @@ import {
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField,
+  stixDomainObjectEditField
 } from '../domain/stixDomainObject';
 import { investigationAddFromContainer } from '../modules/workspace/investigation-domain';
 import { getAuthorizedMembers } from '../utils/authorizedMembers';
@@ -84,7 +84,7 @@ const containerResolvers = {
   // },
   Mutation: {
     containerEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
