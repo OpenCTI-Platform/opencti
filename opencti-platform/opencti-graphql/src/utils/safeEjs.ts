@@ -47,29 +47,29 @@ const forbiddenProperties = new Set([
   'setPrototypeOf',
 ]);
 
-const authorizeGlobals = {
-  undefined: true,
-  Object: safeName('Object'),
-  Boolean: true,
-  Number: true,
-  Array: true,
-  BigInt: true,
-  Date: true,
-  RegExp: true,
-  String: true,
-  JSON: true,
-  Math: true,
-  Infinity: true,
-  isFinite: true,
-  NaN: true,
-  isNaN: true,
-  parseFloat: true,
-  parseInt: true,
-  encodeURI: true,
-  encodeURIComponent: true,
-  decodeURI: true,
-  decodeURIComponent: true,
-};
+const authorizeGlobals = new Map<string, string | true>([
+  ['undefined', true],
+  ['Object', safeName('Object')],
+  ['Boolean', true],
+  ['Number', true],
+  ['Array', true],
+  ['BigInt', true],
+  ['Date', true],
+  ['RegExp', true],
+  ['String', true],
+  ['JSON', true],
+  ['Math', true],
+  ['Infinity', true],
+  ['isFinite', true],
+  ['NaN', true],
+  ['isNaN', true],
+  ['parseFloat', true],
+  ['parseInt', true],
+  ['encodeURI', true],
+  ['encodeURIComponent', true],
+  ['decodeURI', true],
+  ['decodeURIComponent', true],
+]);
 
 const forbiddenGlobals = [
   'eval',
@@ -233,7 +233,7 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
     }
   });
 
-  const allowedVars = new Map(Object.entries(authorizeGlobals));
+  const allowedVars = new Map(authorizeGlobals);
   context.forEach((c) => allowedVars.set(c, true));
 
   const tree = jsParser.parse(code);
