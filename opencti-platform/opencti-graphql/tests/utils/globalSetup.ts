@@ -62,7 +62,7 @@ const testPlatformStart = async () => {
     }
     // Init the modules
     await startModules();
-    logApp.info(`[vitest-global-setup] Platform started in ${new Date().getTime() - stopTime} ms`);
+    logApp.info(`[vitest-global-setup][time] Platform started in ${new Date().getTime() - stopTime} ms`);
   } catch (e) {
     logApp.error(e);
     process.exit(1);
@@ -83,17 +83,18 @@ const platformClean = async () => {
   const testRedisClient = await createRedisClient('reset');
   await testRedisClient.del('stream.opencti');
   testRedisClient.disconnect();
-  logApp.info(`[vitest-global-setup] Platform cleaned up in ${new Date().getTime() - stopTime} ms`);
+  logApp.info(`[vitest-global-setup][time] Platform cleaned up in ${new Date().getTime() - stopTime} ms`);
 };
 
 const waitPlatformIsAlive = async (): Promise<true> => {
+  const startTime = new Date().getTime();
   const isAlive = await isPlatformAlive();
   if (!isAlive) {
     logApp.info('[vitest-global-setup] ping platform ...');
     await wait(1000);
     return waitPlatformIsAlive();
   }
-  logApp.info('[vitest-global-setup] platform is alive');
+  logApp.info(`[vitest-global-setup] platform is alive in ${new Date().getTime() - startTime} ms`);
   return true;
 };
 
