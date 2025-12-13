@@ -1,14 +1,12 @@
- import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
-import type { PluginOption } from 'vite';
 
 export const buildTestConfig = (include: string[]) => defineConfig({
-  plugins: [graphql() as PluginOption],
+  plugins: [graphql()],
   test: {
     include,
     testTimeout: 300000,
     teardownTimeout: 5000,
-    setupFiles: [],
     coverage: {
       provider: 'v8',
       include: ['src/**'],
@@ -16,6 +14,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
       reporter: ['text', 'json', 'html'],
     },
     maxWorkers: 5,
+    isolate: false,
   },
 });
 
