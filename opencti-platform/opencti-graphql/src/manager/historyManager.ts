@@ -137,6 +137,17 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   };
 };
 
+export const historyMessage = (message: string | undefined) => {
+  if (!message) {
+    return '';
+  }
+  const parts = message.split('-');
+  // We want to exclude 'Authorized members' and 'ObjectOrganization' from history
+  const removeSecurityFromMessage = parts.filter((part) => {
+    return !part.includes('Authorized members') && !part.includes('ObjectOrganization');
+  });
+  return removeSecurityFromMessage.join('-').trim();
+};
 export const buildHistoryElementsFromEvents = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   // load all markings to resolve object_marking_refs
   const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
@@ -159,7 +170,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
     }
     let contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
-      message: event.data.message,
+      message: historyMessage(event.data.message),
       entity_type: stix.extensions[STIX_EXT_OCTI].type,
       entity_name: extractStixRepresentative(stix),
       creator_ids: stix.extensions[STIX_EXT_OCTI].creator_ids,
@@ -168,7 +179,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
     };
     if (event.data.type === EVENT_TYPE_UPDATE) {
       const updateEvent: UpdateEvent = event.data as UpdateEvent;
-      contextData.commit = updateEvent.commit?.message;
+       contextData.commit = historyMessage(updateEvent.commit?.message);
       contextData.external_references = updateEvent.commit?.external_references ?? [];
       // Previous markings must be kept to ensure data visibility restrictions
       const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), updateEvent.context.reverse_patch);

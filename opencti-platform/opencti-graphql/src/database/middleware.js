@@ -2068,6 +2068,9 @@ const buildAttribute = async (context, user, key, array) => {
     if (!item) {
       return item;
     }
+    if (key === authorizedMembers.name || key === objectOrganization.name) {
+      return ;
+    }
     if (typeof item === 'object') {
       if (item?.entity_type !== undefined) {
         return extractEntityRepresentativeName(item, 250);
