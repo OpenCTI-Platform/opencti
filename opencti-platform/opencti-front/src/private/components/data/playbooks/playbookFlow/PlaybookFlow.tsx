@@ -13,6 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import React from 'react';
 import ReactFlow from 'reactflow';
 import { graphql, useFragment } from 'react-relay';
 import PlaybookFlowAddComponents from './PlaybookFlowAddComponents';
