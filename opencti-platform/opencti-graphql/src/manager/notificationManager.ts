@@ -265,7 +265,7 @@ export const isRelationFromOrToMatchFilters = (
   } else if (instance.type === STIX_TYPE_RELATION) {
     stixIdsToSearch.push((instance as StixRelation).source_ref, (instance as StixRelation).target_ref);
   }
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const value of listenedInstanceIdsMap.values()) {
     if (stixIdsToSearch.includes(value.id)) {
       return true;
@@ -516,7 +516,6 @@ export const buildTargetEvents = async (
               targets.push({ user: notificationUser, type: translatedType, message });
             }
         } else { // useSideEventMatching = true: Case side events for instance triggers
-          // eslint-disable-next-line no-lonely-if
           if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible
             const listenedInstanceIdsMap = await resolveFiltersMapForUser(userContext, user, finalFilters);
             // eslint-disable-next-line max-len
