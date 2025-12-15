@@ -9,6 +9,7 @@ interface BasicFilterInputProps {
   filterValues: string[];
   label: string;
   type?: string;
+  handleClose?: () => void;
 }
 
 const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
@@ -18,6 +19,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
   filterValues,
   label,
   type,
+  handleClose,
 }) => {
   return (
     <TextField
@@ -31,10 +33,15 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
       autoFocus={true}
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
+          event.preventDefault();
+          event.stopPropagation();
           helpers?.handleAddSingleValueFilter(
             filter?.id ?? '',
             (event.target as HTMLInputElement).value,
           );
+          setTimeout(() => {
+            handleClose?.();
+          }, 0);
         }
       }}
       onBlur={(event) => {
