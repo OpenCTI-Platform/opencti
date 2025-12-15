@@ -2,7 +2,7 @@ import { filterMembersUsersWithUsersOrgs } from '../utils/access';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntity } from '../types/store';
 import { loadThroughDenormalized } from '../resolvers/stix';
-import { INPUT_PARTICIPANT } from '../schema/general';
+import { INPUT_ASSIGNEE, INPUT_PARTICIPANT } from '../schema/general';
 
 export const loadCreators = async (
   context: AuthContext,
@@ -26,4 +26,16 @@ export const loadParticipants = async (
     return [];
   }
   return filterMembersUsersWithUsersOrgs(context, user, participants);
+};
+
+export const loadAssignees = async (
+  context: AuthContext,
+  user: AuthUser,
+  object: BasicStoreEntity,
+) => {
+  const assignees = await loadThroughDenormalized(context, user, object, INPUT_ASSIGNEE, { sortBy: 'user_email' });
+  if (!assignees) {
+    return [];
+  }
+  return filterMembersUsersWithUsersOrgs(context, user, assignees);
 };
