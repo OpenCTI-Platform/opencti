@@ -22,7 +22,7 @@ import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefR
 import type { UpdateEvent } from '../types/event';
 import { fullEntitiesList, pageEntitiesConnection } from '../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { addFilter, isFilterGroupNotEmpty } from './filtering/filtering-utils';
+import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
 import { MEMBERS_ENTITY_TYPES } from '../domain/user';
 import { ES_DEFAULT_PAGINATION } from '../database/engine';
 import type { BasicStoreSettings } from '../types/settings';
@@ -1091,9 +1091,24 @@ export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity
     const userDirectOrganizationsFilters = buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, filters);
     // list the users that are in the user direct organizations
     const usersWithinUserOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userDirectOrganizationsFilters });
-    // list the users in no organizations
-    const userNoOrganizationFilters = addFilter(filters, RELATION_PARTICIPATE_TO, [], 'nil');
-    const usersWithNoOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userNoOrganizationFilters });
+    // list the users always visible: users in no organizations OR internal_users OR users with user_service_account=true
+    const alwaysVisibleUsersFilter = {
+      mode: FilterMode.Or,
+      filters: [
+        { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
+        { key: ['user_service_account'], values: ['true'] },
+        { key: ['id'], values: Object.keys(INTERNAL_USERS) },
+      ],
+      filterGroups: [],
+    };
+    const finalAlwaysVisibleUsersFilter = filters
+      ? {
+        mode: FilterMode.And,
+        filters: [],
+        filterGroups: [filters, alwaysVisibleUsersFilter],
+      }
+      : alwaysVisibleUsersFilter;
+    const usersAlwaysVisible = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: finalAlwaysVisibleUsersFilter });
     // list organizations and groups
     const typesWithoutUser = types.filter((t) => t !== ENTITY_TYPE_USER);
     let groupsAndOrganizations: BasicConnection<T> | T[] = [];
@@ -1103,14 +1118,14 @@ export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity
     // concat users, organizations and groups (cant be done in one query for now because 'or' global mode not working with regardingOf filter)
     if (isResultConnection) {
       const typedUsersWithinUserOrga = usersWithinUserOrga as BasicConnection<T>;
-      const typedUsersWithNoOrga = usersWithNoOrga as BasicConnection<T>;
+      const typedUsersWithNoOrga = usersAlwaysVisible as BasicConnection<T>;
       const typedGroupsAndOrganizations = groupsAndOrganizations as BasicConnection<T>;
       const concatedMembersNodes = [...typedUsersWithinUserOrga.edges, ...typedUsersWithNoOrga.edges, ...typedGroupsAndOrganizations.edges];
       const totalCount = typedUsersWithinUserOrga.pageInfo.globalCount + typedUsersWithNoOrga.pageInfo.globalCount + typedGroupsAndOrganizations.pageInfo.globalCount;
       return buildPaginationFromEdges(args.first ?? ES_DEFAULT_PAGINATION, args.after, concatedMembersNodes, totalCount);
     } else {
       const typedUsersWithinUserOrga = usersWithinUserOrga as T[];
-      const typedUsersWithNoOrga = usersWithNoOrga as T[];
+      const typedUsersWithNoOrga = usersAlwaysVisible as T[];
       const typedGroupsAndOrganizations = groupsAndOrganizations as T[];
       return [...typedUsersWithinUserOrga, ...typedUsersWithNoOrga, ...typedGroupsAndOrganizations];
     }
