@@ -49,13 +49,13 @@ export const ingestionCsvEditionUserHandlingPatch = graphql`
 `;
 
 export interface EditionCsvAddAutoUserInput {
-  user_name: string
-  confidence_level: number
+  user_name: string;
+  confidence_level: number;
 }
 
 interface IngestionCsvEditionUserHandlingProps {
-  feedName: string
-  ingestionCsvDataId: string
+  feedName: string;
+  ingestionCsvDataId: string;
   onAutoUserCreated: () => void;
 }
 const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUserHandlingProps> = ({ feedName, ingestionCsvDataId, onAutoUserCreated }) => {
@@ -134,7 +134,9 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
               fullWidth={true}
               keepMounted={true}
               slots={{ transition: Transition }}
-              onClose={() => { setOpenDialog(false); }}
+              onClose={() => {
+                setOpenDialog(false);
+              }}
             >
               <DialogTitle>
                 {t_i18n('Create an automatic user')}
@@ -145,23 +147,34 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
                     name="user_name"
                     label={t_i18n('Service account responsible for data creation')}
                     containerStyle={fieldSpacingContainerStyle}
-                    showConfidence disabled={true}
+                    showConfidence
+                    disabled={true}
                   />
                 </Box>
                 <Box sx={{ margin: '20px 70px 0' }}>
                   <ConfidenceField
                     name="confidence_level"
-                    entityType={'User'}
+                    entityType="User"
                     containerStyle={fieldSpacingContainerStyle}
                     showAlert={false}
                   />
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => { setOpenDialog(false); resetForm(); }}>
+                <Button
+                  onClick={() => {
+                    setOpenDialog(false);
+                    resetForm();
+                  }}
+                >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button color="secondary" onClick={() => { submitForm(); }}>
+                <Button
+                  color="secondary"
+                  onClick={() => {
+                    submitForm();
+                  }}
+                >
                   {t_i18n('Confirm')}
                 </Button>
               </DialogActions>

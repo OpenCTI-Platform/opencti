@@ -62,13 +62,13 @@ export const sendDisseminationEmail = async (
   user: AuthUser,
   disseminationListId: string,
   opts: {
-    useOctiTemplate: boolean,
-    object: string,
-    body: string,
-    emails: string[],
-    attachFileIds: string[],
-    htmlToBodyFileId: string | null | undefined,
-  }
+    useOctiTemplate: boolean;
+    object: string;
+    body: string;
+    emails: string[];
+    attachFileIds: string[];
+    htmlToBodyFileId: string | null | undefined;
+  },
 ) => {
   const toEmail = conf.get('app:dissemination_list:to_email');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
@@ -150,7 +150,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     body: email_body,
     emails,
     attachFileIds: email_attachment_ids,
-    htmlToBodyFileId: html_to_body_file_id
+    htmlToBodyFileId: html_to_body_file_id,
   };
   const sentFiles = await sendDisseminationEmail(context, user, id, opts);
   // activity logs
@@ -167,7 +167,7 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
     user,
     event_type: 'file',
     event_scope: 'disseminate',
-    context_data: contextData
+    context_data: contextData,
   });
   return true;
 };

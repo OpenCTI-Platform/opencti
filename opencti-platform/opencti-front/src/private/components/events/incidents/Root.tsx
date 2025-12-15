@@ -14,6 +14,8 @@ import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from 'src/utils/hooks/useGranted';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import Incident from './Incident';
 import IncidentKnowledge from './IncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -67,6 +69,7 @@ const incidentQuery = graphql`
           coverage_score
         }
       }
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Incident_incident
       ...IncidentKnowledge_incident
@@ -110,13 +113,13 @@ const RootIncidentComponent = ({ queryRef }) => {
     return 0;
   };
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {incident ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -134,7 +137,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                   data={incident}
                   attribution={['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign']}
                 />
-              }
+              )}
             />
           </Routes>
           <div
@@ -154,7 +157,14 @@ const RootIncidentComponent = ({ queryRef }) => {
                   <IncidentEdition incidentId={incident.id} />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={incident}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <IncidentDeletion id={incident.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -215,7 +225,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={incident.id}/>
+                  <AIInsights id={incident.id} />
                   <StixCoreObjectSecurityCoverage id={incident.id} coverage={incident.securityCoverage} />
                 </div>
               )}
@@ -236,19 +246,19 @@ const RootIncidentComponent = ({ queryRef }) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <IncidentKnowledge incidentData={incident} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={incident}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -283,7 +293,7 @@ const RootIncidentComponent = ({ queryRef }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

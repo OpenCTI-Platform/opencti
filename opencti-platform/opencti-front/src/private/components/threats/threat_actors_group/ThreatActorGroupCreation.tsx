@@ -75,7 +75,7 @@ interface ThreatActorGroupFormProps {
 }
 
 export const ThreatActorGroupCreationForm: FunctionComponent<
-ThreatActorGroupFormProps
+  ThreatActorGroupFormProps
 > = ({
   updater,
   onReset,
@@ -333,7 +333,7 @@ const ThreatActorGroupCreation = ({
   );
 
   const CreateThreatActorGroupControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Threat-Actor-Group' {...props} />
+    <CreateEntityControlledDial entityType="Threat-Actor-Group" {...props} />
   );
 
   return (

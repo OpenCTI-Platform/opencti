@@ -13,6 +13,7 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { wait } from './utils';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Resolved Filters in cache must be reset depending on connector/stream/triggers/playbooks/Pir modifications
@@ -21,6 +22,7 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   [ENTITY_TYPE_PLAYBOOK]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_CONNECTOR]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_PIR]: [ENTITY_TYPE_RESOLVED_FILTERS],
+  [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: [ENTITY_TYPE_RESOLVED_FILTERS],
 };
 
 const cache: any = {};
@@ -111,7 +113,7 @@ export const refreshLocalCacheForEntity = async (topic: string, instance: BasicS
 // (map or array according to the data type storage in the cache)
 // use either getEntitiesMapFromCache or getEntitiesListFromCache in export
 const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>(
-  context: AuthContext, user: AuthUser, type: string
+  context: AuthContext, user: AuthUser, type: string,
 ): Promise<Array<T> | Map<string, T>> => {
   const getEntitiesFromCacheFn = async (): Promise<Array<T> | Map<string, T>> => {
     const fromCache = cache[type];
@@ -144,7 +146,7 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
 
 // get the list of the entities in the cache for a given type
 export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | StixObject>(
-  context: AuthContext, user: AuthUser, type: string
+  context: AuthContext, user: AuthUser, type: string,
 ): Promise<Array<T>> => {
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
     const map = await getEntitiesFromCache(context, user, type) as Map<string, T>;
@@ -160,7 +162,7 @@ export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | 
 
 // get a map <id, instance> of the entities in the cache for a given type
 export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | StixObject>(
-  context: AuthContext, user: AuthUser, type: string
+  context: AuthContext, user: AuthUser, type: string,
 ): Promise<Map<string | StixId, T>> => {
   // Filters is already a map
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {

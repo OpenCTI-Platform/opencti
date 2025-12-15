@@ -5,14 +5,14 @@ import type { SafeRenderOptions } from './safeEjs';
 import type { WorkerReply } from './safeEjs.worker';
 
 export type WorkerOptions = {
-  timeout?: number,
-  useJsonEscape?: boolean,
+  timeout?: number;
+  useJsonEscape?: boolean;
   resourceLimits?: {
-    maxOldGenerationSizeMb?: number
-    maxYoungGenerationSizeMb: number,
-    codeRangeSizeMb: number,
-    stackSizeMb: number,
-  }
+    maxOldGenerationSizeMb?: number;
+    maxYoungGenerationSizeMb: number;
+    codeRangeSizeMb: number;
+    stackSizeMb: number;
+  };
 };
 
 export const safeRender = async (template: string, data: Data, options?: SafeRenderOptions & WorkerOptions): Promise<string> => {
@@ -92,7 +92,7 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
           // Preserve worker error if it exists, otherwise report timeout
           reject(workerError ?? new Error(`Rendering timeout after ${timeout}ms`));
         }, timeout);
-      })
+      }),
     ]);
 
     return result;

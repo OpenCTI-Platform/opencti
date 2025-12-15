@@ -15,7 +15,7 @@ export interface BasicStoreEntityDataComponent extends BasicStoreEntity {
 export interface StoreEntityDataComponent extends StoreEntity {
   name: string;
   description: string;
-  [INPUT_DATA_SOURCE]: BasicStoreEntityDataSource
+  [INPUT_DATA_SOURCE]: BasicStoreEntityDataSource;
 }
 
 export interface StixDataComponent extends StixDomainObject {
@@ -24,9 +24,9 @@ export interface StixDataComponent extends StixDomainObject {
   aliases: Array<string>;
   data_source_ref: StixId | undefined;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
     [STIX_EXT_MITRE]: {
-      'extension_type': 'new-sdo'
-    }
+      extension_type: 'new-sdo';
+    };
   };
 }

@@ -48,6 +48,9 @@ class User:
                 capabilities {
                     id, name
                 }
+                capabilitiesInDraft {
+                    id, name
+                }
             }
             groups {
                 edges {
@@ -134,6 +137,9 @@ class User:
                 id, name
             }
             capabilities {
+                id, name, description
+            }
+            capabilitiesInDraft {
                 id, name, description
             }
             groups {
@@ -429,6 +435,7 @@ class User:
         groups = kwargs.get("groups", None)
         user_confidence_level = kwargs.get("user_confidence_level", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        user_service_account = kwargs.get("user_service_account", False)
         include_token = kwargs.get("include_token", False)
 
         if name is None or user_email is None:
@@ -479,6 +486,7 @@ class User:
                     "monochrome_labels": monochrome_labels,
                     "groups": groups,
                     "user_confidence_level": user_confidence_level,
+                    "user_service_account": user_service_account,
                 }
             },
         )

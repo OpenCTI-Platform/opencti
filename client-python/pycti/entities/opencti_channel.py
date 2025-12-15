@@ -291,7 +291,7 @@ class Channel:
             final_data = final_data + data
             while result["data"]["channels"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["channels"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Channels", {"after": after})
+                self.opencti.app_logger.debug("Listing Channels", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -379,6 +379,7 @@ class Channel:
         channel_types = kwargs.get("channel_types", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
+        x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -413,6 +414,7 @@ class Channel:
                         "aliases": aliases,
                         "channel_types": channel_types,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
+                        "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
                     }
                 },
@@ -443,6 +445,10 @@ class Channel:
             if "x_opencti_granted_refs" not in stix_object:
                 stix_object["x_opencti_granted_refs"] = (
                     self.opencti.get_attribute_in_extension("granted_refs", stix_object)
+                )
+            if "x_opencti_modified_at" not in stix_object:
+                stix_object["x_opencti_modified_at"] = (
+                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
 
             return self.opencti.channel.create(
@@ -490,6 +496,11 @@ class Channel:
                 objectOrganization=(
                     stix_object["x_opencti_granted_refs"]
                     if "x_opencti_granted_refs" in stix_object
+                    else None
+                ),
+                x_opencti_modified_at=(
+                    stix_object["x_opencti_modified_at"]
+                    if "x_opencti_modified_at" in stix_object
                     else None
                 ),
                 update=update,

@@ -49,8 +49,8 @@ const caseTemplateTasksPopoverUnlinkMutation = graphql`
 `;
 
 interface CaseTemplateTasksPopoverProps {
-  task: CaseTemplateTasksLine_node$data,
-  paginationOptions: CaseTemplateTasksLinesPaginationQuery$data,
+  task: CaseTemplateTasksLine_node$data;
+  paginationOptions: CaseTemplateTasksLinesPaginationQuery$data;
 }
 
 const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps> = ({

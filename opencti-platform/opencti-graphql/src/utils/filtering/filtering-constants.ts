@@ -24,7 +24,6 @@ export const INSTANCE_REGARDING_OF_DIRECTION_FORCED = 'direction_forced';
 export const INSTANCE_REGARDING_OF_DIRECTION_REVERSE = 'direction_reverse';
 // ---- relationships
 // TODO remove and migration in favor of exploiting directly 'connections' in the relationship model
-export const RELATION_DYNAMIC_FILTER = 'dynamic';
 export const RELATION_FROM_FILTER = 'fromId';
 export const RELATION_DYNAMIC_FROM_FILTER = 'dynamicFrom';
 export const RELATION_TO_FILTER = 'toId';
@@ -39,8 +38,13 @@ export const INSTANCE_RELATION_TYPES_FILTER = 'elementWithTargetTypes'; // TODO 
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId'; // TODO Rename/migrate to triggerListenId
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 
+// regardingOf filter subfilter keys
+export const RELATION_DYNAMIC_SUBFILTER = 'dynamic';
+export const RELATION_TYPE_SUBFILTER = 'relationship_type';
+export const ID_SUBFILTER = 'id';
+export const RELATION_INFERRED_SUBFILTER = 'is_inferred';
+
 // Values that do not need resolution when matching against stix object
-export const ID_FILTER = 'id';
 export const TYPE_FILTER = 'entity_type';
 export const RELATION_TYPE_FILTER = 'relationship_type';
 export const INDICATOR_FILTER = 'indicator_types';
@@ -52,7 +56,8 @@ export const X_OPENCTI_WORKFLOW_ID = 'x_opencti_workflow_id';
 export const WORKFLOW_FILTER = 'workflow_id';
 export const CONFIDENCE_FILTER = 'confidence';
 export const REVOKED_FILTER = 'revoked';
-export const PATTERN_FILTER = 'pattern_type';
+export const PATTERN_TYPE_FILTER = 'pattern_type';
+export const PATTERN_FILTER = 'pattern';
 export const MAIN_OBSERVABLE_TYPE_FILTER = 'x_opencti_main_observable_type';
 export const CISA_KEV_FILTER = 'x_opencti_cisa_kev';
 export const EPSS_PERCENTILE_FILTER = 'x_opencti_epss_percentile';
@@ -74,6 +79,7 @@ export const RULE_FILTER = 'rule';
 export const USER_ID_FILTER = 'user_id';
 export const SOURCE_RELIABILITY_FILTER = 'source_reliability';
 export const COMPUTED_RELIABILITY_FILTER = 'computed_reliability';
+export const BULK_SEARCH_KEYWORDS_FILTER = 'bulkSearchKeywords';
 
 // for opinions
 export const OPINIONS_METRICS_MEAN_FILTER = 'opinionsMetricsMean';
@@ -95,7 +101,8 @@ export const ALIAS_FILTER = 'alias'; // handle both 'aliases' and 'x_opencti_ali
 export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship is inferred
 
 // for PIR
-export const PIR_SCORE_FILTER_PREFIX = 'pir_score';
+export const PIR_SCORE_FILTER = 'pir_score'; // used in stix filtering
+export const PIR_SCORE_FILTER_PREFIX = 'pir_score'; // used in dynamic filtering
 export const LAST_PIR_SCORE_DATE_FILTER_PREFIX = 'last_pir_score_date';
 
 // for users
@@ -128,6 +135,7 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
   'authorized_members', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
   'authorized_members.id', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
   'restricted_members.id', // nested filter on restricted members
+  BULK_SEARCH_KEYWORDS_FILTER, // set of keywords used in bulk search
 ];
 
 export const isComplexConversionFilterKey = (filterKey: string) => {
@@ -159,7 +167,7 @@ export const SPECIAL_FILTER_KEYS = [
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
-  ...COMPLEX_CONVERSION_FILTER_KEYS
+  ...COMPLEX_CONVERSION_FILTER_KEYS,
 ];
 
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)
@@ -203,4 +211,30 @@ export const FILTER_KEYS_WITH_ME_VALUE = [
   CREATOR_FILTER,
   CONTEXT_ENTITY_ID_FILTER,
   MEMBERS_USER_FILTER,
+];
+
+// multi filter keys
+export const BULK_SEARCH_KEYWORDS_FILTER_KEYS = [
+  'name',
+  'aliases',
+  'x_opencti_aliases',
+  'x_mitre_id',
+  'value',
+  'subject',
+  'attribute_abstract',
+  'x_opencti_additional_names',
+  // observables
+  'iban',
+  'hashes.MD5',
+  'hashes.SHA-1',
+  'hashes.SHA-256',
+  'hashes.SHA-512',
+  'url',
+  'card_number',
+  'account_type',
+  'user_id',
+  'account_login',
+  'path',
+  'attribute_key',
+  'persona_name',
 ];

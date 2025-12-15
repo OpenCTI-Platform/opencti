@@ -89,7 +89,7 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
 `;
 
 const EntityStixCoreRelationshipsEntitiesComponent: FunctionComponent<
-EntityStixCoreRelationshipsEntitiesProps
+  EntityStixCoreRelationshipsEntitiesProps
 > = ({
   queryRef,
   dataColumns,
@@ -103,8 +103,8 @@ EntityStixCoreRelationshipsEntitiesProps
   setNumberOfElements,
 }) => {
   const { data, loadMore, hasMore, isLoadingMore } = usePreloadedPaginationFragment<
-  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery,
-  EntityStixCoreRelationshipsEntitiesViewLines_data$key
+    EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery,
+    EntityStixCoreRelationshipsEntitiesViewLines_data$key
   >({
     queryRef,
     linesQuery: entityStixCoreRelationshipsEntitiesQuery,
@@ -139,20 +139,22 @@ EntityStixCoreRelationshipsEntitiesProps
 };
 
 const EntityStixCoreRelationshipsEntitiesViewLines: FunctionComponent<
-Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
+  Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
 > = (props) => {
   const queryRef = useQueryLoading<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery>(
     entityStixCoreRelationshipsEntitiesQuery,
     { count: 25, ...props.paginationOptions },
   );
   return queryRef ? (
-    <React.Suspense fallback={<>
-      {Array(20)
-        .fill(0)
-        .map((_, idx) => (
-          <EntityStixCoreRelationshipsEntitiesLineDummy key={idx} dataColumns={props.dataColumns} />
-        ))}
-    </>}
+    <React.Suspense fallback={(
+      <>
+        {Array(20)
+          .fill(0)
+          .map((_, idx) => (
+            <EntityStixCoreRelationshipsEntitiesLineDummy key={idx} dataColumns={props.dataColumns} />
+          ))}
+      </>
+    )}
     >
       <EntityStixCoreRelationshipsEntitiesComponent
         {...props}
@@ -160,7 +162,7 @@ Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
       />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement}/>
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

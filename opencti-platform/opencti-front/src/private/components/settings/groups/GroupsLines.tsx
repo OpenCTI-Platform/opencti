@@ -9,11 +9,11 @@ import { DataColumns, PaginationOptions } from '../../../../components/list_line
 const nbOfRowsToLoad = 50;
 
 interface GroupsLinesProps {
-  initialLoading: boolean
-  dataColumns: DataColumns
-  relay: RelayPaginationProp,
-  paginationOptions: PaginationOptions,
-  data: GroupsLines_data$data
+  initialLoading: boolean;
+  dataColumns: DataColumns;
+  relay: RelayPaginationProp;
+  paginationOptions: PaginationOptions;
+  data: GroupsLines_data$data;
 }
 
 const GroupsLines: React.FC<GroupsLinesProps> = (props) => {

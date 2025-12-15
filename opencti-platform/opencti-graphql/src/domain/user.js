@@ -12,7 +12,7 @@ import {
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
   getRequestAuditHeaders,
-  logApp
+  logApp,
 } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -27,7 +27,7 @@ import {
   fullEntitiesThroughRelationsToList,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
-  storeLoadById
+  storeLoadById,
 } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { killUserSessions } from '../database/session';
@@ -42,15 +42,17 @@ import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
   RELATION_HAS_CAPABILITY,
+  RELATION_HAS_CAPABILITY_IN_DRAFT,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
-  RELATION_PARTICIPATE_TO
+  RELATION_PARTICIPATE_TO,
 } from '../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import {
   applyOrganizationRestriction,
   BYPASS,
+  CAPABILITIES_IN_DRAFT_NAMES,
   executionContext,
   FilterMembersMode,
   filterMembersWithUsersOrgs,
@@ -62,7 +64,7 @@ import {
   REDACTED_USER,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
-  VIRTUAL_ORGANIZATION_ADMIN
+  VIRTUAL_ORGANIZATION_ADMIN,
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
@@ -71,7 +73,7 @@ import { defaultMarkingDefinitionsFromGroups, findGroupPaginated as findGroups }
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { extractFilterKeys, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, extractFilterKeys, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
 import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
@@ -79,7 +81,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
+import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
 import { sendMail, smtpComputeFrom } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
@@ -151,7 +153,7 @@ export const userWithOrigin = (req, user) => {
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
-    playbook_id: req?.headers['opencti-playbook-id']
+    playbook_id: req?.headers['opencti-playbook-id'],
   };
   return { ...user, origin };
 };
@@ -174,7 +176,6 @@ const extractInfoFromBasicAuth = (authorization) => {
 const extractTokenFromBasicAuth = async (authorization) => {
   const { username, password } = extractInfoFromBasicAuth(authorization);
   if (username && password) {
-    // eslint-disable-next-line no-use-before-define
     const { api_token: tokenUUID } = await login(username, password);
     return tokenUUID;
   }
@@ -239,18 +240,24 @@ export const findUserPaginated = async (context, user, args) => {
 
 export const findCreators = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const creatorsFilter = async (creators) => { return filterMembersWithUsersOrgs(context, user, creators, FilterMembersMode.EXCLUDE); };
+  const creatorsFilter = async (creators) => {
+    return filterMembersWithUsersOrgs(context, user, creators, FilterMembersMode.EXCLUDE);
+  };
   return fullEntitiesThoughAggregationConnection(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: creatorsFilter });
 };
 
 export const findAssignees = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const assigneesFilter = async (assignees) => { return filterMembersWithUsersOrgs(context, user, assignees, FilterMembersMode.EXCLUDE); };
+  const assigneesFilter = async (assignees) => {
+    return filterMembersWithUsersOrgs(context, user, assignees, FilterMembersMode.EXCLUDE);
+  };
   return fullEntitiesThoughAggregationConnection(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: assigneesFilter });
 };
 export const findParticipants = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const participantsFilter = async (participants) => { return filterMembersWithUsersOrgs(context, user, participants, FilterMembersMode.EXCLUDE); };
+  const participantsFilter = async (participants) => {
+    return filterMembersWithUsersOrgs(context, user, participants, FilterMembersMode.EXCLUDE);
+  };
   return fullEntitiesThoughAggregationConnection(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: participantsFilter });
 };
 
@@ -444,8 +451,8 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, userMarking
   return { user: computedMarkings, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
 };
 
-export const roleCapabilities = async (context, user, roleId) => {
-  return fullEntitiesThroughRelationsToList(context, user, roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
+export const roleCapabilities = async (context, user, roleId, relationshipType = RELATION_HAS_CAPABILITY) => {
+  return await fullEntitiesThroughRelationsToList(context, user, roleId, relationshipType, ENTITY_TYPE_CAPABILITY);
 };
 
 export const getDefaultHiddenTypes = (entities) => {
@@ -462,9 +469,28 @@ export const findRoles = (context, user, args) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
-export const findCapabilities = (context, user, args) => {
-  const finalArgs = R.assoc('orderBy', 'attribute_order', args);
-  return pageEntitiesConnection(context, user, [ENTITY_TYPE_CAPABILITY], finalArgs);
+export const findCapabilities = async (context, user, args, relationship_type = RELATION_HAS_CAPABILITY) => {
+  const filters = relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT
+    ? addFilter(args.filters, 'name', CAPABILITIES_IN_DRAFT_NAMES)
+    : args.filters;
+  return await pageEntitiesConnection(context, user, [ENTITY_TYPE_CAPABILITY], {
+    ...args,
+    filters,
+    orderBy: 'attribute_order',
+  });
+};
+
+export const findRolesWithCapabilityInDraft = async (context, user, args) => {
+  return R.uniqBy((relation) => relation.fromId,
+    await fullRelationsList(
+      context,
+      user,
+      RELATION_HAS_CAPABILITY_IN_DRAFT, {
+        ...args,
+        fromTypes: [ENTITY_TYPE_ROLE],
+        toTypes: [ENTITY_TYPE_CAPABILITY],
+      }),
+  );
 };
 
 export const roleDelete = async (context, user, roleId) => {
@@ -475,7 +501,7 @@ export const roleDelete = async (context, user, roleId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes role \`${deleted.name}\``,
-    context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: deleted }
+    context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: deleted },
   });
   await roleUsersCacheRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].DELETE_TOPIC, deleted, user).then(() => roleId);
@@ -508,7 +534,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
   }
   const targetUser = await findById(context, user, userId);
   if (!targetUser) {
-    throw FunctionalError('Cannot add the relation, User cannot be found.');
+    throw FunctionalError('Cannot add the relation, User cannot be found.', { userId });
   }
   const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   const created = await createRelation(context, user, input);
@@ -519,7 +545,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${created.toType} \`${extractEntityRepresentativeName(created.to)}\` to user \`${actionEmail}\``,
-    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
@@ -533,7 +559,7 @@ export const assignOrganizationNameToUser = async (context, user, userId, organi
 export const assignGroupToUser = async (context, user, userId, groupName) => {
   const targetUser = await findById(context, user, userId);
   if (!targetUser) {
-    throw FunctionalError('Cannot add the relation, User cannot be found.');
+    throw FunctionalError('Cannot add the relation, User cannot be found.', { userId });
   }
   // No need for audit log here, only use for provider login
   const generateToId = generateStandardId(ENTITY_TYPE_GROUP, { name: groupName });
@@ -555,7 +581,7 @@ export const checkPasswordInlinePolicy = (context, policy, password) => {
     password_policy_min_numbers,
     password_policy_min_words,
     password_policy_min_lowercase,
-    password_policy_min_uppercase
+    password_policy_min_uppercase,
   } = policy;
   const errors = [];
   if (isEmptyField(password)) {
@@ -642,7 +668,7 @@ export const sendEmailToUser = async (context, user, input) => {
       ...sanitizeUser(targetUser),
       account_lock_after_date: targetUser.account_lock_after_date
         ? DateTime.fromISO(targetUser.account_lock_after_date).toFormat('yyyy-MM-dd')
-        : ''
+        : '',
     },
     organizationNames,
   });
@@ -670,9 +696,9 @@ export const sendEmailToUser = async (context, user, input) => {
       entity_name: targetUser.name,
       input: {
         ...input,
-        to: targetUser.user_email
-      }
-    }
+        to: targetUser.user_email,
+      },
+    },
   });
   return true;
 };
@@ -787,7 +813,7 @@ export const addUser = async (context, user, newUser) => {
       event_scope: 'create',
       event_access: 'administration',
       message: `creates user \`${actionEmail}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_USER, input: newUser }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_USER, input: newUser },
     });
   }
 
@@ -814,7 +840,7 @@ export const roleEditField = async (context, user, roleId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for role \`${element.name}\``,
-    context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input }
+    context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input },
   });
   await roleUsersCacheRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, element, user);
@@ -823,7 +849,7 @@ export const roleEditField = async (context, user, roleId, input) => {
 export const roleAddRelation = async (context, user, roleId, input) => {
   const role = await storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
-    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`);
+    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`, { id: roleId });
   }
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
@@ -836,19 +862,22 @@ export const roleAddRelation = async (context, user, roleId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${relationData.to.entity_type} \`${extractEntityRepresentativeName(relationData.to)}\` for role \`${role.name}\``,
-    context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: finalInput }
+    context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: finalInput },
   });
   await roleUsersCacheRefresh(context, user, roleId);
+  if (input.relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT) {
+    await addCapabilitiesInDraftUpdatedCount();
+  }
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
 };
 
 export const roleDeleteRelation = async (context, user, roleId, toId, relationshipType) => {
   const role = await storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
-    throw FunctionalError('Cannot delete the relation, Role cannot be found.');
+    throw FunctionalError('Cannot delete the relation, Role cannot be found.', { id: roleId });
   }
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
   const deleted = await deleteRelationsByFromAndTo(context, user, roleId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   const input = { fromId: roleId, toId, relationship_type: relationshipType };
@@ -858,9 +887,12 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
     event_scope: 'update',
     event_access: 'administration',
     message: `removes ${deleted.to.entity_type} \`${extractEntityRepresentativeName(deleted.to)}\` for role \`${role.name}\``,
-    context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input }
+    context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input },
   });
   await roleUsersCacheRefresh(context, user, roleId);
+  if (input.relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT) {
+    await addCapabilitiesInDraftUpdatedCount();
+  }
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
@@ -879,10 +911,10 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (userToUpdate.external && input.key === 'name') {
-      throw FunctionalError('Name cannot be updated for external user');
+      throw FunctionalError('Name cannot be updated for external user', { userId });
     }
     if (userToUpdate.external && input.key === 'user_email') {
-      throw FunctionalError('Email cannot be updated for external user');
+      throw FunctionalError('Email cannot be updated for external user', { userId });
     }
     if (input.key === 'password') {
       const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
@@ -895,7 +927,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         await checkPasswordFromPolicy(context, userPassword);
         input.value = [bcrypt.hashSync(userPassword)];
       } else {
-        throw FunctionalError('Cannot update password for Service account');
+        throw FunctionalError('Cannot update password for Service account', { userId });
       }
     }
     if (input.key === 'account_status') {
@@ -963,7 +995,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
-    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
@@ -995,12 +1027,12 @@ export const bookmarks = async (context, user, args) => {
       entity_type: (data, filter) => {
         const values = [data.type]; // data is a bookmark
         return testStringFilter(filter, values);
-      }
+      },
     };
     bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
   }
   const filteredBookmarks = [];
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const bookmark of bookmarkList) {
     const loadedBookmark = await storeLoadById(context, user, bookmark.id, bookmark.type);
     if (isNotEmptyField(loadedBookmark)) {
@@ -1013,7 +1045,7 @@ export const bookmarks = async (context, user, args) => {
     0,
     null,
     filteredBookmarks.map((n) => ({ node: n })),
-    filteredBookmarks.length
+    filteredBookmarks.length,
   );
 };
 
@@ -1022,7 +1054,7 @@ export const addBookmark = async (context, user, id, type) => {
   const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
   const newBookmarks = R.append(
     { id, type },
-    R.filter((n) => n.id !== id, currentBookmarks)
+    R.filter((n) => n.id !== id, currentBookmarks),
   );
   await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
   return storeLoadById(context, user, id, type);
@@ -1084,11 +1116,11 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
           bool: {
             must: [
               { term: { 'entity_type.keyword': { value: 'Workspace' } } },
-              { terms: { 'internal_id.keyword': workspaceToDeleteIds } }
-            ]
-          }
-        }
-      }
+              { terms: { 'internal_id.keyword': workspaceToDeleteIds } },
+            ],
+          },
+        },
+      },
     }).catch((err) => {
       throw DatabaseError('[DELETE] Error deleting Workspace for user ', { cause: err, user_id: userId });
     });
@@ -1109,14 +1141,14 @@ export const deleteAllTriggerAndDigestByUser = async (userId) => {
               nested: {
                 path: authorizedMembers.name,
                 query: {
-                  term: { [`${authorizedMembers.name}.id.keyword`]: { value: userId } }
-                }
-              }
-            }
-          ]
-        }
-      }
-    }
+                  term: { [`${authorizedMembers.name}.id.keyword`]: { value: userId } },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
   }).catch((err) => {
     throw DatabaseError('[DELETE] Error deleting Trigger for user', { cause: err, user_id: userId });
   });
@@ -1130,11 +1162,11 @@ export const deleteAllNotificationByUser = async (userId) => {
         bool: {
           must: [
             { term: { 'entity_type.keyword': { value: 'Notification' } } },
-            { term: { 'user_id.keyword': { value: userId } } }
-          ]
-        }
-      }
-    }
+            { term: { 'user_id.keyword': { value: userId } } },
+          ],
+        },
+      },
+    },
   }).catch((err) => {
     throw DatabaseError('[DELETE] Error deleting notification for user', { cause: err, user_id: userId });
   });
@@ -1174,7 +1206,7 @@ export const userDelete = async (context, user, userId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes user \`${actionEmail}\``,
-    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: deleted }
+    context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: deleted },
   });
   await killUserSessions(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user).then(() => userId);
@@ -1183,7 +1215,7 @@ export const userDelete = async (context, user, userId) => {
 export const userAddRelation = async (context, user, userId, input) => {
   const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!userData) {
-    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`);
+    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`, { userId });
   }
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
@@ -1204,7 +1236,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${relationData.toType} \`${extractEntityRepresentativeName(relationData.to)}\` for user \`${actionEmail}\``,
-    context_data: { id: userData.id, entity_type: ENTITY_TYPE_USER, input: finalInput }
+    context_data: { id: userData.id, entity_type: ENTITY_TYPE_USER, input: finalInput },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user).then(() => relationData);
 };
@@ -1222,7 +1254,7 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
     event_scope: 'update',
     event_access: 'administration',
     message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
-    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
@@ -1230,10 +1262,10 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
 export const userIdDeleteRelation = async (context, user, userId, toId, relationshipType) => {
   const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!userData) {
-    throw FunctionalError('Cannot delete the relation, User cannot be found.');
+    throw FunctionalError('Cannot delete the relation, User cannot be found.', { userId });
   }
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
   return userDeleteRelation(context, user, userData, toId, relationshipType);
 };
@@ -1247,7 +1279,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
   }
   const targetUser = await findById(context, user, userId);
   if (!targetUser) {
-    throw FunctionalError('Cannot delete the relation, User cannot be found.');
+    throw FunctionalError('Cannot delete the relation, User cannot be found.', { userId });
   }
 
   const { to } = await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
@@ -1267,7 +1299,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     event_scope: 'update',
     event_access: 'administration',
     message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
-    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
+    context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
@@ -1445,7 +1477,7 @@ const virtualOrganizationAdminCapability = {
   entity_type: 'Capability',
   parent_types: ['Basic-Object', 'Internal-Object'],
   created_at: Date.now(),
-  updated_at: Date.now()
+  updated_at: Date.now(),
 };
 
 export const isSensitiveChangesAllowed = (userId, roles) => {
@@ -1461,7 +1493,7 @@ export const buildCompleteUsers = async (context, clients) => {
   const contactInformationFilter = { mode: 'and', filters: [{ key: 'contact_information', values: clients.map((c) => c.user_email) }], filterGroups: [] };
   const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, noFiltersChecking: true };
   const individualsPromise = fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
-  const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
+  const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
   const relations = await fullRelationsList(context, SYSTEM_USER, authRelationships, { indices: READ_RELATIONSHIPS_INDICES });
   const users = new Map();
   const roleIds = new Set();
@@ -1471,6 +1503,7 @@ export const buildCompleteUsers = async (context, clients) => {
   const groupsRoles = new Map();
   const groupsMarkings = new Map();
   const rolesCapabilities = new Map();
+  const rolesCapabilitiesInDraft = new Map();
   for (let index = 0; index < relations.length; index += 1) {
     await doYield();
     const { fromId, entity_type, toId } = relations[index];
@@ -1524,6 +1557,19 @@ export const buildCompleteUsers = async (context, clients) => {
         rolesCapabilities.set(fromId, [toId]);
       }
     }
+
+    // role <- RELATION_HAS_CAPABILITY_IN_DRAFT -> capability
+    if (entity_type === RELATION_HAS_CAPABILITY_IN_DRAFT) {
+      roleIds.add(fromId);
+      capabilityIds.add(toId);
+      if (rolesCapabilitiesInDraft.has(fromId)) {
+        const capabilities = rolesCapabilitiesInDraft.get(fromId);
+        rolesCapabilitiesInDraft.set(fromId, [...(capabilities ?? []), toId]);
+      } else {
+        rolesCapabilitiesInDraft.set(fromId, [toId]);
+      }
+    }
+
     // group <- RELATION_HAS_ROLE -> role
     if (entity_type === RELATION_HAS_ROLE) {
       groupIds.add(fromId);
@@ -1556,6 +1602,8 @@ export const buildCompleteUsers = async (context, clients) => {
     const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
     const capabilities = R.uniq(roles.map((role) => rolesCapabilities.get(role.internal_id)).flat())
       .map((capabilityId) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
+    const capabilitiesInDraft = R.uniq(roles.map((role) => rolesCapabilitiesInDraft.get(role.internal_id)).flat())
+      .map((capabilityId) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
     // Force push the bypass for default admin
     const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
     if (client.internal_id === OPENCTI_ADMIN_UUID && withoutBypass) {
@@ -1581,6 +1629,7 @@ export const buildCompleteUsers = async (context, clients) => {
       ...canManageSensitiveConfig,
       roles,
       capabilities,
+      capabilitiesInDraft,
       default_hidden_types,
       groups,
       organizations,
@@ -1655,7 +1704,7 @@ export const userRenewToken = async (context, user, userId) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `renew token of user \`${actionEmail}\``,
-    context_data: { id: userId, entity_type: ENTITY_TYPE_USER }
+    context_data: { id: userId, entity_type: ENTITY_TYPE_USER },
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
@@ -1670,8 +1719,7 @@ export const userRenewToken = async (context, user, userId) => {
  */
 const validateUser = (user, settings) => {
   // Check organization consistency
-  const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
-  if (!hasSetAccessCapability && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
+  if (!isBypassUser(user) && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
     throw AuthenticationFailure('You can\'t login without an organization');
   }
   // Check account expiration date
@@ -1708,7 +1756,7 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
     event_type: 'authentication',
     event_access: 'administration',
     event_scope: 'login',
-    context_data: { provider }
+    context_data: { provider },
   });
   return userOrigin;
 };

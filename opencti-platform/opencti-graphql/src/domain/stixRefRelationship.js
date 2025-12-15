@@ -7,7 +7,7 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
-  ABSTRACT_STIX_RELATIONSHIP
+  ABSTRACT_STIX_RELATIONSHIP,
 } from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixRefRelationship, META_RELATIONS, STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
@@ -99,7 +99,7 @@ export const addStixRefRelationship = async (context, user, stixRefRelationship)
       from: stixRefRelationship.fromId,
       from_missing: !from,
       to: stixRefRelationship.toId,
-      to_missing: !to
+      to_missing: !to,
     });
   }
   return createRelation(context, user, stixRefRelationship);
@@ -108,7 +108,7 @@ export const stixRefRelationshipEditField = async (context, user, stixRefRelatio
   // Not use ABSTRACT_STIX_REF_RELATIONSHIP to have compatibility on parent type with ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP type
   const stixRefRelation = await storeLoadById(context, user, stixRefRelationshipId, ABSTRACT_STIX_RELATIONSHIP);
   if (!stixRefRelation) {
-    throw FunctionalError('Cannot delete the relation, Stix-Ref-Relation cannot be found.');
+    throw FunctionalError('Cannot delete the relation, Stix-Ref-Relation cannot be found.', { id: stixRefRelationshipId });
   }
   const { element } = await updateAttribute(context, user, stixRefRelationshipId, ABSTRACT_STIX_RELATIONSHIP, input);
   return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].EDIT_TOPIC, element, user);

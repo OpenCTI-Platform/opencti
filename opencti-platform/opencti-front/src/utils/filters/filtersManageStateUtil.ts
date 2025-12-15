@@ -2,7 +2,7 @@ import { Filter, FilterGroup, FilterValue } from './filtersHelpers-types';
 import { DEFAULT_WITHIN_FILTER_VALUES } from './filtersUtils';
 
 type FiltersLocalStorageUtilProps<U> = {
-  filters: FilterGroup,
+  filters: FilterGroup;
 } & U;
 
 const updateFilters = (filters: FilterGroup, updateFn: (filter: Filter) => Filter): FilterGroup => {
@@ -14,7 +14,7 @@ const updateFilters = (filters: FilterGroup, updateFn: (filter: Filter) => Filte
 };
 
 export const handleAddFilterWithEmptyValueUtil = ({ filters, filter }: FiltersLocalStorageUtilProps<{
-  filter: Filter
+  filter: Filter;
 }>) => {
   return {
     ...filters,
@@ -26,8 +26,8 @@ export const handleAddFilterWithEmptyValueUtil = ({ filters, filter }: FiltersLo
 };
 
 export const handleChangeOperatorFiltersUtil = ({ filters, id, operator }: FiltersLocalStorageUtilProps<{
-  id: string,
-  operator: string
+  id: string;
+  operator: string;
 }>): FilterGroup => {
   return updateFilters(filters, (f) => {
     if (f.id === id) {
@@ -50,7 +50,7 @@ export const handleChangeOperatorFiltersUtil = ({ filters, id, operator }: Filte
 };
 
 export const handleSwitchLocalModeUtil = ({ filters, filter }: FiltersLocalStorageUtilProps<{
-  filter: Filter
+  filter: Filter;
 }>): FilterGroup => {
   return updateFilters(filters, (f) => (f.id === filter.id
     ? { ...f, mode: filter.mode === 'and' ? 'or' : 'and' }
@@ -58,15 +58,15 @@ export const handleSwitchLocalModeUtil = ({ filters, filter }: FiltersLocalStora
 };
 
 export const handleAddRepresentationFilterUtil = ({ filters, id, value }: FiltersLocalStorageUtilProps<{
-  id: string,
-  value: string | FilterValue
+  id: string;
+  value: string | FilterValue;
 }>): FilterGroup => {
   return updateFilters(filters, (f) => (f.id === id ? { ...f, values: [...f.values, value] } : f));
 };
 
 export const handleAddSingleValueFilterUtil = ({ filters, id, valueId }: FiltersLocalStorageUtilProps<{
-  id: string,
-  valueId?: string
+  id: string;
+  valueId?: string;
 }>): FilterGroup => {
   if (valueId) {
     return updateFilters(filters, (f) => (f.id === id ? { ...f, values: [valueId] } : f));
@@ -75,21 +75,21 @@ export const handleAddSingleValueFilterUtil = ({ filters, id, valueId }: Filters
 };
 
 export const handleReplaceFilterValuesUtil = ({ filters, id, values }: FiltersLocalStorageUtilProps<{
-  id: string,
-  values: string[] | FilterGroup[],
+  id: string;
+  values: string[] | FilterGroup[];
 }>): FilterGroup => {
   return updateFilters(filters, (f) => (f.id === id ? { ...f, values } : f));
 };
 
 export const handleRemoveRepresentationFilterUtil = ({ filters, id, value }: FiltersLocalStorageUtilProps<{
-  id: string,
-  value: string | FilterValue
+  id: string;
+  value: string | FilterValue;
 }>): FilterGroup => {
   return updateFilters(filters, (f) => (f.id === id
     ? {
-      ...f,
-      values: f.values.filter((v) => v !== value),
-    }
+        ...f,
+        values: f.values.filter((v) => v !== value),
+      }
     : f));
 };
 
@@ -100,10 +100,10 @@ export const handleRemoveFilterUtil = ({ filters, id }: FiltersLocalStorageUtilP
   };
 };
 
-export const handleChangeRepresentationFilterUtil = ({ filters, id, oldValue, newValue }:FiltersLocalStorageUtilProps<{
-  id: string,
-  oldValue: FilterValue,
-  newValue: FilterValue,
+export const handleChangeRepresentationFilterUtil = ({ filters, id, oldValue, newValue }: FiltersLocalStorageUtilProps<{
+  id: string;
+  oldValue: FilterValue;
+  newValue: FilterValue;
 }>): FilterGroup => {
   return updateFilters(
     filters,

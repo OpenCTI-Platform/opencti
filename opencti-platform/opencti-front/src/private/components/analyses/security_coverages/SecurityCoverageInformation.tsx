@@ -96,31 +96,35 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
     const iconPosition = variant === 'matrix' ? 13 : 16;
     if (isEmptyField(coverage_information)) {
       const { options, series } = genOpts(null);
-      return <div className={classes.chartContainer} style={{ width: size, height: size }}>
-        <div className={classes.chart}>
-          <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize}/>
-          <Tooltip title={'Empty coverage'} placement="bottom">
-            <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
-              <span style={{ color: theme.palette.text?.primary }}>E</span>
-            </Avatar>
-          </Tooltip>
+      return (
+        <div className={classes.chartContainer} style={{ width: size, height: size }}>
+          <div className={classes.chart}>
+            <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize} />
+            <Tooltip title="Empty coverage" placement="bottom">
+              <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
+                <span style={{ color: theme.palette.text?.primary }}>E</span>
+              </Avatar>
+            </Tooltip>
+          </div>
         </div>
-      </div>;
+      );
     }
     return (
       <div style={{ display: 'flex' }}>
         {(coverage_information ?? []).map((coverageResult) => {
           const { options, series } = genOpts(coverageResult.coverage_score);
-          return <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}>
-            <div className={classes.chart}>
-              <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize}/>
-              <Tooltip title={`${coverageResult.coverage_name} ${coverageResult.coverage_score}/100`} placement="bottom">
-                <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
-                  <span style={{ color: theme.palette.text?.primary }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
-                </Avatar>
-              </Tooltip>
+          return (
+            <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}>
+              <div className={classes.chart}>
+                <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize} />
+                <Tooltip title={`${coverageResult.coverage_name} ${coverageResult.coverage_score}/100`} placement="bottom">
+                  <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
+                    <span style={{ color: theme.palette.text?.primary }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
+                  </Avatar>
+                </Tooltip>
+              </div>
             </div>
-          </div>;
+          );
         })}
       </div>
     );
@@ -134,8 +138,8 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
         <div className={classes.chartItem}>
           <div className={classes.chartContainer}>
             <div className={classes.chart}>
-              <Chart options={options} series={series} type="donut" width={70} height={70}/>
-              <Tooltip title={'Empty coverage'} placement="top">
+              <Chart options={options} series={series} type="donut" width={70} height={70} />
+              <Tooltip title="Empty coverage" placement="top">
                 <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }}>
                   <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}>E</span>
                 </Avatar>
@@ -165,7 +169,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
           <div key={coverageResult.coverage_name} className={classes.chartItem}>
             <div className={classes.chartContainer}>
               <div className={classes.chart}>
-                <Chart options={options} series={series} type="donut" width={70} height={70}/>
+                <Chart options={options} series={series} type="donut" width={70} height={70} />
                 <Tooltip title={coverageResult.coverage_name} placement="top">
                   <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }}>
                     <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>

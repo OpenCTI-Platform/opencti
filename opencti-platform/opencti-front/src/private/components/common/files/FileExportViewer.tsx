@@ -79,9 +79,9 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
         </Tooltip>
       </div>
       <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         {exportFiles?.edges?.length ? (
-          <List data-testid={'FileExportManager'}>
+          <List data-testid="FileExportManager">
             {exportFiles.edges.map((file) => (
               file?.node && (
                 <FileLine

@@ -11,7 +11,10 @@ RUN set -eux; \
 COPY .yarnrc.yml /opt/opencti-build/
 
 
-#### Build back
+##############################
+### Build back
+##############################
+
 FROM builder AS builder-back
 
 # TAG_VERSION used to generate connector manifest on a tag during yarn build. Default to rolling manifest
@@ -30,8 +33,10 @@ RUN yarn install --immutable
 COPY opencti-graphql/ ./
 RUN yarn build:prod
 
+##############################
+### Build front
+##############################
 
-#### Build front
 FROM builder AS builder-front
 WORKDIR /opt/opencti-build/opencti-front
 
@@ -47,7 +52,10 @@ RUN set -eux; \
     mkdir -p ../opencti-graphql/public; \
     yarn build
 
-### Build the image
+##############################
+### Build the production image
+##############################
+
 FROM base AS app
 
 RUN apk add --no-cache tini python3 python3-dev

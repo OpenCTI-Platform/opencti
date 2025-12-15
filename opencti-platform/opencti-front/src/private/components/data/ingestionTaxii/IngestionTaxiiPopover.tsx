@@ -171,7 +171,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   };
 
   return (
-    <div style={{ margin: 0 }} >
+    <div style={{ margin: 0 }}>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -187,14 +187,14 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         onClose={handleClose}
       >
         {!running && (
-        <MenuItem onClick={handleOpenStart}>
-          {t_i18n('Start')}
-        </MenuItem>
+          <MenuItem onClick={handleOpenStart}>
+            {t_i18n('Start')}
+          </MenuItem>
         )}
         {running && (
-        <MenuItem onClick={handleOpenStop}>
-          {t_i18n('Stop')}
-        </MenuItem>
+          <MenuItem onClick={handleOpenStop}>
+            {t_i18n('Stop')}
+          </MenuItem>
         )}
         <MenuItem onClick={handleOpenUpdate}>
           {t_i18n('Update')}

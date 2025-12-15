@@ -248,30 +248,30 @@ class StixCoreRelationshipContainer extends Component {
         >
           <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true} sx={{ float: 'left' }}>
-              {t('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip/>)}
+              {t('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip />)}
             </Typography>
             {!stixCoreRelationship.is_inferred && (
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <IconButton
-                color="primary"
-                onClick={this.handleOpenEdition.bind(this)}
-                size="large"
-                sx={{ margin: '-15px 0px 0px -2px', float: 'left' }}
-              >
-                <EditOutlined fontSize="small" />
-              </IconButton>
-              <StixCoreRelationshipEdition
-                open={this.state.openEdit}
-                stixCoreRelationshipId={stixCoreRelationship.id}
-                handleClose={this.handleCloseEdition.bind(this)}
-                handleDelete={this.handleOpenDelete.bind(this)}
-              />
-            </Security>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <IconButton
+                  color="primary"
+                  onClick={this.handleOpenEdition.bind(this)}
+                  size="large"
+                  sx={{ margin: '-15px 0px 0px -2px', float: 'left' }}
+                >
+                  <EditOutlined fontSize="small" />
+                </IconButton>
+                <StixCoreRelationshipEdition
+                  open={this.state.openEdit}
+                  stixCoreRelationshipId={stixCoreRelationship.id}
+                  handleClose={this.handleCloseEdition.bind(this)}
+                  handleDelete={this.handleOpenDelete.bind(this)}
+                />
+              </Security>
             )}
             <Paper
               classes={{ root: classes.paperRelationships }}
               variant="outlined"
-              className={'paper-for-grid'}
+              className="paper-for-grid"
             >
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
                 <div
@@ -314,13 +314,13 @@ class StixCoreRelationshipContainer extends Component {
                     <span className={classes.name}>
                       {!fromRestricted
                         ? truncate(
-                          getMainRepresentative(from) !== 'Unknown'
-                            ? getMainRepresentative(from)
-                            : t(`relationship_${from.entity_type}`),
-                          50,
-                        )
+                            getMainRepresentative(from) !== 'Unknown'
+                              ? getMainRepresentative(from)
+                              : t(`relationship_${from.entity_type}`),
+                            50,
+                          )
                         : t('Restricted')}
-                      {!fromRestricted && stixCoreRelationship.from.draftVersion && (<DraftChip/>)}
+                      {!fromRestricted && stixCoreRelationship.from.draftVersion && (<DraftChip />)}
                     </span>
                   </div>
                 </div>
@@ -380,13 +380,13 @@ class StixCoreRelationshipContainer extends Component {
                     <span className={classes.name}>
                       {!toRestricted
                         ? truncate(
-                          getMainRepresentative(to) !== 'Unknown'
-                            ? getMainRepresentative(to)
-                            : t(`relationship_${to.entity_type}`),
-                          50,
-                        )
+                            getMainRepresentative(to) !== 'Unknown'
+                              ? getMainRepresentative(to)
+                              : t(`relationship_${to.entity_type}`),
+                            50,
+                          )
                         : t('Restricted')}
-                      {!toRestricted && stixCoreRelationship.to.draftVersion && (<DraftChip/>)}
+                      {!toRestricted && stixCoreRelationship.to.draftVersion && (<DraftChip />)}
                     </span>
                   </div>
                 </div>
@@ -452,7 +452,7 @@ class StixCoreRelationshipContainer extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+            <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>

@@ -16,7 +16,7 @@ interface StixDomainObjectsExportsProps {
 }
 
 const StixDomainObjectsExports: FunctionComponent<
-StixDomainObjectsExportsProps
+  StixDomainObjectsExportsProps
 > = ({ exportContext, paginationOptions, open, handleToggle }) => {
   const { t_i18n } = useFormatter();
   return (

@@ -14,7 +14,7 @@ const CountryDeletionDeleteMutation = graphql`
   }
 `;
 
-const CountryDeletion = ({ id, isOpen, handleClose }: { id: string, isOpen: boolean, handleClose: () => void }) => {
+const CountryDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {

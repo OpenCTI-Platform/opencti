@@ -17,9 +17,9 @@ import RelationSelection from './components/RelationSelection';
 import GraphLoadingAlert from './components/GraphLoadingAlert';
 
 export interface GraphProps {
-  parentRef: MutableRefObject<HTMLDivElement | null>
-  onPositionsChanged?: (positions: OctiGraphPositions) => void
-  children?: ReactNode
+  parentRef: MutableRefObject<HTMLDivElement | null>;
+  onPositionsChanged?: (positions: OctiGraphPositions) => void;
+  children?: ReactNode;
 }
 
 const Graph = ({
@@ -30,7 +30,7 @@ const Graph = ({
   const graphId = `graph-${uuid()}`;
   const theme = useTheme<Theme>();
   const { width, height } = useResizeObserver(parentRef);
-  const nodeClicked = useRef<{ node?: GraphNode, time?: number }>({});
+  const nodeClicked = useRef<{ node?: GraphNode; time?: number }>({});
 
   const {
     saveZoom,

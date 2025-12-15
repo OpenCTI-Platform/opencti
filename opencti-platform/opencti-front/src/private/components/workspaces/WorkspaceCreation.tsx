@@ -48,13 +48,13 @@ const workspaceValidation = (t_i18n: (s: string) => string) => Yup.object().shap
 });
 
 interface WorkspaceCreationForm {
-  name: string,
-  description: string,
+  name: string;
+  description: string;
 }
 
 interface WorkspaceCreationProps {
-  paginationOptions: WorkspacesLinesPaginationQuery$variables,
-  type: string,
+  paginationOptions: WorkspacesLinesPaginationQuery$variables;
+  type: string;
 }
 
 const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) => {
@@ -116,7 +116,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
 
   const createInvestigationButton = (props: { onOpen: () => void }) => (
     <Security needs={[INVESTIGATION_INUPDATE]}>
-      <CreateEntityControlledDial entityType='Investigation' {...props} />
+      <CreateEntityControlledDial entityType="Investigation" {...props} />
     </Security>
   );
 
@@ -128,30 +128,30 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
           size="small"
           onClick={() => inputRef.current?.click()}
           sx={{ marginLeft: theme.spacing(1) }}
-          data-testid='ImportDashboard'
+          data-testid="ImportDashboard"
           title={t_i18n('Import dashboard')}
         >
-          <FileUploadOutlined fontSize="small" color={'primary'} />
+          <FileUploadOutlined fontSize="small" color="primary" />
         </ToggleButton>
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
-        <GradientButton
-          size="small"
-          sx={{ marginLeft: theme.spacing(1) }}
-          href={importFromHubUrl}
-          target="_blank"
-          title={t_i18n('Import from Hub')}
-        >
-          {t_i18n('Import from Hub')}
-        </GradientButton>
+          <GradientButton
+            size="small"
+            sx={{ marginLeft: theme.spacing(1) }}
+            href={importFromHubUrl}
+            target="_blank"
+            title={t_i18n('Import from Hub')}
+          >
+            {t_i18n('Import from Hub')}
+          </GradientButton>
         )}
-        <CreateEntityControlledDial entityType='Dashboard' {...props} />
+        <CreateEntityControlledDial entityType="Dashboard" {...props} />
       </>
     </Security>
   );
 
   return (
     <>
-      <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleImport} />
+      <VisuallyHiddenInput type="file" accept="application/JSON" ref={inputRef} onChange={handleImport} />
       <Drawer
         title={t_i18n(`Create ${type}`)}
         controlledDial={(type === 'dashboard')

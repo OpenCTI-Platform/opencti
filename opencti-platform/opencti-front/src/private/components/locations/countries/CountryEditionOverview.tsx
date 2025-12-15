@@ -134,7 +134,7 @@ interface CountryEditionFormValues {
 }
 
 const CountryEditionOverviewComponent: FunctionComponent<
-CountryEditionOverviewProps
+  CountryEditionOverviewProps
 > = ({ countryRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const country = useFragment(countryEditionOverviewFragment, countryRef);
@@ -280,12 +280,12 @@ CountryEditionOverviewProps
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

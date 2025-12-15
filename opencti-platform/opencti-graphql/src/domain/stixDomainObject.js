@@ -17,7 +17,7 @@ import {
   pageRegardingEntitiesConnection,
   topRelationsList,
   storeLoadById,
-  storeLoadByIds
+  storeLoadByIds,
 } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
@@ -30,10 +30,10 @@ import {
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
-  isStixDomainObjectThreatActor
+  isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS } from '../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
@@ -157,19 +157,19 @@ export const handleInnerType = (data, innerType) => {
   if (isStixDomainObjectIdentity(innerType)) {
     return {
       ...data,
-      [identityClass.name]: innerType === ENTITY_TYPE_IDENTITY_SECTOR ? 'class' : innerType.toLowerCase()
+      [identityClass.name]: innerType === ENTITY_TYPE_IDENTITY_SECTOR ? 'class' : innerType.toLowerCase(),
     };
   }
   if (isStixDomainObjectLocation(innerType)) {
     return {
       ...data,
-      [entityLocationType.name]: innerType
+      [entityLocationType.name]: innerType,
     };
   }
   if (isStixDomainObjectThreatActor(innerType)) {
     return {
       ...data,
-      [xOpenctiType.name]: innerType
+      [xOpenctiType.name]: innerType,
     };
   }
   return data;
@@ -209,7 +209,7 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId) 
   // If we are in a draft, we need to also search for deleted elements
   const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, { includeDeletedInDraft: true });
   if (!stixDomainObject) {
-    throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.');
+    throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.', { stixDomainObjectId });
   }
   await deleteElementById(context, user, stixDomainObjectId, stixDomainObject.entity_type);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, stixDomainObject, user);
@@ -263,11 +263,11 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {
     const observables = await fullEntitiesThroughRelationsToList(context, user, stixObjectId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
     await Promise.all(
-      observables.map((observable) => updateAttribute(context, user, observable.id, ABSTRACT_STIX_CYBER_OBSERVABLE, input, opts))
+      observables.map((observable) => updateAttribute(context, user, observable.id, ABSTRACT_STIX_CYBER_OBSERVABLE, input, opts)),
     );
   }
   // Check is a real update was done
-  const updateWithoutMeta = R.pipe(R.omit(schemaRelationsRefDefinition.getInputNames(stixDomainObject.entity_type)),)(updatedElem);
+  const updateWithoutMeta = R.pipe(R.omit(schemaRelationsRefDefinition.getInputNames(stixDomainObject.entity_type)))(updatedElem);
   const isUpdated = !R.equals(stixDomainObject, updateWithoutMeta);
   if (isUpdated) {
     // Refresh user sessions for organization authorities

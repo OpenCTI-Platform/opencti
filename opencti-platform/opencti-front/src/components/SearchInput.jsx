@@ -165,61 +165,63 @@ const SearchInput = (props) => {
         } : undefined}
         InputProps={{
           startAdornment: (
-            <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }} >
+            <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }}>
               {isNLQActivated
-                ? <FiligranIcon icon={LogoXtmOneIcon} size='medium' color="ai" />
-                : <Search fontSize="small"/>}
+                ? <FiligranIcon icon={LogoXtmOneIcon} size="medium" color="ai" />
+                : <Search fontSize="small" />}
             </InputAdornment>
           ),
           endAdornment: variant === 'topBar' && (
-          <InputAdornment position="end">
-            {isNLQActivated && isNLQLoading
-              && <div>
-                <Loader variant="inline" />
-              </div>
-            }
-            <Tooltip title={t_i18n('Advanced search')}>
-              <IconButton
-                onClick={handleRemoveAskAI}
-                component={Link}
-                to="/dashboard/search"
-                size="medium"
-                color={
-                  location.pathname.includes('/dashboard/search')
-                  && !location.pathname.includes('/dashboard/search_bulk')
-                  && !isNLQActivated ? 'primary' : 'inherit'
-                }
-              >
-                <BiotechOutlined fontSize='medium'/>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={t_i18n('Bulk search')}>
-              <IconButton
-                onClick={handleRemoveAskAI}
-                component={Link}
-                to="/dashboard/search_bulk"
-                size="medium"
-                color={
-                  location.pathname.includes('/dashboard/search_bulk') && !isNLQActivated
-                    ? 'primary'
-                    : 'inherit'
-                }
-              >
-                <ContentPasteSearchOutlined fontSize="medium"/>
-              </IconButton>
-            </Tooltip>
-            {fullyActive && (
-            <EETooltip forAi={true} title={t_i18n('Ask AI')}>
-              <IconButton
-                size="medium"
-                style={{ color: theme.palette.ai.main }}
-                onClick={isAIEnabled ? handleChangeAskAI : null}
-              >
-                <FiligranIcon icon={LogoXtmOneIcon} size='medium' color="ai" />
-              </IconButton>
-            </EETooltip>
-            )}
-          </InputAdornment>
+            <InputAdornment position="end">
+              {isNLQActivated && isNLQLoading
+                && (
+                  <div>
+                    <Loader variant="inline" />
+                  </div>
+                )
+              }
+              <Tooltip title={t_i18n('Advanced search')}>
+                <IconButton
+                  onClick={handleRemoveAskAI}
+                  component={Link}
+                  to="/dashboard/search"
+                  size="medium"
+                  color={
+                    location.pathname.includes('/dashboard/search')
+                    && !location.pathname.includes('/dashboard/search_bulk')
+                    && !isNLQActivated ? 'primary' : 'inherit'
+                  }
+                >
+                  <BiotechOutlined fontSize="medium" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t_i18n('Bulk search')}>
+                <IconButton
+                  onClick={handleRemoveAskAI}
+                  component={Link}
+                  to="/dashboard/search_bulk"
+                  size="medium"
+                  color={
+                    location.pathname.includes('/dashboard/search_bulk') && !isNLQActivated
+                      ? 'primary'
+                      : 'inherit'
+                  }
+                >
+                  <ContentPasteSearchOutlined fontSize="medium" />
+                </IconButton>
+              </Tooltip>
+              {fullyActive && (
+                <EETooltip forAi={true} title={t_i18n('Ask AI')}>
+                  <IconButton
+                    size="medium"
+                    style={{ color: theme.palette.ai.main }}
+                    onClick={isAIEnabled ? handleChangeAskAI : null}
+                  >
+                    <FiligranIcon icon={LogoXtmOneIcon} size="medium" color="ai" />
+                  </IconButton>
+                </EETooltip>
+              )}
+            </InputAdornment>
           ),
           classes: {
             root: classRoot,

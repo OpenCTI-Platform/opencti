@@ -126,7 +126,7 @@ const RootReport = () => {
                         <ReportEdition reportId={report.id} />
                       </Security>
                     )}
-                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                         <ReportDeletion reportId={report.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>
@@ -189,7 +189,7 @@ const RootReport = () => {
                     </Tabs>
                     {!isKnowledgeOrContent && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                        <AIInsights id={report.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+                        <AIInsights id={report.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
                       </div>
                     )}
@@ -203,21 +203,21 @@ const RootReport = () => {
                     />
                     <Route
                       path="/entities"
-                      element={
+                      element={(
                         <ContainerStixDomainObjects
                           container={report}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/observables"
-                      element={
+                      element={(
                         <ContainerStixCyberObservables
                           container={report}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/knowledge"
@@ -230,25 +230,25 @@ const RootReport = () => {
                     />
                     <Route
                       path="/content/*"
-                      element={
+                      element={(
                         <StixCoreObjectContentRoot
                           stixCoreObject={report}
                           isContainer={true}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/knowledge/*"
-                      element={
+                      element={(
                         <ReportKnowledge
                           report={report}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/files"
-                      element={
+                      element={(
                         <StixCoreObjectFilesAndHistory
                           id={reportId}
                           connectorsExport={props.connectorsForExport}
@@ -257,7 +257,7 @@ const RootReport = () => {
                           withoutRelations={true}
                           bypassEntityId={true}
                         />
-                      }
+                      )}
                     />
                   </Routes>
                 </div>

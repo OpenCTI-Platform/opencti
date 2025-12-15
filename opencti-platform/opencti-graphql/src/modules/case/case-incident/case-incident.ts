@@ -12,11 +12,11 @@ const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCa
     id: 'case-incident',
     name: ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
     category: ENTITY_TYPE_CONTAINER_CASE,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CONTAINER_CASE_INCIDENT]: [{ src: NAME_FIELD }, { src: 'created', dependencies: [NAME_FIELD] }]
+      [ENTITY_TYPE_CONTAINER_CASE_INCIDENT]: [{ src: NAME_FIELD }, { src: 'created', dependencies: [NAME_FIELD] }],
     },
     resolvers: {
       name(data: object) {
@@ -48,7 +48,7 @@ const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCa
   representative: (stix: StixCaseIncident) => {
     return stix.name;
   },
-  converter_2_1: convertCaseIncidentToStix_2_1
+  converter_2_1: convertCaseIncidentToStix_2_1,
 };
 
 registerDefinition(CASE_INCIDENT_DEFINITION);

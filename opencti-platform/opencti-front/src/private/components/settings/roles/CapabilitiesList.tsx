@@ -15,20 +15,27 @@ import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModif
 interface CapabilitiesListProps {
   queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
   role: Role_role$data;
+  isCapabilitiesInDraft?: boolean;
 }
 
 const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
   queryRef,
   role,
+  isCapabilitiesInDraft = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const roleCapabilities = (role.capabilities ?? []).map((n) => ({
-    name: n?.name,
-  })) as { name: string }[];
-  const { capabilities } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
+
+  const { capabilities, capabilitiesInDraft } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
     queryRef,
   );
+
+  const capabilitiesType = isCapabilitiesInDraft ? 'capabilitiesInDraft' : 'capabilities';
+  const capabilitiesBaseList = isCapabilitiesInDraft ? capabilitiesInDraft : capabilities;
+
+  const roleCapabilities = (role[capabilitiesType] ?? []).map((n) => ({
+    name: n?.name,
+  })) as { name: string }[];
   const { isSensitive } = useSensitiveModifications();
 
   return (
@@ -44,16 +51,16 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
             <ItemIcon type="Capability" />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <>
                 {t_i18n('Allow modification of sensitive configuration')}
                 <DangerZoneChip style={{ marginTop: 0 }} />
               </>
-            }
+            )}
           />
         </ListItem>
       )}
-      {capabilities?.edges?.map((edge, i) => {
+      {capabilitiesBaseList?.edges?.map((edge, i) => {
         const capability = edge?.node;
         if (capability) {
           const paddingLeft = (capability.name.split('_').length ?? -20) * 20 - 20;
@@ -65,7 +72,8 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
               && r.name.includes(capability.name)
               && capability.name !== 'BYPASS',
           );
-          const isDisabled = matchingCapabilities.length > 0;
+          const draftCapaMatchingMainCapa = (role.capabilities ?? []).filter((r) => r?.name.includes(capability.name));
+          const isDisabled = isCapabilitiesInDraft ? matchingCapabilities.length > 0 || draftCapaMatchingMainCapa.length > 0 : matchingCapabilities.length > 0;
           const isChecked = isDisabled || roleCapability !== undefined;
           if (isChecked) {
             return (

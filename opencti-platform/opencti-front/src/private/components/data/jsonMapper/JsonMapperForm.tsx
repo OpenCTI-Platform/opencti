@@ -54,8 +54,8 @@ interface JsonMapperFormProps {
     values: JsonMapperFormData,
     formikHelpers: FormikHelpers<JsonMapperFormData>,
   ) => void;
-  isDuplicated?: boolean,
-  attributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes']
+  isDuplicated?: boolean;
+  attributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'];
 }
 
 const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, onSubmit, isDuplicated, attributes }) => {
@@ -68,10 +68,10 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
   // extracting available entities and relationships types from schema
   const { schema } = useAuth();
   const [availableEntityTypes, setAvailableEntityTypes] = useState<
-  RepresentationFormEntityOption[]
+    RepresentationFormEntityOption[]
   >([]);
   const [availableRelationshipTypes, setAvailableRelationshipTypes] = useState<
-  RepresentationFormEntityOption[]
+    RepresentationFormEntityOption[]
   >([]);
 
   // load the available types once in state
@@ -149,7 +149,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
   // on edit mode, jsonMapper.errors might be set; on create mode backend validation is not done yet so error is null
   const [hasError, setHasError] = useState<boolean>(
     !!jsonMapper.errors?.length
-      || (jsonMapper.entity_representations.length === 0 && jsonMapper.relationship_representations.length === 0),
+    || (jsonMapper.entity_representations.length === 0 && jsonMapper.relationship_representations.length === 0),
   );
   let errors: Map<string, string> = new Map();
   const handleRepresentationErrors = (key: string, value: boolean) => {
@@ -184,7 +184,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   onClick={() => onAddEntityRepresentation(setFieldValue, values)}
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </div>
               <FieldArray
@@ -222,7 +222,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   onClick={() => onAddRelationshipRepresentation(setFieldValue, values)}
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </div>
               <FieldArray

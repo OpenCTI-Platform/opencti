@@ -16,8 +16,8 @@ export const convertTriggerToStix = (instance: StoreEntityTrigger): StixTrigger 
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 
@@ -32,7 +32,7 @@ export const convertNotificationToStix = (instance: StoreEntityNotification): St
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };

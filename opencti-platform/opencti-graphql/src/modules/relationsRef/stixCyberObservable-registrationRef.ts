@@ -67,7 +67,7 @@ import {
   ENTITY_USER_ACCOUNT,
   ENTITY_USER_AGENT,
   ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
 } from '../../schema/stixCyberObservable';
 import { getParentTypes } from '../../schema/schemaUtils';
 
@@ -75,14 +75,14 @@ import { getParentTypes } from '../../schema/schemaUtils';
 
 schemaRelationsRefDefinition.registerRelationsRef(
   ABSTRACT_STIX_CYBER_OBSERVABLE,
-  [createdBy, objectMarking, objectLabel, externalReferences, objectOrganization]
+  [createdBy, objectMarking, objectLabel, externalReferences, objectOrganization],
 );
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DIRECTORY, [
-  buildRelationRef(contains, (_: string, toType: string) => [ENTITY_DIRECTORY, ENTITY_HASHED_OBSERVABLE_STIX_FILE].includes(toType))
+  buildRelationRef(contains, (_: string, toType: string) => [ENTITY_DIRECTORY, ENTITY_HASHED_OBSERVABLE_STIX_FILE].includes(toType)),
 ]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DOMAIN_NAME, [
-  buildRelationRef(resolvesTo, (_: string, toType: string) => [ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR].includes(toType))
+  buildRelationRef(resolvesTo, (_: string, toType: string) => [ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR].includes(toType)),
 ]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MESSAGE, [
   buildRelationRef(emailFrom, (_: string, toType: string) => ENTITY_EMAIL_ADDR === toType),
@@ -92,13 +92,18 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MESSAGE, [
   buildRelationRef(bcc, (_: string, toType: string) => ENTITY_EMAIL_ADDR === toType),
   buildRelationRef(bodyMultipart, (_: string, toType: string) => ENTITY_EMAIL_MIME_PART_TYPE === toType),
   buildRelationRef(rawEmail, (_: string, toType: string) => ENTITY_HASHED_OBSERVABLE_ARTIFACT === toType),
-  buildRelationRef(contains, (_: string, toType: string) => [ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_URL, ENTITY_EMAIL_ADDR].includes(toType))
+  buildRelationRef(contains, (_: string, toType: string) => [
+    ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+    ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+    ENTITY_URL,
+    ENTITY_EMAIL_ADDR,
+  ].includes(toType)),
 ]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_ADDR, [
-  buildRelationRef(belongsTo, (_: string, toType: string) => ENTITY_USER_ACCOUNT === toType)
+  buildRelationRef(belongsTo, (_: string, toType: string) => ENTITY_USER_ACCOUNT === toType),
 ]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MIME_PART_TYPE, [
-  buildRelationRef(bodyRaw, (_: string, toType: string) => [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE].includes(toType))
+  buildRelationRef(bodyRaw, (_: string, toType: string) => [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE].includes(toType)),
 ]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_STIX_FILE, [
   buildRelationRef(contains, (_: string, toType: string) => getParentTypes(toType).includes(ABSTRACT_STIX_CYBER_OBSERVABLE)),

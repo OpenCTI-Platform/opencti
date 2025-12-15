@@ -16,11 +16,13 @@ export interface StixObject {
   id: StixId;
   x_opencti_id: string;
   spec_version: string;
-  x_opencti_granted_refs?: string[]
+  x_opencti_granted_refs?: string[];
   x_opencti_type: string;
   type: string;
+  // custom
   x_opencti_workflow_id?: string;
   x_opencti_files: Array<StixFile>;
+  x_opencti_modified_at?: StixDate;
 }
 
 // --- STIX Core Objects

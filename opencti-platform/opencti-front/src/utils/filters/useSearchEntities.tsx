@@ -336,8 +336,8 @@ const useSearchEntities = ({
 
   const searchEntities = (
     filterKey: string,
-    cacheEntities: Record< string, { label: string; value: string | null; type: string }[] >,
-    setCacheEntities: Dispatch< Record<string, { label: string; value: string | null; type: string }[]> >,
+    cacheEntities: Record<string, { label: string; value: string | null; type: string }[]>,
+    setCacheEntities: Dispatch<Record<string, { label: string; value: string | null; type: string }[]>>,
     event: BaseSyntheticEvent,
     isSubKey?: boolean,
   ) => {
@@ -556,7 +556,8 @@ const useSearchEntities = ({
             group: n?.node.entity_type,
           }));
           unionSetEntities(key, membersEntities);
-          if (entityTypes.includes('User')) { // add @me filter value
+          // add @me value for filters with user id as values, except in stix playbook components
+          if (entityTypes.includes('User') && searchContext.elementType !== 'Playbook-Stix-Component') {
             unionSetEntities(key, [meEntity]);
           }
           const membersSystems = (
@@ -592,8 +593,8 @@ const useSearchEntities = ({
           type,
         });
       }
-      // add @me value for filters with user id as values
-      if (type === 'User') {
+      // add @me value for filters with user id as values, except in stix playbook components
+      if (type === 'User' && searchContext.elementType !== 'Playbook-Stix-Component') {
         newOptions.push(meEntity);
       }
 
@@ -904,7 +905,7 @@ const useSearchEntities = ({
           );
           break;
         case 'relationship_type': {
-          let relationshipsTypes: { label: string, value: string, type: string }[] = [];
+          let relationshipsTypes: { label: string; value: string; type: string }[] = [];
           if (availableRelationshipTypes && !isSubKey) { // if available RelationshipTypes is specified, we display only the specified relationship types
             relationshipsTypes = availableRelationshipTypes
               .map((n) => ({

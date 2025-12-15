@@ -30,7 +30,7 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
   const { ingestionCsv } = usePreloadedQuery(ingestionCsvEditionContainerQuery, queryRef);
 
   if (!ingestionCsv) {
-    return <div/>;
+    return <div />;
   }
   return (
     <Drawer
@@ -39,11 +39,13 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
       onClose={handleClose}
       open={open}
     >
-      {({ onClose }) => <IngestionCsvEdition
-        ingestionCsv={ingestionCsv}
-        enableReferences={useIsEnforceReference('IngestionCsv')}
-        handleClose={onClose}
-                        />
+      {({ onClose }) => (
+        <IngestionCsvEdition
+          ingestionCsv={ingestionCsv}
+          enableReferences={useIsEnforceReference('IngestionCsv')}
+          handleClose={onClose}
+        />
+      )
       }
     </Drawer>
   );

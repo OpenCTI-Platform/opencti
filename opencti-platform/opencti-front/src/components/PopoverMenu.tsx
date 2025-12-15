@@ -7,11 +7,11 @@ import { useFormatter } from './i18n';
 import stopEvent from '../utils/domEvent';
 
 interface ChildrenProps {
-  closeMenu: () => void
+  closeMenu: () => void;
 }
 
 interface PopoverMenuProps {
-  children: (props: ChildrenProps) => ReactNode
+  children: (props: ChildrenProps) => ReactNode;
 }
 
 const PopoverMenu = ({ children }: PopoverMenuProps) => {

@@ -164,7 +164,7 @@ class StixDomainObjectBookmarkComponent extends Component {
             )}
             title={renderCardTitle(node)}
             subheader={`${t('Updated on')} ${fsd(node.modified)}`}
-            action={
+            action={(
               <IconButton
                 size="small"
                 onClick={deleteBookMark.bind(this, node.id, node.entity_type)}
@@ -172,7 +172,7 @@ class StixDomainObjectBookmarkComponent extends Component {
               >
                 <StarBorderOutlined />
               </IconButton>
-            }
+            )}
           />
         </CardActionArea>
       </Card>
@@ -369,38 +369,38 @@ class StixDomainObjectBookmarkDummyComponent extends Component {
         <CardActionArea classes={{ root: classes.area }}>
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={
+            avatar={(
               <Skeleton
                 animation="wave"
                 variant="circular"
                 width={30}
                 height={30}
               />
-            }
-            title={
+            )}
+            title={(
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 style={{ marginBottom: 10 }}
               />
-            }
-            subheader={
+            )}
+            subheader={(
               <Skeleton
                 animation="wave"
                 variant="rectangular"
                 width="90%"
                 style={{ marginBottom: 10 }}
               />
-            }
-            action={
+            )}
+            action={(
               <Skeleton
                 animation="wave"
                 variant="circular"
                 width={30}
                 height={30}
               />
-            }
+            )}
             slotProps={{
               title: { color: 'inherit' },
             }}

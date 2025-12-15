@@ -12,25 +12,25 @@ import { wait } from '../database/utils';
 import type { DataEvent, SseEvent } from '../types/event';
 
 export interface HandlerInput {
-  shutdown?: () => Promise<void>
+  shutdown?: () => Promise<void>;
 }
 
 export interface ManagerCronScheduler {
-  handler: (input?: any) => Promise<void>
+  handler: (input?: any) => Promise<void>;
   shutdown?: () => void;
-  interval: number
-  lockKey: string
-  infiniteInterval?: number
-  handlerInitializer?: () => Promise<HandlerInput>
-  lockInHandlerParams?: boolean
-  dynamicSchedule?: boolean
+  interval: number;
+  lockKey: string;
+  infiniteInterval?: number;
+  handlerInitializer?: () => Promise<HandlerInput>;
+  lockInHandlerParams?: boolean;
+  dynamicSchedule?: boolean;
 }
 
 export interface ManagerStreamScheduler {
   handler: (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => void;
   interval: number;
   lockKey: string;
-  streamOpts?: { withInternal?: boolean, streamName?: string, bufferTime: number };
+  streamOpts?: { withInternal?: boolean; streamName?: string; bufferTime: number };
   streamProcessorStartFrom: () => string | undefined;
 }
 
@@ -175,7 +175,7 @@ interface ManagerModule {
   manager: ManagerDefinition;
   start: () => Promise<void>;
   shutdown: () => Promise<boolean>;
-  status: (settings?: BasicStoreSettings) => { running: boolean, enable: boolean, warning: boolean, id: string };
+  status: (settings?: BasicStoreSettings) => { running: boolean; enable: boolean; warning: boolean; id: string };
 }
 
 const managersModule = {

@@ -47,7 +47,8 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
 
   const renderInGraph = () => {
     return (
-      <Drawer open={open}
+      <Drawer
+        open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
@@ -72,7 +73,8 @@ const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, han
 
   const renderClassic = () => {
     return (
-      <Drawer open={open}
+      <Drawer
+        open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}

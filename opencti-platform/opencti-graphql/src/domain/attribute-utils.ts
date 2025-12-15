@@ -24,6 +24,8 @@ import {
   xOpenctiType,
 } from '../schema/attribute-definition';
 
+export const IDS_ATTRIBUTES = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
+
 export const INTERNAL_ATTRIBUTES = [
   // ID
   id.name,
@@ -76,6 +78,7 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_log_sources',
   'x_opencti_firstname',
   'x_opencti_lastname',
+  'x_opencti_modified_at',
   // CVSS 3
   'x_opencti_cvss_base_severity',
   'x_opencti_cvss_attack_vector',
@@ -130,5 +133,5 @@ export const INTERNAL_ATTRIBUTES = [
 ];
 
 export const INTERNAL_REFS = [
-  'objectOrganization'
+  'objectOrganization',
 ];

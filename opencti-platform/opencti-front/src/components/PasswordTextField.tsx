@@ -65,7 +65,7 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
           }}
           disableRipple
         >
-          {isVisible ? <VisibilityOff/> : <Visibility/>}
+          {isVisible ? <VisibilityOff /> : <Visibility />}
         </IconButton>
       )}
     </div>

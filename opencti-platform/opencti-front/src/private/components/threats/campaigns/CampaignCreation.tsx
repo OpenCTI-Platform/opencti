@@ -309,7 +309,7 @@ const CampaignCreation = ({
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_campaigns', paginationOptions, 'campaignAdd');
 
   const CreateCampaignControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Campaign' {...props} />
+    <CreateEntityControlledDial entityType="Campaign" {...props} />
   );
 
   return (

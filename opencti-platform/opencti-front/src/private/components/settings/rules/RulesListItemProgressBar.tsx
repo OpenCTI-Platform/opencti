@@ -4,8 +4,8 @@ import { Work } from './RulesList';
 import { useFormatter } from '../../../../components/i18n';
 
 interface RuleListItemProgressBarProps {
-  taskEnable: boolean
-  work: NonNullable<Work>
+  taskEnable: boolean;
+  work: NonNullable<Work>;
 }
 
 const RuleListItemProgressBar = ({ taskEnable, work }: RuleListItemProgressBarProps) => {

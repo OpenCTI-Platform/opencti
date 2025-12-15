@@ -12,6 +12,7 @@ import { batchGlobalStatusesByType, batchRequestAccessStatusesByType } from '../
 import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
 import { batchIsSubAttackPattern } from '../domain/attackPattern';
 import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -40,7 +41,7 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   executeContext.req = req;
   executeContext.res = res;
   const settings = await getEntityFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  executeContext.otp_mandatory = settings.otp_mandatory ?? false;
+  executeContext.otp_mandatory = settings?.otp_mandatory ?? false; // Null check fixes 500 error on platform theme selection
   executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
   executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
   executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
@@ -60,13 +61,17 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
         executeContext.user_otp_validated = req.session?.user.otp_validated ?? false;
       }
       executeContext.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+      const licenseInfo = getEnterpriseEditionInfo(settings);
+      executeContext.blocked_for_lts_validation = IS_LTS_PLATFORM && !licenseInfo.license_validated;
     }
   } catch (error) {
     logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });
   }
   // endregion
   // Return with batch loaders
-  executeContext.changeDraftContext = (draftId) => { executeContext.draft_context = draftId; };
+  executeContext.changeDraftContext = (draftId) => {
+    executeContext.draft_context = draftId;
+  };
   executeContext.batch = computeLoaders(executeContext, executeContext.user);
   return executeContext;
 };

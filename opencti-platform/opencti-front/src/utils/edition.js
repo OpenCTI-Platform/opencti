@@ -5,11 +5,11 @@ import { authorizedMembersToOptions } from './authorizedMembers';
 export const convertStatus = (t, element) => ((element?.status?.template?.name ?? null) === null
   ? ''
   : {
-    label: element?.status?.template?.name ?? null,
-    color: element?.status?.template?.color ?? null,
-    value: element?.status?.id ?? null,
-    order: element?.status?.order ?? null,
-  });
+      label: element?.status?.template?.name ?? null,
+      color: element?.status?.template?.color ?? null,
+      value: element?.status?.id ?? null,
+      order: element?.status?.order ?? null,
+    });
 
 export const convertMarking = (element) => ({
   label: element.definition ?? element.id,
@@ -78,26 +78,26 @@ export const convertImagesToCarousel = (element) => {
 export const convertCreatedBy = (element, field = 'createdBy') => (isEmptyField(element?.[field])
   ? ''
   : {
-    label: element[field].name,
-    value: element[field].id,
-    type: element[field].entity_type,
-  });
+      label: element[field].name,
+      value: element[field].id,
+      type: element[field].entity_type,
+    });
 
 export const convertUser = (element, field = 'user') => (isEmptyField(element?.[field])
   ? ''
   : {
-    label: element[field].name,
-    value: element[field].id,
-    type: element[field].entity_type,
-  });
+      label: element[field].name,
+      value: element[field].id,
+      type: element[field].entity_type,
+    });
 
 export const convertMapper = (element, field = 'csvMapper') => {
   return (isEmptyField(element?.[field])
     ? ''
     : {
-      label: element[field].name,
-      value: element[field].id,
-    });
+        label: element[field].name,
+        value: element[field].id,
+      });
 };
 
 export const convertNotifiers = (element) => element?.notifiers?.map(({ id, name }) => ({ value: id, label: name }));

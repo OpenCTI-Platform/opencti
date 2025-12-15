@@ -1,6 +1,7 @@
 import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
 import {
+  setupEnterpriseLicense,
   getApplicationDependencies,
   getApplicationInfo,
   getCriticalAlerts,
@@ -13,7 +14,7 @@ import {
   settingEditMessage,
   settingsCleanContext,
   settingsEditContext,
-  settingsEditField
+  settingsEditField,
 } from '../domain/settings';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
@@ -22,9 +23,9 @@ import { elAggregationCount } from '../database/engine';
 import { findById } from '../modules/organization/organization-domain';
 import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
-import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
+import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
-import { CguStatus } from '../generated/graphql';
+import { CguStatus, PlatformType } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { ALLOW_EMAIL_REWRITE, smtpConfiguredEmail } from '../database/smtp';
 
@@ -39,6 +40,7 @@ const settingsResolvers = {
     relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' }),
   },
   Settings: {
+    platform_type: () => (IS_LTS_PLATFORM ? PlatformType.Lts : PlatformType.Standard),
     platform_session_idle_timeout: () => Number(nconf.get('app:session_idle_timeout')),
     platform_session_timeout: () => Number(nconf.get('app:session_timeout')),
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
@@ -66,12 +68,13 @@ const settingsResolvers = {
   },
   AppInfo: {
     memory: getMemoryStatistics(),
-    dependencies: (_, __, context) => getApplicationDependencies(context)
+    dependencies: (_, __, context) => getApplicationDependencies(context),
   },
   SettingsMessage: {
     recipients: (message, _, context) => internalFindByIds(context, context.user, message.recipients),
   },
   Mutation: {
+    setupEnterpriseLicense: (_, { input }, context) => setupEnterpriseLicense(context, context.user, input),
     settingsEdit: (_, { id }, context) => ({
       fieldPatch: ({ input }) => settingsEditField(context, context.user, id, input),
       contextPatch: ({ input }) => settingsEditContext(context, context.user, id, input),
@@ -95,7 +98,7 @@ const settingsResolvers = {
       subscribe: /* v8 ignore next */ async (_, __, context) => {
         return subscribeToPlatformSettingsEvents(context);
       },
-    }
+    },
   },
 };
 

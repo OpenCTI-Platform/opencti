@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import {
   type AttributeDefinition,
   authorizedMembers,
+  changes,
   createdAt,
   creators,
   draftChange,
@@ -10,7 +11,7 @@ import {
   id,
   lastEventId,
   refreshedAt,
-  updatedAt
+  updatedAt,
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
@@ -36,7 +37,7 @@ import {
   ENTITY_TYPE_SYNC,
   ENTITY_TYPE_TAXII_COLLECTION,
   ENTITY_TYPE_USER,
-  ENTITY_TYPE_WORK
+  ENTITY_TYPE_WORK,
 } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
@@ -61,7 +62,7 @@ const HistoryDefinition: AttributeDefinition[] = [
     mandatoryType: 'internal',
     multiple: false,
     upsert: false,
-    isFilterable: false
+    isFilterable: false,
   },
   { name: 'user_metadata', label: 'Event user metadata', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: false },
   {
@@ -74,7 +75,7 @@ const HistoryDefinition: AttributeDefinition[] = [
     mandatoryType: 'no',
     multiple: false,
     upsert: false,
-    isFilterable: false
+    isFilterable: false,
   },
   {
     name: 'group_ids',
@@ -86,7 +87,7 @@ const HistoryDefinition: AttributeDefinition[] = [
     mandatoryType: 'internal',
     multiple: true,
     upsert: false,
-    isFilterable: false
+    isFilterable: false,
   },
   {
     name: 'organization_ids',
@@ -98,7 +99,7 @@ const HistoryDefinition: AttributeDefinition[] = [
     mandatoryType: 'internal',
     multiple: true,
     upsert: false,
-    isFilterable: false
+    isFilterable: false,
   },
   { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
   {
@@ -154,7 +155,8 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'pir_ids', label: 'PIR IDS', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PIR], editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
       { name: 'pir_score', label: 'PIR Score', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'pir_match_from', label: 'Match Pir with source of relationship', type: 'boolean', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-    ]
+      changes,
+    ],
   },
   { ...creators, isFilterable: false },
   { ...updatedAt, isFilterable: false },
@@ -169,7 +171,7 @@ export const settingsMessages = {
     properties: {
       id: {
         type: 'string',
-        minLength: 1
+        minLength: 1,
       },
       message: { type: 'string' },
       activated: { type: 'boolean' },
@@ -177,7 +179,7 @@ export const settingsMessages = {
       dismissible: { type: 'boolean' },
       color: { type: 'string' },
     },
-    required: ['id', 'message', 'activated', 'updated_at', 'dismissible']
+    required: ['id', 'message', 'activated', 'updated_at', 'dismissible'],
   },
 };
 
@@ -205,7 +207,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'platform_theme_light_accent', label: 'Light accent', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_theme_light_logo', label: 'Light logo', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_theme_light_logo_collapsed', label: 'Light logo collapsed', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'platform_theme_light_logo_login', label: 'Ligth logo login', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'platform_theme_light_logo_login', label: 'Light logo login', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_language', label: 'Platform language', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_login_message', label: 'Login message', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_consent_message', label: 'Consent message', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -226,6 +228,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'activity_listeners_ids', label: 'Activity listeners IDs', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'platform_messages', label: 'Platform messages', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, schemaDef: settingsMessages, isFilterable: false },
     { name: 'analytics_google_analytics_v4', label: 'Google analytics V4', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'view_all_users', label: 'View all users enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_token', label: 'XTM Hub Token', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_registration_user_id', label: 'XTM Hub registration User ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_registration_user_name', label: 'XTM Hub registration User name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -239,11 +242,11 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [
     { name: 'lastRun', label: 'Last run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'platformVersion', label: 'Platform version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false }
+    { name: 'platformVersion', label: 'Platform version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_MIGRATION_REFERENCE]: [
     { name: 'title', label: 'Title', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'timestamp', label: 'Timestamp', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false }
+    { name: 'timestamp', label: 'Timestamp', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_GROUP]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
@@ -265,7 +268,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       mappings: [
         { name: 'entity_type', label: 'Entity type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
         { name: 'values', label: 'Values', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
-      ]
+      ],
     },
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'default_hidden_types', label: 'Default hidden types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
@@ -308,7 +311,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
             { name: 'entity_type', label: 'Entity Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
             { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
           ] },
-      ]
+      ],
     },
     { name: 'auto_integration_assignation', label: 'Default Group used for integration user creation', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
   ],
@@ -337,7 +340,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       mappings: [
         { name: 'id', label: 'Id', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
         { name: 'type', label: 'Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-      ]
+      ],
     },
     { name: 'api_token', label: 'API Token', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'otp_secret', label: 'OTP secret', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -378,7 +381,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
             { name: 'entity_type', label: 'Entity Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
             { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
           ] },
-      ]
+      ],
     },
     { name: 'user_service_account', label: 'User service account', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
@@ -388,11 +391,11 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'can_manage_sensitive_config', label: 'Is sensitive changes allowed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_RULE]: [
-    { name: 'active', label: 'Status', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true }
+    { name: 'active', label: 'Status', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_TYPE_RULE_MANAGER]: [
     lastEventId,
-    errors
+    errors,
   ],
   [ENTITY_TYPE_CAPABILITY]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -478,11 +481,11 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
           mappings: [
             { name: 'type', label: 'Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: true, isFilterable: false },
             { name: 'attribute', label: 'Attribute', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: true, isFilterable: false },
-          ]
+          ],
         },
-      ]
+      ],
     },
-    authorizedMembers
+    authorizedMembers,
   ],
   [ENTITY_TYPE_STREAM_COLLECTION]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
@@ -490,7 +493,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'stream_public', label: 'Public stream', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'stream_live', label: 'Is live', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    authorizedMembers
+    authorizedMembers,
   ],
   [ENTITY_TYPE_STATUS_TEMPLATE]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
@@ -530,9 +533,9 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       mappings: [
         { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
         { name: 'message', label: 'Message', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-      ]
+      ],
     },
-    errors
+    errors,
   ],
   [ENTITY_TYPE_BACKGROUND_TASK]: [
     {
@@ -544,7 +547,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       multiple: true,
       editDefault: false,
       upsert: false,
-      isFilterable: false
+      isFilterable: false,
     },
     { name: 'type', label: 'Type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },

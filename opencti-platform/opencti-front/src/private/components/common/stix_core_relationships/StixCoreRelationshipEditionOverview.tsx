@@ -214,7 +214,7 @@ interface StixCoreRelationshipAddInput {
 }
 
 const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
-Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
+  Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
 > = ({ handleClose, handleDelete, stixCoreRelationship, noStoreUpdate, isCoverage = false }) => {
   const stixCoreRelationshipType = 'stix-core-relationship';
 
@@ -401,18 +401,18 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 style={{ marginTop: 20 }}
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="description"
                   />
-                }
+                )}
               />
               {isCoverage && (
                 <CoverageInformationFieldEdit
                   id={stixCoreRelationship.id}
                   name="coverage_information"
-                  mode={'relation'}
+                  mode="relation"
                   values={values.coverage_information ?? []}
                   containerStyle={fieldSpacingContainerStyle}
                 />
@@ -421,12 +421,12 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 name="killChainPhases"
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="killChainPhases"
                   />
-                }
+                )}
                 onChange={editor.changeKillChainPhases}
               />
               {stixCoreRelationship.workflowEnabled && (
@@ -437,35 +437,35 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                   onChange={editor.changeField}
                   setFieldValue={setFieldValue}
                   style={{ marginTop: 20 }}
-                  helpertext={
+                  helpertext={(
                     <SubscriptionFocus
                       context={editContext}
                       fieldName="x_opencti_workflow_id"
                     />
-                  }
+                  )}
                 />
               )}
               <CreatedByField
                 name="createdBy"
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="createdBy"
                   />
-                }
+                )}
                 onChange={editor.changeCreated}
               />
               <ObjectMarkingField
                 name="objectMarking"
                 style={fieldSpacingContainerStyle}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldname="objectMarking"
                   />
-                }
+                )}
                 setFieldValue={setFieldValue}
                 onChange={editor.changeMarking}
               />
@@ -498,7 +498,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
 };
 
 const StixCoreRelationshipEditionOverview: FunctionComponent<
-Omit<StixCoreRelationshipEditionOverviewProps, 'stixCoreRelationship'>
+  Omit<StixCoreRelationshipEditionOverviewProps, 'stixCoreRelationship'>
 > = (props) => {
   const queryData = usePreloadedQuery(
     stixCoreRelationshipEditionOverviewQuery,

@@ -27,6 +27,7 @@ import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
+import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -52,6 +53,18 @@ const draftRootFragment = graphql`
       totalCount
     }
     draft_status
+    currentUserAccessRight
+    authorizedMembers {
+      id
+      name
+      entity_type
+      access_right
+      member_id
+      groups_restriction {
+        id
+        name
+      }
+    }
     validationWork {
       name
       received_time
@@ -76,6 +89,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
+  const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
 
   const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
   if (!draftWorkspace) {
@@ -117,41 +131,41 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
 
   // If me user is not yet updated to be in draft, display loader
   if (!isDraftReadOnly && !draftContext) {
-    return (<Loader/>);
+    return (<Loader />);
   }
 
   return (
     <>
       {isDraftReadOnly && (
-      <>
-        <Breadcrumbs
-          elements={[
-            { label: t_i18n('Data') },
-            { label: t_i18n('Import'), link: '/dashboard/data/import' },
-            { label: t_i18n('Drafts'), link: '/dashboard/data/import/draft' },
-            { label: name, current: true },
-          ]}
-        />
-        {validationWork && (
-        <Paper
-          key={validationWork.id}
-          style={{ margin: '10px 0 20px 0', padding: '15px', borderRadius: 4, position: 'relative' }}
-          variant="outlined"
-        >
-          <ConnectorWorkLine
-            workId={validationWork.id}
-            workName={validationWork.name}
-            workStatus={validationWork.status}
-            workReceivedTime={validationWork.received_time}
-            workEndTime={validationWork.completed_time}
-            workExpectedNumber={validationWork.tracking?.import_processed_number}
-            workProcessedNumber={validationWork.tracking?.import_expected_number}
-            workErrors={validationWork.errors}
-            readOnly
+        <>
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Data') },
+              { label: t_i18n('Import'), link: '/dashboard/data/import' },
+              { label: t_i18n('Drafts'), link: '/dashboard/data/import/draft' },
+              { label: name, current: true },
+            ]}
           />
-        </Paper>
-        )}
-      </>
+          {validationWork && (
+            <Paper
+              key={validationWork.id}
+              style={{ margin: '10px 0 20px 0', padding: '15px', borderRadius: 4, position: 'relative' }}
+              variant="outlined"
+            >
+              <ConnectorWorkLine
+                workId={validationWork.id}
+                workName={validationWork.name}
+                workStatus={validationWork.status}
+                workReceivedTime={validationWork.received_time}
+                workEndTime={validationWork.completed_time}
+                workExpectedNumber={validationWork.tracking?.import_processed_number}
+                workProcessedNumber={validationWork.tracking?.import_expected_number}
+                workErrors={validationWork.errors}
+                readOnly
+              />
+            </Paper>
+          )}
+        </>
       )}
       <Box
         sx={{
@@ -204,43 +218,44 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
           />
-          {!isDraftReadOnly && (
-          <Tab
-            component={Link}
-            to={`/dashboard/data/import/draft/${draftId}/files`}
-            value={`/dashboard/data/import/draft/${draftId}/files`}
-            label={t_i18n('Files')}
-          />)}
+          {!isDraftReadOnly && canAskImportKnowledge && (
+            <Tab
+              component={Link}
+              to={`/dashboard/data/import/draft/${draftId}/files`}
+              value={`/dashboard/data/import/draft/${draftId}/files`}
+              label={t_i18n('Files')}
+            />
+          )}
         </Tabs>
       </Box>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true}/>}
+          element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />}
         />
         <Route
           path="/entities"
-          element={<DraftEntities entitiesType={'Stix-Domain-Object'} excludedEntitiesType={'Container'} isReadOnly={isDraftReadOnly}/>}
+          element={<DraftEntities entitiesType="Stix-Domain-Object" excludedEntitiesType="Container" isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/observables"
-          element={<DraftEntities entitiesType={'Stix-Cyber-Observable'} isReadOnly={isDraftReadOnly}/>}
+          element={<DraftEntities entitiesType="Stix-Cyber-Observable" isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/relationships"
-          element={<DraftRelationships isReadOnly={isDraftReadOnly}/>}
+          element={<DraftRelationships isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/sightings"
-          element={<DraftSightings isReadOnly={isDraftReadOnly}/>}
+          element={<DraftSightings isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/containers"
-          element={<DraftEntities entitiesType={'Container'} isReadOnly={isDraftReadOnly}/>}
+          element={<DraftEntities entitiesType="Container" isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/files"
-          element={<ImportFilesContent inDraftOverview/>}
+          element={<ImportFilesContent inDraftOverview />}
         />
       </Routes>
     </>

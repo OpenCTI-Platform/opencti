@@ -37,8 +37,8 @@ const workspacePopoverFragment = graphql`
 `;
 
 interface WorkspacePopoverProps {
-  data: WorkspacePopoverFragment$key
-  paginationOptions: WorkspacesLinesPaginationQuery$variables
+  data: WorkspacePopoverFragment$key;
+  paginationOptions: WorkspacesLinesPaginationQuery$variables;
 }
 
 const WorkspacePopover = ({ data, paginationOptions }: WorkspacePopoverProps) => {

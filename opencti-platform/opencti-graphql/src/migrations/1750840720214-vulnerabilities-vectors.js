@@ -19,18 +19,18 @@ export const up = async (next) => {
         if (ctx._source.containsKey('x_opencti_cvss_v4_vector')) {
           ctx._source.x_opencti_cvss_v4_vector_string = ctx._source.x_opencti_cvss_v4_vector;
         }
-      `
+      `,
     },
     query: {
       bool: {
         should: [
           { exists: { field: 'x_opencti_cvss_vector' } },
           { exists: { field: 'x_opencti_cvss_v2_vector' } },
-          { exists: { field: 'x_opencti_cvss_v4_vector' } }
+          { exists: { field: 'x_opencti_cvss_v4_vector' } },
         ],
-        minimum_should_match: 1
-      }
-    }
+        minimum_should_match: 1,
+      },
+    },
   };
 
   await elUpdateByQueryForMigration(message, READ_PLATFORM_INDICES, updateQuery);

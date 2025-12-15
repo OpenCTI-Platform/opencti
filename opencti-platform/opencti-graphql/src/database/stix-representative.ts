@@ -20,7 +20,7 @@ import {
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
-  isStixDomainObjectThreatActor
+  isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import type * as SDO from '../types/stix-2-1-sdo';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -58,7 +58,7 @@ import {
   ENTITY_USER_ACCOUNT,
   ENTITY_USER_AGENT,
   ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
 } from '../schema/stixCyberObservable';
 import type * as SCO from '../types/stix-2-1-sco';
 import { hashValue } from '../utils/format';
@@ -74,7 +74,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 export const extractStixRepresentative = (
   stix: S.StixObject,
-  { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean, toRestricted: boolean } = { fromRestricted: false, toRestricted: false },
+  { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean; toRestricted: boolean } = { fromRestricted: false, toRestricted: false },
   withArrowForRelationships = false,
 ): string => {
   const entityType = stix.extensions[STIX_EXT_OCTI].type;
@@ -308,7 +308,7 @@ const extractUserAccessPropertiesFromSighting = (sighting: SRO.StixSighting) => 
       [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs,
       [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_granted_refs,
       entity_type: head(sighting.extensions[STIX_EXT_OCTI].where_sighted_types),
-    } as BasicStoreCommon
+    } as BasicStoreCommon,
   ];
 };
 
@@ -324,13 +324,13 @@ const extractUserAccessPropertiesFromRelationship = (relation: SRO.StixRelation)
       [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs,
       [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].target_ref_granted_refs,
       entity_type: relation.extensions[STIX_EXT_OCTI].target_type,
-    } as BasicStoreCommon
+    } as BasicStoreCommon,
   ];
 };
 
 // extract information from a stix object to have all the elements to check if a user has access to the object
 const extractUserAccessPropertiesFromStixObject = (
-  instance: S.StixObject | S.StixRelationshipObject
+  instance: S.StixObject | S.StixRelationshipObject,
 ) => {
   if (isStixSightingRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
     const sighting = instance as SRO.StixSighting;

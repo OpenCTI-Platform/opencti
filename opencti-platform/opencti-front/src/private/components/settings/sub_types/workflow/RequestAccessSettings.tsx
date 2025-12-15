@@ -29,9 +29,9 @@ const requestAccessSettingsFragment = graphql`
 `;
 
 interface RequestAccessSettingsProps {
-  subTypeId: string,
-  data: RequestAccessSettings_requestAccess$key
-  dataConfiguration: RequestAccessConfigurationEdition_requestAccess$key
+  subTypeId: string;
+  data: RequestAccessSettings_requestAccess$key;
+  dataConfiguration: RequestAccessConfigurationEdition_requestAccess$key;
 }
 
 const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAccessSettingsProps) => {
@@ -61,7 +61,7 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
       <div>
         <Typography variant="h3" gutterBottom={true}>
           {t_i18n('Specific Workflow for Request Access')}
-          <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.REQUEST_ACCESS}/>
+          <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.REQUEST_ACCESS} />
         </Typography>
         <ItemStatusTemplate
           statuses={statusList}
@@ -72,12 +72,12 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
         <Paper
           style={paperStyle}
           variant="outlined"
-          className={'paper-for-grid'}
+          className="paper-for-grid"
         >
           <Typography variant="h3" gutterBottom={true}>
             {t_i18n('Request access actions configuration')}
-            <RequestAccessConfigurationPopover data={dataConfiguration} requestAccessWorkflowDisabled={requestAccessWorkflowDisabled}/>
-            <RequestAccessStatus data={dataConfiguration} requestAccessWorkflowDisabled={requestAccessWorkflowDisabled}/>
+            <RequestAccessConfigurationPopover data={dataConfiguration} requestAccessWorkflowDisabled={requestAccessWorkflowDisabled} />
+            <RequestAccessStatus data={dataConfiguration} requestAccessWorkflowDisabled={requestAccessWorkflowDisabled} />
           </Typography>
         </Paper>
       </div>

@@ -308,7 +308,7 @@ class Opinion:
             final_data = final_data + data
             while result["data"]["opinions"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["opinions"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Opinions", {"after": after})
+                self.opencti.app_logger.debug("Listing Opinions", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -427,6 +427,7 @@ class Opinion:
         opinion = kwargs.get("opinion", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
+        x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
 
         if opinion is not None:
@@ -461,6 +462,7 @@ class Opinion:
                         "authors": authors,
                         "opinion": opinion,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
+                        "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
                     }
                 },
@@ -589,6 +591,10 @@ class Opinion:
                 stix_object["x_opencti_granted_refs"] = (
                     self.opencti.get_attribute_in_extension("granted_refs", stix_object)
                 )
+            if "x_opencti_modified_at" not in stix_object:
+                stix_object["x_opencti_modified_at"] = (
+                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -625,6 +631,11 @@ class Opinion:
                 x_opencti_stix_ids=(
                     stix_object["x_opencti_stix_ids"]
                     if "x_opencti_stix_ids" in stix_object
+                    else None
+                ),
+                x_opencti_modified_at=(
+                    stix_object["x_opencti_modified_at"]
+                    if "x_opencti_modified_at" in stix_object
                     else None
                 ),
                 opinion=stix_object["opinion"] if "opinion" in stix_object else None,

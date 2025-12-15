@@ -64,7 +64,7 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
             }
           />
         </Security>
-        <div className="clearfix"/>
+        <div className="clearfix" />
       </div>
       <List style={{ marginTop: -10, paddingTop: 0 }}>
         <FieldOrEmpty source={subAttackPatterns}>
@@ -74,7 +74,7 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
               dense={true}
               divider={true}
               disablePadding={true}
-              secondaryAction={
+              secondaryAction={(
                 <IconButton
                   aria-label="Remove"
                   onClick={() => removeSubAttackPattern(
@@ -82,16 +82,16 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
                   )}
                   size="large"
                 >
-                  <LinkOff/>
+                  <LinkOff />
                 </IconButton>
-                }
+              )}
             >
               <ListItemButton
                 component={Link}
                 to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
               >
                 <ListItemIcon>
-                  <LockPattern color="primary"/>
+                  <LockPattern color="primary" />
                 </ListItemIcon>
                 <ListItemText
                   primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}

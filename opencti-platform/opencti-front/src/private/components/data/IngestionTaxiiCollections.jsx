@@ -54,7 +54,7 @@ const IngestionTaxiiCollections = () => {
   return (
     <div className={classes.container} data-testid="taxii-push-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('TAXII push'), current: true }]} />
-      <IngestionMenu/>
+      <IngestionMenu />
       <ListLines
         helpers={storageHelpers}
         sortBy={viewStorage.sortBy}
@@ -65,11 +65,11 @@ const IngestionTaxiiCollections = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <IngestionTaxiiCollectionCreation paginationOptions={paginationOptions} />
           </Security>
-        }
+        )}
       >
         <QueryRenderer
           query={IngestionTaxiiCollectionLinesQuery}

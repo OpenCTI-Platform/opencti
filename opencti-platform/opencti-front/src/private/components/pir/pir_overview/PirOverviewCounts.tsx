@@ -66,9 +66,9 @@ const countsQuery = graphql`
 `;
 
 interface PirOverviewCountProps {
-  label: string
-  value: number
-  value24h: number
+  label: string;
+  value: number;
+  value24h: number;
 }
 
 const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => {
@@ -87,7 +87,7 @@ const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => 
           >
             {t_i18n(`entity_${label}`)}
           </Typography>
-          <ItemIcon type={label} size='large' />
+          <ItemIcon type={label} size="large" />
         </div>
 
         <div style={{
@@ -113,8 +113,8 @@ const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => 
 };
 
 interface PirOverviewCountsComponentProps {
-  countsQueryRef: PreloadedQuery<PirOverviewCountsQuery>
-  counts24hQueryRef: PreloadedQuery<PirOverviewCountsQuery>
+  countsQueryRef: PreloadedQuery<PirOverviewCountsQuery>;
+  counts24hQueryRef: PreloadedQuery<PirOverviewCountsQuery>;
 }
 
 const PirOverviewCountsComponent = ({
@@ -173,7 +173,7 @@ const PirOverviewCountsComponent = ({
 };
 
 interface PirOverviewCountsProps {
-  data: PirOverviewCountsFragment$key
+  data: PirOverviewCountsFragment$key;
 }
 
 const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
@@ -197,10 +197,10 @@ const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
       <Grid container spacing={3}>
         <Suspense fallback={<PirOverviewCountsDummy />}>
           {countsQueryRef && counts24hQueryRef && (
-          <PirOverviewCountsComponent
-            countsQueryRef={countsQueryRef}
-            counts24hQueryRef={counts24hQueryRef}
-          />
+            <PirOverviewCountsComponent
+              countsQueryRef={countsQueryRef}
+              counts24hQueryRef={counts24hQueryRef}
+            />
           )}
         </Suspense>
       </Grid>

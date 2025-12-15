@@ -12,21 +12,21 @@ import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filters
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 export type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 
 export interface FilterSearchContext {
-  entityTypes: string[]
-  elementId?: string[]
-  connectorsScope?: boolean
-  elementType?: string
+  entityTypes: string[];
+  elementId?: string[];
+  connectorsScope?: boolean;
+  elementType?: string;
 }
 
 export type FiltersRestrictions = {
-  preventLocalModeSwitchingFor?: string[], // filter keys whose local mode can't be changed
-  preventRemoveFor?: string[], // filter keys whose filter can't be removed
-  preventFilterValuesEditionFor?: Map<string, string[]>, // Map<filter key, values[]> indicating the not removable value for the given filter key
+  preventLocalModeSwitchingFor?: string[]; // filter keys whose local mode can't be changed
+  preventRemoveFor?: string[]; // filter keys whose filter can't be removed
+  preventFilterValuesEditionFor?: Map<string, string[]>; // Map<filter key, values[]> indicating the not removable value for the given filter key
 };
 
 export const emptyFilterGroup = {
@@ -35,7 +35,7 @@ export const emptyFilterGroup = {
   filterGroups: [],
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 export const SELF_ID = 'SELF_ID';
 export const SELF_ID_VALUE = 'CURRENT ENTITY';
@@ -50,7 +50,7 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
-const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'];
+const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids', 'bulkSearchKeywords'];
 
 const pirScoreFilterDefinition = (pirId: string) => ({
   filterKey: `pir_score.${pirId}`,
@@ -114,6 +114,7 @@ export const stixFilters = [
   'confidence',
   'indicator_types',
   'pattern_type',
+  'pattern',
   'x_opencti_main_observable_type',
   'fromId',
   'toId',
@@ -133,7 +134,7 @@ export const stixFilters = [
   'incident_type',
 ];
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // utilities
 
 const getStringFilterKey = (key: string | string[]): string => {
@@ -309,7 +310,7 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
 // construct filters and options for widgets
 export const buildFiltersAndOptionsForWidgets = (
   inputFilters: FilterGroup | undefined | null,
-  opts: { removeTypeAll?: boolean, startDate?: string | null, endDate?: string | null, dateAttribute?: string, isKnowledgeRelationshipWidget?: boolean } = {},
+  opts: { removeTypeAll?: boolean; startDate?: string | null; endDate?: string | null; dateAttribute?: string; isKnowledgeRelationshipWidget?: boolean } = {},
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at', isKnowledgeRelationshipWidget = false } = opts;
   let filters = inputFilters ?? undefined;
@@ -379,7 +380,12 @@ export const useBuildFiltersForTemplateWidgets = () => {
 };
 
 // return the i18n label corresponding to a filter value
-export const filterValue = (filterKey: string, value?: string | null, filterType?: string, filterOperator?: string) => {
+export const filterValue = (
+  filterKey: string,
+  value?: string | null,
+  filterType?: string,
+  filterOperator?: string,
+) => {
   const { t_i18n, nsd, smhd } = useFormatter();
   if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf' || filterKey === 'dynamic' || filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return JSON.stringify(value);
@@ -417,7 +423,7 @@ export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | unde
     && filtersRestrictions.preventFilterValuesEditionFor.get(filterKey)?.some((v) => filterValues.includes(v)));
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Serialization
 // TODO:
 //  these functions are used to sanitize the keys inside filters before serialization and saving into backend
@@ -577,7 +583,7 @@ export const deserializeDashboardManifestForFrontend = (
   };
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
 // note that we're only dealing with one-level filterGroup (no nested), so we just update the 1st level filters list
@@ -620,14 +626,14 @@ export const constructHandleAddFilter = (
   };
   return filters
     ? {
-      ...filters,
-      filters: [...filters.filters, newFilterElement], // add new filter
-    }
+        ...filters,
+        filters: [...filters.filters, newFilterElement], // add new filter
+      }
     : {
-      mode: 'and',
-      filterGroups: [],
-      filters: [newFilterElement],
-    };
+        mode: 'and',
+        filterGroups: [],
+        filters: [newFilterElement],
+      };
 };
 
 // remove a filter (k, op, id) in a filterGroup smartly, for usage in forms
@@ -685,7 +691,8 @@ export const getDefaultOperatorFilter = (
   if (isBasicTextFilter(filterDefinition)) {
     if (filterDefinition.type === 'string') {
       return 'starts_with';
-    } if (filterDefinition.type === 'text') {
+    }
+    if (filterDefinition.type === 'text') {
       if (type === 'text') {
         return 'search';
       }
@@ -738,7 +745,8 @@ export const getAvailableOperatorForFilterKey = (
     if (filterDefinition.type === 'string') {
       return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
         'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with', 'search'];
-    } if (filterDefinition.type === 'text') {
+    }
+    if (filterDefinition.type === 'text') {
       if (filterDefinition.type === 'text') {
         return ['search', 'nil', 'not_nil'];
       }
@@ -978,7 +986,7 @@ export const getSelectedOptions = (
   entitiesOptions: FilterOptionValue[],
   filterValues: string[],
   filtersRepresentativesMap: Map<string,
-  FilterRepresentative>,
+    FilterRepresentative>,
   t_i18n: (s: string) => string,
 ): FilterOptionValue[] => {
   // we try to get first the element from the search
@@ -1076,10 +1084,12 @@ export const isRegardingOfFilterWarning = (
     if (relationshipTypes.includes('located-at')
       && entityTypes.some((type) => ['City', 'IPv4-Addr', 'IPv6-Addr'].includes(type))) {
       return true;
-    } if (relationshipTypes.includes('related-to')
+    }
+    if (relationshipTypes.includes('related-to')
       && entityTypes.some((type) => [...observablesTypes, 'Stix-Cyber-Observable'].includes(type))) {
       return true;
-    } if (relationshipTypes.includes('indicates')
+    }
+    if (relationshipTypes.includes('indicates')
       && entityTypes.some((type) => ['Indicator'].includes(type))) {
       return true;
     }

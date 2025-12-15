@@ -63,9 +63,9 @@ const RootExternalReference = () => {
                 </>
               );
             }
-            return <ErrorNotFound/>;
+            return <ErrorNotFound />;
           }
-          return <Loader/>;
+          return <Loader />;
         }}
       />
     </div>

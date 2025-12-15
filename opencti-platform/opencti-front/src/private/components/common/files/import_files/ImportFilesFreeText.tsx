@@ -10,7 +10,13 @@ import { now } from '../../../../../utils/Time';
 
 type FileFreeTextType = { content: string };
 
-const ImportFilesFreeText = ({ onSumbit, onClose }: { onSumbit: (file: File) => void; onClose: () => void }) => {
+interface ImportFilesFreeTextProps {
+  onSubmit: (file: File) => void;
+  onClose: () => void;
+  initialContent?: string;
+}
+
+const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesFreeTextProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
@@ -27,7 +33,7 @@ const ImportFilesFreeText = ({ onSumbit, onClose }: { onSumbit: (file: File) => 
         type: fileType === 'json' ? 'application/json' : 'text/plain',
       },
     ) as File;
-    onSumbit(file);
+    onSubmit(file);
     resetForm();
   };
 
@@ -35,7 +41,7 @@ const ImportFilesFreeText = ({ onSumbit, onClose }: { onSumbit: (file: File) => 
     <Formik<FileFreeTextType>
       enableReinitialize={true}
       initialValues={{
-        content: '',
+        content: initialContent ?? '',
       }}
       onSubmit={createFileFreeText}
     >
@@ -83,9 +89,11 @@ const ImportFilesFreeText = ({ onSumbit, onClose }: { onSumbit: (file: File) => 
                 {t_i18n('Create file')}
               </Button>
             </Box>
-          </Box>);
+          </Box>
+        );
       }}
-    </Formik>);
+    </Formik>
+  );
 };
 
 export default ImportFilesFreeText;

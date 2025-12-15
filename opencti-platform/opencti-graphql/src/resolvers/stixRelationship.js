@@ -8,9 +8,9 @@ import {
   stixRelationshipsDistribution,
   stixRelationshipsMultiTimeSeries,
   stixRelationshipsNumber,
-  stixRelationshipsTimeSeries
+  stixRelationshipsTimeSeries,
 } from '../domain/stixRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY, } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
 import { stixLoadByIdStringify } from '../database/middleware';
@@ -63,7 +63,7 @@ const stixRelationshipResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    spec_version: getSpecVersionOrDefault
+    spec_version: getSpecVersionOrDefault,
   },
   Mutation: {
     stixRelationshipEdit: (_, { id }, context) => ({

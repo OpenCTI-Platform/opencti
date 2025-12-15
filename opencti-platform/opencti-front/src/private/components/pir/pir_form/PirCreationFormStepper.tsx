@@ -18,9 +18,9 @@ import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 
 interface PirCreationFormStepperProps {
-  step: number
-  accessibleSteps: number[]
-  onClickStep: (step: number) => void
+  step: number;
+  accessibleSteps: number[];
+  onClickStep: (step: number) => void;
 }
 
 const PirCreationFormStepper = ({

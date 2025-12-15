@@ -14,7 +14,7 @@ const streamResolvers = {
   Query: {
     streamCollection: (_, { id }, context) => findById(context, context.user, id),
     streamCollections: (_, args, context) => findStreamCollectionPaginated(context, context.user, args),
-    redisStreamInfo: () => fetchStreamInfo()
+    redisStreamInfo: () => fetchStreamInfo(),
   },
   StreamCollection: {
     authorized_members: (stream, _, context) => getAuthorizedMembers(context, context.user, stream),

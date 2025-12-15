@@ -33,7 +33,7 @@ export const checkRetentionRule = async (context, input) => {
   }
   if (scope === 'file' || scope === 'workbench') { // don't delete progress files or files with works in progress
     result.edges = result.edges.filter((e) => DELETABLE_FILE_STATUSES.includes(e.node.uploadStatus)
-        && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
+      && (e.node.works ?? []).every((work) => !work || DELETABLE_FILE_STATUSES.includes(work?.status)));
   }
   return result.edges.length;
 };
@@ -71,7 +71,7 @@ export const createRetentionRule = async (_, user, input) => {
     event_scope: 'create',
     event_access: 'administration',
     message: `creates retention rule \`${retentionRule.name}\``,
-    context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input }
+    context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input },
   });
   return retentionRule;
 };
@@ -84,7 +84,7 @@ export const retentionRuleEditField = async (context, user, retentionRuleId, inp
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for retention rule \`${element.name}\``,
-    context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input }
+    context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input },
   });
   return element;
 };
@@ -97,7 +97,7 @@ export const deleteRetentionRule = async (context, user, retentionRuleId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes retention rule \`${deleted.name}\``,
-    context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input: deleted }
+    context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input: deleted },
   });
   return retentionRuleId;
 };

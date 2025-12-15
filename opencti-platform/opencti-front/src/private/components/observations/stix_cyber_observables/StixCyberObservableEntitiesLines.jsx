@@ -100,7 +100,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
             if (targetEntity === null) {
               restricted = true;
             } else if (targetEntity.entity_type === 'stix_relation'
-                || targetEntity.entity_type === 'stix-relation'
+              || targetEntity.entity_type === 'stix-relation'
             ) {
               const [parentType] = targetEntity.parent_types;
               targetEntityType = parentType;
@@ -150,17 +150,17 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                     <ItemIcon type={node.entity_type} isReversed={isReversed} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={
+                    primary={(
                       <div>
                         {displayRelation && (
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '10%' }}
-                        >
-                          <ItemEntityType
-                            entityType={node.relationship_type}
-                          />
-                        </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={{ width: '10%' }}
+                          >
+                            <ItemEntityType
+                              entityType={node.relationship_type}
+                            />
+                          </div>
                         )}
                         <div
                           className={classes.bodyItem}
@@ -169,7 +169,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                           <ItemEntityType
                             entityType={targetEntityType}
                             isRestricted={restricted}
-                            size='large'
+                            size="large"
                             showIcon
                           />
                         </div>
@@ -222,7 +222,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                           />
                         </div>
                       </div>
-                  }
+                    )}
                   />
                 </ListItemButton>
               </ListItem>

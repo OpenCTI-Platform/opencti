@@ -19,8 +19,8 @@ const defaultManagerConfigurations = [
       include_global_files: false,
       entity_types: [],
       max_file_size: 5242880,
-    }
-  }
+    },
+  },
 ];
 
 export const getDefaultManagerConfiguration = (managerId: string) => {

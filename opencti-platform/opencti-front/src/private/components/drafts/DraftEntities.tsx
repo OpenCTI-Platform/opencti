@@ -14,6 +14,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { useComputeLink } from '../../../utils/hooks/useAppData';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 const draftEntitiesLineFragment = graphql`
     fragment DraftEntities_node on StixCoreObject {
@@ -123,12 +124,13 @@ interface DraftEntitiesProps {
   isReadOnly: boolean;
 }
 
-const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
+const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
   entitiesType = 'Stix-Core-Object',
   excludedEntitiesType,
   isReadOnly,
 }) => {
   const computeLink = useComputeLink();
+  const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
   const { draftId } = useParams() as { draftId: string };
   const [open, setOpen] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
@@ -223,7 +225,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   };
 
   let createButton: ReactNode;
-  if (!isReadOnly) {
+  if (!isReadOnly && canUpdateKnowledge) {
     createButton = entitiesType === 'Stix-Cyber-Observable' ? (
       <>
         <StixCyberObservableCreation

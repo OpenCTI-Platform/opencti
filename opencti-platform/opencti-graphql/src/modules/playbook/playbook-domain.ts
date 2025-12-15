@@ -15,39 +15,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { createEntity, deleteElementById, patchAttribute, stixLoadById, updateAttribute } from '../../database/middleware';
 import { type EntityOptions, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import {
-  type EditInput,
-  type FilterGroup,
-  FilterMode,
-  type PlaybookAddInput,
-  type PlaybookAddLinkInput,
-  type PlaybookAddNodeInput,
-  type PositionInput
-} from '../../generated/graphql';
-import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
+import { type EditInput, FilterMode, type PlaybookAddInput, type PlaybookAddLinkInput, type PlaybookAddNodeInput, type PositionInput } from '../../generated/graphql';
+import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
-import { PLAYBOOK_COMPONENTS, PLAYBOOK_INTERNAL_DATA_CRON, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
+import { PLAYBOOK_COMPONENTS, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
-import { findFiltersFromKey, checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
-import { elFindByIds } from '../../database/engine';
+import { findFiltersFromKey } from '../../utils/filtering/filtering-utils';
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
+import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren } from './playbook-utils';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -78,12 +70,12 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
       const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
       const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
       if (instance && (instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM' || instance.component_id === 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER')) {
-        const { filters } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
+        const { filters } = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
         const jsonFilters = filters ? JSON.parse(filters) : null;
         const newFilters = {
           mode: FilterMode.And,
           filters: findFiltersFromKey(jsonFilters?.filters ?? [], 'entity_type'),
-          filterGroups: []
+          filterGroups: [],
         };
         const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, stixEntity, newFilters);
         if (isMatch) {
@@ -133,30 +125,6 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
   return playbook.playbook_definition;
 };
 
-const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
-  context: AuthContext,
-  user: AuthUser,
-  input: PlaybookAddNodeInput,
-  userId: string
-) => {
-  if (!input.configuration) {
-    return '{}';
-  }
-  let stringifiedFilters;
-  const config = JSON.parse(input.configuration);
-  if (config.filters) {
-    const filterGroup = JSON.parse(config.filters) as FilterGroup;
-    if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
-      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, elFindByIds as FiltersIdsFinder, { noFiltersConvert: true });
-      stringifiedFilters = JSON.stringify(convertedFilters);
-    } else { // our stix matching is currently limited, we need to validate the input filters
-      validateFilterGroupForStixMatch(filterGroup);
-      stringifiedFilters = config.filters;
-    }
-  }
-  return JSON.stringify({ ...config, filters: stringifiedFilters });
-};
-
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
@@ -186,47 +154,17 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => nodeId);
 };
 
-const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkDefinition[]) => {
-  // Resolve all nodes to delete
-  const linksToDelete = links;
-  const nodesToDelete = [] as NodeDefinition[];
-  let childrenLinks = [] as LinkDefinition[];
-  // Resolve children nodes
-  let childrenNodes = definition.nodes.filter((n) => links.map((o) => o.to.id).includes(n.id));
-  if (childrenNodes.length > 0) {
-    nodesToDelete.push(...childrenNodes);
-    childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
-  }
-  while (childrenLinks.length > 0) {
-    linksToDelete.push(...childrenLinks);
-    // Resolve children nodes not already in nodesToDelete
-    childrenNodes = definition.nodes.filter((n) => linksToDelete.map((o) => o.to.id).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
-    if (childrenNodes.length > 0) {
-      nodesToDelete.push(...childrenNodes);
-      // eslint-disable-next-line @typescript-eslint/no-loop-func
-      childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
-    } else {
-      childrenLinks = [];
-    }
-    logApp.info('Delete links and children loop', { nodesToDelete, linksToDelete });
-  }
-  return {
-    nodes: definition.nodes.filter((n) => !nodesToDelete.map((o) => o.id).includes(n.id)),
-    links: definition.links.filter((n) => !linksToDelete.map((o) => o.id).includes(n.id))
-  };
-};
-
 export const playbookUpdatePositions = async (context: AuthContext, user: AuthUser, id: string, positions: string) => {
   await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const nodesPositions = JSON.parse(positions);
   definition.nodes = definition.nodes.map((n) => {
-    const position = nodesPositions.filter((o: { id: string, position: PositionInput }) => o.id === n.id).at(0);
+    const position = nodesPositions.filter((o: { id: string; position: PositionInput }) => o.id === n.id).at(0);
     if (position) {
       return {
         ...n,
-        position: position.position
+        position: position.position,
       };
     }
     return n;
@@ -240,7 +178,7 @@ export const playbookReplaceNode = async (
   user: AuthUser,
   id: string,
   nodeId: string,
-  input: PlaybookAddNodeInput
+  input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
@@ -249,7 +187,7 @@ export const playbookReplaceNode = async (
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
   if (!relatedComponent) {
-    throw UnsupportedError('Playbook related component not found');
+    throw UnsupportedError('Playbook related component not found', { id: input.component_id });
   }
   const existingEntryPoint = definition.nodes.filter((n) => n.id !== nodeId).find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
@@ -262,7 +200,6 @@ export const playbookReplaceNode = async (
   }
   const oldComponent = PLAYBOOK_COMPONENTS[oldComponentId];
   if (oldComponent.ports.length > relatedComponent.ports.length) {
-    // eslint-disable-next-line no-plusplus
     for (let i = oldComponent.ports.length - 1; i >= relatedComponent.ports.length; i--) {
       // Find all links to the port
       const linksToDelete = definition.links.filter((n) => n.from.id === nodeId && n.from.port === oldComponent.ports[i].id);
@@ -296,14 +233,14 @@ export const playbookInsertNode = async (
   parentNodeId: string,
   parentPortId: string,
   childNodeId: string,
-  input: PlaybookAddNodeInput
+  input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
   if (!relatedComponent) {
-    throw UnsupportedError('Playbook related component not found');
+    throw UnsupportedError('Playbook related component not found', { id: input.component_id });
   }
   const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
@@ -316,7 +253,7 @@ export const playbookInsertNode = async (
     name: input.name,
     position: input.position,
     component_id: input.component_id,
-    configuration: input.configuration ?? '{}' // TODO Check valid json
+    configuration: input.configuration ?? '{}', // TODO Check valid json
   });
   // Replace node with new position
   definition.nodes = definition.nodes.map((n) => {
@@ -326,7 +263,7 @@ export const playbookInsertNode = async (
         position: {
           x: n.position.x,
           y: n.position.y + 150,
-        }
+        },
       };
     }
     return n;
@@ -341,8 +278,8 @@ export const playbookInsertNode = async (
       port: parentPortId,
     },
     to: {
-      id: nodeId
-    }
+      id: nodeId,
+    },
   });
   // Replace the link
   if (relatedComponent.ports.length > 0) {
@@ -355,8 +292,8 @@ export const playbookInsertNode = async (
             port: relatedComponent.ports.at(0)?.id ?? 'out',
           },
           to: {
-            id: childNodeId
-          }
+            id: childNodeId,
+          },
         };
       }
       return n;
@@ -400,7 +337,7 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
   // Check from consistency
   const node = definition.nodes.find((n) => n.id === input.from_node);
   if (!node) {
-    throw UnsupportedError('Playbook link node from not found');
+    throw UnsupportedError('Playbook link node from not found', { id: input.from_node });
   }
   const nodePort = PLAYBOOK_COMPONENTS[node.component_id].ports.find((p) => p.id === input.from_port);
   if (!nodePort || nodePort.type === 'in') {
@@ -414,7 +351,7 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
   // Check to consistency
   const toNode = definition.nodes.find((n) => n.id === input.to_node);
   if (!toNode) {
-    throw UnsupportedError('Playbook link node from not found');
+    throw UnsupportedError('Playbook link node from not found', { id: input.to_node });
   }
   // Build the link
   const linkId = uuidv4();
@@ -422,11 +359,11 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
     id: linkId,
     from: {
       id: input.from_node,
-      port: input.from_port
+      port: input.from_port,
     },
     to: {
-      id: input.to_node
-    }
+      id: input.to_node,
+    },
   });
   const patch = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
@@ -444,12 +381,12 @@ export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, i
 };
 
 type PlaybookCreationType = {
-  name: string,
-  description?: string | null,
-  playbook_start?: string,
-  playbook_running?: boolean,
-  playbook_mode?: string,
-  playbook_definition?: string
+  name: string;
+  description?: string | null;
+  playbook_start?: string;
+  playbook_running?: boolean;
+  playbook_mode?: string;
+  playbook_definition?: string;
 };
 const createPlaybook = async (context: AuthContext, user: AuthUser, playbookCreationInput: PlaybookCreationType) => {
   await checkEnterpriseEdition(context);
@@ -489,7 +426,7 @@ export const playbookExport = async (playbook: BasicStoreEntityPlaybook) => {
       playbook_mode,
       playbook_start,
       playbook_definition,
-    }
+    },
   });
 };
 
@@ -503,7 +440,7 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     );
   }
   if (parsedData.type !== 'playbook') {
-    throw FunctionalError('Invalid import type, must be playbook');
+    throw FunctionalError('Invalid import type, must be playbook', { type: parsedData.type });
   }
   const config = parsedData.configuration;
   const importData = {

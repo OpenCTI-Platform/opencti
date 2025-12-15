@@ -156,7 +156,7 @@ const FintelDesigns = () => {
   return (
     <div data-testid="fintel-designs-page">
       <CustomizationMenu />
-      <PageContainer withGap withRightMenu >
+      <PageContainer withGap withRightMenu>
         <Breadcrumbs
           noMargin
           elements={[
@@ -173,19 +173,19 @@ const FintelDesigns = () => {
               content={t_i18n('If no design configuration is detected, the default settings will be applied.')}
             />
             {queryRef && (
-            <DataTable
-              dataColumns={dataColumns}
-              resolvePath={(data: FintelDesignsLines_data$data) => data.fintelDesigns?.edges?.map((n) => n?.node)}
-              storageKey={LOCAL_STORAGE_KEY}
-              initialValues={initialValues}
-              contextFilters={contextFilters}
-              getComputeLink={getRedirectionLink}
-              lineFragment={fintelDesignsLineFragment}
-              disableLineSelection
-              preloadedPaginationProps={preloadedPaginationProps}
-              createButton={<FintelDesignCreation paginationOptions={queryPaginationOptions} />}
-              icon={() => <ItemIcon type="FintelDesign" />}
-            />
+              <DataTable
+                dataColumns={dataColumns}
+                resolvePath={(data: FintelDesignsLines_data$data) => data.fintelDesigns?.edges?.map((n) => n?.node)}
+                storageKey={LOCAL_STORAGE_KEY}
+                initialValues={initialValues}
+                contextFilters={contextFilters}
+                getComputeLink={getRedirectionLink}
+                lineFragment={fintelDesignsLineFragment}
+                disableLineSelection
+                preloadedPaginationProps={preloadedPaginationProps}
+                createButton={<FintelDesignCreation paginationOptions={queryPaginationOptions} />}
+                icon={() => <ItemIcon type="FintelDesign" />}
+              />
             )}
           </>
         )}

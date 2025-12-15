@@ -10,11 +10,11 @@ import { useFormatter } from '../../../../../components/i18n';
 import { MESSAGING$ } from '../../../../../relay/environment';
 
 interface FintelTemplateWidgetAttributeProps {
-  widget: Widget
-  variableName: string
-  onUpdate?: () => void
-  onDelete?: () => void
-  title?: string
+  widget: Widget;
+  variableName: string;
+  onUpdate?: () => void;
+  onDelete?: () => void;
+  title?: string;
 }
 
 const FintelTemplateWidgetAttribute = ({

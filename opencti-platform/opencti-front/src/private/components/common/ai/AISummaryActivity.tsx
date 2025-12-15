@@ -35,12 +35,12 @@ const aISummaryActivityQuery = graphql`
 `;
 
 interface AISummaryActivityComponentProps {
-  refetch: () => void
+  refetch: () => void;
   language: string;
   setLanguage: (language: string) => void;
-  content: string
-  loading: boolean
-  result: AISummaryActivityStixCoreObjectAskAiActivityQuery$data | null
+  content: string;
+  loading: boolean;
+  result: AISummaryActivityStixCoreObjectAskAiActivityQuery$data | null;
 }
 
 const AISummaryActivityComponent = ({
@@ -138,9 +138,9 @@ const AISummaryActivityComponent = ({
 };
 
 interface AISummaryActivityProps {
-  id: string
-  loading: boolean
-  setLoading: (loading: boolean) => void
+  id: string;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 const AISummaryActivity = ({ id, loading, setLoading }: AISummaryActivityProps) => {

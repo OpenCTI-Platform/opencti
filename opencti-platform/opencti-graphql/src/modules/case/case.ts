@@ -12,11 +12,11 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
     id: 'cases',
     name: ENTITY_TYPE_CONTAINER_CASE,
     category: ENTITY_TYPE_CONTAINER,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CONTAINER_CASE]: [{ src: NAME_FIELD }, { src: 'created' }]
+      [ENTITY_TYPE_CONTAINER_CASE]: [{ src: NAME_FIELD }, { src: 'created' }],
     },
     resolvers: {
       name(data: object) {
@@ -36,7 +36,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   representative: (stix: StixCase) => {
     return stix.name;
   },
-  converter_2_1: convertCaseToStix
+  converter_2_1: convertCaseToStix,
 };
 
 registerDefinition(CASE_DEFINITION);

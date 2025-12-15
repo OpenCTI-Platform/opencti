@@ -13,14 +13,14 @@ from opentelemetry.exporter.prometheus import PrometheusMetricReader
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from prometheus_client import start_http_server
-from pycti import OpenCTIApiClient
+from pycti import OpenCTIApiClient, __version__
 from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
 )
 
-from message_queue_consumer import MessageQueueConsumer
 from listen_handler import ListenHandler
+from message_queue_consumer import MessageQueueConsumer
 from push_handler import PushHandler
 from thread_pool_selector import ThreadPoolSelector
 
@@ -98,6 +98,12 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             config,
             True,
             default=5,
+        )
+        self.opencti_api_requests_timeout = get_config_variable(
+            "OPENCTI_REQUESTS_TIMEOUT",
+            ["opencti", "requests_timeout"],
+            config,
+            default=300,
         )
         self.opencti_api_custom_headers = get_config_variable(
             "OPENCTI_CUSTOM_HEADERS",
@@ -179,6 +185,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             ssl_verify=self.opencti_ssl_verify,
             perform_health_check=False,  # No need to prevent worker start if API is not available yet
             custom_headers=self.opencti_api_custom_headers,
+            requests_timeout=self.opencti_api_requests_timeout,
+            provider="worker/" + __version__,
         )
         self.worker_logger = self.api.logger_class("worker")
 
@@ -231,6 +239,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         )
 
         listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
+
         def listen_execution_pool_submit(task: Callable[[], None]):
             return listen_execution_pool.submit(task)
 
@@ -288,7 +297,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             "push",
                             push_queue,
                             pika_parameters,
-                            functools.partial(push_thread_pool_selector.submit, is_realtime),
+                            functools.partial(
+                                push_thread_pool_selector.submit, is_realtime
+                            ),
                             push_handler.handle_message,
                         )
 

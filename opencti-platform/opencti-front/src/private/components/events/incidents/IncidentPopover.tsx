@@ -84,13 +84,13 @@ const IncidentPopover = ({ id }: { id: string }) => {
         message={t_i18n('Do you want to delete this incident?')}
       />
       {queryRef && (
-      <React.Suspense fallback={<div />}>
-        <IncidentEditionContainer
-          queryRef={queryRef}
-          handleClose={handleCloseEdit}
-          open={displayEdit}
-        />
-      </React.Suspense>
+        <React.Suspense fallback={<div />}>
+          <IncidentEditionContainer
+            queryRef={queryRef}
+            handleClose={handleCloseEdit}
+            open={displayEdit}
+          />
+        </React.Suspense>
       )}
     </>
   );

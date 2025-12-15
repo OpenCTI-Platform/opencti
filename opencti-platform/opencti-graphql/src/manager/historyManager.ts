@@ -8,7 +8,7 @@ import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from 
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
+import type { Change, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
@@ -47,6 +47,7 @@ interface HistoryContext {
   pir_ids?: Array<string>;
   pir_score?: number;
   pir_match_from?: boolean;
+  changes?: Array<Change>;
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -106,9 +107,9 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
       to_id = extensions.target_ref;
       if ((extensions.source_ref_pir_refs ?? []).length > 0) {
         pir_match_from = true;
-        pir_ids = extensions.source_ref_pir_refs;
+        pir_ids = extensions.source_ref_pir_refs ?? [];
       } else if ((extensions.target_ref_pir_refs ?? []).length > 0) {
-        pir_ids = extensions.target_ref_pir_refs;
+        pir_ids = extensions.target_ref_pir_refs ?? [];
       }
     }
   } else if (eventData.type === 'internal-relationship'
@@ -136,7 +137,7 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   };
 };
 
-export const buildHistoryElementsFromEvents = async (context:AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
+export const buildHistoryElementsFromEvents = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   // load all markings to resolve object_marking_refs
   const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   // resolve granted_refs
@@ -180,6 +181,8 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         const relatedMarkings = updateEvent.context.related_restrictions.markings ?? [];
         eventMarkingRefs.push(...relatedMarkings);
       }
+      // add changes
+      contextData.changes = updateEvent.context.changes;
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;
@@ -205,7 +208,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     // add Pir context data for concerned events
     contextData = {
       ...contextData,
-      ...generatePirContextData(event)
+      ...generatePirContextData(event),
     };
     // history type is different for events concerning pir relationships
     const eventData = event.data.data;
@@ -324,7 +327,7 @@ const initHistoryManager = () => {
           filters: [{ key: ['event_access'], values: [], operator: FilterOperator.Nil }],
           filterGroups: [],
         },
-        noFiltersChecking: true
+        noFiltersChecking: true,
       });
       let lastEventId = '0-0';
       if (histoElements.length > 0) {

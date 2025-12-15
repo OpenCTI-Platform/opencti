@@ -51,7 +51,7 @@ export const JsonFormArrayRenderer = (props: ControlProps) => {
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography component={'label'} variant="subtitle2" sx={{ fontSize: '10px' }}>{label}</Typography>
+      <Typography component="label" variant="subtitle2" sx={{ fontSize: '10px' }}>{label}</Typography>
 
       <Autocomplete
         multiple

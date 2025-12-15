@@ -8,10 +8,10 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 interface CountryEditionContainerProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<CountryEditionContainerQuery>
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  handleClose: () => void;
+  queryRef: PreloadedQuery<CountryEditionContainerQuery>;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 export const countryEditionQuery = graphql`

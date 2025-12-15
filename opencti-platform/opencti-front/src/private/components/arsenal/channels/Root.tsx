@@ -7,6 +7,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
@@ -55,6 +57,7 @@ const channelQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Channel_channel
       ...ChannelKnowledge_channel
@@ -100,13 +103,13 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
   const paddingRight = getPaddingRight(location.pathname, channelId, '/dashboard/arsenal/channels');
   const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {channel ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element= {
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -125,7 +128,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                   ]}
                   data={channel}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -143,7 +146,14 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                   <ChannelEdition channelId={channel.id} />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={channel}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ChannelDeletion id={channel.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -218,31 +228,31 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <ChannelKnowledge channelData={channel} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={channel}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses/*"
-                element={
+                element={(
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={channel}
                   />
-                }
+                )}
               />
               <Route
                 path="/files"
-                element={ (
+                element={(
                   <FileManager
                     id={channelId}
                     connectorsImport={connectorsForImport}
@@ -253,7 +263,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={channelId}
                   />
@@ -265,7 +275,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

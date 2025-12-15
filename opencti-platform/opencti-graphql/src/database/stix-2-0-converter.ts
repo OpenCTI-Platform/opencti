@@ -15,7 +15,7 @@ import {
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
-  isStixDomainObjectThreatActor
+  isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
@@ -36,7 +36,7 @@ const CUSTOM_ENTITY_TYPES = [
   ENTITY_TYPE_CONTAINER_FEEDBACK,
   ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
   ENTITY_TYPE_CONTAINER_CASE_RFI,
-  ENTITY_TYPE_CONTAINER_CASE_RFT
+  ENTITY_TYPE_CONTAINER_CASE_RFT,
 ];
 
 export const buildStixId = (instanceType: string, standard_id: S.StixId): S.StixId => {
@@ -108,6 +108,7 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
     x_opencti_id: instance.id,
     spec_version: '2.0',
     x_opencti_type: instance.entity_type,
+    x_opencti_modified_at: convertToStixDate(instance.x_opencti_modified_at),
     type: convertTypeToStix2Type(instance.entity_type),
     x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
     x_opencti_workflow_id: instance.x_opencti_workflow_id,

@@ -188,7 +188,7 @@ class AddExternalReferencesLinesContainer extends Component {
           primary={`${externalReference.source_name} ${externalReferenceId}`}
           secondary={truncate(
             externalReference.description !== null
-              && externalReference.description.length > 0
+            && externalReference.description.length > 0
               ? externalReference.description
               : externalReference.url,
             120,

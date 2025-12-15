@@ -24,11 +24,11 @@ const DISSEMINATION_LIST_DEFINITION: ModuleDefinition<StoreEntityDisseminationLi
     id: 'disseminationList',
     name: ENTITY_TYPE_DISSEMINATION_LIST,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_DISSEMINATION_LIST]: () => uuidv4()
+      [ENTITY_TYPE_DISSEMINATION_LIST]: () => uuidv4(),
     },
   },
   attributes: [
@@ -40,7 +40,7 @@ const DISSEMINATION_LIST_DEFINITION: ModuleDefinition<StoreEntityDisseminationLi
   representative: (stix: StixDisseminationList) => {
     return stix.name;
   },
-  converter_2_1: convertDisseminationListToStix
+  converter_2_1: convertDisseminationListToStix,
 };
 
 registerDefinition(DISSEMINATION_LIST_DEFINITION);

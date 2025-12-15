@@ -4,7 +4,7 @@ name: opencti-tests
 
 steps:
   - name: Runner information
-    image: alpine:3.22
+    image: alpine:3.23
     commands:
     - echo DRONE_STAGE_MACHINE ${DRONE_STAGE_MACHINE}
 
@@ -280,6 +280,7 @@ steps:
       - client-test-311
 
   # always run the examples last since they don't clean up
+  # ---------> already done in Github Actions
   - name: pycti-example-tests
     image: python:3.12
     environment:
@@ -290,7 +291,7 @@ steps:
       - pip3 install -r requirements.txt --user
       - pip3 install .
       - cd examples/
-       - /bin/bash run_all.sh
+      - /bin/bash run_all.sh
     depends_on:
       - client-test-312
 
@@ -312,7 +313,7 @@ services:
   - name: redis
     image: redis:8.4.0
   - name: elastic
-    image: elasticsearch:8.19.7
+    image: elasticsearch:8.19.8
     environment:
       discovery.type: single-node
       xpack.security.enabled: false

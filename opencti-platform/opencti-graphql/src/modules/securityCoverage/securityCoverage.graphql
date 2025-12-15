@@ -16,6 +16,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   draftVersion: DraftVersion
   refreshed_at: DateTime
   # inferences
@@ -147,6 +148,9 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   coverage_information: [CoverageResult!]
   external_uri: String
   periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String!]
   auto_enrichment_disable: Boolean
   objectCovered: StixDomainObject
   toStixBundle: String
@@ -208,12 +212,16 @@ input SecurityCoverageAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
   external_uri: String
   externalReferences: [String]
   update: Boolean
   # coverage specific
   auto_enrichment_disable: Boolean!
   periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String]
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime

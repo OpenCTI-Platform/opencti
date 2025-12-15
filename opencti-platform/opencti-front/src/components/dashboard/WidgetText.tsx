@@ -5,12 +5,12 @@ import WidgetContainer from './WidgetContainer';
 import type { Theme } from '../Theme';
 
 interface WidgetTextProps {
-  variant: string
-  height?: CSSProperties['height']
+  variant: string;
+  height?: CSSProperties['height'];
   parameters?: {
-    title?: string | null
-    content?: string | null
-  } | null
+    title?: string | null;
+    content?: string | null;
+  } | null;
 }
 
 const WidgetText = ({

@@ -21,18 +21,18 @@ const ruleActivationMutation = graphql`
 `;
 
 interface Labels {
-  confirm: string
-  description: string
+  confirm: string;
+  description: string;
 }
 interface RuleLabels {
-  enable: Labels
-  disable: Labels
+  enable: Labels;
+  disable: Labels;
 }
 
 export interface RulesStatusChangeDialogProps {
-  ruleId?: string
-  status: 'enable' | 'disable' | undefined
-  changeStatus: (s: 'enable' | 'disable' | undefined) => void
+  ruleId?: string;
+  status: 'enable' | 'disable' | undefined;
+  changeStatus: (s: 'enable' | 'disable' | undefined) => void;
 }
 
 const RulesStatusChangeDialog = ({
@@ -96,7 +96,7 @@ const RulesStatusChangeDialog = ({
           {t_i18n('Cancel')}
         </Button>
         <Button onClick={submit} color="secondary" disabled={processing}>
-          {t_i18n('Enable')}
+          {status === 'enable' ? t_i18n('Enable') : t_i18n('Disable')}
         </Button>
       </DialogActions>
     </Dialog>

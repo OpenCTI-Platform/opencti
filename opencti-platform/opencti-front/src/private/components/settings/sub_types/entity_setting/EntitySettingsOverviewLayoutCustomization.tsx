@@ -45,7 +45,7 @@ type NonNullableFields<T> = {
 export type EntitySettingsOverviewLayoutCustomizationData = NonNullableFields<Pick<EntitySettingSettings_entitySetting$data, 'id' | 'overview_layout_customization'>>;
 
 interface EntitySettingsOverviewLayoutCustomizationProps {
-  entitySettingsData: EntitySettingsOverviewLayoutCustomizationData
+  entitySettingsData: EntitySettingsOverviewLayoutCustomizationData;
 }
 
 const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverviewLayoutCustomizationProps> = ({
@@ -132,7 +132,7 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
               <TableRow>
                 <TableCell>{t_i18n('Order')}</TableCell>
                 <TableCell>{t_i18n('Widget')}</TableCell>
-                <TableCell align={'left'}>{t_i18n('Full width')}</TableCell>
+                <TableCell align="left">{t_i18n('Full width')}</TableCell>
               </TableRow>
             </TableHead>
             <DragDropContext onDragEnd={(props) => onDragEndHandler(values, props)}>
@@ -156,8 +156,8 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                               {...providedDrag.draggableProps}
                             >
                               <TableCell
-                                component={'th'}
-                                scope={'row'}
+                                component="th"
+                                scope="row"
                                 style={{
                                   verticalAlign: 'bottom',
                                 }}

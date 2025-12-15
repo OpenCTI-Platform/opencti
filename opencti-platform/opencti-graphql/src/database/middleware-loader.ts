@@ -6,7 +6,7 @@ import {
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
   READ_RELATIONSHIPS_INDICES,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
 } from './utils';
 import {
   computeQueryIndices,
@@ -19,7 +19,7 @@ import {
   elLoadById,
   elPaginate,
   ES_DEFAULT_PAGINATION,
-  UNIMPACTED_ENTITIES_ROLE
+  UNIMPACTED_ENTITIES_ROLE,
 } from './engine';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -29,12 +29,12 @@ import { type Filter, type FilterGroup, FilterMode, FilterOperator, type InputMa
 import {
   ASSIGNEE_FILTER,
   CREATOR_FILTER,
-  ID_FILTER,
+  ID_SUBFILTER,
   INSTANCE_REGARDING_OF,
   INSTANCE_REGARDING_OF_DIRECTION_FORCED,
   INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
   PARTICIPANT_FILTER,
-  RELATION_TYPE_FILTER
+  RELATION_TYPE_SUBFILTER,
 } from '../utils/filtering/filtering-constants';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
@@ -52,22 +52,22 @@ export interface FiltersWithNested extends Filter {
 }
 
 export interface FilterGroupWithNested extends FilterGroup {
-  filters: FiltersWithNested[],
-  filterGroups: FilterGroupWithNested[],
+  filters: FiltersWithNested[];
+  filterGroups: FilterGroupWithNested[];
 }
 
 export interface ListFilter<T extends BasicStoreCommon> {
-  indices?: Array<string>
-  search?: InputMaybe<string> | string | undefined
-  useWildcardPrefix?: boolean
-  first?: number | null
-  after?: string | undefined | null
-  orderBy?: any
-  baseData?: boolean
+  indices?: Array<string>;
+  search?: InputMaybe<string> | string | undefined;
+  useWildcardPrefix?: boolean;
+  first?: number | null;
+  after?: string | undefined | null;
+  orderBy?: any;
+  baseData?: boolean;
   orderMode?: InputMaybe<OrderingMode>;
-  filters?: FilterGroupWithNested | null
-  noFiltersChecking?: boolean
-  callback?: (result: Array<T>) => Promise<boolean | void>
+  filters?: FilterGroupWithNested | null;
+  noFiltersChecking?: boolean;
+  callback?: (result: Array<T>) => Promise<boolean | void>;
 }
 
 // entities
@@ -86,11 +86,11 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
 }
 
 export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
-  ids?: Array<string>
-  indices?: Array<string>
-  includeAuthorities?: boolean | null
-  withInferences?: boolean
-  includeDeletedInDraft?: boolean | null
+  ids?: Array<string>;
+  indices?: Array<string>;
+  includeAuthorities?: boolean | null;
+  withInferences?: boolean;
+  includeDeletedInDraft?: boolean | null;
 }
 
 // relations
@@ -106,20 +106,20 @@ interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   fromRole?: string;
   toId?: string | Array<string>;
   toRole?: string;
-  fromTypes?: Array<string>,
-  toTypes?: Array<string>,
-  elementWithTargetTypes?: Array<string>,
-  startTimeStart?: string,
-  startTimeStop?: string,
-  stopTimeStart?: string,
-  stopTimeStop?: string,
-  firstSeenStart?: string,
-  firstSeenStop?: string,
-  lastSeenStart?: string,
-  lastSeenStop?: string,
-  startDate?: string,
-  endDate?: string,
-  confidences?: Array<string>,
+  fromTypes?: Array<string>;
+  toTypes?: Array<string>;
+  elementWithTargetTypes?: Array<string>;
+  startTimeStart?: string;
+  startTimeStop?: string;
+  stopTimeStart?: string;
+  stopTimeStop?: string;
+  firstSeenStart?: string;
+  firstSeenStop?: string;
+  lastSeenStart?: string;
+  lastSeenStop?: string;
+  startDate?: string;
+  endDate?: string;
+  confidences?: Array<string>;
 }
 
 export interface RelationOptions<T extends BasicStoreCommon> extends RelationFilters<T> {
@@ -330,7 +330,7 @@ export const buildThingsFilters = <T extends BasicStoreCommon>(thingTypes: strin
 const entitiesAggregations = [
   { name: CREATOR_FILTER, field: 'creator_id.keyword' },
   { name: ASSIGNEE_FILTER, field: 'rel_object-assignee.internal_id.keyword' },
-  { name: PARTICIPANT_FILTER, field: 'rel_object-participant.internal_id.keyword' }
+  { name: PARTICIPANT_FILTER, field: 'rel_object-participant.internal_id.keyword' },
 ];
 export const fullEntitiesThoughAggregationConnection = async (context: AuthContext, user: AuthUser, filter: string, type: string, args = {}) => {
   const aggregation = entitiesAggregations.find((agg) => agg.name === filter);
@@ -340,8 +340,8 @@ export const fullEntitiesThoughAggregationConnection = async (context: AuthConte
   const aggregationsList = await elAggregationsList(context, user, READ_DATA_INDICES_WITHOUT_INFERRED, [aggregation], args);
   const values = aggregationsList.find((agg) => agg.name === filter)?.values ?? [];
   const nodeElements = values
-    .sort((a: { value: string, label: string }, b: { value: string, label: string }) => a.label.localeCompare(b.label))
-    .map((val: { value: string, label: string }) => ({ node: { id: val.value, name: val.label, entity_type: type } }));
+    .sort((a: { value: string; label: string }, b: { value: string; label: string }) => a.label.localeCompare(b.label))
+    .map((val: { value: string; label: string }) => ({ node: { id: val.value, name: val.label, entity_type: type } }));
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 
@@ -354,12 +354,12 @@ export const fullEntitiesList = async <T extends BasicStoreEntity>(context: Auth
 };
 
 export interface FullEntitiesThroughRelation {
-  type: string | string[]
-  fromOrToId: string | string[]
-  fromOrToType: string | string[]
-  sourceSide: 'from' | 'to'
-  withInferences: boolean
-  filters?: FilterGroupWithNested | null
+  type: string | string[];
+  fromOrToId: string | string[];
+  fromOrToType: string | string[];
+  sourceSide: 'from' | 'to';
+  withInferences: boolean;
+  filters?: FilterGroupWithNested | null;
 }
 
 // This method is designed to fetch all entities
@@ -379,7 +379,7 @@ export const fullEntitiesListThroughRelations = async <T extends BasicStoreCommo
     nested: [
       { key: 'internal_id', values: fromOrToIds },
       { key: 'role', values: [`*_${relation.sourceSide}`], operator: FilterOperator.Wildcard },
-    ]
+    ],
   };
   // Filter the other side of the relation to have expected toEntityType
   const oppositeTypeFilter: FiltersWithNested = {
@@ -409,8 +409,8 @@ export const fullEntitiesListThroughRelations = async <T extends BasicStoreCommo
 };
 
 interface fullOptsList {
-  withInferences?: boolean,
-  filters?: FilterGroupWithNested | null
+  withInferences?: boolean;
+  filters?: FilterGroupWithNested | null;
 }
 
 export const fullEntitiesThroughRelationsToList = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser,
@@ -421,7 +421,7 @@ export const fullEntitiesThroughRelationsToList = async <T extends BasicStoreCom
     fromOrToType: toType,
     sourceSide: 'from',
     withInferences: opts.withInferences ?? false,
-    filters: opts.filters
+    filters: opts.filters,
   };
   return fullEntitiesListThroughRelations(context, user, rel);
 };
@@ -433,7 +433,7 @@ export const fullEntitiesThroughRelationsFromList = async <T extends BasicStoreE
     fromOrToType: fromType,
     sourceSide: 'to',
     withInferences: opts.withInferences ?? false,
-    filters: opts.filters
+    filters: opts.filters,
   };
   return fullEntitiesListThroughRelations(context, user, rel);
 };
@@ -455,8 +455,15 @@ export const topEntitiesList = async <T extends BasicStoreEntity>(context: AuthC
   return asyncMap(data.edges, (edge) => edge.node);
 };
 
-export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, connectedEntityId: string,
-  relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<BasicConnection<T>> => {
+export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  connectedEntityId: string | null,
+  relationType: string,
+  entityType: string | string[],
+  reverse_relation: boolean,
+  args: EntityOptions<T> = {},
+): Promise<BasicConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {
     throw UnsupportedError('List connected entities paginated cant be used', { type: entityType });
@@ -467,12 +474,12 @@ export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity
       {
         key: [INSTANCE_REGARDING_OF],
         values: [
-          { key: ID_FILTER, values: [connectedEntityId] },
-          { key: RELATION_TYPE_FILTER, values: [relationType] },
+          ...(connectedEntityId === null ? [] : [{ key: ID_SUBFILTER, values: [connectedEntityId] }]),
+          { key: RELATION_TYPE_SUBFILTER, values: [relationType] },
           { key: INSTANCE_REGARDING_OF_DIRECTION_FORCED, values: [true] },
           { key: INSTANCE_REGARDING_OF_DIRECTION_REVERSE, values: [reverse_relation] },
-        ]
-      }
+        ],
+      },
     ],
     filterGroups: args.filters && isFilterGroupNotEmpty(args.filters) ? [args.filters] : [],
   };
@@ -485,7 +492,7 @@ export const findEntitiesIdsWithRelations = async (
   connectedEntitiesIds: string[],
   relationType: string,
   entityType: string | string[],
-  reverse_relation: boolean
+  reverse_relation: boolean,
 ) => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   const connectionRole = reverse_relation ? `${relationType}_to` : `${relationType}_from`;
@@ -505,13 +512,13 @@ export const findEntitiesIdsWithRelations = async (
   };
   // add a filter on role for aggregation to return only matching connections for the right role
   const aggFilter = {
-    bool: { filter: [{ term: { 'connections.role.keyword': connectionRole } }] }
+    bool: { filter: [{ term: { 'connections.role.keyword': connectionRole } }] },
   };
   const aggSize = connectedEntitiesIds.length;
   const args = { filters: connectionsFilters, types: [relationType], size: aggSize };
   const aggregation = { field: 'connections.internal_id.keyword', path: 'connections', filter: aggFilter };
   const aggregationResult = await elAggregationNestedTermsWithFilter(context, user, READ_RELATIONSHIPS_INDICES, aggregation, args);
-  const resultEntityIds = aggregationResult.map((agg: { label: string; }) => agg.label)
+  const resultEntityIds = aggregationResult.map((agg: { label: string }) => agg.label)
     .filter((id: string) => connectedEntitiesIds.includes(id)); // keep only ids we were looking for
   return resultEntityIds;
 };
@@ -533,12 +540,12 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
   user: AuthUser,
   ids: string[],
   args?: {
-    type?: string | string[],
-    baseData?: boolean,
-    toMap?: boolean,
-    mapWithAllIds?: boolean,
-    baseFields?: string[]
-  } & Record<string, string | string[] | boolean>
+    type?: string | string[];
+    baseData?: boolean;
+    toMap?: boolean;
+    mapWithAllIds?: boolean;
+    baseFields?: string[];
+  } & Record<string, string | string[] | boolean>,
 ) => {
   return await elFindByIds(context, user, ids, args) as unknown as T[];
 };
@@ -550,11 +557,11 @@ export const internalFindByIdsMapped = async <T extends BasicStoreObject>(
   user: AuthUser,
   ids: string[],
   args?: {
-    type?: string | string[],
-    baseData?: boolean,
-    mapWithAllIds?: boolean,
-    baseFields?: string[]
-  } & Record<string, string | string[] | boolean>
+    type?: string | string[];
+    baseData?: boolean;
+    mapWithAllIds?: boolean;
+    baseFields?: string[];
+  } & Record<string, string | string[] | boolean>,
 ) => {
   return await elFindByIds(context, user, ids, { ...(args ?? {}), toMap: true }) as unknown as Record<string, T>;
 };
@@ -563,14 +570,14 @@ export const internalLoadById = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   id: string | undefined,
-  opts?: { type?: string | string[], baseData?: boolean, indices?: string[] },
+  opts?: { type?: string | string[]; baseData?: boolean; indices?: string[] },
 ): Promise<T> => {
   return await elLoadById<T>(context, user, id ?? '', opts) as unknown as T;
 };
 
 export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string, type: string | string[], opts = {}): Promise<T> => {
   if (R.isNil(type) || R.isEmpty(type)) {
-    throw FunctionalError('You need to specify a type when loading a element');
+    throw FunctionalError('You need to specify a type when loading an element', { id });
   }
   const data = await internalLoadById<T>(context, user, id, { ...opts, type });
   if (data) {
@@ -589,7 +596,7 @@ export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthCon
 
 export const storeLoadByIds = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, ids: string[], type: string): Promise<T[]> => {
   if (R.isNil(type) || R.isEmpty(type)) {
-    throw FunctionalError('You need to specify a type when loading a element');
+    throw FunctionalError('You need to specify a type when loading elements', { ids });
   }
   const hits = await elFindByIds(context, user, ids, { type, indices: READ_DATA_INDICES });
   return ids.map((id) => (hits as T[]).find((h: T) => h.internal_id === id)) as T[];

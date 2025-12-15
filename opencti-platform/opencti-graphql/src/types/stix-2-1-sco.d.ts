@@ -11,12 +11,12 @@ export interface StixArtifact extends StixCyberObject {
   mime_type: string; // optional
   payload_bin: string; // optional
   url: string; // optional
-  hashes : { [k: string]: string }; // optional
+  hashes: { [k: string]: string }; // optional
   encryption_algorithm: string; // optional
   decryption_key: string; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
-    [STIX_EXT_OCTI_SCO]: ArtifactExtension
+    [STIX_EXT_OCTI_SCO]: ArtifactExtension;
   };
 }
 
@@ -70,7 +70,7 @@ export interface StixEmailBodyMultipart extends StixInternalEmailBodyMultipart, 
   external_references: Array<StixInternalExternalReference>;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
-    [STIX_EXT_OCTI_SCO] : { extension_type : 'new-sco' }
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
   };
 }
 
@@ -120,24 +120,24 @@ export interface StixFile extends StixCyberObject {
   atime: StixDate; // optional
   parent_directory_ref: StixId | undefined; // optional
   contains_refs: Array<StixId>; // optional
-  content_ref : StixId | undefined; // optional
+  content_ref: StixId | undefined; // optional
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: FileExtension
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: FileExtension;
     // Archive extension
     'archive-ext'?: {
       contains_refs: Array<StixId>; // optional
-      comment : string; // optional
-    }
+      comment: string; // optional
+    };
     // NTFS Extension
     'ntfs-ext'?: {
-      sid : string; // optional
+      sid: string; // optional
       alternate_data_streams: Array<{
         name: string;
         hashes: object; // optional
         size: number; // optional
       }>; // optional
-    }
+    };
     // PDF Extension
     'pdf-ext'?: {
       version: string; // optional
@@ -145,14 +145,14 @@ export interface StixFile extends StixCyberObject {
       document_info_dict: object; // optional
       pdfid0: string; // optional
       pdfid1: string; // optional
-    }
+    };
     // Raster Image Extension
     'raster-image-ext'?: {
       image_height: number; // optional
       image_width: number; // optional
       bits_per_pixel: number; // optional
       exif_tags: object; // optional
-    }
+    };
     // TODO Windows™ PE Binary Extension
     // 'windows-pebinary-ext'?: {
     // TODO Windows™ PE Optional Header Type
@@ -163,7 +163,7 @@ export interface StixFile extends StixCyberObject {
       size: number; // optional
       entropy: number; // optional
       hashes: object; // optional
-    }
+    };
   };
 }
 
@@ -174,13 +174,13 @@ export interface StixCryptocurrencyWallet extends StixCyberObject {
   description: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO] : { extension_type : 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Simple custom object extension
@@ -191,13 +191,13 @@ export interface StixCryptographicKey extends StixCyberObject {
   description: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO] : { extension_type : 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Custom object extension - Hostname
@@ -207,13 +207,13 @@ export interface StixHostname extends StixCyberObject {
   description: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Custom object extension - Text
@@ -223,13 +223,13 @@ export interface StixText extends StixCyberObject {
   description: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Custom object extension - User Agent
@@ -239,13 +239,13 @@ export interface StixUserAgent extends StixCyberObject {
   description: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Custom object extension - Bank Account
@@ -257,13 +257,13 @@ export interface StixBankAccount extends StixCyberObject {
   description: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Custom object extension - Credential
@@ -273,13 +273,13 @@ export interface StixCredential extends StixCyberObject {
   description: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Custom object extension - Tracking number
@@ -289,13 +289,13 @@ export interface StixTrackingNumber extends StixCyberObject {
   description: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Custom object extension - Phone number
@@ -305,13 +305,13 @@ export interface StixPhoneNumber extends StixCyberObject {
   description: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Custom object extension - Credit Card
@@ -324,13 +324,13 @@ export interface StixPaymentCard extends StixCyberObject {
   description: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 type StixExtendedObservable = StixCryptographicKey | StixHostname | StixText | StixUserAgent | StixEmailBodyMultipart | StixWindowsRegistryValueType;
@@ -389,22 +389,22 @@ export interface StixNetworkTraffic extends StixCyberObject {
   encapsulates_refs: Array<StixId>; // optional
   encapsulated_by_ref: StixId | undefined; // optional
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]?: CyberObjectExtension
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]?: CyberObjectExtension;
     // HTTP Request Extension
     'http-request-ext'?: {
       request_method: string;
-      request_value : string;
-      request_version : string; // optional
-      request_header : object; // optional
+      request_value: string;
+      request_version: string; // optional
+      request_header: object; // optional
       message_body_length: number; // optional
       message_body_data_ref: StixId; // optional
-    }
+    };
     // ICMP Extension
     'icmp-ext'?: {
       icmp_type_hex: string;
       icmp_code_hex: string;
-    }
+    };
     // Network Socket Extension
     'socket-ext'?: {
       address_family: network_socket_address_family_enum;
@@ -414,12 +414,12 @@ export interface StixNetworkTraffic extends StixCyberObject {
       socket_type: network_socket_type_enum; // optional
       socket_descriptor: number; // optional
       socket_handle: number; // optional
-    }
+    };
     // TCP Extension
     'tcp-ext'?: {
       src_flags_hex: string; // optional
-      dst_flags_hex : string; // optional
-    }
+      dst_flags_hex: string; // optional
+    };
   };
 }
 
@@ -445,8 +445,8 @@ export interface StixProcess extends StixCyberObject {
   parent_ref: StixId | undefined; // optional
   child_refs: Array<StixId>; // optional
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]?: CyberObjectExtension
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]?: CyberObjectExtension;
     // Windows™ Process Extension
     'windows-process-ext': {
       aslr_enabled: boolean; // optional
@@ -456,7 +456,7 @@ export interface StixProcess extends StixCyberObject {
       window_title: string; // optional
       startup_info: object; // optional
       integrity_level: windows_integrity_level_enum; // optional
-    }
+    };
     // Windows™ Service Extension
     'windows-service-ext': {
       service_name: string; // optional
@@ -467,7 +467,7 @@ export interface StixProcess extends StixCyberObject {
       service_dll_refs: Array<StixId>; // optional
       service_type: windows_service_type_enum; // optional
       service_status: windows_service_status_enum; // optional
-    }
+    };
   };
 }
 
@@ -485,7 +485,7 @@ export interface StixSoftware extends StixCyberObject {
   version: string; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
-    [STIX_EXT_OCTI_SCO]: SoftwareExtension
+    [STIX_EXT_OCTI_SCO]: SoftwareExtension;
   };
 }
 
@@ -517,15 +517,15 @@ export interface StixUserAccount extends StixCyberObject {
   account_first_login: StixDate; // optional
   account_last_login: StixDate; // optional
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]?: CyberObjectExtension
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]?: CyberObjectExtension;
     // UNIX™ Account Extension
     'unix-account-ext'?: {
       gid: number; // optional
       groups: Array<string>; // optional
       home_dir: string; // optional
       shell: string; // optional
-    }
+    };
   };
 }
 
@@ -543,7 +543,7 @@ export interface StixWindowsRegistryValueType extends StixInternalWindowsRegistr
   external_references: Array<StixInternalExternalReference>;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
-    [STIX_EXT_OCTI_SCO] : { extension_type : 'new-sco' }
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
   };
 }
 
@@ -590,7 +590,7 @@ export interface StixX509Certificate extends StixCyberObject {
     private_key_usage_period_not_after: StixDate; // optional
     certificate_policies: string; // optional
     policy_mappings: string; // optional
-  }
+  };
 }
 
 // Custom object extension - Media Content
@@ -604,13 +604,13 @@ export interface StixMediaContent extends StixCyberObject {
   publication_date: StixDate;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Custom object extension - Persona
@@ -620,13 +620,13 @@ export interface StixPersona extends StixCyberObject {
   persona_type: string;
   score: number;
   labels: Array<string>;
-  created_by_ref: StixId | undefined,
+  created_by_ref: StixId | undefined;
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }
 
 // Custom object extension - SSH key
@@ -642,7 +642,7 @@ export interface StixSSHKey extends StixCyberObject {
   expiration_date: StixDate | undefined; // optional
   external_references: Array<StixInternalExternalReference>; // optional
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
-    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
 }

@@ -30,11 +30,12 @@ import {
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
   OBJECT_CONTAINS_FILTER,
+  PIR_SCORE_FILTER,
   RELATION_DYNAMIC_FROM_FILTER,
   RELATION_DYNAMIC_TO_FILTER,
   REPRESENTATIVE_FILTER,
   TYPE_FILTER,
-  WORKFLOW_FILTER
+  WORKFLOW_FILTER,
 } from '../utils/filtering/filtering-constants';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_GRANTED_REFS, isAbstract } from '../schema/general';
 import { getEntityFromCache } from '../database/cache';
@@ -51,13 +52,13 @@ import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalR
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 
 export type FilterDefinition = {
-  filterKey: string
-  type: string // possible values: boolean, date, integer, float, string, id, vocabulary, text, enum, object, nested
-  label: string // filter key translation in English
-  multiple: boolean, // if the field can have multiple values
-  subEntityTypes: string[] // entity types that have the given type as parent and have this filter key in their schema
-  elementsForFilterValuesSearch: string[] // not empty if type = id, type = enum or type = vocabulary
-  subFilters?: FilterDefinition[]
+  filterKey: string;
+  type: string; // possible values: boolean, date, integer, float, string, id, vocabulary, text, enum, object, nested
+  label: string; // filter key translation in English
+  multiple: boolean; // if the field can have multiple values
+  subEntityTypes: string[]; // entity types that have the given type as parent and have this filter key in their schema
+  elementsForFilterValuesSearch: string[]; // not empty if type = id, type = enum or type = vocabulary
+  subFilters?: FilterDefinition[];
 };
 
 // build the FilterDefinition object that is saved in the filterKeysShema
@@ -158,7 +159,7 @@ const completeFilterDefinitionMapWithObjectAttributeWithMappings = (
         completeFilterDefinitionMapWithObjectAttributeWithMappings(
           attributesMapWithFilterDefinition,
           { ...mappingAttributeDefinition, name: composedMappingName } as ComplexAttributeWithMappings,
-          types
+          types,
         );
       } else if (mappingAttributeDefinition.associatedFilterKeys) { // case 2: attribute with no mappings and associatedFilterKeys is set
         // the keys to add are the ones in associatedFilterKeys
@@ -176,7 +177,7 @@ const completeFilterDefinitionMapWithObjectAttributeWithMappings = (
 const completeFilterDefinitionMapForType = (
   filterDefinitionMap: Map<string, FilterDefinition>, // filter definition map to complete
   type: string, // type whose attributes and relations refs to study (eventually add them in the map or complete subEntityTypes)
-  subTypes?: string[]
+  subTypes?: string[],
 ) => {
   // 01. add the attributes
   const attributesMap = schemaAttributesDefinition.getAttributes(type);
@@ -221,8 +222,8 @@ const completeFilterDefinitionMapWithSpecialKeys = (
             multiple: false,
             elementsForFilterValuesSearch: [],
             subEntityTypes,
-            subFilters: []
-          }
+            subFilters: [],
+          },
         );
       }
     }
@@ -253,8 +254,8 @@ const completeFilterDefinitionMapWithSpecialKeys = (
           multiple: true,
           elementsForFilterValuesSearch: ['Stix-Core-Object'],
           subEntityTypes: [],
-        }
-      ]
+        },
+      ],
     });
     filterDefinitionsMap.set(INSTANCE_DYNAMIC_REGARDING_OF, {
       filterKey: INSTANCE_DYNAMIC_REGARDING_OF,
@@ -279,8 +280,8 @@ const completeFilterDefinitionMapWithSpecialKeys = (
           multiple: false,
           elementsForFilterValuesSearch: ['Stix-Core-Object'],
           subEntityTypes: [],
-        }
-      ]
+        },
+      ],
     });
     // Computed reliability (reliability of the entity, or of its author if no reliability is set)
     filterDefinitionsMap.set(COMPUTED_RELIABILITY_FILTER, {
@@ -502,7 +503,7 @@ export const generateFilterKeysSchema = async () => {
     subEntityTypes: [],
     elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT],
   }]]));
-  // representative (for streams, triggers, playbooks)
+  // representative and pir score (for stix filtering)
   filterKeysSchema.set('Stix-Filtering', new Map([[REPRESENTATIVE_FILTER, {
     filterKey: REPRESENTATIVE_FILTER,
     type: 'string',
@@ -510,17 +511,24 @@ export const generateFilterKeysSchema = async () => {
     multiple: true,
     subEntityTypes: [],
     elementsForFilterValuesSearch: [],
+  }], [PIR_SCORE_FILTER, {
+    filterKey: PIR_SCORE_FILTER,
+    type: 'integer',
+    label: 'PIR Score',
+    multiple: false,
+    subEntityTypes: [],
+    elementsForFilterValuesSearch: [],
   }]]));
   // C. transform the filterKeysSchema map in { key, values }[]
-  const flattenFilterKeysSchema: { entity_type: string, filters_schema: { filterDefinition: FilterDefinition, filterKey: string }[] }[] = [];
+  const flattenFilterKeysSchema: { entity_type: string; filters_schema: { filterDefinition: FilterDefinition; filterKey: string }[] }[] = [];
   filterKeysSchema.forEach((filtersMap, entity_type) => {
-    const filters_schema: { filterDefinition: FilterDefinition, filterKey: string }[] = [];
+    const filters_schema: { filterDefinition: FilterDefinition; filterKey: string }[] = [];
     filtersMap.forEach((filterDefinition, filterKey) => {
       filters_schema.push({ filterDefinition, filterKey });
     });
     flattenFilterKeysSchema.push({
       filters_schema,
-      entity_type
+      entity_type,
     });
   });
   return flattenFilterKeysSchema;

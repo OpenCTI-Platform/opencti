@@ -56,13 +56,15 @@ const DeployCustomDashboard = () => {
     navigate('/dashboard/workspaces/dashboards');
   };
 
-  return <>
-    <XtmHubDialogConnectivityLost
-      status={dialogConnectivityLostStatus}
-      onConfirm={onConfirm}
-      onCancel={onCancel}
-    />
-    <Loader />
-  </>;
+  return (
+    <>
+      <XtmHubDialogConnectivityLost
+        status={dialogConnectivityLostStatus}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
+      <Loader />
+    </>
+  );
 };
 export default DeployCustomDashboard;

@@ -1,13 +1,20 @@
 import * as R from 'ramda';
 import { isEmptyField } from '../../database/utils';
-import { AUTOMATION_MANAGER_USER, executionContext, INTERNAL_USERS } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext, isInternalUser } from '../../utils/access';
 import { getEntitiesListFromCache } from '../../database/cache';
-import type { AuthUser } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { FunctionalError } from '../../config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import type { FilterGroup, PlaybookAddNodeInput } from '../../generated/graphql';
+import { PLAYBOOK_INTERNAL_DATA_CRON } from './playbook-components';
+import { elFindByIds } from '../../database/engine';
+import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
+import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import type { ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
+import { logApp } from '../../config/conf';
 
 export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -15,12 +22,25 @@ export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle)
   return baseData;
 };
 
-export const convertMembersToUsers = async (members: { value: string }[], baseData: StixObject, bundle: StixBundle) => {
-  if (isEmptyField(members)) {
-    return [];
-  }
-  const context = executionContext('playbook_components');
-  const platformUsers = await getEntitiesListFromCache<AuthUser>(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_USER);
+/**
+ * Returns the list of all users authorized based on given members array.
+ *
+ * @param members Array of members.
+ * @param baseData Data from event.
+ * @param bundle Stix bundle transiting through playbook components.
+ * @returns List of users.
+ */
+export const convertMembersToUsers = async (
+  members: { value: string }[],
+  baseData: StixObject,
+  bundle: StixBundle,
+) => {
+  if (isEmptyField(members)) return [];
+  const platformUsers = await getEntitiesListFromCache<AuthUser>(
+    executionContext('playbook_components'),
+    AUTOMATION_MANAGER_USER,
+    ENTITY_TYPE_USER,
+  );
 
   const membersIds: string[] = [];
   members?.forEach((m) => {
@@ -44,12 +64,67 @@ export const convertMembersToUsers = async (members: { value: string }[], baseDa
     }
   });
 
-  const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
-    .some((id: string) => membersIds.includes(id)));
-  const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
-    .some((id: string) => membersIds.includes(id)));
-  const usersFromIds = platformUsers.filter((user) => membersIds.includes(user.id));
-  const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
-    .filter((u) => INTERNAL_USERS[u.id] === undefined);
-  return R.uniqBy(R.prop('id'), withoutInternalUsers);
+  const users = platformUsers.filter((user) => {
+    if (isInternalUser(user)) return false;
+    const isDirectlyAuthorized = membersIds.includes(user.id);
+    const isAuthorizedByGroup = user.groups.some((g) => membersIds.includes(g.internal_id));
+    const isAuthorizedByOrganization = user.organizations.some((o) => membersIds.includes(o.internal_id));
+    return isDirectlyAuthorized || isAuthorizedByGroup || isAuthorizedByOrganization;
+  });
+  return R.uniqBy(R.prop('id'), users);
+};
+
+export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkDefinition[]) => {
+  // Resolve all nodes to delete
+  const linksToDelete = links;
+  const nodesToDelete = [] as NodeDefinition[];
+  let childrenLinks = [] as LinkDefinition[];
+  // Resolve children nodes
+  let childrenNodes = definition.nodes.filter((n) => links.map((o) => o.to.id).includes(n.id));
+  if (childrenNodes.length > 0) {
+    nodesToDelete.push(...childrenNodes);
+    childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
+  }
+  while (childrenLinks.length > 0) {
+    linksToDelete.push(...childrenLinks);
+    // Resolve children nodes not already in nodesToDelete
+    childrenNodes = definition.nodes.filter((n) => linksToDelete.map((o) => o.to.id).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
+    if (childrenNodes.length > 0) {
+      nodesToDelete.push(...childrenNodes);
+      // eslint-disable-next-line @typescript-eslint/no-loop-func
+      childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
+    } else {
+      childrenLinks = [];
+    }
+    logApp.info('Delete links and children loop', { nodesToDelete, linksToDelete });
+  }
+  return {
+    nodes: definition.nodes.filter((n) => !nodesToDelete.map((o) => o.id).includes(n.id)),
+    links: definition.links.filter((n) => !linksToDelete.map((o) => o.id).includes(n.id)),
+  };
+};
+
+export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: PlaybookAddNodeInput,
+  userId: string,
+) => {
+  if (!input.configuration) {
+    return '{}';
+  }
+  let stringifiedFilters;
+  const config = JSON.parse(input.configuration);
+  if (config.filters) {
+    const filterGroup = JSON.parse(config.filters) as FilterGroup;
+    if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
+      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, elFindByIds as FiltersIdsFinder, { noFiltersConvert: true });
+      stringifiedFilters = JSON.stringify(convertedFilters);
+    } else {
+      // our stix matching is currently limited, we need to validate the input filters
+      validateFilterGroupForStixMatch(filterGroup);
+      stringifiedFilters = config.filters;
+    }
+  }
+  return JSON.stringify({ ...config, filters: stringifiedFilters });
 };

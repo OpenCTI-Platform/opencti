@@ -96,7 +96,7 @@ const WidgetCreationPerspective = () => {
               aria-label={t_i18n('Entities')}
             >
               <CardContent>
-                <DatabaseOutline style={{ fontSize: 40 }} color="primary"/>
+                <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
                 <Typography
                   gutterBottom
                   variant="h2"
@@ -104,7 +104,7 @@ const WidgetCreationPerspective = () => {
                 >
                   {t_i18n('Entities')}
                 </Typography>
-                <br/>
+                <br />
                 <Typography variant="body1">
                   {t_i18n('Display global knowledge with filters and criteria.')}
                 </Typography>
@@ -128,7 +128,7 @@ const WidgetCreationPerspective = () => {
               aria-label={t_i18n('Knowledge graph')}
             >
               <CardContent>
-                <FlaskOutline style={{ fontSize: 40 }} color="primary"/>
+                <FlaskOutline style={{ fontSize: 40 }} color="primary" />
                 <Typography
                   gutterBottom
                   variant="h2"
@@ -136,7 +136,7 @@ const WidgetCreationPerspective = () => {
                 >
                   {t_i18n('Knowledge graph')}
                 </Typography>
-                <br/>
+                <br />
                 <Typography variant="body1">
                   {t_i18n(
                     'Display specific knowledge using relationships and filters.',
@@ -173,7 +173,7 @@ const WidgetCreationPerspective = () => {
                 >
                   {t_i18n('Activity & history')}
                 </Typography>
-                <br/>
+                <br />
                 <Typography variant="body1">
                   {t_i18n('Display data related to the history and activity.')}
                 </Typography>

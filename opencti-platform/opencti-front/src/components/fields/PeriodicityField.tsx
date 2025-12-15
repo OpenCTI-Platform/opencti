@@ -66,6 +66,8 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                   durationString = `P${value}W`;
                 } else if (unit === 'D') {
                   durationString = `P${value}D`;
+                } else if (unit === 'H') {
+                  durationString = `P${value}H`;
                 } else {
                   durationString = `PT${value}${unit}`;
                 }
@@ -90,7 +92,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
 
           return (
             <>
-              <InputLabel variant="standard" shrink style={{ marginBottom: 8 }}>
+              <InputLabel variant="standard" shrink>
                 {label || t_i18n('Periodicity')}
               </InputLabel>
               <Box display="flex" gap={1} alignItems="flex-end">
@@ -120,9 +122,10 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                     },
                   }}
                 >
-                  <MenuItem value="D">{t_i18n('Days')}</MenuItem>
-                  <MenuItem value="W">{t_i18n('Weeks')}</MenuItem>
-                  <MenuItem value="M">{t_i18n('Months')}</MenuItem>
+                  <MenuItem value="H">{t_i18n('hour(s)')}</MenuItem>
+                  <MenuItem value="D">{t_i18n('day(s)')}</MenuItem>
+                  <MenuItem value="W">{t_i18n('week(s)')}</MenuItem>
+                  <MenuItem value="M">{t_i18n('month(s)')}</MenuItem>
                 </TextField>
               </Box>
               {helperText && (

@@ -327,7 +327,7 @@ const CityCreation = ({
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_cities', paginationOptions, 'cityAdd');
 
   const CreateCityControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='City' {...props} />
+    <CreateEntityControlledDial entityType="City" {...props} />
   );
   return (
     <Drawer

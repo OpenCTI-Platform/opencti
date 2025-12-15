@@ -20,7 +20,7 @@ import {
   redisGetWork,
   redisSetConnectorHealthMetrics,
   redisSetConnectorLogs,
-  setEditContext
+  setEditContext,
 } from '../database/redis';
 import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
@@ -31,6 +31,7 @@ import {
   ConnectorPriorityGroup,
   ConnectorType,
   type CurrentConnectorStatusInput,
+  type DraftWorkspaceAddInput,
   type EditContext,
   type EditInput,
   type EditManagedConnectorInput,
@@ -44,7 +45,7 @@ import {
   type SynchronizerAddInput,
   type SynchronizerFetchInput,
   type UpdateConnectorManagerStatusInput,
-  ValidationMode
+  ValidationMode,
 } from '../generated/graphql';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
@@ -58,6 +59,7 @@ import { computeConnectorTargetContract, getSupportedContractsByImage } from '..
 import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
 import { createOnTheFlyUser } from '../modules/user/user-domain';
+import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import type { Work } from '../types/work';
 import { AxiosError } from 'axios';
 import { URL } from 'node:url';
@@ -108,7 +110,7 @@ export const updateConnectorWithConnectorInfo = async (
   user: AuthUser,
   connectorEntity: BasicStoreEntityConnector,
   state: string,
-  connectorInfo: ConnectorInfo
+  connectorInfo: ConnectorInfo,
 ) => {
   // Patch the updated_at and the state if needed
   let connectorPatch;
@@ -155,16 +157,16 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
     event_scope: 'update',
     event_access: 'administration',
     message: `resets \`state\` and purge queues for ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch }
+    context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch },
   });
   await purgeConnectorQueues(element);
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 interface RegisterOptions {
-  built_in?: boolean
-  active?: boolean
-  connector_user_id?: string | null,
-  connector_priority_group?: ConnectorPriorityGroup,
+  built_in?: boolean;
+  active?: boolean;
+  connector_user_id?: string | null;
+  connector_priority_group?: ConnectorPriorityGroup;
 }
 
 export const registerConnectorsManager = async (context: AuthContext, user: AuthUser, input: RegisterConnectorsManagerInput) => {
@@ -178,7 +180,7 @@ export const registerConnectorsManager = async (context: AuthContext, user: Auth
   return createEntity(context, user, managerToCreate, ENTITY_TYPE_CONNECTOR_MANAGER);
 };
 
-export const updateConnectorManagerStatus = async (context: AuthContext, user:AuthUser, input: UpdateConnectorManagerStatusInput) => {
+export const updateConnectorManagerStatus = async (context: AuthContext, user: AuthUser, input: UpdateConnectorManagerStatusInput) => {
   const patch: any = { last_sync_execution: now() };
   const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
   return element;
@@ -186,14 +188,14 @@ export const updateConnectorManagerStatus = async (context: AuthContext, user:Au
 
 export const managedConnectorEdit = async (
   context: AuthContext,
-  user:AuthUser,
-  input: EditManagedConnectorInput
+  user: AuthUser,
+  input: EditManagedConnectorInput,
 ) => {
   const conn: any = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR);
   if (isEmptyField(conn)) {
-    throw UnsupportedError('Connector not found');
+    throw UnsupportedError('Connector not found', { id: input.id });
   }
-  const contractsMap = getSupportedContractsByImage();
+  const contractsMap = await getSupportedContractsByImage();
   const targetContract: any = contractsMap.get(conn.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
@@ -207,7 +209,7 @@ export const managedConnectorEdit = async (
     input.manager_contract_configuration,
     targetContract,
     currentManager.public_key,
-    conn.manager_contract_configuration
+    conn.manager_contract_configuration,
   );
   const patch: any = {
     name: input.name,
@@ -221,11 +223,11 @@ export const managedConnectorEdit = async (
 
 export const managedConnectorAdd = async (
   context: AuthContext,
-  user:AuthUser,
-  input: AddManagedConnectorInput
+  user: AuthUser,
+  input: AddManagedConnectorInput,
 ) => {
   // Get contract
-  const contractsMap = getSupportedContractsByImage();
+  const contractsMap = await getSupportedContractsByImage();
   const targetContract: any = contractsMap.get(input.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
@@ -248,13 +250,13 @@ export const managedConnectorAdd = async (
     const onTheFlyCreatedUser = await createOnTheFlyUser(
       context,
       user,
-      { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level ? parseInt(input.confidence_level, 10) : null }
+      { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level ? parseInt(input.confidence_level, 10) : null },
     );
     finalUserId = onTheFlyCreatedUser.id;
   }
   const connectorUser = await storeLoadById(context, user, finalUserId, ENTITY_TYPE_USER);
   if (isEmptyField(connectorUser)) {
-    throw UnsupportedError('Connector user not found');
+    throw UnsupportedError('Connector user not found', { id: finalUserId });
   }
   // Sanitize name
   const sanitizedName = sanitizeContainerName(input.name);
@@ -280,7 +282,7 @@ export const managedConnectorAdd = async (
     manager_contract_configuration: contractConfigurations,
     manager_requested_status: 'stopped',
     connector_state_timestamp: now(),
-    built_in: false
+    built_in: false,
   };
 
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
@@ -293,7 +295,7 @@ export const managedConnectorAdd = async (
     event_scope: 'create',
     event_access: 'administration',
     message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
-    context_data: { id: createdConnector.internal_id, entity_type: ENTITY_TYPE_CONNECTOR, input }
+    context_data: { id: createdConnector.internal_id, entity_type: ENTITY_TYPE_CONNECTOR, input },
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
@@ -304,9 +306,9 @@ export const managedConnectorAdd = async (
 
 export const registerConnector = async (
   context: AuthContext,
-  user:AuthUser,
+  user: AuthUser,
   connectorData: RegisterConnectorInput,
-  opts: RegisterOptions = {}
+  opts: RegisterOptions = {},
 ) => {
   const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
   const { auto = null, auto_update = null, enrichment_resolution = null } = connectorData;
@@ -364,7 +366,7 @@ export const registerConnector = async (
     event_scope: 'create',
     event_access: 'administration',
     message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: connectorData }
+    context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: connectorData },
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
@@ -372,7 +374,7 @@ export const registerConnector = async (
   return completeConnector(createdConnector);
 };
 
-export const connectorDelete = async (context: AuthContext, user:AuthUser, connectorId: string) => {
+export const connectorDelete = async (context: AuthContext, user: AuthUser, connectorId: string) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
   const { element } = await internalDeleteElementById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
@@ -382,7 +384,7 @@ export const connectorDelete = async (context: AuthContext, user:AuthUser, conne
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
-    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: element }
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: element },
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
@@ -397,7 +399,7 @@ const updateConnector = async (context: AuthContext, user: AuthUser, connectorId
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for connector \`${element.name}\``,
-    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input }
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input },
   });
   // Notify configuration change for caching system
   return notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
@@ -414,7 +416,7 @@ export const connectorUpdateHealth = async (_context: AuthContext, _user: AuthUs
     restart_count: input.restart_count,
     started_at: input.started_at,
     is_in_reboot_loop: input.is_in_reboot_loop,
-    last_update: new Date().toISOString()
+    last_update: new Date().toISOString(),
   };
   await redisSetConnectorHealthMetrics(input.id, metrics);
   return input.id;
@@ -457,11 +459,11 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
     throw FunctionalError('Cant find element to update', { id: connectorId, type: ENTITY_TYPE_CONNECTOR });
   }
   if (!['INTERNAL_ENRICHMENT', 'INTERNAL_IMPORT_FILE'].includes(conn.connector_type)) {
-    throw FunctionalError('Update is only possible on internal enrichment or import file connectors types');
+    throw FunctionalError('Update is only possible on internal enrichment or import file connectors types', { connectorId });
   }
   const supportedInputKeys = ['connector_trigger_filters'];
   if (input.some((item) => !supportedInputKeys.includes(item.key))) {
-    throw FunctionalError(`Update is only possible on these input keys: ${supportedInputKeys.join(', ')}`);
+    throw FunctionalError(`Update is only possible on these input keys: ${supportedInputKeys.join(', ')}`, { connectorId });
   }
   const filtersItem: EditInput | undefined = input.find((item: EditInput) => item.key === 'connector_trigger_filters');
   if (filtersItem && filtersItem.value.length > 0) {
@@ -479,12 +481,12 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
 
 // region syncs
 interface ConnectorIngestionInput {
-  id: string,
-  type: 'RSS' | 'CSV' | 'TAXII' | 'TAXII-PUSH' | 'JSON' | 'FORM',
-  name: string,
-  connector_user_id?: string | null,
-  is_running: boolean,
-  connector_priority_group?: ConnectorPriorityGroup,
+  id: string;
+  type: 'RSS' | 'CSV' | 'TAXII' | 'TAXII-PUSH' | 'JSON' | 'FORM';
+  name: string;
+  connector_user_id?: string | null;
+  is_running: boolean;
+  connector_priority_group?: ConnectorPriorityGroup;
 }
 export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
 export const registerConnectorForIngestion = async (context: AuthContext, input: ConnectorIngestionInput) => {
@@ -497,11 +499,11 @@ export const registerConnectorForIngestion = async (context: AuthContext, input:
     auto_update: false,
     scope: ['application/stix+json;version=2.1'],
     only_contextual: false,
-    playbook_compatible: false
+    playbook_compatible: false,
   }, {
     built_in: true,
     active: input.is_running,
-    connector_user_id: input.connector_user_id
+    connector_user_id: input.connector_user_id,
   });
 };
 
@@ -538,7 +540,7 @@ export const computeStreamRemoteUrl = (inputUri: string) => {
   return `${sanitizeUri.endsWith('/') ? sanitizeUri.slice(0, -1) : sanitizeUri}/graphql`;
 };
 
-export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, input:SynchronizerFetchInput) => {
+export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, input: SynchronizerFetchInput) => {
   const { token, uri, ssl_verify } = input;
   try {
     const query = `
@@ -568,7 +570,7 @@ export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, i
       logApp.error('[OPENCTI-MODULE] Issue when trying to call OpenCTI remote stream', { httpStatus: e.status, message: e.message, streamURI: uri });
       errorMessage = e.message;
     }
-    throw ValidationError('Error getting the streams from remote OpenCTI', 'uri', {cause: errorMessage});
+    throw ValidationError('Error getting the streams from remote OpenCTI', 'uri', { cause: errorMessage });
   }
 };
 export const registerSync = async (context: AuthContext, user: AuthUser, syncData: SynchronizerAddInput) => {
@@ -584,7 +586,7 @@ export const registerSync = async (context: AuthContext, user: AuthUser, syncDat
       event_scope: 'create',
       event_access: 'administration',
       message: `creates synchronizer \`${syncData.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_SYNC, input: data }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_SYNC, input: data },
     });
   }
   return element;
@@ -597,7 +599,7 @@ export const syncEditField = async (context: AuthContext, user: AuthUser, syncId
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for synchronizer \`${element.name}\``,
-    context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input }
+    context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, element, user);
 };
@@ -610,7 +612,7 @@ export const syncDelete = async (context: AuthContext, user: AuthUser, syncId: s
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes synchronizer \`${deleted.name}\``,
-    context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input: deleted }
+    context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input: deleted },
   });
   return syncId;
 };
@@ -633,7 +635,9 @@ export const deleteQueues = async (context: AuthContext, user: AuthUser) => {
     const conn = platformConnectors[index];
     await unregisterConnector(conn.id);
   }
-  try { await unregisterExchanges(); } catch (_e) { /* nothing */ }
+  try {
+    await unregisterExchanges();
+  } catch (_e) { /* nothing */ }
 };
 // endregion
 
@@ -696,7 +700,7 @@ export const askJobImport = async (
     configuration,
     bypassValidation,
     validationMode,
-    forceValidation
+    forceValidation,
   };
   const entity = await internalLoadById(context, user, entityId ?? undefined) as BasicStoreCommon;
   // This is a manual request for import, we have to check confidence and throw on error
@@ -720,7 +724,7 @@ export const askJobImport = async (
     file_mime: file.metaData.mimetype ?? 'application/octet-stream',
     connectors: connectorsForFile.map((c: BasicStoreEntityConnector) => c.name),
     entity_name: entityName,
-    entity_type: entityType
+    entity_type: entityType,
   };
   const contextData = completeContextDataForEntity(baseData, entity);
   await publishUserAction({
@@ -731,4 +735,45 @@ export const askJobImport = async (
     context_data: contextData,
   });
   return file;
+};
+
+export const createDraftAndAskJobImport = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: {
+    authorized_members?: DraftWorkspaceAddInput['authorized_members'];
+    entity_id?: string;
+    fileName: string;
+    connectorId?: string;
+    configuration?: string;
+    bypassEntityId?: string;
+    bypassValidation?: boolean;
+    validationMode?: ValidationMode;
+    forceValidation?: boolean;
+  },
+) => {
+  const {
+    authorized_members,
+    fileName,
+    connectorId,
+    configuration,
+    validationMode = defaultValidationMode,
+    entity_id,
+    bypassEntityId,
+  } = args;
+  const { id } = await addDraftWorkspace(context, user, { name: fileName, authorized_members, entity_id });
+
+  return askJobImport(
+    { ...context, draft_context: id },
+    user,
+    {
+      fileName,
+      connectorId,
+      configuration,
+      bypassEntityId,
+      validationMode,
+      bypassValidation: true,
+      forceValidation: false,
+    },
+  );
 };

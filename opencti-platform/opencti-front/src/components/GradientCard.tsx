@@ -30,7 +30,7 @@ const useGradient = (gradientVariant: GradientVariant) => {
   return { startColor, endColor };
 };
 
-const createGradientStyles = ({ startColor, endColor, reverse = false }: { startColor?: string, endColor?: string, reverse?: boolean }) => {
+const createGradientStyles = ({ startColor, endColor, reverse = false }: { startColor?: string; endColor?: string; reverse?: boolean }) => {
   const color1 = reverse ? endColor : startColor;
   const color2 = reverse ? startColor : endColor;
   const gradient = `linear-gradient(99.95deg, ${color1} 0%, ${color2} 100%)`;

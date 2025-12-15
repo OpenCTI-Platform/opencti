@@ -87,10 +87,10 @@ const stixCoreObjectsPolarAreaDistributionQuery = graphql`
 `;
 
 interface StixCoreObjectsPolarAreaComponentProps {
-  dataSelection: WidgetDataSelection[]
-  queryRef: PreloadedQuery<StixCoreObjectsPolarAreaDistributionQuery>
-  withExportPopover: boolean
-  isReadOnly: boolean
+  dataSelection: WidgetDataSelection[];
+  queryRef: PreloadedQuery<StixCoreObjectsPolarAreaDistributionQuery>;
+  withExportPopover: boolean;
+  isReadOnly: boolean;
 }
 
 const StixCoreObjectsPolarAreaComponent = ({
@@ -122,14 +122,14 @@ const StixCoreObjectsPolarAreaComponent = ({
 };
 
 interface StixCoreObjectsPolarAreaProps {
-  startDate?: string | null
-  endDate?: string | null
-  dataSelection: WidgetDataSelection[]
-  parameters?: WidgetParameters | null
-  variant?: string
-  height?: CSSProperties['height']
-  withExportPopover?: boolean
-  isReadOnly?: boolean
+  startDate?: string | null;
+  endDate?: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters | null;
+  variant?: string;
+  height?: CSSProperties['height'];
+  withExportPopover?: boolean;
+  isReadOnly?: boolean;
 }
 
 const StixCoreObjectsPolarArea = ({

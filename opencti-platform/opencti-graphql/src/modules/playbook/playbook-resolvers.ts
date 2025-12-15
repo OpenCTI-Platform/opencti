@@ -32,9 +32,9 @@ import {
   getPlaybookDefinition,
   playbookExport,
   playbookImport,
-  playbookDuplicate
+  playbookDuplicate,
 } from './playbook-domain';
-import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager';
+import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
 import { getConnectorQueueSize } from '../../database/rabbitmq';
 
@@ -59,7 +59,7 @@ const playbookResolvers: Resolvers = {
       // @ts-ignore
       const configurationSchema = await current.schema();
       return JSON.stringify(configurationSchema ?? '{}');
-    }
+    },
   },
   Mutation: {
     playbookAdd: (_, { input }, context) => playbookAdd(context, context.user, input),

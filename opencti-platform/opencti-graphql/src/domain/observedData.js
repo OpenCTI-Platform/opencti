@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { createEntity, distributionEntities, timeSeriesEntities, } from '../database/middleware';
+import { createEntity, distributionEntities, timeSeriesEntities } from '../database/middleware';
 import { internalLoadById, pageEntitiesConnection, topRelationsList, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -59,7 +59,7 @@ export const observedDatasNumber = (context, user, args) => ({
     context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]), R.dissoc('endDate')(args))
+    R.pipe(R.assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]), R.dissoc('endDate')(args)),
   ),
 });
 

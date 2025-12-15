@@ -9,11 +9,11 @@ import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetTreeProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
-  groupBy: string
-  withExport?: boolean
-  readonly?: boolean
-  isDistributed?: boolean
+  data: any[];
+  groupBy: string;
+  withExport?: boolean;
+  readonly?: boolean;
+  isDistributed?: boolean;
 }
 
 const WidgetTree = ({

@@ -6,7 +6,7 @@ import {
   findAttackPatternPaginated,
   findById,
   getAttackPatternsMatrix,
-  parentAttackPatternsPaginated
+  parentAttackPatternsPaginated,
 } from '../domain/attackPattern';
 import {
   stixDomainObjectAddRelation,

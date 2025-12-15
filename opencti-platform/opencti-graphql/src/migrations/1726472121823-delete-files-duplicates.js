@@ -19,7 +19,7 @@ export const up = async (next) => {
       context,
       SYSTEM_USER,
       [ENTITY_TYPE_INTERNAL_FILE],
-      { indices: [READ_INDEX_INTERNAL_OBJECTS], baseData: true, baseFields: ['internal_id', '_index', 'lastModified'] }
+      { indices: [READ_INDEX_INTERNAL_OBJECTS], baseData: true, baseFields: ['internal_id', '_index', 'lastModified'] },
     );
     const filesGroupedById = Object.entries(groupBy((f) => f.internal_id, allFiles));
     const filesToDelete = [];

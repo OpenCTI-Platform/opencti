@@ -14,11 +14,11 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
     id: 'dataSources',
     name: ENTITY_TYPE_DATA_SOURCE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_DATA_SOURCE]: [{ src: NAME_FIELD }]
+      [ENTITY_TYPE_DATA_SOURCE]: [{ src: NAME_FIELD }],
     },
     resolvers: {
       name(data: object) {
@@ -46,16 +46,16 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
       name: RELATION_DERIVED_FROM,
       targets: [
         { name: ENTITY_TYPE_DATA_SOURCE, type: REL_BUILT_IN },
-      ]
-    }
+      ],
+    },
   ],
   relationsRefs: [
-    { ...objectOrganization, isFilterable: false }
+    { ...objectOrganization, isFilterable: false },
   ],
   representative: (stix: StixDataSource) => {
     return stix.name;
   },
-  converter_2_1: convertDataSourceToStix
+  converter_2_1: convertDataSourceToStix,
 };
 
 registerDefinition(DATA_SOURCE_DEFINITION);

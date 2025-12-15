@@ -107,7 +107,8 @@ const ExclusionListPopover: FunctionComponent<ExclusionListPopoverProps> = ({
           onClick={handleClose}
           target="_blank"
           rel="noopener noreferrer"
-        >{t_i18n('Download file')}</MenuItem>
+        >{t_i18n('Download file')}
+        </MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog

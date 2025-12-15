@@ -87,14 +87,14 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
         <ItemIcon type="Event" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-              {data.draftVersion && (<DraftChip/>)}
+              {data.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}
@@ -121,7 +121,7 @@ export const EventLine: FunctionComponent<EventLineProps> = ({
               {fd(data.created)}
             </div>
           </div>
-          }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -147,7 +147,7 @@ export const EventLineDummy = ({
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -205,7 +205,7 @@ export const EventLineDummy = ({
               />
             </div>
           </div>
-          }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

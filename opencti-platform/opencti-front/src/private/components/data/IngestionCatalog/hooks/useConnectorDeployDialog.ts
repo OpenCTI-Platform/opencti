@@ -7,7 +7,7 @@ interface CatalogState {
   selectedConnector: IngestionConnector | null;
   selectedCatalogId: string;
   hasActiveManagers: boolean;
-  deploymentCount: number
+  deploymentCount: number;
 }
 
 const useConnectorDeployDialog = () => {

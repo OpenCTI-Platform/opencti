@@ -5,8 +5,8 @@ import RequestAccessConfigurationEdition from '@components/settings/sub_types/wo
 import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
 
 interface RequestAccessWorkflowEditionProps {
-  data: RequestAccessConfigurationEdition_requestAccess$key
-  requestAccessWorkflowDisabled: boolean
+  data: RequestAccessConfigurationEdition_requestAccess$key;
+  requestAccessWorkflowDisabled: boolean;
 }
 const RequestAccessConfigurationPopover: FunctionComponent<RequestAccessWorkflowEditionProps> = ({
   data,

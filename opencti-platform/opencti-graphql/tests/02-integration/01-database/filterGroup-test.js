@@ -8,6 +8,7 @@ import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_LOCATION, ID_INTERNAL } from '../../../src/schema/general';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import {
+  BULK_SEARCH_KEYWORDS_FILTER,
   COMPUTED_RELIABILITY_FILTER,
   IDS_FILTER,
   INSTANCE_RELATION_FILTER,
@@ -2434,6 +2435,22 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.markingDefinition).toBeNull();
   });
+
+  it('should list scos with bulk search keyword filter', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: BULK_SEARCH_KEYWORDS_FILTER,
+            values: ['france', 'test', 'azerty'],
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(2); // one country with 'France' name + 1 observable with 'azerty' value
+  });
 });
 
 describe('Complex filters regarding of for elastic queries', () => {
@@ -2752,6 +2769,52 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
     notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id, malwareAnalysis.internal_id], 'not_eq') } });
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(0);
+  });
+  it('should list entities using regarding of filter with inferred subfilter set to false', async () => {
+    const generateFilters = (withRegardingOf = true, regardingOfOperator = 'eq', isInferredSubFilterValue = false) => {
+      return {
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware', 'Intrusion-Set'],
+            operator: 'eq',
+            mode: 'or'
+          }
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: withRegardingOf ? [
+              {
+                key: 'regardingOf',
+                operator: regardingOfOperator,
+                values: [
+                  {
+                    key: 'relationship_type',
+                    values: ['uses']
+                  },
+                  {
+                    key: 'inferred',
+                    values: [isInferredSubFilterValue ? 'true' : 'false']
+                  },
+                ],
+                mode: 'or'
+              }
+            ] : [],
+            filterGroups: []
+          }
+        ]
+      };
+    };
+    // with inferred subfilter value = false
+    const eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq', false) } });
+    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
+    expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', false) } });
+    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
   });
 });
 

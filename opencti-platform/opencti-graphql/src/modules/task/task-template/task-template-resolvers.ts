@@ -4,7 +4,7 @@ import { findTaskTemplatePaginated, findById, taskTemplateAdd, taskTemplateDelet
 const taskTemplateResolvers: Resolvers = {
   Query: {
     taskTemplate: (_, { id }, context) => findById(context, context.user, id),
-    taskTemplates: (_, args, context) => findTaskTemplatePaginated(context, context.user, args)
+    taskTemplates: (_, args, context) => findTaskTemplatePaginated(context, context.user, args),
   },
   Mutation: {
     taskTemplateAdd: (_, { input }, context) => taskTemplateAdd(context, context.user, input),

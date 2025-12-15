@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { Channel_channel$key } from '@components/arsenal/channels/__generated__/Channel_channel.graphql';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import ChannelDetails from './ChannelDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -64,10 +65,14 @@ export const channelFragment = graphql`
 `;
 
 interface ChannelProps {
-  channelData: Channel_channel$key
+  channelData: Channel_channel$key;
 }
 
-const Channel: React.FC<ChannelProps> = ({ channelData }) => {
+const Channel: React.FC<ChannelProps> = ({
+  channelData,
+}) => {
+  useInitCreateRelationshipContext();
+
   const channel = useFragment<Channel_channel$key>(channelFragment, channelData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(channel.entity_type);
 

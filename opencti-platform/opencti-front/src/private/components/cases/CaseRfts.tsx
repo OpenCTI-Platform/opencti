@@ -210,7 +210,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Case-Rft' />
+                <StixCoreObjectForms entityType="Case-Rft" />
                 <CaseRftCreation paginationOptions={queryPaginationOptions} />
               </div>
             </Security>

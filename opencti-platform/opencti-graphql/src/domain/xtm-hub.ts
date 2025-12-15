@@ -14,14 +14,15 @@ import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-
 import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
 
 interface AttributeUpdate {
-  key: keyof BasicStoreSettings
-  value: unknown[]
+  key: keyof BasicStoreSettings;
+  value: unknown[];
 }
 
 export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUser): Promise<{
-  status: XtmHubRegistrationStatus
+  status: XtmHubRegistrationStatus;
 }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  await checkHubIfBackendIsReachable(context, user, settings);
   if (!settings.xtm_hub_token) {
     return { status: XtmHubRegistrationStatus.Unregistered };
   }
@@ -49,9 +50,6 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
     attributeUpdates.push({ key: 'xtm_hub_last_connectivity_check', value: [new Date()] });
   }
 
-  const { isReachable } = await xtmHubClient.isBackendReachable();
-  attributeUpdates.push({ key: 'xtm_hub_backend_is_reachable', value: [isReachable] });
-
   if (attributeUpdates.length === 0) {
     return { status: newRegistrationStatus };
   }
@@ -60,7 +58,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
     user,
     settings.id,
     ENTITY_TYPE_SETTINGS,
-    attributeUpdates
+    attributeUpdates,
   );
 
   const updatedSettings = await getSettings(context);
@@ -69,7 +67,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   return { status: newRegistrationStatus };
 };
 
-export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, input: AutoRegisterInput): Promise<{ success: boolean; } > => {
+export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, input: AutoRegisterInput): Promise<{ success: boolean }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
   const licenseInfo = getEnterpriseEditionInfoFromPem(settings.internal_id, settings.enterprise_license);
@@ -82,9 +80,9 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
       platformId: settings.id,
       platformToken: input.platform_token,
       platformUrl: settings.platform_url,
-      platformTitle: settings.platform_title ?? ''
+      platformTitle: settings.platform_title ?? '',
     },
-    licenseInfo.license_type
+    licenseInfo.license_type,
   );
   if (!response.success) {
     return { success: false };
@@ -95,8 +93,8 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
     settings.id,
     [
       { key: 'xtm_hub_token', value: [input.platform_token] },
-      { key: 'xtm_hub_registration_status', value: ['registered'] }
-    ]
+      { key: 'xtm_hub_registration_status', value: ['registered'] },
+    ],
   );
   return { success: true };
 };
@@ -105,28 +103,28 @@ const resetRegistration = async (context: AuthContext, user: AuthUser, settings:
   const attributeUpdates: AttributeUpdate[] = [
     {
       key: 'xtm_hub_token',
-      value: []
+      value: [],
     },
     {
       key: 'xtm_hub_registration_status',
-      value: [XtmHubRegistrationStatus.Unregistered]
+      value: [XtmHubRegistrationStatus.Unregistered],
     },
     {
       key: 'xtm_hub_registration_user_id',
-      value: []
+      value: [],
     },
     {
       key: 'xtm_hub_registration_user_name',
-      value: []
+      value: [],
     },
     {
       key: 'xtm_hub_registration_date',
-      value: []
+      value: [],
     },
     {
       key: 'xtm_hub_last_connectivity_check',
-      value: []
-    }
+      value: [],
+    },
   ];
 
   await updateAttribute(
@@ -134,8 +132,27 @@ const resetRegistration = async (context: AuthContext, user: AuthUser, settings:
     user,
     settings.id,
     ENTITY_TYPE_SETTINGS,
-    attributeUpdates
+    attributeUpdates,
   );
+
+  const updatedSettings = await getSettings(context);
+  await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
+};
+
+const checkHubIfBackendIsReachable = async (context: AuthContext, user: AuthUser, settings: BasicStoreSettings) => {
+  const { isReachable } = await xtmHubClient.isBackendReachable();
+
+  await updateAttribute(
+    context,
+    user,
+    settings.id,
+    ENTITY_TYPE_SETTINGS,
+    [{ key: 'xtm_hub_backend_is_reachable', value: [isReachable] }],
+  );
+
+  if (!isReachable) {
+    logApp.warn('[XTMH] Backend is unreachable');
+  }
 
   const updatedSettings = await getSettings(context);
   await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);

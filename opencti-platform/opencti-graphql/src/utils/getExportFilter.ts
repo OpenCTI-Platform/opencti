@@ -43,14 +43,14 @@ export const getExportFilter = async (user: AuthUser, { markingList, contentMaxM
   const mainFilter = {
     mode: 'and',
     filters: [...access_filters],
-    filterGroups: []
+    filterGroups: [],
   };
   if (isNotEmptyField(objectIdsList)) {
     mainFilter.filters.push({
       key: 'ids',
       values: objectIdsList,
       mode: 'or',
-      operator: 'eq'
+      operator: 'eq',
     });
   }
 

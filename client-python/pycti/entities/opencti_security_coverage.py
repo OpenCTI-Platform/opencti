@@ -202,6 +202,10 @@ class SecurityCoverage:
         coverage_valid_to = kwargs.get("coverage_valid_to", None)
         coverage_information = kwargs.get("coverage_information", None)
         auto_enrichment_disable = kwargs.get("auto_enrichment_disable", None)
+        periodicity = kwargs.get("periodicity", None)
+        duration = kwargs.get("duration", None)
+        type_affinity = kwargs.get("type_affinity", None)
+        platforms_affinity = kwargs.get("platforms_affinity", None)
 
         if name is not None and object_covered is not None:
             self.opencti.app_logger.info("Creating Security Coverage", {"name": name})
@@ -233,6 +237,10 @@ class SecurityCoverage:
                         "coverage_valid_to": coverage_valid_to,
                         "coverage_information": coverage_information,
                         "auto_enrichment_disable": auto_enrichment_disable,
+                        "periodicity": periodicity,
+                        "duration": duration,
+                        "type_affinity": type_affinity,
+                        "platforms_affinity": platforms_affinity,
                     }
                 },
             )
@@ -289,6 +297,22 @@ class SecurityCoverage:
                     stix_object["auto_enrichment_disable"]
                     if "auto_enrichment_disable" in stix_object
                     else False
+                ),
+                periodicity=(
+                    stix_object["periodicity"] if "periodicity" in stix_object else None
+                ),
+                duration=(
+                    stix_object["duration"] if "duration" in stix_object else None
+                ),
+                type_affinity=(
+                    stix_object["type_affinity"]
+                    if "type_affinity" in stix_object
+                    else None
+                ),
+                platforms_affinity=(
+                    stix_object["platforms_affinity"]
+                    if "platforms_affinity" in stix_object
+                    else None
                 ),
                 coverage_last_result=(
                     stix_object["last_result"] if "last_result" in stix_object else None

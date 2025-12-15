@@ -5,11 +5,11 @@ import type { Theme } from '../../components/Theme';
 import type { ApexChartEvents, ApexChartLabels } from './apex';
 
 export interface ScatterChartOptionsArgs {
-  theme: Theme,
-  background?: string
-  dataPointMouseEnter?: ApexChartEvents['dataPointMouseEnter']
-  dataPointMouseLeave?: ApexChartEvents['dataPointMouseLeave']
-  labelsFormatter?: ApexChartLabels['formatter']
+  theme: Theme;
+  background?: string;
+  dataPointMouseEnter?: ApexChartEvents['dataPointMouseEnter'];
+  dataPointMouseLeave?: ApexChartEvents['dataPointMouseLeave'];
+  labelsFormatter?: ApexChartLabels['formatter'];
 }
 
 export const scatterChartOptions = ({

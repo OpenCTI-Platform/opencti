@@ -37,7 +37,7 @@ interface JsonMapperRepresentationAttributeFormProps
 }
 
 const JsonMapperRepresentationAttributeForm: FunctionComponent<
-JsonMapperRepresentationAttributeFormProps
+  JsonMapperRepresentationAttributeFormProps
 > = ({ form, field, schemaAttribute, label, handleErrors }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -105,7 +105,8 @@ JsonMapperRepresentationAttributeFormProps
       <div>
         {
           (schemaAttribute.type === 'date' || schemaAttribute.multiple || schemaAttribute.editDefault)
-            && <JsonMapperRepresentationDialogOption configuration={value}>
+          && (
+            <JsonMapperRepresentationDialogOption configuration={value}>
               <JsonMapperRepresentationAttributeOptions
                 schemaAttribute={schemaAttribute}
                 baseAttributeName={name}
@@ -113,9 +114,10 @@ JsonMapperRepresentationAttributeFormProps
                 form={form}
               />
             </JsonMapperRepresentationDialogOption>
+          )
         }
       </div>
-      <JsonMapperRepresentionAttributeSelectedConfigurations configuration={value?.attr_path?.configuration}/>
+      <JsonMapperRepresentionAttributeSelectedConfigurations configuration={value?.attr_path?.configuration} />
     </div>
   );
 };

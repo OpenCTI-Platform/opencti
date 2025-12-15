@@ -155,7 +155,7 @@ const DisseminationLists = () => {
 
   return (
     <div data-testid="dissemination-settings-page">
-      <AccessesMenu/>
+      <AccessesMenu />
       <PageContainer withRightMenu>
         <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination lists'), current: true }]} />
         {!isEnterpriseEdition ? (

@@ -53,17 +53,17 @@ const toolMutation = graphql`
 const TOOL_TYPE = 'Tool';
 
 interface ToolAddInput {
-  name: string
-  description: string
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  killChainPhases: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  tool_types: string[]
-  tool_version: string
-  confidence: number | null
-  file: File | null
+  name: string;
+  description: string;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  killChainPhases: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  tool_types: string[];
+  tool_version: string;
+  confidence: number | null;
+  file: File | null;
 }
 
 interface ToolFormProps {
@@ -334,7 +334,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
 };
 
 const CreateToolControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial entityType='Tool' {...props} />
+  <CreateEntityControlledDial entityType="Tool" {...props} />
 );
 
 const ToolCreation = ({

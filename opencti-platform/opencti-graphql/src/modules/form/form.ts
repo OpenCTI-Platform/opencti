@@ -11,7 +11,7 @@ export const FORM_DEFINITION: ModuleDefinition<StoreEntityForm, StixForm> = {
     id: 'forms',
     name: ENTITY_TYPE_FORM,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
@@ -70,7 +70,7 @@ export const FORM_DEFINITION: ModuleDefinition<StoreEntityForm, StixForm> = {
           fields: { type: 'array' },
         },
         required: ['version', 'mainEntityType', 'fields'],
-      }
+      },
     },
     {
       name: 'active',

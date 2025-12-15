@@ -17,7 +17,7 @@ interface StixCoreObjectOrStixCoreRelationshipNotesProps {
     readonly id: string;
     readonly x_opencti_color: string | null | undefined;
     readonly x_opencti_order?: number;
-  }[]
+  }[];
 }
 
 const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<StixCoreObjectOrStixCoreRelationshipNotesProps> = ({
@@ -63,7 +63,7 @@ const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<StixCoreObjec
     <>
       {queryRef && !hiddenNote && (
         <React.Suspense
-          fallback={
+          fallback={(
             <div style={{ height: '100%', marginTop }}>
               <Typography
                 variant="h4"
@@ -73,7 +73,7 @@ const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<StixCoreObjec
                 {title}
               </Typography>
             </div>
-          }
+          )}
         >
           <StixCoreObjectOrStixCoreRelationshipNotesCards
             id={stixCoreObjectOrStixCoreRelationshipId}

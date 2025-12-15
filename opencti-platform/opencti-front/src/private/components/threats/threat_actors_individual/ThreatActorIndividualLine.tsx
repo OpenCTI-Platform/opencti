@@ -84,7 +84,7 @@ const threatActorIndividualFragment = graphql`
 `;
 
 export const ThreatActorIndividualLine: FunctionComponent<
-ThreatActorIndividualLineProps
+  ThreatActorIndividualLineProps
 > = ({
   dataColumns,
   node,
@@ -128,7 +128,7 @@ ThreatActorIndividualLineProps
         <ItemIcon type="Threat-Actor-Individual" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -140,7 +140,7 @@ ThreatActorIndividualLineProps
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
@@ -167,7 +167,7 @@ export const ThreatActorIndividualLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -184,7 +184,7 @@ export const ThreatActorIndividualLineDummy = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

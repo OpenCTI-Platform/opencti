@@ -14,7 +14,7 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_SAVED_FILTER]: () => uuidv4()
+      [ENTITY_TYPE_SAVED_FILTER]: () => uuidv4(),
     },
   },
   attributes: [
@@ -29,7 +29,7 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: true
+      isFilterable: true,
     },
     {
       name: 'filters',
@@ -40,7 +40,7 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: false
+      isFilterable: false,
     },
     {
       name: 'scope',
@@ -51,8 +51,8 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: false
-    }
+      isFilterable: false,
+    },
   ],
   relations: [],
   representative: (instance: StixSavedFilter) => {
