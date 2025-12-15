@@ -49,13 +49,13 @@ describe('middleware upsertElement test', () => {
       let inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert);
 
       expect(inputs.length).toEqual(1);
-      expect(inputs[0]).toEqual({key: 'description', value: ['indicator1 new description']});
+      expect(inputs[0]).toEqual({ key: 'description', value: ['indicator1 new description'] });
 
       confidenceForUpsert = { isConfidenceMatch: false };
       inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert);
 
       expect(inputs.length).toEqual(1); // we still update description since no existing
-      expect(inputs[0]).toEqual({key: 'description', value: ['indicator1 new description']});
+      expect(inputs[0]).toEqual({ key: 'description', value: ['indicator1 new description'] });
     });
     it('should generateAttributesInputsForUpsert with indicator description update', () => {
       const resolvedElement = { ...indicator1, description: 'indicator1 old description' }; // existing description
@@ -64,7 +64,7 @@ describe('middleware upsertElement test', () => {
       let inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert);
 
       expect(inputs.length).toEqual(1);
-      expect(inputs[0]).toEqual({key: 'description', value: ['indicator1 new description']});
+      expect(inputs[0]).toEqual({ key: 'description', value: ['indicator1 new description'] });
 
       confidenceForUpsert = { isConfidenceMatch: false };
       inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert);
@@ -74,7 +74,7 @@ describe('middleware upsertElement test', () => {
 
     it('should generateAttributesInputsForUpsert with indicator description update & indicator types unchanged', () => {
       const resolvedElement = { ...indicator1, description: 'indicator1 old description', indicator_types: ['type1', 'type2'] };
-      const updatePatchWithTypes = { ...updatePatch, indicator_types: ['type1', 'type2']};
+      const updatePatchWithTypes = { ...updatePatch, indicator_types: ['type1', 'type2'] };
       let confidenceForUpsert = { isConfidenceMatch: true };
       let inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatchWithTypes, confidenceForUpsert);
 
@@ -96,22 +96,22 @@ describe('middleware upsertElement test', () => {
       pattern: '[domain-name:value = \'filigran.dev\']',
       pattern_type: 'stix',
       x_opencti_main_observable_type: ENTITY_DOMAIN_NAME,
-      indicator_types: ['ip', 'active-directory']
+      indicator_types: ['ip', 'active-directory'],
     };
     const indicatorUpsertOperations = [
       {
         operation: 'remove',
         key: 'indicator_types',
         value: ['active-directory'],
-      }
+      },
     ];
     const updatePatchIndicator1 = {
       standard_id: 'indicator1-uuid-standard',
       // indicator_types: ['malicious-activity'],
-      indicatorUpsertOperations
+      indicatorUpsertOperations,
     };
     it('should mergeUpsertInputs with indicator : different keys', () => {
-      const updatePatch = { ...updatePatchIndicator1, description: 'indicator new description'};
+      const updatePatch = { ...updatePatchIndicator1, description: 'indicator new description' };
       const updatePatchInput = [{
         operation: 'replace',
         key: 'description',
@@ -122,7 +122,6 @@ describe('middleware upsertElement test', () => {
       expect(inputs.length).toEqual(2);
       expect(inputs.find((n) => n.key === 'description')).toEqual({ operation: 'replace', key: 'description', value: ['indicator new description'] });
       expect(inputs.find((n) => n.key === 'indicator_types')).toEqual({ operation: 'remove', key: 'indicator_types', value: ['active-directory'] });
-
     });
     it('should mergeUpsertInputs with indicator : upsert adds type and operation removes another type', () => {
       const updatePatchInput = {
@@ -171,7 +170,8 @@ describe('middleware upsertElement test', () => {
       expect(input.value.includes('indicator-type-1')).toBe(true);
     });
 
-    it('should mergeUpsertInputs with indicator : upsert adds back the same type that was removed, already in DB', () => {
+    // skip this one for now, not implemented yet
+    it.skip('should mergeUpsertInputs with indicator : upsert adds back the same type that was removed, already in DB', () => {
       const updatePatchInput = {
         operation: 'add',
         key: 'indicator_types',
@@ -188,8 +188,75 @@ describe('middleware upsertElement test', () => {
       const inputs = mergeUpsertInput(elementCurrentValue, upsertCurrentValue, updatePatchInput, upsertOperation);
 
       // TODO inputs should be empty
+      console.log('inputs', inputs);
+    });
+    const labelToRemove = {
+      _id: '0fc83074-eb2d-47f6-b315-781e511f0322',
+      _index: 'opencti_stix_meta_objects-000001',
+      base_type: 'ENTITY',
+      color: '#320dff',
+      confidence: 100,
+      created: '2025-07-02T15:23:00.703Z',
+      created_at: '2025-07-02T15:23:00.703Z',
+      creator_id: [
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+      ],
+      entity_type: 'Label',
+      id: '0fc83074-eb2d-47f6-b315-781e511f0322',
+      internal_id: '0fc83074-eb2d-47f6-b315-781e511f0322',
+      modified: '2025-07-02T15:23:00.703Z',
+      parent_types: [
+        'Basic-Object',
+        'Stix-Object',
+        'Stix-Meta-Object',
+      ],
+      standard_id: 'label--00785e04-8bf4-52ee-bba2-88ccecc17b8d',
+      updated_at: '2025-07-02T15:23:00.703Z',
+      value: 'label-to-remove',
+    };
+    it('should mergeUpsertInputs with indicator with only upsertOperation with remove label', () => {
+      const updatePatch = { ...updatePatchIndicator1, description: 'indicator new description' };
+      const upsertOperations = [{
+        operation: 'remove',
+        key: 'objectLabel',
+        value: [labelToRemove],
+      }];
+      const updatePatchInput = [{
+        operation: 'replace',
+        key: 'description',
+        value: ['indicator new description'],
+      }];
+      const inputs = mergeUpsertInputs(indicator1, updatePatch, updatePatchInput, upsertOperations);
 
-      // console.log('inputs', inputs);
+      expect(inputs.length).toEqual(2);
+      expect(inputs.find((n) => n.key === 'description')).toEqual({ operation: 'replace', key: 'description', value: ['indicator new description'] });
+      expect(inputs.find((n) => n.key === 'objectLabel')).toEqual({ operation: 'remove', key: 'objectLabel', value: [labelToRemove] });
+    });
+    it('should mergeUpsertInputs with indicator : upsert adds label and operation removes another label', () => {
+      const labelToAddId = 'eda3b7d5-b722-4c34-9dd5-d70cea8f5cfc';
+      const labelToAdd = { ...labelToRemove, value: 'label-to-add', id: labelToAddId, internal_id: labelToAddId, standard_id: labelToAddId };
+      const labelCurrentId = 'ada3b7d5-b722-4c34-9dd5-d70cea8f5cfc';
+      const labelCurrentValue = { ...labelToRemove, value: 'label-current', id: labelCurrentId, internal_id: labelCurrentId, standard_id: labelCurrentId };
+      const updatePatchInput = {
+        operation: 'add',
+        key: 'objectLabel',
+        value: [labelToAdd],
+      };
+      const upsertOperation = {
+        operation: 'remove',
+        key: 'objectLabel',
+        value: [labelToRemove],
+      };
+      const elementCurrentValue = [labelToRemove, labelCurrentValue];
+      const upsertCurrentValue = [labelCurrentValue, labelToAdd];
+      const input = mergeUpsertInput(elementCurrentValue, upsertCurrentValue, updatePatchInput, upsertOperation);
+
+      // inputs should be operation: 'replace', value: [labelCurrentValue, labelToAdd]
+      expect(input.key).toEqual('objectLabel');
+      expect(input.operation).toEqual('replace');
+      expect(input.value.length).toEqual(2);
+      expect(input.value.some((v) => v.value === labelCurrentValue.value)).toBe(true);
+      expect(input.value.some((v) => v.value === labelToAdd.value)).toBe(true);
     });
   });
 });
