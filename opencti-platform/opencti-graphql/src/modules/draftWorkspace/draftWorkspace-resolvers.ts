@@ -2,9 +2,10 @@ import type { Resolvers } from '../../generated/graphql';
 import {
   addDraftWorkspace,
   deleteDraftWorkspace,
+  draftWorkspaceEditAuthorizedMembers,
+  findById,
   findDraftWorkspacePaginated,
   findDraftWorkspaceRestrictedPaginated,
-  findById,
   getCurrentUserAccessRight,
   getObjectsCount,
   getProcessingCount,
@@ -12,11 +13,10 @@ import {
   listDraftRelations,
   listDraftSightingRelations,
   validateDraftWorkspace,
-  draftWorkspaceEditAuthorizedMembers,
 } from './draftWorkspace-domain';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
-import { filterMembersUsersWithUsersOrgs } from '../../utils/access';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { loadCreators } from '../../database/members';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
@@ -34,13 +34,7 @@ const draftWorkspaceResolvers: Resolvers = {
     },
   },
   DraftWorkspace: {
-    creators: async (draft, _, context) => {
-      const creators = await context.batch.creatorsBatchLoader.load(draft.creator_id);
-      if (!creators) {
-        return [];
-      }
-      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
-    },
+    creators: async (draft, _, context) => loadCreators(context, context.user, draft),
     objectsCount: (draft, _, context) => getObjectsCount(context, context.user, draft),
     processingCount: (draft, _, context) => getProcessingCount(context, context.user, draft),
     works: (draft, args, context) => {

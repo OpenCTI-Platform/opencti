@@ -4,9 +4,10 @@ import { stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { INPUT_GRANTED_REFS } from '../schema/general';
-import { filterMembersUsersWithUsersOrgs, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER } from '../utils/access';
 import { ENABLED_DEMO_MODE } from '../config/conf';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { loadCreators } from '../database/members';
 
 const internalLoadThroughDenormalized = (context, user, element, inputName) => {
   if (inputName === INPUT_GRANTED_REFS) {
@@ -72,13 +73,7 @@ const stixResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    creators: async (stix, _, context) => {
-      const creators = await context.batch.creatorsBatchLoader.load(stix.creator_id);
-      if (!creators) {
-        return [];
-      }
-      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
-    },
+    creators: async (stix, _, context) => loadCreators(context, context.user, stix),
   },
 };
 

@@ -23,7 +23,7 @@ import { numberOfContainersForObject } from '../domain/container';
 import { casesPaginated, containersPaginated, externalReferencesPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
-import { filterMembersUsersWithUsersOrgs } from '../utils/access';
+import { loadCreators } from '../database/members';
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -53,13 +53,7 @@ const stixSightingRelationshipResolvers = {
       return (rel.to ? rel.to : context.batch.idsBatchLoader.load(idLoadArgs));
     },
     // region batch fully loaded through rel de-normalization. Cant be ordered of filtered
-    creators: async (rel, _, context) => {
-      const creators = await context.batch.creatorsBatchLoader.load(rel.creator_id);
-      if (!creators) {
-        return [];
-      }
-      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
-    },
+    creators: async (rel, _, context) => loadCreators(context, context.user, rel),
     objectMarking: (stixCoreObject, _, context) => context.batch.markingsBatchLoader.load(stixCoreObject),
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     objectLabel: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_LABELS, { sortBy: 'value' }),
