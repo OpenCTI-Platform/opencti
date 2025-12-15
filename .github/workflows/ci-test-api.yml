@@ -23,11 +23,23 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
+    - name: Download image platform
+      uses: actions/download-artifact@v4
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        name: docker-image-platform-worker
+        path: /opencti-platform.tar
+    - name: Download image worker
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-image-opencti-worker
+        path: /opencti-worker.tar
+
+    - name: Load image
+      run: |
+          set -eux
+          docker load --input /opencti-platform.tar   
+          docker load --input /opencti-worker.tar   
+          docker images
 
     - name: Collect Workflow Telemetry
       uses: catchpoint/workflow-telemetry-action@v2
@@ -42,7 +54,7 @@ jobs:
 
     - name: Wait for OpenCTI sync instances to start
       run: |
-          set -ex
+          set -eux
           ./scripts/ci/wait-for-url-200.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
           ./scripts/ci/wait-for-url-200.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
           ./scripts/ci/wait-for-url-200.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
@@ -133,11 +145,23 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
+    - name: Download image platform
+      uses: actions/download-artifact@v4
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        name: docker-image-platform-worker
+        path: /opencti-platform.tar
+    - name: Download image worker
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-image-opencti-worker
+        path: /opencti-worker.tar
+
+    - name: Load image
+      run: |
+          set -eux
+          docker load --input /opencti-platform.tar   
+          docker load --input /opencti-worker.tar   
+          docker images
 
     - name: Collect Workflow Telemetry
       uses: catchpoint/workflow-telemetry-action@v2
@@ -196,11 +220,23 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
+    - name: Download image platform
+      uses: actions/download-artifact@v4
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        name: docker-image-platform-worker
+        path: /opencti-platform.tar
+    - name: Download image worker
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-image-opencti-worker
+        path: /opencti-worker.tar
+
+    - name: Load image
+      run: |
+          set -eux
+          docker load --input /opencti-platform.tar   
+          docker load --input /opencti-worker.tar   
+          docker images
 
     - name: Set up Docker Compose for backends
       run: |
