@@ -179,3 +179,20 @@ const handleLostConnectivityEmail = async (context: AuthContext, settings: Basic
 
   return attributeUpdates;
 };
+
+export const contactUsXtmHub = async (context: AuthContext, user: AuthUser): Promise<{ success: boolean }> => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+
+  if (!settings.xtm_hub_token) {
+    logApp.warn('[XTMH] Cannot contact XTM Hub: no token found');
+    return { success: false };
+  }
+
+  const platformInformation = {
+    platformId: settings.id,
+    platformToken: settings.xtm_hub_token,
+  };
+
+  const response = await xtmHubClient.contactUs(platformInformation);
+  return response;
+};
