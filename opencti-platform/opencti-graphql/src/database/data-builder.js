@@ -21,11 +21,12 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_TYPE_STATUS, isDatedInternalObject } from '../schema/internalObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
-import { isStixDomainObject, isStixObjectAliased, resolveAliasesField, STIX_ORGANIZATIONS_RESTRICTED, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
+import { isStixDomainObject, isStixObjectAliased, resolveAliasesField } from '../schema/stixDomainObject';
 import { getEntitiesListFromCache } from './cache';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
+import { isSegregationEntityCheck } from '../modules/entitySetting/entitySetting-utils';
 
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule } = opts;
@@ -120,14 +121,13 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
-  const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o))
-    || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === data.entity_type || getParentTypes(data.entity_type).includes(o));
+  const isSegregationEntity = isSegregationEntityCheck(data.entity_type);
   const appendMetaRelationships = async (inputField, relType) => {
     if (input[inputField]) {
       // For organizations management
       if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
         if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
-            && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
+          && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
           relToCreate.push(...buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
         }
       } else if (relType === RELATION_OBJECT_MARKING) {
@@ -278,7 +278,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   if (isStixRelationshipExceptRef(relationshipType)) {
     // We need to link the data to organization sharing, only for core and sightings.
     if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
-        && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
+      && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
       relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
     }
     const markingsFiltered = await cleanMarkings(context, input.objectMarking);

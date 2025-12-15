@@ -15,7 +15,7 @@ import {
   isStixDomainObject,
   isStixDomainObjectContainer,
   STIX_ORGANIZATIONS_RESTRICTED,
-  STIX_ORGANIZATIONS_UNRESTRICTED
+  STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../../schema/stixDomainObject';
 import { UnsupportedError } from '../../config/errors';
 import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './entitySetting-types';
@@ -153,11 +153,14 @@ export const getDefaultValues = (attributeConfiguration: AttributeConfiguration,
   return undefined;
 };
 
+export const isSegregationEntityCheck = (targetType: BasicStoreEntityEntitySetting['target_type']) =>
+  !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(targetType).includes(o))
+  || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === targetType || getParentTypes(targetType).includes(o));
+
 export const fillDefaultValues = (context: AuthContext, user: any, input: any, entitySetting: any) => {
   const filledValues = new Map();
   if (!input[INPUT_GRANTED_REFS] && entitySetting?.target_type) {
-    const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(entitySetting.target_type).includes(o))
-        || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === entitySetting.target_type || getParentTypes(entitySetting.target_type).includes(o));
+    const isSegregationEntity = isSegregationEntityCheck(entitySetting.target_type);
     if (isSegregationEntity && !context.user_inside_platform_organization && user?.organizations?.length > 0) {
       filledValues.set(INPUT_GRANTED_REFS, user.organizations);
     }
