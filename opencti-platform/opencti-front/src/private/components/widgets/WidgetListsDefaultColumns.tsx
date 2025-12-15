@@ -54,6 +54,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'report_types', label: 'Report type' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
+    { attribute: 'report_content', label: 'Content' },
   ],
   Grouping: [
     { attribute: 'context' },

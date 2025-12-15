@@ -83,6 +83,7 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'published', label: 'Report publication date' },
     { attribute: 'report_types', label: 'Report types' },
     { attribute: 'x_opencti_reliability', label: 'Reliability (self)' },
+    { attribute: 'report_content', label: 'Content' },
   ]],
   ['Task', [
     { attribute: 'due_date', label: 'Due date' },
