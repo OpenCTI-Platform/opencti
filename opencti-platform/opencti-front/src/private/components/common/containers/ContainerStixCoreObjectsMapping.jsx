@@ -116,33 +116,33 @@ const ContainerStixCoreObjectsMapping = ({
         disableCards
       >
         {queryRef && (
-        <React.Suspense
-          fallback={
-            <>
-              {Array(20)
-                .fill(0)
-                .map((_, idx) => (
-                  <ContainerStixCoreObjectsMappingLineDummy
-                    key={idx}
-                    dataColumns={dataColumns}
-                  />
-                ))}
-            </>
-                  }
-        >
-          <ContainerStixCoreObjectsMappingLines
-            container={container}
-            queryRef={queryRef}
-            paginationOptions={paginationOptions}
-            searchTerm={searchTerm}
-            dataColumns={dataColumns}
-            setNumberOfElements={handleSetNumberOfElements}
-            height={height}
-            contentMappingData={contentMappingData}
-            contentMappingCount={contentMappingCount}
-            enableReferences={enableReferences}
-          />
-        </React.Suspense>
+          <React.Suspense
+            fallback={(
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <ContainerStixCoreObjectsMappingLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
+                  ))}
+              </>
+            )}
+          >
+            <ContainerStixCoreObjectsMappingLines
+              container={container}
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              searchTerm={searchTerm}
+              dataColumns={dataColumns}
+              setNumberOfElements={handleSetNumberOfElements}
+              height={height}
+              contentMappingData={contentMappingData}
+              contentMappingCount={contentMappingCount}
+              enableReferences={enableReferences}
+            />
+          </React.Suspense>
         )}
       </ListLines>
     </div>

@@ -50,7 +50,7 @@ export const ThreatActorIndividualEditionQuery = graphql`
 
 const THREAT_ACTOR_TYPE = 'Threat-Actor-Individual';
 const ThreatActorIndividualEditionContainer: FunctionComponent<
-ThreatActorIndividualEditionContainerProps
+  ThreatActorIndividualEditionContainerProps
 > = ({ handleClose, queryRef, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
   const { threatActorIndividual } = usePreloadedQuery<ThreatActorIndividualEditionContainerQuery>(

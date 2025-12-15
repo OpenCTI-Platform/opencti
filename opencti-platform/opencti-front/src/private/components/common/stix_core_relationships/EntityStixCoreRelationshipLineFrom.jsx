@@ -107,22 +107,22 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
             onClick={(event) => (event.shiftKey
               ? onToggleShiftEntity(index, node)
               : onToggleEntity(node, event))
-          }
+            }
           >
             <Checkbox
               edge="start"
               checked={
-              (selectAll && !(node.id in (deSelectedElements || {})))
-              || node.id in (selectedElements || {})
-            }
+                (selectAll && !(node.id in (deSelectedElements || {})))
+                || node.id in (selectedElements || {})
+              }
               disableRipple={true}
             />
           </ListItemIcon>
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null } />
+            <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null} />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <div>
                 {dataColumns.relationship_type && (
                   <div
@@ -142,7 +142,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                     <ItemEntityType
                       entityType={node.to?.entity_type}
                       isRestricted={!node.to}
-                      size='large'
+                      size="large"
                       showIcon
                     />
                   </div>
@@ -156,7 +156,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                   }}
                 >
                   {!restricted ? getMainRepresentative(node.to) : t('Restricted')}
-                  {node.to?.draftVersion && (<DraftChip/>)}
+                  {node.to?.draftVersion && (<DraftChip />)}
                 </div>
                 {dataColumns.x_mitre_id && (
                   <div
@@ -235,7 +235,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                   </div>
                 )}
               </div>
-          }
+            )}
           />
         </ListItemButton>
       </ListItem>
@@ -643,7 +643,7 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               {dataColumns.relationship_type && (
                 <div
@@ -796,7 +796,7 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
                 </div>
               )}
             </div>
-          }
+          )}
         />
       </ListItem>
     );

@@ -310,30 +310,30 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                     <ToggleButton
                       onClick={() => setDisplaySuggestions(true)}
                       disabled={
-                    suggestions.length === 0 || currentMode !== 'graph'
-                  }
+                        suggestions.length === 0 || currentMode !== 'graph'
+                      }
                       value="suggestion"
                       size="small"
                     >
                       <Badge
                         badgeContent={
-                      suggestions.filter(
-                        (n) => !appliedSuggestions.includes(n.type),
-                      ).length
-                    }
+                          suggestions.filter(
+                            (n) => !appliedSuggestions.includes(n.type),
+                          ).length
+                        }
                         color="secondary"
                       >
                         <AssistantOutlined
                           fontSize="small"
                           disabled={suggestions.length === 0}
                           color={
-                        // eslint-disable-next-line no-nested-ternary
-                        suggestions.length === 0
-                          ? 'disabled'
-                          : displaySuggestions
-                            ? 'secondary'
-                            : 'primary'
-                      }
+                            // eslint-disable-next-line no-nested-ternary
+                            suggestions.length === 0
+                              ? 'disabled'
+                              : displaySuggestions
+                                ? 'secondary'
+                                : 'primary'
+                          }
                         />
                       </Badge>
                     </ToggleButton>
@@ -354,7 +354,7 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                             key={suggestion.type}
                             disableGutters={true}
                             divider={true}
-                            secondaryAction={
+                            secondaryAction={(
                               <Tooltip title={t_i18n('Apply the suggestion')}>
                                 <IconButton
                                   edge="end"
@@ -390,17 +390,17 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                                   )}
                                 </IconButton>
                               </Tooltip>
-                            }
+                            )}
                           >
                             <ListItemText
-                              primary={
+                              primary={(
                                 <MarkdownDisplay
                                   content={t_i18n(`suggestion_${suggestion.type}`)}
                                   remarkGfmPlugin={true}
                                   commonmark={true}
                                   markdownComponents={true}
                                 />
-                          }
+                              )}
                             />
                             <Select
                               style={{ width: 200, minWidth: 200, margin: '0 0 0 15px' }}

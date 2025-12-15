@@ -78,7 +78,7 @@ interface IncidentEditionDetailsFormValues {
   last_seen?: FieldOption;
 }
 const IncidentEditionDetails: FunctionComponent<
-IncidentEditionDetailsProps
+  IncidentEditionDetailsProps
 > = ({ incidentRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -205,7 +205,7 @@ IncidentEditionDetailsProps
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="first_seen"/>
+                <SubscriptionFocus context={context} fieldName="first_seen" />
               ),
             }}
           />
@@ -223,7 +223,7 @@ IncidentEditionDetailsProps
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="last_seen"/>
+                <SubscriptionFocus context={context} fieldName="last_seen" />
               ),
             }}
           />

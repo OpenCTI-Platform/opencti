@@ -17,25 +17,25 @@ export const up = async (next) => {
   const parametersCapability = await addCapability(context, SYSTEM_USER, {
     name: 'SETTINGS_SETPARAMETERS',
     attribute_order: 3100,
-    description: 'Access administration parameters'
+    description: 'Access administration parameters',
   });
   // ------ Create Manage customization
   const customizationCapability = await addCapability(context, SYSTEM_USER, {
     name: 'SETTINGS_SETCUSTOMIZATION',
     attribute_order: 3350,
-    description: 'Manage customization'
+    description: 'Manage customization',
   });
   // ------ Create Access to file indexing
   const fileIndexingCapability = await addCapability(context, SYSTEM_USER, {
     name: 'SETTINGS_FILEINDEXING',
     attribute_order: 3600,
-    description: 'Access to file indexing'
+    description: 'Access to file indexing',
   });
   // ------ Create Access to support
   const supportCapability = await addCapability(context, SYSTEM_USER, {
     name: 'SETTINGS_SUPPORT',
     attribute_order: 3700,
-    description: 'Access to support'
+    description: 'Access to support',
   });
 
   // ------ Update roles

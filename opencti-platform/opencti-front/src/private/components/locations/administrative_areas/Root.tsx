@@ -80,7 +80,7 @@ const administrativeAreaQuery = graphql`
 
 const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
+    GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
   >(
     () => ({
       subscription,
@@ -103,7 +103,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -123,7 +123,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   ]}
                   data={administrativeArea}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -151,7 +151,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <AdministrativeAreaDeletion id={administrativeArea.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -219,63 +219,63 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                 path="/"
                 element={
                   <AdministrativeArea administrativeAreaData={administrativeArea} />
-              }
+                }
               />
               <Route
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} replace={true} />
-              }
+                }
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={administrativeArea}
                   />
-              }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/analyses"
                 element={
                   <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={administrativeArea} />
-              }
+                }
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={administrativeArea.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={administrativeAreaId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={administrativeArea}
                   />
-              }
+                )}
               />
               <Route
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId} />
-              }
+                }
               />
             </Routes>
           </div>

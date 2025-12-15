@@ -97,7 +97,7 @@ export const getProtectedSensitiveConfig = async (context, user) => {
     platform_organization: {
       enabled: booleanConf('protected_sensitive_config:platform_organization:enabled', false),
       protected_ids: [],
-    }
+    },
   };
 };
 
@@ -133,7 +133,7 @@ export const getSettings = async (context) => {
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
-      ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true })))
+      ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true }))),
     ],
     playground_enabled: PLAYGROUND_ENABLED,
   };
@@ -191,7 +191,7 @@ const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
   'xtm_hub_registration_user_name',
   'xtm_hub_registration_status',
   'xtm_hub_should_send_connectivity_email',
-  'xtm_hub_backend_is_reachable'
+  'xtm_hub_backend_is_reachable',
 ];
 
 export const settingsEditField = async (context, user, settingsId, input) => {
@@ -228,7 +228,7 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${data.map((i) => i.key).join(', ')}\` for \`platform settings\``,
-    context_data: { id: settingsId, entity_type: ENTITY_TYPE_SETTINGS, input: data }
+    context_data: { id: settingsId, entity_type: ENTITY_TYPE_SETTINGS, input: data },
   });
   const updatedSettings = await getSettings(context);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
@@ -249,7 +249,7 @@ export const getMessagesFilteredByRecipients = (user, settings) => {
 export const settingEditMessage = async (context, user, settingsId, message) => {
   const messageToStore = {
     ...message,
-    updated_at: now()
+    updated_at: now(),
   };
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
   const messages = JSON.parse(settings.platform_messages ?? '[]');
@@ -259,7 +259,7 @@ export const settingEditMessage = async (context, user, settingsId, message) => 
   } else {
     messages.push({
       ...messageToStore,
-      id: generateInternalId()
+      id: generateInternalId(),
     });
   }
   const patch = { platform_messages: JSON.stringify(messages) };
@@ -297,7 +297,7 @@ export const getCriticalAlerts = async (context, user) => {
       message: 'Some groups have field group_confidence_level to null, members will not be able to use the platform properly.',
       details: {
         groups: groupsWithNull,
-      }
+      },
     }];
   }
 

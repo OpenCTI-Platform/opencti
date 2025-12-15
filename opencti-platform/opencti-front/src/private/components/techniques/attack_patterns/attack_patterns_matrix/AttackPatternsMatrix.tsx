@@ -19,7 +19,7 @@ export interface AttackPatternsMatrixProps {
   entityType: string;
   inPaper?: boolean;
   isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number; }>>;
+  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
   entityId?: string;
 }
 
@@ -53,7 +53,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
     }}
     >
       {queryRef && (
-        <React.Suspense fallback={<Loader/>}>
+        <React.Suspense fallback={<Loader />}>
           <AttackPatternsMatrixColumns
             queryRef={queryRef}
             attackPatternIdsToOverlap={attackPatternIdsToOverlap}

@@ -167,7 +167,7 @@ export const SPECIAL_FILTER_KEYS = [
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
-  ...COMPLEX_CONVERSION_FILTER_KEYS
+  ...COMPLEX_CONVERSION_FILTER_KEYS,
 ];
 
 // list of filter keys that are not relation refs keys but whose values need to be resolved (= values point an entity with an id)

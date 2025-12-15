@@ -14,21 +14,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 export interface PlaybookUpdateAction {
-  op?: string
-  attribute?: string
+  op?: string;
+  attribute?: string;
   value?: {
-    label?: string
-    value?: string
+    label?: string;
+    value?: string;
     patch_value?: string | {
-      kill_chain_name: string,
-      phase_name: string
-    }
-  }[]
+      kill_chain_name: string;
+      phase_name: string;
+    };
+  }[];
 }
 
 export interface PlaybookUpdateActionsForm {
-  actions?: PlaybookUpdateAction[]
-  actionsFormValues?: PlaybookUpdateAction['value'][]
+  actions?: PlaybookUpdateAction[];
+  actionsFormValues?: PlaybookUpdateAction['value'][];
 }
 
 export const attributesMultiple = [
@@ -38,5 +38,5 @@ export const attributesMultiple = [
   'objectParticipant',
   'killChainPhases',
   'indicator_types',
-  'x_mitre_platforms'
+  'x_mitre_platforms',
 ];

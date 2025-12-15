@@ -21,7 +21,7 @@ import {
   DRAFT_OPERATION_DELETE,
   DRAFT_OPERATION_DELETE_LINKED,
   DRAFT_OPERATION_UPDATE,
-  DRAFT_OPERATION_UPDATE_LINKED
+  DRAFT_OPERATION_UPDATE_LINKED,
 } from '../modules/draftWorkspace/draftOperations';
 import { SYSTEM_USER } from '../utils/access';
 import { isBasicRelationship } from '../schema/stixRelationship';
@@ -37,7 +37,9 @@ import type { BasicStoreCommon, BasicStoreRelation, InternalEditInput, StoreRela
 
 const completeDeleteElementsFromDraft = async (context: AuthContext, user: AuthUser, elements: BasicStoreCommon[]): Promise<void> => {
   const draftContext = getDraftContext(context, user);
-  if (!draftContext) { return; }
+  if (!draftContext) {
+    return;
+  }
   await elDeleteInstances(elements);
   const elementsIds = elements.map((e) => e.internal_id);
   await elRemoveDraftIdFromElements(context, user, draftContext, elementsIds);
@@ -93,7 +95,7 @@ const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUs
 const removeDraftDeleteLinkedRelations = async (
   context: AuthContext,
   user: AuthUser,
-  deleteLinkedRelations: { rel: any, dep: any }[]
+  deleteLinkedRelations: { rel: any; dep: any }[],
 ): Promise<void> => {
   // Reapply denormalized refs on elements impacted with deleteLinked rel removal
   const elementsToUpdate = deleteLinkedRelations.map((deleteLinkedRelToRemove) => {
@@ -228,7 +230,7 @@ export const elDeleteDraftElements = async (context: AuthContext, user: AuthUser
     body: {
       query: {
         term: { 'draft_ids.keyword': draftId },
-      }
+      },
     },
   }).catch((err: any) => {
     throw DatabaseError('Error deleting draft elements', { cause: err });
@@ -244,8 +246,8 @@ export const elDeleteDraftContextFromUsers = async (context: AuthContext, user: 
       script: { source: "ctx._source.remove('draft_context')" },
       query: {
         term: {
-          'draft_context.keyword': draftId
-        }
+          'draft_context.keyword': draftId,
+        },
       },
     },
   }).catch((err: any) => {
@@ -262,8 +264,8 @@ export const elDeleteDraftContextFromWorks = async (context: AuthContext, user: 
       script: { source: "ctx._source.remove('draft_context')" },
       query: {
         term: {
-          'draft_context.keyword': draftId
-        }
+          'draft_context.keyword': draftId,
+        },
       },
     },
   }).catch((err: any) => {

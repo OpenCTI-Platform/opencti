@@ -128,12 +128,12 @@ class StixDomainObjectsContainer extends Component {
                           key={stixDomainObject.id}
                           divider={true}
                           disablePadding
-                          secondaryAction={
+                          secondaryAction={(
                             <StixCoreObjectLabels
                               labels={stixDomainObject.objectLabel}
                               variant="inSearch"
                             />
-                          }
+                          )}
                         >
                           <ListItemButton
                             component={Link}
@@ -168,12 +168,12 @@ class StixDomainObjectsContainer extends Component {
                       <ListItem
                         key={stixDomainObject.id}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <StixCoreObjectLabels
                             labels={stixDomainObject.objectLabel}
                             variant="inSearch"
                           />
-                        }
+                        )}
                       >
                         <ListItemIcon classes={{ root: classes.itemIcon }}>
                           <ItemIcon type={type} />

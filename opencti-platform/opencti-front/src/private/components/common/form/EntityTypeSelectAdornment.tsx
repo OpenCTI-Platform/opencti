@@ -12,10 +12,10 @@ import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 
 interface EntityTypeSelectAdornmentProps {
-  disabled?: boolean
-  value: string[]
-  onChange: (val: string[]) => void
-  entityTypes?: string[]
+  disabled?: boolean;
+  value: string[];
+  onChange: (val: string[]) => void;
+  entityTypes?: string[];
 }
 
 const EntityTypeSelectAdornment = ({

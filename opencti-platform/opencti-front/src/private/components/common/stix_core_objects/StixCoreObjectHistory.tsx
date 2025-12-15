@@ -106,7 +106,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
   );
 
   return (
-    <div style={{ height: '100%' }} data-testid='sco-history-content'>
+    <div style={{ height: '100%' }} data-testid="sco-history-content">
       <Grid
         container
         spacing={3}
@@ -134,16 +134,18 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           </div>
           <div className="clearfix" />
           {objectsQueryRef
-            && <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-               >
-              <StixCoreObjectHistoryLines
-                queryRef={objectsQueryRef}
-                isRelationLog={false}
-                paginationOptions={objectsPaginationOptions}
-              />
-            </React.Suspense>
-            }
+            && (
+              <React.Suspense
+                fallback={<Loader variant={LoaderVariant.inElement} />}
+              >
+                <StixCoreObjectHistoryLines
+                  queryRef={objectsQueryRef}
+                  isRelationLog={false}
+                  paginationOptions={objectsPaginationOptions}
+                />
+              </React.Suspense>
+            )
+          }
         </Grid>
         {!withoutRelations && (
           <Grid item xs={6}>
@@ -163,15 +165,17 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
             </div>
             <div className="clearfix" />
             {relationsQueryRef
-              && <React.Suspense
-                fallback={<Loader variant={LoaderVariant.inElement} />}
-                 >
-                <StixCoreObjectHistoryLines
-                  queryRef={relationsQueryRef}
-                  isRelationLog={true}
-                  paginationOptions={relationsPaginationOptions}
-                />
-              </React.Suspense>
+              && (
+                <React.Suspense
+                  fallback={<Loader variant={LoaderVariant.inElement} />}
+                >
+                  <StixCoreObjectHistoryLines
+                    queryRef={relationsQueryRef}
+                    isRelationLog={true}
+                    paginationOptions={relationsPaginationOptions}
+                  />
+                </React.Suspense>
+              )
             }
           </Grid>
         )}

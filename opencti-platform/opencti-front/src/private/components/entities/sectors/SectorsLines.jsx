@@ -21,9 +21,9 @@ class SectorsLinesComponent extends Component {
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || (n.description ?? '').toLowerCase().indexOf(keyword.toLowerCase())
-        !== -1
+      !== -1
       || (n.subsectors_text ?? '').toLowerCase().indexOf(keyword.toLowerCase())
-        !== -1;
+      !== -1;
     const sectors = pipe(
       pathOr([], ['sectors', 'edges']),
       map((n) => n.node),
@@ -47,20 +47,20 @@ class SectorsLinesComponent extends Component {
       >
         {data
           ? map((sector) => {
-            const subSectors = pipe(
-              pathOr([], ['subSectors', 'edges']),
-              map((n) => n.node),
-              filter(filterByKeyword),
-              sortByNameCaseInsensitive,
-            )(sector);
-            return (
-              <SectorLine
-                key={sector.id}
-                node={sector}
-                subSectors={subSectors}
-              />
-            );
-          }, sectors)
+              const subSectors = pipe(
+                pathOr([], ['subSectors', 'edges']),
+                map((n) => n.node),
+                filter(filterByKeyword),
+                sortByNameCaseInsensitive,
+              )(sector);
+              return (
+                <SectorLine
+                  key={sector.id}
+                  node={sector}
+                  subSectors={subSectors}
+                />
+              );
+            }, sectors)
           : Array.from(Array(20), (e, i) => <SectorLineDummy key={i} />)}
       </List>
     );

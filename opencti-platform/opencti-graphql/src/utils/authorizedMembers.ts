@@ -30,7 +30,7 @@ import {
   MEMBER_ACCESS_CREATOR,
   MEMBER_ACCESS_RIGHT_ADMIN,
   SYSTEM_USER,
-  validateUserAccessOperation
+  validateUserAccessOperation,
 } from './access';
 import { getDraftContext } from './draftContext';
 
@@ -53,7 +53,7 @@ export const AUTHORIZED_MEMBERS_TYPES = [
 export const getAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
-  entity: BasicStoreEntity
+  entity: BasicStoreEntity,
 ): Promise<MemberAccess[]> => {
   if (isEmptyField(entity.restricted_members)) {
     return [];
@@ -90,7 +90,7 @@ export const getAuthorizedMembers = async (
       name: member?.name ?? '',
       entity_type: member?.entity_type ?? '',
       access_right: currentAuthMember.access_right,
-      groups_restriction
+      groups_restriction,
     };
   });
 };
@@ -98,7 +98,7 @@ export const getAuthorizedMembers = async (
 export const containsValidAdmin = async (
   context: AuthContext,
   authorized_members: Array<AuthorizedMember>,
-  requiredCapabilities: string[] = []
+  requiredCapabilities: string[] = [],
 ) => {
   const adminIds = authorized_members
     .filter((n) => n.access_right === MEMBER_ACCESS_RIGHT_ADMIN)
@@ -146,11 +146,11 @@ export const editAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
   args: {
-    entityId: string,
-    input: MemberAccessInput[] | undefined | null,
-    requiredCapabilities: string[],
-    entityType: string,
-    busTopicKey?: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
+    entityId: string;
+    input: MemberAccessInput[] | undefined | null;
+    requiredCapabilities: string[];
+    entityType: string;
+    busTopicKey?: keyof typeof BUS_TOPICS; // TODO improve busTopicKey types
   },
 ) => {
   const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
@@ -159,7 +159,7 @@ export const editAuthorizedMembers = async (
   const draftId = getDraftContext(context, user);
   if (draftId && draftId !== entityId) throw UnsupportedError('Cannot edit authorized members in draft');
 
-  let restricted_members: { id: string, access_right: string, groups_restriction_ids: string[] | null | undefined }[] | null = null;
+  let restricted_members: { id: string; access_right: string; groups_restriction_ids: string[] | null | undefined }[] | null = null;
 
   if (input) {
     // validate input (validate access right) remove duplicate

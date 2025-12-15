@@ -27,7 +27,7 @@ class EventDetailsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -44,7 +44,7 @@ class EventDetailsComponent extends Component {
               <FieldOrEmpty source={event.event_types}>
                 {event.event_types?.map((eventType) => (
                   <div key={`event_type_ov_${eventType}`} style={{ marginBottom: 10 }}>
-                    <ItemOpenVocab key="type" small={true} type="event_type_ov" value={eventType}/>
+                    <ItemOpenVocab key="type" small={true} type="event_type_ov" value={eventType} />
                   </div>
                 ))}
               </FieldOrEmpty>

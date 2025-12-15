@@ -34,7 +34,7 @@ export const initializeAdminUser = async (context) => {
     const adminPassword = conf.get('app:admin:password');
     const adminToken = conf.get('app:admin:token');
     if (isEmptyField(adminEmail) || isEmptyField(adminPassword) || isEmptyField(adminToken)
-        || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE
+      || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE
     ) {
       throw ConfigurationError('You need to configure the environment vars');
     } else {
@@ -120,7 +120,7 @@ const genConfigMapper = (elements) => {
       if (data.length !== 2) return {};
       const [remote, octi] = data;
       return { [remote]: octi };
-    })
+    }),
   );
 };
 
@@ -186,7 +186,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             orgaPath.map((path) => {
               const value = R.path(path.split('.'), user) || [];
               return Array.isArray(value) ? value : [value];
-            })
+            }),
           );
           const orgasMapper = genConfigMapper(orgasMapping);
           return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
@@ -307,8 +307,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           // endregion
           const openIdScope = R.uniq(openIdScopes).join(' ');
           const options = { logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true,
-            params: { scope: openIdScope, ...(mappedConfig.audience && { audience: mappedConfig.audience })
-          } };
+            params: { scope: openIdScope, ...(mappedConfig.audience && { audience: mappedConfig.audience }),
+            } };
           const debugCallback = (message, meta) => logApp.info(message, meta);
           const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
             logApp.info('[OPENID] Successfully logged', { userinfo });
@@ -410,7 +410,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           addUserLoginCount();
           const { email } = data;
           providerLoginHandler({ email, name: data.first_name }, done);
-        }
+        },
       );
       passport.use(providerRef, facebookStrategy);
       PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
@@ -484,7 +484,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         userInfoURL: `https://${authDomain}/userinfo`,
         client_id: config.clientID ? config.clientID : mappedConfig.clientID, // backward compatibility with Json conf & env var
         client_secret: config.clientSecret ? config.clientSecret : mappedConfig.clientSecret,
-        redirect_uri: config.callback_url
+        redirect_uri: config.callback_url,
       };
       const auth0config = { ...config, ...auth0OpenIDConfiguration };
 
@@ -509,7 +509,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         auth0Strategy.logout = (_, callback) => {
           const params = {
             client_id: mappedConfig.clientID,
-            returnTo: mappedConfig.baseURL
+            returnTo: mappedConfig.baseURL,
           };
           const URLParams = new URLSearchParams(params).toString();
           let endpointUri = `https://${authDomain}/v2/logout?${URLParams}`;
@@ -582,7 +582,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         type: AuthType.AUTH_REQ,
         strategy,
         logout_uri: mappedConfig.logout_uri,
-        provider: providerRef
+        provider: providerRef,
       };
       PROVIDERS.push(headerProvider);
       HEADERS_AUTHENTICATORS.push(headerProvider);

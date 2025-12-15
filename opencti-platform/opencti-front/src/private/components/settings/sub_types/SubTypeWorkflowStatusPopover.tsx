@@ -31,7 +31,7 @@ interface SubTypeStatusPopoverProps {
 }
 
 const SubTypeWorkflowStatusPopover: FunctionComponent<
-SubTypeStatusPopoverProps
+  SubTypeStatusPopoverProps
 > = ({ subTypeId, statusId }) => {
   const { t_i18n } = useFormatter();
   const queryRef = useQueryLoading<SubTypeWorkflowStatusEditQuery>(

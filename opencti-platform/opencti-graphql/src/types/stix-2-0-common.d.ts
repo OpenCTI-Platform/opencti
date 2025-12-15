@@ -16,7 +16,7 @@ export interface StixObject {
   id: StixId;
   x_opencti_id: string;
   spec_version: string;
-  x_opencti_granted_refs?: string[]
+  x_opencti_granted_refs?: string[];
   x_opencti_type: string;
   type: string;
   // custom

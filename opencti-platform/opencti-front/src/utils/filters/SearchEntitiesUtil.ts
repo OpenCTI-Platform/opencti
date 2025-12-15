@@ -1,7 +1,6 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { isStixObjectTypes, ME_FILTER_VALUE } from './filtersUtils';
 
-// eslint-disable-next-line import/prefer-default-export
 export const getOptionsFromEntities = (
   entities: Record<string, FilterOptionValue[]>,
   searchScope: Record<string, string[]>,
@@ -21,7 +20,8 @@ export const getOptionsFromEntities = (
   return filteredOptions.map((f) => {
     if (f.group) {
       return f;
-    } if (f.parentTypes) {
+    }
+    if (f.parentTypes) {
       // In case of entity we group by type
       return { ...f, group: f.type };
     }

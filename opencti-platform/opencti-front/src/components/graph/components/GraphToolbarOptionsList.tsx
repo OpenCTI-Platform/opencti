@@ -7,14 +7,14 @@ import Checkbox from '@mui/material/Checkbox';
 import ListItemIcon from '@mui/material/ListItemIcon';
 
 interface GraphToolbarOptionsListProps<T> {
-  onClose: () => void
-  onSelect: (o: T) => void
-  options: T[]
-  getOptionKey: (o:T) => string
-  getOptionText: (o:T) => string
-  isOptionSelected?: (o: T) => boolean
-  anchorEl?: Element
-  isMultiple?: boolean
+  onClose: () => void;
+  onSelect: (o: T) => void;
+  options: T[];
+  getOptionKey: (o: T) => string;
+  getOptionText: (o: T) => string;
+  isOptionSelected?: (o: T) => boolean;
+  anchorEl?: Element;
+  isMultiple?: boolean;
 }
 
 function GraphToolbarOptionsList<T>({

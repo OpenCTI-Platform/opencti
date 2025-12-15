@@ -128,7 +128,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
         />
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -136,7 +136,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
                     <UserLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <GroupUsersLines
               dataColumns={dataColumns}

@@ -22,7 +22,7 @@ import {
   ENTITY_TYPE_STATUS,
   ENTITY_TYPE_STATUS_TEMPLATE,
   ENTITY_TYPE_STREAM_COLLECTION,
-  ENTITY_TYPE_USER
+  ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -37,7 +37,7 @@ import type {
   BasicWorkflowStatusEntity,
   BasicWorkflowTemplateEntity,
   StoreEntity,
-  StoreRelation
+  StoreRelation,
 } from '../types/store';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
@@ -79,12 +79,12 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
   const filteringIds = []; // will contain the ids that are in the instance filters values
   if (instance.entity_type === ENTITY_TYPE_STREAM_COLLECTION) {
     const streamFilterIds = extractFilterGroupValuesToResolveForCache(
-      JSON.parse((instance as BasicStreamEntity).filters ?? initialFilterGroup)
+      JSON.parse((instance as BasicStreamEntity).filters ?? initialFilterGroup),
     );
     filteringIds.push(...streamFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_TRIGGER) {
     const triggerFilterIds = extractFilterGroupValuesToResolveForCache(
-      JSON.parse((instance as BasicTriggerEntity).filters ?? initialFilterGroup)
+      JSON.parse((instance as BasicTriggerEntity).filters ?? initialFilterGroup),
     );
     filteringIds.push(...triggerFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_CONNECTOR) {
@@ -105,7 +105,7 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
     // IDs from list of PIRs to listen.
     const playbookInPirFilterIds = configurations
       .map((config) => config.inPirFilters)
-      .map((f) => (f ?? []).map((i:{ value:string }) => i.value))
+      .map((f) => (f ?? []).map((i: { value: string }) => i.value))
       .flat();
     filteringIds.push(...playbookFilterIds, ...playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {
@@ -120,7 +120,7 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
   } else {
     throw FunctionalError(
       'Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type',
-      { entity_type: instance.entity_type }
+      { entity_type: instance.entity_type },
     );
   }
   return filteringIds;
@@ -308,7 +308,7 @@ const platformPublicDashboards = (context: AuthContext) => {
           user_id: dash.user_id,
           allowed_markings_ids: dash.allowed_markings_ids,
           allowed_markings: markings,
-        }
+        },
       );
     }
     return publicDashboardsForCache;
@@ -334,9 +334,9 @@ const platformPirs = (context: AuthContext) => {
 type SubEvent = { instance: StoreEntity | StoreRelation };
 
 const initCacheManager = () => {
-  let subscribeAdd: { topic: string; unsubscribe: () => void; };
-  let subscribeEdit: { topic: string; unsubscribe: () => void; };
-  let subscribeDelete: { topic: string; unsubscribe: () => void; };
+  let subscribeAdd: { topic: string; unsubscribe: () => void };
+  let subscribeEdit: { topic: string; unsubscribe: () => void };
+  let subscribeDelete: { topic: string; unsubscribe: () => void };
   const initCacheContent = () => {
     const context = executionContext('cache_manager');
     writeCacheForEntity(ENTITY_TYPE_SETTINGS, platformSettings(context));
@@ -375,11 +375,17 @@ const initCacheManager = () => {
     },
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping cache manager');
-      try { subscribeAdd.unsubscribe(); } catch { /* dont care */ }
-      try { subscribeEdit.unsubscribe(); } catch { /* dont care */ }
-      try { subscribeDelete.unsubscribe(); } catch { /* dont care */ }
+      try {
+        subscribeAdd.unsubscribe();
+      } catch { /* dont care */ }
+      try {
+        subscribeEdit.unsubscribe();
+      } catch { /* dont care */ }
+      try {
+        subscribeDelete.unsubscribe();
+      } catch { /* dont care */ }
       return true;
-    }
+    },
   };
 };
 const cacheManager = initCacheManager();

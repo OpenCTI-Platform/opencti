@@ -51,9 +51,9 @@ export const StixCoreObjectHistoryLinesFragment = graphql`
 `;
 
 interface StixCoreObjectHistoryLinesProps {
-  queryRef: PreloadedQuery<StixCoreObjectHistoryLinesQuery>,
-  isRelationLog: boolean,
-  paginationOptions: StixCoreObjectHistoryLinesQuery$variables,
+  queryRef: PreloadedQuery<StixCoreObjectHistoryLinesQuery>;
+  isRelationLog: boolean;
+  paginationOptions: StixCoreObjectHistoryLinesQuery$variables;
 }
 
 const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesProps> = ({
@@ -89,7 +89,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
       style={{
         borderRadius: 4,
       }}
-      className={'paper-for-grid'}
+      className="paper-for-grid"
       variant="outlined"
     >
       {logs.length > 0 ? (
@@ -102,7 +102,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                   dense={true}
                   divider={true}
                   disablePadding
-                  secondaryAction={
+                  secondaryAction={(
                     <>
                       <Tooltip title={t_i18n('Browse the link')}>
                         <IconButton
@@ -113,7 +113,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                         </IconButton>
                       </Tooltip>
                     </>
-                  }
+                  )}
                 >
                   <ListItemButton
                     style={{ margin: 0, height: 60 }}

@@ -90,7 +90,7 @@ const Positions: FunctionComponent = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -98,7 +98,7 @@ const Positions: FunctionComponent = () => {
                     <PositionLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <PositionsLines
               queryRef={queryRef}

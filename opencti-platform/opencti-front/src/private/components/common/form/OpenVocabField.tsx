@@ -53,7 +53,7 @@ interface OpenVocabFieldComponentProps {
   editContext?: unknown;
   disabled?: boolean;
   multiple?: boolean;
-  disabledOptions?: string[]
+  disabledOptions?: string[];
   onFocus?: (name: string, value: VocabFieldOption) => void;
   onChange?: (name: string, value: string | string[]) => void;
   onSubmit?: (name: string, value: string | string[]) => void;
@@ -90,7 +90,7 @@ const OpenVocabFieldComponent = ({
     .sort((a, b) => a.category.localeCompare(b.category));
 
   const internalOnChange = (v: VocabFieldValue) => {
-    const values = Array.isArray(v) 
+    const values = Array.isArray(v)
       ? v.map((item) => item?.value ?? item)
       : v?.value ?? v;
     onChange?.(name, values);
@@ -99,7 +99,7 @@ const OpenVocabFieldComponent = ({
     }
   };
 
-  const helperText = editContext 
+  const helperText = editContext
     ? <SubscriptionFocus context={editContext} fieldName={name} />
     : undefined;
 
@@ -116,8 +116,8 @@ const OpenVocabFieldComponent = ({
       style={containerStyle}
       options={openVocabList}
       renderOption={(
-        optionProps: HTMLAttributes<HTMLDivElement>, 
-        { value, description }: VocabFieldOption
+        optionProps: HTMLAttributes<HTMLDivElement>,
+        { value, description }: VocabFieldOption,
       ) => (
         <Tooltip
           {...optionProps}
@@ -151,8 +151,8 @@ const OpenVocabField = (props: OpenVocabFieldProps) => {
     : [typeToCategory(props.type)];
 
   const queryRef = useQueryLoading<OpenVocabFieldQuery>(
-    vocabularyQuery, 
-    { 
+    vocabularyQuery,
+    {
       filters: {
         mode: 'or',
         filterGroups: [],
@@ -161,11 +161,11 @@ const OpenVocabField = (props: OpenVocabFieldProps) => {
             key: ['category'],
             values: filterCategories,
             operator: 'eq',
-            mode: 'or'
+            mode: 'or',
           },
         ],
-      }
-    }
+      },
+    },
   );
 
   const FallbackAutoComplete = (
@@ -188,9 +188,9 @@ const OpenVocabField = (props: OpenVocabFieldProps) => {
   return (
     <Suspense fallback={FallbackAutoComplete}>
       {queryRef && (
-        <OpenVocabFieldComponent 
-          {...props} 
-          queryRef={queryRef} 
+        <OpenVocabFieldComponent
+          {...props}
+          queryRef={queryRef}
         />
       )}
     </Suspense>

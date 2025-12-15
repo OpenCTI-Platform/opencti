@@ -23,7 +23,7 @@ const feedbackResolvers: Resolvers = {
     feedbackEditAuthorizedMembers: (_, { id, input }, context) => {
       return feedbackEditAuthorizedMembers(context, context.user, id, input);
     },
-  }
+  },
 };
 
 export default feedbackResolvers;

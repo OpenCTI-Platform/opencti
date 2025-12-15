@@ -8,15 +8,15 @@ import type { Widget } from '../../../../../utils/widget/widget';
 import { SELF_ID } from '../../../../../utils/filters/filtersUtils';
 
 export interface FintelTemplateWidget {
-  variable_name: string
-  widget: Widget
+  variable_name: string;
+  widget: Widget;
 }
 
 interface FintelTemplateWidgetsListProps {
-  widgets: FintelTemplateWidget[]
-  onCreateWidget: () => void
-  onDeleteWidget: (w: FintelTemplateWidget) => void
-  onUpdateWidget: (w: FintelTemplateWidget) => void
+  widgets: FintelTemplateWidget[];
+  onCreateWidget: () => void;
+  onDeleteWidget: (w: FintelTemplateWidget) => void;
+  onUpdateWidget: (w: FintelTemplateWidget) => void;
 }
 
 const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProps> = ({
@@ -41,9 +41,11 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
           {t_i18n('', {
             id: 'Find examples on our documentation.',
             values: {
-              link: <Link target="_blank" to="https://docs.opencti.io/latest/administration/entities/#fintel-templates">
-                {t_i18n('documentation')}
-              </Link>,
+              link: (
+                <Link target="_blank" to="https://docs.opencti.io/latest/administration/entities/#fintel-templates">
+                  {t_i18n('documentation')}
+                </Link>
+              ),
             },
           })}
         </Typography>
@@ -104,9 +106,9 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
               }
               variableName={isSelfAttributeWidget
                 ? t_i18n('', {
-                  id: 'Attributes of the instance',
-                  values: { type: subTypeId ?? '' },
-                })
+                    id: 'Attributes of the instance',
+                    values: { type: subTypeId ?? '' },
+                  })
                 : variable_name
               }
             />

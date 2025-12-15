@@ -35,7 +35,7 @@ interface SettingsOrganizationDetailsProps {
 }
 
 const SettingsOrganizationDetails: FunctionComponent<
-SettingsOrganizationDetailsProps
+  SettingsOrganizationDetailsProps
 > = ({ settingsOrganization }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -45,7 +45,7 @@ SettingsOrganizationDetailsProps
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Basic information')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h3" gutterBottom={true}>

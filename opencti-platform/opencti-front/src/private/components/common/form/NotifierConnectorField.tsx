@@ -49,13 +49,13 @@ const NotifierConnectorFieldQuery = graphql`
 `;
 
 const NotifierConnectorField: FunctionComponent<
-NotifierConnectorFieldProps
+  NotifierConnectorFieldProps
 > = ({ name, style, onChange, disabled, helpertext, required = false }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [connectors, setConnectors] = useState<
-  { label: string | undefined; value: string | undefined }[]
+    { label: string | undefined; value: string | undefined }[]
   >([]);
 
   const searchNotifierConnectors = (
@@ -103,7 +103,7 @@ NotifierConnectorFieldProps
           option: { label: string },
         ) => (
           <li {...props}>
-            <div className={classes.icon }>
+            <div className={classes.icon}>
               <ItemIcon type="Notifier" />
             </div>
             <div className={classes.text}>{option.label}</div>

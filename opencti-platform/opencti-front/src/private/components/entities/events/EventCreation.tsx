@@ -352,7 +352,7 @@ const EventCreation = ({
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_events', paginationOptions, 'eventAdd');
 
   const CreateEventControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Event' {...props} />
+    <CreateEntityControlledDial entityType="Event" {...props} />
   );
   return (
     <Drawer

@@ -18,7 +18,7 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration(
     '[MIGRATION] Migrating synchronizers',
     READ_INDEX_INTERNAL_OBJECTS,
-    updateQuery
+    updateQuery,
   );
   next();
 };

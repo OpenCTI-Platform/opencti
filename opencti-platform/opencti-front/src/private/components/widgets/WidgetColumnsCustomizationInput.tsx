@@ -115,11 +115,11 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                               background: snapshotDrag.isDragging ? 'rgba(0, 0, 0, 0.05)' : 'inherit',
                               height: 42,
                             }}
-                            secondaryAction={
+                            secondaryAction={(
                               <IconButton onClick={() => handleToggleColumn(column.attribute)}>
                                 <Close />
                               </IconButton>
-                            }
+                            )}
                           >
                             <ListItemIcon {...providedDrag.dragHandleProps}>
                               <DragIndicatorOutlined />

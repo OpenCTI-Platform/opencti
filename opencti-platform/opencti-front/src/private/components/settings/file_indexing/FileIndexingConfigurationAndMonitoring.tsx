@@ -40,7 +40,7 @@ interface FileIndexingConfigurationAndMonitoringComponentProps {
 }
 
 const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<
-FileIndexingConfigurationAndMonitoringComponentProps
+  FileIndexingConfigurationAndMonitoringComponentProps
 > = ({ managerConfiguration, queryRef }) => {
   const { filesMetrics } = usePreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>(
     fileIndexingConfigurationAndMonitoringQuery,
@@ -69,7 +69,7 @@ interface FileIndexingConfigurationAndMonitoringProps {
 }
 
 const FileIndexingConfigurationAndMonitoring: FunctionComponent<
-FileIndexingConfigurationAndMonitoringProps
+  FileIndexingConfigurationAndMonitoringProps
 > = ({ managerConfiguration }) => {
   const [queryRef, loadQuery] = useQueryLoader<FileIndexingConfigurationAndMonitoringQuery>(
     fileIndexingConfigurationAndMonitoringQuery,

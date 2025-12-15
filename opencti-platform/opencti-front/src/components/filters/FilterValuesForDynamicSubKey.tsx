@@ -47,11 +47,11 @@ const FilterValuesForDynamicSubKeyContainer = ({
   return (
     <Fragment>
       <Tooltip
-        title={
+        title={(
           <TasksFilterValueContainer
             filters={filterValue}
           />
-        }
+        )}
       >
         <Box
           sx={{
@@ -71,7 +71,7 @@ const FilterValuesForDynamicSubKeyContainer = ({
         }
         >
           <WarningOutlined
-            color={'inherit'}
+            color="inherit"
             style={{ fontSize: 20, color: '#f44336', margin: 5 }}
           />
         </Tooltip>
@@ -81,7 +81,7 @@ const FilterValuesForDynamicSubKeyContainer = ({
 };
 
 interface FilterValuesForDynamicSubKeyProps {
-  filterValue: FilterGroup,
+  filterValue: FilterGroup;
   chipColor?: ChipOwnProps['color'];
 }
 

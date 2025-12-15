@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 type Data_GroupConfidenceLevel = Group_group$data['group_confidence_level'];
 
 type GroupConfidenceLevelProps = {
-  confidenceLevel?: Data_GroupConfidenceLevel
+  confidenceLevel?: Data_GroupConfidenceLevel;
 };
 
 const ConfidenceTooltip: React.FC<GroupConfidenceLevelProps> = ({ confidenceLevel }) => {
@@ -19,9 +19,9 @@ const ConfidenceTooltip: React.FC<GroupConfidenceLevelProps> = ({ confidenceLeve
   return overrides.length > 0 ? (
     <Tooltip
       sx={{ marginLeft: 1 }}
-      title={<GroupConfidenceOverrides overrides={overrides}/>}
+      title={<GroupConfidenceOverrides overrides={overrides} />}
     >
-      <InformationOutline fontSize={'small'} color={'info'}/>
+      <InformationOutline fontSize="small" color="info" />
     </Tooltip>
   ) : null;
 };
@@ -31,7 +31,7 @@ const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceL
 
   if (!confidenceLevel) {
     return (
-      <Alert severity={'error'} variant={'outlined'}>
+      <Alert severity="error" variant="outlined">
         <AlertTitle>
           {t_i18n('This group does not have a Max Confidence Level, members might not be able to create data.')}
         </AlertTitle>
@@ -40,10 +40,10 @@ const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceL
   }
 
   return (
-    <Box component={'span'} sx={{ display: 'inline-flex', alignItems: 'center' }}>
+    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
       <span>{`${confidenceLevel.max_confidence ?? '-'}`}</span>
       {!!confidenceLevel.max_confidence
-        && <ConfidenceTooltip confidenceLevel={confidenceLevel}/>
+        && <ConfidenceTooltip confidenceLevel={confidenceLevel} />
       }
     </Box>
   );

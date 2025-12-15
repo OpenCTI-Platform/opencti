@@ -13,8 +13,8 @@ import inject18n from '../../../../components/i18n';
 const interval$ = interval(FIVE_SECONDS);
 
 const MetricCard = ({ title, value, paperStyle, numberStyle }) => (
-  <Paper variant="outlined" style={paperStyle} className={'paper-for-grid'}>
-    <Typography variant={'h5'}>{title}</Typography>
+  <Paper variant="outlined" style={paperStyle} className="paper-for-grid">
+    <Typography variant="h5">{title}</Typography>
     <div style={numberStyle}>{value}</div>
   </Paper>
 );

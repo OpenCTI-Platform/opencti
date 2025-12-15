@@ -93,7 +93,7 @@ const JsonTaxiiMiddleware = express.json({
       return false;
     }
   },
-  limit: nconf.get('app:max_payload_body_size') || '50mb'
+  limit: nconf.get('app:max_payload_body_size') || '50mb',
 });
 
 const initTaxiiApi = (app) => {
@@ -262,7 +262,7 @@ const initTaxiiApi = (app) => {
         total_count: objects.length,
         success_count: 0,
         failure_count: 0,
-        pending_count: objects.length
+        pending_count: objects.length,
       });
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -290,7 +290,7 @@ const initTaxiiApi = (app) => {
         total_count,
         success_count,
         failure_count,
-        pending_count
+        pending_count,
       });
     } catch (e) {
       const errorDetail = errorConverter(e);

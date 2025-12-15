@@ -32,8 +32,8 @@ const caseRfiResolvers: Resolvers = {
     },
     caseRfiDecline: (_, { id }, context) => {
       return declineRequestAccess(context, context.user, id);
-    }
-  }
+    },
+  },
 };
 
 export default caseRfiResolvers;

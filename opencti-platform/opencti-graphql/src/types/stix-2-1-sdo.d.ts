@@ -6,7 +6,7 @@ import type {
   StixKillChainPhase,
   StixOpenctiExtension,
   StixMitreExtension,
-  StixContainerExtension
+  StixContainerExtension,
 } from './stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from './stix-2-1-extensions';
 
@@ -18,8 +18,8 @@ export interface StixAttackPattern extends StixDomainObject {
   aliases: Array<string>; // optional
   kill_chain_phases: Array<StixKillChainPhase>; // optional
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtension
-    [STIX_EXT_MITRE] : StixMitreExtension
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_MITRE]: StixMitreExtension;
   };
 }
 
@@ -41,8 +41,8 @@ export interface StixCourseOfAction extends StixDomainObject {
   description: string; // optional
   // action - RESERVED
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtension
-    [STIX_EXT_MITRE] : StixMitreExtension
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_MITRE]: StixMitreExtension;
   };
 }
 
@@ -91,7 +91,7 @@ export interface StixInfrastructure extends StixDomainObject {
   name: string;
   description: string; // optional
   infrastructure_types: Array<string>; // infrastructure-type-ov - optional
-  aliases : Array<string>; // optional
+  aliases: Array<string>; // optional
   kill_chain_phases: Array<StixKillChainPhase>; // optional
   first_seen: StixDate; // optional
   last_seen: StixDate; // optional
@@ -103,8 +103,8 @@ export interface StixIntrusionSet extends StixDomainObject {
   name: string;
   description: string; // optional
   aliases: Array<string>; // optional
-  first_seen : StixDate; // optional
-  last_seen : StixDate; // optional
+  first_seen: StixDate; // optional
+  last_seen: StixDate; // optional
   goals: Array<string>; // optional
   resource_level: string; // optional
   primary_motivation: string; // optional
@@ -185,11 +185,11 @@ export interface StixNoteExtension extends StixOpenctiExtension {
 }
 
 export interface StixNote extends StixContainer {
-  abstract: string
-  content: string
-  authors: Array<string>
-  note_types: Array<string>
-  likelihood: number
+  abstract: string;
+  content: string;
+  authors: Array<string>;
+  note_types: Array<string>;
+  likelihood: number;
   extensions: {
     [STIX_EXT_OCTI]: StixNoteExtension;
   };
@@ -204,9 +204,9 @@ export interface StixObservedDataExtension extends StixOpenctiExtension {
 }
 
 export interface StixObservedData extends StixContainer {
-  first_observed: StixDate
-  last_observed: StixDate
-  number_observed: number
+  first_observed: StixDate;
+  last_observed: StixDate;
+  number_observed: number;
   extensions: {
     [STIX_EXT_OCTI]: StixObservedDataExtension;
   };
@@ -221,9 +221,9 @@ export interface StixOpinionExtension extends StixOpenctiExtension {
 }
 
 export interface StixOpinion extends StixContainer {
-  explanation: string // optional
-  authors: Array<string> // optional
-  opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree'
+  explanation: string; // optional
+  authors: Array<string>; // optional
+  opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree';
   extensions: {
     [STIX_EXT_OCTI]: StixOpinionExtension;
   };
@@ -239,10 +239,10 @@ export interface StixReportExtension extends StixOpenctiExtension {
 }
 
 export interface StixReport extends StixContainer {
-  name: string
-  description: string
-  report_types: Array<string>
-  published: StixDate
+  name: string;
+  description: string;
+  report_types: Array<string>;
+  published: StixDate;
   extensions: {
     [STIX_EXT_OCTI]: StixReportExtension;
   };
@@ -254,7 +254,7 @@ export interface StixReport extends StixContainer {
 export interface StixThreatActor extends StixDomainObject {
   name: string;
   description: string; // optional
-  threat_actor_types : Array<string>; // threat-actor-type-ov - optional
+  threat_actor_types: Array<string>; // threat-actor-type-ov - optional
   aliases: Array<string>; // optional
   first_seen: StixDate; // optional
   last_seen: StixDate; // optional
@@ -272,7 +272,7 @@ export interface StixThreatActor extends StixDomainObject {
 export interface StixTool extends StixDomainObject {
   name: string;
   description: string; // optional
-  tool_types : Array<string>; // tool-type-ov - optional
+  tool_types: Array<string>; // tool-type-ov - optional
   aliases: Array<string>; // optional
   kill_chain_phases: Array<StixKillChainPhase>; // optional
   tool_version: string;

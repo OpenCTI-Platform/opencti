@@ -12,10 +12,10 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import stopEvent from '../../../../utils/domEvent';
 
 interface PlaybookPopoverToggleDialogProps {
-  playbookRunning: boolean
-  playbookId: string
-  showDialog: boolean
-  close: () => void
+  playbookRunning: boolean;
+  playbookId: string;
+  showDialog: boolean;
+  close: () => void;
 }
 
 const PlaybookPopoverToggleDialog = ({

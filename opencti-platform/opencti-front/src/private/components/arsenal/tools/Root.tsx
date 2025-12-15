@@ -110,7 +110,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -128,7 +128,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   ]}
                   data={tool}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -153,7 +153,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ToolDeletion id={tool.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -213,34 +213,34 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
             <Routes>
               <Route
                 path="/"
-                element={ (
+                element={(
                   <Tool toolData={tool} />
                 )}
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <ToolKnowledge toolData={tool} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={tool}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses/*"
@@ -263,7 +263,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={toolId}
                   />
@@ -280,7 +280,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
 };
 
 const Root = () => {
-  const { toolId } = useParams() as { toolId: string; };
+  const { toolId } = useParams() as { toolId: string };
   const queryRef = useQueryLoading<RootToolQuery>(toolQuery, {
     id: toolId,
   });

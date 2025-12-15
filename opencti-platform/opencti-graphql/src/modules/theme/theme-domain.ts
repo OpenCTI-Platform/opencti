@@ -27,7 +27,7 @@ const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeNam
   const filters = {
     mode: FilterMode.And,
     filters: [{ key: ['name'], values: [themeName], operator: FilterOperator.Eq }],
-    filterGroups: []
+    filterGroups: [],
   };
   const themes = await findThemePaginated(context, user, { filters });
   return themes.edges.findIndex((edge) => edge.node.name === themeName) > -1;
@@ -74,7 +74,7 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
     theme_logo: DARK_DEFAULTS.theme_logo,
     theme_logo_collapsed: DARK_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: DARK_DEFAULTS.theme_logo_login,
-    built_in: true
+    built_in: true,
   };
 
   const darkTheme = await addTheme(context, user, darkThemeInput);
@@ -91,7 +91,7 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
     theme_logo: LIGHT_DEFAULTS.theme_logo,
     theme_logo_collapsed: LIGHT_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: LIGHT_DEFAULTS.theme_logo_login,
-    built_in: true
+    built_in: true,
   };
 
   await addTheme(context, user, lightThemeInput);

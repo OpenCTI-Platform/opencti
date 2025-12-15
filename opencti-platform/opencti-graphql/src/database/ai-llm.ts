@@ -152,7 +152,7 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
       model: AI_MODEL,
       messages: [
         { role: (AI_TYPE === 'azureopenai') ? 'system' : 'developer', content: developerMessage },
-        { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) }
+        { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) },
       ],
       stream: true,
     });

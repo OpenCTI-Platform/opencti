@@ -276,9 +276,9 @@ const StixDomainObjectEditionContainer = (props) => {
   const createdBy = R.pathOr(null, ['createdBy', 'name'], stixDomainObject) === null
     ? ''
     : {
-      label: R.pathOr(null, ['createdBy', 'name'], stixDomainObject),
-      value: R.pathOr(null, ['createdBy', 'id'], stixDomainObject),
-    };
+        label: R.pathOr(null, ['createdBy', 'name'], stixDomainObject),
+        value: R.pathOr(null, ['createdBy', 'id'], stixDomainObject),
+      };
   const objectMarking = convertMarkings(stixDomainObject);
   let initialValues = R.pipe(
     R.assoc('createdBy', createdBy),
@@ -368,12 +368,12 @@ const StixDomainObjectEditionContainer = (props) => {
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
-                  helperText={
+                  helperText={(
                     <SubscriptionFocus
                       context={editContext}
                       fieldName="aliases"
                     />
-                  }
+                  )}
                 />
               )}
               {'x_opencti_aliases' in stixDomainObject && stixDomainObject.x_opencti_aliases !== undefined && (
@@ -386,12 +386,12 @@ const StixDomainObjectEditionContainer = (props) => {
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
-                  helperText={
+                  helperText={(
                     <SubscriptionFocus
                       context={editContext}
                       fieldName="x_opencti_aliases"
                     />
-                  }
+                  )}
                 />
               )}
               <ConfidenceField
@@ -401,7 +401,7 @@ const StixDomainObjectEditionContainer = (props) => {
                 onSubmit={handleSubmitField}
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={editContext}
-                entityType={'Stix-Domain-Object'}
+                entityType="Stix-Domain-Object"
               />
               {'description' in stixDomainObject && stixDomainObject.description !== undefined && (
                 <Field
@@ -414,35 +414,35 @@ const StixDomainObjectEditionContainer = (props) => {
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
-                  helperText={
+                  helperText={(
                     <SubscriptionFocus
                       context={editContext}
                       fieldName="description"
                     />
-                  }
+                  )}
                 />
               )}
               <CreatedByField
                 name="createdBy"
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="createdBy"
                   />
-                }
+                )}
                 onChange={handleChangeCreatedBy}
               />
               <ObjectMarkingField
                 name="objectMarking"
                 style={fieldSpacingContainerStyle}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldname="objectMarking"
                   />
-                }
+                )}
                 setFieldValue={setFieldValue}
                 onChange={handleChangeObjectMarking}
               />

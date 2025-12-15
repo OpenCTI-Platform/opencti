@@ -63,7 +63,7 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
           size="large"
           color="primary"
         >
-          <Close fontSize="small" color="primary"/>
+          <Close fontSize="small" color="primary" />
         </IconButton>
       </DialogTitle>
       <DialogContent
@@ -90,7 +90,7 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
         <FormControlLabel
           checked={isChecked}
           required
-          control={<Checkbox/>}
+          control={<Checkbox />}
           label={t_i18n('I have read, I understand and I accept the Filigran AI terms')}
           labelPlacement="end"
           onChange={(_, checked) => setIsChecked(checked)}

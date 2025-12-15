@@ -34,7 +34,7 @@ export const findAllByCaseTemplateId = async (context: AuthContext, user: AuthUs
       mode: FilterMode.And,
       filters: [{ key: [buildRefRelationKey(TEMPLATE_TASK_RELATION)], values: [caseTemplateId] }],
       filterGroups: [],
-    }
+    },
   };
   return fullEntitiesList<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
 };

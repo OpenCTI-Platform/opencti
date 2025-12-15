@@ -22,7 +22,7 @@ const savedFilterButtonEditMutation = graphql`
 `;
 
 type SavedFilterButtonProps = {
-  currentSavedFilter?: SavedFiltersSelectionData
+  currentSavedFilter?: SavedFiltersSelectionData;
   setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 

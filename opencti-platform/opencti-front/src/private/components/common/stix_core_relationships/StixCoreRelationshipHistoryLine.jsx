@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
 import Paper from '@mui/material/Paper';
@@ -20,7 +20,7 @@ import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { useTheme  } from '@mui/styles';
+import { useTheme } from '@mui/styles';
 import { truncate } from 'src/utils/String';
 import { useFormatter } from 'src/components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
@@ -57,7 +57,7 @@ export const StixCoreRelationshipHistoryFragment = graphql`
   }
 `;
 
-const StixCoreRelationshipHistoryLine= ({ nodeRef, isRelation }) => {
+const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
   const theme = useTheme();
   const { t_i18n, nsdt } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -190,20 +190,21 @@ const StixCoreRelationshipHistoryLine= ({ nodeRef, isRelation }) => {
             paddingTop: 4,
             fontSize: 11,
           }}
-          >{nsdt(node.timestamp)}</div>
+          >{nsdt(node.timestamp)}
+          </div>
           <Tooltip
             style={{
               maxWidth: '80%',
               lineHeight: 2,
               padding: 10,
             }}
-            title={
+            title={(
               <MarkdownDisplay
                 content={`\`${node.user.name}\` ${node.context_data.message}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
               />
-            }
+            )}
           >
             <div style={{
               height: '100%',
@@ -229,8 +230,8 @@ const StixCoreRelationshipHistoryLine= ({ nodeRef, isRelation }) => {
                 if (externalReference.url && externalReference.url.length > 0) {
                   externalReferenceSecondary = externalReference.url;
                 } else if (
-                  externalReference.description &&
-                  externalReference.description.length > 0
+                  externalReference.description
+                  && externalReference.description.length > 0
                 ) {
                   externalReferenceSecondary = externalReference.description;
                 }
@@ -241,7 +242,7 @@ const StixCoreRelationshipHistoryLine= ({ nodeRef, isRelation }) => {
                       key={externalReference.id}
                       dense
                       divider
-                      secondaryAction={
+                      secondaryAction={(
                         <Tooltip title={t_i18n('Browse the link')}>
                           <IconButton
                             onClick={() =>
@@ -253,7 +254,7 @@ const StixCoreRelationshipHistoryLine= ({ nodeRef, isRelation }) => {
                             <OpenInBrowserOutlined />
                           </IconButton>
                         </Tooltip>
-                      }
+                      )}
                     >
                       <ListItemButton
                         component={Link}

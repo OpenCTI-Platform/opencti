@@ -13,8 +13,8 @@ import { useFormatter } from '../../../../components/i18n';
 type FileImportMarkingSelectionPopupProps = {
   closePopup: () => void;
   handleUpload: (fileMarkings: string[], associatedEntityId?: string) => void;
-  isOpen: boolean
-  entityId?: string
+  isOpen: boolean;
+  entityId?: string;
 };
 
 export type SubmittedFormValues = {
@@ -42,10 +42,14 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, ent
         onSubmit={handleSubmit}
       >
         {({ resetForm, submitForm, setFieldValue }) => (
-          <Dialog open={isOpen} fullWidth={true} slotProps={{ paper: { elevation: 1 } }} onClose={() => {
-            resetForm();
-            closePopup();
-          }}
+          <Dialog
+            open={isOpen}
+            fullWidth={true}
+            slotProps={{ paper: { elevation: 1 } }}
+            onClose={() => {
+              resetForm();
+              closePopup();
+            }}
           >
             <DialogTitle>{t_i18n('Select file marking definitions')}</DialogTitle>
             <DialogContent>

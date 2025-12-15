@@ -81,7 +81,7 @@ const CaseTemplates = () => {
         {queryRef && (
           <>
             <React.Suspense
-              fallback={
+              fallback={(
                 <>
                   {Array(20)
                     .fill(0)
@@ -92,7 +92,7 @@ const CaseTemplates = () => {
                       />
                     ))}
                 </>
-              }
+              )}
             >
               <CaseTemplateLines
                 queryRef={queryRef}

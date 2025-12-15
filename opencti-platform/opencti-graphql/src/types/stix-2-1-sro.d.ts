@@ -5,7 +5,7 @@ import { STIX_EXT_OCTI } from './stix-2-1-extensions';
 // Relationship Specific Properties
 // relationship_type, description, source_ref, target_ref, start_time, stop_time
 export interface RelationExtension extends StixOpenctiExtension {
-  extension_type : 'property-extension' | 'new-sro';
+  extension_type: 'property-extension' | 'new-sro';
   source_value: string;
   source_ref: string;
   source_type: string;
@@ -30,7 +30,7 @@ export interface StixRelation extends StixRelationshipObject {
   start_time: StixDate;
   stop_time: StixDate;
   extensions: {
-    [STIX_EXT_OCTI] : RelationExtension
+    [STIX_EXT_OCTI]: RelationExtension;
   };
 }
 
@@ -59,6 +59,6 @@ export interface StixSighting extends StixRelationshipObject {
   where_sighted_refs: Array<StixId>;
   summary: string;
   extensions: {
-    [STIX_EXT_OCTI] : SightingExtension
+    [STIX_EXT_OCTI]: SightingExtension;
   };
 }

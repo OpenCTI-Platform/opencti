@@ -4,7 +4,7 @@ import { JsonAttrPathConfiguration } from '@components/data/jsonMapper/represent
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface JsonMapperRepresentationAttributeSelectedConfigurationsProps {
-  configuration?: JsonAttrPathConfiguration | null
+  configuration?: JsonAttrPathConfiguration | null;
 }
 
 const flexStyle = { display: 'flex', alignItems: 'end', gap: '4px' };
@@ -21,17 +21,21 @@ FunctionComponent<JsonMapperRepresentationAttributeSelectedConfigurationsProps> 
     <div style={containerStyle}>
       {
         configuration.pattern_date
-        && <div style={flexStyle}>
-          <SubdirectoryArrowRight />{t_i18n('Date pattern')}:
-          <span>{configuration.pattern_date}</span>
-        </div>
+        && (
+          <div style={flexStyle}>
+            <SubdirectoryArrowRight />{t_i18n('Date pattern')}:
+            <span>{configuration.pattern_date}</span>
+          </div>
+        )
       }
       {
         configuration.separator
-        && <div style={flexStyle}>
-          <SubdirectoryArrowRight /> {t_i18n('List separator')}:
-          <span>{configuration.separator}</span>
-        </div>
+        && (
+          <div style={flexStyle}>
+            <SubdirectoryArrowRight /> {t_i18n('List separator')}:
+            <span>{configuration.separator}</span>
+          </div>
+        )
       }
     </div>
   );

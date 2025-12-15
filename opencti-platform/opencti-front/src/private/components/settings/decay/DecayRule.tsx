@@ -57,7 +57,7 @@ const decayRuleFragment = graphql`
 `;
 
 interface DecayRuleComponentProps {
-  queryRef: PreloadedQuery<DecayRuleQuery>
+  queryRef: PreloadedQuery<DecayRuleQuery>;
 }
 
 const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
@@ -122,12 +122,14 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Configuration')}
             </Typography>
-            <Paper style={{
-              flex: 1,
-              margin: '6px 0 0 0',
-              padding: '15px',
-              borderRadius: 6,
-            }} variant="outlined"
+            <Paper
+              style={{
+                flex: 1,
+                margin: '6px 0 0 0',
+                padding: '15px',
+                borderRadius: 6,
+              }}
+              variant="outlined"
             >
               <Grid container={true} spacing={3}>
                 <Grid item xs={12}>
@@ -187,22 +189,26 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Impact')}
           </Typography>
-          <Paper style={{
-            marginTop: theme.spacing(1),
-            padding: '15px',
-            borderRadius: 6,
-          }} variant="outlined"
+          <Paper
+            style={{
+              marginTop: theme.spacing(1),
+              padding: '15px',
+              borderRadius: 6,
+            }}
+            variant="outlined"
           >
             {decayRule.appliedIndicatorsCount} {t_i18n('indicators currently impacted by this rule')}
           </Paper>
           <Typography variant="h4" gutterBottom={true} style={{ marginTop: 10 }}>
             {t_i18n('Life curve')}
           </Typography>
-          <Paper style={{
-            marginTop: theme.spacing(1),
-            padding: '15px',
-            borderRadius: 6,
-          }} variant="outlined"
+          <Paper
+            style={{
+              marginTop: theme.spacing(1),
+              padding: '15px',
+              borderRadius: 6,
+            }}
+            variant="outlined"
           >
             <DecayChart
               decayCurvePoint={chartCurvePoints}

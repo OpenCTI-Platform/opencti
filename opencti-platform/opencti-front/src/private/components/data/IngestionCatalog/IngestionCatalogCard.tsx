@@ -22,14 +22,14 @@ import type { Theme } from '../../../../components/Theme';
 export interface IngestionCatalogCardProps {
   node: IngestionConnector;
   dataListId: string;
-  isEnterpriseEdition: boolean
-  onClickDeploy: () => void
+  isEnterpriseEdition: boolean;
+  onClickDeploy: () => void;
   deploymentCount?: number;
 }
 
 interface ConnectorLogoProps {
   src: string;
-  alt: string
+  alt: string;
 }
 
 const ConnectorLogo = ({ src, alt }: ConnectorLogoProps) => {
@@ -47,7 +47,7 @@ const ConnectorLogo = ({ src, alt }: ConnectorLogoProps) => {
 };
 
 interface ConnectorTitleProps {
-  title: string
+  title: string;
 }
 
 const ConnectorTitle = ({ title }: ConnectorTitleProps) => {

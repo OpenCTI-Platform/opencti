@@ -48,7 +48,7 @@ const ProcessingMenu = () => {
         {isAutomationManager && (
           <MenuItem
             component={Link}
-            to={'/dashboard/data/processing/automation'}
+            to="/dashboard/data/processing/automation"
             selected={location.pathname.includes(
               '/dashboard/data/processing/automation',
             )}
@@ -60,7 +60,7 @@ const ProcessingMenu = () => {
         {isKnowledgeUpdater && (
           <MenuItem
             component={Link}
-            to={'/dashboard/data/processing/tasks'}
+            to="/dashboard/data/processing/tasks"
             selected={location.pathname === '/dashboard/data/processing/tasks'}
             dense={false}
           >
@@ -70,7 +70,7 @@ const ProcessingMenu = () => {
         {isMapperUpdater && (
           <MenuItem
             component={Link}
-            to={'/dashboard/data/processing/csv_mapper'}
+            to="/dashboard/data/processing/csv_mapper"
             selected={location.pathname.includes(
               '/dashboard/data/processing/csv_mapper',
             )}
@@ -82,7 +82,7 @@ const ProcessingMenu = () => {
         {isMapperUpdater && (
           <MenuItem
             component={Link}
-            to={'/dashboard/data/processing/json_mapper'}
+            to="/dashboard/data/processing/json_mapper"
             selected={location.pathname.includes(
               '/dashboard/data/processing/json_mapper',
             )}

@@ -25,12 +25,12 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export type JsonMapperFieldOption = FieldOption & { representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[] };
+export type JsonMapperFieldOption = FieldOption & { representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[] };
 interface JsonMapperFieldComponentProps {
   name: string;
   isOptionEqualToValue: (option: FieldOption, value: FieldOption) => boolean;
   onChange?: (name: string, value: JsonMapperFieldOption) => void;
-  queryRef: PreloadedQuery<JsonMapperFieldSearchQuery>
+  queryRef: PreloadedQuery<JsonMapperFieldSearchQuery>;
   required?: boolean;
 }
 

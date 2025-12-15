@@ -170,7 +170,7 @@ const publicStixDomainObjectBookmarksListQuery = graphql`
 `;
 
 interface PublicStixDomainObjectBookmarksListComponentProps {
-  queryRef: PreloadedQuery<PublicStixDomainObjectBookmarksListQuery>
+  queryRef: PreloadedQuery<PublicStixDomainObjectBookmarksListQuery>;
 }
 
 const PublicStixDomainObjectBookmarksListComponent = ({

@@ -10,11 +10,11 @@ import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
 
 interface FintelTemplateFormDrawerProps {
-  isOpen: boolean
-  onClose: () => void
-  entitySettingId: string
-  entityType?: string
-  template?: { id: string } & FintelTemplateFormInputs
+  isOpen: boolean;
+  onClose: () => void;
+  entitySettingId: string;
+  entityType?: string;
+  template?: { id: string } & FintelTemplateFormInputs;
 }
 
 const FintelTemplateFormDrawer = ({
@@ -67,7 +67,7 @@ const FintelTemplateFormDrawer = ({
   const onEdit = (field: FintelTemplateFormInputKeys, value: unknown) => {
     if (!template) return;
 
-    let input: { key:string, value: [unknown] } = { key: field, value: [value] };
+    let input: { key: string; value: [unknown] } = { key: field, value: [value] };
     if (field === 'published') input = { key: 'start_date', value: [value === 'true' ? new Date() : null] };
     commitEditMutation({
       variables: { id: template.id, input: [input] },

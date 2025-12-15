@@ -18,15 +18,15 @@ import SwitchField from '../../../../../../components/fields/SwitchField';
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 
 interface PlaybookFlowFieldBooleanProps {
-  name: string
-  label: string
-  helperText?: string
+  name: string;
+  label: string;
+  helperText?: string;
 }
 
 const PlaybookFlowFieldBoolean = ({
   name,
   label,
-  helperText
+  helperText,
 }: PlaybookFlowFieldBooleanProps) => {
   return (
     <Field

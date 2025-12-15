@@ -79,13 +79,13 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
     <ListItem
       divider={true}
       disablePadding
-      secondaryAction={
+      secondaryAction={(
         <FormPopover
           formId={data.id}
           formName={data.name}
           paginationOptions={paginationOptions}
         />
-      }
+      )}
     >
       <ListItemButton
         classes={{ root: classes.item }}
@@ -96,7 +96,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
           <ItemIcon type={mainEntityType} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {data.name}
@@ -118,7 +118,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
                 {fd(data.updated_at)}
               </div>
             </div>
-          }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -134,7 +134,7 @@ export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={<MoreVert className={classes.itemIconDisabled}/>}
+      secondaryAction={<MoreVert className={classes.itemIconDisabled} />}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton
@@ -145,7 +145,7 @@ export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.entries(dataColumns).map(([key, column]) => (
               <div
@@ -162,7 +162,7 @@ export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

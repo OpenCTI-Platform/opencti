@@ -5,7 +5,7 @@ import { useFormatter } from '../../i18n';
 import { splitMultilines } from '../../../utils/String';
 
 type BulkTextFieldProps = TextFieldProps & {
-  bulkType?: 'entities' | 'observables'
+  bulkType?: 'entities' | 'observables';
 };
 
 const BulkTextField = ({

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { graphql, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
-import  { useFormatter } from 'src/components/i18n';
+import { useFormatter } from 'src/components/i18n';
 import { FIVE_SECONDS } from 'src/utils/Time';
 import { useTheme } from '@mui/styles';
 import useInterval from 'src/utils/hooks/useInterval';
@@ -46,14 +46,14 @@ const StixCoreRelationshipHistoryLinesFragment = graphql`
   }
 `;
 
-const StixCoreRelationshipHistoryLines= ({ queryRef, isRelationLog, paginationOptions}) => {
+const StixCoreRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
   const queryData = usePreloadedQuery(stixCoreRelationshipHistoryLinesQuery, queryRef);
   const [data, refetch] = useRefetchableFragment(
-    StixCoreRelationshipHistoryLinesFragment, queryData
+    StixCoreRelationshipHistoryLinesFragment, queryData,
   );
 
   useInterval(() => {
@@ -70,16 +70,19 @@ const StixCoreRelationshipHistoryLines= ({ queryRef, isRelationLog, paginationOp
     setOpen(false);
     setSelectedLog(undefined);
   };
-    return (
-      <Paper style={{
+  return (
+    <Paper
+      style={{
         height: '100%',
         marginTop: theme.spacing(1),
         borderRadius: 4,
-      }} className={'paper-for-grid'} variant="outlined"
-      >
-        {logs.length > 0 ? (
-          <List>
-            {logs.map((logEdge) => {
+      }}
+      className="paper-for-grid"
+      variant="outlined"
+    >
+      {logs.length > 0 ? (
+        <List>
+          {logs.map((logEdge) => {
             const log = logEdge.node;
             return (
               <React.Fragment key={log.id}>
@@ -87,7 +90,7 @@ const StixCoreRelationshipHistoryLines= ({ queryRef, isRelationLog, paginationOp
                   dense={true}
                   divider={true}
                   disablePadding
-                  secondaryAction={
+                  secondaryAction={(
                     <>
                       <Tooltip title={t_i18n('Browse the link')}>
                         <IconButton
@@ -98,7 +101,7 @@ const StixCoreRelationshipHistoryLines= ({ queryRef, isRelationLog, paginationOp
                         </IconButton>
                       </Tooltip>
                     </>
-                  }
+                  )}
                 >
                   <ListItemButton
                     style={{ margin: 0, height: 60 }}
@@ -122,31 +125,31 @@ const StixCoreRelationshipHistoryLines= ({ queryRef, isRelationLog, paginationOp
               </React.Fragment>
             );
           })
-            }
-          </List>
-        ) : (
-          <div
+          }
+        </List>
+      ) : (
+        <div
+          style={{
+            display: 'table',
+            height: '100%',
+            width: '100%',
+          }}
+        >
+          <span
             style={{
-              display: 'table',
-              height: '100%',
-              width: '100%',
+              display: 'table-cell',
+              verticalAlign: 'middle',
+              textAlign: 'center',
             }}
           >
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {isRelationLog
-                ? t_i18n('No relations history about this relationship.')
-                : t_i18n('No history about this relationship.')}
-            </span>
-          </div>
-        )}
-      </Paper>
-    );
+            {isRelationLog
+              ? t_i18n('No relations history about this relationship.')
+              : t_i18n('No history about this relationship.')}
+          </span>
+        </div>
+      )}
+    </Paper>
+  );
 };
 
 export default StixCoreRelationshipHistoryLines;

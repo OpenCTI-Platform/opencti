@@ -9,7 +9,7 @@ import {
   notesNumberByEntity,
   notesTimeSeries,
   notesTimeSeriesByAuthor,
-  notesTimeSeriesByEntity
+  notesTimeSeriesByEntity,
 } from '../domain/note';
 import {
   stixDomainObjectAddRelation,
@@ -19,7 +19,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';

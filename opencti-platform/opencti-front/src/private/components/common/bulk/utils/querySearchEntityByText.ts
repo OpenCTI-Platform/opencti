@@ -12,7 +12,7 @@ export type StixCoreEntityType = {
   entity_type: string;
   id: string;
   name: string;
-  representative: StixRepresentative
+  representative: StixRepresentative;
 };
 
 export type StixRepresentative = {

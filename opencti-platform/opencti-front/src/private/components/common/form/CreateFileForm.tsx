@@ -10,16 +10,16 @@ import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 
 export interface CreateFileFormInputs {
-  name: string
-  type: string
-  fileMarkings: FieldOption[]
+  name: string;
+  type: string;
+  fileMarkings: FieldOption[];
 }
 
 interface CreateFileFormProps {
-  isOpen: boolean
-  onClose: () => void
-  onReset: () => void
-  onSubmit: FormikConfig<CreateFileFormInputs>['onSubmit']
+  isOpen: boolean;
+  onClose: () => void;
+  onReset: () => void;
+  onSubmit: FormikConfig<CreateFileFormInputs>['onSubmit'];
 }
 
 const CreateFileForm = ({ isOpen, onClose, onReset, onSubmit }: CreateFileFormProps) => {

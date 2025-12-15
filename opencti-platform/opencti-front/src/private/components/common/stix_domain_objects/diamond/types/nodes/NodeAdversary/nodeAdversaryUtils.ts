@@ -20,7 +20,7 @@ export interface NodeAdversaryUtilsReturns {
   lastAttributions: React.ReactNode;
 }
 
-export const nodeAdversaryUtils = ({ data }: NodeAdversaryUtilsProps):NodeAdversaryUtilsReturns => {
+export const nodeAdversaryUtils = ({ data }: NodeAdversaryUtilsProps): NodeAdversaryUtilsReturns => {
   const { stixDomainObject, entityLink } = data;
 
   if (!stixDomainObject) {

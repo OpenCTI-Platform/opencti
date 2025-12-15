@@ -76,7 +76,7 @@ interface StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps {
 }
 
 const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
+  StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
 > = ({ data, stixCoreObjectOrStixCoreRelationshipId, paginationOptions }) => {
   const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme<Theme>();
@@ -131,7 +131,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
         style={{
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
-        action={
+        action={(
           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
             <NotePopover
               id={note.id}
@@ -141,15 +141,15 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               paginationOptions={paginationOptions}
             />
           </CollaborativeSecurity>
-        }
-        title={
+        )}
+        title={(
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ marginTop: 0.5 }}>
             <Stack direction="row" spacing={1}>
               <Stack direction="row" spacing={0.5} sx={{ textTransform: 'none' }}>
-                <Typography variant='body2' sx={{ fontWeight: 800 }}>
+                <Typography variant="body2" sx={{ fontWeight: 800 }}>
                   {authorLink ? <Link to={authorLink}>{authorName}</Link> : t_i18n('Unknown')}
                 </Typography>
-                <Typography variant='body2' sx={{ color: theme.palette.text?.secondary }}>
+                <Typography variant="body2" sx={{ color: theme.palette.text?.secondary }}>
                   {t_i18n('added a note')} {t_i18n('on')} {nsdt(note.created)}
                 </Typography>
               </Stack>
@@ -177,7 +177,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               limit={1}
             />
           </Stack>
-        }
+        )}
       />
 
       <CardContent sx={{ position: 'relative' }}>

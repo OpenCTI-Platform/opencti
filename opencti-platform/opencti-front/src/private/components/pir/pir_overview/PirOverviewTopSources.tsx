@@ -29,7 +29,7 @@ const topSourcesFragment = graphql`
 `;
 
 interface PirOverviewTopSourcesProps {
-  data: PirOverviewTopSourcesFragment$key
+  data: PirOverviewTopSourcesFragment$key;
 }
 
 const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {

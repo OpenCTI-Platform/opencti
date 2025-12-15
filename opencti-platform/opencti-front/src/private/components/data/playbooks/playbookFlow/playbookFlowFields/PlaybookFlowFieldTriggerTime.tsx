@@ -21,7 +21,7 @@ import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface TriggerTimeForm {
-  period: string
+  period: string;
 }
 
 const PlaybookFlowFieldTriggerTime = () => {

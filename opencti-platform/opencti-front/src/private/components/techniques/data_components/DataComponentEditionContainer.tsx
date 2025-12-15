@@ -20,10 +20,10 @@ export const dataComponentEditionQuery = graphql`
 `;
 
 interface DataComponentEditionContainerProps {
-  queryRef: PreloadedQuery<DataComponentEditionContainerQuery>
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  queryRef: PreloadedQuery<DataComponentEditionContainerQuery>;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 const DataComponentEditionContainer: FunctionComponent<DataComponentEditionContainerProps> = ({

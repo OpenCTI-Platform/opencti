@@ -31,10 +31,10 @@ const RoleEditionFragment = graphql`
 `;
 
 interface RoleEditionDrawerProps {
-  roleRef: RootRoleEditionQuery$data['role']
-  handleClose?: () => void
-  open?: boolean
-  disabled?: boolean
+  roleRef: RootRoleEditionQuery$data['role'];
+  handleClose?: () => void;
+  open?: boolean;
+  disabled?: boolean;
 }
 
 const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
@@ -68,42 +68,46 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
       disabled={disabled}
       controlledDial={UpdateRoleControlledDial}
     >
-      {role ? (<>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-            <Tab label={t_i18n('Overview')} />
-            <Tab label={t_i18n('Capabilities')} />
-            {isCapabilitiesInDraftEnabled &&
-              <Tab
-                disabled={!isEnterpriseEdition}
-                label={
-                  <Box>
-                    {t_i18n('Capabilities in Draft')}
-                    <EEChip clickable={false} />
-                  </Box>
-                }
-              />
-            }
-          </Tabs>
-        </Box>
-        {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
-        {currentTab === 1 && queryRef && (
-          <RoleEditionCapabilities role={role} queryRef={queryRef} />
-        )}
-        {currentTab === 2 && queryRef && (
-          <RoleEditionCapabilities role={role} queryRef={queryRef} isCapabilitiesInDraft />
-        )}
-      </>)
+      {role ? (
+        <>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
+              <Tab label={t_i18n('Overview')} />
+              <Tab label={t_i18n('Capabilities')} />
+              {isCapabilitiesInDraftEnabled
+                && (
+                  <Tab
+                    disabled={!isEnterpriseEdition}
+                    label={(
+                      <Box>
+                        {t_i18n('Capabilities in Draft')}
+                        <EEChip clickable={false} />
+                      </Box>
+                    )}
+                  />
+                )
+              }
+            </Tabs>
+          </Box>
+          {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
+          {currentTab === 1 && queryRef && (
+            <RoleEditionCapabilities role={role} queryRef={queryRef} />
+          )}
+          {currentTab === 2 && queryRef && (
+            <RoleEditionCapabilities role={role} queryRef={queryRef} isCapabilitiesInDraft />
+          )}
+        </>
+      )
         : (<Loader />)}
     </Drawer>
   );
 };
 
 interface RoleEditionProps {
-  roleEditionData?: RootRoleEditionQuery$data
-  handleClose?: () => void
-  open?: boolean
-  disabled?: boolean
+  roleEditionData?: RootRoleEditionQuery$data;
+  handleClose?: () => void;
+  open?: boolean;
+  disabled?: boolean;
 }
 
 const RoleEdition: FunctionComponent<RoleEditionProps> = ({

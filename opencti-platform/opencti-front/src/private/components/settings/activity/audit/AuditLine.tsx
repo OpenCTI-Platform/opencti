@@ -100,7 +100,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const data = useFragment(AuditLineFragment, node);
   const message = useGenerateAuditMessage<AuditLine_node$data>(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
-  const changes= data?.context_data?.changes;
+  const changes = data?.context_data?.changes;
 
   return (
     <>
@@ -165,25 +165,29 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                               </TableCell>
                               <TableCell align="left">{row?.previous && row.previous.length > 0
                                 ? row.previous.join(', ')
-                                : '-'}</TableCell>
+                                : '-'}
+                              </TableCell>
                               <TableCell align="left">{row?.new && row.new.length > 0
                                 ? row.new.join(', ')
-                                : '-'}</TableCell>
+                                : '-'}
+                              </TableCell>
                               <TableCell align="left">{row?.added && row.added.length > 0
                                 ? row.added.join(', ')
-                                : '-'}</TableCell>
+                                : '-'}
+                              </TableCell>
                               <TableCell align="left">{row?.removed && row.removed.length > 0
                                 ? row.removed.join(', ')
-                                : '-'}</TableCell>
+                                : '-'}
+                              </TableCell>
                             </TableRow>
                           ))
-                            ): (
-                              <TableRow>
-                                <TableCell align="center" colSpan={5}>
-                                  {t_i18n('No detail available for this event')}
-                                </TableCell>
-                              </TableRow>
-                            )}
+                          ) : (
+                            <TableRow>
+                              <TableCell align="center" colSpan={5}>
+                                {t_i18n('No detail available for this event')}
+                              </TableCell>
+                            </TableRow>
+                          )}
                         </TableBody>
                       </Table>
                     </TableContainer>
@@ -193,7 +197,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
               </Paper>
             </Grid>
           </div>
-          <div style={{ marginTop: 20}}>
+          <div style={{ marginTop: 20 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Raw data')}
             </Typography>
@@ -213,7 +217,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -252,7 +256,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                 </span>
               </div>
             </div>
-          }
+          )}
         />
       </ListItemButton>
     </>
@@ -271,7 +275,7 @@ export const AuditLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -329,7 +333,7 @@ export const AuditLineDummy = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

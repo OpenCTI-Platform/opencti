@@ -131,7 +131,7 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               }
 
               if (typeName === ENTITY_TYPE_IDENTITY_ORGANIZATION && requiredCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN)
-                  && !userCapabilities.includes(SETTINGS_SET_ACCESSES)) {
+                && !userCapabilities.includes(SETTINGS_SET_ACCESSES)) {
                 if (user.administrated_organizations.some(({ id }) => id === source.id)) {
                   return resolve(source, args, context, info);
                 }

@@ -46,7 +46,7 @@ const PublicRoot = () => {
               <Routes>
                 <Route path="/" element={boundaryWrapper(PublicDataSharing)} />
                 <Route path="/dashboard/:uriKey/*" element={boundaryWrapper(PublicDashboard)} />
-                {isPlaygroundEnabled && <Route path="/graphql/" element={boundaryWrapper(Playground)}/>}
+                {isPlaygroundEnabled && <Route path="/graphql/" element={boundaryWrapper(Playground)} />}
               </Routes>
             </AppDataProvider>
           </ConnectedIntlProvider>

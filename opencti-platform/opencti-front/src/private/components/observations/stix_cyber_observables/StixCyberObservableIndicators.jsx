@@ -138,7 +138,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IconButton
           ref={AddOrCreateIndicatorsButtonRef}
-          aria-label='Add or create indicators button'
+          aria-label="Add or create indicators button"
           color="primary"
           onClick={handleOpenAddOrCreateIndicatorMenu}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
@@ -160,30 +160,30 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
         </Menu>
       </Security>
       <div className="clearfix" />
-      <List style={{ marginTop: -15 }} aria-label='Stix cyber observable indicators list'>
+      <List style={{ marginTop: -15 }} aria-label="Stix cyber observable indicators list">
         {stixCyberObservable.indicators.edges.map((indicatorEdge) => (
           <ListItem
             key={indicatorEdge.node.id}
             divider={true}
             disablePadding
-            secondaryAction={
+            secondaryAction={(
               <StixCyberObservableIndicatorPopover
                 observableId={stixCyberObservable.id}
                 indicatorId={indicatorEdge.node.id}
               />
-            }
+            )}
           >
             <ListItemButton
-              aria-label={'stix cyber observable indicators item'}
+              aria-label="stix cyber observable indicators item"
               style={{ paddingLeft: 10, height: 50 }}
               component={Link}
               to={`/dashboard/observations/indicators/${indicatorEdge.node.id}`}
             >
               <ListItemIcon style={{ color: theme.palette.primary.main }}>
-                <ItemIcon type={indicatorEdge.node.entity_type}/>
+                <ItemIcon type={indicatorEdge.node.entity_type} />
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <div>
                     <div style={{ ...inlineStyles.pattern_type, ...inlineStyles.bodyItem }}>
                       <ItemPatternType
@@ -198,7 +198,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
                       {fd(indicatorEdge.node.created_at)}
                     </div>
                   </div>
-                }
+                )}
               />
             </ListItemButton>
           </ListItem>

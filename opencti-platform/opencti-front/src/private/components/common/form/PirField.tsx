@@ -30,7 +30,7 @@ interface PirFieldProps {
   helpertext?: string;
   disabled?: boolean;
   required?: boolean;
-  style?: CSSProperties,
+  style?: CSSProperties;
 }
 
 const PirField = ({
@@ -90,7 +90,8 @@ const PirField = ({
             flexGrow: 1,
             marginLeft: 10,
           }}
-          >{option.label}</div>
+          >{option.label}
+          </div>
         </li>
       )}
     />

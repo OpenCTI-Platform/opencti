@@ -28,12 +28,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface SightingCreationComponentProps {
-  isTo: boolean,
-  entityId: string,
-  noPadding?: boolean,
-  paginationOptions: EntityStixSightingRelationshipsLinesPaginationQuery$variables
-  stixCoreObjectTypes: string[],
-  variant?: 'controlledDial' | 'inLine',
+  isTo: boolean;
+  entityId: string;
+  noPadding?: boolean;
+  paginationOptions: EntityStixSightingRelationshipsLinesPaginationQuery$variables;
+  stixCoreObjectTypes: string[];
+  variant?: 'controlledDial' | 'inLine';
 }
 
 const SightingCreationComponent: FunctionComponent<SightingCreationComponentProps> = ({
@@ -80,12 +80,12 @@ const SightingCreationComponent: FunctionComponent<SightingCreationComponentProp
 );
 
 interface EntityStixSightingRelationshipsProps {
-  isTo: boolean,
-  entityId: string,
-  noPadding?: boolean,
-  stixCoreObjectTypes: string[],
-  entityLink: string,
-  disableExport?: boolean,
+  isTo: boolean;
+  entityId: string;
+  noPadding?: boolean;
+  stixCoreObjectTypes: string[];
+  entityLink: string;
+  disableExport?: boolean;
 }
 
 const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelationshipsProps> = ({
@@ -219,32 +219,32 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
               noPadding={noPadding}
               paginationOptions={finalPaginationOptions}
               stixCoreObjectTypes={stixCoreObjectTypes}
-              variant='controlledDial'
+              variant="controlledDial"
             />
           )}
         >
           {queryRef && (
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <EntityStixSightingRelationshipLineDummy key={idx} dataColumns={dataColumns} />
-                  ))}
-              </>
-            }
-          >
-            <EntityStixSightingRelationshipsLines
-              queryRef={queryRef}
-              paginationOptions={finalPaginationOptions}
-              entityLink={entityLink}
-              dataColumns={dataColumns}
-              isTo={isTo}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-              onLabelClick={helpers.handleAddFilter}
-            />
-          </React.Suspense>
+            <React.Suspense
+              fallback={(
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <EntityStixSightingRelationshipLineDummy key={idx} dataColumns={dataColumns} />
+                    ))}
+                </>
+              )}
+            >
+              <EntityStixSightingRelationshipsLines
+                queryRef={queryRef}
+                paginationOptions={finalPaginationOptions}
+                entityLink={entityLink}
+                dataColumns={dataColumns}
+                isTo={isTo}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+                onLabelClick={helpers.handleAddFilter}
+              />
+            </React.Suspense>
           )}
         </ListLines>
       </div>

@@ -91,25 +91,29 @@ const SearchBulkContainer = () => {
         return (
           <>
             {typesWithNoAnalysesTab.includes(entity_type)
-              ? (<Chip
-                  style={analysesChipStyle}
-                  label={n(analysesNumber)}
-                 />)
-              : (<Chip
-                  sx={{
-                    ...analysesChipStyle,
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: theme.palette.primary.main,
-                    },
-                  }}
-                  label={n(analysesNumber)}
-                  onClick={(e: MouseEvent<HTMLDivElement>) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    navigate(linkAnalyses);
-                  }}
-                 />)
+              ? (
+                  <Chip
+                    style={analysesChipStyle}
+                    label={n(analysesNumber)}
+                  />
+                )
+              : (
+                  <Chip
+                    sx={{
+                      ...analysesChipStyle,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: theme.palette.primary.main,
+                      },
+                    }}
+                    label={n(analysesNumber)}
+                    onClick={(e: MouseEvent<HTMLDivElement>) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigate(linkAnalyses);
+                    }}
+                  />
+                )
             }
           </>
         );
@@ -149,11 +153,13 @@ const SearchBulkContainer = () => {
             </Tabs>
           </Box>
           {currentTab === 0 && values.length > 0
-            && <SearchBulk
-              inputValues={values}
-              dataColumns={dataColumns}
-              setNumberOfEntities={setNumberOfKnownEntities}
-               />
+            && (
+              <SearchBulk
+                inputValues={values}
+                dataColumns={dataColumns}
+                setNumberOfEntities={setNumberOfKnownEntities}
+              />
+            )
           }
           {currentTab === 0 && isEmpty(textFieldValue)
             && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY} />

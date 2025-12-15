@@ -74,7 +74,7 @@ const dataSourceQuery = graphql`
 
 const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootDataSourcesSubscription>
+    GraphQLSubscriptionConfig<RootDataSourcesSubscription>
   >(
     () => ({
       subscription,
@@ -107,7 +107,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
                 <DataSourceEdition dataSourceId={dataSource.id} />
               </Security>
             )}
-            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+            DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <DataSourceDeletion id={dataSource.id} isOpen={isOpen} handleClose={onClose} />
               </Security>
@@ -150,49 +150,49 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             <Route
               path="/"
               element={
-                <DataSource dataSourceData={dataSource}/>
+                <DataSource dataSourceData={dataSource} />
               }
             />
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <DataSourceKnowledgeComponent
                   data={dataSource}
                   enableReferences={settings?.platform_enable_reference?.includes(
                     'Data-Source',
                   )}
                 />
-              }
+              )}
             />
             <Route
               path="/content/*"
-              element={
+              element={(
                 <StixCoreObjectContentRoot
                   stixCoreObject={dataSource}
                 />
-              }
+              )}
             />
             <Route
               path="/files"
-              element={
+              element={(
                 <FileManager
                   id={dataSourceId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={dataSource}
                 />
-              }
+              )}
             />
             <Route
               path="/history"
               element={
-                <StixCoreObjectHistory stixCoreObjectId={dataSourceId}/>
+                <StixCoreObjectHistory stixCoreObjectId={dataSourceId} />
               }
             />
           </Routes>
         </div>
       ) : (
-        <ErrorNotFound/>
+        <ErrorNotFound />
       )}
     </>
   );

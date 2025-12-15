@@ -60,7 +60,7 @@ interface MarkdownWithRedirectionWarningProps {
 }
 
 const MarkdownDisplay: FunctionComponent<
-MarkdownWithRedirectionWarningProps
+  MarkdownWithRedirectionWarningProps
 > = ({
   content,
   expand,
@@ -172,17 +172,19 @@ MarkdownWithRedirectionWarningProps
   if (disableWarningAtLinkClick || removeLinks || removeLineBreaks) {
     markdownDisplayContent = remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement();
   } else {
-    markdownDisplayContent = <>
-      <div onClick={(event) => browseLinkWarning(event)}>
-        {remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement()}
-      </div>
-      <ExternalLinkPopover
-        displayExternalLink={displayExternalLink}
-        externalLink={externalLink}
-        setDisplayExternalLink={setDisplayExternalLink}
-        setExternalLink={setExternalLink}
-      />
-    </>;
+    markdownDisplayContent = (
+      <>
+        <div onClick={(event) => browseLinkWarning(event)}>
+          {remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement()}
+        </div>
+        <ExternalLinkPopover
+          displayExternalLink={displayExternalLink}
+          externalLink={externalLink}
+          setDisplayExternalLink={setDisplayExternalLink}
+          setExternalLink={setExternalLink}
+        />
+      </>
+    );
   }
   return emptyStringIfUndefined ? markdownDisplayContent : <FieldOrEmpty source={content}>{markdownDisplayContent}</FieldOrEmpty>;
 };

@@ -16,7 +16,7 @@ import {
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
-  INPUT_MARKINGS
+  INPUT_MARKINGS,
 } from '../../schema/general';
 import { elCount } from '../../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
@@ -33,7 +33,7 @@ import {
   OrderingMode,
   type QueryIndicatorsArgs,
   type QueryIndicatorsNumberArgs,
-  type StixCyberObservable
+  type StixCyberObservable,
 } from '../../generated/graphql';
 import type { BasicStoreEntity, NumberResult } from '../../types/store';
 import {
@@ -49,7 +49,7 @@ import {
   type DecayHistoryChart,
   type DecayHistory,
   type DecayLiveDetails,
-  findDecayRuleForIndicator
+  findDecayRuleForIndicator,
 } from '../decayRule/decayRule-domain';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { checkScore, prepareDate, utcDate } from '../../utils/format';
@@ -165,7 +165,7 @@ export const findIndicatorsForDecay = (context: AuthContext, user: AuthUser, max
 export const createObservablesFromIndicator = async (
   context: AuthContext,
   user: AuthUser,
-  input: { objectLabel?: string[] | null; objectMarking?: string[] | null; objectOrganization?: string[] | null; createdBy?: string | null; externalReferences?: string[] | null; },
+  input: { objectLabel?: string[] | null; objectMarking?: string[] | null; objectOrganization?: string[] | null; createdBy?: string | null; externalReferences?: string[] | null },
   indicator: StoreEntityIndicator,
 ) => {
   const { pattern } = indicator;
@@ -203,7 +203,7 @@ export const createObservablesFromIndicator = async (
         objectOrganization: input.objectOrganization,
       };
       return createRelation(context, user, relationInput);
-    })
+    }),
   );
   return observablesToLink;
 };
@@ -246,7 +246,7 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
         throw FunctionalError(`Indicator of type ${patternType} is contained in exclusion list.`, {
           doc_code: 'INDICATOR_PATTERN_EXCLUDED',
           excludedValue: exclusionListCheck.value,
-          exclusionList: exclusionListCheck.listId
+          exclusionList: exclusionListCheck.listId,
         });
       }
     }
@@ -309,7 +309,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
         decay_exclusion_name: exclusionRule.name,
         decay_exclusion_created_at: exclusionRule.created_at,
         decay_exclusion_filters: exclusionRule.decay_exclusion_filters,
-      }
+      },
     };
   } else if (isDecayActivated && !revoked) {
     const indicatorDecayRule = {
@@ -361,7 +361,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
         objectOrganization: indicator.objectOrganization,
       };
       return createRelation(context, user, input);
-    })
+    }),
   );
   if (observablesToLink.length === 0 && indicator.createObservables) {
     await createObservablesFromIndicator(context, user, indicator, created);
@@ -449,7 +449,9 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
 
   // Region Decay and {Score, Valid until, Revoke} computation
   // We keep everything EXCEPT fields that can be changed by decay computation
-  const finalInput = input.filter((editInput) => { return editInput.key !== VALID_UNTIL && editInput.key !== X_SCORE && editInput.key !== REVOKED; });
+  const finalInput = input.filter((editInput) => {
+    return editInput.key !== VALID_UNTIL && editInput.key !== X_SCORE && editInput.key !== REVOKED;
+  });
 
   const isDecayEnabledOnIndicator: boolean = indicatorBeforeUpdate.decay_applied_rule !== undefined && indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score !== undefined;
 
@@ -549,11 +551,11 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
 };
 
 export interface IndicatorPatch {
-  revoked?: boolean,
-  x_opencti_score?: number,
-  decay_history?: DecayHistory[],
-  decay_next_reaction_date?: Date,
-  x_opencti_detection?: boolean,
+  revoked?: boolean;
+  x_opencti_score?: number;
+  decay_history?: DecayHistory[];
+  decay_next_reaction_date?: Date;
+  x_opencti_detection?: boolean;
 }
 
 export const computeIndicatorDecayPatch = (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
@@ -615,13 +617,13 @@ export const indicatorsTimeSeriesByEntity = (context: AuthContext, user: AuthUse
 export const indicatorsNumber = async (context: AuthContext, user: AuthUser, args: QueryIndicatorsNumberArgs): Promise<NumberResult> => {
   const countPromise = elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     ...args,
-    types: [ENTITY_TYPE_INDICATOR]
+    types: [ENTITY_TYPE_INDICATOR],
   }) as Promise<number>;
   const totalPromise = elCount(
     context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR] }
+    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR] },
   ) as Promise<number>;
   const [count, total] = await Promise.all([countPromise, totalPromise]);
   return { count, total };
@@ -634,13 +636,13 @@ export const indicatorsNumberByEntity = async (context: AuthContext, user: AuthU
     context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    { ...args, types: [ENTITY_TYPE_INDICATOR], filters }
+    { ...args, types: [ENTITY_TYPE_INDICATOR], filters },
   );
   const totalPromise = elCount(
     context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR], filters }
+    { ...R.dissoc('endDate', args), types: [ENTITY_TYPE_INDICATOR], filters },
   );
   const [count, total] = await Promise.all([countPromise, totalPromise]);
   return { count, total };

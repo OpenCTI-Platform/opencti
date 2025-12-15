@@ -89,9 +89,11 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
                 {t_i18n('Create file')}
               </Button>
             </Box>
-          </Box>);
+          </Box>
+        );
       }}
-    </Formik>);
+    </Formik>
+  );
 };
 
 export default ImportFilesFreeText;

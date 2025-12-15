@@ -185,7 +185,7 @@ const ImportFilesContext = createContext<ImportFilesContextProps | undefined>(un
 
 export const ImportFilesProvider = ({ children, initialValue }: {
   children: ReactNode;
-  initialValue: InitialValues
+  initialValue: InitialValues;
 }) => {
   const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT']); // Check capability to set connectors and validation mode
   const draftContext = useDraftContext();

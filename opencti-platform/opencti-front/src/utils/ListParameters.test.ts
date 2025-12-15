@@ -21,11 +21,11 @@ describe('ListParameters utils', () => {
   describe(buildViewParamsFromUrlAndStorage, () => {
     it('should convert comma-separated string from URL to array', () => {
       mockLocation.search = '?disabledEntityTypes=Malware,Indicator,Report';
-      
+
       const result = buildViewParamsFromUrlAndStorage(
         mockNavigate,
         mockLocation,
-        'test-key'
+        'test-key',
       );
 
       expect(result.disabledEntityTypes).toEqual(['Malware', 'Indicator', 'Report']);
@@ -35,15 +35,15 @@ describe('ListParameters utils', () => {
       localStorage.setItem('test-key', JSON.stringify({
         disabledEntityTypes: 'toto,tutu',
         disabledCreators: 'creator1',
-        disabledMarkings: 'marking1,marking2,marking3'
+        disabledMarkings: 'marking1,marking2,marking3',
       }));
-      
+
       mockLocation.search = '';
-      
+
       const result = buildViewParamsFromUrlAndStorage(
         mockNavigate,
         mockLocation,
-        'test-key'
+        'test-key',
       );
 
       expect(result.disabledEntityTypes).toEqual(['toto', 'tutu']);
@@ -53,11 +53,11 @@ describe('ListParameters utils', () => {
 
     it('should return empty array when URL parameter value is empty string', () => {
       mockLocation.search = '?disabledEntityTypes=';
-      
+
       const result = buildViewParamsFromUrlAndStorage(
         mockNavigate,
         mockLocation,
-        'test-key'
+        'test-key',
       );
 
       expect(result.disabledEntityTypes).toEqual([]);
@@ -65,11 +65,11 @@ describe('ListParameters utils', () => {
 
     it('should convert single value to single-element array', () => {
       mockLocation.search = '?disabledEntityTypes=Malware';
-      
+
       const result = buildViewParamsFromUrlAndStorage(
         mockNavigate,
         mockLocation,
-        'test-key'
+        'test-key',
       );
 
       expect(result.disabledEntityTypes).toEqual(['Malware']);
@@ -77,15 +77,15 @@ describe('ListParameters utils', () => {
 
     it('should give URL parameters priority over localStorage', () => {
       localStorage.setItem('test-key', JSON.stringify({
-        disabledEntityTypes: ['toto', 'tutu']
+        disabledEntityTypes: ['toto', 'tutu'],
       }));
 
       mockLocation.search = '?disabledEntityTypes=Malware,Indicator';
-      
+
       const result = buildViewParamsFromUrlAndStorage(
         mockNavigate,
         mockLocation,
-        'test-key'
+        'test-key',
       );
 
       expect(result.disabledEntityTypes).toEqual(['Malware', 'Indicator']);
@@ -93,12 +93,12 @@ describe('ListParameters utils', () => {
 
     it('should handle missing parameters without errors', () => {
       mockLocation.search = '?otherParam=value';
-      
+
       expect(() => {
         buildViewParamsFromUrlAndStorage(
           mockNavigate,
           mockLocation,
-          'test-key'
+          'test-key',
         );
       }).not.toThrow();
     });

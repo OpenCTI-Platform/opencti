@@ -27,7 +27,7 @@ import {
   pirRelationshipsDistribution,
   pirRelationshipsMultiTimeSeries,
   pirUnflagElement,
-  updatePir
+  updatePir,
 } from './pir-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { filterMembersWithUsersOrgs, getUserAccessRight } from '../../utils/access';
@@ -68,7 +68,7 @@ const pirResolvers: Resolvers = {
     pirDelete: (_, { id }, context) => deletePir(context, context.user, id),
     pirFlagElement: (_, { id, input }, context) => pirFlagElement(context, context.user, id, input),
     pirUnflagElement: (_, { id, input }, context) => pirUnflagElement(context, context.user, id, input),
-  }
+  },
 };
 
 export default pirResolvers;

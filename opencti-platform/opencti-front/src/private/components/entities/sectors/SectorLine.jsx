@@ -70,11 +70,11 @@ class SectorLineComponent extends Component {
           </ListItemIcon>
           <ListItemText
             sx={{ margin: 0, height: '28px' }}
-            primary={
+            primary={(
               <div>
                 <div className={classes.name}>
                   {node.name}
-                  {node.draftVersion && (<DraftChip style={{ verticalAlign: 1 }}/>)}
+                  {node.draftVersion && (<DraftChip style={{ verticalAlign: 1 }} />)}
                 </div>
                 <div className={classes.description}>
                   {node.description?.length > 0
@@ -82,7 +82,7 @@ class SectorLineComponent extends Component {
                     : t('This sector does not have any description.')}
                 </div>
               </div>
-            }
+            )}
           />
           <ListItemIcon classes={{ root: classes.goIcon }}>
             <KeyboardArrowRightOutlined />
@@ -135,14 +135,14 @@ class SectorLineDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <Skeleton
               animation="wave"
               variant="rectangular"
               width="90%"
               height={20}
             />
-          }
+          )}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRightOutlined />

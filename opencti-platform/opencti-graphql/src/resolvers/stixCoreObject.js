@@ -146,7 +146,7 @@ const stixCoreObjectResolvers = {
     containersNumber: (stixCoreObject, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: stixCoreObject.id }),
     numberOfConnectedElement: (stixCoreObject, _, context) => stixCoreObjectsConnectedNumber(context, context.user, stixCoreObject),
     // Retro compatibility
-    spec_version: getSpecVersionOrDefault
+    spec_version: getSpecVersionOrDefault,
   },
   Analysis: {
     __resolveType(obj) {

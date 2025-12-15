@@ -38,7 +38,7 @@ const defaultCsvMapperValue: CsvMapperFormData = {
 
 interface CsvMapperFormProps {
   csvMapper?: CsvMapperAddInput;
-  setCSVMapperFieldValue: (field: string, value: CsvMapperAddInput) => void
+  setCSVMapperFieldValue: (field: string, value: CsvMapperAddInput) => void;
   returnCSVFormat?: (field: string, value: CsvMapperAddInput) => void;
 }
 
@@ -48,10 +48,10 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
   // extracting available entities and relationships types from schema
   const { schema } = useAuth();
   const [availableEntityTypes, setAvailableEntityTypes] = useState<
-  RepresentationFormEntityOption[]
+    RepresentationFormEntityOption[]
   >([]);
   const [availableRelationshipTypes, setAvailableRelationshipTypes] = useState<
-  RepresentationFormEntityOption[]
+    RepresentationFormEntityOption[]
   >([]);
 
   // load the available types once in state
@@ -152,7 +152,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
           }, [values, dirty, hasError]);
           return (
             <Form>
-              <Box sx={ {
+              <Box sx={{
                 display: 'flex',
                 alignItems: 'center',
                 marginTop: 2.5,
@@ -195,17 +195,17 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   >
                     <FormControlLabel
                       value=","
-                      control={<Radio/>}
+                      control={<Radio />}
                       label={t_i18n('Comma')}
                     />
                     <FormControlLabel
                       value=";"
-                      control={<Radio/>}
+                      control={<Radio />}
                       label={t_i18n('Semicolon')}
                     />
                     <FormControlLabel
-                      value={'|'}
-                      control={<Radio/>}
+                      value="|"
+                      control={<Radio />}
                       label={t_i18n('Pipe')}
                     />
                   </RadioGroup>
@@ -254,7 +254,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   }
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </Box>
               <FieldArray
@@ -300,7 +300,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   }
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </Box>
               <FieldArray
@@ -308,10 +308,11 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                 render={(arrayHelpers) => (
                   <>
                     {values.relationship_representations.map((_, idx) => (
-                      <Box sx={{
-                        marginTop: 2.5,
-                        display: 'flex',
-                      }}
+                      <Box
+                        sx={{
+                          marginTop: 2.5,
+                          display: 'flex',
+                        }}
                         key={`relationship-${idx}`}
                       >
                         <Field

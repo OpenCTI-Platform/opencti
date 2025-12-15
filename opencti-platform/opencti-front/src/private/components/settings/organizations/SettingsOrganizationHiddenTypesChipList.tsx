@@ -13,14 +13,14 @@ const settingsOrganizationHiddenTypesChipListFragment = graphql`
 const SettingsOrganizationHiddenTypesChipList = ({
   organizationData,
 }: {
-  organizationData: SettingsOrganization_organization$data
+  organizationData: SettingsOrganization_organization$data;
 }) => {
   const organization = useFragment(settingsOrganizationHiddenTypesChipListFragment, organizationData as unknown as SettingsOrganizationHiddenTypesChipList_organization$key);
 
   const hiddenTypesOrganization = organization?.default_hidden_types ?? [];
 
   return (
-    <HiddenTypesChipList hiddenTypes={hiddenTypesOrganization}/>
+    <HiddenTypesChipList hiddenTypes={hiddenTypesOrganization} />
   );
 };
 

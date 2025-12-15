@@ -61,8 +61,8 @@ const pirHeaderEditAuthorizedMembersMutation = graphql`
 `;
 
 interface PirHeaderProps {
-  data: PirHeaderFragment$key
-  editionData: PirEditionFragment$key
+  data: PirHeaderFragment$key;
+  editionData: PirEditionFragment$key;
 }
 
 const PirHeader = ({ data, editionData }: PirHeaderProps) => {

@@ -251,16 +251,16 @@ const IngestionCatalogConnectorCreation = ({
       title={t_i18n('Deploy a new connector')}
       open={open}
       onClose={onClose}
-      header={
+      header={(
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
-          <Tooltip title={ `${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
+          <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
             <Button
               variant="outlined"
               component={Link}
               size="small"
               to={buildConnectorsUrl()}
               startIcon={<HubOutlined />}
-              color={'warning'}
+              color="warning"
               disabled={deploymentCount === 0}
             >
               {`${deploymentCount} ${t_i18n('instances deployed')}`}
@@ -296,7 +296,7 @@ const IngestionCatalogConnectorCreation = ({
             </span>
           </Tooltip>
         </div>
-      }
+      )}
     >
       <Stack gap={1}>
         <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
@@ -386,7 +386,7 @@ const IngestionCatalogConnectorCreation = ({
                               data={configDefaults}
                               schema={requiredProperties}
                               renderers={customRenderers}
-                              validationMode={'NoValidation'}
+                              validationMode="NoValidation"
                               onChange={async ({ data }) => {
                                 await setValues({ ...values, ...data });
                               }}
@@ -406,7 +406,7 @@ const IngestionCatalogConnectorCreation = ({
                                 data={configDefaults}
                                 schema={optionalProperties}
                                 renderers={customRenderers}
-                                validationMode={'NoValidation'}
+                                validationMode="NoValidation"
                                 onChange={({ data }) => setValues({ ...values, ...data })}
                               />
                             </AccordionDetails>

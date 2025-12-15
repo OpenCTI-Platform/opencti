@@ -65,7 +65,7 @@ export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
 
   return {
     title: contract.title,
-    slug: contract.slug
+    slug: contract.slug,
   };
 };
 
@@ -124,7 +124,7 @@ export const connectorsForManagers = async (context, user) => {
       filters: [{ key: 'catalog_id', values: ['EXISTS'] }],
       filterGroups: [],
     },
-    noFiltersChecking: true
+    noFiltersChecking: true,
   };
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR], args);
   return elements.map((conn) => completeConnector(conn));
@@ -140,14 +140,14 @@ export const connectorsForWorker = async (context, user) => {
     name: '[DEPRECATED] Internal sync manager',
     connector_scope: [],
     config: connectorConfig('sync'),
-    active: true
+    active: true,
   });
   registeredConnectors.push({
     id: 'playbook',
     name: '[DEPRECATED] Internal playbook manager',
     connector_scope: [],
     config: connectorConfig('playbook'),
-    active: true
+    active: true,
   });
   // endregion
   // Expose syncs
@@ -159,7 +159,7 @@ export const connectorsForWorker = async (context, user) => {
       name: `Sync ${sync.internal_id} queue`,
       connector_scope: [],
       config: connectorConfig(sync.internal_id),
-      active: true
+      active: true,
     });
   }
   // Expose playbooks
@@ -171,7 +171,7 @@ export const connectorsForWorker = async (context, user) => {
       name: `Playbook ${playbook.internal_id} queue`,
       connector_scope: [],
       config: connectorConfig(playbook.internal_id),
-      active: true
+      active: true,
     });
   }
   // Expose background task queues
@@ -181,7 +181,7 @@ export const connectorsForWorker = async (context, user) => {
       name: `Background task ${i} queue`,
       connector_scope: [],
       config: connectorConfig(`background-task-${i}`),
-      active: true
+      active: true,
     });
   }
   // Expose pirs
@@ -193,7 +193,7 @@ export const connectorsForWorker = async (context, user) => {
       name: `Pir ${pir.internal_id} queue`,
       connector_scope: [],
       config: connectorConfig(pir.internal_id),
-      active: true
+      active: true,
     });
   }
   return registeredConnectors;
@@ -212,7 +212,7 @@ const filterConnectors = (instances, type, scope, onlyAlive = false, onlyAuto = 
     filter((c) => (onlyContextual ? c.only_contextual === true : true)),
     filter((c) => (scope && c.connector_scope && c.connector_scope.length > 0
       ? includes(scope.toLowerCase(), map((s) => s.toLowerCase(), c.connector_scope))
-      : true))
+      : true)),
   )(instances);
 };
 

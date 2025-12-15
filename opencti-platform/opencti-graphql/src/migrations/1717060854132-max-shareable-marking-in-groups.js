@@ -65,7 +65,7 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration(
     message,
     READ_INDEX_INTERNAL_OBJECTS,
-    updateQuery
+    updateQuery,
   );
 
   logApp.info(`${message} > done`);

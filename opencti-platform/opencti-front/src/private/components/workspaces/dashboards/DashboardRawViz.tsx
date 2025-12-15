@@ -3,7 +3,7 @@ import WidgetText from '../../../../components/dashboard/WidgetText';
 import type { Widget } from '../../../../utils/widget/widget';
 
 interface DashboardRawVizProps {
-  widget: Widget
+  widget: Widget;
 }
 
 const DashboardRawViz = ({ widget }: DashboardRawVizProps) => {

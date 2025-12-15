@@ -110,7 +110,7 @@ export const jsonMapperExport = async (context: AuthContext, user: AuthUser, jso
       name,
       variables: variables ? JSON.parse(variables) : [],
       representations: parsedRepresentations,
-    }
+    },
   });
 };
 
@@ -119,8 +119,8 @@ export const deleteJsonMapper = async (context: AuthContext, user: AuthUser, jso
     filters: {
       mode: FilterMode.Or,
       filterGroups: [],
-      filters: [{ key: ['json_mapper_id'], values: [jsonMapperId] }]
-    }
+      filters: [{ key: ['json_mapper_id'], values: [jsonMapperId] }],
+    },
   };
   const ingesters = await fullEntitiesList<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
   // prevent deletion if an ingester uses the mapper

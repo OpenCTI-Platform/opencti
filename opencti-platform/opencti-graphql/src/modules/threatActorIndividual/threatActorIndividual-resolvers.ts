@@ -1,11 +1,11 @@
-import { addThreatActorIndividual, findThreatActorIndividualPaginated, findById, } from './threatActorIndividual-domain';
+import { addThreatActorIndividual, findThreatActorIndividualPaginated, findById } from './threatActorIndividual-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField
+  stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
 import { utcDate } from '../../utils/format';

@@ -88,7 +88,7 @@ const campaignQuery = graphql`
 
 type RootCampaignProps = {
   campaignId: string;
-  queryRef: PreloadedQuery<RootCampaignQuery>
+  queryRef: PreloadedQuery<RootCampaignQuery>;
 };
 
 const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
@@ -115,7 +115,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -136,7 +136,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   data={campaign}
                   attribution={['Intrusion-Set', 'Threat-Actor-Individual', 'Threat-Actor-Group']}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -161,7 +161,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <CampaignDeletion id={campaign.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -222,7 +222,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={campaign.id}/>
+                  <AIInsights id={campaign.id} />
                   <StixCoreObjectSecurityCoverage id={campaign.id} coverage={campaign.securityCoverage} />
                 </div>
               )}
@@ -231,8 +231,8 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               <Route
                 path="/"
                 element={
-                  <Campaign campaignData={campaign}/>
-                  }
+                  <Campaign campaignData={campaign} />
+                }
               />
               <Route
                 path="/knowledge"
@@ -242,19 +242,19 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <CampaignKnowledge campaignData={campaign} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={campaign}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -264,14 +264,14 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={campaignId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={campaign}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
@@ -290,7 +290,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
 };
 
 const Root = () => {
-  const { campaignId } = useParams() as { campaignId: string; };
+  const { campaignId } = useParams() as { campaignId: string };
   const queryRef = useQueryLoading<RootCampaignQuery>(campaignQuery, {
     id: campaignId,
   });

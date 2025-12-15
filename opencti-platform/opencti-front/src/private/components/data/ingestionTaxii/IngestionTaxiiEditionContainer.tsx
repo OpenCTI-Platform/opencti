@@ -30,7 +30,7 @@ const IngestionTaxiiEditionContainer: FunctionComponent<IngestionTaxiiEditionCon
   const { ingestionTaxii } = usePreloadedQuery(ingestionTaxiiEditionContainerQuery, queryRef);
 
   if (!ingestionTaxii) {
-    return <div/>;
+    return <div />;
   }
   return (
     <Drawer

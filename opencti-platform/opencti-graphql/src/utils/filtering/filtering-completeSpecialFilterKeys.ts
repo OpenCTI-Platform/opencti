@@ -1,38 +1,38 @@
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
-ALIAS_FILTER,
-BULK_SEARCH_KEYWORDS_FILTER,
-BULK_SEARCH_KEYWORDS_FILTER_KEYS,
-COMPUTED_RELIABILITY_FILTER,
-ID_SUBFILTER,
-IDS_FILTER,
-INSTANCE_DYNAMIC_REGARDING_OF,
-INSTANCE_REGARDING_OF,
-INSTANCE_RELATION_FILTER,
-INSTANCE_RELATION_TYPES_FILTER,
-IS_INFERRED_FILTER,
-isComplexConversionFilterKey,
-LAST_PIR_SCORE_DATE_FILTER_PREFIX,
-PIR_SCORE_FILTER_PREFIX,
-RELATION_DYNAMIC_FROM_FILTER,
-RELATION_DYNAMIC_SUBFILTER,
-RELATION_DYNAMIC_TO_FILTER,
-RELATION_FROM_FILTER,
-RELATION_FROM_ROLE_FILTER,
-RELATION_FROM_TYPES_FILTER,
-RELATION_INFERRED_SUBFILTER,
-RELATION_TO_FILTER,
-RELATION_TO_ROLE_FILTER,
-RELATION_TO_SIGHTING_FILTER,
-RELATION_TO_TYPES_FILTER,
-RELATION_TYPE_FILTER,
-RELATION_TYPE_SUBFILTER,
-SOURCE_RELIABILITY_FILTER,
-TYPE_FILTER,
-USER_SERVICE_ACCOUNT_FILTER,
-WORKFLOW_FILTER,
-X_OPENCTI_WORKFLOW_ID
+  ALIAS_FILTER,
+  BULK_SEARCH_KEYWORDS_FILTER,
+  BULK_SEARCH_KEYWORDS_FILTER_KEYS,
+  COMPUTED_RELIABILITY_FILTER,
+  ID_SUBFILTER,
+  IDS_FILTER,
+  INSTANCE_DYNAMIC_REGARDING_OF,
+  INSTANCE_REGARDING_OF,
+  INSTANCE_RELATION_FILTER,
+  INSTANCE_RELATION_TYPES_FILTER,
+  IS_INFERRED_FILTER,
+  isComplexConversionFilterKey,
+  LAST_PIR_SCORE_DATE_FILTER_PREFIX,
+  PIR_SCORE_FILTER_PREFIX,
+  RELATION_DYNAMIC_FROM_FILTER,
+  RELATION_DYNAMIC_SUBFILTER,
+  RELATION_DYNAMIC_TO_FILTER,
+  RELATION_FROM_FILTER,
+  RELATION_FROM_ROLE_FILTER,
+  RELATION_FROM_TYPES_FILTER,
+  RELATION_INFERRED_SUBFILTER,
+  RELATION_TO_FILTER,
+  RELATION_TO_ROLE_FILTER,
+  RELATION_TO_SIGHTING_FILTER,
+  RELATION_TO_TYPES_FILTER,
+  RELATION_TYPE_FILTER,
+  RELATION_TYPE_SUBFILTER,
+  SOURCE_RELIABILITY_FILTER,
+  TYPE_FILTER,
+  USER_SERVICE_ACCOUNT_FILTER,
+  WORKFLOW_FILTER,
+  X_OPENCTI_WORKFLOW_ID,
 } from './filtering-constants';
 import { ForbiddenAccess, FunctionalError, ResourceNotFoundError, UnsupportedError } from '../../config/errors';
 import { ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI, ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
@@ -158,7 +158,9 @@ export const adaptFilterToIdsFilterKey = (filter: Filter) => {
   const idsArray = [...IDS_ATTRIBUTES]; // the keys to handle additionally
 
   if (operator === 'nil' || operator === 'not_nil') { // nil and not_nil operators must have a single key
-    const filters = idsArray.map((idKey) => { return { ...filter, key: [idKey] }; });
+    const filters = idsArray.map((idKey) => {
+      return { ...filter, key: [idKey] };
+    });
     newFilterGroup = {
       mode: FilterMode.And,
       filters,
@@ -198,7 +200,7 @@ const adaptFilterToEntityTypeFilterKey = (filter: any) => {
         {
           ...filter,
           key: ['parent_types'],
-        }
+        },
       ],
       filterGroups: [],
     };
@@ -236,7 +238,7 @@ const adaptFilterToEntityTypeFilterKey = (filter: any) => {
       mode: operator === 'eq' ? FilterMode.Or : FilterMode.And,
       filters: [
         { ...filter, key: ['entity_type'], values },
-        { ...filter, key: ['parent_types'], values }
+        { ...filter, key: ['parent_types'], values },
       ],
       filterGroups: [],
     };
@@ -298,7 +300,7 @@ const adaptFilterToWorkflowFilterKey = async (context: AuthContext, user: AuthUs
 const adaptFilterValueToIsInferredFilter = (value: any, operator: FilterOperator | null | undefined = FilterOperator.Eq) => {
   const equivalentBooleanValueIsTrue = value === 'true';
   const wildcardOperator = (operator === 'eq' && equivalentBooleanValueIsTrue)
-  || (operator === 'not_eq' && !equivalentBooleanValueIsTrue)
+    || (operator === 'not_eq' && !equivalentBooleanValueIsTrue)
     ? 'wildcard'
     : 'not_wildcard';
   return {
@@ -324,7 +326,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context: AuthContext, use
   const authorTypes = [
     ENTITY_TYPE_IDENTITY_INDIVIDUAL,
     ENTITY_TYPE_IDENTITY_ORGANIZATION,
-    ENTITY_TYPE_IDENTITY_SYSTEM
+    ENTITY_TYPE_IDENTITY_SYSTEM,
   ];
   const reliabilityFilter = {
     mode: FilterMode.And,
@@ -374,7 +376,7 @@ const adaptFilterToFromToTypesFilterKeys = (filter: Filter) => {
   const side = filterKey === RELATION_FROM_TYPES_FILTER ? 'from' : 'to';
   const nested = [
     { key: 'types', operator: filter.operator, values: filter.values },
-    { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+    { key: 'role', operator: 'wildcard', values: [`*_${side}`] },
   ];
   const newFilter = { key: ['connections'], nested, mode: filter.mode, values: [] };
   return { newFilter };
@@ -416,11 +418,11 @@ const adaptFilterToFromOrToFilterKeys = (filter: Filter) => {
     const filterGroupsForValues = values.map((val) => {
       const nestedFrom = [
         { key: nestedKey, operator, values: [val] },
-        { key: 'role', operator: FilterOperator.Wildcard, values: ['*_from'] }
+        { key: 'role', operator: FilterOperator.Wildcard, values: ['*_from'] },
       ];
       const nestedTo = [
         { key: nestedKey, operator, values: [val] },
-        { key: 'role', operator: FilterOperator.Wildcard, values: ['*_to'] }
+        { key: 'role', operator: FilterOperator.Wildcard, values: ['*_to'] },
       ];
       return {
         mode: globalMode,
@@ -436,11 +438,11 @@ const adaptFilterToFromOrToFilterKeys = (filter: Filter) => {
   } else if (operator === 'nil' || operator === 'not_nil') {
     const nestedFrom = [
       { key: nestedKey, operator, values: [] },
-      { key: 'role', operator: 'wildcard', values: ['*_from'] }
+      { key: 'role', operator: 'wildcard', values: ['*_from'] },
     ];
     const nestedTo = [
       { key: nestedKey, operator, values: [] },
-      { key: 'role', operator: 'wildcard', values: ['*_to'] }
+      { key: 'role', operator: 'wildcard', values: ['*_to'] },
     ];
     const innerFilters = [{ key: ['connections'], nested: nestedFrom, mode, values: [] }, { key: ['connections'], nested: nestedTo, mode, values: [] }];
     newFilterGroup = {
@@ -474,7 +476,7 @@ const adaptFilterToFromToIdsFilterKeys = async (context: AuthContext, user: Auth
   const side = filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER ? 'from' : 'to';
   const nested = [
     { key: 'internal_id', operator: filter.operator, values: isDynamic ? dynamicIds : filter.values },
-    { key: 'role', operator: 'wildcard', values: [`*_${side}`] }
+    { key: 'role', operator: 'wildcard', values: [`*_${side}`] },
   ];
   const newFilter = { key: ['connections'], nested, mode: filter.mode, values: [] };
   return { newFilter };
@@ -538,7 +540,7 @@ const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, 
     nested: [
       { ...filter, key: pirKey },
       { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
-    ]
+    ],
   };
   return { newFilter, newFilterGroup: undefined };
 };
@@ -558,7 +560,7 @@ const adaptFilterToServiceAccountFilterKey = (filter: Filter) => {
           values: [],
           operator: FilterOperator.NotNil,
         },
-          filter],
+        filter],
         filterGroups: [],
       };
     }
@@ -572,7 +574,7 @@ const adaptFilterToServiceAccountFilterKey = (filter: Filter) => {
         values: [],
         operator: FilterOperator.Nil,
       },
-        filter],
+      filter],
       filterGroups: [],
     };
   } else {
@@ -589,7 +591,7 @@ const adaptFilterForMetricsFilterKeys = async (filter: Filter) => {
       { key: 'name', values: [filter.key], operator: FilterOperator.Eq },
       { key: 'value', values: filter.values, operator: filter.operator, mode: filter.mode },
     ],
-    values: []
+    values: [],
   };
   return { newFilter, newFilterGroup: undefined };
 };
@@ -610,7 +612,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
   const { newFilter: sourceReliabilityFilter, newFilterGroup: sourceReliabilityFilterGroup } = await adaptFilterToSourceReliabilityFilterKey(
     context,
     user,
-    { ...filter, key: [SOURCE_RELIABILITY_FILTER] }
+    { ...filter, key: [SOURCE_RELIABILITY_FILTER] },
   );
   const isConditionAdditional = operator === 'not_eq' || operator === 'nil'; // if we have one of these operators, the condition on reliability and the condition on source reliability should be both respected
   // else, (the condition on reliability should be respected) OR (reliability is empty and the condition should be respected on source_reliability)
@@ -651,7 +653,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
             values: [],
             operator: FilterOperator.Nil,
             mode: FilterMode.Or,
-          }
+          },
         ],
         filterGroups: sourceReliabilityFilterGroup ? [sourceReliabilityFilterGroup] : [],
       }],
@@ -666,7 +668,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
           ...filter,
           key: ['x_opencti_reliability'],
         },
-        sourceReliabilityFilter
+        sourceReliabilityFilter,
       ],
       filterGroups: [],
     } : {
@@ -694,7 +696,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
 export const completeSpecialFilterKeys = async (
   context: AuthContext,
   user: AuthUser,
-  inputFilters: FilterGroup
+  inputFilters: FilterGroup,
 ): Promise<FilterGroup> => {
   const { filters = [], filterGroups = [] } = inputFilters;
   const finalFilters = [];
@@ -847,7 +849,7 @@ export const completeSpecialFilterKeys = async (
             const filterKeys = Array.isArray(v.key) ? v.key : [v.key];
             return { ...v, key: filterKeys.map((k: any) => `${k}.${v.key}`) };
           }),
-          filterGroups: []
+          filterGroups: [],
         });
       } else if (definition.format === 'nested') {
         finalFilters.push({ key, operator: filter.operator, nested: filter.values, mode: filter.mode, values: [] });

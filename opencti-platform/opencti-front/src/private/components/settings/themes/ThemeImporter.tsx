@@ -58,7 +58,9 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
           'themeImport',
         );
       },
-      onCompleted: () => { handleRefetch(); },
+      onCompleted: () => {
+        handleRefetch();
+      },
     });
   };
 
@@ -70,10 +72,10 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
         size="small"
         component="label"
         onChange={handleImport}
-        data-testid='import-theme-btn'
+        data-testid="import-theme-btn"
       >
         <FileUploadOutlined fontSize="small" />
-        <VisuallyHiddenInput type="file" accept={'application/json'} onClick={handleClick} />
+        <VisuallyHiddenInput type="file" accept="application/json" onClick={handleClick} />
       </IconButton>
     </Tooltip>
   );

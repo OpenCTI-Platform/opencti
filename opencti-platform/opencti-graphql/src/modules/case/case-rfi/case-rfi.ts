@@ -13,11 +13,11 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
     id: 'case-rfi',
     name: ENTITY_TYPE_CONTAINER_CASE_RFI,
     category: ENTITY_TYPE_CONTAINER_CASE,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CONTAINER_CASE_RFI]: [{ src: NAME_FIELD }, { src: 'created' }]
+      [ENTITY_TYPE_CONTAINER_CASE_RFI]: [{ src: NAME_FIELD }, { src: 'created' }],
     },
     resolvers: {
       name(data: object) {
@@ -51,7 +51,7 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
   representative: (stix: StixCaseRfi) => {
     return stix.name;
   },
-  converter_2_1: convertCaseRfiToStix_2_1
+  converter_2_1: convertCaseRfiToStix_2_1,
 };
 
 registerDefinition(CASE_RFI_DEFINITION);

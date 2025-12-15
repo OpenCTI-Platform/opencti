@@ -42,9 +42,9 @@ const ingestionJsonPopoverResetStateMutation = graphql`
 `;
 
 interface IngestionJsonPopoverProps {
-  ingestionJsonId: string
-  running?: boolean | null
-  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined
+  ingestionJsonId: string;
+  running?: boolean | null;
+  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined;
 }
 
 const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({

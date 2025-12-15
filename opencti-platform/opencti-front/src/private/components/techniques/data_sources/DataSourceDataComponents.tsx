@@ -46,14 +46,14 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
                 return (
                   <ListItemText
                     key={idx}
-                    primary={
+                    primary={(
                       <Skeleton
                         animation="wave"
                         variant="rectangular"
                         width="90%"
                         height="100%"
                       />
-                    }
+                    )}
                   />
                 );
               }
@@ -63,7 +63,7 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
                   dense={true}
                   divider={true}
                   disablePadding={true}
-                  secondaryAction={
+                  secondaryAction={(
                     <IconButton
                       aria-label="Remove"
                       onClick={() => removeDataComponent(dataComponent.id)}
@@ -71,7 +71,7 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
                     >
                       <LinkOff />
                     </IconButton>
-                  }
+                  )}
                 >
                   <ListItemButton
                     component={Link}

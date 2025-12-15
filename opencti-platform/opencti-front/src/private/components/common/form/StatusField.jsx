@@ -68,14 +68,14 @@ class StatusField extends Component {
       keyword: '',
       statuses: defaultStatus
         ? [
-          {
-            label: defaultStatus.template.name,
-            color: defaultStatus.template.color,
-            value: defaultStatus.id,
-            order: defaultStatus.order,
-            type: defaultStatus.type,
-          },
-        ]
+            {
+              label: defaultStatus.template.name,
+              color: defaultStatus.template.color,
+              value: defaultStatus.id,
+              order: defaultStatus.order,
+              type: defaultStatus.type,
+            },
+          ]
         : [],
     };
   }
@@ -102,13 +102,13 @@ class StatusField extends Component {
       first: 100,
       filters: this.props.type
         ? {
-          mode: 'and',
-          filterGroups: [],
-          filters: [
-            { key: 'type', values: [this.props.type] },
-            { key: 'scope', values: [this.props.scope || StatusScopeEnum.GLOBAL] },
-          ],
-        }
+            mode: 'and',
+            filterGroups: [],
+            filters: [
+              { key: 'type', values: [this.props.type] },
+              { key: 'scope', values: [this.props.scope || StatusScopeEnum.GLOBAL] },
+            ],
+          }
         : null,
       orderBy: 'order',
       orderMode: 'asc',

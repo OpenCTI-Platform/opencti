@@ -75,7 +75,7 @@ const Incidents: FunctionComponent = () => {
   } as UsePreloadedPaginationFragment<IncidentsLinesQuery>;
 
   return (
-    <div data-testid='incident-page'>
+    <div data-testid="incident-page">
       <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Incidents'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -91,7 +91,7 @@ const Incidents: FunctionComponent = () => {
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Incident' />
+                <StixCoreObjectForms entityType="Incident" />
                 <IncidentCreation paginationOptions={queryPaginationOptions} />
               </div>
             </Security>

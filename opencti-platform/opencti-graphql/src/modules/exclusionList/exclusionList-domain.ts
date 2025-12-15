@@ -96,7 +96,7 @@ const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser,
     file_id: upload.id,
     internal_id: exclusionListInternalId,
     exclusion_list_file_size: byteLength,
-    exclusion_list_values_count: linesNumber
+    exclusion_list_values_count: linesNumber,
   };
   const createdExclusionList = createInternalObject<StoreEntityExclusionList>(context, user, exclusionListToCreate, ENTITY_TYPE_EXCLUSION_LIST);
   await refreshExclusionListStatus();
@@ -134,7 +134,7 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input?.map((i) => i.key).join(', ')}\` for exclusion list \`${element.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_EXCLUSION_LIST, input }
+    context_data: { id, entity_type: ENTITY_TYPE_EXCLUSION_LIST, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_EXCLUSION_LIST].EDIT_TOPIC, element, user);
 };

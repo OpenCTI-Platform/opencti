@@ -6,9 +6,9 @@ import Alert from '@mui/material/Alert';
 import { FieldProps } from 'formik';
 
 interface CsvMapperRepresentationAttributeOptionProps extends FieldProps<string> {
-  placeholder: string
-  info?: string
-  tooltip?: string
+  placeholder: string;
+  info?: string;
+  tooltip?: string;
 }
 
 const CsvMapperRepresentationAttributeOption = ({
@@ -32,13 +32,13 @@ const CsvMapperRepresentationAttributeOption = ({
           placeholder={placeholder}
         />
         {tooltip && (
-        <Tooltip title={tooltip}>
-          <InformationOutline
-            fontSize="small"
-            color="primary"
-            style={{ cursor: 'default' }}
-          />
-        </Tooltip>
+          <Tooltip title={tooltip}>
+            <InformationOutline
+              fontSize="small"
+              color="primary"
+              style={{ cursor: 'default' }}
+            />
+          </Tooltip>
         )}
       </div>
       {info && <Alert style={{ marginTop: 8 }} severity="info">{info}</Alert>}

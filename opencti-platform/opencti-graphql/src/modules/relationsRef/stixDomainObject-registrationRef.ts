@@ -11,7 +11,7 @@ import {
   objectParticipant,
   objects,
   operatingSystems,
-  samples
+  samples,
 } from '../../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -34,7 +34,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY
+  ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
@@ -50,7 +50,7 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INFRASTRUCTURE, [k
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [
   samples, operatingSystems,
   killChainPhases,
-  objectOrganization
+  objectOrganization,
 ]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_TOOL, [killChainPhases, objectOrganization]);
 

@@ -22,8 +22,8 @@ const convertSecurityCoverageToStix = (instance: StoreEntitySecurityCoverage): S
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 

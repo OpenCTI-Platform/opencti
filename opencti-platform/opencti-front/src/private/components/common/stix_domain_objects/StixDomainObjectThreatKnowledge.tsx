@@ -146,7 +146,7 @@ interface StixDomainObjectThreatKnowledgeProps {
 }
 
 const StixDomainObjectThreatKnowledge: FunctionComponent<
-StixDomainObjectThreatKnowledgeProps
+  StixDomainObjectThreatKnowledgeProps
 /*
   TODO
   we should reword the component to be able to manipulate data easier
@@ -492,14 +492,14 @@ StixDomainObjectThreatKnowledgeProps
             </FormControl>
             <FormControlLabel
               style={{ marginTop: 20 }}
-              control={
+              control={(
                 <Switch
                   checked={nestedRelationships}
                   onChange={handleChangeNestedRelationships}
                   name="nested-relationships"
                   color="primary"
                 />
-              }
+              )}
               label={t_i18n('Display nested relationships')}
             />
           </Popover>

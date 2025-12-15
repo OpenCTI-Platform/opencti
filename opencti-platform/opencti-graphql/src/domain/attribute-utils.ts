@@ -133,5 +133,5 @@ export const INTERNAL_ATTRIBUTES = [
 ];
 
 export const INTERNAL_REFS = [
-  'objectOrganization'
+  'objectOrganization',
 ];

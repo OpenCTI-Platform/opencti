@@ -52,15 +52,15 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
                 dense={true}
                 divider={true}
                 disablePadding={true}
-                secondaryAction={
+                secondaryAction={(
                   <StixCoreRelationshipPopover
                     objectId={securityCoverage.id}
-                    connectionKey={'Pagination_securityPlatforms'}
+                    connectionKey="Pagination_securityPlatforms"
                     stixCoreRelationshipId={securityPlatformEdge.node.id}
                     paginationOptions={paginationOptions}
                     isCoverage={true}
                   />
-                }
+                )}
               >
                 <ListItemButton
                   component={Link}
@@ -71,7 +71,7 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
                     <ItemIcon color={theme.palette.primary.main} type="security-platform" />
                   </ListItemIcon>
                   <ListItemText
-                    primary={
+                    primary={(
                       <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                         <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{securityPlatform?.name}</Typography>
                         <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
@@ -81,7 +81,7 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
                           />
                         </Box>
                       </Box>
-                    }
+                    )}
                   />
                 </ListItemButton>
               </ListItem>

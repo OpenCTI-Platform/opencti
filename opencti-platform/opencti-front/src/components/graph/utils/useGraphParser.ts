@@ -8,48 +8,48 @@ import GRAPH_IMAGES from './graphImages';
 import { itemColor } from '../../../utils/Colors';
 
 export interface ObjectToParse {
-  id: string
-  entity_type: string
-  relationship_type: string
-  parent_types: string[]
-  types?: string[] | null | undefined
-  is_inferred: boolean
-  observable_value?: string
-  observableName?: string
-  x_opencti_color?: string
-  x_opencti_additional_names?: string[]
+  id: string;
+  entity_type: string;
+  relationship_type: string;
+  parent_types: string[];
+  types?: string[] | null | undefined;
+  is_inferred: boolean;
+  observable_value?: string;
+  observableName?: string;
+  x_opencti_color?: string;
+  x_opencti_additional_names?: string[];
   hashes?: {
-    algorithm: string
-    hash: string
-  }[]
-  color?: string
-  numberOfConnectedElement?: number
+    algorithm: string;
+    hash: string;
+  }[];
+  color?: string;
+  numberOfConnectedElement?: number;
   createdBy: {
-    id: string
-    name: string
-  }
-  created: string
-  start_time: string
-  stop_time: string
-  first_seen: string
-  last_seen: string
+    id: string;
+    name: string;
+  };
+  created: string;
+  start_time: string;
+  stop_time: string;
+  first_seen: string;
+  last_seen: string;
   from?: {
-    id: string
-    relationship_type?: string
-    entity_type?: string
-  }
+    id: string;
+    relationship_type?: string;
+    entity_type?: string;
+  };
   to?: {
-    id: string
-    relationship_type?: string
-    entity_type?: string
-  }
+    id: string;
+    relationship_type?: string;
+    entity_type?: string;
+  };
   objectMarking: {
-    id: string
-    definition: string
-  }[]
+    id: string;
+    definition: string;
+  }[];
   // Other containers associated to this object.
   // Used for correlation graphs.
-  linkedContainers?: ObjectToParse[]
+  linkedContainers?: ObjectToParse[];
 }
 
 const useGraphParser = () => {
@@ -91,7 +91,8 @@ const useGraphParser = () => {
   const getNodeLabel = (data: ObjectToParse) => {
     if (data.parent_types.includes('basic-relationship')) {
       return t_i18n(`relationship_${data.relationship_type}`);
-    } if (data.entity_type === 'StixFile' && data.observable_value) {
+    }
+    if (data.entity_type === 'StixFile' && data.observable_value) {
       return truncate(data.observable_value, 20);
     }
     return truncate(
@@ -110,7 +111,8 @@ const useGraphParser = () => {
   const getNodeName = (data: ObjectToParse) => {
     if (data.relationship_type) {
       return getRelationshipName(data, true);
-    } if (data.entity_type === 'StixFile' && data.observable_value) {
+    }
+    if (data.entity_type === 'StixFile' && data.observable_value) {
       const hashAlgorithms = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];
       // Find if the observable_value matches one of the hashes
       let displayValue = data.observable_value;
@@ -129,17 +131,17 @@ const useGraphParser = () => {
       // List of other hashes to display (without duplicating the observable_value)
       const hashesList = data.hashes && Array.isArray(data.hashes)
         ? data.hashes
-          .filter((hashObj) => hashObj.hash !== displayValue)
-          .map((hashObj) => `${hashObj.algorithm}: ${hashObj.hash}`)
-          .join('\n')
+            .filter((hashObj) => hashObj.hash !== displayValue)
+            .map((hashObj) => `${hashObj.algorithm}: ${hashObj.hash}`)
+            .join('\n')
         : '';
       // Add name (observableName) if available and different from observable_value
       const additionalInfo = (data.observableName && data.observableName !== displayValue) ? `\nName: ${data.observableName}` : '';
       // Add additional_names if available and different from `observableName`.
       const additionalNames = data.x_opencti_additional_names && Array.isArray(data.x_opencti_additional_names)
         ? data.x_opencti_additional_names
-          .filter((additionalName) => additionalName !== data.observableName)
-          .join(', ')
+            .filter((additionalName) => additionalName !== data.observableName)
+            .join(', ')
         : '';
       const additionalNamesString = additionalNames ? `\n${t_i18n('Additional Names')}: ${additionalNames}` : '';
       return `${label}: ${displayValue}${hashesList ? `\n${hashesList}` : ''}${additionalInfo}${additionalNamesString}\n${dateFormat(defaultDate(data))}`;

@@ -44,11 +44,11 @@ export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
 `;
 
 interface StixCoreObjectOpinionsRadarDialogProps {
-  queryRef: PreloadedQuery<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>
-  stixCoreObjectId: string
-  fetchQuery: () => void
-  fetchDistributionQuery: () => void
-  opinionOptions: { label: string, value: number }[]
+  queryRef: PreloadedQuery<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>;
+  stixCoreObjectId: string;
+  fetchQuery: () => void;
+  fetchDistributionQuery: () => void;
+  opinionOptions: { label: string; value: number }[];
 }
 
 interface OpinionAddInput {
@@ -67,7 +67,7 @@ interface OpinionAddSubmit {
 const OPINION_TYPE = 'Opinion';
 
 const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
-StixCoreObjectOpinionsRadarDialogProps
+  StixCoreObjectOpinionsRadarDialogProps
 > = ({
   queryRef,
   stixCoreObjectId,
@@ -298,7 +298,7 @@ const StixCoreObjectOpinionsDialog: FunctionComponent<Omit<StixCoreObjectOpinion
   );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <StixCoreObjectOpinionsDialogComponent {...props} queryRef={queryRef} fetchQuery={fetchQuery}/>
+      <StixCoreObjectOpinionsDialogComponent {...props} queryRef={queryRef} fetchQuery={fetchQuery} />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

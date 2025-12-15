@@ -3,8 +3,8 @@ import React, { FunctionComponent } from 'react';
 import MarkdownDisplay from './MarkdownDisplay';
 
 interface ItemHistoryProps {
-  username: string,
-  message: string,
+  username: string;
+  message: string;
 }
 
 const ItemHistory: FunctionComponent<ItemHistoryProps> = ({

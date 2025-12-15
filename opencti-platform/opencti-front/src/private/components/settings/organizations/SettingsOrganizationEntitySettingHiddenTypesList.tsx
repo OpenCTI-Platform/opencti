@@ -21,8 +21,8 @@ const settingsOrganizationEntitySettingHiddenTypesListQuery = graphql`
 `;
 
 const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionComponent<{
-  targetType: string
-  queryRef: PreloadedQuery<SettingsOrganizationEntitySettingHiddenTypesListQuery>
+  targetType: string;
+  queryRef: PreloadedQuery<SettingsOrganizationEntitySettingHiddenTypesListQuery>;
 }> = ({
   targetType,
   queryRef,
@@ -36,20 +36,22 @@ const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionCompone
       targetType={targetType}
       nodes={organizations}
       label={t_i18n('Hidden in organizations')}
-      link={'/dashboard/settings/accesses/organizations/'}
-      entityType={'Organization'}
+      link="/dashboard/settings/accesses/organizations/"
+      entityType="Organization"
     />
   );
 };
 const SettingsOrganizationEntitySettingHiddenTypesList: FunctionComponent<{ targetType: string }> = ({ targetType }) => {
   const queryRef = useQueryLoading<SettingsOrganizationEntitySettingHiddenTypesListQuery>(settingsOrganizationEntitySettingHiddenTypesListQuery, {});
-  return <>
-    {queryRef && (
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <SettingsOrganizationEntitySettingHiddenTypesListComponent queryRef={queryRef} targetType={targetType} />
-      </React.Suspense>
-    )}
-  </>;
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <SettingsOrganizationEntitySettingHiddenTypesListComponent queryRef={queryRef} targetType={targetType} />
+        </React.Suspense>
+      )}
+    </>
+  );
 };
 
 export default SettingsOrganizationEntitySettingHiddenTypesList;

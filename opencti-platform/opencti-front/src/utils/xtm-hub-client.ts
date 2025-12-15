@@ -1,10 +1,10 @@
 import { RootSettings$data } from '../private/__generated__/RootSettings.graphql';
 
 interface FetchDocumentParams {
-  settings: RootSettings$data
-  serviceInstanceId: string
-  fileId: string
-  userPlatformToken: string
+  settings: RootSettings$data;
+  serviceInstanceId: string;
+  fileId: string;
+  userPlatformToken: string;
 }
 
 const XtmHubClient = {

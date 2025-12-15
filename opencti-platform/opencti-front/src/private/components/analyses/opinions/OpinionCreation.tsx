@@ -70,14 +70,14 @@ export const opinionCreationMutation = graphql`
 `;
 
 interface OpinionAddInput {
-  opinion: string
-  explanation: string
-  confidence: number | undefined
-  createdBy?: FieldOption
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  opinion: string;
+  explanation: string;
+  confidence: number | undefined;
+  createdBy?: FieldOption;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface OpinionFormProps {

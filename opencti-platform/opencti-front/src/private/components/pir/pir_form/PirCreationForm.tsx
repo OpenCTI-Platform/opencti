@@ -27,8 +27,8 @@ import { PirCreationFormGeneralSettingsRedisStreamQuery } from './__generated__/
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface PirCreationFormProps {
-  onCancel: () => void
-  onSubmit: (data: PirCreationFormData) => void
+  onCancel: () => void;
+  onSubmit: (data: PirCreationFormData) => void;
 }
 
 const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
@@ -95,13 +95,15 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
               />
 
               <Form>
-                {step === 0 && <>
-                  {redisQueryRef && (
-                    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                      <PirCreationFormGeneralSettings redisQueryRef={redisQueryRef} />
-                    </React.Suspense>
-                  )}
-                </>}
+                {step === 0 && (
+                  <>
+                    {redisQueryRef && (
+                      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                        <PirCreationFormGeneralSettings redisQueryRef={redisQueryRef} />
+                      </React.Suspense>
+                    )}
+                  </>
+                )}
                 {step === 1 && <PirCreationFormCriteria />}
               </Form>
             </DialogContent>

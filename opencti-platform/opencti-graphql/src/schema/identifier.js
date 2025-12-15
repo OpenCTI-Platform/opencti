@@ -73,7 +73,7 @@ export const STATIC_MARKING_IDS = [
   MARKING_TLP_GREEN,
   MARKING_TLP_AMBER,
   MARKING_TLP_AMBER_STRICT,
-  MARKING_TLP_RED
+  MARKING_TLP_RED,
 ];
 const STATIC_STANDARD_IDS = [
   { id: MARKING_TLP_CLEAR_ID, data: { definition_type: 'TLP', definition: 'TLP:WHITE' } },
@@ -81,7 +81,7 @@ const STATIC_STANDARD_IDS = [
   { id: MARKING_TLP_GREEN_ID, data: { definition_type: 'TLP', definition: 'TLP:GREEN' } },
   { id: MARKING_TLP_AMBER_ID, data: { definition_type: 'TLP', definition: 'TLP:AMBER' } },
   { id: MARKING_TLP_AMBER_STRICT_ID, data: { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' } },
-  { id: MARKING_TLP_RED_ID, data: { definition_type: 'TLP', definition: 'TLP:RED' } }
+  { id: MARKING_TLP_RED_ID, data: { definition_type: 'TLP', definition: 'TLP:RED' } },
 ];
 const getStaticIdFromData = (data) => {
   const findStatic = R.find((s) => R.equals(s.data, data), STATIC_STANDARD_IDS);
@@ -252,7 +252,7 @@ const stixBaseRelationshipContribution = {
     relationship: [
       { src: 'relationship_type' },
       { src: 'from', dest: 'source_ref', dependencies: ['to'] }, { src: 'to', dest: 'target_ref', dependencies: ['from'] },
-      { src: 'start_time' }, { src: 'stop_time' }
+      { src: 'start_time' }, { src: 'stop_time' },
     ],
   },
   resolvers: {
@@ -261,7 +261,7 @@ const stixBaseRelationshipContribution = {
     },
     to(to) {
       return to?.standard_id;
-    }
+    },
   },
 };
 
@@ -270,7 +270,7 @@ const stixBaseSightingContribution = {
     sighting: [
       { src: 'relationship_type', dest: 'type' },
       { src: 'from', dest: 'sighting_of_ref', dependencies: ['to'] }, { src: 'to', dest: 'where_sighted_refs', dependencies: ['from'] },
-      { src: 'first_seen' }, { src: 'last_seen' }
+      { src: 'first_seen' }, { src: 'last_seen' },
     ],
   },
   resolvers: {
@@ -282,7 +282,7 @@ const stixBaseSightingContribution = {
     },
     to(to) {
       return [to?.standard_id];
-    }
+    },
   },
 };
 
@@ -290,7 +290,7 @@ const identifierContributions = [
   stixBaseCyberObservableContribution,
   stixBaseEntityContribution,
   stixBaseRelationshipContribution,
-  stixBaseSightingContribution
+  stixBaseSightingContribution,
 ];
 export const isSupportedStixType = (stixType) => [...identifierContributions.map((identifier) => Object.keys(identifier.definition)).flat()
   .map((type) => type.toLowerCase()), 'identity', 'location', 'file', 'relationship', 'sighting', 'threat-actor'].includes(stixType);
@@ -523,7 +523,7 @@ export const generateHashedObservableStandardIds = (instance) => {
         .flatMap(([hashKey, hashValue]) => {
           if (!hashValue) return [];
           return generateStandardId(entity_type, {
-            hashes: { [hashKey]: hashValue }
+            hashes: { [hashKey]: hashValue },
           });
         });
       ids.push(...hashIds);

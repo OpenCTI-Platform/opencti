@@ -28,7 +28,7 @@ const knowledgeFragment = graphql`
 `;
 
 interface PirKnowledgeProps {
-  data: PirKnowledgeFragment$key
+  data: PirKnowledgeFragment$key;
 }
 
 const PirKnowledge = ({ data }: PirKnowledgeProps) => {

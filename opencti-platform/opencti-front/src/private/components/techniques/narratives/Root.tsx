@@ -108,7 +108,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -122,10 +122,10 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                   ]}
                   data={narrative}
                 />
-              }
+              )}
             />
           </Routes>
-          <div style={{ paddingRight }} >
+          <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
               { label: t_i18n('Narratives'), link: '/dashboard/techniques/narratives' },
@@ -147,7 +147,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <NarrativeDeletion id={narrative.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -216,19 +216,19 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <NarrativeKnowledge narrativeData={narrative} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={narrative}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -238,14 +238,14 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={narrativeId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={narrative}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
@@ -264,7 +264,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
 };
 
 const Root = () => {
-  const { narrativeId } = useParams() as { narrativeId: string; };
+  const { narrativeId } = useParams() as { narrativeId: string };
   const queryRef = useQueryLoading<RootNarrativeQuery>(narrativeQuery, {
     id: narrativeId,
   });

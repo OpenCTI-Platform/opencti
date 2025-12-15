@@ -64,7 +64,7 @@ const ItemScore = (props) => {
         gutterBottom={true}
         style={{ marginTop: 8, width: '100%' }}
       >
-        {'-'}
+        -
       </Typography>
     );
   }

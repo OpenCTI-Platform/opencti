@@ -66,7 +66,7 @@ const threatActorGroupFragment = graphql`
 `;
 
 interface ThreatActorGroupProps {
-  threatActorGroupData: ThreatActorGroup_ThreatActorGroup$key
+  threatActorGroupData: ThreatActorGroup_ThreatActorGroup$key;
 }
 
 const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupData }) => {

@@ -178,7 +178,7 @@ const authenticateForPublic = async (req, res, next) => {
   const { error, collection, streamFilters } = await computeUserAndCollection(req, res, {
     context,
     user: req.user,
-    id: req.params.id
+    id: req.params.id,
   });
   if (error || (!collection?.stream_public && !context.user)) {
     res.statusMessage = 'You are not authenticated, please check your credentials';
@@ -262,7 +262,9 @@ const createSseMiddleware = () => {
       setDelay: (d) => {
         channel.delay = d;
       },
-      setLastEventId: (id) => { lastEventId = id; },
+      setLastEventId: (id) => {
+        lastEventId = id;
+      },
       connected: () => !res.finished,
       sendEvent: (eventId, topic, event) => {
         // Write on an already terminated response
@@ -430,7 +432,7 @@ const createSseMiddleware = () => {
       const allRelOptions = {
         fromOrToId: stix.extensions[STIX_EXT_OCTI].id,
         indices: [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS],
-        callback: allRelCallback
+        callback: allRelCallback,
       };
       const relationTypes = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP];
       await fullRelationsList(context, req.user, relationTypes, allRelOptions);
@@ -621,7 +623,7 @@ const createSseMiddleware = () => {
                     // So we need to list the containers with stream filters restricted through type and the connected element rel
                     const queryOptions = await convertFiltersToQueryOptions(streamFilters, {
                       defaultTypes: [ENTITY_TYPE_CONTAINER], // Looking only for containers
-                      extraFilters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }] // Connected rel
+                      extraFilters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }], // Connected rel
                     });
                     const countRelatedContainers = await elCount(context, user, streamQueryIndices, queryOptions);
                     // At least one container is matching the filter, so publishing the event
@@ -699,7 +701,7 @@ const createSseMiddleware = () => {
         const queryOptions = await convertFiltersToQueryOptions(streamFilters, {
           defaultTypes: [STIX_CORE_RELATIONSHIPS, STIX_SIGHTING_RELATIONSHIP, ABSTRACT_STIX_OBJECT],
           after: startIsoDate,
-          before: recoverIsoDate
+          before: recoverIsoDate,
         });
         queryOptions.callback = queryCallback;
         await elList(context, user, streamQueryIndices, queryOptions);

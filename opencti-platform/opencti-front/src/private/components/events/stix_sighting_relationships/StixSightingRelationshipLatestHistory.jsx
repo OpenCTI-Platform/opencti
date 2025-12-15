@@ -4,14 +4,14 @@ import StixSightingRelationshipHistoryLines, { stixCoreObjectHistoryLinesQuery }
 import { useFormatter } from 'src/components/i18n';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 
-const StixSightingRelationshipLatestHistory = ({stixSightingRelationshipId}) => {
+const StixSightingRelationshipLatestHistory = ({ stixSightingRelationshipId }) => {
   const { t_i18n } = useFormatter();
   const paginationOptions = {
     filters: {
       mode: 'and',
       filters: [
-        {key: 'context_data.id', values: [stixSightingRelationshipId]},
-        {key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge']},
+        { key: 'context_data.id', values: [stixSightingRelationshipId] },
+        { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
       ],
       filterGroups: [],
     },
@@ -37,8 +37,8 @@ const StixSightingRelationshipLatestHistory = ({stixSightingRelationshipId}) => 
             paginationOptions={paginationOptions}
           />
         </React.Suspense>
-            )
-          }
+      )
+      }
     </>
   );
 };

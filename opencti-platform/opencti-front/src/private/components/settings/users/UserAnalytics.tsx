@@ -56,7 +56,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
   const userServiceAccount = user.user_service_account;
   const isEnterpriseEdition = useEnterpriseEdition();
   if (!isEnterpriseEdition) {
-    return <EnterpriseEdition feature={'User activity'} />;
+    return <EnterpriseEdition feature="User activity" />;
   }
   return (
     <>
@@ -164,38 +164,38 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
           />
         </Grid>
         {!userServiceAccount && (
-        <Grid item xs={4}>
-          <AuditsHorizontalBars
-            variant={undefined}
-            startDate={undefined}
-            endDate={undefined}
-            height={350}
-            parameters={{
-              title: t_i18n('Top global search keywords'),
-            }}
-            dataSelection={[
-              {
-                attribute: 'context_data.search',
-                date_attribute: 'created_at',
-                number: 20,
-                filters: {
-                  mode: 'and',
-                  filters: [
-                    {
-                      key: 'members_user',
-                      values: [user.id],
-                    },
-                  ],
-                  filterGroups: [],
+          <Grid item xs={4}>
+            <AuditsHorizontalBars
+              variant={undefined}
+              startDate={undefined}
+              endDate={undefined}
+              height={350}
+              parameters={{
+                title: t_i18n('Top global search keywords'),
+              }}
+              dataSelection={[
+                {
+                  attribute: 'context_data.search',
+                  date_attribute: 'created_at',
+                  number: 20,
+                  filters: {
+                    mode: 'and',
+                    filters: [
+                      {
+                        key: 'members_user',
+                        values: [user.id],
+                      },
+                    ],
+                    filterGroups: [],
+                  },
                 },
-              },
-            ]}
-          />
-        </Grid>
+              ]}
+            />
+          </Grid>
         )}
         <Grid item xs={4}>
           <AuditsDonut
-            variant={''}
+            variant=""
             startDate={undefined}
             endDate={undefined}
             height={350}

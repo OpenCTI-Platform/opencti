@@ -9,10 +9,10 @@ import stopEvent from '../../../../utils/domEvent';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
 interface EmailTemplatePopoverProps {
-  onUpdate: () => void,
-  onDeleteComplete?: () => void,
-  templateId: string,
-  inline?: boolean
+  onUpdate: () => void;
+  onDeleteComplete?: () => void;
+  templateId: string;
+  inline?: boolean;
 }
 
 const EmailTemplatePopover = ({

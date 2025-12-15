@@ -3,12 +3,12 @@ import { ConnectorsStatusFilterState } from '@components/data/connectors/Connect
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 
-type Connector =
-  NonNullable<ConnectorsListQuery['response']['connectors']>[number]
-  & Partial<NonNullable<ConnectorsStateQuery['response']['connectors']>[number]>;
+type Connector
+  = NonNullable<ConnectorsListQuery['response']['connectors']>[number]
+    & Partial<NonNullable<ConnectorsStateQuery['response']['connectors']>[number]>;
 
 type UseConnectorsStatusFiltersProps = {
-  connectors: Connector[]
+  connectors: Connector[];
   searchParams: URLSearchParams;
 };
 

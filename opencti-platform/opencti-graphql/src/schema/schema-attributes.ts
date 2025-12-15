@@ -8,12 +8,12 @@ import { getParentTypes } from './schemaUtils';
 import { isFeatureEnabled } from '../config/conf';
 
 export const depsKeysRegister = {
-  deps: [] as { src: string, types?: string[] }[],
+  deps: [] as { src: string; types?: string[] }[],
 
-  add(deps: { src: string, types?: string[] }[]) {
+  add(deps: { src: string; types?: string[] }[]) {
     this.deps = [...this.get(), ...deps];
   },
-  get(): { src: string, types?: string[] }[] {
+  get(): { src: string; types?: string[] }[] {
     return this.deps ?? [];
   },
 };
@@ -22,7 +22,7 @@ export const depsKeysRegister = {
 
 const isMandatoryAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
 const isDateAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.type === 'date';
-const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition) : schemaDef is ComplexAttributeWithMappings => { // handy typeguard
+const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
   return schemaDef.type === 'object' && schemaDef.format !== 'flat';
 };
 
@@ -141,7 +141,7 @@ export const schemaAttributesDefinition = {
       if (directAttributes.has(attribute.name)) {
         throw UnsupportedError('You can\'t register two attributes with the same name on an entity', {
           attributeName: attribute.name,
-          entityType
+          entityType,
         });
       }
       // Check sortBy on object
@@ -150,7 +150,7 @@ export const schemaAttributesDefinition = {
         if (correspondingMapping.type !== attribute.sortBy.type) {
           throw UnsupportedError('You can\'t define a sortBy with path and type that do not match the corresponding mapping', {
             attributeName: attribute.name,
-            entityType
+            entityType,
           });
         }
       }
@@ -268,7 +268,7 @@ export const schemaAttributesDefinition = {
       throw FunctionalError(`Cannot resolve path [${path}], missing schema definition for attribute [${pathTokens[0]}}]`);
     }
     return getAttributeMappingFromPath(path, schemaDef);
-  }
+  },
 };
 
 // -- TYPE --

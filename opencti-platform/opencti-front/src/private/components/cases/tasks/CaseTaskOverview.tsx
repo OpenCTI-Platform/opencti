@@ -90,7 +90,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
           >
             {t_i18n('Assignees')}
           </Typography>
-          <ItemAssignees assignees={data.objectAssignee ?? []} stixDomainObjectId={data.id}/>
+          <ItemAssignees assignees={data.objectAssignee ?? []} stixDomainObjectId={data.id} />
           <Typography
             variant="h3"
             gutterBottom={true}

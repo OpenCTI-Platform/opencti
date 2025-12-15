@@ -6,7 +6,7 @@ import type { Theme } from './Theme';
 import PaperHeader, { PaperHeaderProps } from './PaperHeader';
 
 interface PaperAccordionProps extends PaperHeaderProps, PropsWithChildren {
-  preview: ReactNode
+  preview: ReactNode;
 }
 
 const PaperAccordion = ({ title, actions, children, preview }: PaperAccordionProps) => {

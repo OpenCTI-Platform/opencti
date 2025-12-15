@@ -2,11 +2,11 @@ import { UIEvent, useState } from 'react';
 import stopEvent from '../domEvent';
 
 export interface Deletion {
-  deleting: boolean
+  deleting: boolean;
   handleOpenDelete: (e?: UIEvent) => void;
-  displayDelete: boolean
+  displayDelete: boolean;
   handleCloseDelete: (e?: UIEvent) => void;
-  setDeleting: (value: (((prevState: boolean) => boolean) | boolean)) => void
+  setDeleting: (value: (((prevState: boolean) => boolean) | boolean)) => void;
 }
 
 const useDeletion = ({ handleClose }: { handleClose?: () => void }): Deletion => {

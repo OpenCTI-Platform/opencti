@@ -33,13 +33,13 @@ export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle)
 export const convertMembersToUsers = async (
   members: { value: string }[],
   baseData: StixObject,
-  bundle: StixBundle
+  bundle: StixBundle,
 ) => {
   if (isEmptyField(members)) return [];
   const platformUsers = await getEntitiesListFromCache<AuthUser>(
     executionContext('playbook_components'),
     AUTOMATION_MANAGER_USER,
-    ENTITY_TYPE_USER
+    ENTITY_TYPE_USER,
   );
 
   const membersIds: string[] = [];
@@ -100,7 +100,7 @@ export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links
   }
   return {
     nodes: definition.nodes.filter((n) => !nodesToDelete.map((o) => o.id).includes(n.id)),
-    links: definition.links.filter((n) => !linksToDelete.map((o) => o.id).includes(n.id))
+    links: definition.links.filter((n) => !linksToDelete.map((o) => o.id).includes(n.id)),
   };
 };
 
@@ -108,7 +108,7 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
   context: AuthContext,
   user: AuthUser,
   input: PlaybookAddNodeInput,
-  userId: string
+  userId: string,
 ) => {
   if (!input.configuration) {
     return '{}';

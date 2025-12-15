@@ -65,7 +65,7 @@ export const narrativeFragment = graphql`
 `;
 
 interface NarrativeProps {
-  narrativeData: Narrative_narrative$key
+  narrativeData: Narrative_narrative$key;
 }
 
 const Narrative: React.FC<NarrativeProps> = ({

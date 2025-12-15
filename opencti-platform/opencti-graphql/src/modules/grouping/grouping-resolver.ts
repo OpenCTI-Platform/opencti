@@ -10,7 +10,7 @@ import {
   groupingsNumberByEntity,
   groupingsTimeSeries,
   groupingsTimeSeriesByAuthor,
-  groupingsTimeSeriesByEntity
+  groupingsTimeSeriesByEntity,
 } from './grouping-domain';
 import {
   stixDomainObjectAddRelation,
@@ -18,7 +18,7 @@ import {
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField
+  stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
 import { distributionEntities } from '../../database/middleware';
 
@@ -82,7 +82,7 @@ const groupingResolvers: Resolvers = {
     groupingRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
-  }
+  },
 };
 
 export default groupingResolvers;

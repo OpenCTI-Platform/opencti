@@ -216,7 +216,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Grouping' />
+                <StixCoreObjectForms entityType="Grouping" />
                 <GroupingCreation paginationOptions={queryPaginationOptions} />
               </div>
             </Security>

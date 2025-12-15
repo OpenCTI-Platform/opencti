@@ -66,7 +66,7 @@ const LoginRoot = ({ type }: { type: string }) => {
 
   return (
     <StyledEngineProvider injectFirst={true}>
-      <ConnectedThemeProvider settings={data.publicSettings} >
+      <ConnectedThemeProvider settings={data.publicSettings}>
         <CssBaseline />
         <ConnectedIntlProvider settings={data.publicSettings}>
           <Login settings={data.publicSettings} type={type} />

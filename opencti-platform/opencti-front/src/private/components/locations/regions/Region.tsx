@@ -86,7 +86,7 @@ const regionFragment = graphql`
 const RegionComponent = ({
   regionData,
 }: {
-  regionData: Region_region$key
+  regionData: Region_region$key;
 }) => {
   useInitCreateRelationshipContext();
 

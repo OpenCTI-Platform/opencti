@@ -16,11 +16,11 @@ import { buildDate } from '../../../../utils/Time';
 interface DashboardTimeFiltersProps {
   workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
   config?: {
-    startDate: string | null
-    endDate: string | null
-    relativeDate: string | null
-  }
-  handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void
+    startDate: string | null;
+    endDate: string | null;
+    relativeDate: string | null;
+  };
+  handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void;
 }
 
 const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
@@ -46,7 +46,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
       needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
       hasAccess={canEdit}
     >
-      <div style={{ display: 'flex', marginLeft: 20 }} >
+      <div style={{ display: 'flex', marginLeft: 20 }}>
         <FormControl
           size="small"
           style={{ width: 194, marginRight: 8 }}

@@ -17,8 +17,8 @@ const convertEventToStix = (instance: StoreEntityEvent): StixEvent => {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 

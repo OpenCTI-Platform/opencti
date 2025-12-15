@@ -27,9 +27,9 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
   catalogs.push(JSON.stringify(filigranCatalog));
   // Add custom catalogs
   for (let index = 0; index < CUSTOM_CATALOGS.length; index += 1) {
-      const customCatalog = CUSTOM_CATALOGS[index];
-      const catalog = await readFile(customCatalog, { encoding: 'utf8', flag: 'r' });
-      catalogs.push(catalog);
+    const customCatalog = CUSTOM_CATALOGS[index];
+    const catalog = await readFile(customCatalog, { encoding: 'utf8', flag: 'r' });
+    catalogs.push(catalog);
   }
   // Prepare catalogs map
   for (let index = 0; index < catalogs.length; index += 1) {
@@ -54,7 +54,7 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
               type: contract.config_schema.type,
               properties: contract.config_schema.properties,
               required: contract.config_schema.required,
-              additionalProperties: contract.config_schema.additionalProperties
+              additionalProperties: contract.config_schema.additionalProperties,
             };
             try {
               ajv.compile(jsonValidation);
@@ -88,8 +88,8 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
             }
           }
           return JSON.stringify(finalContract);
-        })
-      }
+        }),
+      },
     };
   }
   return newCatalogMap;
@@ -130,7 +130,7 @@ const encryptValue = (rsaPublicKey: string, value: string) => {
       key: rsaPublicKey,
       padding: crypto.constants.RSA_PKCS1_PADDING,
     },
-    aesKeyAndIv
+    aesKeyAndIv,
   );
 
   const version = Buffer.from([0x01]);
@@ -141,7 +141,7 @@ const encryptValue = (rsaPublicKey: string, value: string) => {
 
 export const processPasswordConfigurationValue = (
   rawValue: string,
-  publicKey: string
+  publicKey: string,
 ) => {
   return encryptValue(publicKey, rawValue);
 };
@@ -206,7 +206,7 @@ export const resolveConfigurationValue = (
   propSchema: any,
   inputConfig: ContractConfigInput | undefined,
   existingConfig: ConnectorContractConfiguration | undefined,
-  publicKey: string
+  publicKey: string,
 ): ConnectorContractConfiguration | null => {
   const isPassword = propSchema.format === 'password';
 
@@ -293,7 +293,7 @@ const formatValidationErrors = (errors: any[] | null | undefined, contractTitle:
 
 export const validateContractConfigurations = (
   contractConfigurations: ConnectorContractConfiguration[],
-  targetContract: CatalogContract
+  targetContract: CatalogContract,
 ) => {
   const targetConfig = targetContract.config_schema;
 
@@ -338,7 +338,7 @@ export const validateContractConfigurations = (
     type: targetConfig.type,
     properties: validationProperties,
     required: filteredRequired,
-    additionalProperties: false
+    additionalProperties: false,
   };
 
   const validate = ajv.compile(jsonValidation);
@@ -354,14 +354,14 @@ export const computeConnectorTargetContract = (
   configurations: ContractConfigInput[],
   targetContract: CatalogContract,
   publicKey: string,
-  currentManagerContractConfiguration?: ConnectorContractConfiguration[]
+  currentManagerContractConfiguration?: ConnectorContractConfiguration[],
 ): ConnectorContractConfiguration[] => {
   const targetConfig = targetContract.config_schema;
 
   // Create maps for efficient lookups
   const configMap = new Map(configurations.map((c) => [c.key, c]));
   const currentConfigMap = new Map(
-    currentManagerContractConfiguration?.map((c) => [c.key, c]) ?? []
+    currentManagerContractConfiguration?.map((c) => [c.key, c]) ?? [],
   );
 
   // Process each property and build configuration array
@@ -394,7 +394,7 @@ export const computeConnectorTargetContract = (
       propSchema,
       inputConfig,
       existingConfig,
-      publicKey
+      publicKey,
     );
 
     if (finalConfig) {

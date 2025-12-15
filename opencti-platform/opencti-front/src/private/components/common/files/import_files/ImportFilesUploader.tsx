@@ -8,7 +8,7 @@ import { ImportFilesContextQuery$data } from '@components/common/files/import_fi
 
 export type FileWithConnectors = {
   file: File;
-  connectors?: { id: string; name: string; }[];
+  connectors?: { id: string; name: string }[];
   configuration?: string;
 };
 
@@ -59,7 +59,7 @@ const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) 
       </Grid>
 
       <Grid item xs={12}>
-        <ImportFilesList connectorsForImport={connectorsForImport}/>
+        <ImportFilesList connectorsForImport={connectorsForImport} />
       </Grid>
     </Grid>
   );

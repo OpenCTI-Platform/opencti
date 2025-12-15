@@ -84,7 +84,7 @@ const THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES = ['related-to', 'part-of'];
 
 type RootThreatActorGroupProps = {
   threatActorGroupId: string;
-  queryRef: PreloadedQuery<RootThreatActorGroupQuery>
+  queryRef: PreloadedQuery<RootThreatActorGroupQuery>;
 };
 
 const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorGroupProps) => {
@@ -111,7 +111,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -133,7 +133,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                   ]}
                   data={threatActorGroup}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -159,7 +159,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ThreatActorGroupDeletion id={threatActorGroup.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -219,17 +219,17 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                 />
               </Tabs>
               {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={threatActorGroup.id} />
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <AIInsights id={threatActorGroup.id} />
+                </div>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <ThreatActorGroup threatActorGroupData={threatActorGroup}/>
-                  }
+                  <ThreatActorGroup threatActorGroupData={threatActorGroup} />
+                }
               />
               <Route
                 path="/knowledge"
@@ -239,22 +239,22 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <ThreatActorGroupKnowledge
                       threatActorGroupData={threatActorGroup}
                       relatedRelationshipTypes={THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES}
                     />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={threatActorGroup}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -264,14 +264,14 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={threatActorGroupId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={threatActorGroup}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
@@ -290,7 +290,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
 };
 
 const Root = () => {
-  const { threatActorGroupId } = useParams() as { threatActorGroupId: string; };
+  const { threatActorGroupId } = useParams() as { threatActorGroupId: string };
   const queryRef = useQueryLoading<RootThreatActorGroupQuery>(ThreatActorGroupQuery, {
     id: threatActorGroupId,
     relatedRelationshipTypes: THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES,
