@@ -137,7 +137,7 @@ describe('DataComponent resolver standard behavior', () => {
   it('should dataComponent deleted', async () => {
     const DELETE_QUERY = gql`
       mutation dataComponentDelete($id: ID!) {
-        dataSourceDelete(id: $id)
+        dataComponentDelete(id: $id)
       }
     `;
     // Delete the dataComponent

@@ -2,11 +2,12 @@ import { addThreatActorIndividual, findThreatActorIndividualPaginated, findById 
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
 import type { Resolvers } from '../../generated/graphql';
 import { utcDate } from '../../utils/format';
 import { loadThroughDenormalized } from '../../resolvers/stix';
@@ -32,7 +33,7 @@ const threatActorIndividualResolvers: Resolvers = {
       return addThreatActorIndividual(context, context.user, input);
     },
     threatActorIndividualDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
     },
     threatActorIndividualFieldPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input);

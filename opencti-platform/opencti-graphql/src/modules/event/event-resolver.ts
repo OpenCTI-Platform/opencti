@@ -8,6 +8,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
+import { ENTITY_TYPE_EVENT } from './event-types';
 
 const eventResolvers: Resolvers = {
   Query: {
@@ -19,7 +20,7 @@ const eventResolvers: Resolvers = {
       return addEvent(context, context.user, input);
     },
     eventDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_EVENT);
     },
     eventFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });

@@ -205,11 +205,37 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const stixDomainObjectDelete = async (context, user, stixDomainObjectId) => {
-  // If we are in a draft, we need to also search for deleted elements
+/**
+ * @param {*} context
+ * @param {*} user
+ * @param {string} stixDomainObjectId
+ * @param {string | string[]} stixDomainObjectType - Required entity type(s) for validation
+ */
+export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, stixDomainObjectType) => {
+  const stixDomainObject = await storeLoadById(
+    context,
+    user,
+    stixDomainObjectId,
+    stixDomainObjectType,
+    { includeDeletedInDraft: true },
+  );
+
+  if (!stixDomainObject) {
+    throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.', { id: stixDomainObjectId, types: stixDomainObjectType });
+  }
+
+  await deleteElementById(context, user, stixDomainObjectId, stixDomainObject.entity_type);
+  await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, stixDomainObject, user);
+  return stixDomainObjectId;
+};
+
+/**
+ * To use only for abstract deletion, if type is know please use stixDomainObjectDelete.
+ */
+const stixDomainObjectDeleteUnchecked = async (context, user, stixDomainObjectId) => {
   const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, { includeDeletedInDraft: true });
   if (!stixDomainObject) {
-    throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.', { stixDomainObjectId });
+    throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.', { id: stixDomainObjectId });
   }
   await deleteElementById(context, user, stixDomainObjectId, stixDomainObject.entity_type);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, stixDomainObject, user);
@@ -217,9 +243,8 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId) 
 };
 
 export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsIds) => {
-  // Relations cannot be created in parallel.
   for (let i = 0; i < stixDomainObjectsIds.length; i += 1) {
-    await stixDomainObjectDelete(user, stixDomainObjectsIds[i]);
+    await stixDomainObjectDeleteUnchecked(context, user, stixDomainObjectsIds[i]);
   }
   return stixDomainObjectsIds;
 };

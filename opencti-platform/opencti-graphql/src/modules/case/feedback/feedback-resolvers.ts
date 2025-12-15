@@ -1,6 +1,7 @@
 import type { Resolvers } from '../../../generated/graphql';
-import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { addFeedback, feedbackContainsStixObjectOrStixRelationship, feedbackEditAuthorizedMembers, findFeedbackPaginated, findById } from './feedback-domain';
+import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from './feedback-types';
 
 const feedbackResolvers: Resolvers = {
   Query: {
@@ -18,7 +19,7 @@ const feedbackResolvers: Resolvers = {
       return addFeedback(context, context.user, input);
     },
     feedbackDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_FEEDBACK);
     },
     feedbackEditAuthorizedMembers: (_, { id, input }, context) => {
       return feedbackEditAuthorizedMembers(context, context.user, id, input);

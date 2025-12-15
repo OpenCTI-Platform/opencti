@@ -3,12 +3,13 @@ import { addNarrative, childNarrativesPaginated, findNarrativePaginated, findByI
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
 import type { BasicStoreEntityNarrative } from './narrative-types';
+import { ENTITY_TYPE_NARRATIVE } from './narrative-types';
 
 const narrativeResolvers: Resolvers = {
   Query: {
@@ -25,7 +26,7 @@ const narrativeResolvers: Resolvers = {
       return addNarrative(context, context.user, input);
     },
     narrativeDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_NARRATIVE);
     },
     narrativeFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });

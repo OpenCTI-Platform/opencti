@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/dot-notation */
 import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { FIVE_MINUTES } from '../../utils/testQuery';
-import { checkStreamData, checkStreamGenericContent, fetchStreamEvents, } from '../../utils/testStream';
-import { PORT } from '../../../src/config/conf';
+import { checkStreamData, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
+import { logApp, PORT } from '../../../src/config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 import { writeTestDataToFile } from '../../utils/testOutput';
 import { doTotal, RAW_EVENTS_SIZE, testCreatedCounter, testDeletedCounter, testMergedCounter, testUpdatedCounter } from '../../utils/syncCountHelper';
@@ -22,8 +21,11 @@ describe('Raw streams tests', () => {
   it(
     'Should stream correctly formatted',
     async () => {
+      const startTime = new Date().getTime();
       // Read all events from the beginning.
       const events = await fetchStreamEvents(`http://localhost:${PORT}/stream`, { from: '0' });
+      logApp.info(`[TEST][TIME] time to fetch event: ${new Date().getTime() - startTime}`);
+
       writeTestDataToFile(JSON.stringify(events), 'raw-test-all-event.json');
 
       // 00 - Check the number of events and dump information in test result files
@@ -39,6 +41,8 @@ describe('Raw streams tests', () => {
       const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       dumpEventByTypeToFile('delete', deleteEventsByTypes);
 
+      logApp.info(`[TEST][TIME] time to dump event in files: ${new Date().getTime() - startTime}`);
+
       // 01 - CHECK CREATE EVENTS.
       const allExpectedCounterKeys = Object.keys(testCreatedCounter);
       for (let i = 0; i < allExpectedCounterKeys.length; i += 1) {
@@ -46,7 +50,7 @@ describe('Raw streams tests', () => {
         expect(createEventsByTypes[key], `Created ${key} expected but missing from events`).toBeTruthy();
         expect(
           createEventsByTypes[key].length,
-          `Created ${key} count should be ${testCreatedCounter[key]} but got ${createEventsByTypes[key].length}`
+          `Created ${key} count should be ${testCreatedCounter[key]} but got ${createEventsByTypes[key].length}`,
         ).toBe(testCreatedCounter[key]);
       }
       expect(createEvents.length).toBe(doTotal(testCreatedCounter));
@@ -55,14 +59,15 @@ describe('Raw streams tests', () => {
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
       }
-
+      logApp.info(`[TEST][TIME] time to check created events: ${new Date().getTime() - startTime}`);
       // 02 - CHECK UPDATE EVENTS.
       const allUpdatedCounterKeys = Object.keys(testUpdatedCounter);
       for (let i = 0; i < allUpdatedCounterKeys.length; i += 1) {
         const key = allUpdatedCounterKeys[i];
+        expect(updateEventsByTypes[key], `Updated ${key} expected but missing from events`).toBeTruthy();
         expect(
           updateEventsByTypes[key].length,
-          `Updated ${key} count should be ${testUpdatedCounter[key]} but got ${updateEventsByTypes[key].length} ${JSON.stringify(updateEventsByTypes[key])}`
+          `Updated ${key} count should be ${testUpdatedCounter[key]} but got ${updateEventsByTypes[key].length} ${JSON.stringify(updateEventsByTypes[key])}`,
         ).toBe(testUpdatedCounter[key]);
       }
       expect(updateEvents.length).toBe(doTotal(testUpdatedCounter));
@@ -76,14 +81,16 @@ describe('Raw streams tests', () => {
         expect(patch).toBeDefined();
         expect(reverse_patch).toBeDefined();
       }
-
+      logApp.info(`[TEST][TIME] time to check updated events: ${new Date().getTime() - startTime}`);
       // 03 - CHECK DELETE EVENTS
       const allDeletedCounterKeys = Object.keys(testDeletedCounter);
       for (let i = 0; i < allDeletedCounterKeys.length; i += 1) {
         const key = allDeletedCounterKeys[i];
+
+        expect(deleteEventsByTypes[key], `Deleted ${key} expected but missing from events`).toBeTruthy();
         expect(
           deleteEventsByTypes[key].length,
-          `Deleted ${key} count should be ${testDeletedCounter[key]} but got ${deleteEventsByTypes[key].length}`
+          `Deleted ${key} count should be ${testDeletedCounter[key]} but got ${deleteEventsByTypes[key].length}`,
         ).toBe(testDeletedCounter[key]);
       }
       expect(deleteEvents.length).toBe(doTotal(testDeletedCounter));
@@ -93,6 +100,7 @@ describe('Raw streams tests', () => {
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
       }
+      logApp.info(`[TEST][TIME] time to check deleted events: ${new Date().getTime() - startTime}`);
       // 04 - CHECK MERGE EVENTS
       const mergeEvents = events.filter((e) => e.type === EVENT_TYPE_MERGE);
       const mergeEventsByTypes = R.groupBy((e) => e.data.data.type, mergeEvents);
@@ -102,7 +110,7 @@ describe('Raw streams tests', () => {
         const key = allMergedCounterKeys[i];
         expect(
           mergeEventsByTypes[key].length,
-          `Merged ${key} count should be ${testMergedCounter[key]} but got ${mergeEventsByTypes[key].length}`
+          `Merged ${key} count should be ${testMergedCounter[key]} but got ${mergeEventsByTypes[key].length}`,
         ).toBe(testMergedCounter[key]);
       }
       expect(mergeEvents.length).toBe(doTotal(testMergedCounter));
@@ -120,8 +128,9 @@ describe('Raw streams tests', () => {
           checkStreamData(EVENT_TYPE_MERGE, source);
         }
       }
+      logApp.info(`[TEST][TIME] time to check merged events: ${new Date().getTime() - startTime}`);
       expect(events.length).toBe(RAW_EVENTS_SIZE);
     },
-    FIVE_MINUTES
+    FIVE_MINUTES,
   );
 });
