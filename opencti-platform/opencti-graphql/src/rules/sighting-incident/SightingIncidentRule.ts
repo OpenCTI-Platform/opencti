@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { createInferredEntity, createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
 import def from './SightingIncidentDefinition';
 import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
@@ -39,7 +38,7 @@ const ruleSightingIncidentBuilder = () => {
     context: AuthContext,
     indicator: StixIndicator,
     createInferredEntityCallback: CreateInferredEntityCallbackFunction,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     const { extensions } = indicator;
     const indicatorId = extensions[STIX_EXT_OCTI].id;
@@ -75,7 +74,7 @@ const ruleSightingIncidentBuilder = () => {
     context: AuthContext,
     sightingRelation: StixSighting,
     createInferredEntityCallback: CreateInferredEntityCallbackFunction,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ) => {
     const indicatorId = sightingRelation.extensions[STIX_EXT_OCTI].sighting_of_ref;
     const sightingIndicator = await stixLoadById(context, RULE_MANAGER_USER, indicatorId);
@@ -84,7 +83,7 @@ const ruleSightingIncidentBuilder = () => {
   const applyUpsert = async (
     data: StixIndicator | StixSighting,
     createInferredEntityCallback: CreateInferredEntityCallbackFunction,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
@@ -102,7 +101,7 @@ const ruleSightingIncidentBuilder = () => {
   const insert: RuleRuntime['insert'] = async (
     element,
     createInferredEntityCallback,
-    createInferredRelationCallback
+    createInferredRelationCallback,
   ) => {
     return applyUpsert(element, createInferredEntityCallback, createInferredRelationCallback);
   };

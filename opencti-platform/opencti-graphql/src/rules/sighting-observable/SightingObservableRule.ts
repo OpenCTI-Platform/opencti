@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as R from 'ramda';
 import def from './SightingObservableDefinition';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
@@ -29,7 +28,7 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
   const applyFromStixRelation = async (
     context: AuthContext,
     data: StixRelation,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     // **indicator C** `based on` **observable A**
     const createdId = data.extensions[STIX_EXT_OCTI].id;
@@ -73,7 +72,7 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
   const applyFromStixSighting = async (
     context: AuthContext,
     data: StixSighting,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     // **observable A** is `sighted` in **identity/location B**
     const createdId = data.extensions[STIX_EXT_OCTI].id;
@@ -117,7 +116,7 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
   };
   const applyUpsert = async (
     data: StixRelation | StixSighting,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     if (data.extensions[STIX_EXT_OCTI].type === STIX_SIGHTING_RELATIONSHIP) {
@@ -134,7 +133,7 @@ const sightingObservableRuleBuilder = (): RuleRuntime => {
   const insert: RuleRuntime['insert'] = async (
     element,
     _createInferredEntityCallback,
-    createInferredRelationCallback
+    createInferredRelationCallback,
   ) => {
     return applyUpsert(element, createInferredRelationCallback);
   };

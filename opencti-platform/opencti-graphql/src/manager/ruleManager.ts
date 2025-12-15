@@ -166,7 +166,7 @@ export const rulesApplyHandler = async (
   events: Array<DataEvent>,
   forRules: Array<RuleRuntime> = [],
   createInferredEntityCallback: CreateInferredEntityCallbackFunction = createInferredEntity,
-  createInferredRelationCallback: CreateInferredRelationCallbackFunction = createInferredRelation
+  createInferredRelationCallback: CreateInferredRelationCallbackFunction = createInferredRelation,
 ) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
@@ -361,7 +361,7 @@ export const executeRuleApply = async (
   rule: RuleRuntime,
   id: string,
   createInferredEntityCallback: CreateInferredEntityCallbackFunction,
-  createInferredRelationCallback: CreateInferredRelationCallbackFunction
+  createInferredRelationCallback: CreateInferredRelationCallbackFunction,
 ) => {
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, id);

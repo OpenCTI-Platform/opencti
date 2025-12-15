@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
 import { createInferredRelation, deleteInferredRuleElement, generateUpdateMessage, stixLoadById } from '../database/middleware';
@@ -41,13 +40,13 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     ];
   };
   type ArrayRefs = Array<{ partOfFromId: string; partOfId: string; partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
-  // eslint-disable-next-line max-len
+
   const createObjectRefsInferences = async (
     context: AuthContext,
     data: StixReport,
     addedTargets: ArrayRefs,
     deletedTargets: Array<BasicStoreRelation>,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     if (addedTargets.length === 0 && deletedTargets.length === 0) {
       return;
@@ -125,7 +124,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     report: StixReport,
     addedRefs: Array<string>,
     removedRefs: Array<string>,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     if (addedRefs.length > 0) {
       const identities = await internalFindByIds(context, RULE_MANAGER_USER, addedRefs) as Array<StoreObject>;
@@ -184,7 +183,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   const handlePartOfRelationCreation = async (
     context: AuthContext,
     partOfRelation: StixRelation,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     let partOfTargetStandardId: StixId;
     const { id: partOfStandardId } = partOfRelation;
@@ -209,8 +208,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   };
   const applyInsert = async (
     data: StixObject,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
-    // eslint-disable-next-line consistent-return
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
+
   ): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
@@ -260,7 +259,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   const insert: RuleRuntime['insert'] = async (
     element,
     _createInferredEntityCallback,
-    createInferredRelationCallback
+    createInferredRelationCallback,
   ) => {
     return applyInsert(element, createInferredRelationCallback);
   };

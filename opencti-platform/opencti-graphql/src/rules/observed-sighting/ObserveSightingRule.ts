@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import def from './ObserveSightingDefinition';
@@ -48,7 +47,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   const handleIndicatorUpsert = async (
     context: AuthContext,
     indicator: StixDomainObject,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     const { id: indicatorId } = indicator.extensions[STIX_EXT_OCTI];
     const { object_marking_refs: indicatorMarkings } = indicator;
@@ -94,7 +93,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   const handleObservedDataUpsert = async (
     context: AuthContext,
     observedData: StixObservedData,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     const { created_by_ref: organizationId } = observedData;
     const { id: observedDataId } = observedData.extensions[STIX_EXT_OCTI];
@@ -141,7 +140,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   const handleObservableRelationUpsert = async (
     context: AuthContext,
     baseOnRelation: StixRelation,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ) => {
     const { source_ref: indicatorId } = baseOnRelation.extensions[STIX_EXT_OCTI];
     const baseOnIndicator = (await stixLoadById(context, RULE_MANAGER_USER, indicatorId)) as unknown as StixIndicator;
@@ -151,7 +150,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   };
   const applyUpsert = async (
     data: StixObject,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
@@ -174,7 +173,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   const insert: RuleRuntime['insert'] = async (
     element,
     _createInferredEntityCallback,
-    createInferredRelationCallback
+    createInferredRelationCallback,
   ): Promise<void> => {
     return applyUpsert(element, createInferredRelationCallback);
   };

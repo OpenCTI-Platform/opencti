@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
@@ -17,7 +16,7 @@ const ruleRelatedObservableBuilder = () => {
   // Execution
   const applyUpsert = async (
     data: StixRelation,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const { extensions } = data;
@@ -74,7 +73,7 @@ const ruleRelatedObservableBuilder = () => {
   const insert: RuleRuntime['insert'] = async (
     element,
     _createInferredEntityCallback,
-    createInferredRelationCallback
+    createInferredRelationCallback,
   ) => {
     return applyUpsert(element, createInferredRelationCallback);
   };

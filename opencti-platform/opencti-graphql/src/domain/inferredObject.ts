@@ -8,7 +8,6 @@ export const createInternalInferredRelation = async (context: AuthContext, user:
   if (user.id !== RULE_MANAGER_USER.id) {
     throw ForbiddenAccess();
   }
-  // TODO: JSON input validation? Maybe we don't need it since it's only coming from task manager?
   const { input, ruleContent, opts } = JSON.parse(jsonInput);
   const createdInferredRelation = await createInferredRelation(context, input, ruleContent, opts);
   return createdInferredRelation.id;
@@ -18,7 +17,6 @@ export const createInternalInferredEntity = async (context: AuthContext, user: A
   if (user.id !== RULE_MANAGER_USER.id) {
     throw ForbiddenAccess();
   }
-  // TODO: JSON input validation? Maybe we don't need it since it's only coming from task manager?
   const { input, ruleContent, type } = JSON.parse(jsonInput);
   const createdInferredEntity = await createInferredEntity(context, input, ruleContent, type);
   return createdInferredEntity.id;

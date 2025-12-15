@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
 import { createInferredRelation, deleteInferredRuleElement } from '../database/middleware';
 import { createRuleContent } from './rules-utils';
@@ -17,7 +16,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
   // Execution
   const applyUpsert = async (
     data: StixRelation,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction,
   ): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const { extensions } = data;
@@ -96,7 +95,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
   const insert: RuleRuntime['insert'] = async (
     element,
     _createInferredEntityCallback,
-    createInferredRelationCallback
+    createInferredRelationCallback,
   ) => {
     return applyUpsert(element, createInferredRelationCallback);
   };
