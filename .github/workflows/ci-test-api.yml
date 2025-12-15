@@ -23,17 +23,6 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Download image platform
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-platform-worker-shared
-        path: /tmp/opencti-platform.tar
-    - name: Download image worker
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-opencti-worker-shared
-        path: /tmp/opencti-worker.tar
-
     - name: Load image
       run: |
           set -eux
@@ -147,17 +136,6 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Download image platform
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-platform-worker-shared
-        path: /tmp/opencti-platform.tar
-    - name: Download image worker
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-opencti-worker-shared
-        path: /tmp/opencti-worker.tar
-
     - name: Load image
       run: |
           set -eux
@@ -221,17 +199,6 @@ jobs:
     - name: Runner information
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
-
-    - name: Download image platform
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-platform-worker-shared
-        path: /tmp/opencti-platform.tar
-    - name: Download image worker
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-opencti-worker-shared
-        path: /tmp/opencti-worker.tar
 
     - name: Load image
       run: |
