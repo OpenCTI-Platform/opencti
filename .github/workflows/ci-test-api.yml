@@ -23,16 +23,16 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Load image
-      run: |
-          set -eux
-          docker load --input /tmp/opencti-platform.tar   
-          docker load --input /tmp/opencti-worker.tar   
-          docker images
-
     - name: Collect Workflow Telemetry
       uses: catchpoint/workflow-telemetry-action@v2
 
+    - name: Login to ghcr
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        
     - name: Set up Docker Compose for backends and sync instances
       run: |
          set -ex
@@ -136,14 +136,15 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Load image
-      run: |
-          set -eux
-          docker load --input /tmp/opencti-platform.tar   
-          docker load --input /tmp/opencti-worker.tar   
-          docker images
     - name: Collect Workflow Telemetry
       uses: catchpoint/workflow-telemetry-action@v2
+
+    - name: Login to ghcr
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Docker Compose for backends and sync instances
       run: |
@@ -200,12 +201,12 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Load image
-      run: |
-          set -eux
-          docker load --input /tmp/opencti-platform.tar   
-          docker load --input /tmp/opencti-worker.tar   
-          docker images
+    - name: Login to ghcr
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Docker Compose for backends
       run: |
