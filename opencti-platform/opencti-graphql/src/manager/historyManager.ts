@@ -8,7 +8,7 @@ import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from 
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { Change, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
+import type { Change, SseEvent, StreamDataEvent, StreamDataEventType, UpdateEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
@@ -137,16 +137,17 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   };
 };
 
-export const historyMessage = (message: string | undefined) => {
-  if (!message) {
+export const historyMessage = (eventType: StreamDataEventType, changes: Change[]): string => {
+  const message: string[] = [];
+  if (!changes || changes.length === 0) {
     return '';
   }
-  const parts = message.split('-');
-  // We want to exclude 'Authorized members' and 'ObjectOrganization' from history
-  const removeSecurityFromMessage = parts.filter((part) => {
-    return !part.includes('Authorized members') && !part.includes('ObjectOrganization');
+  changes.forEach((change) => {
+    if (change.field !== 'Authorized members' && change.field !== 'ObjectOrganization') {
+      message.push(`${eventType} ${change.new} in ${change.field}`);
+    }
   });
-  return removeSecurityFromMessage.join('-').trim();
+  return message.join(' - ');
 };
 export const buildHistoryElementsFromEvents = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   // load all markings to resolve object_marking_refs
@@ -168,18 +169,20 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
         .map((stixId) => grantedRefsResolved.get(stixId))
         .filter((o) => isNotEmptyField(o)) as string[];
     }
+    const updateEvent: UpdateEvent = event.data as UpdateEvent;
+    const eventType = event.data.type;
     let contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
-      message: historyMessage(event.data.message),
+      message: historyMessage(eventType, updateEvent.context.changes),
       entity_type: stix.extensions[STIX_EXT_OCTI].type,
       entity_name: extractStixRepresentative(stix),
       creator_ids: stix.extensions[STIX_EXT_OCTI].creator_ids,
       labels_ids: stix.extensions[STIX_EXT_OCTI].labels_ids,
       created_by_ref_id: stix.extensions[STIX_EXT_OCTI].created_by_ref_id,
     };
-    if (event.data.type === EVENT_TYPE_UPDATE) {
+    if (eventType === EVENT_TYPE_UPDATE) {
       const updateEvent: UpdateEvent = event.data as UpdateEvent;
-       contextData.commit = historyMessage(updateEvent.commit?.message);
+      contextData.commit = updateEvent.commit?.message;
       contextData.external_references = updateEvent.commit?.external_references ?? [];
       // Previous markings must be kept to ensure data visibility restrictions
       const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), updateEvent.context.reverse_patch);
