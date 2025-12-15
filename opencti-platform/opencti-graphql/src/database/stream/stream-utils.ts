@@ -43,7 +43,6 @@ export enum StreamProvider {
 export interface StreamOption {
   withInternal?: boolean;
   bufferTime?: number;
-  provider?: StreamProvider;
   autoReconnect?: boolean;
   streamName?: string;
   streamBatchSize?: number;

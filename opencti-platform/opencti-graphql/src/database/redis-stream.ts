@@ -9,9 +9,8 @@ import {
   type RawStreamClient,
   type StreamOption,
   type StreamProcessor,
-  StreamProvider,
 } from './stream/stream-utils';
-import { createRedisClient, getClientBase, getClientPir } from './redis';
+import { createRedisClient, getClientBase, getClientXRANGE } from './redis';
 import { isEmptyField, wait, waitInSec } from './utils';
 import { utcDate } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
@@ -183,15 +182,10 @@ const rawFetchStreamEventsRangeFromEventId = async (
   callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
   opts: StreamOption = {},
 ) => {
-  const { streamBatchSize = MAX_RANGE_MESSAGES, streamName = LIVE_STREAM_NAME, provider = StreamProvider.BASE } = opts;
+  const { streamBatchSize = MAX_RANGE_MESSAGES, streamName = LIVE_STREAM_NAME } = opts;
   const redisStreamName = convertStreamName(streamName);
   let effectiveStartEventId = startEventId;
-  let redisClient;
-  if (provider === StreamProvider.PIR) {
-    redisClient = getClientPir();
-  } else {
-    redisClient = getClientBase();
-  }
+  const redisClient = getClientXRANGE();
   try {
     // Consume streamBatchSize number of stream events from startEventId (excluded)
     const streamResult = await redisClient.call(

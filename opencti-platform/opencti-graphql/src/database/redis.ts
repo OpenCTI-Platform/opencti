@@ -130,7 +130,7 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
 
 // region Initialization of clients
 type RedisConnection = Cluster | Redis;
-interface RedisClients { base: RedisConnection; pir: RedisConnection; lock: RedisConnection; pubsub: RedisPubSub }
+interface RedisClients { base: RedisConnection; xrange: RedisConnection; lock: RedisConnection; pubsub: RedisPubSub }
 
 let redisClients: RedisClients;
 // Method reserved for lock child process
@@ -139,17 +139,17 @@ export const initializeOnlyRedisLockClient = async () => {
   // Disable typescript check for this specific use case.
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  redisClients = { lock, base: null, pubsub: null };
+  redisClients = { lock, base: null, pubsub: null, xrange: null };
 };
 export const initializeRedisClients = async () => {
   const base = await createRedisClient('base', true);
-  const pir = await createRedisClient('Pir Manager', true);
+  const xrange = await createRedisClient('xrange', true);
   const lock = await createRedisClient('lock', true);
   const publisher = await createRedisClient('publisher', true);
   const subscriber = await createRedisClient('subscriber', true);
   redisClients = {
     base,
-    pir,
+    xrange,
     lock,
     pubsub: new RedisPubSub({
       publisher,
@@ -170,7 +170,7 @@ export const shutdownRedisClients = () => {
 
 // region pubsub
 export const getClientBase = (): Cluster | Redis => redisClients.base;
-export const getClientPir = (): Cluster | Redis => redisClients.pir;
+export const getClientXRANGE = (): Cluster | Redis => redisClients.xrange;
 const getClientLock = (): Cluster | Redis => redisClients.lock;
 const getClientPubSub = (): RedisPubSub => redisClients.pubsub;
 export const pubSubAsyncIterator = (topic: string | string[]) => {
