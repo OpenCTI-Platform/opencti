@@ -6,6 +6,7 @@ import RootInvestigation from './investigations/Root';
 import { EXPLORE, INVESTIGATION } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import PublicDashboard from './dashboards/public_dashboards/PublicDashboards';
+import RessaDWM from './dashboards/ressa_dwm/RessaDWM';
 
 const DashboardRoute = () => (
   <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
@@ -22,6 +23,12 @@ const DashboardWorkspaceRoute = () => (
 const PublicDashboardRoute = () => (
   <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
     <PublicDashboard />
+  </Security>
+);
+
+const RessaDWMRoute = () => (
+  <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
+    <RessaDWM />
   </Security>
 );
 
@@ -50,6 +57,10 @@ const Root = () => (
     <Route
       path="/dashboards_public/*"
       element={<PublicDashboardRoute />}
+    />
+    <Route
+      path="/dashboards_ressa_dwm/*"
+      element={<RessaDWMRoute />}
     />
     <Route
       path="/investigations/*"

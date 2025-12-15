@@ -495,6 +495,13 @@ const LeftBarComponent = ({ queryRef }) => {
                     label: 'Public dashboards',
                     exact: true,
                   },
+                  {
+                    granted: isGrantedToExplore,
+                    type: 'Dashboard',
+                    link: '/dashboard/workspaces/dashboards_ressa_dwm',
+                    label: 'Ressa DWM',
+                    exact: true,
+                  },
                 ]}
               />
             )}
