@@ -31,6 +31,7 @@ interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'si
   endIcon?: React.ReactNode;
   fullWidth?: boolean;
   iconOnly?: boolean;
+  selected?: boolean;
   component?: React.ElementType;
   to?: string;
   href?: string;
@@ -40,13 +41,13 @@ interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'si
 }
 
 type RestrictedIntentButtonProps = BaseButtonProps & {
-  intent: 'destructive' | 'ai';
+  intent: 'ai';
   variant?: Exclude<ButtonVariant, 'primary'>;
 };
 
 // Default buttons can use any variant
 type DefaultIntentButtonProps = BaseButtonProps & {
-  intent?: 'default';
+  intent?: 'default' | 'destructive';
   variant?: ButtonVariant;
 };
 
@@ -63,6 +64,7 @@ const Button: React.FC<CustomButtonProps> = ({
   gradientEndColor,
   gradientAngle = 99.95,
   iconOnly = false,
+  selected = false,
   children,
   startIcon,
   endIcon,
@@ -95,6 +97,7 @@ const Button: React.FC<CustomButtonProps> = ({
     gradientColors,
     gradientAngle,
     sizeConfig,
+    selected,
   };
 
   const baseSx = createBaseStyles(styleParams);

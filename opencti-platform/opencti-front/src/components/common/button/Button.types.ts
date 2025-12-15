@@ -2,13 +2,13 @@ export type ButtonSize = 'default' | 'small';
 export type ButtonIntent = 'default' | 'destructive' | 'ai';
 export type GradientVariant = 'default' | 'ai' | 'disabled';
 
-export type MuiColor =  
-  | 'primary' 
-  | 'secondary' 
-  | 'error' 
-  | 'info' 
-  | 'success' 
-  | 'warning'; 
+export type MuiColor
+  = | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'info'
+    | 'success'
+    | 'warning';
 
 export type ButtonColorKey = ButtonIntent | Exclude<MuiColor, 'inherit'>;
 
@@ -18,7 +18,7 @@ export interface ColorDefinition {
   focus: string;
   text: string;
   border: string;
-  borderColor: string
+  borderColor: string;
 }
 
 export interface GradientColor {

@@ -4,10 +4,10 @@ import Button, { CustomButtonProps } from './Button';
 const IconButton: React.FC<Omit<CustomButtonProps, 'iconOnly'>> = (props) => {
   return (
     <Button
-      {...(props as CustomButtonProps)}
-      iconOnly
       variant="tertiary"
       size="small"
+      {...(props as CustomButtonProps)}
+      iconOnly
     />
   );
 };

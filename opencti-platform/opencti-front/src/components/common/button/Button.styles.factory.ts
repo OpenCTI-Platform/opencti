@@ -1,4 +1,5 @@
 import type { SxProps, Theme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import type { ColorDefinition, GradientColor, SizeConfig } from './Button.types';
 import { getDisabledSx, createGradientSx, createTextGradientSx, getButtonContentSx } from './Button.utils';
 
@@ -8,6 +9,7 @@ interface StyleFactoryParams {
   gradientColors: GradientColor;
   gradientAngle: number;
   sizeConfig: SizeConfig;
+  selected: boolean;
 }
 
 // BASE STYLES
@@ -44,17 +46,21 @@ export const createBaseStyles = (params: StyleFactoryParams): SxProps<Theme> => 
 
 // PRIMARY VARIANT
 export const createPrimaryGradientStyles = (params: StyleFactoryParams): SxProps<Theme> => {
-  const { theme, gradientColors, gradientAngle } = params;
+  const { theme, gradientColors, gradientAngle, selected } = params;
+
+  const hoverSx = createGradientSx(theme, gradientColors, gradientAngle, { hover: true });
 
   return {
     ...createGradientSx(theme, gradientColors, gradientAngle),
+
+    ...(selected && hoverSx),
 
     '& .button-content': {
       ...createTextGradientSx(gradientColors, gradientAngle),
       ...getButtonContentSx(),
     },
 
-    '&:hover': createGradientSx(theme, gradientColors, gradientAngle, { hover: true }),
+    '&:hover': hoverSx,
 
     '&:active': createGradientSx(theme, gradientColors, gradientAngle, { active: true }),
 
@@ -63,11 +69,15 @@ export const createPrimaryGradientStyles = (params: StyleFactoryParams): SxProps
 };
 
 export const createPrimarySolidStyles = (params: StyleFactoryParams): SxProps<Theme> => {
-  const { theme, currentColor } = params;
+  const { theme, currentColor, selected } = params;
 
   return {
     backgroundColor: currentColor.main,
     color: currentColor.text,
+
+    ...(selected && {
+      backgroundColor: currentColor.hover,
+    }),
 
     '&:hover': {
       backgroundColor: currentColor.hover,
@@ -79,12 +89,19 @@ export const createPrimarySolidStyles = (params: StyleFactoryParams): SxProps<Th
 
 // SECONDARY VARIANT
 export const createSecondaryGradientStyles = (params: StyleFactoryParams): SxProps<Theme> => {
-  const { theme, gradientColors, gradientAngle } = params;
+  const { theme, gradientColors, gradientAngle, selected } = params;
+
+  const hoverSx = createGradientSx(theme, gradientColors, gradientAngle, { hover: true });
 
   return {
     ...createGradientSx(theme, gradientColors, gradientAngle),
     backgroundColor: 'transparent',
     transition: 'box-shadow 0.3s ease-out, background-color 0.2s ease-out',
+
+    ...(selected && {
+      ...hoverSx,
+      backgroundColor: 'transparent',
+    }),
 
     '& .button-content': {
       ...createTextGradientSx(gradientColors, gradientAngle),
@@ -92,7 +109,7 @@ export const createSecondaryGradientStyles = (params: StyleFactoryParams): SxPro
     },
 
     '&:hover': {
-      ...createGradientSx(theme, gradientColors, gradientAngle, { hover: true }),
+      ...hoverSx,
       backgroundColor: 'transparent',
     },
 
@@ -108,7 +125,7 @@ export const createSecondaryGradientStyles = (params: StyleFactoryParams): SxPro
 };
 
 export const createSecondarySolidStyles = (params: StyleFactoryParams): SxProps<Theme> => {
-  const { theme, currentColor } = params;
+  const { theme, currentColor, selected } = params;
 
   return {
     backgroundColor: 'transparent',
@@ -116,12 +133,16 @@ export const createSecondarySolidStyles = (params: StyleFactoryParams): SxProps<
     border: `1px solid ${currentColor.border}`,
     boxShadow: 'none',
 
+    ...(selected && {
+      backgroundColor: alpha(currentColor.main, 0.15),
+    }),
+
     '&:hover': {
-      backgroundColor: `${currentColor.main}15`,
+      backgroundColor: alpha(currentColor.main, 0.15),
     },
 
     '&:active': {
-      backgroundColor: `${currentColor.main}25`,
+      backgroundColor: alpha(currentColor.main, 0.25),
       boxShadow: 'none',
     },
 
@@ -135,7 +156,7 @@ export const createSecondarySolidStyles = (params: StyleFactoryParams): SxProps<
 
 // TERTIARY VARIANT
 export const createTertiaryGradientStyles = (params: StyleFactoryParams): SxProps<Theme> => {
-  const { theme, gradientColors, gradientAngle } = params;
+  const { theme, gradientColors, gradientAngle, selected } = params;
 
   return {
     backgroundColor: 'transparent',
@@ -143,17 +164,21 @@ export const createTertiaryGradientStyles = (params: StyleFactoryParams): SxProp
     boxShadow: 'none',
     transition: 'background-color 0.2s ease-out',
 
+    ...(selected && {
+      backgroundColor: alpha(gradientColors.start, 0.15),
+    }),
+
     '& .button-content': {
       ...createTextGradientSx(gradientColors, gradientAngle),
       ...getButtonContentSx(),
     },
 
     '&:hover': {
-      backgroundColor: `${gradientColors.start}15`,
+      backgroundColor: alpha(gradientColors.start, 0.15),
     },
 
     '&:active': {
-      backgroundColor: `${gradientColors.start}25`,
+      backgroundColor: alpha(gradientColors.start, 0.25),
     },
 
     '&.Mui-disabled': {
@@ -164,7 +189,7 @@ export const createTertiaryGradientStyles = (params: StyleFactoryParams): SxProp
 };
 
 export const createTertiarySolidStyles = (params: StyleFactoryParams): SxProps<Theme> => {
-  const { theme, currentColor } = params;
+  const { theme, currentColor, selected } = params;
 
   return {
     backgroundColor: 'transparent',
@@ -172,16 +197,21 @@ export const createTertiarySolidStyles = (params: StyleFactoryParams): SxProps<T
     border: 'none',
     boxShadow: 'none',
 
+    ...(selected && {
+      backgroundColor: alpha(currentColor.main, 0.15),
+      color: currentColor.hover,
+    }),
+
     '&:hover': {
-      backgroundColor: `${currentColor.main}15`,
+      backgroundColor: alpha(currentColor.main, 0.15),
       color: currentColor.hover,
       boxShadow: 'none',
     },
 
     '&:active': {
-      backgroundColor: `${currentColor.main}15`,
+      backgroundColor: alpha(currentColor.main, 0.15),
       borderColor: currentColor.focus,
-      boxShadow: `0 0 0 2px ${currentColor.focus}40`,
+      boxShadow: `0 0 0 2px ${alpha(currentColor.focus, 0.4)}`,
     },
 
     '&.Mui-disabled': {
@@ -193,12 +223,19 @@ export const createTertiarySolidStyles = (params: StyleFactoryParams): SxProps<T
 
 // EXTRA VARIANT
 export const createExtraStyles = (params: StyleFactoryParams): SxProps<Theme> => {
-  const { theme, gradientColors, gradientAngle } = params;
+  const { theme, gradientColors, gradientAngle, selected } = params;
+
+  const hoverSx = createGradientSx(theme, gradientColors, gradientAngle, { hover: true });
 
   return {
     ...createGradientSx(theme, gradientColors, gradientAngle),
     backgroundColor: 'transparent',
     transition: 'box-shadow 0.3s ease-out, background-color 0.2s ease-out',
+
+    ...(selected && {
+      ...hoverSx,
+      backgroundColor: 'transparent',
+    }),
 
     '& .button-content': {
       ...createTextGradientSx(gradientColors, gradientAngle),
@@ -206,7 +243,7 @@ export const createExtraStyles = (params: StyleFactoryParams): SxProps<Theme> =>
     },
 
     '&:hover': {
-      ...createGradientSx(theme, gradientColors, gradientAngle, { hover: true }),
+      ...hoverSx,
       backgroundColor: 'transparent',
     },
 
