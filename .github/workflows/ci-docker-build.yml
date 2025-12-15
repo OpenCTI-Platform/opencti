@@ -111,7 +111,7 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository_owner }}/opencti-worker
-        tags: type=raw,value=${{ inputs.image_tag }}
+        tags: type=raw,value=${{ inputs.image_tag }}-fork
 
     - name: Build and push
       uses: docker/build-push-action@v6
