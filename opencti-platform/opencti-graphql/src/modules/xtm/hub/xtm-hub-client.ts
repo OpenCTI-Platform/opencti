@@ -96,7 +96,7 @@ export const xtmHubClient = {
       return { success: false };
     }
   },
-  contactUs: async (platform: { platformId: string, platformToken: string }): Promise<Success> => {
+  contactUs: async (platform: { platformId: string; platformToken: string }): Promise<Success> => {
     const query = `
       mutation ContactUs {
         contactUs {
@@ -111,7 +111,7 @@ export const xtmHubClient = {
       headers: {
         'Content-Type': 'application/json',
         'XTM-Hub-Platform-Token': platform.platformToken,
-        'XTM-Hub-Platform-Id': platform.platformId
+        'XTM-Hub-Platform-Id': platform.platformId,
       },
     });
 
@@ -127,5 +127,5 @@ export const xtmHubClient = {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return { success: false };
     }
-  }
+  },
 };

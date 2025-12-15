@@ -67,7 +67,7 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
             <strong> {remainingDays} {remainingDays === 1 ? t_i18n('Day remaining') : t_i18n('Days remaining')}</strong>
           </>
         ),
-        onButtonClick
+        onButtonClick,
       };
     }
     return {

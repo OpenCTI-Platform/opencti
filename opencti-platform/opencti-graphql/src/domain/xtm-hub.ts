@@ -190,7 +190,7 @@ export const contactUsXtmHub = async (context: AuthContext, user: AuthUser): Pro
 
   const platformInformation = {
     platformId: settings.id,
-    platformToken: settings.xtm_hub_token
+    platformToken: settings.xtm_hub_token,
   };
 
   const response = await xtmHubClient.contactUs(platformInformation);
