@@ -2,7 +2,7 @@ import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeri
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { logFrontend } from '../config/conf';
-import { filterMembersWithUsersOrgs } from '../utils/access';
+import { filterMembersUsersWithUsersOrgs } from '../utils/access';
 
 const logResolvers = {
   Query: {
@@ -20,7 +20,7 @@ const logResolvers = {
       if (!realUser) {
         return null;
       }
-      const filteredUser = await filterMembersWithUsersOrgs(context, context.user, [realUser]);
+      const filteredUser = await filterMembersUsersWithUsersOrgs(context, context.user, [realUser]);
       return filteredUser[0];
     },
     context_data: (log, _) => (log.context_data?.id ? { ...log.context_data, entity_id: log.context_data.id } : log.context_data),

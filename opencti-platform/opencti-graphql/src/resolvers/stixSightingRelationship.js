@@ -23,7 +23,7 @@ import { numberOfContainersForObject } from '../domain/container';
 import { casesPaginated, containersPaginated, externalReferencesPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
-import { filterMembersWithUsersOrgs } from '../utils/access';
+import { filterMembersUsersWithUsersOrgs } from '../utils/access';
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -58,7 +58,7 @@ const stixSightingRelationshipResolvers = {
       if (!creators) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, creators);
+      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
     },
     objectMarking: (stixCoreObject, _, context) => context.batch.markingsBatchLoader.load(stixCoreObject),
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),

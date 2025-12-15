@@ -15,7 +15,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
 import { stixLoadByIdStringify } from '../database/middleware';
 import { loadThroughDenormalized } from './stix';
-import { filterMembersWithUsersOrgs } from '../utils/access';
+import { filterMembersUsersWithUsersOrgs } from '../utils/access';
 
 const stixRelationshipResolvers = {
   Query: {
@@ -44,7 +44,7 @@ const stixRelationshipResolvers = {
       if (!creators) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, creators);
+      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
     },
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     toStix: (rel, args, context) => stixLoadByIdStringify(context, context.user, rel.id, args),

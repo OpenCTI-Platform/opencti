@@ -11,7 +11,7 @@ import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 import { RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
 import { buildRefRelationKey, INPUT_PARTICIPANT } from '../schema/general';
 import { loadThroughDenormalized } from './stix';
-import { filterMembersWithUsersOrgs } from '../utils/access';
+import { filterMembersUsersWithUsersOrgs } from '../utils/access';
 import { findSecurityCoverageByCoveredId } from '../modules/securityCoverage/securityCoverage-domain';
 
 const incidentResolvers = {
@@ -32,7 +32,7 @@ const incidentResolvers = {
       if (!participants) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, participants);
+      return filterMembersUsersWithUsersOrgs(context, context.user, participants);
     },
   },
   IncidentsOrdering: {

@@ -2,7 +2,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { findTaskPaginated, findById, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_PARTICIPANT } from '../../schema/general';
-import { filterMembersWithUsersOrgs } from '../../utils/access';
+import { filterMembersUsersWithUsersOrgs } from '../../utils/access';
 
 const taskResolvers: Resolvers = {
   Query: {
@@ -18,7 +18,7 @@ const taskResolvers: Resolvers = {
       if (!participants) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, participants);
+      return filterMembersUsersWithUsersOrgs(context, context.user, participants);
     },
   },
   Mutation: {

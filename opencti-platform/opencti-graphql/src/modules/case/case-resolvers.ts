@@ -7,7 +7,7 @@ import { caseTasksPaginated } from '../task/task-domain';
 import type { BasicStoreEntityTask } from '../task/task-types';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_PARTICIPANT } from '../../schema/general';
-import { filterMembersWithUsersOrgs } from '../../utils/access';
+import { filterMembersUsersWithUsersOrgs } from '../../utils/access';
 import { storeLoadById } from '../../database/middleware-loader';
 import { FunctionalError } from '../../config/errors';
 
@@ -31,7 +31,7 @@ const caseResolvers: Resolvers = {
       if (!participants) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, participants);
+      return filterMembersUsersWithUsersOrgs(context, context.user, participants);
     },
   },
   CasesOrdering: {

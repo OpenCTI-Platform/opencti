@@ -15,7 +15,7 @@ import {
   draftWorkspaceEditAuthorizedMembers,
 } from './draftWorkspace-domain';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
-import { filterMembersWithUsersOrgs } from '../../utils/access';
+import { filterMembersUsersWithUsersOrgs } from '../../utils/access';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const draftWorkspaceResolvers: Resolvers = {
@@ -39,7 +39,7 @@ const draftWorkspaceResolvers: Resolvers = {
       if (!creators) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, creators);
+      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
     },
     objectsCount: (draft, _, context) => getObjectsCount(context, context.user, draft),
     processingCount: (draft, _, context) => getProcessingCount(context, context.user, draft),
