@@ -1,7 +1,7 @@
 import {
   addReport,
-  findReportPaginated,
   findById,
+  findReportPaginated,
   reportContainsStixObjectOrStixRelationship,
   reportDeleteElementsCount,
   reportDeleteWithElements,
@@ -23,10 +23,8 @@ import {
 } from '../domain/stixDomainObject';
 import { distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { loadThroughDenormalized } from './stix';
-import { INPUT_PARTICIPANT } from '../schema/general';
-import { filterMembersUsersWithUsersOrgs } from '../utils/access';
 import { findSecurityCoverageByCoveredId } from '../modules/securityCoverage/securityCoverage-domain';
+import { loadParticipants } from '../database/members';
 
 const reportResolvers = {
   Query: {
@@ -62,13 +60,7 @@ const reportResolvers = {
   },
   Report: {
     deleteWithElementsCount: (report, _, context) => reportDeleteElementsCount(context, context.user, report.id),
-    objectParticipant: async (container, _, context) => {
-      const participants = await loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' });
-      if (!participants) {
-        return [];
-      }
-      return filterMembersUsersWithUsersOrgs(context, context.user, participants);
-    },
+    objectParticipant: async (container, _, context) => loadParticipants(context, context.user, container),
     securityCoverage: (report, _, context) => findSecurityCoverageByCoveredId(context, context.user, report.id),
   },
   Mutation: {
