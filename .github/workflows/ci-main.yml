@@ -18,7 +18,7 @@ jobs:
       secrets: inherit
 
 # Required to pass artifact from a workflow to another
-  reupload-artifact:
+  reupload-image-artifact:
       needs: wf-build-image
       runs-on: ubuntu-latest
       steps:
@@ -53,7 +53,7 @@ jobs:
   wf-api-test:
       name: API test
       uses: ./.github/workflows/ci-test-api.yml
-      needs: wf-build-image
+      needs: reupload-image-artifact
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
@@ -68,7 +68,7 @@ jobs:
   wf-client-python-test:
       name: Client Python
       uses: ./.github/workflows/ci-test-client-python.yml
-      needs: wf-build-image
+      needs: reupload-image-artifact
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
