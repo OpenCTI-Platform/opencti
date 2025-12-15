@@ -34,9 +34,6 @@ const checkUserAccess = async (context, user, id) => {
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
   const opinion = await findById(context, user, id);
-  if (!opinion) {
-    return;
-  }
   const isCreator = opinion[RELATION_CREATED_BY] ? opinion[RELATION_CREATED_BY] === user.individual_id : false;
   const isCollaborationAllowed = userCapabilities.includes(KNOWLEDGE_COLLABORATION) && isCreator;
   const accessGranted = isAuthorized || isCollaborationAllowed;

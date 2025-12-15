@@ -1,4 +1,4 @@
-import { addSector, childSectorsPaginated, findSectorPaginated, findById, isSubSector, parentSectorsPaginated, targetedOrganizations } from '../domain/sector'; ;
+import { addSector, childSectorsPaginated, findSectorPaginated, findById, isSubSector, parentSectorsPaginated, targetedOrganizations } from '../domain/sector';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
