@@ -108,7 +108,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/opencti-worker
+        images: ghcr.io/opencti-platform/opencti/worker
         tags: type=raw,value=${{ inputs.image_tag }}-fork
 
     - name: Build and push
@@ -117,7 +117,5 @@ jobs:
         context: ${{ inputs.build_context_platform }}
         file: opencti-worker/${{ inputs.dockerfile_platform }}
         push: true
-        tags: ${{ steps.meta.outputs.tags }}
+        tags: test
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/opencti-workerr:buildcache
-        cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/opencti-worker:buildcache,mode=max
