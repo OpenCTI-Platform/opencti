@@ -1,24 +1,24 @@
 /* eslint-disable camelcase */
-import { v4 as uuidv4 } from 'uuid';
-import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
+import {v4 as uuidv4} from 'uuid';
+import {clearIntervalAsync, setIntervalAsync} from 'set-interval-async/dynamic';
 import * as R from 'ramda';
-import { Promise as BluePromise } from 'bluebird';
-import { lockResources } from '../lock/master-lock';
-import { buildQueryFilters, findBackgroundTask, updateTask } from '../domain/backgroundTask';
-import conf, { booleanConf, logApp } from '../config/conf';
-import { resolveUserByIdFromCache } from '../domain/user';
-import { storeLoadByIdsWithRefs } from '../database/middleware';
-import { now } from '../utils/format';
-import { isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
-import { elList } from '../database/engine';
-import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
-import { executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import { buildEntityFilters, internalFindByIds, internalLoadById, fullRelationsList } from '../database/middleware-loader';
-import { getRule } from '../domain/rules';
-import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { generateIndicatorFromObservable } from '../domain/stixCyberObservable';
+import {Promise as BluePromise} from 'bluebird';
+import {lockResources} from '../lock/master-lock';
+import {buildQueryFilters, findBackgroundTask, updateTask} from '../domain/backgroundTask';
+import conf, {booleanConf, logApp} from '../config/conf';
+import {resolveUserByIdFromCache} from '../domain/user';
+import {storeLoadByIdsWithRefs} from '../database/middleware';
+import {now} from '../utils/format';
+import {isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED} from '../database/utils';
+import {elList} from '../database/engine';
+import {FunctionalError, TYPE_LOCK_ERROR} from '../config/errors';
+import {ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX} from '../schema/general';
+import {executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER} from '../utils/access';
+import { buildEntityFilters, fullRelationsList, internalFindByIds, internalLoadById } from '../database/middleware-loader';
+import {getRule} from '../domain/rules';
+import {ENTITY_TYPE_INDICATOR} from '../modules/indicator/indicator-types';
+import {isStixCyberObservable} from '../schema/stixCyberObservable';
+import {generateIndicatorFromObservable} from '../domain/stixCyberObservable';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_ADD_GROUPS,
@@ -48,23 +48,23 @@ import {
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE,
 } from '../domain/backgroundTask-common';
-import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { getDraftContext } from '../utils/draftContext';
-import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
-import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
-import { convertStoreToStix_2_1, convertTypeToStixType } from '../database/stix-2-1-converter';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
-import { generateStandardId } from '../schema/identifier';
-import { isBasicRelationship } from '../schema/stixRelationship';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { getEntityFromCache } from '../database/cache';
-import { objects as getContainerObjects } from '../domain/container';
-import { ruleApply } from './ruleManager';
-import { doYield } from '../utils/eventloop-utils';
+import {schemaRelationsRefDefinition} from '../schema/schema-relationsRef';
+import {getDraftContext} from '../utils/draftContext';
+import {getBestBackgroundConnectorId, pushToWorkerForConnector} from '../database/rabbitmq';
+import {updateExpectationsNumber, updateProcessedTime} from '../domain/work';
+import {convertStoreToStix_2_1, convertTypeToStixType} from '../database/stix-2-1-converter';
+import {STIX_EXT_OCTI} from '../types/stix-2-1-extensions';
+import {RELATION_BASED_ON} from '../schema/stixCoreRelationship';
+import {extractValidObservablesFromIndicatorPattern} from '../utils/syntax';
+import {generateStandardId} from '../schema/identifier';
+import {isBasicRelationship} from '../schema/stixRelationship';
+import {isStixSightingRelationship} from '../schema/stixSightingRelationship';
+import {isStixDomainObjectContainer} from '../schema/stixDomainObject';
+import {ENTITY_TYPE_SETTINGS} from '../schema/internalObject';
+import {getEntityFromCache} from '../database/cache';
+import {objects as getContainerObjects} from '../domain/container';
+import {ruleApply} from './ruleManager';
+import {doYield} from '../utils/eventloop-utils';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -287,12 +287,7 @@ const buildBaseBundleElement = (element, additionalOCTIExtensions, standard_id) 
 };
 const buildBundleElement = (element, actionType, operations) => {
   const additionalExtensions = baseOperationBuilder(actionType, operations, element);
-  const bundleObject = buildBaseBundleElement(element, additionalExtensions);
-  bundleObject.extensions[STIX_EXT_OCTI] = {
-    ...bundleObject.extensions[STIX_EXT_OCTI],
-    ...baseOperationBuilder(actionType, operations, element)
-  };
-  return bundleObject;
+  return buildBaseBundleElement(element, additionalExtensions);
 };
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
