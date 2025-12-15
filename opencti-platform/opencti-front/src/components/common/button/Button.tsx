@@ -2,7 +2,7 @@ import React from 'react';
 import { Button as MuiButton, ButtonProps as MuiButtonProps } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import type { SxProps, Theme } from '@mui/material/styles';
-import type { ButtonIntent, ButtonSize, GradientVariant } from './Button.types';
+import type { ButtonColorKey, ButtonIntent, ButtonSize, GradientVariant } from './Button.types';
 import { getColorDefinitions, getGradientColors, getSizeConfig } from './Button.utils';
 import {
   createBaseStyles,
@@ -15,10 +15,11 @@ import {
   createExtraStyles,
 } from './Button.styles.factory';
 
-type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'extra';
+export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'extra';
 
 interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'size'> {
   variant?: ButtonVariant;
+  color?: ButtonColorKey;
   intent?: ButtonIntent;
   size?: ButtonSize;
   gradient?: boolean;
@@ -31,7 +32,11 @@ interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'si
   fullWidth?: boolean;
   iconOnly?: boolean;
   component?: React.ElementType;
-  to?: string
+  to?: string;
+  href?: string;
+  target?: string;
+  rel?: string;
+  download?: string | boolean;
 }
 
 type RestrictedIntentButtonProps = BaseButtonProps & {
@@ -49,6 +54,7 @@ export type CustomButtonProps = RestrictedIntentButtonProps | DefaultIntentButto
 
 const Button: React.FC<CustomButtonProps> = ({
   variant = 'primary',
+  color,
   intent = 'default',
   size = 'default',
   gradient = false,
@@ -64,19 +70,21 @@ const Button: React.FC<CustomButtonProps> = ({
   ...props
 }) => {
   const theme = useTheme();
-  
+
+  // color takes over intent
+  const currentIntent: ButtonColorKey = color ?? intent;
   const colors = getColorDefinitions(theme);
-  const currentColor = colors[intent];
+  const currentColor = colors[currentIntent];
 
   const isGradient = gradient || variant === 'extra';
-  
+
   const gradientColors = getGradientColors(
     theme,
     isGradient,
     gradientVariant,
     currentColor,
     gradientStartColor,
-    gradientEndColor
+    gradientEndColor,
   );
 
   const sizeConfig = getSizeConfig(theme, size, iconOnly);
@@ -94,23 +102,23 @@ const Button: React.FC<CustomButtonProps> = ({
   const variantSx = (() => {
     switch (variant) {
       case 'primary':
-        return gradient 
+        return gradient
           ? createPrimaryGradientStyles(styleParams)
           : createPrimarySolidStyles(styleParams);
-      
+
       case 'secondary':
         return gradient
           ? createSecondaryGradientStyles(styleParams)
           : createSecondarySolidStyles(styleParams);
-      
+
       case 'tertiary':
         return gradient
           ? createTertiaryGradientStyles(styleParams)
           : createTertiarySolidStyles(styleParams);
-      
+
       case 'extra':
         return createExtraStyles(styleParams);
-      
+
       default:
         return {};
     }

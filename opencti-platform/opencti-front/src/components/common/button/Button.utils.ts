@@ -1,15 +1,15 @@
 import { Theme } from '@mui/material';
-import type { ButtonIntent, GradientVariant, ColorDefinition, GradientColor, ButtonSize } from './Button.types';
+import type { GradientVariant, ColorDefinition, GradientColor, ButtonSize, ButtonColorKey } from './Button.types';
 
-export const getColorDefinitions = (theme: Theme): Record<ButtonIntent, ColorDefinition> => {
-  return { 
+export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorDefinition> => {
+  return {
     default: {
       main: theme.palette.primary.main,
       hover: theme.palette.primary.dark,
       focus: theme.palette.text.primary,
       text: theme.palette.primary.contrastText,
       border: theme.palette.primary.main,
-      borderColor: theme.palette?.border?.main ?? '#252A35'
+      borderColor: theme.palette?.border?.main ?? '#252A35',
     },
     destructive: {
       main: theme.palette.error.main,
@@ -17,7 +17,7 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonIntent, ColorDef
       focus: theme.palette.text.primary,
       text: theme.palette.error.main,
       border: theme.palette.error.main,
-      borderColor: theme.palette?.border?.main ?? '#252A35'
+      borderColor: theme.palette?.border?.main ?? '#252A35',
     },
     ai: {
       main: theme.palette.ai?.main ?? '#B286FF',
@@ -25,7 +25,55 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonIntent, ColorDef
       focus: theme.palette?.ai?.main ?? '#B286FF',
       text: theme.palette.ai?.contrastText ?? '#B286FF',
       border: theme.palette?.ai?.light ?? '#B286FF',
-      borderColor: '#252A35'
+      borderColor: '#252A35',
+    },
+    primary: {
+      main: theme.palette.primary.main,
+      hover: theme.palette.primary.dark,
+      focus: theme.palette.primary.light,
+      text: theme.palette.primary.contrastText,
+      border: theme.palette.primary.main,
+      borderColor: theme.palette.primary.main,
+    },
+    secondary: {
+      main: theme.palette.secondary.main,
+      hover: theme.palette.secondary.dark,
+      focus: theme.palette.secondary.light,
+      text: theme.palette.secondary.contrastText,
+      border: theme.palette.secondary.main,
+      borderColor: theme.palette.secondary.main,
+    },
+    success: {
+      main: theme.palette.success.main,
+      hover: theme.palette.success.dark,
+      focus: theme.palette.success.light,
+      text: theme.palette.success.contrastText,
+      border: theme.palette.success.main,
+      borderColor: theme.palette.success.main,
+    },
+    error: {
+      main: theme.palette.error.main,
+      hover: theme.palette.error.dark,
+      focus: theme.palette.error.light,
+      text: theme.palette.error.contrastText,
+      border: theme.palette.error.main,
+      borderColor: theme.palette.error.main,
+    },
+    warning: {
+      main: theme.palette.warning.main,
+      hover: theme.palette.warning.dark,
+      focus: theme.palette.warning.light,
+      text: theme.palette.warning.contrastText,
+      border: theme.palette.warning.main,
+      borderColor: theme.palette.warning.main,
+    },
+    info: {
+      main: theme.palette.info.main,
+      hover: theme.palette.info.dark,
+      focus: theme.palette.info.light,
+      text: theme.palette.info.contrastText,
+      border: theme.palette.info.main,
+      borderColor: theme.palette.info.main,
     },
   };
 };
@@ -36,7 +84,7 @@ export const getGradientColors = (
   gradientVariant: GradientVariant,
   currentColor: ColorDefinition,
   customStartColor?: string,
-  customEndColor?: string
+  customEndColor?: string,
 ): GradientColor => {
   if (!gradient) {
     return { start: '', end: '' };
@@ -73,11 +121,11 @@ export const createGradientSx = (
   theme: Theme,
   gradientColors: GradientColor,
   gradientAngle: number,
-  options: { hover?: boolean; active?: boolean } = {}
+  options: { hover?: boolean; active?: boolean } = {},
 ) => {
   const { hover = false, active = false } = options;
   const bgColor = theme.palette?.background?.paper || '#1a2332';
-  
+
   const gradientStr = `linear-gradient(${gradientAngle}deg, ${gradientColors.start} 0%, ${gradientColors.end} 100%)`;
 
   const baseStyle = {
@@ -90,7 +138,7 @@ export const createGradientSx = (
   if (hover || active) {
     const shadowY = active ? 2 : 0;
     const blur = active ? 8 : 6;
-    
+
     return {
       ...baseStyle,
       boxShadow: `1px ${shadowY}px ${blur}px -1px ${gradientColors.start}, -1px ${shadowY}px ${blur}px -1px ${gradientColors.end}`,
@@ -105,10 +153,10 @@ export const createGradientSx = (
 
 export const createTextGradientSx = (
   gradientColors: GradientColor,
-  gradientAngle: number
+  gradientAngle: number,
 ) => {
   const gradientStr = `linear-gradient(${gradientAngle}deg, ${gradientColors.start} 0%, ${gradientColors.end} 100%)`;
-  
+
   return {
     background: gradientStr,
     color: 'transparent',
@@ -136,7 +184,7 @@ export const getButtonContentSx = () => ({
 
 export const getSizeConfig = (theme: Theme, size: ButtonSize, iconOnly: boolean) => {
   const config = theme.button.sizes[size];
-  
+
   return {
     ...config,
     padding: iconOnly ? '0' : config.padding,

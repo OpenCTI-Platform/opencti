@@ -57,7 +57,7 @@ export const createPrimaryGradientStyles = (params: StyleFactoryParams): SxProps
     '&:hover': createGradientSx(theme, gradientColors, gradientAngle, { hover: true }),
 
     '&:active': createGradientSx(theme, gradientColors, gradientAngle, { active: true }),
-    
+
     '&.Mui-disabled': getDisabledSx(theme),
   };
 };
