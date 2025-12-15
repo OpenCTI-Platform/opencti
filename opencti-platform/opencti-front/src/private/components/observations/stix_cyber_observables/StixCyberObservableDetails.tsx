@@ -417,8 +417,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
       !n.key.startsWith('__')
     );
 
-  const file = stixCyberObservable.importFiles
-  && stixCyberObservable.importFiles.edges.length > 0
+  const file = stixCyberObservable.importFiles && stixCyberObservable.importFiles.edges.length > 0
     ? stixCyberObservable.importFiles.edges[0].node
     : null;
 
@@ -443,7 +442,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
 
       <Paper
         sx={{ padding: '15px', marginTop: theme.spacing(1) }}
-        className={'paper-for-grid'}
+        className="paper-for-grid"
         variant="outlined"
       >
         <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
@@ -533,7 +532,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
           })}
         </Grid>
 
-        <Divider/>
+        <Divider />
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2.5 }}>
           {stixCyberObservable.entity_type === 'Network-Traffic' && (
