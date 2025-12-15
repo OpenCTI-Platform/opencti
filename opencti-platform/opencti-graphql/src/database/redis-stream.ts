@@ -2,14 +2,7 @@ import { Cluster, Redis } from 'ioredis';
 import * as R from 'ramda';
 import conf, { logApp, REDIS_PREFIX } from '../config/conf';
 import type { ActivityStreamEvent, BaseEvent, DataEvent, SseEvent, StreamNotifEvent } from '../types/event';
-import {
-  ACTIVITY_STREAM_NAME,
-  LIVE_STREAM_NAME,
-  NOTIFICATION_STREAM_NAME,
-  type RawStreamClient,
-  type StreamOption,
-  type StreamProcessor,
-} from './stream/stream-utils';
+import { ACTIVITY_STREAM_NAME, LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamOption, type StreamProcessor } from './stream/stream-utils';
 import { createRedisClient, getClientBase, getClientXRANGE } from './redis';
 import { isEmptyField, wait, waitInSec } from './utils';
 import { utcDate } from '../utils/format';
