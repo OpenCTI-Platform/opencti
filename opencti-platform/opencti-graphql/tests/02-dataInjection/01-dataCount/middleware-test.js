@@ -50,7 +50,7 @@ import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
 import { generateInternalId } from '../../../src/schema/identifier';
 import { mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
-import { entitiesCounter, relationsCounter } from './entityCountHelper';
+import { entitiesCounter, relationsCounter } from '../../utils/entityCountHelper';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -94,14 +94,14 @@ describe('Attribute updater', () => {
     const campaignId = campaign.internal_id;
     const input = { id: '92d46985-17a6-4610-8be8-cc70c82ed214' };
     const dataPromise = patchAttribute(testContext, ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
-    expect(dataPromise).rejects.toThrow();
+    await expect(dataPromise).rejects.toThrow();
   });
   it('should update fail for unknown attributes', async () => {
     const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
     const input = { observable_value: 'test' };
     const dataPromise = patchAttribute(testContext, ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
-    expect(dataPromise).rejects.toThrow();
+    await expect(dataPromise).rejects.toThrow();
   });
   it('should update dont do anything if already the same', async () => {
     const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
@@ -452,7 +452,7 @@ describe('Element loader', () => {
     const report = await elLoadById(testContext, ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const internalId = report.internal_id;
     const loadPromise = storeLoadById(testContext, ADMIN_USER, internalId);
-    expect(loadPromise).rejects.toThrow();
+    await expect(loadPromise).rejects.toThrow();
     const element = await storeLoadById(testContext, ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(element).not.toBeNull();
     expect(element.id).toEqual(internalId);
@@ -462,7 +462,7 @@ describe('Element loader', () => {
     // No type
     const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
     const loadPromise = storeLoadById(testContext, ADMIN_USER, stixId);
-    expect(loadPromise).rejects.toThrow();
+    await expect(loadPromise).rejects.toThrow();
     const element = await storeLoadById(testContext, ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(element).not.toBeNull();
     expect(element.standard_id).toEqual('report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
@@ -473,7 +473,7 @@ describe('Element loader', () => {
     const relation = await elLoadById(testContext, ADMIN_USER, 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
     const relationId = relation.internal_id;
     const loadPromise = storeLoadById(testContext, ADMIN_USER, relationId, null);
-    expect(loadPromise).rejects.toThrow();
+    await expect(loadPromise).rejects.toThrow();
     const element = await storeLoadById(testContext, ADMIN_USER, relationId, 'uses');
     expect(element).not.toBeNull();
     expect(element.id).toEqual(relationId);
@@ -482,7 +482,7 @@ describe('Element loader', () => {
   it('should load relation by stix id', async () => {
     const stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
     const loadPromise = storeLoadById(testContext, ADMIN_USER, stixId, null);
-    expect(loadPromise).rejects.toThrow();
+    await expect(loadPromise).rejects.toThrow();
     const element = await storeLoadById(testContext, ADMIN_USER, stixId, 'uses');
     expect(element).not.toBeNull();
     expect(element.x_opencti_stix_ids).toEqual([stixId]);

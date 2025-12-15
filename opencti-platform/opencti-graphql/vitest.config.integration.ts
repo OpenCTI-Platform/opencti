@@ -17,11 +17,9 @@ export const buildIntegrationTestConfig = (include: string[]) => defineConfig({
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
     },
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+    maxWorkers: 1,
+    isolate: false,
+    fileParallelism: false,
     sequence: {
       shuffle: false,
       sequencer: class Sequencer extends BaseSequencer {

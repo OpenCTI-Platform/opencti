@@ -51,7 +51,7 @@ const elWhiteUser = async () => {
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', async () => {
-    expect(searchEngineInit()).resolves.toBeTruthy();
+    await expect(searchEngineInit()).resolves.toBeTruthy();
     // check all WRITE_PLATFORM_INDICES creation
     for (let i = 0; i < WRITE_PLATFORM_INDICES.length; i += 1) {
       const indexName = WRITE_PLATFORM_INDICES[i];
@@ -220,8 +220,7 @@ describe('Elasticsearch computation', () => {
   });
   it('should invalid time histogram fail', async () => {
     const histogramCount = elHistogramCount(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'minute' });
-    // noinspection ES6MissingAwait.toEqual(36);
-    expect(histogramCount).rejects.toThrow();
+    await expect(histogramCount).rejects.toThrow();
   });
   it('should day histogram accurate', async () => {
     const data = await elHistogramCount(
@@ -990,8 +989,7 @@ describe('Elasticsearch reindex', () => {
   });
   it('should relation reindex check consistency', async () => {
     const indexPromise = elIndexElements(testContext, ADMIN_USER, 'uses', [{ relationship_type: 'uses' }]);
-    // noinspection ES6MissingAwait
-    expect(indexPromise).rejects.toThrow();
+    await expect(indexPromise).rejects.toThrow();
   });
   it('should reindex sighting with unmapped fields', async () => {
     // dummy object with old fields that are not part of the strict mapping
