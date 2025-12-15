@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { includes } from 'ramda';
 import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -27,6 +26,7 @@ import {
 } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservableDetails_stixCyberObservable.graphql';
 import { Theme } from '../../../../components/Theme';
 import { PopoverProps } from '@mui/material/Popover';
+import useAttributeValueToReadableValue from '../../../../utils/hooks/useAttributeValueToReadableValue';
 
 const stixCyberObservableDetailsFragment = graphql`
   fragment StixCyberObservableDetails_stixCyberObservable on StixCyberObservable {
@@ -299,20 +299,6 @@ const reorderMediaContentObservablesAttributes = (data: { key: string; value: st
     .filter(Boolean) as { key: string; value: string }[];
 };
 
-const useTransformValue = (value: string | boolean | string[] | number, key: string) => {
-  const { dateAttributes } = useAttributes();
-  const { fldt } = useFormatter();
-
-  const result = includes(key, dateAttributes) ? fldt(value) : value;
-
-  if (result === true) return 'TRUE';
-  if (result === false) return 'FALSE';
-  if (Array.isArray(result)) return result.join('\n');
-  if (typeof result === 'number') return result.toString();
-
-  return result;
-};
-
 interface DownloadFileButtonMenuProps {
   fileSize: number | null | undefined;
   encodedFilePath: string | null;
@@ -522,7 +508,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
               );
             }
 
-            const finalValue = useTransformValue(value, key);
+            const finalValue = useAttributeValueToReadableValue(value, key);
 
             return (
               <Grid key={key} size={6}>
