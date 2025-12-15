@@ -39,8 +39,8 @@ export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
   // Ternary Operator (?): Defaults if basePath is undefined, null, "" (empty string), 0, etc (falsy values).
   // basePath is trimmed in '../config/conf.js' to prevent a user from setting it to something like '       '
-  // NOTE: Do NOT use Nullish Coalescing (??): Would only default if basePath is undefined or null. 
-  // It might be set to an empty string and would fail to set properly in base2return var in next line 
+  // NOTE: Do NOT use Nullish Coalescing (??): Would only default if basePath is undefined or null.
+  // It might be set to an empty string and would fail to set properly in base2return var in next line
   const base2return = basePath ? basePath : '/';
   // In some odd configurations refererToSanitize will be the string('undefined') versus value(undefined)
   if (!refererToSanitize || refererToSanitize === 'undefined') return base2return;

@@ -21,7 +21,7 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
 
   const attackPatterns = ((securityCoverage.attackPatterns?.edges ?? [])
     .map((edge) => edge.node)
-    .filter(node => node?.to !== null && node?.to !== undefined)
+    .filter((node) => node?.to !== null && node?.to !== undefined)
     .map((node) => node.to)) as unknown as Parameters<typeof AttackPatternsMatrix>[0]['attackPatterns'];
 
   const attackPatternsCoverageMap = new Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>();

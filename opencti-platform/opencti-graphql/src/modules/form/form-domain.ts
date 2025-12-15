@@ -571,14 +571,14 @@ export const formSubmit = async (
           mainEntity[field.attributeMapping.attributeName] = convertedValue;
         }
         mainEntity = completeEntity(mainEntityType, mainEntity);
-        if( isStixCyberObservable(mainEntity.entity_type)) {
-            if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
-                throw FunctionalError('Main entity observable is not correctly formatted', {
-                    type: mainEntity.entity_type,
-                    input: mainEntity,
-                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
-                });
-            }
+        if (isStixCyberObservable(mainEntity.entity_type)) {
+          if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
+            throw FunctionalError('Main entity observable is not correctly formatted', {
+              type: mainEntity.entity_type,
+              input: mainEntity,
+              doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+            });
+          }
         }
         mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
@@ -626,15 +626,15 @@ export const formSubmit = async (
           mainEntity.context = 'form';
         }
         mainEntity = completeEntity(mainEntityType, mainEntity);
-          if( isStixCyberObservable(mainEntity.entity_type)) {
-              if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
-                  throw FunctionalError('Main entity observable is not correctly formatted', {
-                      type: mainEntity.entity_type,
-                      input: mainEntity,
-                      doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
-                  });
-              }
+        if (isStixCyberObservable(mainEntity.entity_type)) {
+          if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
+            throw FunctionalError('Main entity observable is not correctly formatted', {
+              type: mainEntity.entity_type,
+              input: mainEntity,
+              doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+            });
           }
+        }
         mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
       }
@@ -652,15 +652,15 @@ export const formSubmit = async (
       // Transform special fields after applying all field values
       mainEntity = await transformSpecialFields(context, user, mainEntity, mainEntityFields, false);
       mainEntity = completeEntity(mainEntityType, mainEntity);
-        if( isStixCyberObservable(mainEntity.entity_type)) {
-            if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
-                throw FunctionalError('Main entity observable is not correctly formatted', {
-                    type: mainEntity.entity_type,
-                    input: mainEntity,
-                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
-                });
-            }
+      if (isStixCyberObservable(mainEntity.entity_type)) {
+        if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
+          throw FunctionalError('Main entity observable is not correctly formatted', {
+            type: mainEntity.entity_type,
+            input: mainEntity,
+            doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+          });
         }
+      }
       mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
       mainEntityStixId = mainEntity.standard_id;
     }
@@ -704,14 +704,14 @@ export const formSubmit = async (
                 newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
               }
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-              if( isStixCyberObservable(newAdditionalEntity.entity_type)) {
-                  if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
-                      throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
-                          type: newAdditionalEntity.entity_type,
-                          input: newAdditionalEntity,
-                          doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
-                      });
-                  }
+              if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
+                if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
+                  throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
+                    type: newAdditionalEntity.entity_type,
+                    input: newAdditionalEntity,
+                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  });
+                }
               }
               const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
               bundle.objects.push(stixAdditionalEntity);
@@ -765,14 +765,14 @@ export const formSubmit = async (
                 newAdditionalEntity.context = 'form';
               }
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-              if( isStixCyberObservable(newAdditionalEntity.entity_type)) {
-                  if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
-                      throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
-                          type: newAdditionalEntity.entity_type,
-                          input: newAdditionalEntity,
-                          doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
-                      });
-                  }
+              if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
+                if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
+                  throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
+                    type: newAdditionalEntity.entity_type,
+                    input: newAdditionalEntity,
+                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  });
+                }
               }
               const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
               bundle.objects.push(stixAdditionalEntity);
@@ -822,14 +822,14 @@ export const formSubmit = async (
               }
 
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-              if( isStixCyberObservable(newAdditionalEntity.entity_type)) {
-                  if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
-                      throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
-                          type: newAdditionalEntity.entity_type,
-                          input: newAdditionalEntity,
-                          doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
-                      });
-                 }
+              if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
+                if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
+                  throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
+                    type: newAdditionalEntity.entity_type,
+                    input: newAdditionalEntity,
+                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  });
+                }
               }
               const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
               bundle.objects.push(stixAdditionalEntity);
