@@ -4,7 +4,7 @@ import { VocabularyCategory } from '../generated/graphql';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 
-const message = '[MIGRATION] Vocabulary add SSHKeyTypeOv';
+const message = '[MIGRATION] Vocabulary add key_type_ov';
 export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration');

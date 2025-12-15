@@ -70,7 +70,7 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
       >
         <Grid item xs={6}>
           <StixCyberObservableDetails
-            stixCyberObservable={stixCyberObservable}
+            data={stixCyberObservable}
           />
         </Grid>
         <Grid item xs={6}>
