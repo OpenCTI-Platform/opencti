@@ -535,35 +535,35 @@ describe('buildChanges standard behavior', async () => {
   });
   it('should build empty changes for Auth members change', async () => {
     const inputs = [{
-      key:'restricted_members',
-      previous:[],
-      value:[{
+      key: 'restricted_members',
+      previous: [],
+      value: [{
         access_right: 'admin',
         id: ADMIN_USER.id,
-      }]
+      }],
     }];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([]);
   });
   it('should not have auth member in changes for description and auth members add', async () => {
     const inputs = [{
-      key:'restricted_members',
-      previous:[],
-      value:[{
+      key: 'restricted_members',
+      previous: [],
+      value: [{
         access_right: 'admin',
         id: ADMIN_USER.id,
       },
-        {
-          key: 'description',
-          previous: ['description'],
-          value: ['new description']
-        }]
+      {
+        key: 'description',
+        previous: ['description'],
+        value: ['new description'],
+      }],
     }];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([[{
       field: 'Description',
       previous: ['description'],
-      new: ['new description']
+      new: ['new description'],
     }]]);
   });
 });
