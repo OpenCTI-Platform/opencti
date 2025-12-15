@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import {
-  buildChanges,
   buildRestrictedEntity,
   createEntity,
   createRelationRaw,
