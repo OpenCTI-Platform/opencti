@@ -175,7 +175,7 @@ const pirManagerHandler = async () => {
     const { lastEventId } = await fetchStreamEventsRangeFromEventId(
       pir.lastEventId,
       processStreamEventsForPir(context, pir),
-      { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE, autoReconnect: false, provider: StreamProvider.PIR },
+      { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE, autoReconnect: false },
     );
       // Update pir last event id.
     if (lastEventId !== pir.lastEventId) {
