@@ -78,7 +78,7 @@ const PlaybookFlowForm = ({
 }: PlaybookFlowFormProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const nodeData = action === 'config' ? selectedNode?.data : undefined;
+  const nodeData = (action === 'config' || action === 'replace') ? selectedNode?.data : undefined;
   const currentConfig = nodeData?.configuration ?? null;
 
   const filtersState = useFiltersState(currentConfig?.filters
