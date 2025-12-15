@@ -123,15 +123,3 @@ jobs:
         name: docker-image-opencti-worker
         path: /tmp/opencti-worker.tar
         retention-days: 1
-
-  test-download-opencti-worker:
-    name: Build OpenCTI Worker image
-    runs-on: ubuntu-latest
-    needs: build-opencti-worker
-    steps:
-    - name: Download image worker
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-opencti-worker
-        path: /tmp/opencti-worker.tar
-

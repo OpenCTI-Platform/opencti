@@ -19,7 +19,7 @@ jobs:
 
 # Required to pass artifact from a workflow to another
   reupload-artifact:
-      needs: build
+      needs: wf-build-image
       runs-on: ubuntu-latest
       steps:
         - name: Download image worker
