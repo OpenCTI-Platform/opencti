@@ -17,39 +17,6 @@ jobs:
         build_context_worker: "."
       secrets: inherit
 
-# Required to pass artifact from a workflow to another
-  reupload-image-artifact:
-      needs: wf-build-image
-      runs-on: ubuntu-latest
-      steps:
-        - name: Download image worker
-          uses: actions/download-artifact@v4
-          with:
-            name: docker-image-opencti-worker
-            path: /tmp/opencti-worker.tar
-
-        - name: Re-upload image worker for next workflow
-          uses: actions/upload-artifact@v4
-          with:
-            name: docker-image-opencti-worker-shared
-            path: /tmp/opencti-worker.tar
-            retention-days: 1
-
-        - name: Download image platform
-          uses: actions/download-artifact@v4
-          with:
-            name: docker-image-opencti-platform
-            path: /tmp/opencti-platform.tar
-
-        - name: Re-upload image platform for next workflow
-          uses: actions/upload-artifact@v4
-          with:
-            name: docker-image-opencti-platform-shared
-            path: /tmp/opencti-platform.tar
-            retention-days: 1
-
-
-
   wf-api-test:
       name: API test
       uses: ./.github/workflows/ci-test-api.yml

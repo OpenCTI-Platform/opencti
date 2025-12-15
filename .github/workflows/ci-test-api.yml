@@ -26,39 +26,12 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-
-    - name: Download image platform run id
+    - name: Download image platform
       continue-on-error: true
       uses: actions/download-artifact@v4
       with:
         name: docker-image-opencti-platform
         path: /tmp/opencti-platform.tar
-        run-id: ${{ inputs.run-id }}
-
-
-    - name: Download image platform runid + secret
-      continue-on-error: true
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-opencti-platform
-        path: /tmp/opencti-platform.tar
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        run-id: ${{ inputs.run-id }}
-
-    - name: Download image platform - simple
-      continue-on-error: true
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-opencti-platform
-        path: /tmp/opencti-platform.tar
-
-
-    - name: Download image platform - simple shared
-      continue-on-error: true
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-opencti-platform-shared
-        path: /tmp/opencti-platform-shared.tar
 
     - name: Download image worker
       uses: actions/download-artifact@v4
@@ -69,6 +42,8 @@ jobs:
     - name: Load image
       run: |
           set -eux
+          ls -larth /tmp
+          ls -larth /tmp/opencti-platform.tar   
           docker load --input /tmp/opencti-platform.tar   
           docker load --input /tmp/opencti-worker.tar   
           docker images
