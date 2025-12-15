@@ -2581,7 +2581,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
   // endregion
   const revolvedInputs = await resolveRefsForInputs(context, user, initial.entity_type, newInputs);
-  
+
   return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
 

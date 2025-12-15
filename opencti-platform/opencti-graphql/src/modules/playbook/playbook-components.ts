@@ -424,8 +424,8 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
       //   }
 
       // Check if new bundle objects has the same object ids of previous bundle objects
-      const enrichedObjects = stixBundle.objects.map(newObj => {
-        const prevObj = previousStepBundle.objects.find(o => o.id === newObj.id);
+      const enrichedObjects = stixBundle.objects.map((newObj) => {
+        const prevObj = previousStepBundle.objects.find((o) => o.id === newObj.id);
         if (prevObj) {
           const resolveDuplicate = (a: any, b: any) => {
             if (Array.isArray(a) && Array.isArray(b)) {
@@ -440,8 +440,8 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
       });
 
       // Check if new bundle contains objects of previous bundle and add them if not in it
-      previousStepBundle.objects.forEach(prevObj => {
-        const existsInCurrent = stixBundle.objects.some(o => o.id === prevObj.id);
+      previousStepBundle.objects.forEach((prevObj) => {
+        const existsInCurrent = stixBundle.objects.some((o) => o.id === prevObj.id);
         if (!existsInCurrent) {
           enrichedObjects.push(prevObj);
         }
@@ -949,7 +949,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
           };
           element.extensions[STIX_EXT_OCTI].opencti_upsert_operations = [
             ...(element.extensions[STIX_EXT_OCTI].opencti_upsert_operations ?? []),
-            patchOperation
+            patchOperation,
           ];
           patchOperations.push(patchValue);
         }
@@ -1211,7 +1211,7 @@ export const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfig
                   op: action.op,
                   attribute: action.attribute,
                   value: R.uniq([...currentValues, ...actionValues]),
-                  patchOperation: { op: EditOperation.Replace, path, value: actionPatchValues }
+                  patchOperation: { op: EditOperation.Replace, path, value: actionPatchValues },
                 };
               }
               if (action.op === EditOperation.Replace) {
@@ -1219,7 +1219,7 @@ export const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfig
                   op: action.op,
                   attribute: action.attribute,
                   value: actionValues,
-                  patchOperation: { op: EditOperation.Replace, path, value: actionPatchValues }
+                  patchOperation: { op: EditOperation.Replace, path, value: actionPatchValues },
                 };
               }
               if (action.op === EditOperation.Remove) {
@@ -1227,7 +1227,7 @@ export const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfig
                   op: action.op,
                   attribute: action.attribute,
                   value: actionValues,
-                  patchOperation: { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionPatchValues.includes(c)) }
+                  patchOperation: { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionPatchValues.includes(c)) },
                 };
               }
             }
@@ -1237,7 +1237,7 @@ export const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfig
               op: action.op,
               attribute: action.attribute,
               value: currentValue,
-              patchOperation: { op: action.op, path, value: convertValue(attributeType, currentPatchValue) }
+              patchOperation: { op: action.op, path, value: convertValue(attributeType, currentPatchValue) },
             };
           });
         // Enlist operations to execute
