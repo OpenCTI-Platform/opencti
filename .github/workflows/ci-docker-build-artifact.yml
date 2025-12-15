@@ -71,7 +71,7 @@ jobs:
         push: false
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        outputs: type=docker,dest=/opencti-platform.tar
+        outputs: type=docker,dest=/tmp/opencti-platform.tar
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -115,7 +115,7 @@ jobs:
         push: false
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        outputs: type=docker,dest=/opencti-worker.tar
+        outputs: type=docker,dest=/tmp/opencti-worker.tar
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
