@@ -139,14 +139,16 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
 
 export const historyMessage = (eventType: StreamDataEventType, changes: Change[]): string => {
   const message: string[] = [];
-  if (!changes || changes.length === 0) {
+  if (!changes) {
     return '';
   }
-  changes.forEach((change) => {
-    if (change.field !== 'Authorized members' && change.field !== 'ObjectOrganization') {
-      message.push(`${eventType} ${change.new} in ${change.field}`);
-    }
-  });
+  if (changes.length > 0) {
+    changes.forEach((change) => {
+      if (change.field !== 'Authorized members' && change.field !== 'ObjectOrganization') {
+        message.push(`${eventType} ${change.new} in ${change.field}`);
+      }
+    });
+  }
   return message.join(' - ');
 };
 export const buildHistoryElementsFromEvents = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
