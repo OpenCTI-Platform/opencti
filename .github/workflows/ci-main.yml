@@ -56,6 +56,7 @@ jobs:
       needs: reupload-image-artifact
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+        run-id: ${{ github.run_id }}
       secrets: inherit
 
   wf-frontend-test:
