@@ -80,8 +80,8 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=registry,ref=filigran/platform:buildcache
-        cache-to: type=registry,ref=filigran/platform:buildcache,mode=max
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/opencti-platform:buildcache
+        cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/opencti-platform:buildcache,mode=max
 
   build-opencti-worker:
     name: Build OpenCTI Worker image
@@ -121,5 +121,5 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=registry,ref=filigran/worker:buildcache
-        cache-to: type=registry,ref=filigran/worker:buildcache,mode=max
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/opencti-workerr:buildcache
+        cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/opencti-worker:buildcache,mode=max
