@@ -50,7 +50,7 @@ jobs:
          cd scripts/ci
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
-         docker compose --profile "*" up -d
+         docker compose  --profile "backend" --profile "ci-test-api-sync" up -d
 
     - name: Wait for OpenCTI sync instances to start
       run: |
@@ -171,7 +171,7 @@ jobs:
          cd scripts/ci
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
-         docker compose --profile "backend" --profile ci-test-api up -d
+         docker compose --profile "backend" --profile "ci-test-rules" up -d
 
     - name: Start rules test
       run: |
