@@ -57,7 +57,7 @@ import { checkObservableValue, isCacheEmpty } from '../../database/exclusionList
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
 import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
-import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
+import { getEntitySettingFromCache } from '../../utils/entitySetting-utils';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;

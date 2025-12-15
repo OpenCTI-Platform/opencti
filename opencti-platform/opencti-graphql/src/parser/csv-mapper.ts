@@ -11,7 +11,7 @@ import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import type { AttributeColumn, CsvMapperParsed, CsvMapperRepresentation, CsvMapperRepresentationAttribute } from '../modules/internal/csvMapper/csvMapper-types';
 import { CsvMapperRepresentationType } from '../modules/internal/csvMapper/csvMapper-types';
 import { getHashesNames, isCsvValidRepresentationType } from '../modules/internal/csvMapper/csvMapper-utils';
-import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../utils/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import { UnsupportedError } from '../config/errors';
 import { internalFindByIdsMapped } from '../database/middleware-loader';

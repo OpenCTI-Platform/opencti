@@ -2,7 +2,7 @@ import { logMigration } from '../config/conf';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
+import { getAttributesConfiguration } from '../utils/entitySetting-utils';
 import { authorizedMembers } from '../schema/attribute-definition';
 import { elReplace } from '../database/engine';
 

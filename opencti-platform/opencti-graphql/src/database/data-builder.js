@@ -26,7 +26,7 @@ import { getEntitiesListFromCache } from './cache';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
-import { isSegregationEntityCheck } from '../modules/entitySetting/entitySetting-utils';
+import { isSegregationEntityCheck } from '../utils/entitySetting-utils';
 
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule } = opts;

@@ -7,7 +7,7 @@ import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from '../m
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { getEntityValidatorCreation, getEntityValidatorUpdate } from './validator-register';
 import type { AuthContext, AuthUser } from '../types/user';
-import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
+import { getAttributesConfiguration } from '../utils/entitySetting-utils';
 import { externalReferences } from './stixRefRelationship';
 import { telemetry } from '../config/tracing';
 import type { AttributeDefinition } from './attribute-definition';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { fillDefaultValues, isSegregationEntityCheck } from '../../../../src/modules/entitySetting/entitySetting-utils';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, INPUT_GRANTED_REFS } from '../../../../src/schema/general';
+import { fillDefaultValues, isSegregationEntityCheck } from '../../../src/utils/entitySetting-utils';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, INPUT_GRANTED_REFS } from '../../../src/schema/general';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -13,7 +13,7 @@ import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
-} from '../../../../src/schema/stixDomainObject';
+} from '../../../src/schema/stixDomainObject';
 
 // Test fixtures
 const TEST_USER_ID = 'user-123';

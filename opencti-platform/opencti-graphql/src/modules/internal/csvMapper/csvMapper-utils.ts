@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntityCsvMapper, CsvMapperParsed, CsvMapperRepresentation, CsvMapperResolved } from './csvMapper-types';
 import { CsvMapperRepresentationType } from './csvMapper-types';
 import { isEmptyField, isNotEmptyField } from '../../../database/utils';
-import { fillDefaultValues, getEntitySettingFromCache } from '../../entitySetting/entitySetting-utils';
+import { fillDefaultValues, getEntitySettingFromCache } from '../../../utils/entitySetting-utils';
 import { FunctionalError } from '../../../config/errors';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_REFS } from '../../../domain/attribute-utils';

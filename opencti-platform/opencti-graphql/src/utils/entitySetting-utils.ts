@@ -7,8 +7,8 @@ import {
   INPUT_AUTHORIZED_MEMBERS,
   INPUT_GRANTED_REFS,
   INPUT_MARKINGS,
-} from '../../schema/general';
-import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+} from '../schema/general';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OPINION,
@@ -16,24 +16,24 @@ import {
   isStixDomainObjectContainer,
   STIX_ORGANIZATIONS_RESTRICTED,
   STIX_ORGANIZATIONS_UNRESTRICTED,
-} from '../../schema/stixDomainObject';
-import { UnsupportedError } from '../../config/errors';
-import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './entitySetting-types';
-import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
-import { getEntitiesListFromCache } from '../../database/cache';
-import { MEMBER_ACCESS_CREATOR, SYSTEM_USER } from '../../utils/access';
-import type { AuthContext } from '../../types/user';
-import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
-import { isStixCyberObservable } from '../../schema/stixCyberObservable';
-import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
-import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
-import { isBooleanAttribute, isNumericAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { isEmptyField } from '../../database/utils';
-import type { MandatoryType } from '../../schema/attribute-definition';
-import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
-import { getParentTypes } from '../../schema/schemaUtils';
+} from '../schema/stixDomainObject';
+import { UnsupportedError } from '../config/errors';
+import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { getEntitiesListFromCache } from '../database/cache';
+import { MEMBER_ACCESS_CREATOR, SYSTEM_USER } from './access';
+import type { AuthContext } from '../types/user';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixCyberObservable } from '../schema/stixCyberObservable';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
+import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
+import { isBooleanAttribute, isNumericAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import { isEmptyField } from '../database/utils';
+import type { MandatoryType } from '../schema/attribute-definition';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { getParentTypes } from '../schema/schemaUtils';
 
 export type typeAvailableSetting = boolean | string;
 
