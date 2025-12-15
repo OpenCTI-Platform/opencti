@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
+import { ManageSearchOutlined, Search, TuneOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import IconButton from '@common/button/IconButton';
 import { Link, useLocation } from 'react-router-dom';
@@ -169,7 +169,7 @@ const SearchInput = (props) => {
             </InputAdornment>
           ),
           endAdornment: variant === 'topBar' && (
-            <InputAdornment position="end">
+            <InputAdornment position="end" sx={{ display: 'flex', gap: 0.5 }}>
               {isNLQActivated && isNLQLoading
                 && (
                   <div>
@@ -188,7 +188,7 @@ const SearchInput = (props) => {
                     && !isNLQActivated
                   }
                 >
-                  <BiotechOutlined fontSize="medium" />
+                  <TuneOutlined />
                 </IconButton>
               </Tooltip>
               <Tooltip title={t_i18n('Bulk search')}>
@@ -200,7 +200,7 @@ const SearchInput = (props) => {
                     location.pathname.includes('/dashboard/search_bulk') && !isNLQActivated
                   }
                 >
-                  <ContentPasteSearchOutlined fontSize="medium" />
+                  <ManageSearchOutlined />
                 </IconButton>
               </Tooltip>
               {fullyActive && (

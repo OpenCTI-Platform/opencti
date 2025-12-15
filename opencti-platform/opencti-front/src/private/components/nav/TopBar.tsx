@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Badge } from '@mui/material';
+import { alpha, Badge, Stack } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@common/button/IconButton';
@@ -46,13 +46,14 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { RelayError } from '../../../relay/relayTypes';
 import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import UploadImport from '../../../components/UploadImport';
+import AskArianeButton from '../chatbox/AskArianeButton';
+import { CGUStatus } from '../settings/Experience';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
+    zIndex: theme.zIndex.drawer - 1,
     background: 0,
     backgroundColor: theme.palette.background.nav,
     paddingTop: theme.spacing(0.2),
@@ -61,21 +62,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderTop: 0,
     color: theme.palette.text?.primary,
   },
-  logoContainer: {
-    marginTop: theme.spacing(0.2),
-    paddingLeft: theme.spacing(1),
-    minWidth: SMALL_BAR_WIDTH,
-  },
-  logo: {
-    cursor: 'pointer',
-    height: 35,
-    marginRight: 3,
-  },
-  logoCollapsed: {
-    cursor: 'pointer',
-    height: 35,
-    marginRight: 4,
-  },
   barRight: {
     marginRight: theme.spacing(2),
     height: '100%',
@@ -83,9 +69,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     alignItems: 'center',
     justifyContent: 'end',
     marginLeft: 'auto',
-  },
-  barRightContainer: {
-    float: 'left',
   },
   subtitle: {
     color: theme.palette.text?.secondary,
@@ -133,12 +116,6 @@ interface TopBarProps {
 const topBarQuery = graphql`
   query TopBarQuery {
     myUnreadNotificationsCount
-    settings {
-      platform_theme {
-        theme_logo
-        theme_logo_collapsed
-      }
-    }
   }
 `;
 
@@ -162,7 +139,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
-    settings: { platform_openaev_url: openAEVUrl, platform_enterprise_edition: ee, platform_xtmhub_url: xtmhubUrl, xtm_hub_registration_status: xtmhubStatus },
+    settings: {
+      platform_openaev_url: openAEVUrl,
+      platform_enterprise_edition: ee,
+      platform_xtmhub_url: xtmhubUrl,
+      xtm_hub_registration_status: xtmhubStatus,
+      filigran_chatbot_ai_cgu_status,
+    },
   } = useAuth();
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
@@ -197,9 +180,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
-
-  const platformTheme = data.settings?.platform_theme;
-  const logo = navOpen ? platformTheme?.theme_logo || theme.logo : platformTheme?.theme_logo_collapsed || theme.logo_collapsed;
 
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
@@ -276,16 +256,26 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setOpenDrawer(false);
     handleCloseMenu();
   };
+
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
   // draft
   const draftModeColor = getDraftModeColor(theme);
+
+  const appBarGradient = theme.palette.background.default && theme.palette.background.paper
+    ? `${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.9)}`
+    : 'rgba(7, 13, 25, 0.90) 0%, rgba(12, 21, 36, 0.90)}';
+
   return (
     <AppBar
       position="fixed"
-      className={classes.appBar}
-      variant="outlined"
       elevation={0}
+      sx={{
+        marginLeft: navOpen ? `${OPEN_BAR_WIDTH}px` : `${SMALL_BAR_WIDTH}px`,
+        width: navOpen ? `calc(100% - ${OPEN_BAR_WIDTH}px)` : `calc(100% - ${SMALL_BAR_WIDTH}px)`,
+        backdropFilter: 'blur(4px)',
+        background: `linear-gradient(90deg, ${appBarGradient} 100%)`,
+      }}
     >
       {/* Header and Footer Banners containing classification level of system */}
       <Toolbar
@@ -296,15 +286,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           borderBottom: draftContext ? `1px solid ${draftModeColor}` : 'initial',
         }}
       >
-        <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
-          <Link to="/dashboard">
-            <img
-              src={logo}
-              alt="logo"
-              className={navOpen ? classes.logo : classes.logoCollapsed}
-            />
-          </Link>
-        </div>
         {hasKnowledgeAccess && (
           <div
             style={{ display: 'flex', marginLeft: theme.spacing(3) }}
@@ -323,10 +304,16 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           {!!draftContext && (
             <DraftContextBanner />
           )}
-          <div className={classes.barRightContainer}>
+          <Stack direction="row" gap={1} alignItems="center">
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <>
+                  {
+                    filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
+                      <AskArianeButton />
+                    )
+                  }
+
                   { ee.license_type === 'nfr' && <ItemBoolean variant="large" label="EE DEV LICENSE" status={false} /> }
                   <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
                     <UploadImport
@@ -432,11 +419,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               aria-label={t_i18n('Profile')}
               id="profile-menu-button"
               onClick={handleOpenMenu}
-              // color={
-              //   location.pathname === '/dashboard/profile/me'
-              //     ? 'primary'
-              //     : 'inherit'
-              // }
+              selected={location.pathname === '/dashboard/profile/me'}
             >
               <AccountCircleOutlined fontSize="medium" />
             </IconButton>
@@ -462,7 +445,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 {t_i18n('Logout')}
               </MenuItem>
             </Menu>
-          </div>
+          </Stack>
         </div>
       </Toolbar>
       <FeedbackCreation

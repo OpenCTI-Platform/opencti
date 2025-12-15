@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { graphql, usePreloadedQuery } from 'react-relay';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createStyles, makeStyles, styled, useTheme } from '@mui/styles';
 import MenuList from '@mui/material/MenuList';
@@ -76,8 +77,6 @@ import {
 } from 'mdi-material-ui';
 import Popover from '@mui/material/Popover';
 import Collapse from '@mui/material/Collapse';
-import { CGUStatus } from '../settings/Experience';
-import AskArianeButton from '../chatbox/AskArianeButton';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
@@ -117,6 +116,8 @@ import useAuth from '../../../utils/hooks/useAuth';
 import useHelper from '../../../utils/hooks/useHelper';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useDimensions from '../../../utils/hooks/useDimensions';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { Box } from '@mui/material';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -203,6 +204,17 @@ const useStyles = makeStyles((theme) => createStyles({
   },
 }));
 
+const leftBarQuery = graphql`
+  query LeftBarQuery {
+    settings {
+      platform_theme {
+        theme_logo
+        theme_logo_collapsed
+      }
+    }
+  }
+`;
+
 const StyledTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} arrow classes={{ popper: className }} />
 ))(({ theme }) => ({
@@ -214,14 +226,13 @@ const StyledTooltip = styled(({ className, ...props }) => (
   },
 }));
 
-const LeftBar = () => {
+const LeftBarComponent = ({ queryRef }) => {
   const theme = useTheme();
   const location = useLocation();
   const ref = useRef();
   const { t_i18n } = useFormatter();
   const {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
-    settings: { filigran_chatbot_ai_cgu_status },
   } = useAuth();
   const navigate = useNavigate();
   const hasOnlyAccessToImportDraftTab = useHasOnlyAccessToImportDraftTab();
@@ -268,6 +279,11 @@ const LeftBar = () => {
     localStorage.getItem('navOpen') === 'true',
   );
   const classes = useStyles({ navOpen });
+
+  const data = usePreloadedQuery(leftBarQuery, queryRef);
+  const platformTheme = data.settings?.platform_theme;
+  const logo = navOpen ? platformTheme?.theme_logo || theme.logo : platformTheme?.theme_logo_collapsed || theme.logo_collapsed;
+
   const addMenuUnique = (menu) => {
     const joined = selectedMenu.concat(menu);
     return joined.filter((value, index, array) => array.indexOf(value) === index);
@@ -381,8 +397,6 @@ const LeftBar = () => {
 
   const isMobile = dimension.width < 768;
 
-  const askArianeButtonRef = useRef();
-
   const generateSubMenu = (menu, entries) => {
     return navOpen ? (
       <Collapse in={selectedMenu.includes(menu)} timeout="auto" unmountOnExit={true}>
@@ -469,6 +483,7 @@ const LeftBar = () => {
       </Popover>
     );
   };
+
   return (
     <Drawer
       variant="permanent"
@@ -478,8 +493,9 @@ const LeftBar = () => {
       slotProps={{
         paper: {
           sx: {
-            display: 'grid',
-            gridAutoRows: '90% 1fr',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
           },
         },
       }}
@@ -490,18 +506,41 @@ const LeftBar = () => {
         position: 'sticky',
         top: 0,
         height: '100vh',
-        transition: theme.transitions.create('width', {
-          easing: theme.transitions.easing.easeInOut,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
         overflow: 'hidden',
       }}
     >
-      <div ref={ref} aria-label="Main navigation" style={{ overflowY: 'auto' }}>
-        <MenuList
-          component="nav"
-          style={{ marginTop: `calc( ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px + 66px )` }}
-        >
+      <Box
+        className={classes.logoContainer}
+        style={{
+          marginTop: `calc(${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px)`,
+        }}
+        sx={{
+          padding: 2,
+          flexShrink: 0,
+        }}
+      >
+        <Link to="/dashboard">
+          <img
+            src={logo}
+            alt="logo"
+            style={{ height: 35, maxWidth: '100%', objectFit: 'contain' }}
+          />
+        </Link>
+      </Box>
+
+      <div
+        ref={ref}
+        aria-label="Main navigation"
+        style={{
+          overflow: 'auto',
+          overflowX: 'hidden',
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+        }}
+      >
+        <MenuList component="nav">
           {!draftContext && (
             <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
               <MenuItem
@@ -1055,11 +1094,11 @@ const LeftBar = () => {
           )}
         </Security>
       </div>
+
+      {/** Bottom **/}
       <div
         style={{
-          marginTop: 'auto',
-          position: 'fixed',
-          bottom: 0,
+          flexShrink: 0,
           borderRight: theme.palette.mode === 'dark'
             ? '1px solid rgba(255, 255, 255, 0.12)'
             : '1px solid rgba(0, 0, 0, 0.12)',
@@ -1069,33 +1108,6 @@ const LeftBar = () => {
       >
         <Divider />
         <MenuList>
-          {filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
-            <MenuItem
-              style={{
-                color: theme.palette.ai.main,
-                paddingBlock: navOpen ? undefined : '10px',
-                paddingInline: navOpen ? theme.spacing(1.25) : undefined,
-              }}
-              onKeyDown={(e) => {
-                if (['a', 'A', 'c', 'C'].includes(e.key)) {
-                  e.stopPropagation();
-                }
-              }}
-            >
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  position: 'absolute',
-                  left: 0,
-                }}
-                onClick={() => {
-                  askArianeButtonRef.current?.toggleChatbot();
-                }}
-              />
-              <AskArianeButton ref={askArianeButtonRef} />
-            </MenuItem>
-          )}
           <MenuItem
             dense={true}
             style={{ marginBottom: bannerHeightNumber }}
@@ -1117,6 +1129,19 @@ const LeftBar = () => {
         </MenuList>
       </div>
     </Drawer>
+  );
+};
+
+const LeftBar = () => {
+  const queryRef = useQueryLoading(leftBarQuery, {});
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense>
+          <LeftBarComponent queryRef={queryRef} />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 

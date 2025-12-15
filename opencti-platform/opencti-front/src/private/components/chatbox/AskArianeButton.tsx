@@ -1,17 +1,17 @@
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import ReactDOM from 'react-dom';
 import { useTheme } from '@mui/styles';
 import { CGUStatus } from '@components/settings/Experience';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import FiligranIcon from '@components/common/FiligranIcon';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
-import GradientButton, { GradientVariant } from '../../../components/GradientButton';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../components/Theme';
-import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
+import { APP_BASE_PATH, fileUri } from '../../../relay/environment';
 import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
 import embleme from '../../../static/images/embleme_filigran_white.png';
 import useHelper from '../../../utils/hooks/useHelper';
@@ -25,18 +25,6 @@ const AskArianeButton = React.forwardRef((props, ref) => {
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
   const hasRightToValidateCGU = useGranted([SETTINGS_SETPARAMETERS]);
-
-  const [navOpen, setNavOpen] = useState(
-    localStorage.getItem('navOpen') === 'true',
-  );
-  useEffect(() => {
-    const sub = MESSAGING$.toggleNav.subscribe({
-      next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
-    });
-    return () => {
-      sub.unsubscribe();
-    };
-  });
 
   const isCGUStatusPending = filigran_chatbot_ai_cgu_status === CGUStatus.pending;
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
@@ -144,37 +132,32 @@ const AskArianeButton = React.forwardRef((props, ref) => {
       <EETooltip
         title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
       >
-        {navOpen ? (
-          <GradientButton
-            size="small"
-            sx={{ width: '100%', paddingLeft: '8px' }}
-            gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
-            onClick={toggleChatbot}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" style={chatIconStyle} />}
-          >
-            {t_i18n('ASK ARIANE')}
-            <EEChip />
-          </GradientButton>
-        ) : (
-          <GradientButton
-            size="small"
-            sx={{ margin: '-4px', marginLeft: '-6px', marginTop: '-4px', minWidth: 'auto', paddingLeft: 1, paddingY: theme.spacing(0.5) }}
-            gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
-            onClick={toggleChatbot}
-            startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" style={chatIconStyle} />}
-          >
-          </GradientButton>
-        )}
+        <Button
+          variant="tertiary"
+          gradient
+          gradientVariant="ai"
+          onClick={toggleChatbot}
+          startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" style={chatIconStyle} />}
+        >
+          {t_i18n('Ask Ariane')}
+          <EEChip />
+        </Button>
       </EETooltip>
-      {isEnterpriseEdition && isChatbotAiEnabled() ? (
-        <filigran-chatbot
-          ref={chatbotRef}
-          open={isChatbotOpen}
-          left={navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH}
-          agenticUrl={chatbotProxyUrl}
-          theme={chatBotTheme}
-        />
-      ) : null}
+
+      {isEnterpriseEdition && isChatbotAiEnabled()
+        ? ReactDOM.createPortal(
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            <filigran-chatbot
+              ref={chatbotRef}
+              open={isChatbotOpen}
+              left={window.screen.availWidth - 430}
+              agentic-url={chatbotProxyUrl}
+              theme={JSON.stringify(chatBotTheme)}
+            />,
+            document.body,
+          )
+        : null}
 
       {openValidateTermsOfUse && (
         <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)} />
