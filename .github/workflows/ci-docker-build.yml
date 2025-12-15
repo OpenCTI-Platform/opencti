@@ -43,8 +43,6 @@ jobs:
   build-opencti-platform:
     name: Build OpenCTI Platform image
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
