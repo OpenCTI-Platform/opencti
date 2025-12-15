@@ -20,7 +20,7 @@ jobs:
   wf-api-test:
       name: API test
       uses: ./.github/workflows/ci-test-api.yml
-      needs: reupload-image-artifact
+      needs: wf-build-image
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
         run-id: ${{ github.run_id }}
@@ -36,7 +36,7 @@ jobs:
   wf-client-python-test:
       name: Client Python
       uses: ./.github/workflows/ci-test-client-python.yml
-      needs: reupload-image-artifact
+      needs: wf-build-image
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
