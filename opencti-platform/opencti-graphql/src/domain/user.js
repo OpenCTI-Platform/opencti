@@ -56,7 +56,7 @@ import {
   executionContext,
   fetchMembersWithOrgaRestriction,
   FilterMembersMode,
-  filterMembersWithUsersOrgs,
+  filterMembersUsersWithUsersOrgs,
   INTERNAL_USERS,
   INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
@@ -221,26 +221,24 @@ export const findUserPaginated = async (context, user, args) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
 
+const postResolveMembersFunction = (context, user) => {
+  return (async (usersResult) => { return filterMembersUsersWithUsersOrgs(context, user, usersResult, FilterMembersMode.EXCLUDE); });
+};
+
 export const findCreators = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const creatorsFilter = async (creators) => {
-    return filterMembersWithUsersOrgs(context, user, creators, FilterMembersMode.EXCLUDE);
-  };
+  const creatorsFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: creatorsFilter });
 };
 
 export const findAssignees = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const assigneesFilter = async (assignees) => {
-    return filterMembersWithUsersOrgs(context, user, assignees, FilterMembersMode.EXCLUDE);
-  };
+  const assigneesFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: assigneesFilter });
 };
 export const findParticipants = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const participantsFilter = async (participants) => {
-    return filterMembersWithUsersOrgs(context, user, participants, FilterMembersMode.EXCLUDE);
-  };
+  const participantsFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: participantsFilter });
 };
 

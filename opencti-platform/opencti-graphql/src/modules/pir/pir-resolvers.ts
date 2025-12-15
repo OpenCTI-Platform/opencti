@@ -30,7 +30,7 @@ import {
   updatePir,
 } from './pir-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { filterMembersWithUsersOrgs, getUserAccessRight } from '../../utils/access';
+import { filterMembersUsersWithUsersOrgs, getUserAccessRight } from '../../utils/access';
 import { getConnectorQueueSize } from '../../database/rabbitmq';
 
 const pirResolvers: Resolvers = {
@@ -48,7 +48,7 @@ const pirResolvers: Resolvers = {
       if (!creators) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, creators);
+      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
     },
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

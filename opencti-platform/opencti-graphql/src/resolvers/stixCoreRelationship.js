@@ -37,7 +37,7 @@ import {
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
-import { filterMembersWithUsersOrgs } from '../utils/access';
+import { filterMembersUsersWithUsersOrgs } from '../utils/access';
 
 const stixCoreRelationshipResolvers = {
   Query: {
@@ -76,7 +76,7 @@ const stixCoreRelationshipResolvers = {
       if (!creators) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, creators);
+      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
     },
     objectMarking: (rel, _, context) => context.batch.markingsBatchLoader.load(rel),
     // endregion

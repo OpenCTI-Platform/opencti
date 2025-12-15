@@ -28,7 +28,7 @@ import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/s
 import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
-import { filterMembersWithUsersOrgs } from '../utils/access';
+import { filterMembersUsersWithUsersOrgs } from '../utils/access';
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -68,7 +68,7 @@ const stixDomainObjectResolvers = {
       if (!assignees) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, assignees);
+      return filterMembersUsersWithUsersOrgs(context, context.user, assignees);
     },
     workflowEnabled: async (stixDomainObject, _, context) => {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);

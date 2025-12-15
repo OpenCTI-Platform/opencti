@@ -4,7 +4,7 @@ import { stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { INPUT_GRANTED_REFS } from '../schema/general';
-import { filterMembersWithUsersOrgs, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER } from '../utils/access';
+import { filterMembersUsersWithUsersOrgs, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER } from '../utils/access';
 import { ENABLED_DEMO_MODE } from '../config/conf';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
@@ -77,7 +77,7 @@ const stixResolvers = {
       if (!creators) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, creators);
+      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
     },
   },
 };

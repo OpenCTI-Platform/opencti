@@ -19,7 +19,7 @@ import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { distributionRelations } from '../database/middleware';
 import { schemaRelationsRefTypesMapping } from '../database/stix-ref';
 import { containersPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
-import { filterMembersWithUsersOrgs } from '../utils/access';
+import { filterMembersUsersWithUsersOrgs } from '../utils/access';
 
 const stixRefRelationshipResolvers = {
   Query: {
@@ -45,7 +45,7 @@ const stixRefRelationshipResolvers = {
       if (!creators) {
         return [];
       }
-      return filterMembersWithUsersOrgs(context, context.user, creators);
+      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
     },
     // endregion
     // Utils

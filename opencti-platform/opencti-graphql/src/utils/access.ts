@@ -964,48 +964,65 @@ type ParticipantWithOrgIds = Participant & Creator & {
 };
 
 export enum FilterMembersMode {
-  RESTRICT = 'restrict',
-  EXCLUDE = 'exclude',
+  RESTRICT = 'restrict', // remove restricted users
+  EXCLUDE = 'exclude', // replace restricted users by a user named 'RESTRICTED'
 }
-export const filterMembersWithUsersOrgs = async (
+
+/**
+ * Post-Filter a list of users by applying orga restriction on users visibility
+ */
+export const filterMembersUsersWithUsersOrgs = async (
   context: AuthContext,
   user: AuthUser,
   members: ParticipantWithOrgIds[],
   filterMode = FilterMembersMode.RESTRICT,
 ): Promise<ParticipantWithOrgIds[]> => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
-  if (!userInPlatformOrg) {
-    const userOrgIds = (user.organizations || []).map((org) => org.id);
-    const resultMembers = [];
-    for (let i = 0; i < members.length; i += 1) {
-      const member = members[i];
-      if (member.id === user.id || INTERNAL_USERS[member.id] || member.user_service_account) {
+  const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
+  const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+  // case 1. no orga restriction on user visibility
+  if (userCanViewAllUsers || !platformSettings.platform_organization || platformSettings.view_all_users) {
+    return members;
+  }
+
+  // case 2. apply orga restriction on users
+  // fetch organizations directly linked to the user
+  const userDirectOrganizations = await pageEntitiesConnection(
+    context,
+    user,
+    [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+    { filters: buildRegardingOfDirectParticipateToFilters([user.id], undefined) },
+  );
+  const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
+
+  const resultMembers = [];
+  for (let i = 0; i < members.length; i += 1) {
+    const member = members[i];
+    if (member.id === user.id || INTERNAL_USERS[member.id] || member.user_service_account) {
+      resultMembers.push(member);
+    } else {
+      const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
+      const noOrg = memberOrgIds.length === 0;
+      const sameOrg = memberOrgIds.some((id) => userDirectOrganizationsIds.includes(id));
+      if (sameOrg || noOrg) {
         resultMembers.push(member);
       } else {
-        const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
-        const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
-        if (sameOrg) {
-          resultMembers.push(member);
-        } else {
-          if (filterMode === FilterMembersMode.RESTRICT) {
-            const restrictedMember = {
-              ...member,
-              name: RESTRICTED_USER.name,
-              user_email: RESTRICTED_USER.user_email,
-              representative: {
-                main: RESTRICTED_USER.name,
-                secondary: RESTRICTED_USER.name,
-              },
-            };
-            resultMembers.push(restrictedMember);
-          }
+        if (filterMode === FilterMembersMode.RESTRICT) {
+          const restrictedMember = {
+            ...member,
+            name: RESTRICTED_USER.name,
+            user_email: RESTRICTED_USER.user_email,
+            representative: {
+              main: RESTRICTED_USER.name,
+              secondary: RESTRICTED_USER.name,
+            },
+          };
+          resultMembers.push(restrictedMember);
         }
       }
     }
-    return resultMembers;
   }
-  return members;
+  return resultMembers;
 };
 
 interface ListArgs {
