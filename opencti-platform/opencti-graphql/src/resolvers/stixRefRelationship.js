@@ -1,8 +1,8 @@
 import {
   addStixRefRelationship,
-  findRefRelationshipsPaginated,
   findById,
   findNestedPaginated,
+  findRefRelationshipsPaginated,
   isDatable,
   schemaRefRelationships,
   schemaRefRelationshipsPossibleTypes,
@@ -19,7 +19,7 @@ import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { distributionRelations } from '../database/middleware';
 import { schemaRelationsRefTypesMapping } from '../database/stix-ref';
 import { containersPaginated, notesPaginated, opinionsPaginated, reportsPaginated } from '../domain/stixCoreObject';
-import { filterMembersUsersWithUsersOrgs } from '../utils/access';
+import { loadCreators } from '../database/members';
 
 const stixRefRelationshipResolvers = {
   Query: {
@@ -40,13 +40,7 @@ const stixRefRelationshipResolvers = {
     reports: (rel, args, context) => reportsPaginated(context, context.user, rel.id, args),
     notes: (rel, args, context) => notesPaginated(context, context.user, rel.id, args),
     opinions: (rel, args, context) => opinionsPaginated(context, context.user, rel.id, args),
-    creators: async (rel, _, context) => {
-      const creators = await context.batch.creatorsBatchLoader.load(rel.creator_id);
-      if (!creators) {
-        return [];
-      }
-      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
-    },
+    creators: async (rel, _, context) => loadCreators(context, context.user, rel),
     // endregion
     // Utils
     editContext: (rel) => fetchEditContext(rel.id),

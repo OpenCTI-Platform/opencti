@@ -16,11 +16,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import type { Resolvers } from '../../generated/graphql';
 import {
   deletePir,
-  findPirPaginated,
-  findPirRelationPaginated,
   findById,
   findPirContainers,
   findPirHistory,
+  findPirPaginated,
+  findPirRelationPaginated,
   pirAdd,
   pirEditAuthorizedMembers,
   pirFlagElement,
@@ -30,8 +30,9 @@ import {
   updatePir,
 } from './pir-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { filterMembersUsersWithUsersOrgs, getUserAccessRight } from '../../utils/access';
+import { getUserAccessRight } from '../../utils/access';
 import { getConnectorQueueSize } from '../../database/rabbitmq';
+import { loadCreators } from '../../database/members';
 
 const pirResolvers: Resolvers = {
   Query: {
@@ -43,13 +44,7 @@ const pirResolvers: Resolvers = {
     pirLogs: (_, args, context) => findPirHistory(context, context.user, args),
   },
   Pir: {
-    creators: async (pir, _, context) => {
-      const creators = await context.batch.creatorsBatchLoader.load(pir.creator_id);
-      if (!creators) {
-        return [];
-      }
-      return filterMembersUsersWithUsersOrgs(context, context.user, creators);
-    },
+    creators: async (pir, _, context) => loadCreators(context, context.user, pir),
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     pirContainers: (pir, args, context) => findPirContainers(context, context.user, pir, args),
