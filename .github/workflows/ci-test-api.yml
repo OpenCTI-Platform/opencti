@@ -31,13 +31,13 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: docker-image-opencti-platform
-        path: /tmp/opencti-platform.tar
+        path: /tmp
 
     - name: Download image worker
       uses: actions/download-artifact@v4
       with:
         name: docker-image-opencti-worker
-        path: /tmp/opencti-worker.tar
+        path: /tmp
 
     - name: Load image
       run: |
@@ -154,13 +154,13 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: docker-image-opencti-platform
-        path: /tmp/opencti-platform.tar
+        path: /tmp
 
     - name: Download image worker
       uses: actions/download-artifact@v4
       with:
         name: docker-image-opencti-worker
-        path: /tmp/opencti-worker.tar
+        path: /tmp
 
     - name: Load image
       run: |
@@ -230,14 +230,14 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: docker-image-opencti-platform
-        path: /tmp/opencti-platform.tar
+        path: /tmp
 
     - name: Download image worker
       uses: actions/download-artifact@v4
       with:
         name: docker-image-opencti-worker
-        path: /tmp/opencti-worker.tar
-        
+        path: /tmp
+
     - name: Load image
       run: |
           set -eux
