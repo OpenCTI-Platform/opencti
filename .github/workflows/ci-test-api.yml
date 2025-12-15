@@ -26,12 +26,12 @@ jobs:
     - name: Download image platform
       uses: actions/download-artifact@v4
       with:
-        name: docker-image-platform-worker
+        name: docker-image-platform-worker-shared
         path: /tmp/opencti-platform.tar
     - name: Download image worker
       uses: actions/download-artifact@v4
       with:
-        name: docker-image-opencti-worker
+        name: docker-image-opencti-worker-shared
         path: /tmp/opencti-worker.tar
 
     - name: Load image
@@ -148,12 +148,12 @@ jobs:
     - name: Download image platform
       uses: actions/download-artifact@v4
       with:
-        name: docker-image-platform-worker
+        name: docker-image-platform-worker-shared
         path: /tmp/opencti-platform.tar
     - name: Download image worker
       uses: actions/download-artifact@v4
       with:
-        name: docker-image-opencti-worker
+        name: docker-image-opencti-worker-shared
         path: /tmp/opencti-worker.tar
 
     - name: Load image
@@ -222,12 +222,12 @@ jobs:
     - name: Download image platform
       uses: actions/download-artifact@v4
       with:
-        name: docker-image-platform-worker
+        name: docker-image-platform-worker-shared
         path: /tmp/opencti-platform.tar
     - name: Download image worker
       uses: actions/download-artifact@v4
       with:
-        name: docker-image-opencti-worker
+        name: docker-image-opencti-worker-shared
         path: /tmp/opencti-worker.tar
 
     - name: Load image
