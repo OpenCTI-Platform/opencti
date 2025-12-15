@@ -309,6 +309,11 @@ const initRuleManager = () => {
       const lastEventState = await redisGetManagerEventState(RULE_MANAGER_NAME);
       const lastEventDateTouse = lastEventState ?? lastEventId;
       logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventDateTouse ?? 'start'}`);
+      // Cleaning previous lastEventId value from stored manager: we now rely on redis state instead of ES state
+      if (lastEventId) {
+        const context = executionContext(RULE_MANAGER_NAME, RULE_MANAGER_USER);
+        await patchAttribute(context, RULE_MANAGER_USER, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, { lastEventId: null });
+      }
       // Start the stream listening
       const opts = { withInternal: true, streamName: LIVE_STREAM_NAME };
       streamProcessor = createStreamProcessor('Rule manager', ruleStreamHandler, opts);
