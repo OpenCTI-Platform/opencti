@@ -1001,7 +1001,7 @@ export const filterMembersUsersWithUsersOrgs = async (
     if (member.id === user.id || INTERNAL_USERS[member.id] || member.user_service_account) {
       resultMembers.push(member);
     } else {
-      const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
+      const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? []; // TODO fetch only not-inferred orga
       const noOrg = memberOrgIds.length === 0;
       const sameOrg = memberOrgIds.some((id) => userDirectOrganizationsIds.includes(id));
       if (sameOrg || noOrg) {
