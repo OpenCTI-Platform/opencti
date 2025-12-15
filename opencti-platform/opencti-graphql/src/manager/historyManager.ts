@@ -9,7 +9,7 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { Change, SseEvent, StreamDataEvent, StreamDataEventType, UpdateEvent } from '../types/event';
-import { utcDate } from '../utils/format';
+import { truncate, utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { internalFindByIds, topEntitiesList } from '../database/middleware-loader';
@@ -138,16 +138,16 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
 };
 
 export const historyMessage = (eventType: StreamDataEventType, changes: Change[]): string => {
-  const message: string[] = [];
+  const messages: string[] = [];
   if (!changes) {
     return '';
   }
   if (changes.length > 0) {
     changes.forEach((change) => {
-      message.push(`${eventType} ${change.new} in ${change.field}`);
+      messages.push(`${truncate(change.new, 250)} in ${change.field}`);
     });
   }
-  return message.join(' - ');
+  return `${eventType}s ${messages.join(' - ')}${messages.length > 3 ? ` and ${messages.length - 3} more operations` : ''}`;
 };
 export const buildHistoryElementsFromEvents = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   // load all markings to resolve object_marking_refs
