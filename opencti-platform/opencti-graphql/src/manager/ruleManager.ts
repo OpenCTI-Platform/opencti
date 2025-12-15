@@ -317,7 +317,7 @@ const initRuleManager = () => {
       // Start the stream listening
       const opts = { withInternal: true, streamName: LIVE_STREAM_NAME };
       streamProcessor = createStreamProcessor('Rule manager', ruleStreamHandler, opts);
-      await streamProcessor.start(lastEventDateTouse);
+      await streamProcessor.start(lastEventDateTouse ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
