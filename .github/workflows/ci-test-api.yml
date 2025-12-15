@@ -27,18 +27,18 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: docker-image-platform-worker
-        path: /opencti-platform.tar
+        path: /tmp/opencti-platform.tar
     - name: Download image worker
       uses: actions/download-artifact@v4
       with:
         name: docker-image-opencti-worker
-        path: /opencti-worker.tar
+        path: /tmp/opencti-worker.tar
 
     - name: Load image
       run: |
           set -eux
-          docker load --input /opencti-platform.tar   
-          docker load --input /opencti-worker.tar   
+          docker load --input /tmp/opencti-platform.tar   
+          docker load --input /tmp/opencti-worker.tar   
           docker images
 
     - name: Collect Workflow Telemetry
@@ -149,20 +149,19 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: docker-image-platform-worker
-        path: /opencti-platform.tar
+        path: /tmp/opencti-platform.tar
     - name: Download image worker
       uses: actions/download-artifact@v4
       with:
         name: docker-image-opencti-worker
-        path: /opencti-worker.tar
+        path: /tmp/opencti-worker.tar
 
     - name: Load image
       run: |
           set -eux
-          docker load --input /opencti-platform.tar   
-          docker load --input /opencti-worker.tar   
+          docker load --input /tmp/opencti-platform.tar   
+          docker load --input /tmp/opencti-worker.tar   
           docker images
-
     - name: Collect Workflow Telemetry
       uses: catchpoint/workflow-telemetry-action@v2
 
@@ -224,18 +223,18 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: docker-image-platform-worker
-        path: /opencti-platform.tar
+        path: /tmp/opencti-platform.tar
     - name: Download image worker
       uses: actions/download-artifact@v4
       with:
         name: docker-image-opencti-worker
-        path: /opencti-worker.tar
+        path: /tmp/opencti-worker.tar
 
     - name: Load image
       run: |
           set -eux
-          docker load --input /opencti-platform.tar   
-          docker load --input /opencti-worker.tar   
+          docker load --input /tmp/opencti-platform.tar   
+          docker load --input /tmp/opencti-worker.tar   
           docker images
 
     - name: Set up Docker Compose for backends
