@@ -12,10 +12,10 @@ const fileResolvers = {
       const globalFilesPath = `${getDraftContextFilesPrefix(context)}import/global`;
       return paginatedForPathWithEnrichment(context, context.user, globalFilesPath, undefined, opts);
     },
-    pendingFiles: (_, opts, context) => { // correspond to global workbenches (i.e. worbenches in Data > Import)
+    pendingFiles: (_, opts, context) => { // correspond to global workbenches (i.e. workbenches in Data > Import)
       return paginatedForPathWithEnrichment(context, context.user, 'import/pending', undefined, opts);
     },
-    filesMetrics: (_, args, context) => filesMetrics(context, context.user),
+    filesMetrics: (_, __, context) => filesMetrics(context, context.user),
     guessMimeType: (_, { fileId }) => guessMimeType(fileId),
   },
   File: {
