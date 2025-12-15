@@ -144,9 +144,7 @@ export const historyMessage = (eventType: StreamDataEventType, changes: Change[]
   }
   if (changes.length > 0) {
     changes.forEach((change) => {
-      if (change.field !== 'Authorized members' && change.field !== 'ObjectOrganization') {
-        message.push(`${eventType} ${change.new} in ${change.field}`);
-      }
+      message.push(`${eventType} ${change.new} in ${change.field}`);
     });
   }
   return message.join(' - ');
@@ -175,7 +173,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
     const eventType = event.data.type;
     let contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
-      message: historyMessage(eventType, updateEvent.context.changes),
+      message: historyMessage(eventType, updateEvent.context?.changes),
       entity_type: stix.extensions[STIX_EXT_OCTI].type,
       entity_name: extractStixRepresentative(stix),
       creator_ids: stix.extensions[STIX_EXT_OCTI].creator_ids,

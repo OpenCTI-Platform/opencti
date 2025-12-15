@@ -113,14 +113,14 @@ import {
 } from '../schema/general';
 import { isAnId, isValidDate } from '../schema/schemaUtils';
 import {
-isStixRefRelationship,
-objectOrganization,
-RELATION_CREATED_BY,
-RELATION_EXTERNAL_REFERENCE,
-RELATION_GRANTED_TO,
-RELATION_OBJECT,
-RELATION_OBJECT_MARKING,
-STIX_REF_RELATIONSHIP_TYPES,
+  isStixRefRelationship,
+  objectOrganization,
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_GRANTED_TO,
+  RELATION_OBJECT,
+  RELATION_OBJECT_MARKING,
+  STIX_REF_RELATIONSHIP_TYPES,
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
@@ -242,7 +242,7 @@ import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
-import {publishUserAction} from '../listener/UserActionListener';
+import { publishUserAction } from '../listener/UserActionListener';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2069,7 +2069,7 @@ const buildAttribute = async (context, user, key, array) => {
       return item;
     }
     if (key === authorizedMembers.name || key === objectOrganization.name) {
-      return ;
+      return;
     }
     if (typeof item === 'object') {
       if (item?.entity_type !== undefined) {
@@ -2093,69 +2093,70 @@ export const buildChanges = async (context, user, entityType, inputs) => {
   const changes = [];
   for (const input of inputs) {
     const { key, previous, value, operation } = input;
-    if (!key) continue;
-    const field = getKeyName(entityType, key);
-    const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
-    const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
-    let isMultiple = false;
-    if (attributeDefinition) {
-      isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
-    } else if (relationsRefDefinition) {
-      isMultiple = relationsRefDefinition.multiple;
-    }
-
-    const previousArrayFull = Array.isArray(previous) ? previous : [previous];
-    const valueArrayFull = Array.isArray(value) ? value : [value];
-    const previousArray = await buildAttribute(context, user, key, previousArrayFull);
-    const valueArray = await buildAttribute(context, user, key, valueArrayFull);
-
-    if (isMultiple) {
-      let added = [];
-      let removed = [];
-      let newValues = [];
-      if (operation === UPDATE_OPERATION_ADD) {
-        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-        newValues = previousArray.concat(valueArray);
-      } else if (operation === UPDATE_OPERATION_REMOVE) {
-        removed = valueArray;
-        newValues = previousArray.filter((valueItem) => !valueArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-      } else {
-        // UPDATE_OPERATION_REPLACE or no operation is the same
-        removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-        newValues = valueArray;
+    if (key && key !== authorizedMembers.name && key !== objectOrganization.name) {
+      const field = getKeyName(entityType, key);
+      const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
+      const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
+      let isMultiple = false;
+      if (attributeDefinition) {
+        isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
+      } else if (relationsRefDefinition) {
+        isMultiple = relationsRefDefinition.multiple;
       }
 
-      if (added.length > 0 || removed.length > 0) {
+      const previousArrayFull = Array.isArray(previous) ? previous : [previous];
+      const valueArrayFull = Array.isArray(value) ? value : [value];
+      const previousArray = await buildAttribute(context, user, key, previousArrayFull);
+      const valueArray = await buildAttribute(context, user, key, valueArrayFull);
+
+      if (isMultiple) {
+        let added = [];
+        let removed = [];
+        let newValues = [];
+        if (operation === UPDATE_OPERATION_ADD) {
+          added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+          newValues = previousArray.concat(valueArray);
+        } else if (operation === UPDATE_OPERATION_REMOVE) {
+          removed = valueArray;
+          newValues = previousArray.filter((valueItem) => !valueArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+        } else {
+        // UPDATE_OPERATION_REPLACE or no operation is the same
+          removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+          added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
+          newValues = valueArray;
+        }
+
+        if (added.length > 0 || removed.length > 0) {
+          changes.push({
+            field,
+            previous: previousArray,
+            new: newValues,
+            added,
+            removed,
+          });
+        }
+      } else if (isMultiple === false) {
+        const isStatusChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
+        const platformStatuses = isStatusChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
+        const resolvedValue = (array) => {
+          if (field === 'Workflow status') {
+          // we want the status name and not its internal id
+            const statusId = array[0];
+            const status = statusId ? platformStatuses.find((p) => p.id === statusId) : statusId;
+            return status ? [status.name] : null;
+          }
+          return array;
+        };
+
         changes.push({
           field,
-          previous: previousArray,
-          new: newValues,
-          added,
-          removed,
+          previous: resolvedValue(previousArray),
+          new: resolvedValue(valueArray),
         });
-      }
-    } else if (isMultiple === false) {
-      const isStatusChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
-      const platformStatuses = isStatusChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
-      const resolvedValue = (array) => {
-        if (field === 'Workflow status') {
-          // we want the status name and not its internal id
-          const statusId = array[0];
-          const status = statusId ? platformStatuses.find((p) => p.id === statusId) : statusId;
-          return status ? [status.name] : null;
-        }
-        return array;
-      };
-
-      changes.push({
-        field,
-        previous: resolvedValue(previousArray),
-        new: resolvedValue(valueArray),
-      });
-    } else {
+      } else {
       // This should not happen so better at least log at info level to be able to debug.
-      logApp.info('Changes cannot be computed', { inputs, entityType });
+        logApp.info('Changes cannot be computed', { inputs, entityType });
+      }
     }
   }
   return changes;
@@ -2522,7 +2523,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           event_scope: 'update',
           event_access: 'administration',
           message,
-          context_data: { id: updatedInstance.id, entity_type: updatedInstance.entity_type, input: updatedInputs }
+          context_data: { id: updatedInstance.id, entity_type: updatedInstance.entity_type, input: updatedInputs },
         });
       }
       const event = await storeUpdateEvent(

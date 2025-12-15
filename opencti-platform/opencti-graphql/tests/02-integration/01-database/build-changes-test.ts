@@ -552,18 +552,17 @@ describe('buildChanges standard behavior', async () => {
       value: [{
         access_right: 'admin',
         id: ADMIN_USER.id,
-      },
-      {
-        key: 'description',
-        previous: ['description'],
-        value: ['new description'],
-      }],
+      }] },
+    {
+      key: 'description',
+      previous: ['description'],
+      value: ['new description'],
     }];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([[{
+    expect(changes).toEqual([{
       field: 'Description',
       previous: ['description'],
       new: ['new description'],
-    }]]);
+    }]);
   });
 });
