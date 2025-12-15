@@ -279,7 +279,6 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
               search={searchTerm}
               filters={contextFilters}
               handleClearSelectedElements={handleClearSelectedElements}
-              variant="large"
               container={container}
               handleCopy={handleCopy}
               warning={true}

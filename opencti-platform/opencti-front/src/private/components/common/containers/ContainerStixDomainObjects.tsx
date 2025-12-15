@@ -239,7 +239,6 @@ const ContainerStixDomainObjects = ({ container, enableReferences }: {
             filters={contextFilters}
             search={searchTerm}
             handleClearSelectedElements={handleClearSelectedElements}
-            variant="large"
             container={containerData}
             warning={true}
             warningMessage={t_i18n('Be careful, you are about to delete the selected entities (not the relationships)')}
