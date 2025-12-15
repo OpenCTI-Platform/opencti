@@ -32,7 +32,6 @@ import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
 import conf, { booleanConf } from '../config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
-import { StreamProvider } from '../database/stream/stream-utils';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'Pir Manager';
@@ -110,7 +109,6 @@ export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>
   // 2. Check Pir criteria one by one (because we need to know which one matches or not).
   const matchingCriteria: typeof pir_criteria = [];
   if (eventMatchesPirFilters) {
-    // eslint-disable-next-line no-restricted-syntax
     for (const pirCriterion of pir_criteria) {
       const isMatch = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pirCriterion.filters);
       if (isMatch) matchingCriteria.push(pirCriterion);
