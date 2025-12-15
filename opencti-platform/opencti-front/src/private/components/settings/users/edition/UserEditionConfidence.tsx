@@ -3,7 +3,7 @@ import UserConfidenceLevelField from '@components/settings/users/edition/UserCon
 import { UserEdition_user$data } from '@components/settings/users/__generated__/UserEdition_user.graphql';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { userMutationFieldPatch } from '@components/settings/users/edition/UserEditionOverview';
@@ -190,7 +190,6 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                     aria-label="Add"
                     onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: defaultOverrideConfidence })}
                     style={{ marginTop: '5px' }}
-                    size="large"
                     disabled={values.overrides.some((o) => o.entity_type === '')}
                   >
                     <Add fontSize="small" />

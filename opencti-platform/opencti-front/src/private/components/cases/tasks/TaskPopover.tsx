@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import ToggleButton from '@mui/material/ToggleButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
@@ -105,7 +105,6 @@ const TaskPopover = ({
           onClick={handleOpen}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
-          size="large"
           color="primary"
         >
           <MoreVert />

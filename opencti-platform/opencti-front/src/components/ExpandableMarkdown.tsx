@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { emptyFilled, truncate } from '../utils/String';
 import MarkdownDisplay from './MarkdownDisplay';
 
@@ -22,7 +22,7 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
         <div style={{ position: 'absolute', top: -32, right: 0 }}>
-          <IconButton onClick={onClick} size="large">
+          <IconButton onClick={onClick}>
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </div>

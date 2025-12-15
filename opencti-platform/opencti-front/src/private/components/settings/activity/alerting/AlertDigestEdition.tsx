@@ -1,5 +1,5 @@
 import { Close } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
@@ -188,7 +188,6 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large"
           color="primary"
         >
           <Close fontSize="small" color="primary" />

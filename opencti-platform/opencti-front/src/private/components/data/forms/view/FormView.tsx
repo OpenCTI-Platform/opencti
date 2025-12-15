@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -11,7 +11,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Divider from '@mui/material/Divider';
@@ -634,7 +634,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   push(newGroup);
                                 }}
                                 startIcon={<AddIcon />}
-                                variant="outlined"
+                                variant="secondary"
                                 size="small"
                               >
                                 {t_i18n('Add')} {t_i18n(schema.mainEntityType)}
@@ -827,7 +827,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                           push(newGroup);
                                         }}
                                         startIcon={<AddIcon />}
-                                        variant="outlined"
+                                        variant="secondary"
                                         size="small"
                                       >
                                         {t_i18n('Add')} {additionalEntity.label || additionalEntity.entityType}
@@ -918,8 +918,6 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                 />
                 <Button
                   className={classes.submitButton}
-                  variant="contained"
-                  color="primary"
                   type="submit"
                   disabled={isSubmitting || !isValid}
                 >

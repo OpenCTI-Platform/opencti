@@ -1,7 +1,7 @@
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent } from 'react';
 import WidgetConfigStepper from './WidgetConfigStepper';
@@ -55,12 +55,11 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
       )}
 
       <DialogActions>
-        <Button onClick={onCancel}>
+        <Button variant="secondary" onClick={onCancel}>
           {t_i18n('Cancel')}
         </Button>
         <Button
           data-testid="widget-submit-button"
-          color="secondary"
           onClick={() => onSubmit(config)}
           disabled={!isFormValid}
         >

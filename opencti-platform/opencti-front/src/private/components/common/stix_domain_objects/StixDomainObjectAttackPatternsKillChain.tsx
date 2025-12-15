@@ -395,7 +395,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                     <IconButton
                       color={isModeOnlyActive ? 'secondary' : 'primary'}
                       onClick={() => setIsModeOnlyActive((value) => !value)}
-                      size="large"
                     >
                       <VisibilityOutlined />
                     </IconButton>

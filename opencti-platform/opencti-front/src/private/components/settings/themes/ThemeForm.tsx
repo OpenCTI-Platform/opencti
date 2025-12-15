@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form } from 'formik';
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { useFormatter } from '../../../../components/i18n';
@@ -188,7 +188,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         withButtons && (
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={onCancel}
               disabled={isSubmitting}
               style={{ marginLeft: theme.spacing(2) }}
@@ -196,8 +196,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={onSubmit}
               disabled={isSubmitting}
               style={{ marginLeft: theme.spacing(2) }}

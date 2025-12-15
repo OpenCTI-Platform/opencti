@@ -4,7 +4,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
@@ -139,12 +139,11 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleReset} disabled={isSubmitting}>
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 type="submit"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
               >

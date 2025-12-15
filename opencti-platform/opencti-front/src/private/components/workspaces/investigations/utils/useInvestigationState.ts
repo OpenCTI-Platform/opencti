@@ -22,7 +22,6 @@ interface InvestigationOpRemove {
 type AllInvestigationOps = InvestigationOpExpand | InvestigationOpAdd | InvestigationOpRemove;
 type InvestigationState = AllInvestigationOps[];
 
-// eslint-disable-next-line import/prefer-default-export
 export const useInvestigationState = (investigationId: string) => {
   const STORAGE_KEY = `investigation-state-${investigationId}`;
 

@@ -4,7 +4,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
@@ -71,13 +71,13 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={() => setOpenValidate(false)}
             disabled={validating}
           >
             {t_i18n('Cancel')}
           </Button>
           <Button
-            color="secondary"
             onClick={handleValidateMapping}
             disabled={validating}
           >
@@ -99,13 +99,13 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={() => setOpenClearMapping(false)}
             disabled={clearing}
           >
             {t_i18n('Cancel')}
           </Button>
           <Button
-            color="secondary"
             onClick={() => handleClearMapping()}
             disabled={clearing}
           >
@@ -145,7 +145,6 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
           )}
           <Tooltip title={t_i18n('Ask new mapping')}>
             <Button
-              variant="contained"
               size="small"
               onClick={handleAskNewSuggestion}
               disabled={!hasConnectorsAvailable || askingSuggestion}
@@ -156,7 +155,6 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
           {!inSuggestedMode && (
             <Tooltip title={t_i18n('Clear mappings')}>
               <Button
-                variant="contained"
                 onClick={() => setOpenClearMapping(true)}
                 size="small"
               >
@@ -167,8 +165,6 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
           {inSuggestedMode && (
             <Tooltip title={t_i18n('Validate suggested mapping')}>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={() => setOpenValidate(true)}
                 startIcon={<CheckCircleOutlined />}
                 size="small"

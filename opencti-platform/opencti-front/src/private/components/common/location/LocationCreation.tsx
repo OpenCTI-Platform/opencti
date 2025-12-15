@@ -5,7 +5,7 @@ import { graphql } from 'react-relay';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import MenuItem from '@mui/material/MenuItem';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
@@ -191,7 +191,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
           </Field>
           <div className={classes.buttons}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               classes={{ root: classes.button }}
@@ -199,8 +199,6 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
               classes={{ root: classes.button }}

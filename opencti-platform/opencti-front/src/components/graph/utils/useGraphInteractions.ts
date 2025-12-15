@@ -249,14 +249,14 @@ const useGraphInteractions = () => {
     if (selectedDraggedNode) {
       selectedNodes.forEach((n) => {
         if (n.id !== node.id) {
-          n.x += translate.x; // eslint-disable-line no-param-reassign
-          n.y += translate.y; // eslint-disable-line no-param-reassign
-          n.z += translate.z ?? 0; // eslint-disable-line no-param-reassign
+          n.x += translate.x;
+          n.y += translate.y;
+          n.z += translate.z ?? 0;
           // During node drag, the lib force-graph set fx and fy equal to x and y.
           // so we are doing the same thing for all selected nodes.
-          n.fx = n.x; // eslint-disable-line no-param-reassign
-          n.fy = n.y; // eslint-disable-line no-param-reassign
-          n.fz = n.z; // eslint-disable-line no-param-reassign
+          n.fx = n.x;
+          n.fy = n.y;
+          n.fz = n.z;
         }
       });
     }
@@ -270,15 +270,15 @@ const useGraphInteractions = () => {
    */
   const fixPositionsOnDragEnd = (node: GraphNode) => {
     const selectedDraggedNode = selectedNodes.find((n) => n.id === node.id);
-    node.fx = node.x; // eslint-disable-line no-param-reassign
-    node.fy = node.y; // eslint-disable-line no-param-reassign
-    node.fz = node.z; // eslint-disable-line no-param-reassign
+    node.fx = node.x;
+    node.fy = node.y;
+    node.fz = node.z;
     if (selectedDraggedNode) {
       selectedNodes.forEach((n) => {
         if (n.id !== node.id) {
-          n.fx = n.x; // eslint-disable-line no-param-reassign
-          n.fy = n.y; // eslint-disable-line no-param-reassign
-          n.fz = n.z; // eslint-disable-line no-param-reassign
+          n.fx = n.x;
+          n.fy = n.y;
+          n.fz = n.z;
         }
       });
     }

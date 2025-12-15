@@ -8,7 +8,7 @@ import { CloseOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import {
   ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data,
   ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key,
@@ -199,7 +199,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: Contain
       classes={{ root: classes.item }}
       divider={true}
       secondaryAction={(
-        <IconButton disabled={true} aria-haspopup="true" size="large" classes={classes.itemIconDisabled}>
+        <IconButton disabled={true} aria-haspopup="true" classes={classes.itemIconDisabled}>
           <MoreVert />
         </IconButton>
       )}

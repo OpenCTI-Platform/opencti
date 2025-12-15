@@ -10,7 +10,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { UserHistoryLine_node$key } from '@components/settings/users/__generated__/UserHistoryLine_node.graphql';
 import { useTheme } from '@mui/styles';
@@ -160,7 +160,8 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
             }}
             onClick={() => commit && handleOpen()}
           >
-            <ItemIcon type={eventScope} color="inherit" size="small" />
+            {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+            <ItemIcon type={eventScope} size="small" />
           </Avatar>
         );
       }
@@ -197,7 +198,8 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
             }}
             onClick={() => commit && handleOpen()}
           >
-            <ItemIcon type={eventScope} color="inherit" size="small" />
+            {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+            <ItemIcon type={eventScope} size="small" />
           </Avatar>
         );
       }
@@ -214,7 +216,8 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
             }}
             onClick={() => commit && handleOpen()}
           >
-            <ItemIcon type={eventScope} color="inherit" size="small" />
+            {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+            <ItemIcon type={eventScope} size="small" />
           </Avatar>
         );
       }
@@ -279,7 +282,8 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
           >
-            <ItemIcon type={eventScope} color="inherit" size="small" />
+            {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+            <ItemIcon type={eventScope} size="small" />
           </Avatar>
         );
       }
@@ -295,7 +299,8 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
               cursor: commit ? 'pointer' : 'auto',
             }}
           >
-            <ItemIcon type={eventScope} color="inherit" size="small" />
+            {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+            <ItemIcon type={eventScope} size="small" />
           </Avatar>
         );
       }
@@ -311,7 +316,8 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         }}
         onClick={() => commit && handleOpen()}
       >
-        <ItemIcon type={eventScope} color="inherit" size="small" />
+        {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+        <ItemIcon type={eventScope} size="small" />
       </Avatar>
     );
   };
@@ -370,7 +376,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button color="primary" onClick={handleClose}>
+          <Button onClick={handleClose}>
             {t_i18n('Close')}
           </Button>
         </DialogActions>

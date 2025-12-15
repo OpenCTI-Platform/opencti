@@ -1,10 +1,10 @@
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import WidgetFilters from '@components/widgets/WidgetFilters';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Box, Stack } from '@mui/material';
@@ -116,7 +116,6 @@ const WidgetCreationDataSelection = () => {
                   right: -20,
                 }}
                 onClick={() => handleRemoveDataSelection(i)}
-                size="large"
               >
                 <CancelOutlined fontSize="small" />
               </IconButton>
@@ -159,8 +158,7 @@ const WidgetCreationDataSelection = () => {
 
       {perspective === 'entities' && (
         <div style={{ display: 'flex' }}>
-          <Button
-            variant="contained"
+          <IconButton
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
             size="small"
@@ -172,14 +170,13 @@ const WidgetCreationDataSelection = () => {
             }}
           >
             <AddOutlined fontSize="small" />
-          </Button>
+          </IconButton>
         </div>
       )}
 
       {perspective === 'relationships' && (
         <Stack direction="row">
           <Button
-            variant="contained"
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             size="small"
             onClick={() => handleAddDataSelection('relationships')}
@@ -193,7 +190,6 @@ const WidgetCreationDataSelection = () => {
             <AddOutlined fontSize="small" /> {t_i18n('Relationships')}
           </Button>
           <Button
-            variant="contained"
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
             size="small"
@@ -212,7 +208,6 @@ const WidgetCreationDataSelection = () => {
       {perspective === 'audits' && (
         <Stack direction="row">
           <Button
-            variant="contained"
             disabled={
               getCurrentDataSelectionLimit(type) === dataSelection.length
               || getCurrentCategory(type) === 'distribution'
@@ -234,7 +229,6 @@ const WidgetCreationDataSelection = () => {
       <div style={{ marginTop: 20, textAlign: 'center' }}>
         <Button
           disabled={!isDataSelectionFiltersValid()}
-          variant="contained"
           color="primary"
           style={{
             marginTop: 20,

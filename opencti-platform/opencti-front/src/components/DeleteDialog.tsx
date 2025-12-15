@@ -1,7 +1,7 @@
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { UIEvent } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -53,10 +53,10 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose ?? deletion.handleCloseDelete} disabled={deletion.deleting}>
+        <Button variant="secondary" onClick={onClose ?? deletion.handleCloseDelete} disabled={deletion.deleting}>
           {t_i18n('Cancel')}
         </Button>
-        <Button color="secondary" onClick={submitDelete} disabled={deletion.deleting}>
+        <Button onClick={submitDelete} disabled={deletion.deleting}>
           {t_i18n('Confirm')}
         </Button>
       </DialogActions>

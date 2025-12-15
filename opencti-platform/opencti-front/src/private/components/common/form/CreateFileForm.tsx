@@ -1,7 +1,8 @@
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
-import { Dialog, DialogTitle, DialogContent, MenuItem, DialogActions, Button } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, MenuItem, DialogActions } from '@mui/material';
+import Button from '@common/button/Button';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import React from 'react';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -80,11 +81,10 @@ const CreateFileForm = ({ isOpen, onClose, onReset, onSubmit }: CreateFileFormPr
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleReset} disabled={isSubmitting}>
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
               >

@@ -1,6 +1,7 @@
 import React, { FormEvent, FunctionComponent } from 'react';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
-import { IconButton, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
+import IconButton from '@common/button/IconButton';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';

@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -98,7 +97,7 @@ class ListLinesContent extends Component {
         let entities = [];
         while (firstIndex <= currentIndex) {
           entities = [...entities, dataList[firstIndex].node];
-          // eslint-disable-next-line no-plusplus
+
           firstIndex++;
         }
         const forcedRemove = R.values(selectedElements).filter(
@@ -109,7 +108,7 @@ class ListLinesContent extends Component {
       let entities = [];
       while (firstIndex >= currentIndex) {
         entities = [...entities, dataList[firstIndex].node];
-        // eslint-disable-next-line no-plusplus
+
         firstIndex--;
       }
       const forcedRemove = R.values(selectedElements).filter(

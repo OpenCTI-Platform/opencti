@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -237,7 +237,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
           <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               classes={{ root: classes.button }}
@@ -245,8 +245,6 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
               classes={{ root: classes.button }}

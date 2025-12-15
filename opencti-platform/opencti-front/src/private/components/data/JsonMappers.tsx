@@ -10,7 +10,7 @@ import { graphql } from 'react-relay';
 import JsonMapperCreationContainer from '@components/data/jsonMapper/JsonMapperCreationContainer';
 import { schemaAttributesQuery } from '@components/data/csvMapper/csvMappers.data';
 import { jsonMappers_SchemaAttributesQuery } from '@components/data/jsonMapper/__generated__/jsonMappers_SchemaAttributesQuery.graphql';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import ToggleButton from '@mui/material/ToggleButton';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -143,7 +143,6 @@ const JsonMappers = () => {
                       <FileUploadOutlined fontSize="small" color="primary" />
                     </ToggleButton>
                     <Button
-                      variant="contained"
                       disableElevation
                       sx={{ marginLeft: 1 }}
                       onClick={() => setOpen(true)}

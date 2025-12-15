@@ -4,7 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { ImageListItem, ImageListItemBar, Modal } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
 import Paper from '@mui/material/Paper';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { ZoomOutMapOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import { convertImagesToCarousel } from '../utils/edition';

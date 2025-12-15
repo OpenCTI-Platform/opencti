@@ -3,13 +3,13 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
-import IconButton from '@mui/material/IconButton';
 import { EditOutlined, ExpandLessOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Field, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { Stack, Box } from '@mui/material';
 import { NOTE_TYPE, noteCreationUserMutation } from './NoteCreation';
 import { insertNode } from '../../../../utils/store';
@@ -145,12 +145,13 @@ const Header = ({ title, id, data, paginationOptions, onToggleWrite }: HeaderPro
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
         <Stack direction="row" justifyContent="space-between" flex={1}>
           <IconButton
-            color="primary"
             onClick={onToggleWrite}
             sx={{
-              marginTop: '-15px',
+              marginTop: -0.7,
+              marginLeft: 1,
             }}
-            size="large"
+            variant="tertiary"
+            size="small"
           >
             <EditOutlined fontSize="small" />
           </IconButton>
@@ -288,7 +289,6 @@ const NoteForm = ({ defaultMarkings, onToggleWrite, onToggleMore, onSubmit }: No
 
           <Stack direction="row" justifyContent="space-between">
             <Button
-              variant="contained"
               onClick={handleToggleMore}
               disabled={isSubmitting}
               size="small"
@@ -301,7 +301,7 @@ const NoteForm = ({ defaultMarkings, onToggleWrite, onToggleMore, onSubmit }: No
 
             <Stack direction="row" spacing={1}>
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
                 size="small"
@@ -309,8 +309,6 @@ const NoteForm = ({ defaultMarkings, onToggleWrite, onToggleMore, onSubmit }: No
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 size="small"

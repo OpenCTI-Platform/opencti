@@ -11,7 +11,7 @@ import { csvMappers_SchemaAttributesQuery } from '@components/data/csvMapper/__g
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
 import { CsvMappersImportQuery$data } from '@components/data/__generated__/CsvMappersImportQuery.graphql';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import ToggleButton from '@mui/material/ToggleButton';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -180,7 +180,6 @@ const CsvMappers = () => {
                       <FileUploadOutlined fontSize="small" color="primary" />
                     </ToggleButton>
                     <Button
-                      variant="contained"
                       disableElevation
                       sx={{ marginLeft: 1 }}
                       onClick={() => setOpen(true)}

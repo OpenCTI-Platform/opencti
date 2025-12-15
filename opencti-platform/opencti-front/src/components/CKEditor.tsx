@@ -60,31 +60,31 @@ import { useIntl } from 'react-intl';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// eslint-disable-next-line import/extensions
+
 import de from 'ckeditor5/translations/de.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// eslint-disable-next-line import/extensions
+
 import en from 'ckeditor5/translations/en.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// eslint-disable-next-line import/extensions
+
 import es from 'ckeditor5/translations/es.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// eslint-disable-next-line import/extensions
+
 import fr from 'ckeditor5/translations/fr.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// eslint-disable-next-line import/extensions
+
 import ja from 'ckeditor5/translations/ja.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// eslint-disable-next-line import/extensions
+
 import ko from 'ckeditor5/translations/ko.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// eslint-disable-next-line import/extensions
+
 import zh from 'ckeditor5/translations/zh.js';
 
 const CKEDITOR_DEFAULT_CONFIG: EditorConfig = {

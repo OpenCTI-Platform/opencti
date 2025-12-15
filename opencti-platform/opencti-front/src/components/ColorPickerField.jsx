@@ -1,7 +1,7 @@
 import React from 'react';
 import MuiTextField from '@mui/material/TextField';
 import { SketchPicker } from 'react-color';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Popover from '@mui/material/Popover';
 import InputAdornment from '@mui/material/InputAdornment';
 import { useField } from 'formik';
@@ -87,7 +87,7 @@ const ColorPickerField = (props) => {
                     backgroundColor: meta.value || '',
                   }}
                 />
-                <IconButton aria-label="open" onClick={handleClick} size="large">
+                <IconButton aria-label="open" onClick={handleClick}>
                   <ColorLens />
                 </IconButton>
               </InputAdornment>

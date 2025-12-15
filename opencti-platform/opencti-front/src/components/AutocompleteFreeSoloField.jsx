@@ -1,6 +1,6 @@
 import React from 'react';
 import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import MUIAutocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import { fieldToTextField } from 'formik-mui';
@@ -88,7 +88,6 @@ const AutocompleteFreeSoloField = (props) => {
           onClick={() => openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
-          size="large"
         >
           <Add />
         </IconButton>

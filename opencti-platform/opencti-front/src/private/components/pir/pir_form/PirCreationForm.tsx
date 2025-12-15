@@ -13,10 +13,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { Button, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import React, { useState } from 'react';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
+import Button from '@common/button/Button';
 import { PirCreationFormData } from './pir-form-utils';
 import PirCreationFormGeneralSettings, { redisStreamQuery } from './PirCreationFormGeneralSettings';
 import PirCreationFormStepper from './PirCreationFormStepper';
@@ -109,13 +110,12 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
             </DialogContent>
 
             <DialogActions>
-              <Button onClick={onCancel}>
+              <Button variant="secondary" onClick={onCancel}>
                 {t_i18n('Cancel')}
               </Button>
               {step !== 1 && (
                 <Button
                   onClick={() => setStep(step + 1)}
-                  color="secondary"
                   disabled={!isStepValid}
                 >
                   {t_i18n('Next')}
@@ -124,7 +124,6 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
               {step === 1 && (
                 <Button
                   onClick={submitForm}
-                  color="secondary"
                   disabled={!isStepValid}
                 >
                   {t_i18n('Create')}

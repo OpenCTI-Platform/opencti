@@ -2,7 +2,7 @@ import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import { Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { FormikConfig } from 'formik/dist/types';
 import StatusTemplateFieldScoped from '@components/settings/sub_types/workflow/StatusTemplateFieldScoped';
 import GroupField, { GroupFieldOption } from '@components/common/form/GroupField';
@@ -161,8 +161,6 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
                 style={fieldSpacingContainerStyle}
               />
               <Button
-                variant="contained"
-                color="primary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 style={{ marginTop: 20, float: 'right' }}

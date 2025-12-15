@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, toPairs } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';

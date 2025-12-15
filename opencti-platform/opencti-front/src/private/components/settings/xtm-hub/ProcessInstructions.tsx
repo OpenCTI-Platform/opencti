@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 
 interface ProcessInstructionsProps {

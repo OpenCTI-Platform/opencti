@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import Button from '@mui/material/Button';
-import { useTheme } from '@mui/material/styles';
+import Button from '@common/button/Button';
 import { useFormatter } from '../i18n';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
@@ -16,7 +15,6 @@ const QuickRelativeDateFiltersButtons: FunctionComponent<QuickRelativeDateFilter
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
   const quickButtons = [
     { label: t_i18n('Last 30 minutes'), value: 'now-30m' },
     { label: t_i18n('Last 1 hour'), value: 'now-1h' },
@@ -35,10 +33,6 @@ const QuickRelativeDateFiltersButtons: FunctionComponent<QuickRelativeDateFilter
         <Button
           key={button.value}
           size="small"
-          style={{
-            textTransform: 'none',
-            color: theme.palette.text.primary,
-          }}
           onClick={() => handleClick(button.value)}
         >
           {button.label}

@@ -8,7 +8,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Button from '@mui/material/Button';
+import IconButton from '@common/button/IconButton';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../i18n';
 import ItemAuthor from '../../ItemAuthor';
@@ -525,18 +525,17 @@ const EntityDetailsComponent: FunctionComponent<
         '-'
       )}
       {expandable && (
-        <Button
-          variant="contained"
+        <IconButton
           size="small"
           onClick={handleToggleExpand}
           className={classes.buttonExpand}
         >
           {expanded ? (
-            <ExpandLessOutlined fontSize="small" />
+            <ExpandLessOutlined />
           ) : (
-            <ExpandMoreOutlined fontSize="small" />
+            <ExpandMoreOutlined />
           )}
-        </Button>
+        </IconButton>
       )}
     </div>
   );

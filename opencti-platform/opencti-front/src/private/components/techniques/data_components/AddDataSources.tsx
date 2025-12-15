@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
 import { DataSourcesLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataSourcesLinesPaginationQuery.graphql';
@@ -53,7 +53,6 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
         aria-label="Add"
         onClick={handleOpen}
         classes={{ root: classes.createButton }}
-        size="large"
       >
         <Add fontSize="small" />
       </IconButton>

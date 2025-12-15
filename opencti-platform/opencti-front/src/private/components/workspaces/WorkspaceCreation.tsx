@@ -1,6 +1,6 @@
 import React, { BaseSyntheticEvent, useContext, useRef } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
@@ -21,7 +21,6 @@ import { insertNode } from '../../../utils/store';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
 import { isNotEmptyField } from '../../../utils/utils';
-import GradientButton from '../../../components/GradientButton';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
@@ -134,15 +133,15 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
           <FileUploadOutlined fontSize="small" color="primary" />
         </ToggleButton>
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
-          <GradientButton
-            size="small"
+          <Button
+            gradient
             sx={{ marginLeft: theme.spacing(1) }}
             href={importFromHubUrl}
             target="_blank"
             title={t_i18n('Import from Hub')}
           >
             {t_i18n('Import from Hub')}
-          </GradientButton>
+          </Button>
         )}
         <CreateEntityControlledDial entityType="Dashboard" {...props} />
       </>
@@ -188,7 +187,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
                 />
                 <div style={{ marginTop: 20, textAlign: 'right' }}>
                   <Button
-                    variant="contained"
+                    variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
                     style={{ marginLeft: theme.spacing(2) }}
@@ -196,8 +195,6 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
-                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                     style={{ marginLeft: theme.spacing(2) }}

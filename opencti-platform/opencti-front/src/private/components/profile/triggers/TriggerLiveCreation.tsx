@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -332,7 +332,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
               {liveFields(setFieldValue, values)}
               <div className={classes.buttons}>
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -340,8 +340,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}

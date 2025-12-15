@@ -3,7 +3,6 @@ import { isEmpty } from 'ramda';
 import moment from 'moment';
 import Alert from '@mui/material/Alert';
 import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
-import IconButton from '@mui/material/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
 import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
@@ -14,7 +13,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -290,7 +290,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                       }
                     }}
                     aria-haspopup="true"
-                    color={nested ? 'inherit' : 'primary'}
+                    // color={nested ? 'inherit' : 'primary'}
                     size="small"
                   >
                     <ProgressUpload fontSize="small" />
@@ -314,7 +314,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                         }
                       }}
                       aria-haspopup="true"
-                      color={nested ? 'inherit' : 'primary'}
+                      // color={nested ? 'inherit' : 'primary'}
                       size="small"
                     >
                       <GetAppOutlined fontSize="small" />
@@ -463,11 +463,10 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRemove} disabled={deleting}>
+          <Button variant="secondary" onClick={handleCloseRemove} disabled={deleting}>
             {t_i18n('Cancel')}
           </Button>
           <Button
-            color="secondary"
             onClick={() => handleRemoveJob(file?.id)}
             disabled={deleting}
           >
@@ -501,14 +500,14 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             {t_i18n('Cancel')}
           </Button>
           <Button
-            color="warning"
+            // color="warning"
             onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)
             }
           >
             {t_i18n('Raw file')}
           </Button>
           <Button
-            color="success"
+            // color="success"
             onClick={() => handleLink(
               `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
             )

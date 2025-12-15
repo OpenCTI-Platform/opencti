@@ -14,7 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { CancelOutlined, AddOutlined } from '@mui/icons-material';
-import { IconButton, MenuItem, Button, Grid2 as Grid } from '@mui/material';
+import { MenuItem, Grid2 as Grid } from '@mui/material';
+import IconButton from '@common/button/IconButton';
 import { Field, FieldArray, useFormikContext } from 'formik';
 import { useTheme } from '@mui/styles';
 import { capitalizeFirstLetter } from '../../../../../../../utils/String';
@@ -157,10 +158,9 @@ const PlaybookFlowFieldActions = ({
               </div>
             );
           })}
-          <Button
+          <IconButton
             size="small"
             color="secondary"
-            variant="contained"
             disabled={!actionsAreValid}
             style={{ width: '100%', height: 20 }}
             onClick={() => {
@@ -168,7 +168,7 @@ const PlaybookFlowFieldActions = ({
             }}
           >
             <AddOutlined fontSize="small" />
-          </Button>
+          </IconButton>
         </div>
       )}
     />

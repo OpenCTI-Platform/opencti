@@ -1,13 +1,13 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
-import { IconButton } from '@mui/material';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import { MeasureInput } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualCreationMutation.graphql';
 import {
   ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
@@ -85,7 +85,6 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
                   onClick={() => {
                     arrayHelpers.remove(index);
                   }}
-                  size="large"
                   style={{ position: 'absolute', right: -10, top: 5 }}
                 >
                   <DeleteOutlined />
@@ -95,8 +94,6 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
             <Button
               size="small"
               startIcon={<AddOutlined />}
-              variant="contained"
-              color="primary"
               aria-label="Add"
               id="addHeight"
               onClick={() => {
@@ -230,7 +227,6 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
                         },
                       });
                     }}
-                    size="large"
                     style={{ position: 'absolute', right: -10, top: 5 }}
                   >
                     <DeleteOutlined />
@@ -241,8 +237,6 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
             <Button
               size="small"
               startIcon={<AddOutlined />}
-              variant="contained"
-              color="primary"
               aria-label="Add"
               id="addHeight"
               onClick={() => {

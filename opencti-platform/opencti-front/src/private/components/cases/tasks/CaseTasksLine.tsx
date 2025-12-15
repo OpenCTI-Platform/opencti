@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Skeleton from '@mui/material/Skeleton';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Drawer from '@components/common/drawer/Drawer';
 import CaseTaskOverview from '@components/cases/tasks/CaseTaskOverview';
@@ -163,7 +163,6 @@ export const CaseTasksLineDummy = () => {
           disabled={true}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
-          size="large"
         >
           <MoreVert />
         </IconButton>

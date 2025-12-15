@@ -1,5 +1,5 @@
 import { Badge, Tooltip } from '@mui/material';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import React from 'react';
 import { useFormatter } from '../../../../../../components/i18n';
 
@@ -15,9 +15,7 @@ const IngestionCatalogCardDeployButton = ({ deploymentCount, onClick }: Ingestio
     <Tooltip title={deploymentCount ? `${deploymentCount} deployments` : ''}>
       <Badge badgeContent={deploymentCount} color="warning">
         <Button
-          variant="contained"
           onClick={onClick}
-          size="small"
         >
           {t_i18n('Deploy')}
         </Button>

@@ -6,7 +6,7 @@ import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/material';
 import { FintelDesignCreationAddMutation } from '@components/settings/fintel_design/__generated__/FintelDesignCreationAddMutation.graphql';
 import { useNavigate } from 'react-router-dom';
@@ -134,7 +134,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
           />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               style={{ marginLeft: 16 }}
@@ -142,8 +142,6 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
               style={{ marginLeft: 16 }}

@@ -9,7 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../../utils/hooks/useGranted';
-import GradientButton from '../../../../components/GradientButton';
+import Button from '@common/button/Button';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -84,9 +84,17 @@ const XtmHubSettingsComponent = () => {
               <li>{t_i18n('monitor key metrics of the platform and health status')} <i>({t_i18n('coming soon')})</i></li>
             </List>
 
-            <GradientButton variant="outlined" component="a" href="https://filigran.io/platforms/xtm-hub/" target="_blank" rel="noreferrer" style={{ marginTop: 10, marginBottom: 10 }}>
+            <Button
+              gradient
+              variant="secondary"
+              component="a"
+              href="https://filigran.io/platforms/xtm-hub/"
+              target="_blank"
+              rel="noreferrer"
+              style={{ marginTop: 10, marginBottom: 10 }}
+            >
               {t_i18n('Discover the Hub')}
-            </GradientButton>
+            </Button>
 
           </>
         )}

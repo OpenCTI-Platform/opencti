@@ -20,7 +20,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import DialogTitle from '@mui/material/DialogTitle';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import AccessesMenu from './AccessesMenu';
@@ -261,6 +261,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             </DialogContent>
                             <DialogActions>
                               <Button
+                                variant="secondary"
                                 onClick={() => {
                                   setFieldValue('platform_organization', platformOrganization);
                                   setOpenPlatformOrganizationChanges(false);
@@ -269,7 +270,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                                 {t_i18n('Cancel')}
                               </Button>
                               <Button
-                                color="secondary"
                                 onClick={() => {
                                   setPlatformOrganization(values.platform_organization);
                                   setOpenPlatformOrganizationChanges(false);

@@ -1,6 +1,5 @@
 import { graphql } from 'react-relay';
 
-// eslint-disable-next-line import/prefer-default-export
 export const markingDefinitionsLinesSearchQuery = graphql`
     query MarkingDefinitionsQuerySearchQuery($search: String) {
         markingDefinitions(search: $search) {

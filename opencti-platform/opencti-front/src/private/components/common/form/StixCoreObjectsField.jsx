@@ -10,7 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { useFormatter } from '../../../../components/i18n';

@@ -1,6 +1,6 @@
 import React, { FormEvent, FunctionComponent, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { Theme } from '@mui/material/styles/createTheme';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
@@ -158,8 +158,8 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
         })}
       >
         <Button
+          size="small"
           component="label"
-          variant="contained"
           onChange={internalOnChange}
           className={classes.button}
           disabled={disabled}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useQueryLoader } from 'react-relay';

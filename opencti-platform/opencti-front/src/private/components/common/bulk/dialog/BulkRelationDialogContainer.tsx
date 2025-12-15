@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import BulkRelationDialog from '@components/common/bulk/dialog/BulkRelationDialog';
 import { PaginationOptions } from 'src/components/list_lines';
 import { useFormatter } from 'src/components/i18n';
@@ -45,7 +45,7 @@ const BulkRelationDialogContainer = ({
 
   return (
     <>
-      <Button onClick={handleOpenDialog} color="primary" variant="outlined" sx={inlinedStyle.button} size="small">
+      <Button onClick={handleOpenDialog} variant="secondary" sx={inlinedStyle.button} size="small">
         {t_i18n('Create relations in bulk')}
       </Button>
       {isDialogOpen && (

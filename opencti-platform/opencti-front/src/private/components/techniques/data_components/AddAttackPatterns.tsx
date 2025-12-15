@@ -1,6 +1,6 @@
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -59,7 +59,6 @@ const AddAttackPatterns: FunctionComponent<{
         aria-label="Add"
         onClick={handleOpen}
         classes={{ root: classes.createButton }}
-        size="large"
       >
         <Add fontSize="small" />
       </IconButton>

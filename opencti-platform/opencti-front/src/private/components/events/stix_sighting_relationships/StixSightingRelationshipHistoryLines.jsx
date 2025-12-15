@@ -7,7 +7,7 @@ import { useFormatter } from 'src/components/i18n';
 import useInterval from 'src/utils/hooks/useInterval';
 import { FIVE_SECONDS } from 'src/utils/Time';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
 import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
@@ -91,7 +91,6 @@ const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginat
                     <Tooltip title={t_i18n('Browse the link')}>
                       <IconButton
                         onClick={() => handleOpen(log)}
-                        size="large"
                         color="primary"
                       >
                       </IconButton>

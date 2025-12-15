@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import InputAdornment from '@mui/material/InputAdornment';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -270,7 +270,6 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
               )}
               <div className={classes.buttons}>
                 <Button
-                  variant="contained"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -278,7 +277,6 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
                   color="secondary"
                   onClick={() => handleVerify(formValues)}
                   disabled={isSubmitting}
@@ -287,7 +285,6 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   {t_i18n('Verify')}
                 </Button>
                 <Button
-                  variant="contained"
                   color="secondary"
                   onClick={submitForm}
                   disabled={!verified || isSubmitting}

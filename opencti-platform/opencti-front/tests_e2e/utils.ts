@@ -47,9 +47,8 @@ export const awaitUntilCondition = async (
   let isConditionOk = await conditionPromise();
   let loopCurrent = 0;
   while (!isConditionOk === expectToBeTrue && loopCurrent < loopCount) {
-    // eslint-disable-next-line no-await-in-loop
     await sleep(sleepTimeBetweenLoop);
-    // eslint-disable-next-line no-await-in-loop
+
     isConditionOk = await conditionPromise();
     loopCurrent += 1;
   }

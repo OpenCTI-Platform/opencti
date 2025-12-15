@@ -1,7 +1,8 @@
 import { alpha } from '@mui/material/styles';
 import { CloudUploadOutlined } from '@mui/icons-material';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import React, { useState } from 'react';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import type { Theme } from '../../../../../components/Theme';
@@ -80,12 +81,12 @@ const ImportFilesDropzone = ({
         {t_i18n('Drag and drop files to import')}
       </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-        <Button variant="contained" component="label" size="small">
+        <Button component="label" size="small">
           {t_i18n('Browse files')}
           <input type="file" hidden multiple onChange={handleFileChange} />
         </Button>
         {openFreeText && (
-          <Button variant="outlined" component="label" size="small" onClick={() => openFreeText?.(true)}>
+          <Button variant="secondary" component="label" size="small" onClick={() => openFreeText?.(true)}>
             {t_i18n('Copy/paste mode')}
           </Button>
         )}

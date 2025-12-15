@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 import Alert from '@mui/material/Alert';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { AutoModeOutlined, ContentCopyOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import { AISummaryContainersContainersAskAiSummaryQuery$data } from '@components/common/ai/__generated__/AISummaryContainersContainersAskAiSummaryQuery.graphql';

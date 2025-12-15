@@ -3,7 +3,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Box from '@mui/material/Box';
 import { Link, useNavigate } from 'react-router-dom';
 import DialogContent from '@mui/material/DialogContent';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import DialogActions from '@mui/material/DialogActions';
 import { RootSettings$data } from '../../../__generated__/RootSettings.graphql';
 import { useFormatter } from '../../../../components/i18n';

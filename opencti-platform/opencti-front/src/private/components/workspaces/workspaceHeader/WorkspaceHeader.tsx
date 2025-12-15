@@ -15,7 +15,7 @@ import WorkspaceWidgetConfig from 'src/private/components/workspaces/dashboards/
 import { WorkspaceHeaderToStixReportBundleQuery$data } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderToStixReportBundleQuery.graphql';
 import WorkspaceKebabMenu from '@components/workspaces/WorkspaceKebabMenu';
 import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/WorkspaceHeaderTagManager';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionContainer';
 import { WorkspaceHeaderFragment$key } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -129,7 +129,6 @@ const WorkspaceHeader = ({
           )}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
             <Button
-              variant="contained"
               disableElevation
               sx={{ marginLeft: 1 }}
               onClick={handleOpenEdit}

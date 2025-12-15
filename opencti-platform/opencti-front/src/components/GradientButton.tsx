@@ -14,6 +14,17 @@ interface GradientButtonProps extends ButtonProps {
   target?: string;
 }
 
+/**
+ * @deprecated use @common/button/Button
+ *
+ * <Button
+ *   gradient
+ *   gradientStartColor="#color"
+ *   gradientEndColor="#color"
+ * >
+ *  { ... }
+ * </Button>
+ */
 const GradientButton = ({
   gradientVariant = GradientVariant.default,
   children,

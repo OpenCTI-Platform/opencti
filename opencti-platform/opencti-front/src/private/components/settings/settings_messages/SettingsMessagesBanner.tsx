@@ -1,5 +1,5 @@
 import { Close } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
@@ -218,7 +218,7 @@ const SettingsMessagesBannerComponent = ({
       {messageToDisplay.dismissible && (
         <IconButton
           aria-label="close"
-          color="inherit"
+          // color="inherit"
           size="small"
           className={classes.button}
           style={{ color }}

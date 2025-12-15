@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Chip from '@mui/material/Chip';
 import { AccountBalanceOutlined } from '@mui/icons-material';
 import { BankPlus } from 'mdi-material-ui';
@@ -14,7 +14,7 @@ import Dialog from '@mui/material/Dialog';
 import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { Link } from 'react-router-dom';
 import ObjectOrganizationField from '../form/ObjectOrganizationField';
@@ -218,13 +218,13 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                   </Form>
                 </DialogContent>
                 <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Close')}
                   </Button>
                   <Button
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    color="secondary"
+                    // color="secondary"
                   >
                     {t_i18n('Share')}
                   </Button>
@@ -248,7 +248,6 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                 aria-label="Label"
                 onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
                 style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-                size="large"
                 disabled={disabled}
               >
                 <BankPlus fontSize="small" color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'} />
@@ -296,13 +295,12 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                 </Form>
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleReset} disabled={isSubmitting}>
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Close')}
                 </Button>
                 <Button
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  color="secondary"
                 >
                   {t_i18n('Share')}
                 </Button>

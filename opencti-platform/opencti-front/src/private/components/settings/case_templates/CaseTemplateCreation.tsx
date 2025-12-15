@@ -1,4 +1,4 @@
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { Field, Form, Formik } from 'formik';
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
@@ -124,7 +124,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
               }}
               >
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   style={{ marginLeft: theme.spacing(2) }}
@@ -132,8 +132,6 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   style={{ marginLeft: theme.spacing(2) }}

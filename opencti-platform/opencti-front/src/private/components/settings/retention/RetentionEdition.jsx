@@ -8,7 +8,7 @@ import * as R from 'ramda';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
@@ -239,7 +239,6 @@ const RetentionEditionContainer = (props) => {
             }
             <div className={classes.buttons}>
               <Button
-                variant="contained"
                 color="secondary"
                 onClick={() => handleVerify(values)}
                 disabled={isSubmitting}
@@ -248,7 +247,6 @@ const RetentionEditionContainer = (props) => {
                 {t('Verify')}
               </Button>
               <Button
-                variant="contained"
                 color="primary"
                 onClick={submitForm}
                 classes={{ root: classes.button }}

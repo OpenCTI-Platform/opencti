@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { FileExportOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -71,7 +71,6 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
               disabled={!isExportPossible || !!draftContext}
               aria-haspopup="true"
               color="primary"
-              size="medium"
             >
               <FileExportOutline />
             </IconButton>

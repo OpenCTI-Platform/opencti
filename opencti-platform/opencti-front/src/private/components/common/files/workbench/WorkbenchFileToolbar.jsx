@@ -5,13 +5,13 @@ import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import { CenterFocusStrongOutlined, ClearOutlined, DeleteOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@mui/material/Dialog';
 import Slide from '@mui/material/Slide';
 import { Form, Formik } from 'formik';
@@ -166,7 +166,7 @@ class WorkbenchFileToolbar extends Component {
             anchor="bottom"
             variant="persistent"
             classes={{
-              // eslint-disable-next-line no-nested-ternary
+
               paper: classes.bottomNav,
             }}
             open={isOpen}
@@ -200,24 +200,19 @@ class WorkbenchFileToolbar extends Component {
                   aria-label="clear"
                   disabled={numberOfSelectedElements === 0}
                   onClick={handleClearSelectedElements.bind(this)}
-                  size="large"
                 >
-                  <ClearOutlined fontSize="small" />
+                  <ClearOutlined />
                 </IconButton>
               </Typography>
               <IconButton
                 disabled={numberOfSelectedElements === 0}
                 onClick={this.handleOpenApplyMarking.bind(this)}
-                color="primary"
-                size="large"
               >
                 <CenterFocusStrongOutlined />
               </IconButton>
               <IconButton
                 disabled={numberOfSelectedElements === 0}
                 onClick={this.handleOpenDelete.bind(this)}
-                color="primary"
-                size="large"
               >
                 <DeleteOutlined />
               </IconButton>

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, SyntheticEvent, useEffect, useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { RelationManyToMany, CalendarMultiselectOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Drawer from '@mui/material/Drawer';
@@ -114,7 +114,6 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                 <span>
                   <IconButton
                     color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
-                    size="large"
                     onClick={() => handleToggleTimeLineDisplayRelationships()}
                   >
                     <RelationManyToMany />
@@ -131,7 +130,6 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                 <span>
                   <IconButton
                     color={timeLineFunctionalDate ? 'secondary' : 'primary'}
-                    size="large"
                     onClick={() => handleToggleTimeLineFunctionalDate()}
                   >
                     <CalendarMultiselectOutline />

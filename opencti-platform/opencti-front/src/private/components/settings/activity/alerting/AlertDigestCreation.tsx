@@ -4,10 +4,10 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Close } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -288,7 +288,6 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large"
           color="primary"
         >
           <Close fontSize="small" color="primary" />
@@ -313,7 +312,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
               {digestFields(setFieldValue, values)}
               <div className={classes.buttons}>
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -321,8 +320,6 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}

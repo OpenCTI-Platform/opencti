@@ -5,7 +5,10 @@ import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
-import { IngestionTaxiiEditionFragment_ingestionTaxii$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiEditionFragment_ingestionTaxii.graphql';
+import {
+  IngestionTaxiiEditionFragment_ingestionTaxii$data,
+  IngestionTaxiiEditionFragment_ingestionTaxii$key,
+} from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiEditionFragment_ingestionTaxii.graphql';
 import CommitMessage from '@components/common/form/CommitMessage';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
@@ -28,7 +31,6 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import { IngestionTaxiiEditionFragment_ingestionTaxii$key } from './__generated__/IngestionTaxiiEditionFragment_ingestionTaxii.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { adaptFieldValue } from '../../../../utils/String';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';

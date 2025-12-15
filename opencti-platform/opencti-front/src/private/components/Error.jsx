@@ -57,7 +57,6 @@ class ErrorBoundaryComponent extends React.Component {
     return { error };
   }
 
-  // eslint-disable-next-line
   componentDidCatch(error, errorInfo) {
     try {
       const isNetworkError = this.state.error.res;
@@ -114,7 +113,6 @@ ErrorBoundaryComponent.propTypes = {
 export const ErrorBoundary = compose(withRouter)(ErrorBoundaryComponent);
 
 export const boundaryWrapper = (Component) => {
-  // eslint-disable-next-line react/display-name
   return (
     <ErrorBoundary>
       <Component />

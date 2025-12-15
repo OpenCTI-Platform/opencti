@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useQueryLoader } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
@@ -63,7 +63,6 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}
-        size="large"
         color="primary"
       >
         <MoreVert />

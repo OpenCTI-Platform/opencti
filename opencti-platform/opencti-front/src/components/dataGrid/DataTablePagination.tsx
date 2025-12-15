@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import React, { type Dispatch, type SetStateAction, Suspense, useCallback, useEffect } from 'react';
 import { ArrowLeft, ArrowRight } from '@mui/icons-material';
 import { ButtonGroup } from '@mui/material';
-import Button from '@mui/material/Button';
+import IconButton from '@common/button/IconButton';
 import { TableTuneIcon } from 'filigran-icon';
 import { useFormatter } from '../i18n';
 import { NumberOfElements } from '../../utils/hooks/useLocalStorage';
@@ -149,9 +149,10 @@ const DataTablePagination = ({
         variant="text"
         color="pagination"
       >
-        <Button
+        <IconButton
           onClick={() => fetchMore('previous')}
-          size="small"
+          variant="tertiary"
+          size="default"
           disabled={firstItem === 1}
           style={{
             padding: 0,
@@ -160,7 +161,7 @@ const DataTablePagination = ({
           }}
         >
           <ArrowLeft />
-        </Button>
+        </IconButton>
         <Tooltip
           title={(
             <div>
@@ -185,14 +186,15 @@ const DataTablePagination = ({
             </Typography>
           </Box>
         </Tooltip>
-        <Button
+        <IconButton
           onClick={() => fetchMore('forward')}
-          size="small"
+          variant="tertiary"
+          size="default"
           disabled={lastItem === numberOfElements.original}
           style={{ paddingLeft: 0, paddingRight: 0, minWidth: 24 }}
         >
           <ArrowRight />
-        </Button>
+        </IconButton>
       </ButtonGroup>
       <Suspense>
         <NestedMenuButton

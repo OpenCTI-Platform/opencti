@@ -7,11 +7,11 @@ import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
 import { Form, Formik } from 'formik';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import EmailTemplateField, { EmailTemplate, EmailTemplateFieldOption } from '@components/common/form/EmailTemplateField';
 import { FormikConfig } from 'formik/dist/types';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -121,13 +121,12 @@ const UserEmailSend = ({ userId, isOpen, onSubmit, outlined }: UserEmailSendProp
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleReset} disabled={isSubmitting}>
+              <Button variant="secondary">
                 {t_i18n('Close')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                color="secondary"
               >
                 {t_i18n('Send')}
               </Button>

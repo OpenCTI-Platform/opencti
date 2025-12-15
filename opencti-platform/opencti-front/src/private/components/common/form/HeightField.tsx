@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { IconButton } from '@mui/material';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
@@ -143,7 +143,6 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
                         },
                       });
                     }}
-                    size="large"
                     style={{ position: 'absolute', right: -10, top: 5 }}
                   >
                     <DeleteOutlined />
@@ -154,8 +153,6 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
             <Button
               size="small"
               startIcon={<AddOutlined />}
-              variant="contained"
-              color="primary"
               aria-label="Add"
               id="addHeight"
               onClick={() => {
@@ -243,7 +240,6 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    size="large"
                     style={{ position: 'absolute', right: -10, top: 5 }}
                   >
                     <DeleteOutlined />
@@ -253,8 +249,6 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
               <Button
                 size="small"
                 startIcon={<AddOutlined />}
-                variant="contained"
-                color="primary"
                 aria-label="Add"
                 id="addHeight"
                 onClick={() => {

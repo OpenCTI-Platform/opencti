@@ -12,7 +12,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/styles';
@@ -216,6 +216,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={handleCloseClearWorks}
             disabled={clearing}
           >
@@ -223,7 +224,6 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
           </Button>
           <Button
             onClick={submitClearWorks}
-            color="secondary"
             disabled={clearing}
           >
             {t_i18n('Confirm')}
@@ -263,6 +263,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={handleCloseResetState}
             disabled={resetting}
           >
@@ -270,8 +271,8 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
           </Button>
           <Button
             onClick={submitResetState}
-            color={isSensitive ? 'error' : 'secondary'}
             disabled={resetting || refreshingQueueDetails}
+            {...(isSensitive && { color: 'error' })}
           >
             {t_i18n('Confirm')}
           </Button>

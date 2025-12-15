@@ -1,7 +1,7 @@
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Divider from '@mui/material/Divider';
 import React from 'react';
 import { declineRequestAccessMutation, validateRequestAccessMutation } from '@components/cases/CaseUtils';
@@ -90,17 +90,13 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
           <Tooltip title={disabledTooltip}>
             <div>
               <Button
-                color="primary"
                 disabled
-                variant="contained"
                 style={{ marginRight: 10 }}
               >
                 {t_i18n('Validate')}
               </Button>
               <Button
-                color="primary"
                 disabled
-                variant="contained"
               >
                 {t_i18n('Decline')}
               </Button>
@@ -110,16 +106,14 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
         {isDecisionNotTaken && userCanAction && (
           <div>
             <Button
-              color="primary"
-              variant="outlined"
+              variant="secondary"
               style={{ marginRight: 10, color: approvedButtonColor, borderColor: approvedButtonColor }}
               onClick={onSubmitValidateRequestAccess}
             >
               {t_i18n('Validate')}
             </Button>
             <Button
-              color="primary"
-              variant="outlined"
+              variant="secondary"
               style={{ color: declineButtonColor, borderColor: declineButtonColor }}
               onClick={onSubmitDeclineRequestAccess}
             >

@@ -8,7 +8,6 @@ import { CsvMapperRepresentationAttributesFormFragment } from '../csvMapper/repr
 import { CsvMapperAddInput, csvMapperToFormData } from '../csvMapper/CsvMapperUtils';
 import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValues';
 
-// eslint-disable-next-line import/prefer-default-export
 export const csvFeedCsvMapperToFormData = (csvMapper: CsvMapperAddInput): CsvMapperFormData => {
   const computeDefaultValues = useComputeDefaultValues();
   const { schemaAttributes } = useCsvMappersData();

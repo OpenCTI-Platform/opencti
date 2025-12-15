@@ -1,4 +1,4 @@
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import CoreForm from '@rjsf/core';
 import JsonForm from '@rjsf/mui';
@@ -207,8 +207,6 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
             />
             <div className={classes.buttons}>
               <Button
-                variant="contained"
-                color="primary"
                 onClick={() => {
                   notifierConfiguration.current = JSON.stringify(formRef.current?.state.formData);
                   setOpen(true);
@@ -219,7 +217,6 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                 {t_i18n('Test')}
               </Button>
               <Button
-                variant="contained"
                 color="secondary"
                 onClick={() => {
                   submitForm(setSubmitting, setErrors, values, formRef.current);

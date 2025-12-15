@@ -29,7 +29,9 @@ export default class StixCoreObjectContentTabPage {
     if (isAutoSave) {
       await element.fill(input);
       // We wait for changes to be saved before leaving page
-      return new Promise((r) => { setTimeout(r, 4000); });
+      return new Promise((r) => {
+        setTimeout(r, 4000);
+      });
     }
 
     await element.fill(input);
@@ -53,9 +55,11 @@ export default class StixCoreObjectContentTabPage {
   getContentMappingViewButton() {
     return this.page.getByLabel('Content mapping view');
   }
+
   getContentViewButton() {
     return this.page.getByLabel('Content view');
   }
+
   getEditorViewButton() {
     return this.page.getByLabel('Editor view');
   }

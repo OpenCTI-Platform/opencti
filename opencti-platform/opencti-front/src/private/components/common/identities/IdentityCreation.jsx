@@ -11,7 +11,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -223,11 +223,10 @@ class IdentityCreation extends Component {
                   )}
                 </DialogContent>
                 <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

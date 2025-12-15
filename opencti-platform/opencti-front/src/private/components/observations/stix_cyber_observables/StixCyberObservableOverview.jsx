@@ -8,14 +8,14 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Chip from '@mui/material/Chip';
 import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
@@ -259,7 +259,6 @@ class StixCyberObservableOverview extends Component {
                         edge="end"
                         aria-label="delete"
                         onClick={this.deleteStixId.bind(this, stixId)}
-                        size="large"
                       >
                         <Delete />
                       </IconButton>
@@ -274,7 +273,6 @@ class StixCyberObservableOverview extends Component {
           <DialogActions>
             <Button
               onClick={this.handleToggleOpenStixIds.bind(this)}
-              color="primary"
             >
               {t('Close')}
             </Button>

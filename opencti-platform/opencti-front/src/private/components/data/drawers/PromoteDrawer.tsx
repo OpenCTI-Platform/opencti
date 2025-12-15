@@ -1,6 +1,6 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import { useTheme } from '@mui/styles';
 import Checkbox from '@mui/material/Checkbox';
@@ -64,7 +64,6 @@ const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSub
         >
           <Button
             sx={{ marginLeft: theme.spacing(2) }}
-            variant="contained"
             color="secondary"
             onClick={onSubmit}
           >

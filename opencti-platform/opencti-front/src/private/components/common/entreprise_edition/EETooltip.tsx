@@ -3,7 +3,7 @@ import React, { ReactElement, useState } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import DialogActions from '@mui/material/DialogActions';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';

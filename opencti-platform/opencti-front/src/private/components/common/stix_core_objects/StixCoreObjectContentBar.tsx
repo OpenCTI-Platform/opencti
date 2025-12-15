@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { ZoomInOutlined, ZoomOutOutlined, SaveOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Slide, { SlideProps } from '@mui/material/Slide';
@@ -84,18 +84,18 @@ const StixCoreObjectContentBar: FunctionComponent<
                   <IconButton
                     color="primary"
                     onClick={handleSave}
-                    size="large"
                     disabled={!changed}
                     aria-label={t_i18n('Save')}
                   >
                     <SaveOutlined />
                   </IconButton>
                 )}
-                label={changed ? (
-                  <span style={{ color: theme.palette.warn.main }}>
-                    {t_i18n('You have unsaved changes')}
-                  </span>
-                ) : t_i18n('No changes detected')
+                label={changed
+                  ? (
+                      <span style={{ color: theme.palette.warn.main }}>
+                        {t_i18n('You have unsaved changes')}
+                      </span>
+                    ) : t_i18n('No changes detected')
                 }
               />
             </FormGroup>
@@ -105,7 +105,6 @@ const StixCoreObjectContentBar: FunctionComponent<
               color="primary"
               onClick={handleZoomOut}
               disabled={currentZoom <= 0.6}
-              size="large"
               aria-label={t_i18n('Zoom out')}
             >
               <ZoomOutOutlined />
@@ -116,7 +115,6 @@ const StixCoreObjectContentBar: FunctionComponent<
               color="primary"
               onClick={handleZoomIn}
               disabled={currentZoom >= 2}
-              size="large"
               aria-label={t_i18n('Zoom in')}
             >
               <ZoomInOutlined />

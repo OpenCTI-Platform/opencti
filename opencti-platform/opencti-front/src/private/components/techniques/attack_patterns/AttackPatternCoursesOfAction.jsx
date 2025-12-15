@@ -6,7 +6,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -68,7 +68,6 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
                   <IconButton
                     aria-label="Remove"
                     onClick={() => removeCourseOfAction(courseOfActionEdge)}
-                    size="large"
                   >
                     <LinkOff />
                   </IconButton>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -10,7 +10,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
 import { Link } from 'react-router-dom';
 import { DeleteOperationsLinesPaginationQuery$variables } from './__generated__/DeleteOperationsLinesPaginationQuery.graphql';
@@ -142,7 +142,6 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
         onClick={handleOpen}
         disabled={disabled}
         aria-haspopup="true"
-        size="large"
       >
         <MoreVert fontSize="small" color="primary" />
       </IconButton>
@@ -178,10 +177,10 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseConfirm} disabled={deleting || restoring}>
+          <Button variant="secondary" onClick={handleCloseConfirm} disabled={deleting || restoring}>
             {t_i18n('Cancel')}
           </Button>
-          <Button color="secondary" onClick={submitConfirm} disabled={deleting || restoring}>
+          <Button onClick={submitConfirm} disabled={deleting || restoring}>
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>

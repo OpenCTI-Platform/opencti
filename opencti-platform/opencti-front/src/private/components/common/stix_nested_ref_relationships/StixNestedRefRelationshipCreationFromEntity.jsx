@@ -6,8 +6,8 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import { Add, ArrowRightAlt, ChevronRightOutlined, Close } from '@mui/icons-material';
 import Fab from '@mui/material/Fab';
@@ -558,7 +558,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
-            size="large"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
@@ -741,7 +740,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 aria-label="Close"
                 className={classes.closeButton}
                 onClick={handleClose}
-                size="large"
               >
                 <Close fontSize="small" color="primary" />
               </IconButton>
@@ -861,7 +859,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
               />
               <div className={classes.buttonBack}>
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleResetSelection}
                   disabled={isSubmitting}
                 >
@@ -870,7 +868,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
               </div>
               <div className={classes.buttons}>
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -878,8 +876,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -918,7 +914,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
           aria-label="Label"
           onClick={handleOpen}
           style={{ float: 'left', margin: '-15px 0 0 -2px', zIndex: 1 }}
-          size="large"
         >
           <Add fontSize="small" />
         </IconButton>

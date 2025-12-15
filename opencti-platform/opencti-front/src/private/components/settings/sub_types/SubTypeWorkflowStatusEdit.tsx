@@ -5,7 +5,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';

@@ -1,11 +1,11 @@
 import React, { FunctionComponent, ReactNode, useMemo } from 'react';
 import Dialog from '@mui/material/Dialog';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { CogOutline } from 'mdi-material-ui';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Badge } from '@mui/material';
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { useFormatter } from '../../../../../../components/i18n';
@@ -34,7 +34,6 @@ const JsonMapperRepresentationDialogOption: FunctionComponent<JsonMapperRepresen
         color="primary"
         aria-label={t_i18n('Settings')}
         onClick={handleClickOpen}
-        size="large"
       >
         <Badge color="secondary" variant="dot" invisible={!visible}>
           <CogOutline />

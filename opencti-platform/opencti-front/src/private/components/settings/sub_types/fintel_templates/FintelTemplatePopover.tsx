@@ -1,7 +1,7 @@
 import MoreVert from '@mui/icons-material/MoreVert';
 import React, { UIEvent, useState } from 'react';
-import { IconButton, Menu, MenuItem, PopoverProps } from '@mui/material';
-import Button from '@mui/material/Button';
+import { Menu, MenuItem, PopoverProps } from '@mui/material';
+import IconButton from '@common/button/IconButton';
 import useFintelTemplateExport from './useFintelTemplateExport';
 import useFintelTemplateDelete from './useFintelTemplateDelete';
 import stopEvent from '../../../../../utils/domEvent';
@@ -80,14 +80,14 @@ const FintelTemplatePopover = ({
           <MoreVert fontSize="small" />
         </IconButton>
       ) : (
-        <Button
+        <IconButton
           onClick={onOpenMenu}
           aria-haspopup="true"
           className="icon-outlined"
-          variant="outlined"
+          variant="secondary"
         >
           <MoreVert fontSize="small" />
-        </Button>
+        </IconButton>
       )}
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>

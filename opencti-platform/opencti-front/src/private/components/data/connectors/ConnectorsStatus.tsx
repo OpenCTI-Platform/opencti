@@ -4,7 +4,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { useQueryLoader } from 'react-relay';
 import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
@@ -12,7 +12,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -260,6 +260,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={() => setConnectorIdToReset(undefined)}
             disabled={resetting}
           >
@@ -269,7 +270,6 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
             onClick={() => {
               submitResetState(connectorIdToReset);
             }}
-            color="secondary"
             disabled={resetting}
           >
             {t_i18n('Confirm')}
@@ -363,7 +363,6 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                     }}
                                     aria-haspopup="true"
                                     color="primary"
-                                    size="large"
                                     disabled={!!connector.built_in}
                                   >
                                     <PlaylistRemoveOutlined />
@@ -380,7 +379,6 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                   aria-haspopup="true"
                                   color="primary"
                                   disabled={!canDeleteConnector(connector as unknown as Connector_connector$data)}
-                                  size="large"
                                 >
                                   <DeleteOutlined />
                                 </IconButton>

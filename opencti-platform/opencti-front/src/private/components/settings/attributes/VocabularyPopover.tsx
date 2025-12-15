@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { MoreVertOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { PopoverProps } from '@mui/material/Popover';

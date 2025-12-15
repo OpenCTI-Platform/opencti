@@ -3,7 +3,7 @@ import Dialog from '@mui/material/Dialog';
 import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import React from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
@@ -86,6 +86,7 @@ const FormAuthorizedMembers = ({
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={() => {
                 handleReset();
                 handleClose();
@@ -94,7 +95,6 @@ const FormAuthorizedMembers = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting || !dirty}
             >

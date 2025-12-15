@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drafts from '@components/drafts/Drafts';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
@@ -28,8 +28,9 @@ const DraftWorkspaceViewer = ({ entityId }: DraftWorkspaceViewerProps) => {
               color="primary"
               aria-label="Add"
               onClick={() => setOpenCreate(true)}
-              style={{ marginTop: -15 }}
-              size="large"
+              sx={{ marginTop: -0.8 }}
+              size="small"
+              variant="tertiary"
             >
               <Add fontSize="small" />
             </IconButton>

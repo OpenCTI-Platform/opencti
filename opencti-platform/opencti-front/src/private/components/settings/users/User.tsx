@@ -8,12 +8,12 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -873,12 +873,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseKillSession} disabled={killing}>
+          <Button variant="secondary" onClick={handleCloseKillSession} disabled={killing}>
             {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={submitKillSession}
-            color="secondary"
             disabled={killing}
           >
             {t_i18n('Confirm')}
@@ -901,12 +900,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseKillSessions} disabled={killing}>
+          <Button variant="secondary" onClick={handleCloseKillSessions} disabled={killing}>
             {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={submitKillSessions}
-            color="secondary"
             disabled={killing}
           >
             {t_i18n('Confirm')}
@@ -929,12 +927,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRenewToken}>
+          <Button variant="secondary" onClick={handleCloseRenewToken}>
             {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={submitRenewToken}
-            color="secondary"
           >
             {t_i18n('Confirm')}
           </Button>

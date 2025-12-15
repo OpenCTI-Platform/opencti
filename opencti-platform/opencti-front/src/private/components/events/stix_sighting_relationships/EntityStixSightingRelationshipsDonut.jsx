@@ -142,7 +142,6 @@ class EntityStixSightingRelationshipsDonut extends Component {
     this.renderSimpleLabel = this.renderSimpleLabel.bind(this);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   renderSimpleLabel(props) {
     return props.value;
   }

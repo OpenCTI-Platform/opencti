@@ -14,7 +14,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DecayDialogContent from './DecayDialogContent';
 import DecayExclusionDialogContent from './DecayExclusionDialogContent';
@@ -114,7 +114,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                 <Grid item xs={8}>
                   <Button
                     size="small"
-                    variant="outlined"
+                    variant="secondary"
                     onClick={openLifecycleDialog}
                     startIcon={<TroubleshootOutlined />}
                     sx={{ marginTop: '22px' }}

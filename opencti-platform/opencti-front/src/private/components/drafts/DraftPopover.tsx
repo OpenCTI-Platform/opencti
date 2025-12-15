@@ -1,12 +1,12 @@
 import React, { UIEvent, useState } from 'react';
 import MoreVert from '@mui/icons-material/MoreVert';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
@@ -142,7 +142,6 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
         <IconButton
           onClick={handleOpen}
           aria-haspopup="true"
-          size="large"
           color="primary"
           aria-label={t_i18n('Draft popover of actions')}
         >
@@ -174,9 +173,8 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
             <DialogContentText>{t_i18n('You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.')}</DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseSwitch}>{t_i18n('Cancel')}</Button>
+            <Button variant="secondary" onClick={handleCloseSwitch}>{t_i18n('Cancel')}</Button>
             <Button
-              color="secondary"
               onClick={submitToDraft}
               disabled={switchToDraft}
             >

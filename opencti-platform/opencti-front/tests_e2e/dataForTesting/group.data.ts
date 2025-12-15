@@ -15,8 +15,8 @@ export const getGroups = () => `
 `;
 
 interface AddGroupInput {
-  name: string
-  roles: string[]
+  name: string;
+  roles: string[];
 }
 
 const addGroup = (input: AddGroupInput) => `

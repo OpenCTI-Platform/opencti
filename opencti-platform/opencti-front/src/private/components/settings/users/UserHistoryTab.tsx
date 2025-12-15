@@ -1,11 +1,12 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from '@mui/material';
+import { Avatar, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from '@mui/material';
 import { DeleteOutlined, StorageOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { LinkVariantPlus, LinkVariantRemove, Merge, VectorRadius } from 'mdi-material-ui';
 import { v4 as uuid } from 'uuid';
 import { deepOrange, green, indigo, lightGreen, orange, pink, red, teal, yellow } from '@mui/material/colors';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { UserHistoryTab_user$key } from './__generated__/UserHistoryTab_user.graphql';
 import DataTable from '../../../../components/dataGrid/DataTable';
@@ -132,7 +133,8 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           }}
           onClick={() => commit && handleOpen()}
         >
-          <ItemIcon type={eventScope} color="inherit" size="small" />
+          {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+          <ItemIcon type={eventScope} size="small" />
         </Avatar>
       );
     }
@@ -169,7 +171,8 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           }}
           onClick={() => commit && handleOpen()}
         >
-          <ItemIcon type={eventScope} color="inherit" size="small" />
+          {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+          <ItemIcon type={eventScope} size="small" />
         </Avatar>
       );
     }
@@ -186,7 +189,8 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           }}
           onClick={() => commit && handleOpen()}
         >
-          <ItemIcon type={eventScope} color="inherit" size="small" />
+          {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+          <ItemIcon type={eventScope} size="small" />
         </Avatar>
       );
     }
@@ -251,7 +255,8 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
         >
-          <ItemIcon type={eventScope} color="inherit" size="small" />
+          {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+          <ItemIcon type={eventScope} size="small" />
         </Avatar>
       );
     }
@@ -267,7 +272,8 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
             cursor: commit ? 'pointer' : 'auto',
           }}
         >
-          <ItemIcon type={eventScope} color="inherit" size="small" />
+          {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+          <ItemIcon type={eventScope} size="small" />
         </Avatar>
       );
     }
@@ -282,7 +288,8 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
         }}
         onClick={() => commit && handleOpen()}
       >
-        <ItemIcon type={eventScope} color="inherit" size="small" />
+        {/* <ItemIcon type={eventScope} color="inherit" size="small" /> */}
+        <ItemIcon type={eventScope} size="small" />
       </Avatar>
     );
   };
@@ -306,7 +313,6 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
               <IconButton
                 component={Link}
                 to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
-                size="large"
                 color="primary"
               >
                 <StorageOutlined fontSize="small" />
@@ -316,7 +322,6 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
               <IconButton
                 component={Link}
                 to={`/dashboard/data/relationships/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
-                size="large"
                 color="primary"
               >
                 <VectorRadius fontSize="small" />
@@ -340,7 +345,7 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           />
         </DialogContent>
         <DialogActions>
-          <Button color="primary" onClick={handleClose}>
+          <Button onClick={handleClose}>
             {t_i18n('Close')}
           </Button>
         </DialogActions>

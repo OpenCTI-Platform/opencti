@@ -8,7 +8,7 @@ import SearchPageModel from '../model/search.pageModel';
 import DataEntitiesPage from '../model/DataEntities.pageModel';
 import { sleep } from '../utils';
 
-export const runBackgroundTaskOnIncidentByFilter = async (page:Page, dryRun: boolean) => {
+export const runBackgroundTaskOnIncidentByFilter = async (page: Page, dryRun: boolean) => {
   const incidentPage = new EventsIncidentPage(page);
   const dataTable = new DataTablePage(page);
   const taskPopup = new TaskPopup(page);
@@ -33,7 +33,7 @@ export const runBackgroundTaskOnIncidentByFilter = async (page:Page, dryRun: boo
   await filter.removeLastFilter();
 };
 
-export const runBackgroundTaskOnIncidentBySearch = async (page:Page, dryRun: boolean) => {
+export const runBackgroundTaskOnIncidentBySearch = async (page: Page, dryRun: boolean) => {
   const search = new SearchPageModel(page);
   const taskPopup = new TaskPopup(page);
   const dataTable = new DataTablePage(page);
@@ -49,7 +49,7 @@ export const runBackgroundTaskOnIncidentBySearch = async (page:Page, dryRun: boo
   }
 };
 
-export const searchOnDataEntitiesPerLabels = async (page:Page, dryRun: boolean) => {
+export const searchOnDataEntitiesPerLabels = async (page: Page, dryRun: boolean) => {
   const filter = new FiltersPageModel(page);
   const dataTable = new DataTablePage(page);
 

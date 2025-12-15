@@ -3,7 +3,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import MuiTextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import { DeleteOutlined } from '@mui/icons-material';

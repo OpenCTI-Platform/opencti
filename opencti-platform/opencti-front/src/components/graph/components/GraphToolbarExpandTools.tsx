@@ -614,7 +614,6 @@ const GraphToolbarExpandTools = ({
 
     const allNewElements: ObjectToParse[] = [];
     for (const id of selectionIds) {
-      // eslint-disable-next-line no-await-in-loop
       const { stixRelationships } = (await fetchQuery(
         expandRelationshipsQuery,
         { filters: expandFilterGroup(id, entityTypes, relationshipTypes) },

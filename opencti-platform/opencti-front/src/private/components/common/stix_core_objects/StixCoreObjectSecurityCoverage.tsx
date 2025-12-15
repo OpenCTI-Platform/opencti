@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
@@ -135,7 +135,7 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
         {isEmptyField(coverage) && (
           <Tooltip title={t_i18n('Create a coverage')}>
             <Button
-              variant="outlined"
+              variant="secondary"
               size="small"
               style={{ fontSize: 12 }}
               disabled={!isGrantedToUpdate}

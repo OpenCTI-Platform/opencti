@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
-import Button from '@mui/material/Button';
-import { IconButton } from '@mui/material';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import Paper from '@mui/material/Paper';
 import MenuItem from '@mui/material/MenuItem';
@@ -24,7 +24,7 @@ interface QueryAttributeFieldAddProps {
   containerStyle: { marginTop: number; width: string };
   setFieldValue?: (name: string, value: unknown) => void;
 }
-// eslint-disable-next-line import/prefer-default-export
+
 export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddProps> = ({
   name,
   values,
@@ -130,7 +130,6 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    size="large"
                     style={{ position: 'absolute', right: 0, top: 5 }}
                   >
                     <DeleteOutlined />
@@ -140,8 +139,6 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
               <Button
                 size="small"
                 startIcon={<AddOutlined />}
-                variant="contained"
-                color="primary"
                 aria-label="Add"
                 id="addHeader"
                 onClick={() => {

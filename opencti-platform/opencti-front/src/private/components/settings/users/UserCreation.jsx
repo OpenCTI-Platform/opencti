@@ -1,6 +1,6 @@
 import React from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import { graphql, usePreloadedQuery } from 'react-relay';
@@ -313,7 +313,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                 }}
                 >
                   <Button
-                    variant="contained"
+                    variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
                     style={{ marginLeft: theme.spacing(2) }}
@@ -321,8 +321,6 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
-                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                     style={{ marginLeft: theme.spacing(2) }}

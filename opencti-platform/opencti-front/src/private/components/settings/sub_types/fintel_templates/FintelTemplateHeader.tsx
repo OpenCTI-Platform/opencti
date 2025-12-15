@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import { Typography, Button } from '@mui/material';
+import { Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import Button from '@common/button/Button';
 import FintelTemplatePopover from './FintelTemplatePopover';
 import { FintelTemplateHeader_template$key } from './__generated__/FintelTemplateHeader_template.graphql';
 import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
@@ -90,7 +91,6 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
             onDeleteComplete={() => navigate(subTypeLink)}
           />
           <Button
-            variant="contained"
             onClick={onSubmit}
             style={{ marginLeft: 'auto' }}
             disabled={editorValue === template.template_content || editOnGoing}

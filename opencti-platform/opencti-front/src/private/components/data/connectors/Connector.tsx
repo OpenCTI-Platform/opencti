@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Chip from '@mui/material/Chip';
 import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
@@ -585,7 +585,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       )
                 )}
                 {connector.connector_info && (
-                // eslint-disable-next-line no-nested-ternary
+
                   connector.connector_info.last_run_datetime ? (
                     <>
                       <Typography variant="h3" gutterBottom={true}>
@@ -625,7 +625,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {t_i18n('Next run')}
                 </Typography>
                 {connector.connector_info && (
-                // eslint-disable-next-line no-nested-ternary
+
                   connector.connector_info.run_and_terminate ? (
                     <Typography variant="body1" gutterBottom={true}>
                       {t_i18n('External schedule')}
@@ -757,7 +757,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               />
               {connector.is_managed && (
                 <Button
-                  variant="contained"
                   disabled={computeConnectorStatus(connector).processing}
                   color={connector.manager_current_status === 'started' ? 'error' : 'primary'}
                   onClick={() => commitUpdateStatus({
