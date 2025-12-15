@@ -1,0 +1,8 @@
+type Mutation {
+    initStubs: Boolean @public
+    initSchema: Boolean @public
+}
+
+type Query {
+    queries: Boolean @public
+}

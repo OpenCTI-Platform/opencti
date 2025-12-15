@@ -150,4 +150,6 @@ import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';
 import './xtm/hub/xtm-hub-graphql';
 import './metrics/metrics-graphql';
+import './tidb/tidb-graphql';
+
 // endregion

@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1765829761739,
+      "tag": "0000_solid_avengers",
+      "breakpoints": true
+    }
+  ]
+}
