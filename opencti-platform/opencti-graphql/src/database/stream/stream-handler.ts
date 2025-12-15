@@ -13,7 +13,7 @@ import {
   LIVE_STREAM_NAME,
   type RawStreamClient,
   type StreamOption,
-  type StreamProcessor
+  type StreamProcessor,
 } from './stream-utils';
 import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
@@ -67,7 +67,7 @@ export const storeUpdateEvent = async (
   instance: StoreObject,
   message: string,
   changes: Change[],
-  opts: UpdateEventOpts = {}
+  opts: UpdateEventOpts = {},
 ) => {
   try {
     if (isStixExportableInStreamData(instance)) {
@@ -128,7 +128,7 @@ export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, ins
 export const createStreamProcessor = <T extends BaseEvent> (
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
-  opts: StreamOption = {}
+  opts: StreamOption = {},
 ): StreamProcessor => {
   return streamClient.rawCreateStreamProcessor(provider, callback, opts);
 };

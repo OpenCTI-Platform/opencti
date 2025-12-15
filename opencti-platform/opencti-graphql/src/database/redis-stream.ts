@@ -9,7 +9,7 @@ import {
   type RawStreamClient,
   type StreamOption,
   type StreamProcessor,
-  StreamProvider
+  StreamProvider,
 } from './stream/stream-utils';
 import { createRedisClient, getClientBase, getClientPir } from './redis';
 import { isEmptyField, wait, waitInSec } from './utils';
@@ -90,7 +90,7 @@ const MAX_RANGE_MESSAGES = 100;
 const rawCreateStreamProcessor = <T extends BaseEvent> (
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
-  opts: StreamOption = {}
+  opts: StreamOption = {},
 ): StreamProcessor => {
   let client: Cluster | Redis;
   let startEventId: string;
@@ -114,7 +114,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
         STREAM_BATCH_TIME,
         'STREAMS',
         redisStreamName,
-        startEventId
+        startEventId,
       ) as any[];
       // Process the event results
       if (streamResult && streamResult.length > 0) {

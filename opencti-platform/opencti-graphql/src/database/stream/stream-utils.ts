@@ -3,22 +3,22 @@ import type { AuthUser } from '../../types/user';
 import type { StoreObject } from '../../types/store';
 import { generateMergeMessage } from '../generate-message';
 import { convertStoreToStix_2_1 } from '../stix-2-1-converter';
-import type { StixCoreObject, StixObject  } from '../../types/stix-2-1-common';
+import type { StixCoreObject, StixObject } from '../../types/stix-2-1-common';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../utils';
 import { UnsupportedError } from '../../config/errors';
 import { INTERNAL_EXPORTABLE_TYPES } from '../../schema/stixCoreObject';
 import type {
-ActivityStreamEvent,
-BaseEvent,
-Change,
-DeleteEvent,
-EventOpts,
-MergeEvent,
-SseEvent,
-StreamDataEvent,
-StreamNotifEvent,
-UpdateEvent,
-UpdateEventOpts
+  ActivityStreamEvent,
+  BaseEvent,
+  Change,
+  DeleteEvent,
+  EventOpts,
+  MergeEvent,
+  SseEvent,
+  StreamDataEvent,
+  StreamNotifEvent,
+  UpdateEvent,
+  UpdateEventOpts,
 } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
@@ -37,7 +37,7 @@ export interface StreamProcessor {
 
 export enum StreamProvider {
   BASE = 'base',
-  PIR = 'Pir Manager'
+  PIR = 'Pir Manager',
 }
 
 export interface StreamOption {
@@ -46,15 +46,15 @@ export interface StreamOption {
   provider?: StreamProvider;
   autoReconnect?: boolean;
   streamName?: string;
-  streamBatchSize?: number
+  streamBatchSize?: number;
 }
 
 export type StreamInfo = {
-  lastEventId: string,
-  firstEventId: string,
-  firstEventDate: string,
-  lastEventDate: string,
-  streamSize: number
+  lastEventId: string;
+  firstEventId: string;
+  firstEventDate: string;
+  lastEventDate: string;
+  streamSize: number;
 };
 
 export interface RawStreamClient {
@@ -64,7 +64,7 @@ export interface RawStreamClient {
   rawCreateStreamProcessor: <T extends BaseEvent> (
     provider: string,
     callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
-    opts?: StreamOption
+    opts?: StreamOption,
   ) => StreamProcessor;
   rawFetchStreamEventsRangeFromEventId: <T extends BaseEvent> (
     startEventId: string,
@@ -95,7 +95,7 @@ export const buildMergeEvent = async (user: AuthUser, previous: StoreObject, ins
       patch: jsonpatch.compare(previousStix, currentStix),
       reverse_patch: jsonpatch.compare(currentStix, previousStix),
       sources: await asyncListTransformation<StixObject>(sourceEntities, convertStoreToStix_2_1) as StixCoreObject[],
-    }
+    },
   };
 };
 // Update
@@ -105,7 +105,7 @@ export const buildStixUpdateEvent = (
   stix: StixCoreObject,
   message: string,
   changes: Change[],
-  opts: UpdateEventOpts = {}
+  opts: UpdateEventOpts = {},
 ): UpdateEvent => {
   // Build and send the event
   const patch = jsonpatch.compare(previousStix, stix);
@@ -132,8 +132,8 @@ export const buildStixUpdateEvent = (
       reverse_patch: previousPatch,
       related_restrictions: opts.related_restrictions,
       pir_ids: opts.pir_ids,
-      changes
-    }
+      changes,
+    },
   };
 };
 export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, changes: Change[], opts: UpdateEventOpts): UpdateEvent => {
@@ -167,6 +167,6 @@ export const buildDeleteEvent = async (
     scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
     message,
     origin: user.origin,
-    data: stix
+    data: stix,
   };
 };
