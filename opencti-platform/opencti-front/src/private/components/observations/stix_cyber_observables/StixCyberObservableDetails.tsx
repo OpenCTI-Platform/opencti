@@ -23,7 +23,7 @@ import StixCyberObservableMalwareAnalyses from './StixCyberObservableMalwareAnal
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { StixCyberObservable_stixCyberObservable$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservable_stixCyberObservable.graphql';
 import {
-  StixCyberObservableDetails_stixCyberObservable$key
+  StixCyberObservableDetails_stixCyberObservable$key,
 } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservableDetails_stixCyberObservable.graphql';
 import { Theme } from '../../../../components/Theme';
 import { PopoverProps } from '@mui/material/Popover';
@@ -291,12 +291,12 @@ const stixCyberObservableDetailsFragment = graphql`
   }
 `;
 
-const reorderMediaContentObservablesAttributes = (data: { key: string, value: string }[]) => {
+const reorderMediaContentObservablesAttributes = (data: { key: string; value: string }[]) => {
   const desiredOrder = ['content', 'title', 'media_category', 'url', 'publication_date'];
 
   return desiredOrder
     .map((key) => data.find((item) => item.key === key))
-    .filter(Boolean) as { key: string, value: string }[];
+    .filter(Boolean) as { key: string; value: string }[];
 };
 
 const useTransformValue = (value: string | boolean | string[] | number, key: string) => {
@@ -314,13 +314,13 @@ const useTransformValue = (value: string | boolean | string[] | number, key: str
 };
 
 interface DownloadFileButtonMenuProps {
-  fileSize: number | null | undefined,
-  encodedFilePath: string | null,
+  fileSize: number | null | undefined;
+  encodedFilePath: string | null;
 }
 
 const DownloadFileButtonMenu = ({
   fileSize,
-  encodedFilePath
+  encodedFilePath,
 }: DownloadFileButtonMenuProps) => {
   const { t_i18n } = useFormatter();
 
@@ -379,7 +379,7 @@ const DownloadFileButtonMenu = ({
   );
 };
 
-const LabelItemCopy = ({ label, value }: { label: string, value: string }) => {
+const LabelItemCopy = ({ label, value }: { label: string; value: string }) => {
   return (
     <>
       <Typography variant="h3" gutterBottom={true}>{label}</Typography>
@@ -405,16 +405,16 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
   const observableAttributes = Object.entries(stixCyberObservable)
     // remove unwanted keys
     .filter(([key, _]) =>
-      key !== 'id' &&
-      key !== 'entity_type' &&
-      key !== 'obsContent'
+      key !== 'id'
+      && key !== 'entity_type'
+      && key !== 'obsContent',
     )
     .map(([key, value]) => ({ key, value }))
     // final filtering
-    .filter(n =>
-      n.value &&
-      !ignoredAttributes.includes(n.key) &&
-      !n.key.startsWith('__')
+    .filter((n) =>
+      n.value
+      && !ignoredAttributes.includes(n.key)
+      && !n.key.startsWith('__'),
     );
 
   const file = stixCyberObservable.importFiles && stixCyberObservable.importFiles.edges.length > 0
@@ -468,22 +468,22 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
             const { key, value } = observableAttribute;
 
             if (key === 'hashes') {
-              return (value as { algorithm: string, hash: string }[])
+              return (value as { algorithm: string; hash: string }[])
                 .filter(({ hash }) => hash !== '')
                 .map((hash) => (
                   <Grid key={hash.algorithm} size={6}>
                     <LabelItemCopy label={`${hash.algorithm} - hashes`} value={hash.hash} />
                   </Grid>
-              ));
+                ));
             }
 
             if (key === 'startup_info') {
-              return (value as { key: string, value: string }[])
+              return (value as { key: string; value: string }[])
                 .map((v) => (
                   <Grid key={v.key} size={6}>
                     <LabelItemCopy label={`${v.key} - startup_info`} value={v.value} />
                   </Grid>
-              ));
+                ));
             }
 
             if (isVocabularyField(stixCyberObservable.entity_type, key)) {
