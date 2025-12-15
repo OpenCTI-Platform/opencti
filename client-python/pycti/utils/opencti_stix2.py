@@ -2959,7 +2959,7 @@ class OpenCTIStix2:
             try:
                 self.opencti.set_retry_number(processing_count)
                 self.import_item(item, update, types, work_id)
-                return True
+                return None
             except (RequestException, Timeout):
                 bundles_timeout_error_counter.add(1)
                 worker_logger.warning("A connection error or timeout occurred")
@@ -3013,11 +3013,14 @@ class OpenCTIStix2:
                                 "source": "Draft in read only",
                             },
                         )
-                    return False
+                    return None
                 # Platform does not know what to do and raises an error:
                 # That also works for missing reference with too much execution
                 else:
                     bundles_technical_error_counter.add(1)
+                    worker_logger.error(
+                        "Unrecognized error during bundle import", {"error": error}
+                    )
                     if work_id is not None:
                         item_str = json.dumps(item)
                         self.opencti.work.report_expectation(
@@ -3031,20 +3034,22 @@ class OpenCTIStix2:
                                 ),
                             },
                         )
-                    return False
+                    return None
 
+        max_retry_error_message = "Max number of retries reached, please see error logs of workers for more details. Bundle will be sent to dead letter queue."
+        worker_logger.error(max_retry_error_message)
         if work_id is not None:
             item_str = json.dumps(item)
             self.opencti.work.report_expectation(
                 work_id,
                 {
-                    "error": "Max number of retries reached, please see error logs of workers for more details",
+                    "error": max_retry_error_message,
                     "source": (
                         item_str if len(item_str) < 50000 else "Bundle too large"
                     ),
                 },
             )
-        return False
+        return item
 
     def import_bundle(
         self,
@@ -3104,8 +3109,15 @@ class OpenCTIStix2:
                     )
                     too_large_elements_bundles.append(item)
                 else:
-                    self.import_item_with_retries(item, update, types, work_id)
-                    imported_elements.append({"id": item["id"], "type": item["type"]})
+                    failed_item = self.import_item_with_retries(
+                        item, update, types, work_id
+                    )
+                    if failed_item is not None:
+                        too_large_elements_bundles.append(item)
+                    else:
+                        imported_elements.append(
+                            {"id": item["id"], "type": item["type"]}
+                        )
 
         return imported_elements, too_large_elements_bundles
 
