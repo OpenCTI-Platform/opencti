@@ -16,6 +16,18 @@ export const loadCreators = async (
   return filterMembersUsersWithUsersOrgs(context, user, creators);
 };
 
+export const loadCreator = async (
+  context: AuthContext,
+  user: AuthUser,
+  userIdToLoad?: string,
+) => {
+  if (!userIdToLoad) return null;
+  const realUser = await context.batch?.creatorBatchLoader.load(userIdToLoad);
+  if (!realUser) return null;
+  const filteredUser = await filterMembersUsersWithUsersOrgs(context, user, [realUser]);
+  return filteredUser[0];
+};
+
 export const loadParticipants = async (
   context: AuthContext,
   user: AuthUser,
