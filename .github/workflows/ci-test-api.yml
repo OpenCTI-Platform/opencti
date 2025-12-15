@@ -49,6 +49,8 @@ jobs:
          set -ex
          cd scripts/ci
          export TAG=${{ github.sha }}
+         export IMAGE_NAME_PLAFORM=ghcr.io/${{ github.repository_owner }}/opencti-platform
+         export IMAGE_NAME_WORKER=ghcr.io/${{ github.repository_owner }}/opencti-worker
          docker network create runner-docker-network
          docker compose  --profile "backend" --profile "ci-test-api-sync" up -d
 
@@ -74,7 +76,7 @@ jobs:
           -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4100/graphql \
           -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4100/graphql \
           -e PYTHONUNBUFFERED=1  \
-          filigran/platform:${{ github.sha }} \
+          ghcr.io/${{ github.repository_owner }}/opencti-platform:${{ github.sha }} \
           sh -c 'set -eux
             mkdir -p ../../opencti-connectors/stream/backup-files/src
             wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
@@ -169,7 +171,8 @@ jobs:
       run: |
          set -ex
          cd scripts/ci
-         export TAG=${{ github.sha }}
+         export IMAGE_NAME_PLAFORM=ghcr.io/${{ github.repository_owner }}/opencti-platform
+         export IMAGE_NAME_WORKER=ghcr.io/${{ github.repository_owner }}/opencti-worker
          docker network create runner-docker-network
          docker compose --profile "backend" --profile "ci-test-rules" up -d
 
@@ -182,7 +185,7 @@ jobs:
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
-          filigran/platform:${{ github.sha }} \
+          ghcr.io/${{ github.repository_owner }}/opencti-platform:${{ github.sha }} \
           sh -c 'set -eux
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
         '
@@ -253,7 +256,7 @@ jobs:
           -e APP__BASE_URL=http://unit-and-other-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
-          filigran/platform:${{ github.sha }} \
+          ghcr.io/${{ github.repository_owner }}/opencti-platform:${{ github.sha }} \
           sh -c 'set -eux
             yarn check-ts
             yarn lint

@@ -63,7 +63,7 @@ services:
   opencti-raw-start:
     container_name: opencti-raw-start
     profiles: ["ci-test-api-sync"]
-    image: filigran/platform:${TAG}
+    image: ${IMAGE_NAME_PLATFORM:-filigran/platform}:${TAG}
     restart: unless-stopped
     environment:
       - BASE_NAME=opencti-raw-start
@@ -77,7 +77,7 @@ services:
   opencti-live-start:
     container_name: opencti-live-start
     profiles: ["ci-test-api-sync"]
-    image: filigran/platform:${TAG}
+    image: ${IMAGE_NAME_PLATFORM:-filigran/platform}:${TAG}
     restart: unless-stopped
     environment:
       - BASE_NAME=opencti-live-start
@@ -91,7 +91,7 @@ services:
   opencti-direct-start:
     container_name: opencti-direct-start
     profiles: ["ci-test-api-sync"]
-    image: filigran/platform:${TAG}
+    image: ${IMAGE_NAME_PLATFORM:-filigran/platform}:${TAG}
     restart: unless-stopped
     environment:
       - BASE_NAME=opencti-direct-start
@@ -105,7 +105,7 @@ services:
   opencti-restore-start:
     container_name: opencti-restore-start
     profiles: ["ci-test-api-sync"]
-    image: filigran/platform:${TAG}
+    image: ${IMAGE_NAME_PLATFORM:-filigran/platform}:${TAG}
     restart: unless-stopped
     environment:
       - BASE_NAME=opencti-restore-start
@@ -120,7 +120,7 @@ services:
   opencti-pycti-start:
     container_name: opencti-pycti-start
     profiles: ["ci-test-pycti"]
-    image: filigran/platform:${TAG}
+    image: ${IMAGE_NAME_PLATFORM:-filigran/platform}:${TAG}
     restart: unless-stopped
     environment:
       - BASE_NAME=opencti-pycti-start
@@ -135,7 +135,7 @@ services:
   opencti-direct-worker:
     container_name: opencti-direct-worker
     profiles: ["ci-test-api-sync"]
-    image: filigran/worker:${TAG}
+    image: ${IMAGE_NAME_WORKER:-filigran/worker}:${TAG}
     restart: unless-stopped
     environment:
       - OPENCTI_URL=http://opencti-direct-start:4100
@@ -147,7 +147,7 @@ services:
   opencti-test-worker:
     container_name: opencti-test-worker
     profiles: ["ci-test-api-sync","ci-test-rules"]
-    image: filigran/worker:${TAG}
+    image: ${IMAGE_NAME_WORKER:-filigran/worker}:${TAG}
     restart: unless-stopped
     environment:
       - OPENCTI_URL=http://api-tests:4010
