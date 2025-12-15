@@ -58,7 +58,7 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
     let done = false;
 
     const once = (fn: () => unknown) => {
-      if(!done) {
+      if (!done) {
         done = true;
         if (timer) {
           clearTimeout(timer);
