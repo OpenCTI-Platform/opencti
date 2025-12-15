@@ -31,7 +31,7 @@ jobs:
       continue-on-error: true
       uses: actions/download-artifact@v4
       with:
-        name: docker-image-platform-worker-shared
+        name: docker-image-opencti-platform
         path: /tmp/opencti-platform.tar
         run-id: ${{ inputs.run-id }}
 
@@ -40,7 +40,7 @@ jobs:
       continue-on-error: true
       uses: actions/download-artifact@v4
       with:
-        name: docker-image-platform-worker-shared
+        name: docker-image-opencti-platform
         path: /tmp/opencti-platform.tar
         github-token: ${{ secrets.GITHUB_TOKEN }}
         run-id: ${{ inputs.run-id }}
@@ -49,8 +49,16 @@ jobs:
       continue-on-error: true
       uses: actions/download-artifact@v4
       with:
-        name: docker-image-platform-worker-shared
+        name: docker-image-opencti-platform
         path: /tmp/opencti-platform.tar
+
+
+    - name: Download image platform - simple shared
+      continue-on-error: true
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-image-opencti-platform-shared
+        path: /tmp/opencti-platform-shared.tar
 
     - name: Download image worker
       uses: actions/download-artifact@v4
