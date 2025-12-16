@@ -9106,7 +9106,6 @@ type Query {
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
-  runMigration(migrationName: String!): String!
 }
 
 type Subscription {
@@ -10036,6 +10035,7 @@ type Mutation {
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   contactUsXtmHub: Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
+  runMigration(migrationName: String!): Boolean!
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {

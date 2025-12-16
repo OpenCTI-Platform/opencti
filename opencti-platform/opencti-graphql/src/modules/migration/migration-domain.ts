@@ -3,7 +3,7 @@ import { retrieveMigration } from '../../database/migration';
 import { logApp, logMigration } from '../../config/conf';
 import { MigrationSet } from 'migrate';
 import { isBypassUser } from '../../utils/access';
-import { ForbiddenAccess } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 
 export const runMigration = async (user: AuthUser, migrationFileName: string) => {
   if (!isBypassUser(user)) {
@@ -14,9 +14,9 @@ export const runMigration = async (user: AuthUser, migrationFileName: string) =>
   migrationSet.up((migrationError) => {
     if (migrationError) {
       logApp.error(`[MIGRATION] Migration ${migrationFileName} up error`, { cause: migrationError });
-      return `Error running migration: ${migrationError.message}`;
+      throw FunctionalError(`Error running migration: ${migrationError.message}`);
     }
     logMigration.info(`[MIGRATION] Migration ${migrationFileName} successfully run`);
   });
-  return 'Migration successfully run';
+  return true;
 };

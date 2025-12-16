@@ -2,7 +2,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { runMigration } from './migration-domain';
 
 const migrationResolvers: Resolvers = {
-  Query: {
+  Mutation: {
     runMigration: (_, { migrationName }, context) => runMigration(context.user, migrationName),
   },
 };

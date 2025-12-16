@@ -15286,6 +15286,7 @@ export type Mutation = {
   ruleManagerClean: RuleManager;
   ruleSetActivation: Rule;
   rulesRescan?: Maybe<Scalars['Boolean']['output']>;
+  runMigration: Scalars['Boolean']['output'];
   savedFilterAdd?: Maybe<SavedFilter>;
   savedFilterDelete?: Maybe<Scalars['ID']['output']>;
   savedFilterFieldPatch?: Maybe<SavedFilter>;
@@ -17124,6 +17125,11 @@ export type MutationRuleSetActivationArgs = {
 
 export type MutationRulesRescanArgs = {
   elementId: Scalars['ID']['input'];
+};
+
+
+export type MutationRunMigrationArgs = {
+  migrationName: Scalars['String']['input'];
 };
 
 
@@ -22057,7 +22063,6 @@ export type Query = {
   rule?: Maybe<Rule>;
   ruleManagerInfo?: Maybe<RuleManager>;
   rules?: Maybe<Array<Maybe<Rule>>>;
-  runMigration: Scalars['String']['output'];
   runtimeAttributes?: Maybe<AttributeConnection>;
   savedFilters?: Maybe<SavedFilterConnection>;
   schemaAttributeNames?: Maybe<AttributeConnection>;
@@ -23997,11 +24002,6 @@ export type QueryRolesArgs = {
 
 export type QueryRuleArgs = {
   id: Scalars['String']['input'];
-};
-
-
-export type QueryRunMigrationArgs = {
-  migrationName: Scalars['String']['input'];
 };
 
 
@@ -43285,6 +43285,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ruleManagerClean?: Resolver<ResolversTypes['RuleManager'], ParentType, ContextType, Partial<MutationRuleManagerCleanArgs>>;
   ruleSetActivation?: Resolver<ResolversTypes['Rule'], ParentType, ContextType, RequireFields<MutationRuleSetActivationArgs, 'enable' | 'id'>>;
   rulesRescan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRulesRescanArgs, 'elementId'>>;
+  runMigration?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRunMigrationArgs, 'migrationName'>>;
   savedFilterAdd?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterAddArgs, 'input'>>;
   savedFilterDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSavedFilterDeleteArgs, 'id'>>;
   savedFilterFieldPatch?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterFieldPatchArgs, 'id'>>;
@@ -44967,7 +44968,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   rule?: Resolver<Maybe<ResolversTypes['Rule']>, ParentType, ContextType, RequireFields<QueryRuleArgs, 'id'>>;
   ruleManagerInfo?: Resolver<Maybe<ResolversTypes['RuleManager']>, ParentType, ContextType>;
   rules?: Resolver<Maybe<Array<Maybe<ResolversTypes['Rule']>>>, ParentType, ContextType>;
-  runMigration?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryRunMigrationArgs, 'migrationName'>>;
   runtimeAttributes?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QueryRuntimeAttributesArgs, 'attributeName'>>;
   savedFilters?: Resolver<Maybe<ResolversTypes['SavedFilterConnection']>, ParentType, ContextType, Partial<QuerySavedFiltersArgs>>;
   schemaAttributeNames?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QuerySchemaAttributeNamesArgs, 'elementType'>>;
