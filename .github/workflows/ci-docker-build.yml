@@ -76,7 +76,7 @@ jobs:
         file: opencti-platform/Dockerfile_featurebranch
         target: ${{ inputs.dockerfile_target }}
         push: ${{ inputs.publish_to_registry == 'true' }}
-        outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar }}
+        outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
@@ -126,7 +126,7 @@ jobs:
         context: opencti-worker
         file: opencti-worker/Dockerfile
         push: ${{ inputs.publish_to_registry == 'true' }}
-        outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-worker.tar }}
+        outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-worker.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
