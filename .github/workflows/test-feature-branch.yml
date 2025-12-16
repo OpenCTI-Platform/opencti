@@ -24,6 +24,7 @@ jobs:
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         image_tag: ${{ github.ref_name }}
+        publish_to_registry: true
       secrets: inherit
 
   deploy:
