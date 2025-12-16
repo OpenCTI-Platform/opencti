@@ -52,8 +52,15 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, change, icon, isPositive }) => {
-  const changeColor = isPositive ? '#d32f2f' : '#2e7d32';
-  const changeBgColor = isPositive ? '#ffebee' : '#e8f5e9';
+  const theme = useTheme<Theme>();
+  const isDark = theme.palette.mode === 'dark';
+  
+  const changeColor = isPositive 
+    ? (isDark ? '#f44336' : '#d32f2f')
+    : (isDark ? '#66bb6a' : '#2e7d32');
+  const changeBgColor = isPositive
+    ? (isDark ? 'rgba(244, 67, 54, 0.2)' : '#ffebee')
+    : (isDark ? 'rgba(102, 187, 106, 0.2)' : '#e8f5e9');
 
   return (
     <Card
@@ -61,7 +68,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, change, icon, isPosit
       sx={{
         height: '100%',
         position: 'relative',
-        backgroundColor: '#fafafa',
+        backgroundColor: theme.palette.background?.paper || theme.palette.background?.default,
       }}
     >
       <CardContent sx={{ padding: 2.5 }}>
@@ -69,7 +76,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, change, icon, isPosit
           {/* Icon on the left */}
           <Box
             sx={{
-              color: '#757575',
+              color: theme.palette.text?.secondary,
               marginRight: 2,
               display: 'flex',
               alignItems: 'center',
@@ -86,7 +93,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, change, icon, isPosit
             <Typography
               variant="body2"
               sx={{
-                color: '#424242',
+                color: theme.palette.text?.secondary,
                 fontWeight: 500,
                 fontSize: '0.875rem',
                 marginBottom: 1.5,
@@ -100,7 +107,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, change, icon, isPosit
                 variant="h4"
                 sx={{
                   fontWeight: 600,
-                  color: '#212121',
+                  color: theme.palette.text?.primary,
                   fontSize: '1.2rem',
                 }}
               >
@@ -191,9 +198,9 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
         floating: false,
         fontSize: '12px',
         fontFamily: '"IBM Plex Sans", sans-serif',
-        fontColor: '#212121',
+        fontColor: theme.palette.text?.primary,
         labels: {
-          colors: '#212121',
+          colors: theme.palette.text?.primary,
         },
         itemMargin: {
           horizontal: 10,
@@ -273,6 +280,7 @@ interface ProgressListProps {
 }
 
 const ProgressList: React.FC<ProgressListProps> = ({ items }) => {
+  const theme = useTheme<Theme>();
   const maxValue = Math.max(...items.map((item) => item.value));
 
   return (
@@ -280,10 +288,10 @@ const ProgressList: React.FC<ProgressListProps> = ({ items }) => {
       {items.map((item, index) => (
         <Box key={index}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0.5 }}>
-            <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#424242' }}>
+            <Typography variant="body2" sx={{ fontSize: '0.875rem', color: theme.palette.text?.secondary }}>
               {item.name}
             </Typography>
-            <Typography variant="body2" sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#212121' }}>
+            <Typography variant="body2" sx={{ fontSize: '0.875rem', fontWeight: 600, color: theme.palette.text?.primary }}>
               {item.value}
             </Typography>
           </Box>
@@ -293,10 +301,12 @@ const ProgressList: React.FC<ProgressListProps> = ({ items }) => {
             sx={{
               height: 8,
               borderRadius: 4,
-              backgroundColor: '#e0e0e0',
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(255, 255, 255, 0.1)' 
+                : 'rgba(0, 0, 0, 0.08)',
               '& .MuiLinearProgress-bar': {
                 borderRadius: 4,
-                backgroundColor: '#1976d2',
+                backgroundColor: theme.palette.primary?.main || '#1976d2',
               },
             }}
           />
@@ -308,6 +318,7 @@ const ProgressList: React.FC<ProgressListProps> = ({ items }) => {
 
 const RessaDWM = () => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Ressa DWM'));
@@ -370,14 +381,14 @@ const RessaDWM = () => {
         <Grid container spacing={3}>
           {/* Monitored Sources Panel */}
           <Grid item xs={12} md={4}>
-            <Card variant="outlined" sx={{ height: '100%', backgroundColor: '#fafafa' }}>
+            <Card variant="outlined" sx={{ height: '100%', backgroundColor: theme.palette.background?.paper || theme.palette.background?.default }}>
               <CardContent>
                 <Typography
                   variant="h6"
                   sx={{
                     fontWeight: 600,
                     marginBottom: 2,
-                    color: '#212121',
+                    color: theme.palette.text?.primary,
                     fontSize: '1rem',
                   }}
                 >
@@ -404,14 +415,14 @@ const RessaDWM = () => {
 
           {/* Top Leaks Panel */}
           <Grid item xs={12} md={4}>
-            <Card variant="outlined" sx={{ height: '100%', backgroundColor: '#fafafa' }}>
+            <Card variant="outlined" sx={{ height: '100%', backgroundColor: theme.palette.background?.paper || theme.palette.background?.default }}>
               <CardContent>
                 <Typography
                   variant="h6"
                   sx={{
                     fontWeight: 600,
                     marginBottom: 2,
-                    color: '#212121',
+                    color: theme.palette.text?.primary,
                     fontSize: '1rem',
                   }}
                 >
@@ -432,14 +443,14 @@ const RessaDWM = () => {
 
           {/* Top Damageable Panel */}
           <Grid item xs={12} md={4}>
-            <Card variant="outlined" sx={{ height: '100%', backgroundColor: '#fafafa' }}>
+            <Card variant="outlined" sx={{ height: '100%', backgroundColor: theme.palette.background?.paper || theme.palette.background?.default }}>
               <CardContent>
                 <Typography
                   variant="h6"
                   sx={{
                     fontWeight: 600,
                     marginBottom: 2,
-                    color: '#212121',
+                    color: theme.palette.text?.primary,
                     fontSize: '1rem',
                   }}
                 >
@@ -463,14 +474,14 @@ const RessaDWM = () => {
         <Grid container spacing={3} sx={{ marginTop: 0 }}>
           {/* Vulnerability Trends Chart */}
           <Grid item xs={12} md={6}>
-            <Card variant="outlined" sx={{ height: '100%', backgroundColor: '#fafafa' }}>
+            <Card variant="outlined" sx={{ height: '100%', backgroundColor: theme.palette.background?.paper || theme.palette.background?.default }}>
               <CardContent>
                 <Typography
                   variant="h6"
                   sx={{
                     fontWeight: 600,
                     marginBottom: 2,
-                    color: '#212121',
+                    color: theme.palette.text?.primary,
                     fontSize: '1rem',
                   }}
                 >
@@ -501,14 +512,14 @@ const RessaDWM = () => {
 
           {/* Data Leak Trends Chart */}
           <Grid item xs={12} md={6}>
-            <Card variant="outlined" sx={{ height: '100%', backgroundColor: '#fafafa' }}>
+            <Card variant="outlined" sx={{ height: '100%', backgroundColor: theme.palette.background?.paper || theme.palette.background?.default }}>
               <CardContent>
                 <Typography
                   variant="h6"
                   sx={{
                     fontWeight: 600,
                     marginBottom: 2,
-                    color: '#212121',
+                    color: theme.palette.text?.primary,
                     fontSize: '1rem',
                   }}
                 >
@@ -635,6 +646,9 @@ interface ChatMessage {
 }
 
 const ChatInterface: React.FC = () => {
+  const theme = useTheme<Theme>();
+  const isDark = theme.palette.mode === 'dark';
+  
   const pinnedChats: ChatItem[] = [
     { id: '1', name: 'Ray Tanaka', avatar: 'RT', lastMessage: 'Hey, how are you?', time: '2:30 PM', isOnline: true },
     { id: '2', name: 'Beth Davies', avatar: 'BD', lastMessage: 'See you tomorrow', time: '1:15 PM', isOnline: true },
@@ -696,23 +710,23 @@ const ChatInterface: React.FC = () => {
   ];
 
   return (
-    <Card variant="outlined" sx={{ backgroundColor: '#fafafa', height: 600 }}>
+    <Card variant="outlined" sx={{ backgroundColor: theme.palette.background?.paper || theme.palette.background?.default, height: 600 }}>
       <Box sx={{ display: 'flex', height: '100%' }}>
         {/* Left Sidebar - Chat List */}
         <Box
           sx={{
             width: '25%',
-            borderRight: '1px solid #e0e0e0',
+            borderRight: `1px solid ${theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')}`,
             display: 'flex',
             flexDirection: 'column',
-            backgroundColor: '#ffffff',
+            backgroundColor: theme.palette.background?.paper || theme.palette.background?.default,
           }}
         >
           {/* Header */}
           <Box
             sx={{
               padding: 2,
-              borderBottom: '1px solid #e0e0e0',
+              borderBottom: `1px solid ${theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -721,19 +735,19 @@ const ChatInterface: React.FC = () => {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#212121' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: theme.palette.text?.primary }}>
                 Telegram
               </Typography>
-              <ArrowDropDown sx={{ color: '#212121' }} />
+              <ArrowDropDown sx={{ color: theme.palette.text?.primary }} />
             </Box>
             <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <IconButton size="small" sx={{ color: '#212121' }}>
+              <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
                 <Menu fontSize="small" />
               </IconButton>
-              <IconButton size="small" sx={{ color: '#212121' }}>
+              <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
                 <Edit fontSize="small" />
               </IconButton>
-              <IconButton size="small" sx={{ color: '#212121' }}>
+              <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
                 <GridView fontSize="small" />
               </IconButton>
             </Box>
@@ -747,7 +761,7 @@ const ChatInterface: React.FC = () => {
                 variant="caption"
                 sx={{
                   padding: '8px 16px',
-                  color: '#757575',
+                  color: theme.palette.text?.secondary,
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   textTransform: 'uppercase',
@@ -770,7 +784,7 @@ const ChatInterface: React.FC = () => {
                 variant="caption"
                 sx={{
                   padding: '8px 16px',
-                  color: '#757575',
+                  color: theme.palette.text?.secondary,
                   fontSize: '0.75rem',
                   fontWeight: 600,
                   textTransform: 'uppercase',
@@ -788,13 +802,13 @@ const ChatInterface: React.FC = () => {
         </Box>
 
         {/* Right Side - Chat Content */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#fafafa' }}>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: theme.palette.background?.default }}>
           {/* Chat Header */}
           <Box
             sx={{
               padding: 2,
-              borderBottom: '1px solid #e0e0e0',
-              backgroundColor: '#ffffff',
+              borderBottom: `1px solid ${theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')}`,
+              backgroundColor: theme.palette.background?.paper || theme.palette.background?.default,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -805,7 +819,7 @@ const ChatInterface: React.FC = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box
                 sx={{
-                  backgroundColor: '#1976d2',
+                  backgroundColor: theme.palette.primary?.main || '#1976d2',
                   borderRadius: 1,
                   padding: '4px',
                   display: 'flex',
@@ -815,7 +829,7 @@ const ChatInterface: React.FC = () => {
               >
                 <GridView sx={{ fontSize: '1.25rem', color: '#ffffff' }} />
               </Box>
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: '#212121' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: theme.palette.text?.primary }}>
                 Channel Name
               </Typography>
             </Box>
@@ -827,11 +841,11 @@ const ChatInterface: React.FC = () => {
                 sx={{
                   textTransform: 'none',
                   fontSize: '0.875rem',
-                  color: '#757575',
-                  borderColor: '#e0e0e0',
+                  color: theme.palette.text?.secondary,
+                  borderColor: theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'),
                   '&:hover': {
-                    borderColor: '#bdbdbd',
-                    backgroundColor: '#fafafa',
+                    borderColor: theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'),
+                    backgroundColor: theme.palette.action?.hover,
                   },
                 }}
               >
@@ -845,13 +859,13 @@ const ChatInterface: React.FC = () => {
                   sx={{
                     textTransform: 'none',
                     fontSize: '0.875rem',
-                    backgroundColor: '#1976d2',
+                    backgroundColor: theme.palette.primary?.main || '#1976d2',
                     color: '#ffffff',
                     borderRadius: 0,
                     borderTopLeftRadius: 4,
                     borderBottomLeftRadius: 4,
                     '&:hover': {
-                      backgroundColor: '#1565c0',
+                      backgroundColor: theme.palette.primary?.dark || '#1565c0',
                     },
                   }}
                 >
@@ -863,14 +877,14 @@ const ChatInterface: React.FC = () => {
                   sx={{
                     minWidth: 'auto',
                     padding: '6px 8px',
-                    backgroundColor: '#1976d2',
+                    backgroundColor: theme.palette.primary?.main || '#1976d2',
                     color: '#ffffff',
                     borderRadius: 0,
                     borderTopRightRadius: 4,
                     borderBottomRightRadius: 4,
                     borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
                     '&:hover': {
-                      backgroundColor: '#1565c0',
+                      backgroundColor: theme.palette.primary?.dark || '#1565c0',
                     },
                   }}
                 >
@@ -891,8 +905,8 @@ const ChatInterface: React.FC = () => {
           <Box
             sx={{
               padding: 2,
-              borderTop: '1px solid #e0e0e0',
-              backgroundColor: '#ffffff',
+              borderTop: `1px solid ${theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')}`,
+              backgroundColor: theme.palette.background?.paper || theme.palette.background?.default,
             }}
           >
             <TextField
@@ -916,12 +930,15 @@ const ChatInterface: React.FC = () => {
 };
 
 const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
+  const theme = useTheme<Theme>();
+  const isDark = theme.palette.mode === 'dark';
+  
   return (
     <ListItem
       sx={{
         padding: '8px 16px',
         cursor: 'pointer',
-        '&:hover': { backgroundColor: '#f5f5f5' },
+        '&:hover': { backgroundColor: theme.palette.action?.hover },
       }}
     >
       <ListItemAvatar>
@@ -930,7 +947,7 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
             sx={{
               width: 40,
               height: 40,
-              backgroundColor: chat.isGroup ? '#9c27b0' : '#1976d2',
+              backgroundColor: chat.isGroup ? (theme.palette.secondary?.main || '#9c27b0') : (theme.palette.primary?.main || '#1976d2'),
               fontSize: '0.875rem',
             }}
           >
@@ -946,7 +963,7 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
                 height: 14,
                 borderRadius: '50%',
                 backgroundColor: '#4caf50',
-                border: '2px solid #ffffff',
+                border: `2px solid ${theme.palette.background?.paper || '#ffffff'}`,
                 zIndex: 1,
               }}
             />
@@ -955,7 +972,7 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
       </ListItemAvatar>
       <ListItemText
         primary={
-          <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem', color: '#212121' }}>
+          <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem', color: theme.palette.text?.primary }}>
             {chat.name}
           </Typography>
         }
@@ -964,7 +981,7 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
             variant="caption"
             sx={{
               fontSize: '0.75rem',
-              color: '#424242',
+              color: theme.palette.text?.secondary,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -974,7 +991,7 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
           </Typography>
         }
       />
-      <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#424242', marginLeft: 1 }}>
+      <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.text?.secondary, marginLeft: 1 }}>
         {chat.time}
       </Typography>
     </ListItem>
@@ -982,6 +999,8 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
 };
 
 const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
+  const theme = useTheme<Theme>();
+  const isDark = theme.palette.mode === 'dark';
   const isOwn = message.isOwn || false;
 
   return (
@@ -1000,7 +1019,7 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
             sx={{
               width: 36,
               height: 36,
-              backgroundColor: '#1976d2',
+              backgroundColor: theme.palette.primary?.main || '#1976d2',
               fontSize: '0.75rem',
             }}
           >
@@ -1016,7 +1035,7 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
                 height: 14,
                 borderRadius: '50%',
                 backgroundColor: '#4caf50',
-                border: '2px solid #ffffff',
+                border: `2px solid ${theme.palette.background?.paper || '#ffffff'}`,
               }}
             />
           )}
@@ -1033,10 +1052,10 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
             justifyContent: isOwn ? 'flex-end' : 'flex-start',
           }}
         >
-          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: '#212121' }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: theme.palette.text?.primary }}>
             {message.sender}
           </Typography>
-          <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#424242' }}>
+          <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.text?.secondary }}>
             {message.time}
           </Typography>
         </Box>
@@ -1044,7 +1063,9 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
           <Paper
             sx={{
               padding: 1.5,
-              backgroundColor: isOwn ? '#e3f2fd' : '#f5f5f5',
+              backgroundColor: isOwn 
+                ? (isDark ? 'rgba(25, 118, 210, 0.2)' : '#e3f2fd')
+                : (isDark ? 'rgba(255, 255, 255, 0.05)' : '#f5f5f5'),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -1053,11 +1074,11 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#212121' }}>
+              <Typography variant="body2" sx={{ fontSize: '0.875rem', color: theme.palette.text?.primary }}>
                 {message.message}
               </Typography>
             </Box>
-            <IconButton size="small">
+            <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
               <MoreVert fontSize="small" />
             </IconButton>
           </Paper>
@@ -1065,12 +1086,14 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
           <Paper
             sx={{
               padding: 1.5,
-              backgroundColor: isOwn ? '#e3f2fd' : '#ffffff',
+              backgroundColor: isOwn
+                ? (isDark ? 'rgba(25, 118, 210, 0.2)' : '#e3f2fd')
+                : (theme.palette.background?.paper || theme.palette.background?.default),
               borderRadius: 2,
               marginBottom: message.reactions ? 1 : 0,
             }}
           >
-            <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#212121' }}>
+            <Typography variant="body2" sx={{ fontSize: '0.875rem', color: theme.palette.text?.primary }}>
               {message.message}
             </Typography>
           </Paper>
@@ -1093,15 +1116,15 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
                   alignItems: 'center',
                   gap: 0.5,
                   padding: '2px 8px',
-                  backgroundColor: '#f5f5f5',
+                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#f5f5f5',
                   borderRadius: 1,
                   fontSize: '0.75rem',
                 }}
               >
-                {reaction.type === 'thumb' && <ThumbUp sx={{ fontSize: '0.875rem', color: '#212121' }} />}
+                {reaction.type === 'thumb' && <ThumbUp sx={{ fontSize: '0.875rem', color: theme.palette.text?.primary }} />}
                 {reaction.type === 'heart' && <Favorite sx={{ fontSize: '0.875rem', color: '#f44336' }} />}
-                {reaction.type === 'smile' && <SentimentSatisfied sx={{ fontSize: '0.875rem', color: '#212121' }} />}
-                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#212121' }}>
+                {reaction.type === 'smile' && <SentimentSatisfied sx={{ fontSize: '0.875rem', color: theme.palette.text?.primary }} />}
+                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.text?.primary }}>
                   {reaction.count}
                 </Typography>
               </Box>
@@ -1115,7 +1138,7 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
             sx={{
               width: 36,
               height: 36,
-              backgroundColor: '#9c27b0',
+              backgroundColor: theme.palette.secondary?.main || '#9c27b0',
               fontSize: '0.75rem',
               color: '#ffffff',
             }}
