@@ -59,7 +59,6 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     }
     const { id: reportId, object_refs_inferred } = report.extensions[STIX_EXT_OCTI];
     const reportObjectRefIds = [...(report.object_refs ?? []), ...(object_refs_inferred ?? [])];
-    const targetsToCreate = [];
     // region handle creation
     for (let index = 0; index < addedTargets.length; index += 1) {
       const { partOfFromId, partOfId, partOfStandardId, partOfTargetId, partOfTargetStandardId } = addedTargets[index];
@@ -69,27 +68,19 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       if (!reportObjectRefIds.includes(partOfStandardId)) {
         const ruleRelationContent = createRuleContent(id, dependencies, [reportId, partOfId], {});
         const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
-        targetsToCreate.push({ i: inputForRelation, r: ruleRelationContent });
+        const inferredTarget = await createInferredRelationCallback(context, inputForRelation, ruleRelationContent, opts) as RelationCreation;
+        if (inferredTarget?.isCreation) {
+          createdTargets.push(inferredTarget.element[INPUT_DOMAIN_TO] as BasicStoreObject);
+        }
       }
       // -----------------------------------------------------------------------------------------------------------
       if (!reportObjectRefIds.includes(partOfTargetStandardId)) {
         const ruleIdentityContent = createRuleContent(id, dependencies, isSource ? [reportId, partOfTargetId] : [reportId, partOfFromId], {});
         const inputForIdentity = { fromId: reportId, toId: isSource ? partOfTargetId : partOfFromId, relationship_type: RELATION_OBJECT };
-        targetsToCreate.push({ i: inputForIdentity, r: ruleIdentityContent });
-      }
-    }
-    // endregion
-    // When current rule is called from taskManager, we need to generate an event on last inferred creation
-    const isMiddlewareCreation = createInferredRelationCallback === createInferredRelation;
-    for (let indexCreateTarget = 0; targetsToCreate.length; indexCreateTarget += 1) {
-      const currentTargetToCreate = targetsToCreate[indexCreateTarget];
-      const currentOpts = opts;
-      if (indexCreateTarget === targetsToCreate.length - 1 && !isMiddlewareCreation) {
-        currentOpts.publishStreamEvent = true;
-      }
-      const inferredTarget = await createInferredRelationCallback(context, currentTargetToCreate.i, currentTargetToCreate.r, currentOpts) as RelationCreation;
-      if (inferredTarget?.isCreation) {
-        createdTargets.push(inferredTarget.element[INPUT_DOMAIN_TO] as BasicStoreObject);
+        const inferredTarget = await createInferredRelationCallback(context, inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
+        if (inferredTarget?.isCreation) {
+          createdTargets.push(inferredTarget.element[INPUT_DOMAIN_TO] as BasicStoreObject);
+        }
       }
     }
     // region handle deletion
