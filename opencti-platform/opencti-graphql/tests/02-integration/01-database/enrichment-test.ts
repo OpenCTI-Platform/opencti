@@ -3,7 +3,7 @@ import { filterConnectorsForElementEnrichment } from '../../../src/domain/enrich
 import { testContext } from '../../utils/testQuery';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
 
-import internalConnectors from '../07-connector/internal-connectors.json';
+import internalConnectors from '../05-parser/07-connector/internal-connectors.json';
 
 describe('Enrichment domain filter connector unit testing', () => {
   const externalReferenceElement = {
@@ -15,7 +15,7 @@ describe('Enrichment domain filter connector unit testing', () => {
     internal_id: '822363f9-5edc-4b52-bfb9-9bea3df12f4c',
     standard_id: 'external-reference--46263753-2d5e-59f7-ae0d-09cd69f84f98',
     creator_id: [
-      'cae57c08-a936-4e45-9de5-4e4a00b01a3f'
+      'cae57c08-a936-4e45-9de5-4e4a00b01a3f',
     ],
     created_at: '2024-06-07T09:43:34.910Z',
     updated_at: '2024-06-07T09:43:34.910Z',
@@ -26,8 +26,8 @@ describe('Enrichment domain filter connector unit testing', () => {
     parent_types: [
       'Basic-Object',
       'Stix-Object',
-      'Stix-Meta-Object'
-    ]
+      'Stix-Meta-Object',
+    ],
   };
   const connectors = [...internalConnectors];
   const externalRefScope = ENTITY_TYPE_EXTERNAL_REFERENCE;
