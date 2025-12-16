@@ -70,20 +70,12 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const ruleRelationContent = createRuleContent(id, dependencies, [reportId, partOfId], {});
         const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
         targetsToCreate.push({ i: inputForRelation, r: ruleRelationContent });
-        const inferredRelation = await createInferredRelationCallback(context, inputForRelation, ruleRelationContent, opts) as RelationCreation;
-        if (inferredRelation?.isCreation) {
-          createdTargets.push(inferredRelation.element[INPUT_DOMAIN_TO] as BasicStoreObject);
-        }
       }
       // -----------------------------------------------------------------------------------------------------------
       if (!reportObjectRefIds.includes(partOfTargetStandardId)) {
         const ruleIdentityContent = createRuleContent(id, dependencies, isSource ? [reportId, partOfTargetId] : [reportId, partOfFromId], {});
         const inputForIdentity = { fromId: reportId, toId: isSource ? partOfTargetId : partOfFromId, relationship_type: RELATION_OBJECT };
         targetsToCreate.push({ i: inputForIdentity, r: ruleIdentityContent });
-        const inferredTarget = await createInferredRelationCallback(context, inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
-        if (inferredTarget?.isCreation) {
-          createdTargets.push(inferredTarget.element[INPUT_DOMAIN_TO] as BasicStoreObject);
-        }
       }
     }
     // endregion
