@@ -22,7 +22,7 @@ const normalizeMigrationName = (rawName) => {
 
 export const retrieveMigration = async (migrationFileName) => {
   const migration = await import(`../migrations/${migrationFileName}.js`);
-  if (!migration) {
+  if (!migration?.up) {
     throw Error('No migration found with this name', { migrationFileName });
   }
   return migration;

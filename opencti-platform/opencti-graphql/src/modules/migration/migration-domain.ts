@@ -1,9 +1,14 @@
-import type { AuthContext, AuthUser } from '../../types/user';
+import type { AuthUser } from '../../types/user';
 import { retrieveMigration } from '../../database/migration';
 import { logApp, logMigration } from '../../config/conf';
 import { MigrationSet } from 'migrate';
+import { isBypassUser } from '../../utils/access';
+import { ForbiddenAccess } from '../../config/errors';
 
-export const runMigration = async (context: AuthContext, user: AuthUser, migrationFileName: string) => {
+export const runMigration = async (user: AuthUser, migrationFileName: string) => {
+  if (!isBypassUser(user)) {
+    throw ForbiddenAccess();
+  }
   const migration = await retrieveMigration(migrationFileName);
   const migrationSet = new MigrationSet(migration);
   migrationSet.up((migrationError) => {
@@ -14,4 +19,5 @@ export const runMigration = async (context: AuthContext, user: AuthUser, migrati
     logMigration.info(`[MIGRATION] Migration ${migrationFileName} successfully run`);
     return 'DONE';
   });
+  return 'DONE';
 };
