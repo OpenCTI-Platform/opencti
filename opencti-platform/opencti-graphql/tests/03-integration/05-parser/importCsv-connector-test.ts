@@ -22,11 +22,7 @@ describe('Verify internal importCsv connector', () => {
   });
 
   it('should upload csv and create work that is use for this test', async () => {
-<<<<<<<< HEAD:opencti-platform/opencti-graphql/tests/03-integration/05-parser/importCsv-connector-test.ts
     const file = fileToReadStream('./tests/02-integration/05-parser/importCsv-connector', 'csv-file-cities.csv', 'csv-file-cities.csv', 'text/csv');
-========
-    const file = fileToReadStream('./tests/03-integration/07-connector/importCsv-connector', 'csv-file-cities.csv', 'csv-file-cities.csv', 'text/csv');
->>>>>>>> c04b460bcd ([backend] Refactor api-test folders (#13317)):opencti-platform/opencti-graphql/tests/03-integration/07-connector/importCsv-connector-test.ts
     const uploadedFile = await uploadToStorage(testContext, ADMIN_USER, `${IMPORT_STORAGE_PATH}/global`, file, {});
     expect(uploadedFile).toBeDefined();
     expect(uploadedFile.upload.id).toBe('import/global/csv-file-cities.csv');
