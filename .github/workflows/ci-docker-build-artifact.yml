@@ -46,6 +46,7 @@ jobs:
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
+
     steps:
     - uses: actions/checkout@v6
       with:
@@ -63,7 +64,7 @@ jobs:
         images: filigran/platform
         tags: type=raw,value=${{ inputs.image_tag }}
 
-    - name: Build and push
+    - name: Build and save
       uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.build_context_platform }}
@@ -86,6 +87,7 @@ jobs:
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
+
     steps:
     - uses: actions/checkout@v6
       with:
@@ -107,7 +109,8 @@ jobs:
       with:
         images: filigran/worker
         tags: type=raw,value=${{ inputs.image_tag }}
-    - name: Build and push
+
+    - name: Build and save
       uses: docker/build-push-action@v6
       with:
         context: ${{ inputs.build_context_worker }}

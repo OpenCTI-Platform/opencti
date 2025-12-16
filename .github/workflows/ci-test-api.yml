@@ -178,6 +178,7 @@ jobs:
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
          docker compose --profile "backend" --profile "ci-test-rules" up -d
+         ./scripts/ci/wait-for-url-200.sh http://localhost:9200/_cluster/health?wait_for_status=yellow  120 2
 
     - name: Start rules test
       run: |
