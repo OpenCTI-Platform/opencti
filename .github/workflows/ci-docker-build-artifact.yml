@@ -11,26 +11,16 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
-      dockerfile_platform:
-        description: "Dockerfile"
+      client_python_local:
+        description: "Use client python from the same commit"
+        type: boolean
+        required: false
+        default: false
+      dockerfile_target:
+        description: "Target to build in the multi stage docker file - testing or app"
         type: string
         required: false
-        default: Dockerfile_featurebranch
-      build_context_platform:
-        description: "Build context"
-        type: string
-        required: false
-        default: opencti-platform
-      dockerfile_worker:
-        description: "Dockerfile"
-        type: string
-        required: false
-        default: Dockerfile_featurebranch
-      build_context_worker:
-        description: "Build context"
-        type: string
-        required: false
-        default: opencti-worker
+        default: testing
     outputs:
       image-tag-version-cleaned:
         description: "Image tag after formatting"
@@ -52,6 +42,10 @@ jobs:
       with:
         ref: ${{ inputs.checkout_ref }}
 
+    - name: Use client-python from same branch
+      if: ${{ inputs.client_python_release == true }}
+      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-platform/opencti-graphql/src/python/requirements.txt
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       with:
@@ -63,12 +57,13 @@ jobs:
       with:
         images: filigran/platform
         tags: type=raw,value=${{ inputs.image_tag }}
+        target: ${{ inputs.dockerfile_target }}
 
     - name: Build and save
       uses: docker/build-push-action@v6
       with:
-        context: ${{ inputs.build_context_platform }}
-        file: opencti-platform/${{ inputs.dockerfile_platform }}
+        context: opencti-platform
+        file: opencti-platform/Dockerfile_featurebranch
         push: false
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -93,6 +88,10 @@ jobs:
       with:
         ref: ${{ inputs.checkout_ref }}
 
+    - name: Use client-python from same branch
+      if: ${{ inputs.client_python_release == true }}
+      run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-worker/src/requirements.txt
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       with:
@@ -108,8 +107,8 @@ jobs:
     - name: Build and save
       uses: docker/build-push-action@v6
       with:
-        context: ${{ inputs.build_context_worker }}
-        file: opencti-worker/${{ inputs.dockerfile_worker }}
+        context: opencti-worker
+        file: opencti-worker/Dockerfile
         push: false
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
