@@ -57,7 +57,6 @@ jobs:
       with:
         images: filigran/platform
         tags: type=raw,value=${{ inputs.image_tag }}
-        target: ${{ inputs.dockerfile_target }}
 
     - name: Build and save
       uses: docker/build-push-action@v6
@@ -68,6 +67,7 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         outputs: type=docker,dest=/tmp/opencti-platform.tar
+        target: ${{ inputs.dockerfile_target }}
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
