@@ -43,7 +43,7 @@ jobs:
         ref: ${{ inputs.checkout_ref }}
 
     - name: Use client-python from same branch
-      if: ${{ inputs.client_python_release == true }}
+      if: ${{ inputs.client_python_local == true }}
       run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-platform/opencti-graphql/src/python/requirements.txt
 
     - name: Set up Docker Buildx
@@ -89,7 +89,7 @@ jobs:
         ref: ${{ inputs.checkout_ref }}
 
     - name: Use client-python from same branch
-      if: ${{ inputs.client_python_release == true }}
+      if: ${{ inputs.client_python_local == true }}
       run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-worker/src/requirements.txt
 
     - name: Set up Docker Buildx
