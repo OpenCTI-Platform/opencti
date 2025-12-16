@@ -137,17 +137,42 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   };
 };
 
-export const historyMessage = (operation: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test' | '_get', changes: Change[]): string => {
+const messageForOperation = (messages: string[], operation: 'adds' | 'removes' | 'replaces') => {
+  return `${operation} ${messages.join(' - ')}${messages.length > 3 ? ` and ${messages.length - 3} more operations` : ''}`;
+};
+export const historyMessage = (changes: Change[]): string => {
   const messages: string[] = [];
+  const addMessages: string[] = [];
+  const removeMessages: string[] = [];
+  const replaceMessages: string[] = [];
+
   if (!changes) {
     return '';
   }
   if (changes.length > 0) {
     changes.forEach((change) => {
-      messages.push(`\`${truncate(change.new, 250)}\` in \`${change.field}\``);
+      if (change.added && change.added.length > 0) {
+        addMessages.push(`\`${truncate(change.added.join(', '), 250)}\` in \`${change.field}\``);
+      } else if (change.removed && change.removed.length > 0) {
+        removeMessages.push(`\`${truncate(change.removed.join(', '), 250)}\` in \`${change.field}\``);
+      } else {
+        replaceMessages.push(`\`${truncate(change.new, 250)}\` in \`${change.field}\``);
+      }
     });
   }
-  return `${operation}s ${messages.join(' - ')}${messages.length > 3 ? ` and ${messages.length - 3} more operations` : ''}`;
+  if (addMessages.length > 0) {
+    const addMessage = messageForOperation(addMessages, 'adds');
+    messages.push(addMessage);
+  }
+  if (removeMessages.length > 0) {
+    const removeMessage = messageForOperation(removeMessages, 'removes');
+    messages.push(removeMessage);
+  }
+  if (replaceMessages.length > 0) {
+    const replaceMessage = messageForOperation(replaceMessages, 'replaces');
+    messages.push(replaceMessage);
+  }
+  return `${messages.join(' | ')}`;
 };
 export const buildHistoryElementsFromEvents = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   // load all markings to resolve object_marking_refs
@@ -169,11 +194,10 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
         .map((stixId) => grantedRefsResolved.get(stixId))
         .filter((o) => isNotEmptyField(o)) as string[];
     }
-    const updateEvent: UpdateEvent = event.data as UpdateEvent;
     const eventType = event.data.type;
     let contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
-      message: historyMessage(updateEvent.context?.patch[0].op, updateEvent.context?.changes),
+      message: event.data.message,
       entity_type: stix.extensions[STIX_EXT_OCTI].type,
       entity_name: extractStixRepresentative(stix),
       creator_ids: stix.extensions[STIX_EXT_OCTI].creator_ids,
@@ -197,6 +221,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
       }
       // add changes
       contextData.changes = updateEvent.context.changes;
+      contextData.message = historyMessage(updateEvent.context.changes);
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;

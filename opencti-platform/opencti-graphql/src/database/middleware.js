@@ -2515,6 +2515,9 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       const isSecurityUpdate = () => {
         return updatedInputs.some((input) => input.key === objectOrganization.name || input.key === authorizedMembers.name);
       };
+      const isNotOnlySecurityUpdate = () => {
+        return updatedInputs.some((input) => input.key !== objectOrganization.name && input.key !== authorizedMembers.name);
+      };
       const securityUpdate = isSecurityUpdate();
       if (securityUpdate) {
         await publishUserAction({
@@ -2535,7 +2538,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         changes,
         {
           ...opts,
-          noHistory: securityUpdate,
+          noHistory: securityUpdate && !isNotOnlySecurityUpdate(),
           commit,
           related_restrictions: relatedRestrictions,
           pir_ids,
