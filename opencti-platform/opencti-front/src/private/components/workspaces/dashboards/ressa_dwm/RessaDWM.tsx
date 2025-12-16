@@ -40,7 +40,7 @@ import { ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import type { ApexOptions } from 'apexcharts';
 import Chart from '@components/common/charts/Chart';
-import { lineChartOptions } from '../../../../../utils/Charts';
+import { lineChartOptions, donutChartOptions } from '../../../../../utils/Charts';
 import type { Theme } from '../../../../../components/Theme';
 
 interface StatCardProps {
@@ -139,81 +139,131 @@ interface DonutChartProps {
 }
 
 const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
-  const size = 200;
-  const radius = 80;
-  const strokeWidth = 30;
-  const center = size / 2;
-  const circumference = 2 * Math.PI * radius;
+  const theme = useTheme<Theme>();
 
-  let cumulativePercentage = 0;
+  const chartData = useMemo(() => data.map((item) => item.value), [data]);
+  const labels = useMemo(() => data.map((item) => item.label), [data]);
+  const colors = useMemo(() => data.map((item) => item.color), [data]);
 
-  const segments = data.map((item) => {
-    const percentage = (item.value / total) * 100;
-    const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
-    const strokeDashoffset = -cumulativePercentage * (circumference / 100);
-    cumulativePercentage += percentage;
+  const options: ApexOptions = useMemo(() => {
+    const baseOptions = donutChartOptions(
+      theme,
+      labels,
+      'right',
+      false,
+      colors,
+      true, // displayLegend: true - legend چارت را فعال می‌کنیم
+      false, // displayLabels: false - درصد‌ها را از روی نمودار برمی‌داریم
+      true,
+      true,
+      70,
+      false,
+    ) as ApexOptions;
+
+    // محاسبه درصد برای هر آیتم
+    const percentages = chartData.map((value) => ((value / total) * 100).toFixed(1));
 
     return {
-      ...item,
-      strokeDasharray,
-      strokeDashoffset,
+      ...baseOptions,
+      labels: labels, // اضافه کردن labels برای نمایش در legend
+      chart: {
+        ...baseOptions.chart,
+        events: {
+          ...baseOptions.chart?.events,
+          mounted: (chartContext: any) => {
+            // اطمینان از نمایش همیشگی labels
+            if (chartContext && chartContext.w) {
+              const apexChart = chartContext.w.globals;
+              if (apexChart) {
+                // Force update برای نمایش labels
+                setTimeout(() => {
+                  chartContext.updateSeries(chartData, true);
+                }, 100);
+              }
+            }
+          },
+        },
+      },
+      legend: {
+        ...baseOptions.legend,
+        position: 'right',
+        horizontalAlign: 'center',
+        floating: false,
+        fontSize: '12px',
+        fontFamily: '"IBM Plex Sans", sans-serif',
+        fontColor: '#212121',
+        labels: {
+          colors: '#212121',
+        },
+        itemMargin: {
+          horizontal: 10,
+          vertical: 5,
+        },
+        formatter: (seriesName: string, opts: { seriesIndex: number }) => {
+          const percentage = percentages[opts.seriesIndex];
+          return `${seriesName} ${percentage}%`;
+        },
+      },
+      dataLabels: {
+        ...baseOptions.dataLabels,
+        enabled: false, // درصد‌ها را از روی نمودار برمی‌داریم
+      },
+      tooltip: {
+        ...baseOptions.tooltip,
+        enabled: true,
+      },
+      plotOptions: {
+        ...baseOptions.plotOptions,
+        pie: {
+          ...baseOptions.plotOptions?.pie,
+          donut: {
+            ...baseOptions.plotOptions?.pie?.donut,
+            labels: {
+              show: true,
+              name: {
+                show: true,
+                fontSize: '14px',
+                fontFamily: '"IBM Plex Sans", sans-serif',
+                fontWeight: 400,
+                color: theme.palette.text?.secondary || '#757575',
+                offsetY: -10,
+                formatter: () => 'Total',
+              },
+              value: {
+                show: true,
+                fontSize: '24px',
+                fontFamily: '"IBM Plex Sans", sans-serif',
+                fontWeight: 600,
+                color: theme.palette.text?.primary || '#212121',
+                offsetY: 10,
+                formatter: () => total.toLocaleString(),
+              },
+              total: {
+                show: true,
+                showAlways: true,
+                label: 'Total',
+                fontSize: '14px',
+                fontFamily: '"IBM Plex Sans", sans-serif',
+                fontWeight: 400,
+                color: theme.palette.text?.secondary || '#757575',
+                formatter: () => total.toLocaleString(),
+              },
+            },
+          },
+        },
+      },
     };
-  });
+  }, [theme, labels, colors, total, chartData]);
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-      <Box sx={{ position: 'relative', width: size, height: size }}>
-        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-          {segments.map((segment, index) => (
-            <circle
-              key={index}
-              cx={center}
-              cy={center}
-              r={radius}
-              fill="none"
-              stroke={segment.color}
-              strokeWidth={strokeWidth}
-              strokeDasharray={segment.strokeDasharray}
-              strokeDashoffset={segment.strokeDashoffset}
-              strokeLinecap="round"
-            />
-          ))}
-        </svg>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            textAlign: 'center',
-          }}
-        >
-          <Typography variant="body2" sx={{ color: '#757575', fontSize: '0.75rem' }}>
-            Total
-          </Typography>
-          <Typography variant="h5" sx={{ fontWeight: 600, color: '#212121' }}>
-            {total.toLocaleString()}
-          </Typography>
-        </Box>
-      </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {data.map((item, index) => (
-          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{
-                width: 12,
-                height: 12,
-                borderRadius: '50%',
-                backgroundColor: item.color,
-                flexShrink: 0,
-              }}
-            />
-            <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#424242' }}>
-              {item.label}
-            </Typography>
-          </Box>
-        ))}
-      </Box>
+    <Box sx={{ height: 300 }}>
+      <Chart
+        options={options}
+        series={chartData}
+        type="donut"
+        width="100%"
+        height="100%"
+      />
     </Box>
   );
 };
