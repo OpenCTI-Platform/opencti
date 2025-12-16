@@ -18,6 +18,15 @@ const normalizeMigrationName = (rawName) => {
   return rawName;
 };
 
+export const retrieveMigration = (migrationName) => {
+  console.log('migrations', migrations);
+  const knexMigrations = migrations.map((migration, i) => ({
+    name: migrationsFilenames[i].substring('../migrations/'.length),
+    migration,
+  }));
+  console.log('knexMigrations', knexMigrations);
+};
+
 const retrieveMigrations = () => {
   const knexMigrations = migrations.map((migration, i) => ({
     name: migrationsFilenames[i].substring('../migrations/'.length),
