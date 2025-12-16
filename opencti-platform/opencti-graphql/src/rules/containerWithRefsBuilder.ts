@@ -79,18 +79,6 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       }
     }
     // endregion
-    // region handle deletion
-    const deletedTargetRefs: Array<StoreObject> = [];
-    for (let indexDeletion = 0; indexDeletion < deletedTargets.length; indexDeletion += 1) {
-      const inferenceToDelete = deletedTargets[indexDeletion];
-      const isDeletion = await deleteInferredRuleElement(id, inferenceToDelete, [], opts);
-      if (isDeletion) {
-        // if delete really occurs (not simple upsert removing an explanation)
-        const deletedTarget = await internalLoadById(context, RULE_MANAGER_USER, inferenceToDelete.toId) as unknown as StoreObject;
-        deletedTargetRefs.push(deletedTarget);
-      }
-    }
-    // endregion
     // When current rule is called from taskManager, we need to generate an event on last inferred creation
     const isMiddlewareCreation = createInferredRelationCallback === createInferredRelation;
     for (let indexCreateTarget = 0; targetsToCreate.length; indexCreateTarget += 1) {
@@ -104,6 +92,18 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         createdTargets.push(inferredTarget.element[INPUT_DOMAIN_TO] as BasicStoreObject);
       }
     }
+    // region handle deletion
+    const deletedTargetRefs: Array<StoreObject> = [];
+    for (let indexDeletion = 0; indexDeletion < deletedTargets.length; indexDeletion += 1) {
+      const inferenceToDelete = deletedTargets[indexDeletion];
+      const isDeletion = await deleteInferredRuleElement(id, inferenceToDelete, [], opts);
+      if (isDeletion) {
+        // if delete really occurs (not simple upsert removing an explanation)
+        const deletedTarget = await internalLoadById(context, RULE_MANAGER_USER, inferenceToDelete.toId) as unknown as StoreObject;
+        deletedTargetRefs.push(deletedTarget);
+      }
+    }
+    // endregion
     if (createdTargets.length > 0 || deletedTargetRefs.length > 0) {
       const updatedReport = structuredClone(report);
       const deletedTargetIds = deletedTargetRefs.map((d) => d.standard_id);
