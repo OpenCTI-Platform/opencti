@@ -1,0 +1,11 @@
+{
+  "name": "opencti",
+  "packageManager": "yarn@4.12.0",
+  "workspaces": [
+    "opencti-platform/opencti-front",
+    "opencti-platform/opencti-graphql"
+  ],
+  "devDependencies": {
+    "nx": "22.2.5"
+  }
+}
