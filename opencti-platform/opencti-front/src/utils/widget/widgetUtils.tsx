@@ -17,7 +17,7 @@ import {
   ViewListOutline,
 } from 'mdi-material-ui';
 import React from 'react';
-// eslint-disable-next-line import/extensions
+
 import type { WidgetDataSelection } from './widget';
 
 const widgetVisualizationTypes = [
@@ -206,7 +206,7 @@ const widgetVisualizationTypes = [
 export type WidgetVisualizationTypes
   = (typeof widgetVisualizationTypes)[number]['key'];
 
-export const RELATIONSHIP_WIDGETS_TYPES = ['Stix-Core-Relationship', 'stix-sighting-relationship', 'object', 'object-label'];
+export const RELATIONSHIP_WIDGETS_TYPES = ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'];
 
 export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => w.key !== 'attribute');
 

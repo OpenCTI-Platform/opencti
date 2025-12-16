@@ -102,7 +102,7 @@ describe('Stix Filtering', () => {
         key: ['entity_type'],
         mode: 'or',
         operator: 'eq',
-        values: ['Report']
+        values: ['Report'],
       }],
       filterGroups: [],
     } as FilterGroup;
@@ -118,7 +118,7 @@ describe('Stix Filtering', () => {
         key: ['entity_type'],
         mode: 'or',
         operator: 'eq',
-        values: ['Report']
+        values: ['Report'],
       }],
       filterGroups: [],
     } as FilterGroup;
@@ -131,7 +131,7 @@ describe('Stix Filtering', () => {
         key: ['entity_type'],
         mode: 'or',
         operator: 'eq',
-        values: ['Report', 'Indicator']
+        values: ['Report', 'Indicator'],
       }],
       filterGroups: [],
     } as FilterGroup;
@@ -147,12 +147,12 @@ describe('Stix Filtering', () => {
         key: ['entity_type'],
         mode: 'or',
         operator: 'eq',
-        values: ['Report']
+        values: ['Report'],
       }, {
         key: ['creator_id'],
         mode: 'or',
         operator: 'eq',
-        values: [ME_FILTER_VALUE]
+        values: [ME_FILTER_VALUE],
       }],
       filterGroups: [],
     } as FilterGroup;
@@ -164,7 +164,7 @@ describe('Stix Filtering', () => {
     expect(await isStixMatchFilterGroup_MockableForUnitTests(testContext, WHITE_USER, stixReport, filterGroup, MOCK_RESOLUTION_MAP)).toEqual(false);
   });
 
-  //--------------------------------------------------------------------------------------------------------------------
+  // --------------------------------------------------------------------------------------------------------------------
   // Now testing complex filters with edge cases
   describe('Complex filtering cases', () => {
     it('using all types of filter keys (string, numeric, boolean)', async () => {
@@ -179,7 +179,7 @@ describe('Stix Filtering', () => {
             mode: 'and',
             filters: [
               { key: ['entity_type'], mode: 'or', operator: 'eq', values: ['Report', 'Indicator'] },
-              { key: ['confidence'], mode: 'and', operator: 'gt', values: ['25'] }
+              { key: ['confidence'], mode: 'and', operator: 'gt', values: ['25'] },
             ],
             filterGroups: [],
           },
@@ -188,7 +188,7 @@ describe('Stix Filtering', () => {
             filters: [
               { key: ['revoked'], mode: 'or', operator: 'eq', values: ['true'] },
               { key: ['objectLabel'], mode: 'or', operator: 'eq', values: ['id-for-label-indicator'] },
-              { key: ['objectMarking'], mode: 'or', operator: 'eq', values: ['id-for-marking-tlp:green'] }
+              { key: ['objectMarking'], mode: 'or', operator: 'eq', values: ['id-for-marking-tlp:green'] },
             ],
             filterGroups: [],
           },
@@ -214,7 +214,7 @@ describe('Stix Filtering', () => {
             mode: 'or',
             filters: [{ key: ['entity_type'], operator: 'eq', values: ['Software'], mode: 'or' }],
             filterGroups: [],
-          }
+          },
         ],
       } as FilterGroup;
       expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([3, 61]); // 2 malware + 1 software
@@ -234,7 +234,7 @@ describe('Stix Filtering', () => {
             mode: 'or',
             filters: [{ key: ['entity_type'], operator: 'eq', values: ['Software'], mode: 'or' }],
             filterGroups: [],
-          }
+          },
         ],
       } as FilterGroup;
       expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([0, 64]); // nothing is both malware and software
@@ -346,7 +346,7 @@ describe('Stix Filtering', () => {
 
       filterGroup = {
         mode: 'or',
-        filters: [{ key: ['entity_type'], operator: 'eq', values: ['Stix-Core-Relationship'], mode: 'or' }],
+        filters: [{ key: ['entity_type'], operator: 'eq', values: ['stix-core-relationship'], mode: 'or' }],
         filterGroups: [],
       } as FilterGroup;
       expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([24, 40]); // 24/26 rels are Stix-core-rel

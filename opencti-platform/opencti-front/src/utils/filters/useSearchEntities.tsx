@@ -857,7 +857,7 @@ const useSearchEntities = ({
               if (!availableEntityTypes
                 || (availableEntityTypes && availableEntityTypes.length > 1)) {
                 result = [
-                  abstractTypeFilterValue('Stix-Core-Relationship'),
+                  abstractTypeFilterValue('stix-core-relationship'),
                   ...result,
                 ];
               }
@@ -900,7 +900,7 @@ const useSearchEntities = ({
               ...sdoTypes,
               abstractTypeFilterValue('Stix-Domain-Object'),
               ...scrTypes,
-              abstractTypeFilterValue('Stix-Core-Relationship'),
+              abstractTypeFilterValue('stix-core-relationship'),
             ].sort((a, b) => a.label.localeCompare(b.label)),
           );
           break;

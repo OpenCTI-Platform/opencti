@@ -154,7 +154,7 @@ export const stixCoreRelationshipEditContext = async (context, user, stixCoreRel
 export const stixCoreRelationshipRemoveFromDraft = async (context, user, stixCoreObjectId) => {
   const stixCoreRelationship = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_RELATIONSHIP, { includeDeletedInDraft: true });
   if (!stixCoreRelationship) {
-    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Relationship cannot be found.', { id: stixCoreObjectId });
+    throw FunctionalError('Cannot remove the object from draft, stix-core-relationship cannot be found.', { id: stixCoreObjectId });
   }
   // TODO currently not locked, but might need to be
   await elRemoveElementFromDraft(context, user, stixCoreRelationship);
