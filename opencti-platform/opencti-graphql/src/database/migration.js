@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
 import { logApp, logMigration, PLATFORM_VERSION } from '../config/conf';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, FunctionalError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
 import { createEntity, createRelation, loadEntity, patchAttribute } from './middleware';
@@ -21,11 +21,12 @@ const normalizeMigrationName = (rawName) => {
 };
 
 export const retrieveMigration = async (migrationFileName) => {
-  const migration = await import(`../migrations/${migrationFileName}.js`);
-  if (!migration?.up) {
-    throw Error('No migration found with this name', { migrationFileName });
+  try {
+    const migration = await import(`../migrations/${migrationFileName}.js`);
+    return migration;
+  } catch (e) {
+    throw FunctionalError('No migration found with this name', { cause: e, migrationFileName });
   }
-  return migration;
 };
 
 const retrieveMigrations = async () => {
