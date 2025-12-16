@@ -716,6 +716,8 @@ const ChatInterface: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              minHeight: '64px',
+              height: '64px',
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -725,13 +727,13 @@ const ChatInterface: React.FC = () => {
               <ArrowDropDown sx={{ color: '#212121' }} />
             </Box>
             <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <IconButton size="small">
+              <IconButton size="small" sx={{ color: '#212121' }}>
                 <Menu fontSize="small" />
               </IconButton>
-              <IconButton size="small">
+              <IconButton size="small" sx={{ color: '#212121' }}>
                 <Edit fontSize="small" />
               </IconButton>
-              <IconButton size="small">
+              <IconButton size="small" sx={{ color: '#212121' }}>
                 <GridView fontSize="small" />
               </IconButton>
             </Box>
@@ -796,12 +798,14 @@ const ChatInterface: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              minHeight: '64px',
+              height: '64px',
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box
                 sx={{
-                  backgroundColor: '#9c27b0',
+                  backgroundColor: '#1976d2',
                   borderRadius: 1,
                   padding: '4px',
                   display: 'flex',
@@ -820,19 +824,59 @@ const ChatInterface: React.FC = () => {
                 variant="outlined"
                 size="small"
                 startIcon={<VideoCall />}
-                sx={{ textTransform: 'none', fontSize: '0.875rem' }}
+                sx={{
+                  textTransform: 'none',
+                  fontSize: '0.875rem',
+                  color: '#757575',
+                  borderColor: '#e0e0e0',
+                  '&:hover': {
+                    borderColor: '#bdbdbd',
+                    backgroundColor: '#fafafa',
+                  },
+                }}
               >
                 Meet now
               </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<Add />}
-                endIcon={<ArrowDropDown />}
-                sx={{ textTransform: 'none', fontSize: '0.875rem' }}
-              >
-                New meeting
-              </Button>
+              <Box sx={{ display: 'flex', borderRadius: 1, overflow: 'hidden' }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<Add />}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.875rem',
+                    backgroundColor: '#1976d2',
+                    color: '#ffffff',
+                    borderRadius: 0,
+                    borderTopLeftRadius: 4,
+                    borderBottomLeftRadius: 4,
+                    '&:hover': {
+                      backgroundColor: '#1565c0',
+                    },
+                  }}
+                >
+                  New meeting
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    minWidth: 'auto',
+                    padding: '6px 8px',
+                    backgroundColor: '#1976d2',
+                    color: '#ffffff',
+                    borderRadius: 0,
+                    borderTopRightRadius: 4,
+                    borderBottomRightRadius: 4,
+                    borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
+                    '&:hover': {
+                      backgroundColor: '#1565c0',
+                    },
+                  }}
+                >
+                  <ArrowDropDown />
+                </Button>
+              </Box>
             </Box>
           </Box>
 
