@@ -9,11 +9,12 @@ import {
   buildDeleteEvent,
   buildMergeEvent,
   buildUpdateEvent,
+  type FetchEventRangeOption,
   isStreamPublishable,
   LIVE_STREAM_NAME,
   type RawStreamClient,
-  type StreamOption,
   type StreamProcessor,
+  type StreamProcessorOption,
 } from './stream-utils';
 import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
@@ -128,7 +129,7 @@ export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, ins
 export const createStreamProcessor = <T extends BaseEvent> (
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
-  opts: StreamOption = {},
+  opts: StreamProcessorOption = {},
 ): StreamProcessor => {
   return streamClient.rawCreateStreamProcessor(provider, callback, opts);
 };
@@ -140,7 +141,7 @@ export const fetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
 export const fetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
   startEventId: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
-  opts: StreamOption = {},
+  opts: FetchEventRangeOption = {},
 ) => {
   return streamClient.rawFetchStreamEventsRangeFromEventId(startEventId, callback, opts);
 };

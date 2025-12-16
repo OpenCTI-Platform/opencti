@@ -35,12 +35,13 @@ export interface StreamProcessor {
   running: () => boolean;
 }
 
-export enum StreamProvider {
-  BASE = 'base',
-  PIR = 'Pir Manager',
+export interface FetchEventRangeOption {
+  withInternal?: boolean;
+  streamName?: string;
+  streamBatchSize?: number;
 }
 
-export interface StreamOption {
+export interface StreamProcessorOption {
   withInternal?: boolean;
   bufferTime?: number;
   autoReconnect?: boolean;
@@ -63,12 +64,12 @@ export interface RawStreamClient {
   rawCreateStreamProcessor: <T extends BaseEvent> (
     provider: string,
     callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
-    opts?: StreamOption,
+    opts?: StreamProcessorOption,
   ) => StreamProcessor;
   rawFetchStreamEventsRangeFromEventId: <T extends BaseEvent> (
     startEventId: string,
     callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
-    opts?: StreamOption,
+    opts?: FetchEventRangeOption,
   ) => Promise<{ lastEventId: string }>;
   rawStoreNotificationEvent: <T extends StreamNotifEvent> (event: T) => Promise<void>;
   rawFetchRangeNotifications: <T extends StreamNotifEvent> (start: Date, end: Date) => Promise<Array<T>>;

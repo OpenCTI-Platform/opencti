@@ -2,7 +2,15 @@ import { Cluster, Redis } from 'ioredis';
 import * as R from 'ramda';
 import conf, { logApp, REDIS_PREFIX } from '../config/conf';
 import type { ActivityStreamEvent, BaseEvent, DataEvent, SseEvent, StreamNotifEvent } from '../types/event';
-import { ACTIVITY_STREAM_NAME, LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamOption, type StreamProcessor } from './stream/stream-utils';
+import {
+  ACTIVITY_STREAM_NAME,
+  type FetchEventRangeOption,
+  LIVE_STREAM_NAME,
+  NOTIFICATION_STREAM_NAME,
+  type RawStreamClient,
+  type StreamProcessor,
+  type StreamProcessorOption,
+} from './stream/stream-utils';
 import { createRedisClient, getClientBase, getClientXRANGE } from './redis';
 import { isEmptyField, wait, waitInSec } from './utils';
 import { utcDate } from '../utils/format';
@@ -82,7 +90,7 @@ const MAX_RANGE_MESSAGES = 100;
 const rawCreateStreamProcessor = <T extends BaseEvent> (
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
-  opts: StreamOption = {},
+  opts: StreamProcessorOption = {},
 ): StreamProcessor => {
   let client: Cluster | Redis;
   let startEventId: string;
@@ -173,9 +181,9 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
 const rawFetchStreamEventsRangeFromEventId = async (
   startEventId: string,
   callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
-  opts: StreamOption = {},
+  opts: FetchEventRangeOption = {},
 ) => {
-  const { streamBatchSize = MAX_RANGE_MESSAGES, streamName = LIVE_STREAM_NAME } = opts;
+  const { streamBatchSize = MAX_RANGE_MESSAGES, streamName = LIVE_STREAM_NAME, withInternal } = opts;
   const redisStreamName = convertStreamName(streamName);
   let effectiveStartEventId = startEventId;
   const redisClient = getClientXRANGE();
@@ -192,18 +200,15 @@ const rawFetchStreamEventsRangeFromEventId = async (
     // Process the event results
     if (streamResult && streamResult.length > 0) {
       const lastStreamResultId = R.last(streamResult)[0]; // id of last event fetched (internal or external)
-      await processStreamResult(streamResult, callback, opts.withInternal); // process the stream events of the range
+      await processStreamResult(streamResult, callback, withInternal); // process the stream events of the range
       if (lastStreamResultId) {
         effectiveStartEventId = lastStreamResultId;
       }
     } else {
-      await processStreamResult([], callback, opts.withInternal);
+      await processStreamResult([], callback, withInternal);
     }
   } catch (err) {
     logApp.error('Redis stream consume fail', { cause: err });
-    if (opts.autoReconnect) {
-      await waitInSec(2);
-    }
   }
   return { lastEventId: effectiveStartEventId };
 };
