@@ -629,6 +629,7 @@ interface ChatMessage {
   message: string;
   time: string;
   isOnline?: boolean;
+  isOwn?: boolean; // آیا پیام از کاربر فعلی است
   reactions?: { type: string; count: number }[];
   attachment?: string;
 }
@@ -659,14 +660,16 @@ const ChatInterface: React.FC = () => {
       message: 'Thank you for always being so positive!',
       time: '2:30 PM',
       isOnline: true,
+      isOwn: false,
     },
     {
       id: '2',
-      sender: 'System',
-      avatar: 'S',
+      sender: 'You',
+      avatar: 'ME',
       message: 'W July_Promotion',
       time: '2:25 PM',
       attachment: 'file',
+      isOwn: true,
     },
     {
       id: '3',
@@ -675,11 +678,20 @@ const ChatInterface: React.FC = () => {
       message: 'Cupcake ipsum dolor sit amet muffin sesame snaps caramels. Gingerbread chupa chups cupcake tiramisu croissant. Pastry apple pie halvah cheesecake candy tiramisu cake.',
       time: '2:20 PM',
       isOnline: true,
+      isOwn: false,
       reactions: [
         { type: 'thumb', count: 9 },
         { type: 'heart', count: 8 },
         { type: 'smile', count: 7 },
       ],
+    },
+    {
+      id: '4',
+      sender: 'You',
+      avatar: 'ME',
+      message: 'Great work on the project!',
+      time: '2:15 PM',
+      isOwn: true,
     },
   ];
 
@@ -707,10 +719,10 @@ const ChatInterface: React.FC = () => {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: '#212121' }}>
                 Telegram
               </Typography>
-              <ArrowDropDown />
+              <ArrowDropDown sx={{ color: '#212121' }} />
             </Box>
             <Box sx={{ display: 'flex', gap: 0.5 }}>
               <IconButton size="small">
@@ -787,22 +799,10 @@ const ChatInterface: React.FC = () => {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box
-                sx={{
-                  backgroundColor: '#9c27b0',
-                  color: '#ffffff',
-                  padding: '6px 12px',
-                  borderRadius: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                }}
-              >
-                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                  Channel Name
-                </Typography>
-                <GridView fontSize="small" sx={{ fontSize: '0.875rem' }} />
-              </Box>
+              <GridView sx={{ fontSize: '1.25rem', color: '#9c27b0' }} />
+              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: '#212121' }}>
+                Channel Name
+              </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
@@ -885,13 +885,14 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
             <Box
               sx={{
                 position: 'absolute',
-                bottom: 0,
-                right: 0,
-                width: 12,
-                height: 12,
+                bottom: -2,
+                right: 12,
+                width: 14,
+                height: 14,
                 borderRadius: '50%',
                 backgroundColor: '#4caf50',
                 border: '2px solid #ffffff',
+                zIndex: 1,
               }}
             />
           )}
@@ -899,7 +900,7 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
       </ListItemAvatar>
       <ListItemText
         primary={
-          <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+          <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem', color: '#212121' }}>
             {chat.name}
           </Typography>
         }
@@ -908,7 +909,7 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
             variant="caption"
             sx={{
               fontSize: '0.75rem',
-              color: '#757575',
+              color: '#424242',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -918,7 +919,7 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
           </Typography>
         }
       />
-      <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#757575', marginLeft: 1 }}>
+      <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#424242', marginLeft: 1 }}>
         {chat.time}
       </Typography>
     </ListItem>
@@ -926,40 +927,60 @@ const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
 };
 
 const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
+  const isOwn = message.isOwn || false;
+
   return (
-    <Box sx={{ display: 'flex', gap: 1, marginBottom: 2 }}>
-      <Box sx={{ position: 'relative' }}>
-        <Avatar
+    <Box
+      sx={{
+        display: 'flex',
+        gap: 1,
+        marginBottom: 2,
+        flexDirection: isOwn ? 'row-reverse' : 'row',
+        justifyContent: isOwn ? 'flex-start' : 'flex-start',
+      }}
+    >
+      {!isOwn && (
+        <Box sx={{ position: 'relative' }}>
+          <Avatar
+            sx={{
+              width: 36,
+              height: 36,
+              backgroundColor: '#1976d2',
+              fontSize: '0.75rem',
+            }}
+          >
+            {message.avatar}
+          </Avatar>
+          {message.isOnline && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 26,
+                right: -4,
+                width: 14,
+                height: 14,
+                borderRadius: '50%',
+                backgroundColor: '#4caf50',
+                border: '2px solid #ffffff',
+              }}
+            />
+          )}
+        </Box>
+      )}
+      <Box sx={{ flex: 1, maxWidth: '70%', display: 'flex', flexDirection: 'column', alignItems: isOwn ? 'flex-end' : 'flex-start' }}>
+        <Box
           sx={{
-            width: 36,
-            height: 36,
-            backgroundColor: '#1976d2',
-            fontSize: '0.75rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            marginBottom: 0.5,
+            flexDirection: isOwn ? 'row-reverse' : 'row',
           }}
         >
-          {message.avatar}
-        </Avatar>
-        {message.isOnline && (
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              backgroundColor: '#4caf50',
-              border: '2px solid #ffffff',
-            }}
-          />
-        )}
-      </Box>
-      <Box sx={{ flex: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginBottom: 0.5 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: '#212121' }}>
             {message.sender}
           </Typography>
-          <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#757575' }}>
+          <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#424242' }}>
             {message.time}
           </Typography>
         </Box>
@@ -967,15 +988,16 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
           <Paper
             sx={{
               padding: 1.5,
-              backgroundColor: '#f5f5f5',
+              backgroundColor: isOwn ? '#e3f2fd' : '#f5f5f5',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               marginBottom: 1,
+              borderRadius: 2,
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+              <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#212121' }}>
                 {message.message}
               </Typography>
             </Box>
@@ -987,18 +1009,18 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
           <Paper
             sx={{
               padding: 1.5,
-              backgroundColor: '#ffffff',
+              backgroundColor: isOwn ? '#e3f2fd' : '#ffffff',
               borderRadius: 2,
               marginBottom: message.reactions ? 1 : 0,
             }}
           >
-            <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#424242' }}>
+            <Typography variant="body2" sx={{ fontSize: '0.875rem', color: '#212121' }}>
               {message.message}
             </Typography>
           </Paper>
         )}
         {message.reactions && (
-          <Box sx={{ display: 'flex', gap: 1, marginTop: 0.5 }}>
+          <Box sx={{ display: 'flex', gap: 1, marginTop: 0.5, flexDirection: isOwn ? 'row-reverse' : 'row' }}>
             {message.reactions.map((reaction, index) => (
               <Box
                 key={index}
