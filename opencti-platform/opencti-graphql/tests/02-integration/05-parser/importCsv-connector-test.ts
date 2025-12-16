@@ -1,17 +1,17 @@
 /* eslint-disable max-len */
 import { describe, it, expect } from 'vitest';
-import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { processCSVforWorkers } from '../../../../src/connector/importCsv/importCsv-connector';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { processCSVforWorkers } from '../../../src/connector/importCsv/importCsv-connector';
 import { csvMapperMockSimpleCities } from './importCsv-connector/csv-mapper-cities';
-import { createWork, findById as findWorkById } from '../../../../src/domain/work';
-import { IMPORT_CSV_CONNECTOR } from '../../../../src/connector/importCsv/importCsv';
-import type { CsvMapperParsed } from '../../../../src/modules/internal/csvMapper/csvMapper-types';
-import { resolveUserByIdFromCache } from '../../../../src/domain/user';
-import type { AuthUser } from '../../../../src/types/user';
-import conf from '../../../../src/config/conf';
-import { IMPORT_STORAGE_PATH } from '../../../../src/modules/internal/document/document-domain';
-import { fileToReadStream, uploadToStorage } from '../../../../src/database/file-storage';
-import type { CsvBundlerIngestionOpts } from '../../../../src/parser/csv-bundler';
+import { createWork, findById as findWorkById } from '../../../src/domain/work';
+import { IMPORT_CSV_CONNECTOR } from '../../../src/connector/importCsv/importCsv';
+import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
+import { resolveUserByIdFromCache } from '../../../src/domain/user';
+import type { AuthUser } from '../../../src/types/user';
+import conf from '../../../src/config/conf';
+import { IMPORT_STORAGE_PATH } from '../../../src/modules/internal/document/document-domain';
+import { fileToReadStream, uploadToStorage } from '../../../src/database/file-storage';
+import type { CsvBundlerIngestionOpts } from '../../../src/parser/csv-bundler';
 
 describe('Verify internal importCsv connector', () => {
   let work: any;
@@ -22,7 +22,7 @@ describe('Verify internal importCsv connector', () => {
   });
 
   it('should upload csv and create work that is use for this test', async () => {
-    const file = fileToReadStream('./tests/02-integration/07-connector/importCsv-connector', 'csv-file-cities.csv', 'csv-file-cities.csv', 'text/csv');
+    const file = fileToReadStream('./tests/02-integration/05-parser/importCsv-connector', 'csv-file-cities.csv', 'csv-file-cities.csv', 'text/csv');
     const uploadedFile = await uploadToStorage(testContext, ADMIN_USER, `${IMPORT_STORAGE_PATH}/global`, file, {});
     expect(uploadedFile).toBeDefined();
     expect(uploadedFile.upload.id).toBe('import/global/csv-file-cities.csv');
