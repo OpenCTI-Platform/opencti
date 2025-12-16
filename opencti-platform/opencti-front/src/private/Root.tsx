@@ -8,7 +8,7 @@ import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
 import { FilterDefinition, UserContext } from '../utils/hooks/useAuth';
-import platformModuleHelper, { isFeatureEnable } from '../utils/platformModulesHelper';
+import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
 import Index from './Index';
@@ -378,8 +378,6 @@ const rootPrivateQuery = graphql`
 `;
 
 const displayTopBanner = (settings: RootSettings$data) => {
-  const isFreeTrialsEnabled = isFeatureEnable(settings, 'FREE_TRIALS');
-
   const displayTrialBanner = isNotEmptyField(settings?.platform_xtmhub_url) && settings.platform_demo;
 
   const eeSettings = settings?.platform_enterprise_edition;
@@ -388,7 +386,7 @@ const displayTopBanner = (settings: RootSettings$data) => {
   )
   );
 
-  return isFreeTrialsEnabled && (displayTrialBanner || displayLicenseBanner);
+  return (displayTrialBanner || displayLicenseBanner);
 };
 
 const computeBannerSettings = (settings: RootSettings$data) => {

@@ -1,11 +1,10 @@
 import React, { useContext, useState } from 'react';
 import moment from 'moment/moment';
 import { UserContext } from '../../utils/hooks/useAuth';
-import { dateFormat, daysBetweenDates, now } from '../../utils/Time';
+import { daysBetweenDates, now } from '../../utils/Time';
 import TopBanner, { TopBannerColor } from '../../components/TopBanner';
 import { useFormatter } from '../../components/i18n';
 import { RootSettings$data } from '../__generated__/RootSettings.graphql';
-import useHelper from '../../utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import Dialog from '@mui/material/Dialog';
@@ -40,7 +39,6 @@ const getBannerColor = (remainingDays: number) => {
 
 const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_edition'], onButtonClick?: () => void): BannerInfo | undefined => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   if (!eeSettings.license_validated) {
     return {
       message: `The current ${eeSettings.license_type} license has expired, Enterprise Edition is disabled.`,
@@ -54,25 +52,18 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
     };
   }
   if (eeSettings.license_type === LICENSE_OPTION_TRIAL) {
-    const featureFlagFreeTrials = isFeatureEnable('FREE_TRIALS');
-    if (featureFlagFreeTrials) {
-      const remainingDays = daysBetweenDates(now(), moment(eeSettings.license_expiration_date));
-      const bannerColor = getBannerColor(remainingDays);
-      return {
-        buttonText: t_i18n('Contact us'),
-        bannerColor,
-        message: (
-          <>
-            {t_i18n('Your OpenCTI Enterprise Edition free trial is active: ')}
-            <strong> {remainingDays} {remainingDays === 1 ? t_i18n('Day remaining') : t_i18n('Days remaining')}</strong>
-          </>
-        ),
-        onButtonClick,
-      };
-    }
+    const remainingDays = daysBetweenDates(now(), moment(eeSettings.license_expiration_date));
+    const bannerColor = getBannerColor(remainingDays);
     return {
-      message: `This is a trial Enterprise Edition version, valid until ${dateFormat(eeSettings.license_expiration_date)}.`,
-      bannerColor: 'yellow',
+      buttonText: t_i18n('Contact us'),
+      bannerColor,
+      message: (
+        <>
+          {t_i18n('Your OpenCTI Enterprise Edition free trial is active: ')}
+          <strong> {remainingDays} {remainingDays === 1 ? t_i18n('Day remaining') : t_i18n('Days remaining')}</strong>
+        </>
+      ),
+      onButtonClick,
     };
   }
   return undefined;
