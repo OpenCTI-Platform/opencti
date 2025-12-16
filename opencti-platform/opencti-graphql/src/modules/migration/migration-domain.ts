@@ -14,7 +14,7 @@ export const runMigration = async (user: AuthUser, migrationFileName: string) =>
   migrationSet.up((migrationError) => {
     if (migrationError) {
       logApp.error(`[MIGRATION] Migration ${migrationFileName} up error`, { cause: migrationError });
-      return 'Error running migration';
+      return `Error running migration: ${migrationError.message}`;
     }
     logMigration.info(`[MIGRATION] Migration ${migrationFileName} successfully run`);
   });
