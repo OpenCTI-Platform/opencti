@@ -7,7 +7,7 @@ from typing import Any, Dict, Union, Literal
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 
-from pycti import OpenCTIApiClient, OpenCTIStix2Splitter
+from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
 
 
 @dataclass(unsafe_hash=True)
@@ -35,6 +35,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             log_level=self.log_level,
             json_logging=self.json_logging,
             ssl_verify=self.ssl_verify,
+            provider="pushHandler/" + __version__,
         )
 
     def send_bundle_to_specific_queue(
