@@ -9,8 +9,8 @@ describe('historyMessage tests', () => {
       previous: [],
       new: ['description'],
     }];
-    const message = historyMessage('update', changes);
-    expect(message).toEqual('updates description in Description');
+    const message = historyMessage('replace', changes);
+    expect(message).toEqual('replaces `description` in `Description`');
   });
   it('should generate history message for multiple update', () => {
     const changes = [{
@@ -25,8 +25,8 @@ describe('historyMessage tests', () => {
       added: [],
       removed: ['bootkit'],
     }];
-    const message = historyMessage('update', changes);
-    expect(message).toEqual('updates description in Description - backdoor in Malware types');
+    const message = historyMessage('replace', changes);
+    expect(message).toEqual('replaces `description` in `Description` - `backdoor` in `Malware types`');
   });
   it('should generate history message for multiple update', () => {
     const changes = [{
@@ -50,7 +50,7 @@ describe('historyMessage tests', () => {
       field: 'Workflow status',
       previous: ['status1'],
       new: ['status2'] }];
-    const message = historyMessage('update', changes as Change[]);
-    expect(message).toEqual('updates description in Description - backdoor in Malware types - 52 in Confidence - status2 in Workflow status and 1 more operations');
+    const message = historyMessage('replace', changes as Change[]);
+    expect(message).toEqual('replaces `description` in `Description` - `backdoor` in `Malware types` - `52` in `Confidence` - `status2` in `Workflow status` and 1 more operations');
   });
 });

@@ -8,7 +8,7 @@ import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from 
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { Change, SseEvent, StreamDataEvent, StreamDataEventType, UpdateEvent } from '../types/event';
+import type { Change, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { truncate, utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
@@ -137,17 +137,17 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   };
 };
 
-export const historyMessage = (eventType: StreamDataEventType, changes: Change[]): string => {
+export const historyMessage = (operation: 'add' | 'remove' | 'replace' | 'move' | 'copy' | 'test' | '_get', changes: Change[]): string => {
   const messages: string[] = [];
   if (!changes) {
     return '';
   }
   if (changes.length > 0) {
     changes.forEach((change) => {
-      messages.push(`${truncate(change.new, 250)} in ${change.field}`);
+      messages.push(`\`${truncate(change.new, 250)}\` in \`${change.field}\``);
     });
   }
-  return `${eventType}s ${messages.join(' - ')}${messages.length > 3 ? ` and ${messages.length - 3} more operations` : ''}`;
+  return `${operation}s ${messages.join(' - ')}${messages.length > 3 ? ` and ${messages.length - 3} more operations` : ''}`;
 };
 export const buildHistoryElementsFromEvents = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   // load all markings to resolve object_marking_refs
@@ -173,7 +173,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
     const eventType = event.data.type;
     let contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
-      message: historyMessage(eventType, updateEvent.context?.changes),
+      message: historyMessage(updateEvent.context?.patch[0].op, updateEvent.context?.changes),
       entity_type: stix.extensions[STIX_EXT_OCTI].type,
       entity_name: extractStixRepresentative(stix),
       creator_ids: stix.extensions[STIX_EXT_OCTI].creator_ids,
