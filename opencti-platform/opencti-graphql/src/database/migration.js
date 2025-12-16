@@ -98,7 +98,7 @@ const migrationStorage = {
   },
 };
 
-export const applyMigration = (context) => {
+export const applyMigration = async (context) => {
   const set = new MigrationSet(migrationStorage);
   return new Promise((resolve, reject) => {
     migrationStorage.load((err, state) => {
@@ -145,7 +145,7 @@ export const applyMigration = (context) => {
       reject(reason);
     });
   }).then(async (state) => {
-    // After migration, path the current version runtime
+    // After migration, patch the current version runtime
     const statusPatch = { platformVersion: PLATFORM_VERSION };
     await patchAttribute(context, SYSTEM_USER, state.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
     logApp.info(`[MIGRATION] Platform version updated to ${PLATFORM_VERSION}`);
