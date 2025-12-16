@@ -12,6 +12,15 @@
         "cwd": "opencti-worker/src",
         "command": "pip install -r requirements.txt"
       }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "dev" }],
+      "options": {
+        "cwd": "opencti-worker/src",
+        "command": "python worker.py"
+      }
     }
   }
 }

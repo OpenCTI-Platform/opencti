@@ -13,6 +13,7 @@
     },
     "dev": {
       "executor": "nx:run-commands",
+      "continuous": true,
       "options": {
         "cwd": "opencti-platform/opencti-front",
         "command": "yarn dev"
