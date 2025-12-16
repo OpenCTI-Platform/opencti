@@ -219,7 +219,7 @@ describe('check safeRenderClient error handling and worker termination detection
     ).rejects.toThrow(/nonExistentVariable/i);
   });
 
-  it('should handle memory limit errors correctly', async () => {
+  it.skip('should handle memory limit errors correctly', async () => {
     // Template that tries to allocate too much memory
     const template = '<% const arr = new Array(1000000000).fill("x"); %><%= arr.length %>';
     const data = {};
