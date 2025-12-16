@@ -7,5 +7,9 @@
   ],
   "devDependencies": {
     "nx": "22.2.5"
+  },
+  "scripts": {
+    "deps": "nx run-many -t install",
+    "dev": "nx run-many -t dev"
   }
 }
