@@ -9,6 +9,9 @@
       "options": {
         "cwd": "opencti-platform/opencti-front",
         "command": "yarn install"
+      },
+      "metadata": {
+        "description": "Install the OpenCTI front dependencies"
       }
     },
     "dev": {
@@ -17,6 +20,9 @@
       "options": {
         "cwd": "opencti-platform/opencti-front",
         "command": "yarn dev"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI front in development mode"
       }
     }
   }

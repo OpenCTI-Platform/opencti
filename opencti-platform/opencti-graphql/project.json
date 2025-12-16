@@ -10,6 +10,9 @@
       "options": {
         "cwd": "opencti-platform/opencti-graphql",
         "command": "yarn install && yarn install:python"
+      },
+      "metadata": {
+        "description": "Install the OpenCTI GraphQL server dependencies"
       }
     },
     "dev": {
@@ -18,6 +21,9 @@
       "options": {
         "cwd": "opencti-platform/opencti-graphql",
         "command": "yarn start"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI GraphQL server in development mode"
       }
     }
   }

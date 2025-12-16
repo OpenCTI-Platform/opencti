@@ -10,6 +10,9 @@
       "options": {
         "cwd": "client-python",
         "command": "pip install -r requirements.txt && pip install -e ."
+      },
+      "metadata": {
+        "description": "Install the OpenCTI Python client dependencies"
       }
     }
   }

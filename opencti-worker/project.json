@@ -11,6 +11,9 @@
       "options": {
         "cwd": "opencti-worker/src",
         "command": "pip install -r requirements.txt"
+      },
+      "metadata": {
+        "description": "Install the OpenCTI worker dependencies"
       }
     },
     "dev": {
@@ -20,6 +23,9 @@
       "options": {
         "cwd": "opencti-worker/src",
         "command": "python worker.py"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI worker in development mode"
       }
     }
   }
