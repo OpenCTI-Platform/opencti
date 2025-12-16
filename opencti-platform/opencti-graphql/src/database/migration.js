@@ -7,9 +7,11 @@ import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
 import { createEntity, createRelation, loadEntity, patchAttribute } from './middleware';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import migrations, { filenames as migrationsFilenames } from '../migrations/*.js';
 import { fullEntitiesThroughRelationsToList } from './middleware-loader';
+import fs from 'fs/promises';
+import path from 'path';
+
+const MIGRATION_DIRECTORY_PATH = path.join(__dirname, '../src/migrations');
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
@@ -18,7 +20,13 @@ const normalizeMigrationName = (rawName) => {
   return rawName;
 };
 
-const retrieveMigrations = () => {
+const retrieveMigrations = async () => {
+  const migrationsFilenames = (await fs.readdir(MIGRATION_DIRECTORY_PATH))
+    .filter((f) => f.endsWith('.js'));
+
+  const migrations = await Promise.all(
+    migrationsFilenames.map((file) => import(`../migrations/${file}`)));
+
   const knexMigrations = migrations.map((migration, i) => ({
     name: migrationsFilenames[i].substring('../migrations/'.length),
     migration,
@@ -31,8 +39,8 @@ const retrieveMigrations = () => {
   });
 };
 
-export const lastAvailableMigrationTime = () => {
-  const allMigrations = retrieveMigrations();
+export const lastAvailableMigrationTime = async () => {
+  const allMigrations = await retrieveMigrations();
   const lastMigration = R.last(allMigrations);
   return lastMigration && lastMigration.timestamp;
 };
@@ -89,17 +97,17 @@ const migrationStorage = {
   },
 };
 
-export const applyMigration = (context) => {
+export const applyMigration = async (context) => {
   const set = new MigrationSet(migrationStorage);
   return new Promise((resolve, reject) => {
-    migrationStorage.load((err, state) => {
+    migrationStorage.load(async (err, state) => {
       if (err) {
         throw DatabaseError('[MIGRATION] Error applying migration', { cause: err });
       }
       // Set last run date on the set
       set.lastRun = state.lastRun;
       // Read migrations from webpack
-      const filesMigrationSet = retrieveMigrations();
+      const filesMigrationSet = await retrieveMigrations();
       // Filter migration to apply. Should be > lastRun
       const [lastMigrationTime] = state.lastRun.split('-');
       const lastMigrationDate = new Date(parseInt(lastMigrationTime, 10));
