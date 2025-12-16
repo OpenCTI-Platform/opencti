@@ -20,10 +20,17 @@ const normalizeMigrationName = (rawName) => {
   return rawName;
 };
 
+const buildMigrationObject = (migration, name) => {
+  const title = normalizeMigrationName(name);
+  const [time] = title.split('-');
+  const timestamp = parseInt(time, 10);
+  return { title, timestamp, up: migration.up, down: migration.down };
+};
+
 export const retrieveMigration = async (migrationFileName) => {
   try {
     const migration = await import(`../migrations/${migrationFileName}.js`);
-    return migration;
+    return buildMigrationObject(migration, `${migrationFileName}.js`);
   } catch (e) {
     throw FunctionalError('No migration found with this name', { cause: e, migrationFileName });
   }
@@ -36,15 +43,9 @@ const retrieveMigrations = async () => {
   const migrations = await Promise.all(
     migrationsFilenames.map((file) => import(`../migrations/${file}`)));
 
-  const knexMigrations = migrations.map((migration, i) => ({
-    name: migrationsFilenames[i].substring('../migrations/'.length),
-    migration,
-  }));
-  return knexMigrations.map(({ name, migration }) => {
-    const title = normalizeMigrationName(name);
-    const [time] = title.split('-');
-    const timestamp = parseInt(time, 10);
-    return { title, up: migration.up, down: migration.down, timestamp };
+  return migrations.map((migration, i) => {
+    const name = migrationsFilenames[i].substring('../migrations/'.length);
+    return buildMigrationObject(migration, name);
   });
 };
 

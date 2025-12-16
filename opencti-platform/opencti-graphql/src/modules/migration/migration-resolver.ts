@@ -3,7 +3,7 @@ import { runMigration } from './migration-domain';
 
 const migrationResolvers: Resolvers = {
   Mutation: {
-    runMigration: (_, { migrationName }, context) => runMigration(context.user, migrationName),
+    runMigration: (_, { migrationName }, context) => runMigration(context, context.user, migrationName),
   },
 };
 
