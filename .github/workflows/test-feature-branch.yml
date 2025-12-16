@@ -44,7 +44,7 @@ jobs:
             job_templates launch 'Deploy OpenCTI feature branch for testing' \
             --wait \
             --inventory eu-west-staging \
-            --extra_vars '{"octi_version":"${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}","octi_config": ${{ inputs.octi_config }},"redis_cluster":"${{ inputs.redis_cluster }}"}' \
+            --extra_vars '{"octi_version":"${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}","octi_config": ${{ inputs.octi_config }},"redis_cluster": ${{ inputs.redis_cluster }} }' \
             -f human
       - name: Forge URL to match playbook limitations
         id: urlforge
