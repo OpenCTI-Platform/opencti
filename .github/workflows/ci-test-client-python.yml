@@ -47,8 +47,7 @@ jobs:
     - name: Load image
       run: |
           set -eux
-          docker load --input /tmp/opencti-platform.tar   
-          docker load --input /tmp/opencti-worker.tar   
+          docker load --input /tmp/opencti-platform.tar
           docker images
 
     - name: Set up Docker Compose for backends
