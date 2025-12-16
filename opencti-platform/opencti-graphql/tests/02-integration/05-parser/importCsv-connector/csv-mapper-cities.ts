@@ -38,17 +38,17 @@ export const csvMapperMockSimpleCities: Partial<CsvMapperParsed> = {
         { key: 'objectLabel',
           based_on: {
             representations: [
-              'labelRepresentation'
-            ]
-          }
+              'labelRepresentation',
+            ],
+          },
         },
-      ]
+      ],
     },
     {
       id: 'labelRepresentation',
       type: CsvMapperRepresentationType.Entity,
       target:
-        { entity_type: ENTITY_TYPE_LABEL
+        { entity_type: ENTITY_TYPE_LABEL,
         },
       attributes: [
         { key: 'color',
@@ -60,8 +60,8 @@ export const csvMapperMockSimpleCities: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'K',
           },
-        }
-      ]
-    }
-  ]
+        },
+      ],
+    },
+  ],
 };

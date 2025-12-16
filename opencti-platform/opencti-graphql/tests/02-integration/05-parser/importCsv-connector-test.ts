@@ -22,7 +22,7 @@ describe('Verify internal importCsv connector', () => {
   });
 
   it('should upload csv and create work that is use for this test', async () => {
-    const file = fileToReadStream('./tests/02-integration/07-connector/importCsv-connector', 'csv-file-cities.csv', 'csv-file-cities.csv', 'text/csv');
+    const file = fileToReadStream('./tests/02-integration/05-parser/importCsv-connector', 'csv-file-cities.csv', 'csv-file-cities.csv', 'text/csv');
     const uploadedFile = await uploadToStorage(testContext, ADMIN_USER, `${IMPORT_STORAGE_PATH}/global`, file, {});
     expect(uploadedFile).toBeDefined();
     expect(uploadedFile.upload.id).toBe('import/global/csv-file-cities.csv');
@@ -38,7 +38,7 @@ describe('Verify internal importCsv connector', () => {
       applicantUser: user,
       csvMapper: csvMapperMockSimpleCities as CsvMapperParsed,
       entity: undefined,
-      workId: work.id
+      workId: work.id,
     };
     const { totalObjectsCount, totalBundlesCount } = await processCSVforWorkers(testContext, 'import/global/csv-file-cities.csv', mapperOpts);
 
