@@ -6,9 +6,10 @@
   "targets": {
     "install": {
       "executor": "nx:run-commands",
+      "dependsOn": [{ "projects": ["client-python"], "target": "install" }],
       "options": {
         "cwd": "opencti-platform/opencti-graphql",
-        "command": "yarn install"
+        "command": "yarn install && yarn install:python"
       }
     },
     "dev": {
