@@ -1,0 +1,22 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "opencti-platform/opencti-front",
+  "projectType": "application",
+  "types": ["yarn"],
+  "targets": {
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn install"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn dev"
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "opencti-platform/opencti-graphql",
+  "projectType": "application",
+  "types": ["yarn"],
+  "targets": {
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn install"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn start"
+      }
+    }
+  }
+}
