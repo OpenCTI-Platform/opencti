@@ -539,7 +539,7 @@ const RessaDWM = () => {
         </Grid>
 
         {/* Chat Section */}
-        <Box sx={{ marginTop: 3 }}>
+        <Box sx={{ marginTop: 3, marginBottom: 28 }}>
           <ChatInterface />
         </Box>
       </Box>
@@ -664,7 +664,7 @@ const ChatInterface: React.FC = () => {
     },
     {
       id: '2',
-      sender: 'You',
+      sender: 'Me',
       avatar: 'ME',
       message: 'W July_Promotion',
       time: '2:25 PM',
@@ -687,7 +687,7 @@ const ChatInterface: React.FC = () => {
     },
     {
       id: '4',
-      sender: 'You',
+      sender: 'Me',
       avatar: 'ME',
       message: 'Great work on the project!',
       time: '2:15 PM',
@@ -799,7 +799,18 @@ const ChatInterface: React.FC = () => {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <GridView sx={{ fontSize: '1.25rem', color: '#9c27b0' }} />
+              <Box
+                sx={{
+                  backgroundColor: '#9c27b0',
+                  borderRadius: 1,
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <GridView sx={{ fontSize: '1.25rem', color: '#ffffff' }} />
+              </Box>
               <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: '#212121' }}>
                 Channel Name
               </Typography>
@@ -935,8 +946,8 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
         display: 'flex',
         gap: 1,
         marginBottom: 2,
-        flexDirection: isOwn ? 'row-reverse' : 'row',
-        justifyContent: isOwn ? 'flex-start' : 'flex-start',
+        flexDirection: 'row',
+        justifyContent: isOwn ? 'flex-end' : 'flex-start',
       }}
     >
       {!isOwn && (
@@ -974,7 +985,8 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
             alignItems: 'center',
             gap: 1,
             marginBottom: 0.5,
-            flexDirection: isOwn ? 'row-reverse' : 'row',
+            flexDirection: 'row',
+            justifyContent: isOwn ? 'flex-end' : 'flex-start',
           }}
         >
           <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: '#212121' }}>
@@ -1020,7 +1032,15 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
           </Paper>
         )}
         {message.reactions && (
-          <Box sx={{ display: 'flex', gap: 1, marginTop: 0.5, flexDirection: isOwn ? 'row-reverse' : 'row' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              marginTop: 0.5,
+              flexDirection: 'row',
+              justifyContent: isOwn ? 'flex-end' : 'flex-start',
+            }}
+          >
             {message.reactions.map((reaction, index) => (
               <Box
                 key={index}
@@ -1034,10 +1054,10 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
                   fontSize: '0.75rem',
                 }}
               >
-                {reaction.type === 'thumb' && <ThumbUp sx={{ fontSize: '0.875rem' }} />}
+                {reaction.type === 'thumb' && <ThumbUp sx={{ fontSize: '0.875rem', color: '#212121' }} />}
                 {reaction.type === 'heart' && <Favorite sx={{ fontSize: '0.875rem', color: '#f44336' }} />}
-                {reaction.type === 'smile' && <SentimentSatisfied sx={{ fontSize: '0.875rem' }} />}
-                <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
+                {reaction.type === 'smile' && <SentimentSatisfied sx={{ fontSize: '0.875rem', color: '#212121' }} />}
+                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#212121' }}>
                   {reaction.count}
                 </Typography>
               </Box>
@@ -1045,6 +1065,21 @@ const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
           </Box>
         )}
       </Box>
+      {isOwn && (
+        <Box sx={{ position: 'relative' }}>
+          <Avatar
+            sx={{
+              width: 36,
+              height: 36,
+              backgroundColor: '#9c27b0',
+              fontSize: '0.75rem',
+              color: '#ffffff',
+            }}
+          >
+            {message.avatar}
+          </Avatar>
+        </Box>
+      )}
     </Box>
   );
 };
