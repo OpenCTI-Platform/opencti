@@ -44,7 +44,7 @@ const retrieveMigrations = async () => {
     migrationsFilenames.map((file) => import(`../migrations/${file}`)));
 
   return migrations.map((migration, i) => {
-    const name = migrationsFilenames[i].substring('../migrations/'.length);
+    const name = migrationsFilenames[i];
     return buildMigrationObject(migration, name);
   });
 };
