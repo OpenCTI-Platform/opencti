@@ -1,7 +1,6 @@
 import { ReactNode, useCallback } from 'react';
 import { Add } from '@mui/icons-material';
 import { TextField, IconButton, Autocomplete, AutocompleteProps, TextFieldProps, AutocompleteValue } from '@mui/material';
-import { fieldToAutocomplete } from 'formik-mui';
 import { FieldProps, useField } from 'formik';
 import { truncate } from '../utils/String';
 import { useFormatter } from './i18n';
@@ -17,6 +16,7 @@ export type AutocompleteFieldProps<
   DC extends Bool = false,
   FSolo extends Bool = false,
 > = Omit<AutocompleteProps<Value, M, DC, FSolo>, 'onChange' | 'onBlur' | 'onFocus' | 'renderInput'>
+  & FieldProps<Value>
   & {
     optionLength?: number;
     required?: boolean;
@@ -41,7 +41,7 @@ const AutocompleteField = <
   onInternalChange,
   openCreate,
   ...muiProps
-}: AutocompleteFieldProps<M, Value, DC, FSolo> & FieldProps<Value>) => {
+}: AutocompleteFieldProps<M, Value, DC, FSolo>) => {
   type MuiProps = AutocompleteProps<Value, M, DC, FSolo>;
 
   const {
@@ -53,6 +53,7 @@ const AutocompleteField = <
     textfieldprops,
     getOptionLabel,
     endAdornment,
+    disabled,
   } = muiProps;
 
   const [, meta] = useField(name);
@@ -74,8 +75,6 @@ const AutocompleteField = <
   const internalOnBlur = useCallback<NonNullable<MuiProps['onBlur']>>(() => {
     setFieldTouched(name, true);
   }, [setFieldTouched]);
-
-  const fieldProps = fieldToAutocomplete(muiProps); // TODO needed?
 
   const defaultOptionToValue = (option: Value, value: Value) => {
     const optionVal = typeof option === 'object' ? option.value : option;
@@ -101,7 +100,7 @@ const AutocompleteField = <
         handleHomeEndKeys={true}
         getOptionLabel={getOptionLabel || defaultGetOptionLabel}
         noOptionsText={noOptionsText}
-        {...fieldProps}
+        {...muiProps}
         renderOption={renderOption}
         renderInput={({ inputProps: { value, ...inputProps }, InputProps, ...params }) => (
           <TextField
@@ -134,7 +133,7 @@ const AutocompleteField = <
 
       {openCreate && (
         <IconButton
-          disabled={fieldProps.disabled}
+          disabled={disabled}
           onClick={() => openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}

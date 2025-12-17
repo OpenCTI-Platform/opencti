@@ -20,7 +20,8 @@ export interface KillChainPhaseFieldOption extends FieldOption {
 }
 
 type FormikFieldConfig<P> = Omit<FieldConfig<P>, 'component' | 'as' | 'render' | 'children'>;
-type FieldProps<ComponentProps> = FormikFieldConfig<ComponentProps> & ComponentProps & {
+type NoMetaProps<P> = Omit<P, 'field' | 'form' | 'meta'>;
+type FieldProps<ComponentProps> = FormikFieldConfig<ComponentProps> & NoMetaProps<ComponentProps> & {
   component: ComponentType<ComponentProps>;
 };
 
