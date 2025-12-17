@@ -114,10 +114,8 @@ describe('File resolver standard behavior', () => {
       const stixDomainObjectInternalId = stixDomainObject?.data?.stixDomainObjectAdd.id;
       const importPushQueryResult = await queryAsAdminWithSuccess({
         query: IMPORT_FILE_QUERY,
-        variables: { id: stixDomainObjectInternalId, file: upload, fileMarkings: [MARKING_DEFINITION_TO_CREATE] },
+        variables: { id: stixDomainObjectInternalId, file: upload, fileMarkings: [customMarkingId] },
       });
-
-      console.log('---------------stixDomainObject', JSON.stringify(stixDomainObject), '---------------importPushQueryResult', JSON.stringify(importPushQueryResult));
       expect(importPushQueryResult?.data?.stixDomainObjectEdit.importPush.id).toBeDefined();
 
       // Forth step : verify the marking is on the file
@@ -132,6 +130,8 @@ describe('File resolver standard behavior', () => {
                   objectMarking {
                     id
                     standard_id
+                    definition
+                    definition_type
                   }
                 }
               }
@@ -144,9 +144,11 @@ describe('File resolver standard behavior', () => {
         query: READ_QUERY,
         variables: { id: stixDomainObjectInternalId },
       });
+
       const file = queryResult?.data?.stixDomainObject.importFiles.edges[0].node;
+
       expect(file.objectMarking.length).toBe(1);
-      expect(file.objectMarking[0].standard_id).toBe(customMarkingId);
+      expect(file.objectMarking[0].definition).toBe('TLP:TEST_DELETE');
 
       // Third step : Delete the marking
       const DELETE_MARKING_QUERY = gql`
@@ -162,7 +164,7 @@ describe('File resolver standard behavior', () => {
         variables: { id: markingDefinitionInternalId },
       });
 
-      // Forth step : call batchFileMarkingDefinitions to see if the result doesn't have the id of the deleted marking
+      // Forth step : After deletion of the marking, the file should not have the id of the deleted marking anymore
       const finalQueryResult = await queryAsAdminWithSuccess({
         query: READ_QUERY,
         variables: { id: stixDomainObjectInternalId },

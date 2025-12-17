@@ -325,8 +325,8 @@ describe('Workspace resolver standard behavior', () => {
           file: upload,
           dashboardManifest: emptyDashboardManifest,
           importType: 'widget',
-        }
-      }
+        },
+      },
     });
     expect(queryResult.data.workspaceWidgetConfigurationImport).not.toBeUndefined();
     expect(queryResult.data.workspaceWidgetConfigurationImport).not.toBeNull();
@@ -356,12 +356,12 @@ describe('Workspace resolver standard behavior', () => {
           file: upload,
           dashboardManifest: emptyDashboardManifest,
           importType: 'widget',
-        }
-      }
+        },
+      },
     });
 
     expect(queryResult.errors[0].message).toEqual(
-      'Invalid type. Please import OpenCTI widget-type only'
+      'Invalid type. Please import OpenCTI widget-type only',
     );
   });
 
@@ -383,12 +383,12 @@ describe('Workspace resolver standard behavior', () => {
           file: upload,
           dashboardManifest: emptyDashboardManifest,
           importType: 'widget',
-        }
-      }
+        },
+      },
     });
 
     expect(queryResult.errors[0].message).toEqual(
-      'Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.16'
+      'Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: 5.12.16',
     );
   });
 
