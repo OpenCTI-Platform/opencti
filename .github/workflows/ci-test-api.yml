@@ -19,6 +19,15 @@ jobs:
       with:
         ref: ${{ inputs.checkout_ref }}
 
+    - name: Check trigger type
+      run: |
+        echo "Event name: ${{ github.event_name }}"        
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          echo "Triggered by pull_request"
+        elif [ "${{ github.event_name }}" == "pull_request_target" ]; then
+          echo "Triggered by pull_request_target"
+        fi
+        
     - name: Runner information
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
