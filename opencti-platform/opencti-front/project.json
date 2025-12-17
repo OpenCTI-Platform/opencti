@@ -25,6 +25,16 @@
         "description": "Build the OpenCTI front"
       }
     },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn check-ts && yarn lint && yarn verify-translation"
+      },
+      "metadata": {
+        "description": "Check TS, lint and verify translations in the OpenCTI front"
+      }
+    },
     "dev": {
       "executor": "nx:run-commands",
       "continuous": true,

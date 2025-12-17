@@ -25,6 +25,16 @@
         "description": "Build the OpenCTI GraphQL server"
       }
     },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn lint"
+      },
+      "metadata": {
+        "description": "Lint the OpenCTI GraphQL server"
+      }
+    },
     "dev": {
       "executor": "nx:run-commands",
       "continuous": true,
