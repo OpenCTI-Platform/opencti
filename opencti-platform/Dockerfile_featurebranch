@@ -1,6 +1,5 @@
 FROM node:22-alpine AS base
 
-
 ##############################
 ### Build builder
 ##############################
@@ -14,7 +13,6 @@ RUN set -eux; \
     npm install -g corepack
 
 COPY .yarnrc.yml /opt/opencti/
-
 
 ##############################
 ### Build back
@@ -93,7 +91,6 @@ VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "build/back.js"]
-
 
 ##############################
 ### Build production image
