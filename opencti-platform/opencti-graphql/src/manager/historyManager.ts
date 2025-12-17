@@ -9,7 +9,7 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { Change, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
-import { utcDate } from '../utils/format';
+import { truncate, utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { internalFindByIds, topEntitiesList } from '../database/middleware-loader';
@@ -137,6 +137,43 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   };
 };
 
+const messageForOperation = (messages: string[], operation: 'adds' | 'removes' | 'replaces') => {
+  return `${operation} ${messages.join(' - ')}${messages.length > 3 ? ` and ${messages.length - 3} more operations` : ''}`;
+};
+export const historyMessage = (changes: Change[]): string => {
+  const messages: string[] = [];
+  const addMessages: string[] = [];
+  const removeMessages: string[] = [];
+  const replaceMessages: string[] = [];
+
+  if (!changes) {
+    return '';
+  }
+  if (changes.length > 0) {
+    changes.forEach((change) => {
+      if (change.added && change.added.length > 0) {
+        addMessages.push(`\`${truncate(change.added.join(', '), 250)}\` in \`${change.field}\``);
+      } else if (change.removed && change.removed.length > 0) {
+        removeMessages.push(`\`${truncate(change.removed.join(', '), 250)}\` in \`${change.field}\``);
+      } else {
+        replaceMessages.push(`\`${truncate(change.new, 250)}\` in \`${change.field}\``);
+      }
+    });
+  }
+  if (addMessages.length > 0) {
+    const addMessage = messageForOperation(addMessages, 'adds');
+    messages.push(addMessage);
+  }
+  if (removeMessages.length > 0) {
+    const removeMessage = messageForOperation(removeMessages, 'removes');
+    messages.push(removeMessage);
+  }
+  if (replaceMessages.length > 0) {
+    const replaceMessage = messageForOperation(replaceMessages, 'replaces');
+    messages.push(replaceMessage);
+  }
+  return `${messages.join(' | ')}`;
+};
 export const buildHistoryElementsFromEvents = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   // load all markings to resolve object_marking_refs
   const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
@@ -157,6 +194,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
         .map((stixId) => grantedRefsResolved.get(stixId))
         .filter((o) => isNotEmptyField(o)) as string[];
     }
+    const eventType = event.data.type;
     let contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
       message: event.data.message,
@@ -166,7 +204,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
       labels_ids: stix.extensions[STIX_EXT_OCTI].labels_ids,
       created_by_ref_id: stix.extensions[STIX_EXT_OCTI].created_by_ref_id,
     };
-    if (event.data.type === EVENT_TYPE_UPDATE) {
+    if (eventType === EVENT_TYPE_UPDATE) {
       const updateEvent: UpdateEvent = event.data as UpdateEvent;
       contextData.commit = updateEvent.commit?.message;
       contextData.external_references = updateEvent.commit?.external_references ?? [];
@@ -183,6 +221,7 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
       }
       // add changes
       contextData.changes = updateEvent.context.changes;
+      contextData.message = historyMessage(updateEvent.context.changes);
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;
