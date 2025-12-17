@@ -26,6 +26,11 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
+    - name: Collect Workflow Telemetry
+      uses: catchpoint/workflow-telemetry-action@v2
+      with:
+        comment_on_pr: false
+
     - name: Download image platform
       continue-on-error: true
       uses: actions/download-artifact@v4
@@ -42,8 +47,6 @@ jobs:
     - name: Load image
       run: |
           set -eux
-          ls -larth /tmp
-          ls -larth /tmp/opencti-platform.tar   
           docker load --input /tmp/opencti-platform.tar   
           docker load --input /tmp/opencti-worker.tar   
           docker images
@@ -150,6 +153,11 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
+    - name: Collect Workflow Telemetry
+      uses: catchpoint/workflow-telemetry-action@v2
+      with:
+        comment_on_pr: false
+
     - name: Download image platform
       continue-on-error: true
       uses: actions/download-artifact@v4
@@ -169,8 +177,6 @@ jobs:
           docker load --input /tmp/opencti-platform.tar   
           docker load --input /tmp/opencti-worker.tar   
           docker images
-    - name: Collect Workflow Telemetry
-      uses: catchpoint/workflow-telemetry-action@v2
 
     - name: Set up Docker Compose for backends and sync instances
       run: |
