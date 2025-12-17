@@ -60,8 +60,8 @@ plugins:
       canonical_version: latest
   - search
   - git-committers:
-      repository: OpenCTI-Platform/docs
-      branch: main
+      repository: OpenCTI-Platform/opencti
+      branch: master
   - git-revision-date-localized:
       enable_creation_date: true
       type: timeago
