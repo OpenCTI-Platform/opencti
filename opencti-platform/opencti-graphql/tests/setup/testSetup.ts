@@ -1,4 +1,4 @@
-import '../../src/modules';
+import '../../src/modules/index';
 import cacheManager from '../../src/manager/cacheManager';
 import { initializeRedisClients } from '../../src/database/redis';
 import { searchEngineInit } from '../../src/database/engine';
@@ -23,4 +23,3 @@ beforeAll(async () => {
   initLockFork();
   logApp.info(`[vitest-test-setup][time] initLockFork in ${new Date().getTime() - startTime}`);
 });
-
