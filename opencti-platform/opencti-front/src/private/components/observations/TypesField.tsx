@@ -11,35 +11,17 @@ import { StixCyberObservablesLinesSubTypesQuery } from '@components/observations
 
 interface TypesFieldComponentProps {
   queryRef: PreloadedQuery<StixCyberObservablesLinesSubTypesQuery>;
-  // type: string | string [];
   name: string;
   label?: string;
   required?: boolean;
-  // variant?: string;
-  containerStyle?: Record<string, string | number>;
-  editContext?: unknown;
-  // disabled?: boolean;
-  // multiple?: boolean;
-  // disabledOptions?: string[];
-  // // onFocus?: (name: string, value: TypesFieldOption) => void;
-  // onChange?: (name: string, value: string | string[]) => void;
-  // onSubmit?: (name: string, value: string | string[]) => void;
+  containerstyle?: Record<string, string | number>;
 }
 const TypesFieldComponent = ({
   name,
   label,
-  // type,
   required = false,
-  // variant,
-  // onChange,
-  // onSubmit,
-  // onFocus,
-  // multiple,
-  containerStyle,
-  // editContext,
+  containerstyle,
   queryRef,
-  // disabled = false,
-  // disabledOptions = [],
 }: TypesFieldComponentProps) => {
   const { t_i18n } = useFormatter();
   const { subTypes } = usePreloadedQuery(stixCyberObservablesLinesSubTypesQuery, queryRef);
@@ -60,7 +42,7 @@ const TypesFieldComponent = ({
         label={label}
         fullWidth={true}
         required={required}
-        style={containerStyle}
+        containerstyle={containerstyle}
       >
         {translatedOrderedList.map((subType) => (
           <MenuItem key={subType.id} value={subType.label}>
@@ -75,21 +57,21 @@ const TypesFieldComponent = ({
 type TypesFieldProps = Omit<TypesFieldComponentProps, 'queryRef'>;
 
 const TypesField = (props: TypesFieldProps) => {
-  const { name, label, containerStyle, required } = props;
+  const { name, label, containerstyle, required } = props;
 
-  const queryRef = useQueryLoading(
+  const queryRef = useQueryLoading<StixCyberObservablesLinesSubTypesQuery>(
     stixCyberObservablesLinesSubTypesQuery,
-    { count: 25 },
+    { type: 'Stix-Cyber-Observable' },
   );
   const FallbackSelect = (
     <Field
       component={SelectField}
       variant="standard"
+      fullWidth
       name={name}
       label={label}
-      fullWidth={true}
       required={required}
-      style={containerStyle}
+      containerstyle={containerstyle}
     />
   );
 

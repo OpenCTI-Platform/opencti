@@ -286,7 +286,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             name="x_opencti_main_observable_type"
             label={t_i18n('Main observable type')}
             required={(mandatoryAttributes.includes('x_opencti_main_observable_type'))}
-            containerStyle={fieldSpacingContainerStyle}
+            containerstyle={fieldSpacingContainerStyle}
           />
           <Field
             component={DateTimePickerField}
