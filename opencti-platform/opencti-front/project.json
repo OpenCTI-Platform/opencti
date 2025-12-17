@@ -69,6 +69,17 @@
       "metadata": {
         "description": "Run the OpenCTI front in development mode"
       }
+    },
+    "graphql": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn relay"
+      },
+      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "graphql" }],
+      "metadata": {
+        "description": "Generate the relay schema based on the backend GraphQL schema"
+      }
     }
   }
 }

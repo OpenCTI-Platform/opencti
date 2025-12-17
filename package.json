@@ -16,6 +16,7 @@
     "build": "nx run-many --tuiAutoExit --target build",
     "test": "nx run-many --tuiAutoExit --target test,e2e",
     "lint": "nx run-many --tuiAutoExit --target lint",
+    "graphql": "nx run-many --tuiAutoExit --target graphql",
     "with-python-venv": "node scripts/with_python_virtual_env.mjs",
     "deps:venv": "yarn with-python-venv yarn deps",
     "build:venv": "yarn with-python-venv yarn build",

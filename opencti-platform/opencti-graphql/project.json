@@ -65,6 +65,16 @@
       "metadata": {
         "description": "Run the OpenCTI GraphQL server in development mode"
       }
+    },
+    "graphql": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn build:schema"
+      },
+      "metadata": {
+        "description": "Build the GraphQL schema"
+      }
     }
   }
 }
