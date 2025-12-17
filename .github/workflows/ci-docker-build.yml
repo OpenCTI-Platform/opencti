@@ -47,7 +47,7 @@ jobs:
       with:
         ref: ${{ inputs.checkout_ref }}
 
-    - name: Use client-python from same branch
+    - name: Use client-python in OpenCTI from same branch
       if: ${{ inputs.client_python_local == true }}
       run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-platform/opencti-graphql/src/python/requirements.txt
 
@@ -81,7 +81,7 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
-    - name: Upload artifact
+    - name: Upload opencti docker image artifact
       if: ${{ inputs.publish_to_registry == 'false' }}
       uses: actions/upload-artifact@v4
       with:
@@ -101,7 +101,7 @@ jobs:
       with:
         ref: ${{ inputs.checkout_ref }}
 
-    - name: Use client-python from same branch
+    - name: Use client-python in worker from same branch
       if: ${{ inputs.client_python_local == true }}
       run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-worker/src/requirements.txt
 
