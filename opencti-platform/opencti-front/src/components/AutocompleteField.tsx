@@ -6,6 +6,7 @@ import { truncate } from '../utils/String';
 import { useFormatter } from './i18n';
 import { isNilField } from '../utils/utils';
 import { FieldOption } from '../utils/field';
+import { fieldToAutocomplete } from 'formik-mui';
 
 type Bool = boolean | undefined;
 type PossibleValue = FieldOption | string;
@@ -13,7 +14,7 @@ type PossibleValue = FieldOption | string;
 export type AutocompleteFieldProps<
   M extends Bool = true,
   Value extends PossibleValue = FieldOption,
-  DC extends Bool = false,
+  DC extends Bool = boolean,
   FSolo extends Bool = false,
 > = Omit<AutocompleteProps<Value, M, DC, FSolo>, 'onChange' | 'onBlur' | 'onFocus' | 'renderInput'>
   & FieldProps<Value>
@@ -31,7 +32,7 @@ export type AutocompleteFieldProps<
 const AutocompleteField = <
   M extends Bool = true,
   Value extends PossibleValue = FieldOption,
-  DC extends Bool = false,
+  DC extends Bool = boolean,
   FSolo extends Bool = false,
 >({
   optionLength = 40,
@@ -90,36 +91,39 @@ const AutocompleteField = <
 
   const helperText = textfieldprops?.helperText;
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
+  const fieldProps = fieldToAutocomplete({
+    ...muiProps,
+    renderInput: ({ inputProps: { value, ...inputProps }, InputProps, ...params }) => (
+      <TextField
+        {...{ ...params, inputProps }}
+        {...textfieldprops}
+        slotProps={{
+          input: {
+            ...InputProps,
+            endAdornment: endAdornment ?? InputProps.endAdornment,
+          },
+        }}
+        value={value}
+        name={name}
+        required={required}
+        fullWidth
+        error={showError}
+        helperText={showError ? meta.error : helperText}
+      />
+    ),
+  });
 
   return (
     <div style={{ position: 'relative' }}>
       <Autocomplete
         size="small"
-        selectOnFocus={true}
-        autoHighlight={true}
-        handleHomeEndKeys={true}
+        selectOnFocus
+        autoHighlight
+        handleHomeEndKeys
         getOptionLabel={getOptionLabel || defaultGetOptionLabel}
         noOptionsText={noOptionsText}
-        {...muiProps}
+        {...fieldProps}
         renderOption={renderOption}
-        renderInput={({ inputProps: { value, ...inputProps }, InputProps, ...params }) => (
-          <TextField
-            {...{ ...params, inputProps }}
-            {...textfieldprops}
-            slotProps={{
-              input: {
-                ...InputProps,
-                endAdornment: endAdornment ?? InputProps.endAdornment,
-              },
-            }}
-            value={value}
-            name={name}
-            required={required}
-            fullWidth={true}
-            error={showError}
-            helperText={showError ? meta.error : helperText}
-          />
-        )}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}
