@@ -1,0 +1,276 @@
+site_name: OpenCTI Documentation
+site_description: Documentation about OpenCTI, the next-generation Cyber Threat Intelligence platform.
+site_author: Filigran
+site_url: https://docs.opencti.io
+copyright: © 2025 Filigran. All rights reserved
+repo_name: GitHub
+repo_url: https://github.com/OpenCTI-Platform/opencti
+edit_uri: https://github.com/OpenCTI-Platform/docs/blob/main/docs/
+
+# Theming
+theme:
+  name: material
+  custom_dir: overrides
+  logo: assets/logo.png
+  features:
+    - navigation.tabs
+    - navigation.path
+    - navigation.footer
+    - navigation.expand
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - search.highlight
+  palette:
+    scheme: filigran
+  font:
+    text: IBM Plex Sans
+    code: Roboto Mono
+# CSS
+extra_css:
+  - assets/css/custom.css
+
+# Extra
+extra:
+  version:
+    provider: mike
+  analytics:
+    provider: google
+    property: G-DB4K9LZPDZ
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/OpenCTI-Platform
+    - icon: fontawesome/solid/book
+      link: https://blog.filigran.io
+    - icon: fontawesome/brands/slack
+      link: https://community.filigran.io
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/company/filigran
+    - icon: fontawesome/brands/x-twitter
+      link: https://twitter.com/FiligranHQ
+    - icon: fontawesome/brands/facebook
+      link: https://facebook.com/FiligranHQ
+
+# Plugins
+plugins:
+  - mike:
+      alias_type: symlink
+      canonical_version: latest
+  - search
+  - git-committers:
+      repository: OpenCTI-Platform/docs
+      branch: main
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+  - glightbox
+
+# Extensions
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - tables
+  - admonition
+  - def_list
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.smartsymbols
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.betterem
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      use_pygments: true
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: false
+      auto_title: false
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.snippets:
+      url_download: true
+
+# Page tree
+nav:
+  - Home: 'index.md'
+  - Deployment & Setup:
+    - Platform:
+      - Overview: deployment/overview.md
+      - Installation: deployment/installation.md
+      - Configuration: deployment/configuration.md
+      - Authentication: deployment/authentication.md
+      - Upgrade: deployment/upgrade.md
+    - Ecosystem:
+      - Connectors: deployment/connectors.md
+      - Integrations: deployment/integrations.md
+      - Manager:
+        - Overview: deployment/integration-manager.md
+        - Quick start: deployment/integration-manager/quick-start.md
+        - Architecture: deployment/integration-manager/architecture.md
+        - Installation guide: deployment/integration-manager/installation.md
+        - Configuration: deployment/integration-manager/configuration.md
+        - Migration guide: deployment/integration-manager/migration.md
+        - Troubleshooting guide: deployment/integration-manager/troubleshooting.md
+      - Other resources: deployment/resources.md
+    - Advanced:
+      - Platform managers: deployment/managers.md
+      - Clustering: deployment/clustering.md
+      - Indices and rollover: deployment/rollover.md
+      - On-premise map server: deployment/map.md
+      - On-premise AI extraction: deployment/ai-import-document.md
+      - Troubleshooting: deployment/troubleshooting.md
+    - Breaking changes:
+        - Index: deployment/breaking-changes.md
+        - Migration guides:
+            - OpenBAS scenario generation: deployment/breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md
+            - Stream connectors data import: deployment/breaking-changes/6.3-removing-some-connectors.md
+            - Promote to Indicator: deployment/breaking-changes/6.2-promote-to-indicator.md
+            - SAML authentication: deployment/breaking-changes/6.2-saml-authentication.md
+            - New filter API: deployment/breaking-changes/5.12-filters.md
+  - User Guide:
+    - Getting started: usage/getting-started.md
+    - Foundations:
+      - Data model: usage/data-model.md
+      - Nested objects: usage/nested.md
+      - Containers: usage/containers.md
+      - Deduplication: usage/deduplication.md
+      - Reliability and confidence: usage/reliability-confidence.md
+      - Meaning of dates: usage/dates.md
+      - CTI Copilot ✨: usage/copilot.md
+    - Explore knowledge:
+      - Overview: usage/overview.md
+      - Search for knowledge: usage/search.md
+      - Insights and summaries ✨: usage/insights.md
+      - Explore by entity types:
+        - Analysis: usage/exploring-analysis.md
+        - Cases: usage/exploring-cases.md
+        - Events: usage/exploring-events.md
+        - Observations: usage/exploring-observations.md
+        - Threats: usage/exploring-threats.md
+        - Arsenal: usage/exploring-arsenal.md
+        - Techniques: usage/exploring-techniques.md
+        - Entities: usage/exploring-entities.md
+        - Locations: usage/exploring-locations.md
+      - Pivot and investigate: usage/pivoting.md
+    - Create knowledge:
+      - Automated import:
+        - Getting started: usage/import/getting-started.md
+        - Connectors: usage/import/external-connectors.md
+        - Streams: usage/import/internal-streams.md
+        - Feeds:
+          - TAXII Feed: usage/import/taxii-feed.md
+          - TAXII push: usage/import/taxii-push.md
+          - RSS Feed: usage/import/rss-feed.md
+          - CSV Feed: usage/import/csv-feed.md
+          - JSON Feed: usage/import/json-feed.md
+      - Import from files: usage/import-files.md
+      - Manual creations: usage/manual-creation.md
+      - Draft workspaces: usage/draftWorkspaces.md
+      - Analyst workbench: usage/workbench.md
+    - Enrich knowledge:
+      - Inferences and reasoning: usage/inferences.md
+      - Enrichment connectors: usage/enrichment.md
+      - Merge objects: usage/merging.md
+      - Refine content ✨: usage/refine-content.md
+    - Act on knowledge:
+      - Case management: usage/case-management.md
+      - Notifications and alerting: usage/notifications.md
+      - Background tasks: usage/background-tasks.md
+      - Dashboards:
+        - Custom dashboards: usage/dashboards.md
+        - Share custom dashboards: usage/dashboards-share.md
+        - Widget creation: usage/widgets.md
+        - Tips for widget creation: usage/tips-widget-creation.md
+      - Workflows and assignation: usage/workflows.md
+      - Indicators lifecycle: usage/indicators-lifecycle.md
+      - Automation: usage/automation.md
+      - Security Coverage: usage/security-coverage.md
+    - Delete and restore knowledge: usage/delete-restore.md
+    - Sharing and exports:
+      - Native feeds: usage/feeds.md
+      - Manual export: usage/export.md
+  - Administration:
+    - Introduction: administration/introduction.md
+    - Enterprise edition: administration/enterprise.md
+    - Data management:
+      - Merging and de-duplication: administration/merging.md
+      - CSV Mappers: administration/csv-mappers.md
+      - JSON Mappers: administration/json-mappers.md
+    - Platform settings:
+      - Parameters: administration/parameters.md
+      - Security:
+        - Policies: administration/policies.md
+        - Users and RBAC:
+          - Users and RBAC: administration/users.md
+          - Protect sensitive configuration: administration/protect-sensitive-configuration.md
+        - Data segregation:
+          - Marking restriction: administration/segregation.md
+          - Organization segregation: administration/organization-segregation.md
+          - Authorized members: administration/authorized-members.md
+          - Request access: administration/request-access.md
+        - Dissemination list: administration/dissemination-list.md
+        - Email templates: administration/email-templates.md
+      - Customization:
+        - Entity types: administration/entities.md
+        - Rules engine: administration/reasoning.md
+        - Notifiers:
+          - Custom notifiers: administration/notifiers.md
+          - Notifier samples: administration/notifier-samples.md
+          - Tips to create notifiers: administration/tips-to-create-a-custom-notifier.md
+        - Retention policies: administration/retentions.md
+        - Decay rules & Decay Exclusion rules: 
+          - Decay rules: administration/decay-rules.md
+          - Decay exclusion rules: administration/decay-exclusion-rules.md
+        - Exclusion lists: administration/exclusion-lists.md
+      - Taxonomies: administration/ontologies.md
+      - Activity:
+        - Overview: administration/audit/overview.md
+        - Events: administration/audit/events.md
+        - Configuration: administration/audit/configuration.md
+        - Activity triggers: administration/audit/triggers.md
+      - File indexing:  administration/file-indexing.md
+      - Support package:  administration/support-package.md
+      - XTM Hub: administration/hub.md # Warning: page is linked in XTM Hub documentation
+  - Reference:
+    - Data:
+      - Data model: reference/data-model.md
+      - Data processing: reference/data-processing.md
+      - Taxonomy: reference/taxonomy.md
+      - Artificial intelligence: reference/artificial-intelligence.md
+    - APIs and feeds:
+      - GraphQL API: reference/api.md
+      - Filters:
+        - Filters knowledge: reference/filters.md
+      - Data Streaming: reference/streaming.md
+    - Deployment and stack:
+        - Usage telemetry: reference/usage-telemetry.md
+        - FIPS 140-2 installation: reference/fips.md
+  - Development:
+    - Prerequisites:
+      - Ubuntu: development/environment_ubuntu.md
+      - Windows: development/environment_windows.md
+    - Platform: development/platform.md
+    - Python library: development/python.md
+    - Connectors: development/connectors.md
+    - Integration Manager: development/integration-manager.md
+    - Playground: development/api-usage.md
+
+
+
