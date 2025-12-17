@@ -68,7 +68,7 @@ jobs:
             wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
             mkdir -p ../../opencti-connectors/external-import/restore-files/src
             wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration --coverage
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
         '
 
     - name: Upload backend test result
