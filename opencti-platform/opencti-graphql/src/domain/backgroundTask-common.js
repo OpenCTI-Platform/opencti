@@ -32,7 +32,7 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 import { createWork } from './work';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
-import { addUserBackgroundTaskCount } from '../manager/telemetryManager';
+import { addTelemetryCount, TELEMETRY_COUNT } from '../manager/telemetryManager';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -358,7 +358,7 @@ export const createDefaultTask = async (context, user, input, taskType, taskExpe
   }
 
   if (scope === BackgroundTaskScope.User) {
-    await addUserBackgroundTaskCount();
+    await addTelemetryCount(TELEMETRY_COUNT.BACKGROUND_TASK_USER);
   }
   return task;
 };

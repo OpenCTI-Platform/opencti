@@ -29,7 +29,7 @@ import { detectObservableType } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
-import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
+import { addTelemetryCount, TELEMETRY_COUNT } from '../../manager/telemetryManager';
 import { checkObservableSyntax } from '../../utils/syntax';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 
@@ -105,7 +105,7 @@ export const addForm = async (
     });
 
     // Add telemetry
-    await addFormIntakeCreatedCount();
+    await addTelemetryCount(TELEMETRY_COUNT.FORM_INTAKE_CREATED);
   }
 
   return element;
@@ -193,7 +193,7 @@ export const formEditField = async (
   });
 
   // Add telemetry
-  await addFormIntakeUpdatedCount();
+  await addTelemetryCount(TELEMETRY_COUNT.FORM_INTAKE_UPDATED);
 
   return element;
 };
@@ -224,7 +224,7 @@ export const formDelete = async (
     });
 
     // Add telemetry
-    await addFormIntakeDeletedCount();
+    await addTelemetryCount(TELEMETRY_COUNT.FORM_INTAKE_DELETED);
   }
 
   return formId;
@@ -964,7 +964,7 @@ export const formSubmit = async (
     logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });
 
     // Add telemetry for form submission
-    await addFormIntakeSubmittedCount();
+    await addTelemetryCount(TELEMETRY_COUNT.FORM_INTAKE_SUBMITTED);
 
     return {
       success: true,

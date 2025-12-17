@@ -46,101 +46,35 @@ const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
 const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
 // Region user event counters
-export const TELEMETRY_GAUGE_DISSEMINATION = 'disseminationCount';
-export const TELEMETRY_GAUGE_NLQ = 'nlqQueryCount';
-export const TELEMETRY_GAUGE_REQUEST_ACCESS = 'requestAccessCreationCount';
-export const TELEMETRY_GAUGE_DRAFT_CREATION = 'draftCreationCount';
-export const TELEMETRY_GAUGE_DRAFT_VALIDATION = 'draftValidationCount';
-export const TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED = 'capabilitiesInDraftUpdateCount';
-export const TELEMETRY_GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount';
-export const TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION = 'workbenchDraftConvertionCount';
-export const TELEMETRY_GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount';
-export const TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT = 'userIntoServiceAccountCount';
-export const TELEMETRY_GAUGE_SERVICE_ACCOUNT_INTO_USER = 'serviceAccountIntoUserCount';
-export const TELEMETRY_GAUGE_USER_EMAIL_SEND = 'userEmailSendCount';
-export const TELEMETRY_BACKGROUND_TASK_USER = 'userBackgroundTaskCount';
-export const TELEMETRY_EMAIL_TEMPLATE_CREATED = 'emailTemplateCreatedCount';
-export const TELEMETRY_FORGOT_PASSWORD = 'forgotPasswordCount';
-export const TELEMETRY_CONNECTOR_DEPLOYED = 'connectorDeployedCount';
-export const TELEMETRY_FORM_INTAKE_CREATED = 'formIntakeCreatedCount';
-export const TELEMETRY_FORM_INTAKE_UPDATED = 'formIntakeUpdatedCount';
-export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
-export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
-export const TELEMETRY_USER_LOGIN = 'userLoginCount';
+export enum TELEMETRY_COUNT {
+  GAUGE_DISSEMINATION = 'disseminationCount',
+  GAUGE_NLQ = 'nlqQueryCount',
+  GAUGE_REQUEST_ACCESS = 'requestAccessCreationCount',
+  GAUGE_DRAFT_CREATION = 'draftCreationCount',
+  GAUGE_DRAFT_VALIDATION = 'draftValidationCount',
+  GAUGE_CAPABILITIES_IN_DRAFT_UPDATED = 'capabilitiesInDraftUpdateCount',
+  GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount',
+  GAUGE_WORKBENCH_DRAFT_CONVERTION = 'workbenchDraftConvertionCount',
+  GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount',
+  GAUGE_USER_INTO_SERVICE_ACCOUNT = 'userIntoServiceAccountCount',
+  GAUGE_SERVICE_ACCOUNT_INTO_USER = 'serviceAccountIntoUserCount',
+  GAUGE_USER_EMAIL_SEND = 'userEmailSendCount',
+  BACKGROUND_TASK_USER = 'userBackgroundTaskCount',
+  EMAIL_TEMPLATE_CREATED = 'emailTemplateCreatedCount',
+  FORGOT_PASSWORD = 'forgotPasswordCount',
+  CONNECTOR_DEPLOYED = 'connectorDeployedCount',
+  FORM_INTAKE_CREATED = 'formIntakeCreatedCount',
+  FORM_INTAKE_UPDATED = 'formIntakeUpdatedCount',
+  FORM_INTAKE_DELETED = 'formIntakeDeletedCount',
+  FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount',
+  USER_LOGIN = 'userLoginCount',
+}
 
-export const addDisseminationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
+export const addTelemetryCount = async (telemetryCount: TELEMETRY_COUNT) => {
+  await redisSetTelemetryAdd(telemetryCount, 1);
 };
-export const addNlqQueryCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1);
-};
-export const addRequestAccessCreationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS, 1);
-};
-export const addDraftCreationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DRAFT_CREATION, 1);
-};
-export const addDraftValidationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DRAFT_VALIDATION, 1);
-};
-export const addCapabilitiesInDraftUpdatedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED, 1);
-};
-export const addWorkbenchUploadCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_UPLOAD, 1);
-};
-export const addWorkbenchDraftConvertionCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION, 1);
-};
-export const addWorkbenchValidationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_VALIDATION, 1);
-};
-export const addUserIntoServiceAccountCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT, 1);
-};
-
-export const addServiceAccountIntoUserCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_SERVICE_ACCOUNT_INTO_USER, 1);
-};
-
-export const addUserEmailSendCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_USER_EMAIL_SEND, 1);
-};
-
-export const addFormIntakeCreatedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_CREATED, 1);
-};
-
-export const addFormIntakeUpdatedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_UPDATED, 1);
-};
-
-export const addFormIntakeDeletedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_DELETED, 1);
-};
-
-export const addFormIntakeSubmittedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_SUBMITTED, 1);
-};
-
-export const addUserBackgroundTaskCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_BACKGROUND_TASK_USER, 1);
-};
-
-export const addEmailTemplateCreatedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_EMAIL_TEMPLATE_CREATED, 1);
-};
-
-export const addForgotPasswordCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_FORGOT_PASSWORD, 1);
-};
-
-export const addConnectorDeployedCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_CONNECTOR_DEPLOYED, 1);
-};
-
 export const addUserLoginCount = () => {
-  redisSetTelemetryAdd(TELEMETRY_USER_LOGIN, 1).catch((reason) => logApp.info('Error add user login in telemetry', { reason }));
+  redisSetTelemetryAdd(TELEMETRY_COUNT.USER_LOGIN, 1).catch((reason) => logApp.info('Error add user login in telemetry', { reason }));
 };
 
 // End Region user event counters
@@ -288,47 +222,47 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region Telemetry user events
-    const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
+    const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_DISSEMINATION);
     manager.setDisseminationCount(disseminationCountInRedis);
-    const nlqQueryCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_NLQ);
+    const nlqQueryCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_NLQ);
     manager.setNlqQueryCount(nlqQueryCountInRedis);
-    const requestAccessCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_REQUEST_ACCESS);
+    const requestAccessCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_REQUEST_ACCESS);
     manager.setRequestAccessCreatedCount(requestAccessCountInRedis);
-    const draftCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_CREATION);
+    const draftCreationCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_DRAFT_CREATION);
     manager.setDraftCreationCount(draftCreationCountInRedis);
-    const draftValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_VALIDATION);
+    const draftValidationCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_DRAFT_VALIDATION);
     manager.setDraftValidationCount(draftValidationCountInRedis);
-    const capabilitiesInDraftUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED);
+    const capabilitiesInDraftUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_CAPABILITIES_IN_DRAFT_UPDATED);
     manager.setCapabilitiesInDraftUpdatedCount(capabilitiesInDraftUpdatedCountInRedis);
-    const workbenchUploadCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_UPLOAD);
+    const workbenchUploadCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_WORKBENCH_UPLOAD);
     manager.setWorkbenchUploadCount(workbenchUploadCountInRedis);
-    const workbenchDraftConvertionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION);
+    const workbenchDraftConvertionCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_WORKBENCH_DRAFT_CONVERTION);
     manager.setWorkbenchDraftConvertionCount(workbenchDraftConvertionCountInRedis);
-    const workbenchValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_VALIDATION);
+    const workbenchValidationCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_WORKBENCH_VALIDATION);
     manager.setWorkbenchValidationCount(workbenchValidationCountInRedis);
-    const userIntoServiceAccountCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT);
+    const userIntoServiceAccountCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_USER_INTO_SERVICE_ACCOUNT);
     manager.setUserIntoServiceAccountCount(userIntoServiceAccountCountInRedis);
-    const serviceAccountIntoUserCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_SERVICE_ACCOUNT_INTO_USER);
+    const serviceAccountIntoUserCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_SERVICE_ACCOUNT_INTO_USER);
     manager.setServiceAccountIntoUserCount(serviceAccountIntoUserCountInRedis);
-    const emailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_USER_EMAIL_SEND);
+    const emailSendCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_USER_EMAIL_SEND);
     manager.setUserEmailSendCount(emailSendCountInRedis);
-    const userBackgroundTaskCountInRedis = await redisGetTelemetry(TELEMETRY_BACKGROUND_TASK_USER);
+    const userBackgroundTaskCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.BACKGROUND_TASK_USER);
     manager.setUserBackgroundTaskCount(userBackgroundTaskCountInRedis);
-    const emailTemplateCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_EMAIL_TEMPLATE_CREATED);
+    const emailTemplateCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.EMAIL_TEMPLATE_CREATED);
     manager.setEmailTemplateCreatedCount(emailTemplateCreatedCountInRedis);
-    const forgotPasswordCountInRedis = await redisGetTelemetry(TELEMETRY_FORGOT_PASSWORD);
+    const forgotPasswordCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.FORGOT_PASSWORD);
     manager.setForgotPasswordCount(forgotPasswordCountInRedis);
-    const connectorDeployedCountInRedis = await redisGetTelemetry(TELEMETRY_CONNECTOR_DEPLOYED);
+    const connectorDeployedCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.CONNECTOR_DEPLOYED);
     manager.setConnectorDeployedCount(connectorDeployedCountInRedis);
-    const userLoginCountInRedis = await redisGetTelemetry(TELEMETRY_USER_LOGIN);
+    const userLoginCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.USER_LOGIN);
     manager.setUserLoginCount(userLoginCountInRedis);
-    const formIntakeCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_CREATED);
+    const formIntakeCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.FORM_INTAKE_CREATED);
     manager.setFormIntakeCreatedCount(formIntakeCreatedCountInRedis);
-    const formIntakeUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_UPDATED);
+    const formIntakeUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.FORM_INTAKE_UPDATED);
     manager.setFormIntakeUpdatedCount(formIntakeUpdatedCountInRedis);
-    const formIntakeDeletedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_DELETED);
+    const formIntakeDeletedCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.FORM_INTAKE_DELETED);
     manager.setFormIntakeDeletedCount(formIntakeDeletedCountInRedis);
-    const formIntakeSubmittedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_SUBMITTED);
+    const formIntakeSubmittedCountInRedis = await redisGetTelemetry(TELEMETRY_COUNT.FORM_INTAKE_SUBMITTED);
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     // end region Telemetry user events
 
