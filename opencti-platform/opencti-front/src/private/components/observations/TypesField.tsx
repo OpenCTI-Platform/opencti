@@ -17,7 +17,7 @@ interface TypesFieldComponentProps {
   multiple?: boolean;
   onChange?: (name: string, value: string | string[]) => void;
 }
-interface Tlabel {
+interface TLabel {
   tlabel: string;
 }
 
@@ -33,7 +33,7 @@ const TypesFieldComponent = ({
 
   if (subTypes) {
     const subTypesEdges = subTypes.edges;
-    const sortByLabel = <T extends Tlabel>(arr: T[]): T[] =>
+    const sortByLabel = <T extends TLabel>(arr: T[]): T[] =>
       [...arr].sort((a, b) => {
         const labelA = String(a.tlabel).toLowerCase();
         const labelB = String(b.tlabel).toLowerCase();
