@@ -49,7 +49,7 @@ jobs:
 
 
   opencti-frontend-e2e-test-ee:
-    name: Frontend e2e tests
+    name: Frontend e2e tests EE
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
@@ -74,7 +74,7 @@ jobs:
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
 
-    - name: Start e2e opencti and worker instance
+    - name: Start e2e opencti and worker instance EE
       run: |
         set -ex;
         docker run -d --network runner-docker-network \
@@ -140,7 +140,7 @@ jobs:
     - name: Wait for OpenCTI e2e backend instances to start
       run: ./frontend-e2e-test/scripts/ci/wait-for-url-200.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
 
-    - name: Frontend e2e tests
+    - name: Frontend e2e tests EE
       run: |
         docker run --network runner-docker-network \
           --name frontend-e2e-tests \
@@ -159,10 +159,10 @@ jobs:
               yarn install
               npx playwright install --with-deps chromium
               yarn build
-              yarn test:e2e --grepInvert '@ce'
+              yarn test:e2e --grep-invert '@ce'
             '
 
-    - name: Upload front e2e test results
+    - name: Upload front e2e test results EE
       uses: actions/upload-artifact@v5
       if: always()
       continue-on-error: true
