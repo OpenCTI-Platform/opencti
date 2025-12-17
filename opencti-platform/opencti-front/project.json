@@ -14,6 +14,17 @@
         "description": "Install the OpenCTI front dependencies"
       }
     },
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "build" }],
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn build"
+      },
+      "metadata": {
+        "description": "Build the OpenCTI front"
+      }
+    },
     "dev": {
       "executor": "nx:run-commands",
       "continuous": true,

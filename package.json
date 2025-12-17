@@ -12,6 +12,7 @@
   },
   "scripts": {
     "deps": "nx run-many --tuiAutoExit --target install",
+    "build": "nx run-many --tuiAutoExit --target build",
     "dev": "nx run-many --target dev"
   }
 }
