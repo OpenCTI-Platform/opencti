@@ -35,6 +35,26 @@
         "description": "Lint the OpenCTI GraphQL server"
       }
     },
+    "wait-api": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn wait-api"
+      },
+      "metadata": {
+        "description": "Wait for the API to be available"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn test"
+      },
+      "metadata": {
+        "description": "Run the tests of the OpenCTI GraphQL server"
+      }
+    },
     "dev": {
       "executor": "nx:run-commands",
       "continuous": true,

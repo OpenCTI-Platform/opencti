@@ -35,6 +35,30 @@
         "description": "Check TS, lint and verify translations in the OpenCTI front"
       }
     },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn test"
+      },
+      "metadata": {
+        "description": "Run the tests of the OpenCTI front"
+      }
+    },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        { "projects": ["opencti-graphql"], "target": "wait-api" },
+        { "projects": ["opencti-worker"], "target": "dev" }
+      ],
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn test:e2e"
+      },
+      "metadata": {
+        "description": "Run the tests of the OpenCTI front"
+      }
+    },
     "dev": {
       "executor": "nx:run-commands",
       "continuous": true,
