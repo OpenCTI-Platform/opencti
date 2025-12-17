@@ -420,7 +420,6 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               <KillChainPhasesField
                 name="killChainPhases"
                 style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
                 helpertext={(
                   <SubscriptionFocus
                     context={editContext}
@@ -507,7 +506,7 @@ const StixCoreRelationshipEditionOverview: FunctionComponent<
   if (queryData.stixCoreRelationship === null) {
     return <ErrorNotFound />;
   }
-  // eslint-disable-next-line max-len
+
   const stixCoreRelationship = useFragment<StixCoreRelationshipEditionOverview_stixCoreRelationship$key>(
     StixCoreRelationshipEditionOverviewFragment,
     queryData.stixCoreRelationship,
