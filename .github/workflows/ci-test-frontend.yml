@@ -62,11 +62,6 @@ jobs:
       continue-on-error: true
       run: ./frontend-e2e-test/scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Collect Workflow Telemetry
-      uses: catchpoint/workflow-telemetry-action@v2
-      with:
-        comment_on_pr: false
-
     - name: Duplicate workspace
       run: |
          cp -pr ${{ github.workspace }}/frontend-e2e-test ${{ github.workspace }}/frontend-e2e-start
