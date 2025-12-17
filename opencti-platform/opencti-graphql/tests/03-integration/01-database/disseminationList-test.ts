@@ -18,8 +18,8 @@ const TEST_DISSEMINATION_LIST_UPDATE_INPUT: EditInput[] = [
 ];
 
 describe('Create dissemination list', async () => {
-  // Activate EE locally
   beforeEach(() => {
+    // Activate EE for this test
     vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
     vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
   });

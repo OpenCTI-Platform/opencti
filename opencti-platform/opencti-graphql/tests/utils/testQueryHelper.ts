@@ -194,7 +194,7 @@ export const disableEE = async () => {
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
   // EE cant be disabled as setup by configuration
-  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
+  expect(settingsResult.platform_enterprise_edition.license_validated).toBeFalsy();
 };
 
 export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {
@@ -224,7 +224,7 @@ export const enableEEAndSetOrganization = async (organization: OrganizationTestD
   const platformOrganizationId = await getOrganizationIdByName(organization.name);
   const platformSettings: any = await getSettings(testContext);
 
-  await enableEE();
+  // await enableEE();
 
   const input = [
     { key: 'platform_organization', value: [platformOrganizationId] },
@@ -239,7 +239,7 @@ export const enableEEAndSetOrganization = async (organization: OrganizationTestD
  * Remove any platform organization and go back to community edition.
  */
 export const enableCEAndUnSetOrganization = async () => {
-  await disableEE();
+  // await disableEE();
 
   const platformSettings: any = await getSettings(testContext);
   const input = [

@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, it, expect } from 'vitest';
+import { afterAll, beforeAll, describe, it, expect, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { addIngestionCsv, deleteIngestionCsv, ingestionCsvAddAutoUser } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { adminQuery, PLATFORM_ORGANIZATION, USER_EDITOR } from '../../utils/testQuery';
@@ -10,6 +10,7 @@ import { findDefaultIngestionGroups, groupEditField } from '../../../src/domain/
 import type { BasicGroupEntity } from '../../../src/types/store';
 import { findById as findUserById } from '../../../src/domain/user';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const DELETE_USER_QUERY = gql`
   mutation userDelete($id: ID!) {
@@ -39,6 +40,9 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   let ingestionDefaultGroupId: string;
 
   beforeAll(async () => {
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
     ingestionUser = getFakeAuthUser('CsvFeedIngestionDomain');
     ingestionUser.capabilities = [{ name: 'KNOWLEDGE' }, { name: 'INGESTION_SETINGESTIONS' }];
     currentTestContext = executionContext('testContext', ingestionUser);
@@ -46,6 +50,9 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 
   afterAll(async () => {
     await enableCEAndUnSetOrganization();
+    // Deactivate EE at the end of this test - back to CE
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     for (let i = 0; i < ingestionCreatedIds.length; i += 1) {
       await deleteIngestionCsv(currentTestContext, ingestionUser, ingestionCreatedIds[i]);
     }
@@ -66,7 +73,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       uri: 'http://fakefeed.invalid',
       user_id: '[F] CSV Feed to test auto user creation without platform org',
       automatic_user: true,
-      confidence_level: 42
+      confidence_level: 42,
     };
     const ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
     expect(ingestionCreated.name).toBe('CSV Feed to test auto user creation without platform org');
@@ -103,7 +110,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       uri: 'http://fakefeed.invalid',
       user_id: '[F] CSV Feed to test auto user creation with platform org',
       automatic_user: true,
-      confidence_level: 81
+      confidence_level: 81,
     };
     const ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
     expect(ingestionCreated.name).toBe('CSV Feed to test auto user creation with platform org');
@@ -140,7 +147,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       authentication_type: IngestionAuthType.None,
       name: 'CSV Feed to test with system user',
       uri: 'http://fakefeed.invalid',
-      user_id: ''
+      user_id: '',
     };
 
     await expect(async () => {
@@ -154,7 +161,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       name: 'CSV Feed to test existing user setup',
       uri: 'http://fakefeed.invalid',
       user_id: USER_EDITOR.id,
-      confidence_level: 88
+      confidence_level: 88,
     };
     const ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
     expect(ingestionCreated.name).toBe('CSV Feed to test existing user setup');
@@ -173,7 +180,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       name: 'MyFééd @ Testing @mail.fr 🌈🍅 - CSVフィードの作成',
       uri: 'http://fakefeed.invalid',
       user_id: '[F] MyFééd @ Testing @mail.fr 🌈🍅 - CSVフィードの作成',
-      automatic_user: true
+      automatic_user: true,
     };
     const ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
     expect(ingestionCreated.name).toBe('MyFééd @ Testing @mail.fr 🌈🍅 - CSVフィードの作成');
@@ -210,7 +217,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       name: 'Feed created with auto user by no default ingestion group in config',
       uri: 'http://fakefeed.invalid',
       user_id: '[F] should not be created',
-      automatic_user: true
+      automatic_user: true,
     };
     await expect(async () => {
       await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
@@ -233,7 +240,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       name: 'Feed not created because auto service account already exists',
       uri: 'http://fakefeed.invalid',
       user_id: '[F] Feed not created because auto service account already exists',
-      automatic_user: true
+      automatic_user: true,
     };
     // First call
     const firstIngestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
@@ -272,7 +279,7 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
       uri: 'http://fakefeed.invalid',
       user_id: '[F] CSV Feed to test with auto user',
       automatic_user: true,
-      confidence_level: 32
+      confidence_level: 32,
     };
     ingestionCreated = await addIngestionCsv(currentTestContext, ingestionUser, ingestionCsvInput);
   });
@@ -298,7 +305,7 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
   it('should create an automatic user and associate it to the ingestion feed', async () => {
     const ingestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput = {
       user_name: '[F] should create automatic user',
-      confidence_level: 63
+      confidence_level: 63,
     };
     const ingestionModified = await ingestionCsvAddAutoUser(currentTestContext, ingestionUser, ingestionCreated.id, ingestionCsvAddAutoUserInput);
 
