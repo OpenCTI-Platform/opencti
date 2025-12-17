@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { Field } from 'formik';
-import { assoc, compose, map, pipe, prop, sortBy, toLower } from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../components/i18n';
 import SelectField from '../../../components/fields/SelectField';
@@ -16,6 +15,10 @@ interface TypesFieldComponentProps {
   required?: boolean;
   containerstyle?: Record<string, string | number>;
 }
+interface Tlabel {
+  tlabel: string;
+}
+
 const TypesFieldComponent = ({
   name,
   label,
@@ -28,12 +31,21 @@ const TypesFieldComponent = ({
 
   if (subTypes) {
     const subTypesEdges = subTypes.edges;
-    const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
-    const translatedOrderedList = pipe(
-      map((n) => n.node),
-      map((n) => assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
-      sortByLabel,
-    )(subTypesEdges);
+    const sortByLabel = <T extends Tlabel>(arr: T[]): T[] =>
+      [...arr].sort((a, b) => {
+        const labelA = String(a.tlabel).toLowerCase();
+        const labelB = String(b.tlabel).toLowerCase();
+        return labelA.localeCompare(labelB);
+      });
+
+    const translatedOrderedList = sortByLabel(
+      subTypesEdges
+        .map((n) => n.node)
+        .map((n) => ({
+          ...n,
+          tlabel: t_i18n(`entity_${n.label}`),
+        })),
+    );
     return (
       <Field
         component={SelectField}
