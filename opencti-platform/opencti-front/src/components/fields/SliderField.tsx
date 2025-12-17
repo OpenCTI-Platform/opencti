@@ -1,23 +1,33 @@
-import React from 'react';
-import { useField } from 'formik';
-import Slider from '@mui/material/Slider';
+import React, { ChangeEvent } from 'react';
+import { FieldProps, useField } from 'formik';
+import Slider, { SliderProps } from '@mui/material/Slider';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import * as R from 'ramda';
 import inject18n from '../i18n';
+import { JSX } from 'react/jsx-runtime';
 
-const SliderField = ({
-  form: { setFieldValue, setFieldTouched },
-  field: { name },
-  onFocus,
-  onSubmit,
-  label,
-  style,
-  disabled,
-  required = false,
-}) => {
+export type SliderFieldProps = FieldProps<string> & Omit<SliderProps, 'onChange' | 'onFocus'> & {
+  required: boolean;
+  onChange?: (name: string, value: string) => void;
+  onFocus?: (name: string) => void;
+  onSubmit?: (name: string, value: string) => void;
+  label?: string;
+};
+
+const SliderField = (muiProps: SliderFieldProps) => {
+  const {
+    form: { setFieldValue, setFieldTouched },
+    field: { name },
+    onFocus,
+    onSubmit,
+    label,
+    style,
+    disabled,
+    required = false,
+  } = muiProps;
   const [field, meta] = useField(name);
-  const internalOnFocus = (event) => {
+  const internalOnFocus = (event: ChangeEvent<HTMLInputElement>) => {
     const { nodeName } = event.relatedTarget || {};
     if (nodeName === 'INPUT' || nodeName === undefined) {
       if (typeof onFocus === 'function') {
@@ -25,7 +35,7 @@ const SliderField = ({
       }
     }
   };
-  const internalOnBlur = (event) => {
+  const internalOnBlur = (event: ChangeEvent<HTMLInputElement>) => {
     const { nodeName } = event.relatedTarget || {};
     if (nodeName === 'INPUT' || nodeName === 'DIV' || nodeName === undefined) {
       setFieldTouched(name, true);
@@ -34,6 +44,7 @@ const SliderField = ({
       }
     }
   };
+
   return (
     <div
       style={style}
