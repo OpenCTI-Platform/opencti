@@ -1,8 +1,8 @@
 name: OpenCTI CI
 on:
   workflow_dispatch:
-  push:
-  pull_request:
+  #push:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 jobs:
