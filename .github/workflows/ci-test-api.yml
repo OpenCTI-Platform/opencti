@@ -17,15 +17,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check trigger type
-      run: |
-        echo "Event name: ${{ github.event_name }}"        
-        if [ "${{ github.event_name }}" == "pull_request" ]; then
-          echo "Triggered by pull_request"
-        elif [ "${{ github.event_name }}" == "pull_request_target" ]; then
-          echo "Triggered by pull_request_target"
-        fi
-
     - name: OpenCTI checkout
       uses: actions/checkout@v6
       with:
