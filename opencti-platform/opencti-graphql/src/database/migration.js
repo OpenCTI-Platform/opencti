@@ -28,7 +28,7 @@ const retrieveMigrations = async () => {
     migrationsFilenames.map((file) => import(`../migrations/${file}`)));
 
   const knexMigrations = migrations.map((migration, i) => ({
-    name: migrationsFilenames[i].substring('../migrations/'.length),
+    name: migrationsFilenames[i],
     migration,
   }));
   return knexMigrations.map(({ name, migration }) => {
