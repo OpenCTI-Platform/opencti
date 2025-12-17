@@ -14,6 +14,8 @@ interface TypesFieldComponentProps {
   label?: string;
   required?: boolean;
   containerstyle?: Record<string, string | number>;
+  multiple?: boolean;
+  onChange?: (name: string, value: string | string[]) => void;
 }
 interface Tlabel {
   tlabel: string;
