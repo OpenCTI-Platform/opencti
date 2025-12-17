@@ -29,7 +29,7 @@ const noBypassRoleName = `NoBypassReferencesRole ${nowTime}`;
 const noBypassGroupName = `NoBypassReferencesTestGroup ${nowTime}`;
 
 test.describe('Create user with no references bypass capabilities', () => {
-  test('Create basic user role', async ({ page }) => {
+  test('Create basic user role', { tag: ['@ce'] }, async ({ page }) => {
     const rolesSettingsPage = new RolesSettingsPage(page);
     const rolePage = new RolePage(page);
     const roleFormPage = new RoleFormPage(page);
