@@ -12,9 +12,14 @@
   },
   "scripts": {
     "deps": "nx run-many --tuiAutoExit --target install",
+    "dev": "nx run-many --target dev",
     "build": "nx run-many --tuiAutoExit --target build",
-    "lint": "nx run-many --tuiAutoExit --target lint",
     "test": "nx run-many --tuiAutoExit --target test,e2e",
-    "dev": "nx run-many --target dev"
+    "lint": "nx run-many --tuiAutoExit --target lint",
+    "with-python-venv": "node scripts/with_python_virtual_env.mjs",
+    "deps:venv": "yarn with-python-venv yarn deps",
+    "build:venv": "yarn with-python-venv yarn build",
+    "dev:venv": "yarn with-python-venv yarn dev",
+    "test:venv": "yarn with-python-venv yarn test"
   }
 }
