@@ -10,18 +10,23 @@ This is the main repository of the OpenCTI Documentation space. The online versi
 ## Install the documentation locally
 
 Clone the repository:
-```
-$ git clone git@github.com:OpenCTI-Platform/docs.git
+
+```sh
+git clone git@github.com:OpenCTI-Platform/opencti.git
+cd docs
 ```
 
 Install dependencies
-```
+
+```sh
+cd docs
 pip install -r requirements.txt
 ```
 
 Launch the local environment:
-```
-$ mkdocs serve
+
+```sh
+mkdocs serve
 Starting server at http://localhost:8000/
 ```
 
@@ -30,28 +35,31 @@ Starting server at http://localhost:8000/
 ### Update the source
 
 Commiting on the main branch does not impact (for now) the deployed documentation, please commit as many times as possible:
-```
-$ git commit -a -m "[docs] MESSAGE"
-$ git push
+
+```sh
+git commit -a -m "[docs] MESSAGE"
+git push
 ```
 
 ### Deploy and update the current version
 
 With the right version number (eg. 5.7.X):
-```
-$ mike deploy --push [version]
+
+```sh
+mike deploy --push [version]
 ```
 
 ### Deploy a new stable version
 
 With the right version number (eg. 5.7.X), update the `latest` tag:
-```
-$ mike deploy --push --update-aliases [version] latest
+
+```sh
+mike deploy --push --update-aliases [version] latest
 ```
 
 ## Useful commands
 
 List versions:
 ```
-$ mike list
+mike list
 ```

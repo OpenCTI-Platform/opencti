@@ -5,7 +5,7 @@ site_url: https://docs.opencti.io
 copyright: © 2025 Filigran. All rights reserved
 repo_name: GitHub
 repo_url: https://github.com/OpenCTI-Platform/opencti
-edit_uri: https://github.com/OpenCTI-Platform/docs/blob/main/docs/
+edit_uri: https://github.com/OpenCTI-Platform/opencti/blob/master/docs/docs
 
 # Theming
 theme:
