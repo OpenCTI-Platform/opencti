@@ -4,7 +4,7 @@ import IntrusionSetFormPage from '../model/form/intrusionSetForm.pageModel';
 import IntrusionSetDetailsPage from '../model/intrusionSetDetails.pageModel';
 import StixCoreRelationshipCreationFromEntityFormPage from '../model/form/stixCoreRelationshipCreationFromEntityForm.pageModel';
 
-test('Create a new relationship in intrusion set knowledge', async ({ page }) => {
+test('Create a new relationship in intrusion set knowledge', { tag: ['@ce'] }, async ({ page }) => {
   const intrusionSetPage = new IntrusionSetPage(page);
   const intrusionSetForm = new IntrusionSetFormPage(page);
   const intrusionSetDetailsPage = new IntrusionSetDetailsPage(page);

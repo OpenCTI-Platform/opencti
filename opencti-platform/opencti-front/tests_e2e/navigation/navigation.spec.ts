@@ -1844,7 +1844,7 @@ const navigateAllMenu = async (page: Page) => {
   await leftBarPage.expectBreadcrumb('Investigations');
 };
 
-test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page }) => {
+test('Check navigation on all pages', async ({ page }) => {
   await page.goto('/');
   const leftBarPage = new LeftBarPage(page);
   await leftBarPage.open();
