@@ -4,7 +4,7 @@
 
 ## What is OpenCTI EE?
 
-OpenCTI Enterprise Edition is based on the open core concept. This means that the source code of OCTI EE remains open source and included in the main GitHub repository of the platform but is published under a specific license. As specified in the GitHub license file:
+OpenCTI Enterprise Edition is based on the open core concept. This means that the source code of OpenCTI EE remains open source and included in the main GitHub repository of the platform but is published under a specific license. As specified in the GitHub license file:
 
 - The OpenCTI Community Edition is licensed under the Apache License, Version 2.0 (the "Apache License").
 - The OpenCTI Enterprise Edition is licensed under the OpenCTI Enterprise Edition License (the "Enterprise Edition License").
