@@ -69,7 +69,7 @@ OpenCTI uses different mechanisms to be able to publish actions (audit) or data 
 
 | <div style="width:200px"></div>  | Create             | Delete              | Edit                |
 |:---------------------------------|:-------------------|:--------------------|:--------------------|
-| Remote OCTI Streams              | :white_check_mark: | :white_check_mark:  | :white_check_mark:  |
+| Remote OpencTI Streams           | :white_check_mark: | :white_check_mark:  | :white_check_mark:  |
 
 ### Data sharing
 

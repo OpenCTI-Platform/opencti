@@ -45,8 +45,8 @@ Roles are used in the platform to grant the given groups with some **capabilitie
 | `Connectors API usage: register, ping, export push ...` | Connectors specific permissions for register, ping, push export files, etc.             |
 | `Access data sharing`                                   | Access and consume data such as TAXII collections, CSV feeds and live streams.          |
 | &nbsp;&nbsp;`Manage data sharing`                       | Share data such as TAXII collections, CSV feeds and live streams or custom dashboards.  |
-| `Access ingestion`                                      | Access (read only) remote OCTI streams, TAXII feeds, RSS feeds, CSV feeds.              |
-| &nbsp;&nbsp;`Manage ingestion`                          | Create, update, delete any remote OCTI streams, TAXII feeds, RSS feeds, CSV feeds.      |
+| `Access ingestion`                                      | Access (read only) remote OpenCTI streams, TAXII feeds, RSS feeds, CSV feeds.           |
+| &nbsp;&nbsp;`Manage ingestion`                          | Create, update, delete any remote OpenCTI streams, TAXII feeds, RSS feeds, CSV feeds.   |
 | `Manage data mappers`                                   | Create, update and delete CSV & JSON mappers.                                           |
 | `Use Playbooks`                                         | Use Playbooks (enroll an entity in a playbook).                                                                         |
 | &nbsp;&nbsp;`Manage Playbooks`                          | Manage Playbooks.                                                                       |
