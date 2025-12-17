@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
-import { compose, pathOr, pipe, map, sortWith, ascend, path, union } from 'ramda';
+import { useState } from 'react';
+import { pathOr, pipe, map, sortWith, ascend, path, union } from 'ramda';
 import { Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
+import { makeStyles } from '@mui/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import inject18n from '../../../../components/i18n';
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import ItemIcon from '../../../../components/ItemIcon';
+import { useFormatter } from '../../../../components/i18n';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -18,23 +18,27 @@ const styles = () => ({
     flexGrow: 1,
     marginLeft: 10,
   },
-});
+}));
 
-class KillChainPhasesField extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      killChainPhases: [],
-    };
-  }
+const KillChainPhasesField = ({
+  style,
+  name,
+  onChange,
+  helpertext,
+  disabled,
+  required = false,
+}) => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const [killChainPhases, setKillChainPhases] = useState([]);
 
-  searchKillChainPhases(event) {
+  const searchKillChainPhases = (event) => {
     fetchQuery(killChainPhasesSearchQuery, {
       search: event && event.target.value,
     })
       .toPromise()
       .then((data) => {
-        const killChainPhases = pipe(
+        const kcp = pipe(
           pathOr([], ['killChainPhases', 'edges']),
           sortWith([ascend(path(['node', 'x_opencti_order']))]),
           map((n) => ({
@@ -44,53 +48,39 @@ class KillChainPhasesField extends Component {
             phase_name: n.node.phase_name,
           })),
         )(data);
-        this.setState({
-          killChainPhases: union(this.state.killChainPhases, killChainPhases),
-        });
+        setKillChainPhases(union(killChainPhases, kcp));
       });
-  }
+  };
 
-  render() {
-    const {
-      t,
-      name,
-      style,
-      classes,
-      onChange,
-      helpertext,
-      disabled,
-      required = false,
-    } = this.props;
-    return (
-      <Field
-        component={AutocompleteField}
-        style={style}
-        name={name}
-        required={required}
-        multiple={true}
-        disabled={disabled}
-        textfieldprops={{
-          variant: 'standard',
-          label: t('Kill chain phases'),
-          helperText: helpertext,
-          onFocus: this.searchKillChainPhases.bind(this),
-          required,
-        }}
-        noOptionsText={t('No available options')}
-        options={this.state.killChainPhases}
-        onInputChange={this.searchKillChainPhases.bind(this)}
-        onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-        renderOption={(props, option) => (
-          <li {...props} key={option.value}>
-            <div className={classes.icon} style={{ color: option.color }}>
-              <ItemIcon type="Kill-Chain-Phase" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
-          </li>
-        )}
-      />
-    );
-  }
-}
+  return (
+    <Field
+      component={AutocompleteField}
+      name={name}
+      style={style}
+      required={required}
+      multiple={true}
+      disabled={disabled}
+      textfieldprops={{
+        variant: 'standard',
+        label: t_i18n('Kill chain phases'),
+        helperText: helpertext,
+        onFocus: searchKillChainPhases,
+        required,
+      }}
+      noOptionsText={t_i18n('No available options')}
+      options={killChainPhases}
+      onInputChange={searchKillChainPhases}
+      onChange={typeof onChange === 'function' ? onChange : null}
+      renderOption={(props, option) => (
+        <li {...props} key={option.value}>
+          <div className={classes.icon} style={{ color: option.color }}>
+            <ItemIcon type="Kill-Chain-Phase" />
+          </div>
+          <div className={classes.text}>{option.label}</div>
+        </li>
+      )}
+    />
+  );
+};
 
-export default compose(inject18n, withStyles(styles))(KillChainPhasesField);
+export default KillChainPhasesField;
