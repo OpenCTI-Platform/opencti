@@ -4,7 +4,7 @@ import GroupingsPage from '../model/grouping.pageModel';
 import GroupingFormPage from '../model/form/groupingForm.pageModel';
 import GroupingDetailsPage from '../model/groupingDetails.pageModel';
 
-test('Create a new grouping', async ({ page }) => {
+test('Create a new grouping', { tag: ['@ce'] }, async ({ page }) => {
   const groupingsPage = new GroupingsPage(page);
   const groupingForm = new GroupingFormPage(page);
   const groupingDetails = new GroupingDetailsPage(page);

@@ -2,8 +2,8 @@ import DraftsPage from 'tests_e2e/model/drafts.pageModel';
 import RestrictionsPage from 'tests_e2e/model/restrictions.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 
-test.describe('Restricted Drafts', () => {
-  test('should allow to remove restrictions on a draft', { tag: ['@ce'] }, async ({ page }) => {
+test.describe('Restricted Drafts', { tag: ['@ce'] }, () => {
+  test('should allow to remove restrictions on a draft', async ({ page }) => {
     const draftName = `Restricted Draft E2E - ${Date.now()}`;
 
     // create a restricted draft

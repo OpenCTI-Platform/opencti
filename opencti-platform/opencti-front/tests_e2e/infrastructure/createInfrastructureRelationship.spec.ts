@@ -4,7 +4,7 @@ import InfrastructurePage from '../model/infrastructure.pageModel';
 import InfrastructureFormPage from '../model/form/infrastructureForm.pageModel';
 import InfrastructureDetailsPageModel from '../model/infrastructureDetails.pageModel';
 
-test('Create a new relationship in infrastructure knowledge', async ({ page }) => {
+test('Create a new relationship in infrastructure knowledge', { tag: ['@ce'] }, async ({ page }) => {
   const infrastructurePage = new InfrastructurePage(page);
   const infrastructureForm = new InfrastructureFormPage(page);
   const infrastructureDetailsPage = new InfrastructureDetailsPageModel(page);
