@@ -87,7 +87,7 @@ jobs:
       with:
         name: docker-image-opencti-platform
         path: /tmp/opencti-platform.tar
-        retention-days: 1
+        retention-days: 7
 
   build-opencti-worker:
     name: Build OpenCTI Worker image
@@ -139,4 +139,4 @@ jobs:
       with:
         name: docker-image-opencti-worker
         path: /tmp/opencti-worker.tar
-        retention-days: 1
+        retention-days: 7
