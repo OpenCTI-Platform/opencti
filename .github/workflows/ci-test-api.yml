@@ -212,7 +212,7 @@ jobs:
       run: cat runner_resource_stat.log
 
   run-opencti-api-unit-test:
-    name: Unit and others tests
+    name: Api unit tests
     runs-on: ubuntu-latest
 
     steps:
@@ -230,30 +230,15 @@ jobs:
         name: docker-image-opencti-platform
         path: /tmp
 
-    - name: Download image worker
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image-opencti-worker
-        path: /tmp
-
     - name: Load image
       run: |
           set -eux
           docker load --input /tmp/opencti-platform.tar   
-          docker load --input /tmp/opencti-worker.tar   
           docker images
-
-    - name: Set up Docker Compose for backends
-      run: |
-         set -ex
-         cd scripts/ci
-         docker network create runner-docker-network
-         docker compose --profile "backend" up -d
 
     - name: Start unit and linter (aka yarn test:ci-unit)
       run: |
-        docker run --network runner-docker-network \
-          --name unit-and-other-tests \
+        docker run --name unit-and-other-tests \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
@@ -261,17 +246,6 @@ jobs:
             yarn check-ts
             yarn lint
             NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
-        '
-
-    # Output all logs used during the job
-    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
-      if: always()
-      continue-on-error: true
-      run: |
-          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
-          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
-          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
-          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
 
     - name: Print resources stats
       if: always()
