@@ -1,7 +1,7 @@
 import {drizzle} from 'drizzle-orm/mysql2';
 import mysql, {type Connection} from 'mysql2/promise';
 import {entity, identifier, intrusionSet, malware, relationship, stub} from '../../schema';
-import {and, asc, eq, exists, inArray, or} from 'drizzle-orm';
+import {and, asc, eq, exists, getTableColumns, inArray, or, sql} from 'drizzle-orm';
 import {getInputIds, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED} from '../../schema/identifier';
 import type {MySql2Database} from 'drizzle-orm/mysql2/driver';
 import type {LabelAddInput, MalwareAddInput, MarkingDefinitionAddInput} from '../../generated/graphql';
@@ -12,6 +12,8 @@ import {ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION} from '../../schema/st
 import {alias} from 'drizzle-orm/mysql-core';
 import {idLabel} from '../../schema/schema-labels';
 import {doYield} from '../../utils/eventloop-utils';
+import {schemaTypesDefinition} from '../../schema/schema-types';
+import {ABSTRACT_STIX_REF_RELATIONSHIP} from '../../schema/general';
 
 type NewEntityCommon = typeof entity.$inferInsert;
 type NewIdentifier = typeof identifier.$inferInsert;
@@ -25,6 +27,21 @@ interface SqlHandler {
     convert: () => any
     targetRefs: () => {type: string, id: string}[]
 }
+
+const tableDefinitions = [
+    {
+        type: 'malware',
+        table: malware,
+        relation: 'relationship_malware',
+        relation_alias: alias(malware, 'relationship_malware')
+    },
+    {
+        type: 'intrusion-set',
+        table: intrusionSet,
+        relation: 'relationship_intrusion-set',
+        relation_alias: alias(intrusionSet, 'relationship_intrusion-set')
+    }
+];
 
 const prepareRef = (refs: string[], type: string, transform?: (s: string) => string) => {
     return (refs || []).filter((s) => s !== null).map((s) => ({type , id: transform ? transform(s) : s }));
@@ -145,9 +162,9 @@ const createEntity = async (db: MySql2Database & { $client: Connection }, handle
             existingSpecificId = specificResult.id;
             // Common
             const newCommon: NewEntityCommon = {
-                entityType: handler.type.toLowerCase(),
-                parentTypes: getParentTypes(handler.type),
-                representativeMain: handler.representative(),
+                entity_type: handler.type.toLowerCase(),
+                parent_types: getParentTypes(handler.type),
+                representative_main: handler.representative(),
                 targetId: existingSpecificId,
                 targetTable: handler.table[Symbol.for('drizzle:Name')],
             };
@@ -171,8 +188,8 @@ const createEntity = async (db: MySql2Database & { $client: Connection }, handle
                 const idFromMap = refEntitiesMap.get(rel.id);
                 if (idFromMap) {
                     relationships.push({
-                        relationshipType: rel.type,
-                        parentTypes: getParentTypes(rel.type),
+                        relationship_type: rel.type,
+                        parent_types: getParentTypes(rel.type),
                         fromId: entityId,
                         fromTable: 'entity', // Ref can only exists between entities
                         toId: idFromMap.id,
@@ -245,51 +262,94 @@ export const initSchema = async (_context: any, __userContext: any) => {
 export const queries = async (_context: any, __userContext: any) => {
     const connection = await mysql.createConnection({ uri: 'mysql://root@127.0.0.1:4000/opencti' });
     const db = drizzle(connection);
-
-    // const findIds = ['malware--e454d6f5-2532-4bb9-9758-639991d6ba03'];
-    const relationship_entity = alias(entity, 'relationship_entity');
-    const relationship_relationship = alias(relationship, 'relationship_relationship');
-    const relationship_stub = alias(stub, 'relationship_stub');
-    const relationship_malware = alias(malware, 'relationship_malware');
     const start = new Date().getTime();
-    const res = await db.select().from(entity)
-        //.rightJoin(identifier, eq(entity.id, identifier.targetId))
-        // join on malware table
-        .leftJoin(malware, and(eq(entity.targetId, malware.id), eq(entity.targetTable, 'malware')))
-        .leftJoin(intrusionSet, and(eq(entity.targetId, intrusionSet.id), eq(entity.targetTable, 'intrusion-set')))
-        // join on references
-        .leftJoin(relationship, and(eq(entity.id, relationship.fromId), inArray(relationship.relationshipType, [RELATION_OBJECT_MARKING, RELATION_OBJECT_LABEL, RELATION_SAMPLE])))
-            .leftJoin(relationship_entity, and(eq(relationship.toId, relationship_entity.id), eq(relationship.toTable, 'entity')))
-                .leftJoin(relationship_stub, and(eq(relationship_entity.targetId, relationship_stub.id), eq(relationship_entity.targetTable, 'stub')))
-                .leftJoin(relationship_malware, and(eq(relationship_entity.targetId, relationship_malware.id), eq(relationship_entity.targetTable, 'malware')))
-            .leftJoin(relationship_relationship, and(eq(relationship.toId, relationship_relationship.id), eq(relationship.toTable, 'relationship')))
-        // -- in regards of
-        // .rightJoin(regardsOf, and(eq(entity.id, regardsOf.fromId), inArray(regardsOf.relationshipType, [RELATION_SAMPLE])))
-        //     .rightJoin(regardsOfRelEntity, and(eq(regardsOf.toId, regardsOfRelEntity.id), eq(regardsOf.toTable, 'entity')))
-        // Join relationship, type specific
-        //.where(inArray(identifier.identifier, findIds))
-        //.where(eq(entity.entityType, 'malware'))
+
+    // Testing filter
+    const includeRefs = 'base'; // base or extended
+    const filterTypes = ['malware'];
+    const includeInRegardsOfFilter = false;
+    const findIds = ['malware--e454d6f5-2532-4bb9-9758-639991d6ba03'];
+
+    // Builder
+    const relationship_entity = alias(entity, 'relationship_entity');
+    const identifiers = sql<any>`(SELECT JSON_ARRAYAGG(JSON_OBJECT('uuid', ${identifier.identifier},'type', ${identifier.type})) 
+        FROM ${identifier} WHERE ${identifier.targetId} = ${entity.id})`;
+    const tables: any = {
+        entity: getTableColumns(entity),
+        identifiers: identifiers,
+        relationship: getTableColumns(relationship),
+        relationship_entity: getTableColumns(relationship_entity),
+    };
+    for (let i = 0; i < tableDefinitions.length; i += 1) {
+        const table = tableDefinitions[i];
+        tables[table.type] = getTableColumns(table.table);
+        tables[table.relation] = getTableColumns(table.relation_alias);
+    }
+    // region base
+    const baseQuery = db.select(tables).from(entity);
+    for (let baseIndex = 0; baseIndex < tableDefinitions.length; baseIndex += 1) {
+        const table = tableDefinitions[baseIndex];
+        baseQuery.leftJoin(table.table, and(eq(entity.targetId, table.table.id), eq(entity.targetTable, table.type)));
+    }
+    // endregion
+
+    // region refs fetching
+    const refTypes = includeRefs === 'base' ? [RELATION_OBJECT_MARKING, RELATION_OBJECT_LABEL]
+        : schemaTypesDefinition.get(ABSTRACT_STIX_REF_RELATIONSHIP);
+    const relationship_stub = alias(stub, 'relationship_stub');
+    baseQuery.leftJoin(relationship, and(eq(entity.id, relationship.fromId), inArray(relationship.relationship_type, refTypes)))
+        .leftJoin(relationship_entity, and(eq(relationship.toId, relationship_entity.id), eq(relationship.toTable, 'entity')))
+            .leftJoin(relationship_stub, and(eq(relationship_entity.targetId, relationship_stub.id), eq(relationship_entity.targetTable, 'stub')));
+    for (let leftIndex = 0; leftIndex < tableDefinitions.length; leftIndex += 1) {
+        const table = tableDefinitions[leftIndex];
+        baseQuery.leftJoin(table.relation_alias, and(eq(relationship_entity.targetId, table.relation_alias.id),
+            eq(relationship_entity.targetTable, table.type)));
+    }
+    // endregion
+
+    // region where
+    const filteredQuery = baseQuery
         .where(and(
-            eq(entity.entityType, 'malware'),
-            // -- in regards of for sample connections to malware with specific name
-            exists(
+            // filter on an entity attribute
+            filterTypes.length > 0 ? inArray(entity.entity_type, filterTypes) : undefined,
+            // Filter on instance ids
+            findIds.length > 0 ? exists(
+                db.select().from(identifier)
+                    .rightJoin(entity, and(eq(identifier.targetId, entity.id)))
+                    .where(inArray(identifier.identifier, findIds))
+            ) : undefined,
+            // Filter in regards of targeting sample with specific name
+            includeInRegardsOfFilter ? exists(
                 db.select().from(relationship)
                     .leftJoin(relationship_entity, and(eq(relationship.toId, relationship_entity.id), eq(relationship.toTable, 'entity')))
                         .leftJoin(relationship_stub, and(eq(relationship_entity.targetId, relationship_stub.id), eq(relationship_entity.targetTable, 'stub')))
-                        .leftJoin(relationship_malware, and(eq(relationship_entity.targetId, relationship_malware.id), eq(relationship_entity.targetTable, 'malware')))
+                        //.leftJoin(relationship_malware, and(eq(relationship_entity.targetId, relationship_malware.id), eq(relationship_entity.targetTable, 'malware')))
                     .where(
                         and(
                             eq(relationship.fromId, entity.id),
-                            eq(relationship.relationshipType, RELATION_SAMPLE),
-                            eq(relationship_malware.name, 'test-source2'),
+                            eq(relationship.relationship_type, RELATION_SAMPLE),
+                            //eq(relationship_malware.name, 'test-source21'),
                         )
                     )
-                )
+                ) : undefined
             )
-        )
-        // .where(and(eq(entity.entityType, 'malware'), eq(malware.name, 'test')))
-        .orderBy(asc(entity.createdAt));
+        );
+    // endregion
+
+    // region order by and fetch result
+    const orderedQuery = filteredQuery
+        .orderBy(asc(entity.created_at))
+        .limit(100)
+        .offset(0);
+    // endregion
+
+    // region Execute query
+    const res = await orderedQuery;
+    // endregion
+
     console.log('Time to find ' + res.length + ' items ' +  (new Date().getTime() - start) + ' ms ');
+
+    // region rebuild result
     const elements = [];
     const idIndex = new Map<bigint, number>();
     for (let index = 0; index < res.length; index += 1) {
@@ -301,31 +361,35 @@ export const queries = async (_context: any, __userContext: any) => {
             if (existingIndex !== undefined) {
                 const baseObject: any = elements[existingIndex];
                 if (element.relationship) {
-                    const {relationshipType, toTable} = element.relationship;
+                    const {relationship_type, toTable} = element.relationship;
                     const entityTarget = element[`relationship_${toTable}`];
                     const specificTarget: any = element[`relationship_${entityTarget?.targetTable}`];
                     const item = { ...specificTarget, ...entityTarget, i_relation: element.relationship };
-                    if (baseObject[relationshipType]) {
-                        baseObject[relationshipType].push(item);
+                    if (baseObject[relationship_type]) {
+                        baseObject[relationship_type].push(item);
                     } else {
-                        baseObject[relationshipType] = [item];
+                        baseObject[relationship_type] = [item];
                     }
                 }
                 elements[existingIndex] = baseObject;
             } else {
                 idIndex.set(element.entity.id, index);
                 const specific = element[entityType];
-                const baseObject: any = { ...specific, ...element.entity };
+                const baseObject: any = { ...specific, ...element.entity, identifiers: element.identifiers };
                 if (element.relationship) {
-                    const { relationshipType, toTable } = element.relationship;
+                    const { relationship_type, toTable } = element.relationship;
                     const entityTarget = element[`relationship_${toTable}`];
                     const specificTarget: any = element[`relationship_${entityTarget?.targetTable}`];
-                    baseObject[relationshipType] = [{ ...specificTarget, ...entityTarget, i_relation: element.relationship }];
+                    baseObject[relationship_type] = [{ ...specificTarget, ...entityTarget, i_relation: element.relationship }];
                 }
                 elements[index] = baseObject;
             }
         }
     }
-    console.log('Time to rebuild ' + elements.length + ' elements ' + (new Date().getTime() - start) + ' ms ');
+    // endregion
+
+    console.log('Time to find+rebuild ' + elements.length + ' elements ' + (new Date().getTime() - start) + ' ms ');
+
+    // return
     return true;
 };

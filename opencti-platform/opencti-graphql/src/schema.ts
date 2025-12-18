@@ -12,21 +12,21 @@ export const users = mysqlTable('user', {
     firstname: varchar('firstname', {length: 256}),
     lastname: varchar('lastname', {length: 256}),
     // dates
-    createdAt: timestamp('created_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
-    modifiedAt: timestamp('modified_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    created_at: timestamp('created_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    modified_at: timestamp('modified_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
 });
 
 export const identifier = mysqlTable('identifier', {
     id: bigint('id', { mode: 'bigint' }).autoincrement().primaryKey(),
     identifier: varchar('identifier', { length: 255 }).unique(),
     type: varchar('type', { length: 50 }).notNull(), // 'stix', 'alias', ...
-    creatorId: bigint('creator_id', { mode: 'bigint' }).references(() => users.id),
+    creator_id: bigint('creator_id', { mode: 'bigint' }).references(() => users.id),
     // targets
     targetId: bigint('target_id', { mode: 'bigint' }).notNull(), // id in entity or relationship
     targetTable: varchar('target_table', { length: 50 }).notNull(), // 'entity_common' or 'relationship_common'
     // dates
-    createdAt: timestamp('created_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
-    modifiedAt: timestamp('modified_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    created_at: timestamp('created_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    modified_at: timestamp('modified_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
 }, (table) => {
     return {
         idxReverse: index('idx_ident_reverse').on(table.id),
@@ -35,28 +35,28 @@ export const identifier = mysqlTable('identifier', {
 
 export const entity = mysqlTable('entity', {
     id: bigint('id', { mode: 'bigint' }).autoincrement().primaryKey(),
-    entityType: varchar('entity_type', { length: 50 }).notNull(), // malware
-    parentTypes: json('parent_types').$type<string[]>().notNull(),
-    representativeMain: varchar('representative_main', { length: 256 }).notNull(),
-    creatorId: bigint('creator_id', { mode: 'bigint' }).references(() => users.id),
+    entity_type: varchar('entity_type', { length: 50 }).notNull(), // malware
+    parent_types: json('parent_types').$type<string[]>().notNull(),
+    representative_main: varchar('representative_main', { length: 256 }).notNull(),
+    creator_id: bigint('creator_id', { mode: 'bigint' }).references(() => users.id),
     // targets
     targetId: bigint('target_id', { mode: 'bigint' }).notNull(), // Malware ID
     targetTable: varchar('target_table', { length: 50 }).notNull(), // 'malware'
     // dates
-    createdAt: timestamp('created_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
-    modifiedAt: timestamp('modified_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    created_at: timestamp('created_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    modified_at: timestamp('modified_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
 }, (table) => {
     return {
         // This is required for efficient parent type searches
-        parentTypesIdx: index('idx_parent_types').on(sql`(CAST(${table.parentTypes} AS CHAR(32) ARRAY))`)
+        parentTypesIdx: index('idx_parent_types').on(sql`(CAST(${table.parent_types} AS CHAR(32) ARRAY))`)
     };
 });
 
 export const relationship = mysqlTable('relationship', {
     id: bigint('id', { mode: 'bigint' }).autoincrement().primaryKey(),
-    relationshipType: varchar('relationship_type', { length: 50 }).notNull(), // malware
-    parentTypes: json('parent_types').$type<string[]>().notNull(),
-    creatorId: bigint('creator_id', { mode: 'bigint' }).references(() => users.id),
+    relationship_type: varchar('relationship_type', { length: 50 }).notNull(), // malware
+    parent_types: json('parent_types').$type<string[]>().notNull(),
+    creator_id: bigint('creator_id', { mode: 'bigint' }).references(() => users.id),
     // From
     fromId: bigint('from_id', { mode: 'bigint' }).notNull(),
     fromTable: varchar('from_table', { length: 50 }).notNull(), // 'entity_common' or 'relationship_common'
@@ -64,12 +64,12 @@ export const relationship = mysqlTable('relationship', {
     toId: bigint('to_id', { mode: 'bigint' }).notNull(),
     toTable: varchar('to_table', { length: 50 }).notNull(), // 'entity_common' or 'relationship_common'
     // dates
-    createdAt: timestamp('created_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
-    modifiedAt: timestamp('modified_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    created_at: timestamp('created_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    modified_at: timestamp('modified_at', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
 }, (table) => {
     return {
         // This is required for efficient parent type searches
-        parentTypesIdx: index('idx_parent_types').on(sql`(CAST(${table.parentTypes} AS CHAR(32) ARRAY))`)
+        parentTypesIdx: index('idx_parent_types').on(sql`(CAST(${table.parent_types} AS CHAR(32) ARRAY))`)
     };
 });
 
@@ -77,13 +77,13 @@ export const malware = mysqlTable('malware', {
     id: bigint('id', { mode: 'bigint' }).autoincrement().primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
     description: text('description'),
-    malwareTypes: json('malware_types').$type<string[]>(),
-    implementationLanguages: json('implementation_languages').$type<string[]>(),
-    architectureExecutionEnvs: json('architecture_execution_envs').$type<string[]>(),
+    malware_types: json('malware_types').$type<string[]>(),
+    implementation_languages: json('implementation_languages').$type<string[]>(),
+    architecture_execution_envs: json('architecture_execution_envs').$type<string[]>(),
     capabilities: json('capabilities').$type<string[]>(),
-    isFamily: boolean('is_family').default(false),
-    firstSeen: timestamp('first_seen', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
-    lastSeen: timestamp('last_seen', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    is_family: boolean('is_family').default(false),
+    first_seen: timestamp('first_seen', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    last_seen: timestamp('last_seen', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
 }, (table) => {
     return {
         idxName: index('idx_malware_name').on(table.name),
@@ -94,8 +94,8 @@ export const intrusionSet = mysqlTable('intrusion-set', {
     id: bigint('id', { mode: 'bigint' }).autoincrement().primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
     description: text('description'),
-    firstSeen: timestamp('first_seen', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
-    lastSeen: timestamp('last_seen', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    first_seen: timestamp('first_seen', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
+    last_seen: timestamp('last_seen', { fsp: 6 }).default(sql`CURRENT_TIMESTAMP(6)`),
 }, (table) => {
     return {
         idxName: index('idx_intrusion_set_name').on(table.name),
