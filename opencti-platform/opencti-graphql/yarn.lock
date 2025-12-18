@@ -7363,15 +7363,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild-plugin-import-glob@npm:0.1.1":
-  version: 0.1.1
-  resolution: "esbuild-plugin-import-glob@npm:0.1.1"
-  dependencies:
-    fast-glob: "npm:^3.2.5"
-  checksum: 10c0/ae7e47630a78890309c273a055578644870b938f20bf276de39e5fe39be4f5b4b9d7b3edf27025bd8f5cfdaa5277c9a7735b2ed164c717f0dec211f64d591620
-  languageName: node
-  linkType: hard
-
 "esbuild@npm:0.27.1":
   version: 0.27.1
   resolution: "esbuild@npm:0.27.1"
@@ -7992,7 +7983,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-glob@npm:^3.2.5, fast-glob@npm:^3.2.9":
+"fast-glob@npm:^3.2.9":
   version: 3.3.3
   resolution: "fast-glob@npm:3.3.3"
   dependencies:
@@ -10939,7 +10930,6 @@ __metadata:
     ejs: "npm:3.1.10"
     esbuild: "npm:0.27.1"
     esbuild-plugin-copy: "npm:2.1.1"
-    esbuild-plugin-import-glob: "npm:0.1.1"
     eslint: "npm:9.39.1"
     eslint-import-resolver-typescript: "npm:4.4.4"
     eslint-plugin-import: "npm:2.32.0"
