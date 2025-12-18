@@ -47,7 +47,6 @@ jobs:
       continue-on-error: true
       run: cat runner_resource_stat.log
 
-
   opencti-frontend-e2e-test-ee:
     if: ${{ !github.event.pull_request.head.repo.fork }}
     name: Frontend e2e tests EE
