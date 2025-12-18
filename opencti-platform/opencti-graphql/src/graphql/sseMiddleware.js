@@ -40,7 +40,7 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { generateCreateMessage } from '../database/generate-message';
+import { generateCreateMessage } from '../database/data-changes';
 import { asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';

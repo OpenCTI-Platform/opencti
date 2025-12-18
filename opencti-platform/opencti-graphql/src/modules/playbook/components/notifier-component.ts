@@ -8,7 +8,7 @@ import { getEntityFromCache } from '../../../database/cache';
 import type { BasicStoreSettings } from '../../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../../manager/notificationManager';
-import { generateCreateMessage, generateDeleteMessage } from '../../../database/generate-message';
+import { generateCreateMessage, generateDeleteMessage } from '../../../database/data-changes';
 import { convertStixToInternalTypes } from '../../../schema/schemaUtils';
 import { storeNotificationEvent } from '../../../database/stream/stream-handler';
 import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';

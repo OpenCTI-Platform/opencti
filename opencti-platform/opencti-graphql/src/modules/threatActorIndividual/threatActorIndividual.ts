@@ -49,6 +49,51 @@ import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_PERSONA } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import type { NestedObjectAttribute } from '../../schema/attribute-definition';
+import { DefaultFormating, humanizeDate, humanizeHeight, humanizeWeight } from '../../utils/humanize';
+
+type Measurement = {
+  measure: number;
+  date_seen: string;
+};
+
+const weight: NestedObjectAttribute<Measurement> = {
+  name: 'weight',
+  label: 'Weight',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isFilterable: false,
+  representative: (item, _, format = DefaultFormating): string => {
+    return humanizeWeight(item.measure, format) + ' at ' + humanizeDate(item.date_seen, format);
+  },
+  mappings: [
+    { name: 'measure', label: 'Weight measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
+    { name: 'date_seen', label: 'Weight measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
+  ],
+};
+
+const height: NestedObjectAttribute<Measurement> = {
+  name: 'height',
+  label: 'Height',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isFilterable: false,
+  representative: (item, _, format = DefaultFormating): string => {
+    return humanizeHeight(item.measure, format) + ' at ' + humanizeDate(item.date_seen, format);
+  },
+  mappings: [
+    { name: 'measure', label: 'Height measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
+    { name: 'date_seen', label: 'Height measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
+  ],
+};
 
 const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActorIndividual, StixThreatActorIndividual> = {
   type: {
@@ -97,36 +142,8 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'marital_status', label: 'Marital status', type: 'string', format: 'vocabulary', vocabularyCategory: 'marital_status_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'eye_color', label: 'Eye color', type: 'string', format: 'vocabulary', vocabularyCategory: 'eye_color_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hair_color', label: 'Hair color', type: 'string', format: 'vocabulary', vocabularyCategory: 'hair_color_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    {
-      name: 'height',
-      label: 'Height',
-      type: 'object',
-      format: 'nested',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: true,
-      upsert: true,
-      isFilterable: false,
-      mappings: [
-        { name: 'measure', label: 'Height measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
-        { name: 'date_seen', label: 'Height measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
-      ],
-    },
-    {
-      name: 'weight',
-      label: 'Weight',
-      type: 'object',
-      format: 'nested',
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: true,
-      upsert: true,
-      isFilterable: false,
-      mappings: [
-        { name: 'measure', label: 'Weight measure', type: 'numeric', mandatoryType: 'external', upsert: true, precision: 'float', editDefault: false, multiple: false, isFilterable: true },
-        { name: 'date_seen', label: 'Weight measure date', type: 'date', mandatoryType: 'external', upsert: true, editDefault: false, multiple: false, isFilterable: true },
-      ],
-    },
+    height,
+    weight,
     { name: 'confidence', label: 'Confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'revoked', label: 'Revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'lang', label: 'Lang', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },

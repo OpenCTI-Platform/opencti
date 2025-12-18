@@ -142,6 +142,12 @@ export const sanitizeAuthorizedMembers = (input: MemberAccessInput[]) => {
   });
 };
 
+export interface AuthorizedMembers {
+  id: string;
+  access_right: string;
+  groups_restriction_ids: string[] | null | undefined;
+}
+
 export const buildRestrictedMembers = async (
   context: AuthContext,
   user: AuthUser,
@@ -157,7 +163,7 @@ export const buildRestrictedMembers = async (
   // Allow authorized members edition only on draft type but not for other entity types in draft
   const draftId = getDraftContext(context, user);
   if (draftId && draftId !== entityId) throw UnsupportedError('Cannot edit authorized members in draft');
-  let restricted_members: { id: string; access_right: string; groups_restriction_ids: string[] | null | undefined }[] | null = null;
+  let restricted_members: AuthorizedMembers[] | null = null;
   if (input) {
     // validate input (validate access right) remove duplicate
     const filteredInput = sanitizeAuthorizedMembers(input);

@@ -58,6 +58,7 @@ import { RELATION_MEMBER_OF, RELATION_IN_PIR } from '../schema/internalRelations
 import { AuthorizedMember } from '../utils/access';
 import type { Metric } from '../modules/metrics/metrics';
 import type { PirInformation } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 
 interface Representative {
   main: string;
@@ -676,6 +677,7 @@ interface BasicManagerEntity extends BasicStoreEntity {
 
 interface BasicWorkflowStatus extends BasicStoreEntity {
   order: number;
+  entity_type: typeof ENTITY_TYPE_STATUS;
   template_id: string;
   type: string;
   scope: StatusScope;
@@ -688,6 +690,7 @@ interface BasicTaskEntity extends BasicStoreEntity {
 
 interface BasicWorkflowTemplateEntity extends BasicStoreEntity {
   name: string;
+  entity_type: typeof ENTITY_TYPE_STATUS_TEMPLATE;
   color: string;
 }
 

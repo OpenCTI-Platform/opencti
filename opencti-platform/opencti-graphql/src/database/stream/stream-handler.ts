@@ -3,7 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { StoreObject, StoreRelation } from '../../types/store';
 import type { ActivityStreamEvent, BaseEvent, Change, CreateEventOpts, EventOpts, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEventOpts } from '../../types/event';
 import { isStixExportableInStreamData } from '../../schema/stixCoreObject';
-import { generateCreateMessage, generateDeleteMessage, generateRestoreMessage } from '../generate-message';
+import { generateCreateMessage, generateDeleteMessage, generateRestoreMessage } from '../data-changes';
 import {
   buildCreateEvent,
   buildDeleteEvent,
@@ -66,13 +66,12 @@ export const storeUpdateEvent = async (
   user: AuthUser,
   previous: StoreObject,
   instance: StoreObject,
-  message: string,
   changes: Change[],
   opts: UpdateEventOpts = {},
 ) => {
   try {
     if (isStixExportableInStreamData(instance)) {
-      const event = buildUpdateEvent(user, previous, instance, message, changes, opts);
+      const event = buildUpdateEvent(user, previous, instance, changes, opts);
       await pushToStream(context, user, event, opts);
       return event;
     }
