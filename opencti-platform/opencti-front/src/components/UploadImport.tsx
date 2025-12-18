@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { useTheme } from '@mui/styles';
-import { Theme } from '@mui/material/styles/createTheme';
-import IconButton from '@common/button/IconButton';
 import Button from '@common/button/Button';
-import { UploadFileOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@common/button/IconButton';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
-import { useFormatter } from './i18n';
-import useDraftContext from '../utils/hooks/useDraftContext';
+import { FileUploadOutlined } from '@mui/icons-material';
+import { Theme } from '@mui/material/styles/createTheme';
+import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/styles';
+import React, { useState } from 'react';
 import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
+import useDraftContext from '../utils/hooks/useDraftContext';
+import { useFormatter } from './i18n';
 
 interface UploadImportProps {
   color?: 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
@@ -54,11 +54,10 @@ const UploadImport = ({
         <Tooltip title={title} aria-label={title}>
           <IconButton
             color={color}
-            size={size}
             aria-haspopup="true"
             onClick={() => setOpenImportFilesDialog(true)}
           >
-            <UploadFileOutlined fontSize={fontSize} />
+            <FileUploadOutlined fontSize={fontSize} />
           </IconButton>
         </Tooltip>
       ) : (
@@ -66,7 +65,6 @@ const UploadImport = ({
           onClick={() => setOpenImportFilesDialog(true)}
           color={color}
           size={size}
-          // variant={variant}
           aria-label={title}
           title={title}
           sx={style ?? { marginLeft: theme.spacing(1) }}

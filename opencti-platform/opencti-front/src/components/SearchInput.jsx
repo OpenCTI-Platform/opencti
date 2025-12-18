@@ -67,6 +67,59 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+export function GradientBorderTextField({
+  isActive,
+  ...props
+}) {
+  const theme = useTheme();
+
+  return (
+    <TextField
+      {...props}
+      variant="outlined"
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          position: 'relative',
+          borderRadius: 2,
+          backgroundColor: theme.palette.background.paper,
+
+          '& fieldset': {
+            border: '1px solid transparent',
+          },
+
+          ...(isActive && {
+            '&.Mui-focused:not(:hover) fieldset': {
+              border: `1px solid ${theme.palette.ai.dark}`,
+            },
+
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              inset: 0,
+              borderRadius: 'inherit',
+              padding: '1px',
+              background: `linear-gradient(
+                90deg,
+                ${theme.palette.ai?.light},
+                ${theme.palette.ai?.dark}
+              )`,
+              WebkitMask:
+                'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              maskComposite: 'exclude',
+              pointerEvents: 'none',
+              opacity: 0.8,
+            },
+
+            '&:hover fieldset': {
+              border: `1px solid ${theme.palette.ai.dark}`, // Keep transparent on hover
+            },
+          }),
+        },
+      }}
+    />
+  );
+}
+
 const SearchInput = (props) => {
   const classes = useStyles();
   const location = useLocation();
@@ -131,7 +184,7 @@ const SearchInput = (props) => {
 
   return (
     <>
-      <TextField
+      <GradientBorderTextField
         name="keyword"
         value={searchValue}
         variant="outlined"
@@ -147,77 +200,89 @@ const SearchInput = (props) => {
             onSubmit(value, isNLQActivated);
           }
         }}
-        sx={isNLQActivated ? {
-          borderColor: 'red',
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': {
-              borderColor: theme.palette.ai.main,
-              borderWidth: '2px',
-            },
-            '&:hover fieldset': {
-              borderColor: theme.palette.ai.main,
-              borderWidth: '2px',
-            },
-          },
-        } : undefined}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }}>
-              {isNLQActivated
-                ? <FiligranIcon icon={LogoXtmOneIcon} size="medium" color="ai" />
-                : <Search fontSize="small" />}
-            </InputAdornment>
-          ),
-          endAdornment: variant === 'topBar' && (
-            <InputAdornment position="end" sx={{ display: 'flex', gap: 0.5 }}>
-              {isNLQActivated && isNLQLoading
-                && (
-                  <div>
-                    <Loader variant="inline" />
-                  </div>
-                )
-              }
-              <Tooltip title={t_i18n('Advanced search')}>
-                <IconButton
-                  onClick={handleRemoveAskAI}
-                  component={Link}
-                  to="/dashboard/search"
-                  selected={
-                    location.pathname.includes('/dashboard/search')
-                    && !location.pathname.includes('/dashboard/search_bulk')
-                    && !isNLQActivated
-                  }
-                >
-                  <TuneOutlined />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title={t_i18n('Bulk search')}>
-                <IconButton
-                  onClick={handleRemoveAskAI}
-                  component={Link}
-                  to="/dashboard/search_bulk"
-                  selected={
-                    location.pathname.includes('/dashboard/search_bulk') && !isNLQActivated
-                  }
-                >
-                  <ManageSearchOutlined />
-                </IconButton>
-              </Tooltip>
-              {fullyActive && (
-                <EETooltip forAi={true} title={t_i18n('Ask AI')}>
+        isActive={isNLQActivated}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <Search
+                fontSize="small"
+                sx={{
+                  color: isNLQActivated ? theme.palette.ai.main : 'inherit',
+                  mr: 0.5,
+                }}
+              />
+            ),
+
+            endAdornment: variant === 'topBar' ? (
+              <InputAdornment
+                position="end"
+                sx={{ display: 'flex', gap: 0.5 }}
+              >
+                {isNLQActivated && isNLQLoading && (
+                  <Loader variant="inline" />
+                )}
+
+                <Tooltip title={t_i18n('Advanced search')}>
                   <IconButton
-                    style={{ color: theme.palette.ai.main }}
-                    onClick={isAIEnabled ? handleChangeAskAI : null}
+                    onClick={handleRemoveAskAI}
+                    component={Link}
+                    to="/dashboard/search"
+                    selected={
+                      location.pathname.includes('/dashboard/search')
+                      && !location.pathname.includes(
+                        '/dashboard/search_bulk',
+                      )
+                      && !isNLQActivated
+                    }
                   >
-                    <FiligranIcon icon={LogoXtmOneIcon} size="medium" color="ai" />
+                    <TuneOutlined />
                   </IconButton>
-                </EETooltip>
-              )}
-            </InputAdornment>
-          ),
-          classes: {
-            root: classRoot,
-            input: classInput,
+                </Tooltip>
+
+                <Tooltip title={t_i18n('Bulk search')}>
+                  <IconButton
+                    onClick={handleRemoveAskAI}
+                    component={Link}
+                    to="/dashboard/search_bulk"
+                    selected={
+                      location.pathname.includes(
+                        '/dashboard/search_bulk',
+                      ) && !isNLQActivated
+                    }
+                  >
+                    <ManageSearchOutlined />
+                  </IconButton>
+                </Tooltip>
+
+                {fullyActive && (
+                  <EETooltip
+                    forAi
+                    title={t_i18n('Ask AI')}
+                  >
+                    <IconButton
+                      sx={{ color: theme.palette.ai.main }}
+                      selected={isNLQActivated}
+                      onClick={
+                        isAIEnabled
+                          ? handleChangeAskAI
+                          : undefined
+                      }
+                    >
+                      <FiligranIcon
+                        icon={LogoXtmOneIcon}
+                        size="small"
+                        color="ai"
+                      />
+                    </IconButton>
+                  </EETooltip>
+                )}
+              </InputAdornment>
+            ) : null,
+
+            classes: {
+              root: classRoot,
+              input: classInput,
+            },
           },
         }}
         {...otherProps}

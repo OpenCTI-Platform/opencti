@@ -118,6 +118,7 @@ import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/S
 import useDimensions from '../../../utils/hooks/useDimensions';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { Box } from '@mui/material';
+import { LeftBarHeader } from './LeftBarHeader';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -256,6 +257,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]);
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToExplore = useGranted([EXPLORE]);
+  const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
 
   const anchors = {
     analyses: useRef(null),
@@ -391,6 +393,12 @@ const LeftBarComponent = ({ queryRef }) => {
 
   const {
     bannerSettings: { bannerHeightNumber },
+    settings: {
+      platform_openaev_url: openAEVUrl,
+      // platform_enterprise_edition: ee,
+      platform_xtmhub_url: xtmhubUrl,
+      xtm_hub_registration_status: xtmhubStatus,
+    },
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { dimension } = useDimensions();
@@ -510,22 +518,34 @@ const LeftBarComponent = ({ queryRef }) => {
       }}
     >
       <Box
-        className={classes.logoContainer}
-        style={{
-          marginTop: `calc(${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px)`,
-        }}
+        // className={classes.logoContainer}
+        // style={{
+        //   marginTop: `calc(${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px)`,
+        // }}
         sx={{
-          padding: 2,
+          // padding: 2,
           flexShrink: 0,
         }}
       >
-        <Link to="/dashboard">
+        <LeftBarHeader
+          logo={logo}
+          logoCollapsed={platformTheme?.theme_logo_collapsed}
+          navOpen={navOpen}
+          bannerHeightNumber={bannerHeightNumber}
+          settingsMessagesBannerHeight={settingsMessagesBannerHeight}
+          openAEVUrl={openAEVUrl}
+          xtmhubUrl={xtmhubUrl}
+          xtmhubStatus={xtmhubStatus}
+          hasXtmHubAccess={hasXtmHubAccess}
+        />
+
+        {/* <Link to="/dashboard">
           <img
             src={logo}
             alt="logo"
             style={{ height: 35, maxWidth: '100%', objectFit: 'contain' }}
           />
-        </Link>
+        </Link> */}
       </Box>
 
       <div
