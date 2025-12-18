@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, describe, expect, it } from 'vitest';
+import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
 import { ADMIN_USER, getGroupIdByName, getOrganizationIdByName, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { entitySettingEditField, findByType as findEntitySettingsByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
@@ -12,7 +12,7 @@ import {
   type RequestAccessConfigureInput,
   StatusOrdering,
   StatusScope,
-  type StatusTemplate
+  type StatusTemplate,
 } from '../../../src/generated/graphql';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../src/types/store';
 import { logApp } from '../../../src/config/conf';
@@ -24,16 +24,17 @@ import {
   computeAuthorizedMembersForRequestAccess,
   configureRequestAccess,
   declineRequestAccess,
-  getRfiEntitySettings
+  getRfiEntitySettings,
 } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { executionContext, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
 import type { BasicStoreEntityEntitySetting, RequestAccessFlow } from '../../../src/modules/entitySetting/entitySetting-types';
-import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
+import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { verifyRequestAccessEnabled } from '../../../src/modules/requestAccess/requestAccessUtils';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import { getFakeAuthUser, getGroupEntity } from '../../utils/domainQueryHelper';
 import type { Group } from '../../../src/types/group';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 describe('Request access domain  - initialized status', async () => {
   it('should initial data be created', async () => {
@@ -63,24 +64,24 @@ describe('Request access domain  - initialized status', async () => {
   it('should get request access scope status', async () => {
     statusTemplateGlobalRfi = await createStatusTemplate(testContext, ADMIN_USER, {
       name: 'GLOBAL_RFI',
-      color: '#b83f13'
+      color: '#b83f13',
     });
     statusTemplateRequestAccess = await createStatusTemplate(testContext, ADMIN_USER, {
       name: 'REQUEST_ACCESS_SCOPE',
-      color: '#b83f13'
+      color: '#b83f13',
     });
     await createStatus(
       testContext,
       ADMIN_USER,
       ENTITY_TYPE_CONTAINER_CASE_RFI,
-      { template_id: statusTemplateGlobalRfi.id, order: 666, scope: StatusScope.Global }
+      { template_id: statusTemplateGlobalRfi.id, order: 666, scope: StatusScope.Global },
     );
 
     await createStatus(
       testContext,
       ADMIN_USER,
       ENTITY_TYPE_CONTAINER_CASE_RFI,
-      { template_id: statusTemplateRequestAccess.id, order: 111, scope: StatusScope.RequestAccess }
+      { template_id: statusTemplateRequestAccess.id, order: 111, scope: StatusScope.RequestAccess },
     );
 
     const args: QueryStatusesArgs = {
@@ -124,7 +125,7 @@ describe('Request access domain  - initialized status', async () => {
   it('should get all status template by GLOBAL scope', async () => {
     resetCacheForEntity(ENTITY_TYPE_STATUS);
     const args: QueryStatusTemplatesByStatusScopeArgs = {
-      scope: StatusScope.Global
+      scope: StatusScope.Global,
     };
     const globalTemplates: StatusTemplate[] = await findAllTemplatesByStatusScope(testContext, ADMIN_USER, args);
     logApp.info('[TEST] globalTemplates', { globalTemplates });
@@ -135,7 +136,7 @@ describe('Request access domain  - initialized status', async () => {
   it('should get all status template by REQUEST_ACCESS scope', async () => {
     resetCacheForEntity(ENTITY_TYPE_STATUS);
     const args: QueryStatusTemplatesByStatusScopeArgs = {
-      scope: StatusScope.RequestAccess
+      scope: StatusScope.RequestAccess,
     };
     const requestAccessTemplates: StatusTemplate[] = await findAllTemplatesByStatusScope(testContext, ADMIN_USER, args);
     logApp.info('[TEST] requestAccessTemplates', { requestAccessTemplates });
@@ -151,13 +152,19 @@ describe('Request access domain  - compute RFI retricted members', async () => {
   let testOrganizationId: string;
 
   beforeAll(async () => {
-    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    await setOrganization(PLATFORM_ORGANIZATION);
     platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
   });
 
   afterAll(async () => {
-    await enableCEAndUnSetOrganization();
+    // Deactivate EE at the end of this test - back to CE
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
+    await unSetOrganization();
   });
 
   it('should configure request access settings', async () => {
@@ -168,7 +175,7 @@ describe('Request access domain  - compute RFI retricted members', async () => {
     raConfig.approval_admin = [greenGroupId];
 
     const editInput: EditInput[] = [
-      { key: 'request_access_workflow', value: [raConfig] }
+      { key: 'request_access_workflow', value: [raConfig] },
     ];
     await entitySettingEditField(testContext, ADMIN_USER, rfiEntitySettings.id, editInput);
 
@@ -181,14 +188,14 @@ describe('Request access domain  - compute RFI retricted members', async () => {
       restricted_members: [
         {
           id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
-          access_right: 'admin'
+          access_right: 'admin',
         },
         {
           id: '55ec0c6a-13ce-5e39-b486-354fe4a7084f',
-          access_right: 'view'
+          access_right: 'view',
         },
       ],
-      granted: [PLATFORM_ORGANIZATION.id]
+      granted: [PLATFORM_ORGANIZATION.id],
     };
 
     await expect(async () => {
@@ -203,55 +210,55 @@ describe('Request access domain  - compute RFI retricted members', async () => {
     const authorizedMembers = await computeAuthorizedMembersForRequestAccess(testContext, ADMIN_USER, someEntity as BasicStoreCommon);
     expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_ADMIN)).toStrictEqual({
       id: OPENCTI_ADMIN_UUID,
-      access_right: MEMBER_ACCESS_RIGHT_ADMIN
+      access_right: MEMBER_ACCESS_RIGHT_ADMIN,
     });
     expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_EDIT)).toStrictEqual({
       id: platformOrganizationId,
       access_right: MEMBER_ACCESS_RIGHT_EDIT,
-      groups_restriction_ids: [greenGroupId]
+      groups_restriction_ids: [greenGroupId],
     });
   });
 
   it('should knowledge sharing request on entity with organisation sharing use it', async () => {
     // No granted part
     const someEntity: Partial<BasicStoreCommon> = {
-      granted: [testOrganizationId]
+      granted: [testOrganizationId],
     };
 
     const authorizedMembers = await computeAuthorizedMembersForRequestAccess(testContext, ADMIN_USER, someEntity as BasicStoreCommon);
     expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_ADMIN)).toStrictEqual({
       id: OPENCTI_ADMIN_UUID,
-      access_right: MEMBER_ACCESS_RIGHT_ADMIN
+      access_right: MEMBER_ACCESS_RIGHT_ADMIN,
     });
     expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_EDIT)).toStrictEqual({
       id: testOrganizationId,
       access_right: MEMBER_ACCESS_RIGHT_EDIT,
-      groups_restriction_ids: [greenGroupId]
+      groups_restriction_ids: [greenGroupId],
     });
   });
 
   it('should knowledge sharing request on entity with several organisation sharing use them', async () => {
     // No granted part
     const someEntity: Partial<BasicStoreCommon> = {
-      granted: [testOrganizationId, platformOrganizationId]
+      granted: [testOrganizationId, platformOrganizationId],
     };
 
     const authorizedMembers = await computeAuthorizedMembersForRequestAccess(testContext, ADMIN_USER, someEntity as BasicStoreCommon);
     expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_ADMIN)).toStrictEqual({
       id: OPENCTI_ADMIN_UUID,
-      access_right: MEMBER_ACCESS_RIGHT_ADMIN
+      access_right: MEMBER_ACCESS_RIGHT_ADMIN,
     });
     expect(authorizedMembers.filter((member) => member.access_right === MEMBER_ACCESS_RIGHT_EDIT).length).toBe(2);
     expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_EDIT && member.id === testOrganizationId)).toStrictEqual({
       id: testOrganizationId,
       access_right: MEMBER_ACCESS_RIGHT_EDIT,
-      groups_restriction_ids: [greenGroupId]
+      groups_restriction_ids: [greenGroupId],
     });
 
     expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_EDIT && member.id === platformOrganizationId)).toStrictEqual({
       id: platformOrganizationId,
       access_right: MEMBER_ACCESS_RIGHT_EDIT,
-      groups_restriction_ids: [greenGroupId]
+      groups_restriction_ids: [greenGroupId],
     });
   });
 });
@@ -260,15 +267,15 @@ describe('Request access domain  - conditions for request access activated', asy
   it('should CE be forbidden to use request access', async () => {
     const settings: Partial<BasicStoreSettings> = {
       valid_enterprise_edition: false,
-      platform_organization: TEST_ORGANIZATION.id
+      platform_organization: TEST_ORGANIZATION.id,
     };
 
     const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
       request_access_workflow: {
         approval_admin: [GREEN_GROUP.id],
         approved_workflow_id: '1234',
-        declined_workflow_id: '5678'
-      }
+        declined_workflow_id: '5678',
+      },
     };
 
     const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
@@ -278,15 +285,15 @@ describe('Request access domain  - conditions for request access activated', asy
 
   it('should request access be disabled when there is no platform organization', async () => {
     const settings: Partial<BasicStoreSettings> = {
-      valid_enterprise_edition: true
+      valid_enterprise_edition: true,
     };
 
     const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
       request_access_workflow: {
         approval_admin: [GREEN_GROUP.id],
         approved_workflow_id: '1234',
-        declined_workflow_id: '5678'
-      }
+        declined_workflow_id: '5678',
+      },
     };
 
     const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
@@ -297,15 +304,15 @@ describe('Request access domain  - conditions for request access activated', asy
   it('should request access be disabled when admin group is not setup', async () => {
     const settings: Partial<BasicStoreSettings> = {
       valid_enterprise_edition: true,
-      platform_organization: TEST_ORGANIZATION.id
+      platform_organization: TEST_ORGANIZATION.id,
     };
 
     const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
       request_access_workflow: {
         approval_admin: [],
         approved_workflow_id: '1234',
-        declined_workflow_id: '5678'
-      }
+        declined_workflow_id: '5678',
+      },
     };
 
     const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
@@ -316,13 +323,13 @@ describe('Request access domain  - conditions for request access activated', asy
   it('should request access be disabled when approved_workflow_id or declined_workflow_id is not setup', async () => {
     const settings: Partial<BasicStoreSettings> = {
       valid_enterprise_edition: true,
-      platform_organization: TEST_ORGANIZATION.id
+      platform_organization: TEST_ORGANIZATION.id,
     };
 
     const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
       request_access_workflow: {
         approval_admin: [GREEN_GROUP.id],
-      }
+      },
     };
 
     const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
@@ -333,15 +340,15 @@ describe('Request access domain  - conditions for request access activated', asy
   it('should request access be enabled when everything is configured', async () => {
     const settings: Partial<BasicStoreSettings> = {
       valid_enterprise_edition: true,
-      platform_organization: TEST_ORGANIZATION.id
+      platform_organization: TEST_ORGANIZATION.id,
     };
 
     const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
       request_access_workflow: {
         approval_admin: [GREEN_GROUP.id],
         approved_workflow_id: '1234',
-        declined_workflow_id: '5678'
-      }
+        declined_workflow_id: '5678',
+      },
     };
 
     const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
@@ -386,7 +393,7 @@ describe('Request access domain  - configuration edition', async () => {
       testContext,
       ADMIN_USER,
       ENTITY_TYPE_CONTAINER_CASE_RFI,
-      { template_id: statusTemplateRequestAccess.id, order: 3, scope: StatusScope.RequestAccess }
+      { template_id: statusTemplateRequestAccess.id, order: 3, scope: StatusScope.RequestAccess },
     );
 
     greenGroup = await getGroupEntity(GREEN_GROUP);
@@ -394,16 +401,16 @@ describe('Request access domain  - configuration edition', async () => {
 
   afterAll(async () => {
     const editInput: EditInput[] = [
-      { key: 'request_access_workflow', value: [initialConfig] }
+      { key: 'request_access_workflow', value: [initialConfig] },
     ];
     await entitySettingEditField(testContext, ADMIN_USER, rfiEntitySettings?.id, editInput);
   });
 
   it('should disabling approval_admin in request access be allowed', async () => {
-    const input:RequestAccessConfigureInput = {
+    const input: RequestAccessConfigureInput = {
       approval_admin: undefined,
       approved_status_id: statusTemplateRequestAccess.id,
-      declined_status_id: statusTemplateRequestAccess.id
+      declined_status_id: statusTemplateRequestAccess.id,
     };
 
     const configuration = await configureRequestAccess(testContext, ADMIN_USER, input);
@@ -413,10 +420,10 @@ describe('Request access domain  - configuration edition', async () => {
   });
 
   it('should disabling approved_status_id in request access be allowed', async () => {
-    const input:RequestAccessConfigureInput = {
+    const input: RequestAccessConfigureInput = {
       approval_admin: [greenGroup.id],
       approved_status_id: undefined,
-      declined_status_id: statusTemplateRequestAccess.id
+      declined_status_id: statusTemplateRequestAccess.id,
     };
 
     const configuration = await configureRequestAccess(testContext, ADMIN_USER, input);
@@ -427,10 +434,10 @@ describe('Request access domain  - configuration edition', async () => {
   });
 
   it('should disabling approved_status_id in request access be allowed', async () => {
-    const input:RequestAccessConfigureInput = {
+    const input: RequestAccessConfigureInput = {
       approval_admin: [greenGroup.id],
       approved_status_id: statusTemplateRequestAccess.id,
-      declined_status_id: undefined
+      declined_status_id: undefined,
     };
 
     const configuration = await configureRequestAccess(testContext, ADMIN_USER, input);

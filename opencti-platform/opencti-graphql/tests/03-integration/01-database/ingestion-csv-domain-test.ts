@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { addIngestionCsv, deleteIngestionCsv, ingestionCsvAddAutoUser } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { adminQuery, PLATFORM_ORGANIZATION, USER_EDITOR } from '../../utils/testQuery';
 import { type EditInput, IngestionAuthType, type IngestionCsv, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../src/generated/graphql';
-import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
+import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { findDefaultIngestionGroups, groupEditField } from '../../../src/domain/group';
@@ -49,7 +49,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   });
 
   afterAll(async () => {
-    await enableCEAndUnSetOrganization();
+    await unSetOrganization();
     // Deactivate EE at the end of this test - back to CE
     vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
     vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
@@ -101,7 +101,7 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   });
 
   it('should create a CSV Feed with auto user creation works fine with platform org', async () => {
-    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    await setOrganization(PLATFORM_ORGANIZATION);
     const platformOrganization = await getOrganizationEntity(PLATFORM_ORGANIZATION);
 
     const ingestionCsvInput: IngestionCsvAddInput = {

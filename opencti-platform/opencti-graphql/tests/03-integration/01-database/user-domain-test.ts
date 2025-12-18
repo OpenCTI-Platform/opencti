@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ADMIN_USER, AMBER_STRICT_GROUP, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
@@ -14,13 +14,13 @@ import {
   findById as findUserById,
   isUserTheLastAdmin,
   userAddRelation,
-  userDelete
+  userDelete,
 } from '../../../src/domain/user';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { deleteElementById } from '../../../src/database/middleware';
-import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
+import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
 import type { Group } from '../../../src/types/group';
@@ -31,6 +31,7 @@ import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationshi
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntityWorkspace, StoreEntityWorkspace } from '../../../src/modules/workspace/workspace-types';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -47,7 +48,7 @@ const createUserForTest = async (adminContext: AuthContext, adminUser: AuthUser,
     user_email: `${username}@opencti.io`,
     name: username,
     firstname: username,
-    lastname: 'opencti'
+    lastname: 'opencti',
   };
   const userAdded = await addUser(adminContext, adminUser, simpleUser);
   await assignGroupToUser(adminContext, adminUser, userAdded.id, AMBER_STRICT_GROUP.name);
@@ -65,7 +66,7 @@ const createNotificationForUser = async (context: AuthContext, user: AuthUser) =
     notification_type: '',
     notification_content: [{
       title: '',
-      events: []
+      events: [],
     }],
     user_id: user.id,
   };
@@ -93,7 +94,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     const privateInvestigationInput: WorkspaceAddInput = {
       name: 'investigation-not-shared',
       description: 'this investigation is not shared to other users.',
-      type: 'investigation'
+      type: 'investigation',
     };
 
     const privateInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, privateInvestigationInput);
@@ -103,12 +104,12 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     const sharedWithAdminRightsInvestigationInput: WorkspaceAddInput = {
       name: 'investigation-shared-with-admin-rights',
       description: 'this investigation will be shared to another user with admin rights.',
-      type: 'investigation'
+      type: 'investigation',
     };
     let sharedWithAdminRightsInvestigationData: StoreEntityWorkspace | BasicStoreEntityWorkspace = await addWorkspace(
       userToDeleteContext,
       userToDeletedAuth,
-      sharedWithAdminRightsInvestigationInput
+      sharedWithAdminRightsInvestigationInput,
     );
     const sharedIAuthMembers: MemberAccessInput[] = sharedWithAdminRightsInvestigationData.restricted_members;
     sharedIAuthMembers.push({ id: 'ALL', access_right: 'admin' });
@@ -121,7 +122,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     const sharedReadOnlyInvestigationInput: WorkspaceAddInput = {
       name: 'investigation-shared-read-only',
       description: 'this investigation will be shared to another user with view rights.',
-      type: 'investigation'
+      type: 'investigation',
     };
     let sharedInvestigationData: StoreEntityWorkspace | BasicStoreEntityWorkspace = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedReadOnlyInvestigationInput);
     const sharedInvestigationAuthMembers: MemberAccessInput[] = sharedInvestigationData.restricted_members;
@@ -135,7 +136,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     const adminInvestigationInput: WorkspaceAddInput = {
       name: 'investigation-owned-by-admin',
       description: 'this investigation is owned by the admin, do not delete.',
-      type: 'investigation'
+      type: 'investigation',
     };
 
     const adminInvestigationData = await addWorkspace(adminContext, ADMIN_USER, adminInvestigationInput);
@@ -208,7 +209,7 @@ describe('Service account User coverage', async () => {
       user_service_account: true,
       groups: [testGroup.id],
       objectOrganization: [testOrganization.id],
-      prevent_default_groups: true
+      prevent_default_groups: true,
     };
     const userAddResult = await addUser(testContext, authUser, userAddInput);
     const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
@@ -256,11 +257,17 @@ describe('Service account with platform organization coverage', async () => {
   const anotherOrgThanPlatformOne: BasicStoreEntityOrganization = await getOrganizationEntity(TEST_ORGANIZATION);
 
   beforeAll(async () => {
-    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    await setOrganization(PLATFORM_ORGANIZATION);
   });
 
   afterAll(async () => {
-    await enableCEAndUnSetOrganization();
+    // Deactivate EE at the end of this test - back to CE
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
+    await unSetOrganization();
   });
 
   it('Standard user should not be added to platform organization', async () => {
@@ -320,7 +327,11 @@ describe('Service account with platform organization coverage', async () => {
     expect(userCreated.password).toBeUndefined();
 
     // WHEN user log in with token
-    const fakeReq = { headers: () => { return undefined; }, header: () => { return undefined; }, socket: { remoteAddress: '::1' } };
+    const fakeReq = { headers: () => {
+      return undefined;
+    }, header: () => {
+      return undefined;
+    }, socket: { remoteAddress: '::1' } };
     const loggedInUser = await authenticateUserByTokenOrUserId(testContext, fakeReq, userCreated.api_token);
     expect(loggedInUser).toBeDefined();
 

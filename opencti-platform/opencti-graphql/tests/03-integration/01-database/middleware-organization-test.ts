@@ -1,7 +1,7 @@
-import { beforeAll, afterAll, describe, expect, it } from 'vitest';
+import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
 import { now } from 'moment';
 import { GraphQLError } from 'graphql/index';
-import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
+import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { ADMIN_USER, PLATFORM_ORGANIZATION, testContext, TEST_ORGANIZATION, GREEN_GROUP, inPlatformContext } from '../../utils/testQuery';
 import type { ThreatActorIndividualAddInput } from '../../../src/generated/graphql';
 import { type BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
@@ -12,6 +12,7 @@ import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { DEFAULT_ROLE } from '../../../src/utils/access';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 describe('Middleware test coverage on organization sharing verification', () => {
   let userInPlatformOrg: AuthUser;
@@ -20,7 +21,10 @@ describe('Middleware test coverage on organization sharing verification', () => 
   let platformOrganizationEntity: BasicStoreEntityOrganization;
 
   beforeAll(async () => {
-    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    await setOrganization(PLATFORM_ORGANIZATION);
 
     platformOrganizationEntity = await getOrganizationEntity(PLATFORM_ORGANIZATION);
     externalOrganizationEntity = await getOrganizationEntity(TEST_ORGANIZATION);
@@ -40,7 +44,10 @@ describe('Middleware test coverage on organization sharing verification', () => 
   });
 
   afterAll(async () => {
-    await enableCEAndUnSetOrganization();
+    // Deactivate EE at the end of this test - back to CE
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
+    await unSetOrganization();
   });
 
   describe('Trying to create an existing entity that is not shared to user should raise a dedicated exception.', () => {
@@ -48,7 +55,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
       const threatActorIndividualName = `Testing org segregation ${now()}`;
       const inputOne: ThreatActorIndividualAddInput = {
         name: threatActorIndividualName,
-        description: 'Created by user in org platform'
+        description: 'Created by user in org platform',
       };
       const threatActor = await addThreatActorIndividual(inPlatformContext, userInPlatformOrg, inputOne);
 
@@ -56,7 +63,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
       try {
         const inputNext: ThreatActorIndividualAddInput = {
           name: threatActorIndividualName,
-          description: 'Created by external user'
+          description: 'Created by external user',
         };
         await addThreatActorIndividual(testContext, userInExternalOrg, inputNext);
         expect(true, 'An exception should been raised before this line').toBeFalsy();
@@ -72,7 +79,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
       const inputOne: ThreatActorIndividualAddInput = {
         name: threatActorIndividualName,
         description: 'Created by user with TLP:RED',
-        objectMarking: [MARKING_TLP_RED]
+        objectMarking: [MARKING_TLP_RED],
       };
       const threatActor = await addThreatActorIndividual(testContext, ADMIN_USER, inputOne);
       const inputNext: ThreatActorIndividualAddInput = {

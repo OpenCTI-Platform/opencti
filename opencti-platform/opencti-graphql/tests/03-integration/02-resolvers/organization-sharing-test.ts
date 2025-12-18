@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import {
   ADMIN_API_TOKEN,
@@ -10,18 +10,12 @@ import {
   PYTHON_PATH,
   TEST_ORGANIZATION,
   testContext,
-  USER_EDITOR
+  USER_EDITOR,
 } from '../../utils/testQuery';
-import {
-adminQueryWithSuccess,
-awaitUntilCondition,
-enableCEAndUnSetOrganization,
-enableEEAndSetOrganization,
-queryAsUserIsExpectedError,
-queryAsUserWithSuccess
-} from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, awaitUntilCondition, unSetOrganization, setOrganization, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
 import { execChildPython } from '../../../src/python/pythonBridge';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const ORGANIZATION_SHARING_QUERY = gql`
   mutation StixCoreObjectSharingGroupAddMutation(
@@ -89,7 +83,10 @@ describe('Organization sharing standard behavior for container', () => {
     reportInternalId = report.id;
   });
   it('should platform organization sharing and EE activated', async () => {
-    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    await setOrganization(PLATFORM_ORGANIZATION);
   });
   it('should not delete organization if platform organization', async () => {
     const DELETE_QUERY = gql`
@@ -117,12 +114,12 @@ describe('Organization sharing standard behavior for container', () => {
     organizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQueryWithSuccess({
       query: ORGANIZATION_SHARING_QUERY,
-      variables: { id: reportInternalId, organizationId }
+      variables: { id: reportInternalId, organizationId },
     });
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
   });
   it('should Editor user access all objects', async () => {
-    await awaitUntilCondition(async () => {   
+    await awaitUntilCondition(async () => {
       const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
         query: REPORT_STIX_DOMAIN_ENTITIES,
         variables: { id: reportInternalId },
@@ -150,12 +147,15 @@ describe('Organization sharing standard behavior for container', () => {
       query: PURGE_QUERY,
       variables: {
         id: reportInternalId,
-        purgeElements: true
-      }
+        purgeElements: true,
+      },
     });
     expect(purgeQueryResult.data.reportEdit.delete).toEqual(reportInternalId);
   });
   it('should plateform organization sharing and EE deactivated', async () => {
-    await enableCEAndUnSetOrganization();
+    // Deactivate EE at the end of this test - back to CE
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
+    await unSetOrganization();
   });
 });

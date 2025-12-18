@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { AuthUser } from '../../../src/types/user';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
-import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
+import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { AMBER_GROUP, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { DEFAULT_ROLE, SYSTEM_USER } from '../../../src/utils/access';
@@ -30,7 +30,7 @@ describe('Middleware test coverage on restricted_members configuration', () => {
     // Activate EE for this test
     vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
     vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
-    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    await setOrganization(PLATFORM_ORGANIZATION);
 
     platformOrganizationEntity = await getOrganizationEntity(PLATFORM_ORGANIZATION);
     testOrganizationEntity = await getOrganizationEntity(TEST_ORGANIZATION);
@@ -69,7 +69,7 @@ describe('Middleware test coverage on restricted_members configuration', () => {
     for (let i = 0; i < idToDelete.length; i += 1) {
       await internalDeleteElementById(testContext, SYSTEM_USER, idToDelete[i], ENTITY_TYPE_CONTAINER_CASE_RFI); // +5 RFI deleted
     }
-    await enableCEAndUnSetOrganization();
+    await unSetOrganization();
   });
 
   it('should User in intersection group X org has access', async () => {
@@ -98,7 +98,7 @@ describe('Middleware test coverage on restricted_members configuration', () => {
   });
   it('Should everyone has access if no restricted member and no org platform', async () => {
     // disable org sharing
-    await enableCEAndUnSetOrganization();
+    await unSetOrganization();
     const rfiInput: CaseRfiAddInput = {
       name: 'CaseRFI no restricted members',
       created: now(),
@@ -114,7 +114,9 @@ describe('Middleware test coverage on restricted_members configuration', () => {
     expect(result_userTestOrgGreenGroup).toBeDefined();
 
     // enable EE and org sharing
-    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    await setOrganization(PLATFORM_ORGANIZATION);
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
   });
   it('Should User not in group X org but in additional User restricted member has access', async () => {
     const rfiInput: CaseRfiAddInput = {

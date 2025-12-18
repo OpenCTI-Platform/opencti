@@ -17,7 +17,7 @@ import {
 } from './testQuery';
 import { downloadFile } from '../../src/database/raw-file-storage';
 import { streamConverter } from '../../src/database/file-storage';
-import conf, { logApp } from '../../src/config/conf';
+import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { getSettings, settingsEditField } from '../../src/domain/settings';
 import { fileToReadStream } from '../../src/database/file-storage';
@@ -169,34 +169,6 @@ export const readCsvFromFileStream = async (filePath: string, fileName: string) 
   return csvLines;
 };
 
-/**
- * Enable Enterprise edition for test
- * @deprecated This function is useless: api-test are always run under EE with an env variable that take priority over settings
- */
-export const enableEE = async () => {
-  const platformSettings: any = await getSettings(testContext);
-  const input = [
-    { key: 'enterprise_license', value: [conf.get('app:enterprise_edition_license')] },
-  ];
-  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
-  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
-  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-};
-
-/**
- * Go back to community edition
- * @deprecated This function is useless: api-test are always run under EE with an env variable that take priority over settings
- */
-export const disableEE = async () => {
-  const platformSettings: any = await getSettings(testContext);
-  const input = [
-    { key: 'enterprise_license', value: [] },
-  ];
-  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
-  // EE cant be disabled as setup by configuration
-  expect(settingsResult.platform_enterprise_edition.license_validated).toBeFalsy();
-};
-
 export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {
   const file = fs.createReadStream(
     path.resolve(__dirname, `../data/${filePathRelativeFromData}`),
@@ -220,11 +192,9 @@ export const createUploadFromTestDataFile = async (filePathRelativeFromData: str
  * Enable Enterprise edition and set the platform organisation.
  * @param organization organization to use as platform organisation.
  */
-export const enableEEAndSetOrganization = async (organization: OrganizationTestData) => {
+export const setOrganization = async (organization: OrganizationTestData) => {
   const platformOrganizationId = await getOrganizationIdByName(organization.name);
   const platformSettings: any = await getSettings(testContext);
-
-  // await enableEE();
 
   const input = [
     { key: 'platform_organization', value: [platformOrganizationId] },
@@ -238,9 +208,7 @@ export const enableEEAndSetOrganization = async (organization: OrganizationTestD
 /**
  * Remove any platform organization and go back to community edition.
  */
-export const enableCEAndUnSetOrganization = async () => {
-  // await disableEE();
-
+export const unSetOrganization = async () => {
   const platformSettings: any = await getSettings(testContext);
   const input = [
     { key: 'platform_organization', value: [] },
