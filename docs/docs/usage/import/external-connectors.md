@@ -23,7 +23,7 @@ Purging a message queue is necessary to remove any accumulated messages that may
 
 By purging the queue, you ensure that the connector starts with a clean slate, processing only the new data.
 
-### Connector Ecosystem
+### Connector ecosystem
 
 OpenCTI's connector ecosystem covers a broad spectrum of sources, enhancing the platform's capability to integrate data from various contexts, from threat intelligence providers to specialized databases. The list of available connectors can be found in our [connectors catalog](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76#c94bf651e08146c4855a25efeaabc574). Connectors are categorized into three types: import connectors (the focus here), [enrichment connectors](../enrichment.md), and stream consumers. Further documentation on connectors is available on [the dedicated documentation page](../../deployment/connectors.md).
 

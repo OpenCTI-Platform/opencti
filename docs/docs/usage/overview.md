@@ -214,5 +214,4 @@ Because of the volumes of information the history is written in a specific index
 
 - The `Observables` tab (for Reports and Observed data): A table containing all SCO (Stix Cyber Observable) contained in the Report or the Observed data, with search and filters available. It also displays if the SCO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - the `Entities` tab (for Reports and Observed data): A table containing all SDO (Stix Domain Objects) contained in the Report or the Observed data, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
-- Observables:
 - the `Sightings` tab (for Indicators and Observables): A table containing all `Sightings` relationships corresponding to events in which `Indicators` (IP, domain name, URL, etc.) are detected by or within an information system, an individual or an organization. Most often, this corresponds to a security event transmitted by a SIEM or EDR.
