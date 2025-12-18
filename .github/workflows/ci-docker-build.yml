@@ -26,6 +26,11 @@ on:
         type: string
         required: false
         default: false
+      registry:
+        description: "Registry used to publish the image"
+        type: string
+        required: false
+        default: "filigran/platform"
     outputs:
       image-tag-version-cleaned:
         description: "Image tag after formatting"
@@ -67,7 +72,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: filigran/platform
+        images: ${{ inputs.registry }}
         tags: type=raw,value=${{ inputs.image_tag }}
 
     - name: Build and push
@@ -121,7 +126,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: filigran/worker
+        images: ${{ inputs.registry }}
         tags: type=raw,value=${{ inputs.image_tag }}
 
     - name: Build and push
