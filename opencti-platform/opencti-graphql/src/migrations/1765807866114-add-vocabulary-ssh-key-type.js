@@ -1,12 +1,12 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { VocabularyCategory } from '../generated/graphql';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 
 const message = '[MIGRATION] Vocabulary add key_type_ov';
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration');
   const category = VocabularyCategory.KeyTypeOv;
   const vocabularies = openVocabularies[category] ?? [];
@@ -20,7 +20,7 @@ export const up = async (next) => {
     };
     await addVocabulary(context, SYSTEM_USER, data);
   }
-  logApp.info(`${message} > done. ${vocabularies.length} vocabularies added.`);
+  logMigration.info(`${message} > done. ${vocabularies.length} vocabularies added.`);
   next();
 };
 
