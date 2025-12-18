@@ -25,7 +25,6 @@ describe('Create dissemination list', async () => {
   });
   let data: StoreEntityDisseminationList;
 
-  // await enableEE();
   it('should create a dissemination list for settings user', async () => {
     data = await addDisseminationList(testContext, TEST_DISSEMINATION_USER_SET, TEST_DISSEMINATION_LIST_CREATE_INPUT);
     expect(data.name, 'List created').toBe('Dissemination list');
