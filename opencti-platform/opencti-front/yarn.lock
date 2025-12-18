@@ -7320,6 +7320,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cssjanus@npm:^2.0.1":
+  version: 2.3.0
+  resolution: "cssjanus@npm:2.3.0"
+  checksum: 10c0/b410c6f31c80947cc4508f232bab13beb3de6c38f1824962d12ef64b754d0191230efc2211815bc144ddbf50e509d63d0f120fc2402f657762e1f6bd60edf6a3
+  languageName: node
+  linkType: hard
+
 "csstype@npm:^3.0.2, csstype@npm:^3.1.0, csstype@npm:^3.1.3, csstype@npm:^3.2.2":
   version: 3.2.3
   resolution: "csstype@npm:3.2.3"
@@ -12753,6 +12760,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"openai@npm:6.10.0":
+  version: 6.10.0
+  resolution: "openai@npm:6.10.0"
+  peerDependencies:
+    ws: ^8.18.0
+    zod: ^3.25 || ^4.0
+  peerDependenciesMeta:
+    ws:
+      optional: true
+    zod:
+      optional: true
+  bin:
+    openai: bin/cli
+  checksum: 10c0/09f48d7fd4cdc580a2ff8aa67f744373c2e30b5cebc890428a740a134c7bb3ea64113a4d417da96945c3ecfc7e317e78f9a364f93981e65b0aaa7a07b7a45277
+  languageName: node
+  linkType: hard
+
 "opencti-front@workspace:.":
   version: 0.0.0-use.local
   resolution: "opencti-front@workspace:."
@@ -12888,6 +12912,7 @@ __metadata:
     monaco-editor: "npm:0.52.2"
     monaco-graphql: "npm:1.7.3"
     monocart-reporter: "npm:2.10.1"
+    openai: "npm:6.10.0"
     pdfmake: "npm:0.3.7"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
@@ -12927,6 +12952,7 @@ __metadata:
     remark-gfm: "npm:4.0.1"
     remark-parse: "npm:11.0.0"
     rxjs: "npm:7.8.2"
+    stylis-plugin-rtl: "npm:^2.1.1"
     three-spritetext: "npm:1.10.0"
     typescript: "npm:5.9.3"
     typescript-eslint: "npm:8.58.2"
@@ -15547,6 +15573,17 @@ __metadata:
     hey-listen: "npm:^1.0.8"
     tslib: "npm:^2.1.0"
   checksum: 10c0/96415a82217890e11bf8b9c278a0870fc343508c1e8fd614ef0b17a1a75d387ae0220d53dbe8acf60226cfdb7dd898678b4fa3d90d23d778bd606ccb069cdc7f
+  languageName: node
+  linkType: hard
+
+"stylis-plugin-rtl@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "stylis-plugin-rtl@npm:2.1.1"
+  dependencies:
+    cssjanus: "npm:^2.0.1"
+  peerDependencies:
+    stylis: 4.x
+  checksum: 10c0/706640bba51ca75e3a824f781b59e8d8b8d034a10b839aa93daea166aac6cc67a4e7c063496ea8a09c396b639cff9859a42f5d03937d8f89f8922fd6c7435739
   languageName: node
   linkType: hard
 

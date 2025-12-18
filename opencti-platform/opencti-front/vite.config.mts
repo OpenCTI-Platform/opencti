@@ -194,7 +194,7 @@ logger.error = (msg, options) => {
 const basePath = "";
 
 const backProxy = (ws = false) => ({
-  target: process.env.BACK_END_URL ?? 'http://135.181.243.102:8000',
+  target: process.env.BACK_END_URL ?? 'http://135.181.243.101:28080',
   changeOrigin: true,
   ws,
 });
