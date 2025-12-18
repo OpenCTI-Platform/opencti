@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { hashMergeValidation } from '../../../src/database/middleware';
-import {generateAttributesInputsForUpsert} from "../../../src/utils/upsert-utils";
-import {ADMIN_USER, testContext} from "../../utils/testQuery";
-import {ENTITY_DOMAIN_NAME} from "../../../src/schema/stixCyberObservable";
+import {generateAttributesInputsForUpsert} from '../../../src/utils/upsert-utils';
+import {ADMIN_USER, testContext} from '../../utils/testQuery';
+import {ENTITY_DOMAIN_NAME} from '../../../src/schema/stixCyberObservable';
 
 describe('middleware hashMergeValidation test', () => {
   it('should hashes allowed to merge', () => {
@@ -48,28 +48,28 @@ describe('middleware upsertElement test', () => {
         standard_id: 'indicator1-uuid-standard',
         description: 'indicator1 new description',
       };
-      let confidenceForUpsert = { isConfidenceMatch: true }
+      let confidenceForUpsert = { isConfidenceMatch: true };
       let inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert);
 
       expect(inputs.length).toEqual(1);
-      expect(inputs[0]).toEqual({key: 'description', value: ['indicator1 new description']})
+      expect(inputs[0]).toEqual({key: 'description', value: ['indicator1 new description']});
 
-      confidenceForUpsert = { isConfidenceMatch: false }
+      confidenceForUpsert = { isConfidenceMatch: false };
       inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert);
 
       expect(inputs.length).toEqual(1); // we still update description since no existing
-      expect(inputs[0]).toEqual({key: 'description', value: ['indicator1 new description']})
+      expect(inputs[0]).toEqual({key: 'description', value: ['indicator1 new description']});
     });
     it('should generateAttributesInputsForUpsert with indicator description update', () => {
       const resolvedElement = { ...indicator1, description: 'indicator1 old description' }; // existing description
 
-      let confidenceForUpsert = { isConfidenceMatch: true }
+      let confidenceForUpsert = { isConfidenceMatch: true };
       let inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert);
 
       expect(inputs.length).toEqual(1);
-      expect(inputs[0]).toEqual({key: 'description', value: ['indicator1 new description']})
+      expect(inputs[0]).toEqual({key: 'description', value: ['indicator1 new description']});
 
-      confidenceForUpsert = { isConfidenceMatch: false }
+      confidenceForUpsert = { isConfidenceMatch: false };
       inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, updatePatch, confidenceForUpsert);
 
       expect(inputs.length).toEqual(0); // no changes since confidenceMatch is false, we don't replace existing description

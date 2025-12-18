@@ -19,7 +19,7 @@ import {
   elReindexElements,
   ES_INDEX_PATTERN_SUFFIX,
   ES_MAX_PAGINATION,
-  searchEngineInit
+  searchEngineInit,
 } from '../../../src/database/engine';
 import {
   DEPRECATED_INDICES,
@@ -30,7 +30,7 @@ import {
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_RELATIONSHIPS_INDICES,
-  WRITE_PLATFORM_INDICES
+  WRITE_PLATFORM_INDICES,
 } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, buildStandardUser, testContext, TESTING_GROUPS, TESTING_ORGS } from '../../utils/testQuery';
@@ -51,7 +51,7 @@ const elWhiteUser = async () => {
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', async () => {
-    expect(searchEngineInit()).resolves.toBeTruthy();
+    await expect(searchEngineInit()).resolves.toBeTruthy();
     // check all WRITE_PLATFORM_INDICES creation
     for (let i = 0; i < WRITE_PLATFORM_INDICES.length; i += 1) {
       const indexName = WRITE_PLATFORM_INDICES[i];
@@ -133,8 +133,8 @@ describe('Elasticsearch computation', () => {
       READ_DATA_INDICES,
       {
         types: ['Stix-Domain-Object'],
-        field: 'entity_type'
-      }
+        field: 'entity_type',
+      },
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(2);
@@ -156,7 +156,7 @@ describe('Elasticsearch computation', () => {
           filters: [{ key: ['name'], values: ['Paradise Ransomware'] }],
           filterGroups: [],
         },
-      }
+      },
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.size).toEqual(1);
@@ -177,7 +177,7 @@ describe('Elasticsearch computation', () => {
           filters: [{ key: [buildRefRelationKey(RELATION_OBJECT_MARKING)], values: [marking.internal_id] }],
           filterGroups: [],
         },
-      }
+      },
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(1);
@@ -220,15 +220,14 @@ describe('Elasticsearch computation', () => {
   });
   it('should invalid time histogram fail', async () => {
     const histogramCount = elHistogramCount(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'minute' });
-    // noinspection ES6MissingAwait.toEqual(36);
-    expect(histogramCount).rejects.toThrow();
+    await expect(histogramCount).rejects.toThrow();
   });
   it('should day histogram accurate', async () => {
     const data = await elHistogramCount(
       testContext,
       ADMIN_USER,
       READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'day', startDate: '2019-09-29T00:00:00.000Z', endDate: new Date().toISOString() }
+      { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'day', startDate: '2019-09-29T00:00:00.000Z', endDate: new Date().toISOString() },
     );
     expect(data.length).toEqual(1);
     // noinspection JSUnresolvedVariable
@@ -241,7 +240,7 @@ describe('Elasticsearch computation', () => {
       testContext,
       ADMIN_USER,
       READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { types: ['Stix-Domain-Object'], field: 'created', interval: 'month', startDate: '2019-09-23T00:00:00.000Z', endDate: '2020-03-02T00:00:00.000Z' }
+      { types: ['Stix-Domain-Object'], field: 'created', interval: 'month', startDate: '2019-09-23T00:00:00.000Z', endDate: '2020-03-02T00:00:00.000Z' },
     );
     expect(data.length).toEqual(7);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -265,7 +264,7 @@ describe('Elasticsearch computation', () => {
         interval: 'year',
         startDate: '2019-09-23T00:00:00.000Z',
         endDate: '2020-03-02T00:00:00.000Z',
-      }
+      },
     );
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -289,7 +288,7 @@ describe('Elasticsearch computation', () => {
           filters: [{ key: [buildRefRelationKey(RELATION_USES)], values: [attackPattern.internal_id] }],
           filterGroups: [],
         },
-      }
+      },
     );
     expect(data.length).toEqual(1);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -311,8 +310,8 @@ describe('Elasticsearch computation', () => {
           mode: 'and',
           filters: [{ key: [buildRefRelationKey('*')], values: [attackPattern.internal_id] }],
           filterGroups: [],
-        }
-      }
+        },
+      },
     );
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -333,7 +332,7 @@ describe('Elasticsearch computation', () => {
           filters: [{ key: ['name'], values: ['ANSSI'] }],
           filterGroups: [],
         },
-      }
+      },
     );
     expect(data.length).toEqual(1);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -514,7 +513,7 @@ describe('Elasticsearch pagination', () => {
     expect(malware.name).toEqual('Paradise Ransomware');
     expect(malware._index).not.toBeNull();
     expect(malware.parent_types).toEqual(
-      expect.arrayContaining(['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'])
+      expect.arrayContaining(['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object']),
     );
   });
   it('should entity paginate everything for standard user', async () => {
@@ -692,7 +691,7 @@ describe('Elasticsearch pagination', () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       orderBy: 'created',
       orderMode: 'asc',
-      first: ES_MAX_PAGINATION
+      first: ES_MAX_PAGINATION,
     });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.Capability);
@@ -925,7 +924,7 @@ describe('Elasticsearch pagination', () => {
           values: [],
         }],
         filterGroups: [],
-      }
+      },
     });
     expect(data).not.toBeNull();
   });
@@ -990,8 +989,7 @@ describe('Elasticsearch reindex', () => {
   });
   it('should relation reindex check consistency', async () => {
     const indexPromise = elIndexElements(testContext, ADMIN_USER, 'uses', [{ relationship_type: 'uses' }]);
-    // noinspection ES6MissingAwait
-    expect(indexPromise).rejects.toThrow();
+    await expect(indexPromise).rejects.toThrow();
   });
   it('should reindex sighting with unmapped fields', async () => {
     // dummy object with old fields that are not part of the strict mapping

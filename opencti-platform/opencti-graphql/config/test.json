@@ -56,7 +56,8 @@
   },
   "elasticsearch": {
     "index_prefix": "test",
-    "url": "http://127.0.0.1:9200"
+    "url": "http://127.0.0.1:9200",
+    "engine_selector": "elk"
   },
   "minio": {
     "bucket_name": "test",
