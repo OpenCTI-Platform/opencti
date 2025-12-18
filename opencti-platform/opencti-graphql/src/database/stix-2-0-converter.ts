@@ -120,8 +120,9 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
       version: file.version,
       object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
     }))),
-    x_created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
-    x_created_by_ref_type: instance[INPUT_CREATED_BY]?.entity_type,
+    // TODO Add missing attribute 2.1 extension
+    // x_created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
+    // x_created_by_ref_type: instance[INPUT_CREATED_BY]?.entity_type,
   };
 };
 
