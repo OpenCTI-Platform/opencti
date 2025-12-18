@@ -1,11 +1,10 @@
 name: Publish package
 
 on:
-  workflow_run:
-    workflows: ["OpenCTI CI", "Build image"]
-    types: [completed]
+  push:
     # branches: [master,release/current]
     branches: [issue/13571-build-images]
+
 
 jobs:
   build_package_debian:
