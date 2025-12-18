@@ -14,7 +14,7 @@ jobs:
       name: Build and push image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
-        image_tag: ${{ github.ref_name == 'master'  && "rolling" || github.ref_name == 'release/current' && "prerelease" || github.ref_name == 'issue/13571-build-images' && "test-13571"  }}
+        image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' || github.ref_name == 'issue/13571-build-images' && 'test-13571'  }}
         client_python_local: true
       secrets: inherit
 
