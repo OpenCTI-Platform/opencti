@@ -27,7 +27,20 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import Transition from '../../../../components/Transition';
 
 export const StixCoreRelationshipHistoryFragment = graphql`
-  fragment StixCoreRelationshipHistoryLine_node on Log {
+  fragment StixCoreRelationshipHistoryLine_node on Log @argumentDefinitions(
+    tz: {
+      type: "String",
+      defaultValue: null
+    }
+    locale: {
+      type: "String",
+      defaultValue: null
+    }
+    unit_system: {
+      type: "String",
+      defaultValue: null
+    }
+  ) {
     id
     event_type
     event_scope
@@ -35,7 +48,7 @@ export const StixCoreRelationshipHistoryFragment = graphql`
     user {
       name
     }
-    context_data {
+    context_data(tz: $tz, locale: $locale, unit_system: $unit_system) {
       message
       commit
       external_references {
@@ -44,13 +57,6 @@ export const StixCoreRelationshipHistoryFragment = graphql`
         external_id
         url
         description
-      }
-      changes{
-        field
-        previous
-        new
-        added
-        removed
       }
     }
   }
@@ -64,11 +70,12 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
 
   const [openExternalLink, setOpenExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState(null);
+  const externalRefs = node.context_data?.external_references ?? [];
+  const hasExternalRefs = externalRefs.length > 0;
 
   const handleOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => setOpen(false);
   const handleOpenExternalLink = (url) => {
     setExternalLink(url);
@@ -115,12 +122,7 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
     }
     return { color: yellow[500], Icon: HelpOutlined, clickable: true };
   };
-  const renderIcon = (
-    eventScope,
-    isRelation,
-    eventMessage,
-    commit,
-  ) => {
+  const renderIcon = (eventScope, isRelation, eventMessage, commit) => {
     const { color, Icon, clickable } = getIconConfig(eventScope, eventMessage, isRelation);
     const canClick = clickable && !!commit;
     return (
@@ -140,83 +142,21 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
     );
   };
 
-  const externalRefs = node.context_data?.external_references ?? [];
-  const hasExternalRefs = externalRefs.length > 0;
-
   return (
-    <div style={{
-      marginBottom: 5,
-    }}
-    >
-      <div style={{
-        float: 'left',
-        width: 30,
-        height: 30,
-        margin: '7px 0 0 0',
-      }}
-      >
-        <Badge
-          color="secondary"
-          overlap="circular"
-          badgeContent="M"
-          invisible={node.context_data.commit == null}
-        >
-          {renderIcon(
-            node.event_scope,
-            isRelation,
-            node.context_data.message,
-            node.context_data.commit,
-          )}
+    <ListItem style={{ height: 40, padding: 0 }}>
+      <div style={{ float: 'left', width: 30, height: 30, margin: '7px 0 0 0' }}>
+        <Badge color="secondary" overlap="circular" badgeContent="M" invisible={node.context_data.commit == null}>
+          {renderIcon(node.event_scope, isRelation, node.context_data.message, node.context_data.commit)}
         </Badge>
       </div>
-      <div
-        style={{
-          width: 'auto',
-          overflow: 'hidden',
-          height: hasExternalRefs ? 'auto' : 40 }}
-      >
-        <Paper style={{
-          width: '100%',
-          height: '100%',
-          padding: '8px 15px 0 15px',
-          background: 0,
-        }}
-        >
-          <div style={{
-            float: 'right',
-            textAlign: 'right',
-            width: 180,
-            paddingTop: 4,
-            fontSize: 11,
-          }}
-          >{nsdt(node.timestamp)}
+      <div style={{ flex: 1, width: 'auto', overflow: 'hidden', height: hasExternalRefs ? 'auto' : 40 }}>
+        <Paper style={{ width: '100%', height: '100%', padding: '8px 15px 0 15px', background: 0 }}>
+          <div style={{ float: 'right', textAlign: 'right', width: 180, paddingTop: 4, fontSize: 11 }}>
+            {nsdt(node.timestamp)}
           </div>
-          <Tooltip
-            style={{
-              maxWidth: '80%',
-              lineHeight: 2,
-              padding: 10,
-            }}
-            title={(
-              <MarkdownDisplay
-                content={`\`${node.user.name}\` ${node.context_data.message}`}
-                remarkGfmPlugin={true}
-                commonmark={true}
-              />
-            )}
-          >
-            <div style={{
-              height: '100%',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-            >
-              <MarkdownDisplay
-                content={`\`${node.user.name}\` ${node.context_data.message}`}
-                remarkGfmPlugin={true}
-                commonmark={true}
-              />
+          <Tooltip sx={{ maxWidth: '80%', lineHeight: 2, padding: 10 }} title={(<><b>{node.user.name}</b> {node.context_data.message}</>)}>
+            <div style={{ height: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <b>{node.user.name}</b> {node.context_data.message}
             </div>
           </Tooltip>
           {hasExternalRefs && (
@@ -321,13 +261,7 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={openExternalLink}
-        keepMounted
-        slots={{ transition: Transition }}
-        onClose={handleCloseExternalLink}
-      >
+      <Dialog slotProps={{ paper: { elevation: 1 } }} open={openExternalLink} keepMounted slots={{ transition: Transition }} onClose={handleCloseExternalLink}>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to browse this external link?')}
@@ -340,7 +274,7 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </ListItem>
   );
 };
 

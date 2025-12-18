@@ -33,6 +33,19 @@ export type SchemaType = {
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
 };
 
+export type PlatformLang
+  = | 'de-de'
+    | 'en-us'
+    | 'es-es'
+    | 'fr-fr'
+    | 'it-it'
+    | 'ja-jp'
+    | 'ko-kr'
+    | 'zh-cn'
+    | 'ru-ru';
+
+const defaultLang: PlatformLang = 'en-us';
+
 export interface UserContextType {
   me: RootMe_data$data | undefined;
   settings: RootSettings$data | undefined;
@@ -43,6 +56,9 @@ export interface UserContextType {
   isXTMHubAccessible: boolean | null | undefined;
   about: RootPrivateQuery$data['about'] | undefined;
   themes: RootPrivateQuery$data['themes'] | undefined;
+  unitSystem: string;
+  locale: PlatformLang;
+  tz: string;
 }
 
 const defaultContext = {
@@ -55,6 +71,9 @@ const defaultContext = {
   isXTMHubAccessible: undefined,
   about: undefined,
   themes: undefined,
+  locale: defaultLang,
+  unitSystem: 'Metric',
+  tz: 'UTC',
 };
 export const UserContext = React.createContext<UserContextType>(defaultContext);
 
@@ -69,11 +88,16 @@ const useAuth = () => {
     isXTMHubAccessible,
     about,
     themes,
+    unitSystem,
+    locale,
+    tz,
   } = useContext(UserContext);
   if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes) {
     throw new Error('Invalid user context !');
   }
-  return { me, settings, bannerSettings, entitySettings, platformModuleHelpers, schema, isXTMHubAccessible, about, themes };
+  return { me, settings, bannerSettings, entitySettings,
+    platformModuleHelpers, schema, isXTMHubAccessible,
+    about, themes, locale, tz, unitSystem };
 };
 
 export default useAuth;

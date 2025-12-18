@@ -771,6 +771,7 @@ export const objectOrganization: RefAttribute = {
   datable: false,
   isFilterable: true,
   toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+  requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNORGARESTRICT'],
 };
 
 export const objectAssignee: RefAttribute = {

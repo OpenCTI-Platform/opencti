@@ -528,12 +528,10 @@ type LogEdge {
   node: Log!
 }
 
-type Change {
+type HistoryChange {
   field: String!
-  previous: [String!]
-  new: [String!]
-  added: [String!]
-  removed: [String!]
+  changes_added: [String!]
+  changes_removed: [String!]
 }
 
 type ContextData {
@@ -549,7 +547,7 @@ type ContextData {
   pir_ids: [String!]
   pir_score: Int
   pir_match_from: Boolean
-  changes: [Change]
+  changes: [HistoryChange]
 }
 
 type Log {
@@ -563,7 +561,7 @@ type Log {
   user: Creator
   raw_data: String
   context_uri: String
-  context_data: ContextData
+  context_data(tz: String, locale: String, unit_system: String): ContextData
   user_metadata: JSON
 }
 
@@ -9173,7 +9171,9 @@ type Query {
   rabbitMQMetrics(prefix: String): RabbitMQMetrics
   elasticSearchMetrics: ElasticSearchMetrics
   logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
+  log(id: ID!): Log
   audits(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
+  audit(id: ID!): Log
   auditsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
   auditsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   auditsDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]

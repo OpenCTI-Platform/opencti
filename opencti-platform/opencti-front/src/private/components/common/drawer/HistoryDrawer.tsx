@@ -1,111 +1,137 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, Suspense } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
-import { useFragment } from 'react-relay';
-import { StixCoreObjectHistoryFragment } from '@components/common/stix_core_objects/StixCoreObjectHistoryLine';
-import { StixCoreObjectHistoryLine_node$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLine_node.graphql';
+import { graphql, useLazyLoadQuery } from 'react-relay';
+import Paper from '@mui/material/Paper';
 import TableContainer from '@mui/material/TableContainer';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
-import { StixCoreRelationshipHistoryFragment } from '@components/common/stix_core_relationships/StixCoreRelationshipHistoryLine';
-import Label from '../../../../components/common/label/Label';
-import Card from '../../../../components/common/card/Card';
-import { EMPTY_VALUE } from '../../../../utils/String';
+import Loader from '../../../../components/Loader';
+import { HistoryDrawerQuery } from './__generated__/HistoryDrawerQuery.graphql';
+import useAuth from '../../../../utils/hooks/useAuth';
+import TruncatedRawValue from '@components/common/drawer/TruncatedRawValue';
+import { Typography } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../components/Theme';
 
 interface HistoryDrawerProps {
   open: boolean;
   onClose: () => void;
   title: string;
-  node: StixCoreObjectHistoryLine_node$key | undefined;
-  isRelation: boolean;
+  logId?: string;
 }
 
-const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, title, node, isRelation }) => {
-  const drawerFragment = isRelation
-    ? StixCoreRelationshipHistoryFragment
-    : StixCoreObjectHistoryFragment;
-  const data = useFragment(drawerFragment, node);
+const historyDrawerQuery = graphql`
+  query HistoryDrawerQuery($id: ID!, $tz: String, $locale: String, $unit_system: String) {
+    log(id: $id) {
+      id
+      user {
+        name
+      }
+      context_data(tz: $tz, locale: $locale, unit_system: $unit_system) {
+        entity_type
+        message
+        changes {
+          field
+          changes_added
+          changes_removed
+        }
+      }
+    }
+  }
+`;
+
+interface HistoryDrawerContentProps {
+  logId: string;
+}
+
+const HistoryDrawerContent: FunctionComponent<HistoryDrawerContentProps> = ({ logId }) => {
+  const { locale, tz, unitSystem } = useAuth();
+  const variables = { id: logId, tz, locale: locale, unit_system: unitSystem };
+  const data = useLazyLoadQuery<HistoryDrawerQuery>(historyDrawerQuery, variables);
   const { t_i18n } = useFormatter();
-  const changes = data?.context_data?.changes;
+  const theme = useTheme<Theme>();
+  const changes = data?.log?.context_data?.changes;
 
   return (
-    <Drawer
-      open={open}
-      onClose={onClose}
-      title={title}
-    >
-      <div>
-        <div>
-          <Label>
-            {t_i18n('Message')}
-          </Label>
-          <MarkdownDisplay
-            content={data?.context_data?.message}
-            remarkGfmPlugin={true}
-            commonmark={true}
-          />
-        </div>
-        <div style={{ marginTop: 16 }}>
-          <Label>
-            {t_i18n('Details')}
-          </Label>
-          <Card>
-            <TableContainer>
-              <Table sx={{ minWidth: 650 }} size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell></TableCell>
-                    <TableCell align="left">{t_i18n('Previous value')}</TableCell>
-                    <TableCell align="left">{t_i18n('New value')}</TableCell>
-                    <TableCell align="left">{t_i18n('Added')}</TableCell>
-                    <TableCell align="left">{t_i18n('Removed')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {changes && changes.length > 0 ? (changes.map((row) => (
-                    <TableRow
-                      key={row?.field}
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                    >
-                      <TableCell component="th" scope="row">
+    <div>
+      <Paper variant="outlined" style={{ padding: 15, backgroundColor: theme.palette.background.paper, borderColor: theme.palette.primary.main }}>
+        <Typography variant="h4" gutterBottom={true} color="primary">
+          {t_i18n('Message')}
+        </Typography>
+        <b>{data?.log?.user?.name}</b> {data?.log?.context_data?.message ?? ''}
+      </Paper>
+      <div style={{ marginTop: 20 }}>
+        <Paper style={{ marginTop: theme.spacing(1), position: 'relative' }}>
+          <TableContainer>
+            <Table sx={{ minWidth: 650 }} size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ fontSize: 12, fontWeight: 'bold' }}>{t_i18n('Field').toUpperCase()}</TableCell>
+                  <TableCell width="40%" style={{ fontSize: 12, fontWeight: 'bold' }}>{t_i18n('Removed').toUpperCase()}</TableCell>
+                  <TableCell width="40%" style={{ fontSize: 12, fontWeight: 'bold' }}>{t_i18n('Added').toUpperCase()}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {changes && changes.length > 0 ? (changes.map((row) => {
+                  return (
+                    <TableRow key={row?.field} hover={false}>
+                      <TableCell component="th" scope="row" style={{ fontWeight: 'bold', padding: 14, verticalAlign: 'top' }}>
                         {row?.field}
                       </TableCell>
-                      <TableCell align="left">{row?.previous && row.previous.length > 0
-                        ? row.previous.join(', ')
-                        : EMPTY_VALUE}
+                      <TableCell align="left" style={{ verticalAlign: 'top' }}>
+                        {row?.changes_removed && row.changes_removed.length > 0
+                          ? row.changes_removed.map((s, i: number) => {
+                              return (
+                                <div key={i}>
+                                  <TruncatedRawValue value={s} />
+                                </div>
+                              );
+                            })
+                          : <TruncatedRawValue value="-" />}
                       </TableCell>
-                      <TableCell align="left">{row?.new && row.new.length > 0
-                        ? row.new.join(', ')
-                        : EMPTY_VALUE}
-                      </TableCell>
-                      <TableCell align="left">{row?.added && row.added.length > 0
-                        ? row.added.join(', ')
-                        : EMPTY_VALUE}
-                      </TableCell>
-                      <TableCell align="left">{row?.removed && row.removed.length > 0
-                        ? row.removed.join(', ')
-                        : EMPTY_VALUE}
+                      <TableCell align="left" style={{ verticalAlign: 'top' }}>
+                        {row?.changes_added && row.changes_added.length > 0
+                          ? row.changes_added.map((s, i: number) => {
+                              return (
+                                <div key={i}>
+                                  <TruncatedRawValue value={s} />
+                                </div>
+                              );
+                            })
+                          : <TruncatedRawValue value="-" />}
                       </TableCell>
                     </TableRow>
-                  ))
-                  ) : (
-                    <TableRow>
-                      <TableCell align="center" colSpan={5}>
-                        {t_i18n('No detail available for this event')}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Card>
-        </div>
+                  );
+                }))
+                  : (
+                      <TableRow>
+                        <TableCell align="center" colSpan={3}>
+                          {t_i18n('No detail available for this event')}
+                        </TableCell>
+                      </TableRow>
+                    )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
       </div>
-    </Drawer>
+    </div>
   );
 };
+
+const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, title, logId }) => {
+  return logId
+    ? (
+        <Drawer open={open} onClose={onClose} title={title}>
+          <Suspense fallback={<Loader />}>
+            <HistoryDrawerContent logId={logId} />
+          </Suspense>
+        </Drawer>
+      ) : <></>;
+};
+
 export default HistoryDrawer;

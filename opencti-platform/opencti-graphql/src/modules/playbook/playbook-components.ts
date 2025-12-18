@@ -94,7 +94,7 @@ import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from 
 import { EditOperation, FilterMode } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
-import { generateCreateMessage } from '../../database/generate-message';
+import { generateCreateMessage } from '../../database/data-changes';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';

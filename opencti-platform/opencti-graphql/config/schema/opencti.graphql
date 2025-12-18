@@ -498,12 +498,11 @@ type LogEdge {
   cursor: String!
   node: Log!
 }
-type Change {
+
+type HistoryChange {
   field: String!
-  previous: [String!]
-  new: [String!]
-  added: [String!]
-  removed: [String!]
+  changes_added: [String!]
+  changes_removed: [String!]
 }
 type ContextData {
   entity_id: String
@@ -518,7 +517,7 @@ type ContextData {
   pir_ids: [String!] @auth(for: [PIRAPI])
   pir_score: Int @auth(for: [PIRAPI])
   pir_match_from: Boolean @auth(for: [PIRAPI])
-  changes: [Change]
+  changes: [HistoryChange]
 }
 type Log {
   id: ID!
@@ -531,7 +530,7 @@ type Log {
   user: Creator
   raw_data: String @auth(for: [SETTINGS_SECURITYACTIVITY])
   context_uri: String
-  context_data: ContextData
+  context_data(tz: String, locale: String, unit_system: String): ContextData
   user_metadata: JSON
 }
 
@@ -14011,6 +14010,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): LogConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES])
+  log(id: ID!): Log @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES])
   audits(
     first: Int
     after: ID
@@ -14020,6 +14020,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): LogConnection @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  audit(id: ID!): Log @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsNumber(
     dateAttribute: String
     types: [String]

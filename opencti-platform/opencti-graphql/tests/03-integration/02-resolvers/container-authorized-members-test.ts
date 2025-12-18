@@ -178,12 +178,13 @@ describe('container-authorized-members', () => {
     let caseIncident: CaseIncident;
     let userEditorId: string;
     it('should Case Incident Response created', async () => {
-      // Create Case Incident Response
+    // Create Case Incident Response
       const caseIncidentResponseCreateQueryResult = await adminQuery({
         query: CREATE_QUERY,
         variables: {
           input: {
             name: 'Case Incident Response With Authorized Members from entity',
+            x_opencti_stix_ids: ['case-incident--019839f8-3220-5fe2-b937-404fe19ef54a'],
           },
         },
       });
