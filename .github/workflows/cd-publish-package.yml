@@ -25,6 +25,7 @@ jobs:
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22 \
           sh -c 'set -eux
+           cd /home/workspace
            apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl g++ make python3 python3-dev
            npm install -g node-gyp
            find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.ref_name }}#subdirectory=client-python|' -i {} \;
@@ -74,6 +75,7 @@ jobs:
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
           sh -c 'set -eux
+           cd /home/workspace
            apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
            npm install -g node-gyp
            find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.ref_name }}#subdirectory=client-python|' -i {} \;

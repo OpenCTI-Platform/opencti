@@ -8,7 +8,6 @@ on:
 jobs:
 
   wf-build-image:
-      if: ${{ github.event.workflow_run.conclusion == 'success' }}
       name: Build and push image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
