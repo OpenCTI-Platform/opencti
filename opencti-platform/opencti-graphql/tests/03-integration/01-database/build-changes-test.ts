@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildChanges } from '../../../src/database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
-import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
-import { findByType } from '../../../src/domain/status';
+import { testContext } from '../../utils/testQuery';
 
 describe('buildChanges standard behavior', async () => {
   it('should build changes for value replaced by other value in "description"', async () => {
@@ -13,11 +12,11 @@ describe('buildChanges standard behavior', async () => {
         value: ['new description'],
       },
     ];
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
-      field: 'Description',
-      previous: ['description'],
-      new: ['new description'],
+      field: 'Malware--description',
+      changes_removed: [{ raw: 'description' }],
+      changes_added: [{ raw: 'new description' }],
     }]);
   });
   it('should build changes for nothing replaced by something in "description"', async () => {
@@ -28,11 +27,11 @@ describe('buildChanges standard behavior', async () => {
         value: ['description'],
       },
     ];
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
-      field: 'Description',
-      previous: [],
-      new: ['description'],
+      field: 'Malware--description',
+      changes_removed: [],
+      changes_added: [{ raw: 'description' }],
     }]);
   });
   it('should build changes for something replaced by nothing in "description"', async () => {
@@ -43,17 +42,21 @@ describe('buildChanges standard behavior', async () => {
         value: [],
       },
     ];
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
-      field: 'Description',
-      previous: ['description'],
-      new: [],
+      field: 'Malware--description',
+      changes_removed: [{ raw: 'description' }],
+      changes_added: [],
     }]);
   });
   it('should build changes for "Malware types" added', async () => {
     const inputs = [{ key: 'malware_types', previous: ['backdoor'], value: ['backdoor', 'bootkit'] }];
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
-    expect(changes).toEqual([{ field: 'Malware types', previous: ['backdoor'], new: ['backdoor', 'bootkit'], added: ['bootkit'], removed: [] }]);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_MALWARE, inputs);
+    expect(changes).toEqual([{
+      field: 'Malware--malware_types',
+      changes_removed: [],
+      changes_added: [{ raw: 'bootkit' }],
+    }]);
   });
   it('should build changes for "Malware types" removed', async () => {
     const inputs = [
@@ -63,8 +66,12 @@ describe('buildChanges standard behavior', async () => {
         value: ['backdoor'],
       },
     ];
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
-    expect(changes).toEqual([{ field: 'Malware types', previous: ['backdoor', 'bootkit'], new: ['backdoor'], added: [], removed: ['bootkit'] }]);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_MALWARE, inputs);
+    expect(changes).toEqual([{
+      field: 'Malware--malware_types',
+      changes_removed: [{ raw: 'bootkit' }],
+      changes_added: [],
+    }]);
   });
   it('should build changes for "participant" added ', async () => {
     const inputs = [{
@@ -72,31 +79,41 @@ describe('buildChanges standard behavior', async () => {
       operation: 'add',
       value: [{
         entity_type: 'User',
-        id: '9b854803-7158-4e4e-a492-f8845ac33aad',
+        internal_id: '9b854803-7158-4e4e-a492-f8845ac33aad',
         name: 'User 1',
-        user_email: 'user1@user1.com' }] }];
+        user_email: 'user1@user1.com',
+      }],
+    }];
 
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Participants', previous: [], new: ['User 1'], added: ['User 1'], removed: [] }]);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{
+      field: 'Report--objectParticipant',
+      changes_removed: [],
+      changes_added: [{ raw: '9b854803-7158-4e4e-a492-f8845ac33aad', translated: '{"9b854803-7158-4e4e-a492-f8845ac33aad":"User 1"}' }],
+    }]);
   });
   it('should build changes for second "participant" added ', async () => {
     const inputs = [{
       key: 'objectParticipant',
       operation: 'add',
-      value: [
-        {
-          entity_type: 'User',
-          id: '7c854803-7158-4e4e-a492-f8845ac33agp',
-          name: 'User 2',
-        }],
+      value: [{
+        entity_type: 'User',
+        internal_id: '7c854803-7158-4e4e-a492-f8845ac33agp',
+        name: 'User 2',
+      }],
       previous: [{
         entity_type: 'User',
-        id: '9b854803-7158-4e4e-a492-f8845ac33aad',
+        internal_id: '9b854803-7158-4e4e-a492-f8845ac33aad',
         name: 'User 1',
-      }] }];
+      }],
+    }];
 
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Participants', previous: ['User 1'], new: ['User 1', 'User 2'], added: ['User 2'], removed: [] }]);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{
+      field: 'Report--objectParticipant',
+      changes_removed: [],
+      changes_added: [{ raw: '7c854803-7158-4e4e-a492-f8845ac33agp', translated: '{"7c854803-7158-4e4e-a492-f8845ac33agp":"User 2"}' }],
+    }]);
   });
   it('should build changes for "marking" added', async () => {
     const inputs = [
@@ -139,8 +156,12 @@ describe('buildChanges standard behavior', async () => {
       },
     ];
 
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Markings', previous: [], new: ['TLP:GREEN'], added: ['TLP:GREEN'], removed: [] }]);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{
+      field: 'Report--objectMarking',
+      changes_removed: [],
+      changes_added: [{ raw: '6da54f1c-8c1b-4c61-953a-2ded39adcaba', translated: '{"6da54f1c-8c1b-4c61-953a-2ded39adcaba":"TLP:GREEN"}' }],
+    }]);
   });
   it('should build changes for second "marking" added', async () => {
     const inputs = [
@@ -236,8 +257,13 @@ describe('buildChanges standard behavior', async () => {
       },
     ];
 
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Markings', previous: ['PAP:GREEN'], new: ['PAP:GREEN', 'TLP:GREEN'], added: ['TLP:GREEN'], removed: [] }]);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{
+      field: 'Report--objectMarking',
+      changes_removed: [],
+      changes_added: [{ raw: '6da54f1c-8c1b-4c61-953a-2ded39adcaba', translated: '{"6da54f1c-8c1b-4c61-953a-2ded39adcaba":"TLP:GREEN"}',
+      }],
+    }]);
   });
   it('should build changes for second "marking" removed', async () => {
     const inputs = [
@@ -370,167 +396,157 @@ describe('buildChanges standard behavior', async () => {
       },
     ];
 
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Markings', previous: ['PAP:GREEN', 'TLP:GREEN'], new: ['PAP:GREEN'], added: [], removed: ['TLP:GREEN'] }]);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{
+      field: 'Report--objectMarking',
+      changes_removed: [{ raw: '6da54f1c-8c1b-4c61-953a-2ded39adcaba', translated: '{"6da54f1c-8c1b-4c61-953a-2ded39adcaba":"TLP:GREEN"}' }],
+      changes_added: [],
+    }]);
   });
   it('should build changes for integer (like confidence level)', async () => {
     const inputs = [{ key: 'confidence', previous: [58], value: [52] }];
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Confidence', previous: [58], new: [52] }]);
+    const changes = await buildChanges(testContext, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{
+      field: 'Report--confidence',
+      changes_removed: [{ raw: 58 }],
+      changes_added: [{ raw: 52 }],
+    }]);
   });
   it('should build changes for labels removed', async () => {
-    const inputs
-      = [
+    const inputs = [{
+      key: 'objectLabel',
+      operation: 'remove',
+      previous: [
         {
-          key: 'objectLabel',
-          operation: 'remove',
-          previous: [
-            {
-              _id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
-              _index: 'opencti_stix_meta_objects-000001',
-              base_type: 'ENTITY',
-              color: '#5ce3b1',
-              confidence: 100,
-              created: '2025-10-28T13:58:44.914Z',
-              created_at: '2025-10-28T13:58:44.914Z',
-              creator_id: [
-                '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
-              ],
-              entity_type: 'Label',
-              i_relation: {
-                _id: 'd86192fa-3d75-4930-b984-af07ff2c5c68',
-                _index: 'opencti_stix_meta_relationships-000001',
-                base_type: 'RELATION',
-                entity_type: 'object-label',
-                fromId: '66cba5b6-fa96-4ec5-bbd3-6f277d56e926',
-                fromName: 'coucou',
-                fromRole: 'object-label_from',
-                fromType: 'Report',
-                id: 'd86192fa-3d75-4930-b984-af07ff2c5c68',
-                internal_id: 'd86192fa-3d75-4930-b984-af07ff2c5c68',
-                relationship_type: 'object-label',
-                sort: [
-                  'relationship-meta--01c2fc35-74b8-4138-bfa2-a8a52e5bc5a8',
-                ],
-                source_ref: 'report--temporary',
-                standard_id: 'relationship-meta--01c2fc35-74b8-4138-bfa2-a8a52e5bc5a8',
-                target_ref: 'label--temporary',
-                toId: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
-                toName: 'anti-sandbox',
-                toRole: 'object-label_to',
-                toType: 'Label',
-              },
-              id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
-              internal_id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
-              modified: '2025-10-28T13:58:44.914Z',
-              parent_types: [
-                'Basic-Object',
-                'Stix-Object',
-                'Stix-Meta-Object',
-              ],
-              refreshed_at: '2025-10-28T16:14:59.505Z',
-              standard_id: 'label--84f47fea-17d1-58bd-88ee-053d92e591c0',
-              updated_at: '2025-10-28T13:58:44.914Z',
-              value: 'anti-sandbox',
-              x_opencti_stix_ids: [],
-            },
-            {
-              _id: '8cee9d94-105e-42ae-ad56-cae421a927a2',
-              _index: 'opencti_stix_meta_objects-000001',
-              base_type: 'ENTITY',
-              color: '#bd10e0',
-              confidence: 100,
-              created: '2025-10-21T09:22:42.066Z',
-              created_at: '2025-10-21T09:22:42.066Z',
-              creator_id: [
-                '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
-              ],
-              entity_type: 'Label',
-              i_relation: {
-                _id: '11b424c7-d914-4e3a-9c1c-7377a1cef35f',
-                _index: 'opencti_stix_meta_relationships-000001',
-                base_type: 'RELATION',
-                entity_type: 'object-label',
-                fromId: '66cba5b6-fa96-4ec5-bbd3-6f277d56e926',
-                fromName: 'coucou',
-                fromRole: 'object-label_from',
-                fromType: 'Report',
-                id: '11b424c7-d914-4e3a-9c1c-7377a1cef35f',
-                internal_id: '11b424c7-d914-4e3a-9c1c-7377a1cef35f',
-                sort: [
-                  'relationship-meta--13d16999-d63a-4862-bbbc-58590107d6f0',
-                ],
-                source_ref: 'report--temporary',
-                standard_id: 'relationship-meta--13d16999-d63a-4862-bbbc-58590107d6f0',
-              },
-              id: '8cee9d94-105e-42ae-ad56-cae421a927a2',
-              internal_id: '8cee9d94-105e-42ae-ad56-cae421a927a2',
-              modified: '2025-10-21T09:22:42.066Z',
-              parent_types: [
-                'Basic-Object',
-                'Stix-Object',
-                'Stix-Meta-Object',
-              ],
-              refreshed_at: '2025-10-21T09:22:42.066Z',
-              standard_id: 'label--f5658bbf-8549-5a15-9194-0c3d502a8c2a',
-              updated_at: '2025-10-21T09:22:42.066Z',
-              value: 'angie',
-              x_opencti_stix_ids: [],
-            },
+          _id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          _index: 'opencti_stix_meta_objects-000001',
+          base_type: 'ENTITY',
+          color: '#5ce3b1',
+          confidence: 100,
+          created: '2025-10-28T13:58:44.914Z',
+          created_at: '2025-10-28T13:58:44.914Z',
+          creator_id: [
+            '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           ],
-          value: [
-            {
-              _id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
-              _index: 'opencti_stix_meta_objects-000001',
-              base_type: 'ENTITY',
-              color: '#5ce3b1',
-              confidence: 100,
-              created: '2025-10-28T13:58:44.914Z',
-              created_at: '2025-10-28T13:58:44.914Z',
-              creator_id: [
-                '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
-              ],
-              entity_type: 'Label',
-              id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
-              internal_id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
-              modified: '2025-10-28T13:58:44.914Z',
-              parent_types: [
-                'Basic-Object',
-                'Stix-Object',
-                'Stix-Meta-Object',
-              ],
-              refreshed_at: '2025-10-28T16:14:59.505Z',
-              standard_id: 'label--84f47fea-17d1-58bd-88ee-053d92e591c0',
-              updated_at: '2025-10-28T13:58:44.914Z',
-              value: 'anti-sandbox',
-              x_opencti_stix_ids: [],
-            },
+          entity_type: 'Label',
+          i_relation: {
+            _id: 'd86192fa-3d75-4930-b984-af07ff2c5c68',
+            _index: 'opencti_stix_meta_relationships-000001',
+            base_type: 'RELATION',
+            entity_type: 'object-label',
+            fromId: '66cba5b6-fa96-4ec5-bbd3-6f277d56e926',
+            fromName: 'coucou',
+            fromRole: 'object-label_from',
+            fromType: 'Report',
+            id: 'd86192fa-3d75-4930-b984-af07ff2c5c68',
+            internal_id: 'd86192fa-3d75-4930-b984-af07ff2c5c68',
+            relationship_type: 'object-label',
+            sort: [
+              'relationship-meta--01c2fc35-74b8-4138-bfa2-a8a52e5bc5a8',
+            ],
+            source_ref: 'report--temporary',
+            standard_id: 'relationship-meta--01c2fc35-74b8-4138-bfa2-a8a52e5bc5a8',
+            target_ref: 'label--temporary',
+            toId: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+            toName: 'anti-sandbox',
+            toRole: 'object-label_to',
+            toType: 'Label',
+          },
+          id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          internal_id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          modified: '2025-10-28T13:58:44.914Z',
+          parent_types: [
+            'Basic-Object',
+            'Stix-Object',
+            'Stix-Meta-Object',
           ],
+          refreshed_at: '2025-10-28T16:14:59.505Z',
+          standard_id: 'label--84f47fea-17d1-58bd-88ee-053d92e591c0',
+          updated_at: '2025-10-28T13:58:44.914Z',
+          value: 'anti-sandbox',
+          x_opencti_stix_ids: [],
         },
-      ];
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Label', previous: ['anti-sandbox', 'angie'], new: ['angie'], removed: ['anti-sandbox'], added: [] }]);
-  });
-  it('should build changes for status replaced', async () => {
-    // we use data-initialization statuses
-    const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
-    const inputs = [{
-      key: 'x_opencti_workflow_id',
-      previous: [statuses[0].id],
-      value: [statuses[1].id],
-    }];
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Workflow status', previous: [statuses[0].name], new: [statuses[1].name] }]);
-  });
-  it('should build changes for creator add', async () => {
-    const securityId = await getUserIdByEmail(USER_SECURITY.email);
-    const editorId = await getUserIdByEmail(USER_EDITOR.email);
-    const inputs = [{
-      key: 'creator_id',
-      previous: [securityId],
-      value: [securityId, editorId],
-    }];
-    const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Creators', previous: ['security@opencti.io'], new: ['security@opencti.io', 'editor@opencti.io'], added: ['editor@opencti.io'], removed: [] }]);
+        {
+          _id: '8cee9d94-105e-42ae-ad56-cae421a927a2',
+          _index: 'opencti_stix_meta_objects-000001',
+          base_type: 'ENTITY',
+          color: '#bd10e0',
+          confidence: 100,
+          created: '2025-10-21T09:22:42.066Z',
+          created_at: '2025-10-21T09:22:42.066Z',
+          creator_id: [
+            '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+          ],
+          entity_type: 'Label',
+          i_relation: {
+            _id: '11b424c7-d914-4e3a-9c1c-7377a1cef35f',
+            _index: 'opencti_stix_meta_relationships-000001',
+            base_type: 'RELATION',
+            entity_type: 'object-label',
+            fromId: '66cba5b6-fa96-4ec5-bbd3-6f277d56e926',
+            fromName: 'coucou',
+            fromRole: 'object-label_from',
+            fromType: 'Report',
+            id: '11b424c7-d914-4e3a-9c1c-7377a1cef35f',
+            internal_id: '11b424c7-d914-4e3a-9c1c-7377a1cef35f',
+            sort: [
+              'relationship-meta--13d16999-d63a-4862-bbbc-58590107d6f0',
+            ],
+            source_ref: 'report--temporary',
+            standard_id: 'relationship-meta--13d16999-d63a-4862-bbbc-58590107d6f0',
+          },
+          id: '8cee9d94-105e-42ae-ad56-cae421a927a2',
+          internal_id: '8cee9d94-105e-42ae-ad56-cae421a927a2',
+          modified: '2025-10-21T09:22:42.066Z',
+          parent_types: [
+            'Basic-Object',
+            'Stix-Object',
+            'Stix-Meta-Object',
+          ],
+          refreshed_at: '2025-10-21T09:22:42.066Z',
+          standard_id: 'label--f5658bbf-8549-5a15-9194-0c3d502a8c2a',
+          updated_at: '2025-10-21T09:22:42.066Z',
+          value: 'angie',
+          x_opencti_stix_ids: [],
+        },
+      ],
+      value: [
+        {
+          _id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          _index: 'opencti_stix_meta_objects-000001',
+          base_type: 'ENTITY',
+          color: '#5ce3b1',
+          confidence: 100,
+          created: '2025-10-28T13:58:44.914Z',
+          created_at: '2025-10-28T13:58:44.914Z',
+          creator_id: [
+            '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+          ],
+          entity_type: 'Label',
+          id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          internal_id: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c',
+          modified: '2025-10-28T13:58:44.914Z',
+          parent_types: [
+            'Basic-Object',
+            'Stix-Object',
+            'Stix-Meta-Object',
+          ],
+          refreshed_at: '2025-10-28T16:14:59.505Z',
+          standard_id: 'label--84f47fea-17d1-58bd-88ee-053d92e591c0',
+          updated_at: '2025-10-28T13:58:44.914Z',
+          value: 'anti-sandbox',
+          x_opencti_stix_ids: [],
+        },
+      ],
+    },
+    ];
+    const changes = await buildChanges(testContext, ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{
+      field: 'Report--objectLabel',
+      changes_removed: [
+        { raw: 'd9c27d81-c003-4a0d-bfdc-397b8d12f59c', translated: '{"d9c27d81-c003-4a0d-bfdc-397b8d12f59c":"anti-sandbox"}' },
+      ],
+      changes_added: [],
+    }]);
   });
 });

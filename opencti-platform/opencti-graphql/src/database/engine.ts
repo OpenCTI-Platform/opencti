@@ -105,6 +105,7 @@ import {
   INTERNAL_USERS,
   isBypassUser,
   isServiceAccountUser,
+  isUserHasCapabilities,
   MEMBER_ACCESS_ALL,
   SYSTEM_USER,
   userFilterStoreElements,
@@ -223,6 +224,7 @@ export const ES_RETRY_ON_CONFLICT = 30;
 export const BULK_TIMEOUT = '1h';
 const ES_MAX_MAPPINGS = 3000;
 const MAX_AGGREGATION_SIZE = 100;
+const INNER_HITS_WINDOWS_SIZE = 100;
 
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
@@ -343,7 +345,7 @@ export const searchEngineVersion = async (): Promise<{ platform: string; version
   const searchInfo = await engineToUse.info()
     .then((info) => oebp(info).version)
     .catch(
-      /* v8 ignore next */ (e) => {
+      /* v8 ignore next */(e) => {
         throw ConfigurationError('Search engine seems down', { cause: e });
       },
     );
@@ -566,7 +568,7 @@ const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
+  const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: {} } } } } };
   // condition on authorizedMembers id
   const authorizedMembersIdsTerms = { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } };
   // condition on group restriction ids
@@ -615,13 +617,69 @@ const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?
   return [{ bool: { should: shouldConditions } }];
 };
 
+const buildHistoryRestrictions = (user: AuthUser, historyFiltering?: boolean) => {
+  const restrictions = [];
+  if (historyFiltering) {
+    // Compute forbidden fields for the user
+    const forbiddenAttributes = [];
+    const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
+    for (let i = 0; i < registeredTypes.length; i += 1) {
+      const registeredType = registeredTypes[i];
+      const attributes = schemaAttributesDefinition.getAttributes(registeredType);
+      const invalidAttrs = Array.from(attributes.values()).filter((a: AttributeDefinition) =>
+        !isUserHasCapabilities(user, a.requiredCapabilities));
+      forbiddenAttributes.push(...invalidAttrs.map((a) => registeredType + '--' + a.name));
+    }
+    restrictions.push({
+      bool: {
+        should: [
+          {
+            bool: {
+              must_not: [
+                {
+                  nested: {
+                    path: 'context_data.history_changes',
+                    query: {
+                      match_all: {},
+                    },
+                  },
+                },
+              ],
+            },
+          },
+          {
+            nested: {
+              path: 'context_data.history_changes',
+              inner_hits: {
+                size: INNER_HITS_WINDOWS_SIZE, // Mandatory
+              },
+              query: {
+                bool: {
+                  must_not: [
+                    {
+                      terms: {
+                        'context_data.history_changes.field.keyword': forbiddenAttributes,
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        ],
+        minimum_should_match: 1,
+      },
+    });
+  }
+  return restrictions;
+};
+
 export const buildDataRestrictions = async (
   context: AuthContext,
   user: AuthUser,
-  opts: { includeAuthorities?: boolean | null } | null | undefined = {},
+  opts: { includeAuthorities?: boolean | null; historyFiltering?: boolean } | null | undefined = {},
 ): Promise<{ must: any[]; must_not: any[] }> => {
   const must: any[] = [];
-
   const must_not: any[] = [];
   // If internal users of the system, we cancel rights checking
   if (INTERNAL_USERS[user.id]) {
@@ -631,6 +689,9 @@ export const buildDataRestrictions = async (
   must.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities }));
   // If user have bypass, no need to check restrictions
   if (!isBypassUser(user)) {
+    // region handle history protection
+    must.push(...buildHistoryRestrictions(user, opts?.historyFiltering));
+    // endregion
     // region Handle marking restrictions
     if (user.allowed_marking.length === 0) {
       // If user have no marking, he can only access to data with no markings.
@@ -1605,8 +1666,23 @@ export const elRebuildRelation = (concept: { internal_id: string; base_type: str
   }
   return concept;
 };
+
+function setPropertyByPath(obj: Record<string, any>, path: string, value: any) {
+  const parts = path.split('.');
+  let current = obj;
+  for (let i = 0; i < parts.length - 1; i += 1) {
+    const part = parts[i];
+    if (!current[part] || typeof current[part] !== 'object') {
+      current[part] = {};
+    }
+    current = current[part];
+  }
+  current[parts[parts.length - 1]] = value;
+}
+
 const elDataConverter = <T>(esHit: any): T => {
   const elementData = esHit._source;
+  // Base element mapping
   const data: Record<string, any> = {
     _index: esHit._index,
     _id: esHit._id,
@@ -1615,8 +1691,22 @@ const elDataConverter = <T>(esHit: any): T => {
     ...elRebuildRelation(elementData),
     ...(isNotEmptyField(esHit.fields) ? esHit.fields : {}),
   };
-  const entries = Object.entries(data);
+  // Inner elements mapping
+  if (esHit.inner_hits) {
+    Object.keys(esHit.inner_hits).forEach((innerHitKey) => {
+      const nestedHits = esHit.inner_hits[innerHitKey];
+      if (nestedHits?.hits?.hits) {
+        if (nestedHits?.hits?.hits.length === INNER_HITS_WINDOWS_SIZE) {
+          logApp.warn('Inner hits limitation reached', { id: elementData.internal_id, key: innerHitKey });
+        }
+        const matchedDocs = nestedHits.hits.hits.map((h: any) => h._source);
+        setPropertyByPath(elementData, innerHitKey, matchedDocs);
+      }
+    });
+  }
+  // Rule inference mapping
   const ruleInferences = [];
+  const entries = Object.entries(data);
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
     if (key.startsWith(RULE_PREFIX)) {
@@ -1675,7 +1765,7 @@ export const elConvertHitsToMap = async <T extends BasicStoreBase>(
   return convertedHitsMap;
 };
 
-export const elConvertHits = async <T extends BasicStoreBase> (data: any): Promise<T[]> => asyncMap<any, T>(data, (hit) => elDataConverter<T>(hit));
+export const elConvertHits = async <T extends BasicStoreBase>(data: any): Promise<T[]> => asyncMap<any, T>(data, (hit) => elDataConverter<T>(hit));
 
 const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
   const duplicatedIds = new Set<string>();
@@ -1710,14 +1800,14 @@ type ElFindByIdsOpts = {
   withoutRels?: boolean | null;
   toMap?: boolean;
   mapWithAllIds?: boolean;
-  type?: string | string [] | null;
+  type?: string | string[] | null;
   relCount?: boolean | null;
   includeDeletedInDraft?: boolean | null;
 };
 
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
 // It's a way to load a bunch of ids and use in list or map
-export const elFindByIds = async <T extends BasicStoreBase> (
+export const elFindByIds = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   ids: string[] | string,
@@ -1889,6 +1979,12 @@ const BASE_SEARCH_CONNECTIONS = [
   // Add all other attributes
   'connections.*',
 ];
+const BASE_SEARCH_HISTORY = [
+  // Pounds for history search
+  'context_data.history_changes.field^4',
+  // Add all other attributes
+  'context_data.history_changes.*',
+];
 const BASE_SEARCH_ATTRIBUTES = [
   // Pounds for attributes search
   `${ATTRIBUTE_NAME}^5`,
@@ -1964,6 +2060,7 @@ const BASE_SEARCH_ATTRIBUTES = [
 
 type ProcessSearchArgs = {
   useWildcardPrefix?: boolean;
+  historyFiltering?: boolean;
 };
 function processSearch(
   search: string,
@@ -2010,9 +2107,51 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
   // Return the elastic search engine expected bool should terms
   // Build the search for all exact match (between double quotes)
   const shouldSearch = [];
+  const searchPhrase = R.uniq(querySearch).join(' ');
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|http?:/g, '')));
-  shouldSearch.push(
-    ...cleanExactSearch.map((ex) => [
+  if (args.historyFiltering) {
+    shouldSearch.push(...cleanExactSearch.map((ex) => [{
+      nested: {
+        path: 'context_data.history_changes',
+        query: {
+          bool: {
+            must: [
+              {
+                multi_match: {
+                  type: 'phrase',
+                  query: ex,
+                  lenient: true,
+                  fields: BASE_SEARCH_HISTORY,
+                },
+              },
+            ],
+          },
+        },
+      },
+    }]).flat());
+    if (searchPhrase) {
+      shouldSearch.push(...[{
+        nested: {
+          path: 'context_data.history_changes',
+          query: {
+            bool: {
+              must: [
+                {
+                  query_string: {
+                    query: searchPhrase,
+                    analyze_wildcard: true,
+                    fields: BASE_SEARCH_HISTORY,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+      ]);
+    }
+  } else {
+    shouldSearch.push(...cleanExactSearch.map((ex) => [
       {
         multi_match: {
           type: 'phrase',
@@ -2040,13 +2179,9 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
           },
         },
       },
-    ]).flat(),
-  );
-  // Build the search for all other fields
-  const searchPhrase = R.uniq(querySearch).join(' ');
-  if (searchPhrase) {
-    shouldSearch.push(...[
-      {
+    ]).flat());
+    if (searchPhrase) {
+      shouldSearch.push(...[{
         query_string: {
           query: searchPhrase,
           analyze_wildcard: true,
@@ -2079,7 +2214,8 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
           },
         },
       },
-    ]);
+      ]);
+    }
   }
   return shouldSearch;
 };
@@ -2556,7 +2692,7 @@ export const RUNTIME_ATTRIBUTES: Record<string, any> = {
     field: 'observable_value.keyword',
     type: 'keyword',
     getSource: async () => runtimeFieldObservableValueScript(),
-    getParams: async () => {},
+    getParams: async () => { },
   },
   createdBy: {
     field: 'createdBy.keyword',
@@ -2736,6 +2872,7 @@ type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   search?: string | null;
   filters?: FilterGroup | null;
   noFiltersChecking?: boolean;
+  historyFiltering?: boolean;
   startDate?: any;
   endDate?: any;
   dateAttribute?: string | null;
@@ -2758,6 +2895,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
     filters,
     noFiltersChecking,
     startDate = null,
+    historyFiltering = false,
     endDate = null,
     dateAttribute = null,
     includeAuthorities = false,
@@ -2769,7 +2907,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering: any[] = [];
   // Handle marking restrictions
-  const markingRestrictions = await buildDataRestrictions(context, user, { includeAuthorities });
+  const markingRestrictions = await buildDataRestrictions(context, user, { historyFiltering, includeAuthorities });
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
@@ -2970,6 +3108,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
   } catch (err: any) {
     const root_cause = err.meta?.body?.error?.caused_by?.type;
     if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
+    console.log(err, root_cause);
     throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
   }
 };
@@ -2978,7 +3117,7 @@ type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
   logForMigration?: boolean;
   callback?: (elements: T[], globalCount: number) => Promise<boolean | undefined>;
 };
-const elRepaginate = async <T extends BasicStoreBase> (
+const elRepaginate = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | undefined | null,
@@ -3033,7 +3172,7 @@ const elRepaginate = async <T extends BasicStoreBase> (
   return { elements: listing, totalCount: globalHitsCount };
 };
 
-export const elConnection = async <T extends BasicStoreBase> (
+export const elConnection = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | null | undefined,
@@ -3043,7 +3182,7 @@ export const elConnection = async <T extends BasicStoreBase> (
   return buildPaginationFromEdges<T>(opts.first, opts.after, elements as BasicNodeEdge<T>[], totalCount);
 };
 
-export const elList = async <T extends BasicStoreBase> (
+export const elList = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   indexName: string | string[] | undefined | null,
@@ -3053,7 +3192,7 @@ export const elList = async <T extends BasicStoreBase> (
   return data.elements as T[];
 };
 
-export const elLoadBy = async <T extends BasicStoreBase> (
+export const elLoadBy = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   field: string,
@@ -3481,7 +3620,7 @@ export const elAggregationsList = async (
   });
 };
 
-const buildRegardingOfFilter = async <T extends BasicStoreBase> (
+const buildRegardingOfFilter = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   elements: T[],
@@ -3778,7 +3917,7 @@ const getRelatedRelations = async (
     await BluePromise.map(groups, concurrentFetch, { concurrency: ES_MAX_CONCURRENCY });
   }
 };
-export const getRelationsToRemove = async <T extends BasicStoreBase> (
+export const getRelationsToRemove = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   elements: T[],
@@ -3790,7 +3929,7 @@ export const getRelationsToRemove = async <T extends BasicStoreBase> (
   await getRelatedRelations(context, user, ids, relationsToRemove, 0, relationsToRemoveMap, opts);
   return { relations: R.flatten(relationsToRemove), relationsToRemoveMap };
 };
-export const elDeleteInstances = async <T extends BasicStoreBase> (
+export const elDeleteInstances = async <T extends BasicStoreBase>(
   instances: T[],
   opts: { forceRefresh?: boolean } = {},
 ) => {
