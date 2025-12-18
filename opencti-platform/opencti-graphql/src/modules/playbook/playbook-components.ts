@@ -842,18 +842,17 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const { access_restrictions: accessRestrictions, all } = playbookNode.configuration;
-    // Resolve potential dyanmic access rights
+    // Resolve potential dynamic access rights
     const baseData = extractBundleBaseElement(dataInstanceId, bundle) as StixObject;
     const finalAccessRestrictions = [];
     for (let index = 0; index < accessRestrictions.length; index += 1) {
       const accessRestriction = accessRestrictions[index];
       if (accessRestriction.value === 'AUTHOR') {
         // If dynamic binding of author and an author is really defined in the data
-        if (isNotEmptyField(baseData.extensions[STIX_EXT_OCTI].created_by_ref_id)) {
-          finalAccessRestrictions.push({
-            ...accessRestriction,
-            value: baseData.extensions[STIX_EXT_OCTI].created_by_ref_id,
-          });
+        const createdById = baseData.extensions[STIX_EXT_OCTI].created_by_ref_id;
+        const createdByType = baseData.extensions[STIX_EXT_OCTI].created_by_ref_type;
+        if (isNotEmptyField(createdById) && createdByType === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
+          finalAccessRestrictions.push({ ...accessRestriction, value: createdById });
         }
       } else if (accessRestriction.value === 'CREATORS') {
         const creators = (baseData.extensions[STIX_EXT_OCTI].creator_ids ?? []).filter((id) => isNotEmptyField(id));
