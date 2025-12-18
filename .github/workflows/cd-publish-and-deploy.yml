@@ -1,0 +1,20 @@
+name: Publish and deploy to staging
+
+on:
+  workflow_run:
+    workflows: [OpenCTI CI]
+    types: [completed]
+    # branches: [master,release/current]
+    branches: [issue/13571-build-images]
+
+jobs:
+
+  wf-build-image:
+      if: ${{ github.event.workflow_run.conclusion == 'success' }}
+      name: Build and push image
+      uses: ./.github/workflows/ci-docker-build.yml
+      with:
+        image_tag: ${{ github.ref_name == 'master'  && "rolling" || github.ref_name == 'release/current' && "prerelease" || github.ref_name == 'issue/13571-build-images' && "test-13571"  }}
+        client_python_local: true
+      secrets: inherit
+
