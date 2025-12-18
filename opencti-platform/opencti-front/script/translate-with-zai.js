@@ -15,7 +15,7 @@ const CONCURRENCY = 4;
 
 // Get API key from environment variable
 const ZAI_API_KEY = process.env.ZAI_API_KEY;
-const ZAI_BASE_URL = process.env.ZAI_BASE_URL || 'https://api.z.ai/api/paas/v4/';
+const ZAI_BASE_URL = process.env.ZAI_BASE_URL || 'https://api.z.ai/api/coding/paas/v4';
 
 if (!ZAI_API_KEY) {
   console.error('❌ ZAI_API_KEY environment variable is not set.');
