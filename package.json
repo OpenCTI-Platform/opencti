@@ -1,0 +1,26 @@
+{
+  "name": "opencti",
+  "packageManager": "yarn@4.12.0",
+  "workspaces": [
+    "opencti-platform/opencti-front",
+    "opencti-platform/opencti-graphql",
+    "client-python",
+    "opencti-worker"
+  ],
+  "devDependencies": {
+    "nx": "22.2.5"
+  },
+  "scripts": {
+    "deps": "nx run-many --tuiAutoExit --target install",
+    "dev": "nx run-many --target dev",
+    "build": "nx run-many --tuiAutoExit --target build",
+    "test": "nx run-many --tuiAutoExit --target test,e2e",
+    "lint": "nx run-many --tuiAutoExit --target lint",
+    "graphql": "nx run-many --tuiAutoExit --target graphql",
+    "with-python-venv": "node scripts/with_python_virtual_env.mjs",
+    "deps:venv": "yarn with-python-venv yarn deps",
+    "build:venv": "yarn with-python-venv yarn build",
+    "dev:venv": "yarn with-python-venv yarn dev",
+    "test:venv": "yarn with-python-venv yarn test"
+  }
+}

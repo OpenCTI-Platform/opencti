@@ -1,0 +1,19 @@
+{
+  "name": "client-python",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "client-python",
+  "projectType": "application",
+  "types": ["python"],
+  "targets": {
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "client-python",
+        "command": "pip install -r requirements.txt && pip install -e ."
+      },
+      "metadata": {
+        "description": "Install the OpenCTI Python client dependencies"
+      }
+    }
+  }
+}
