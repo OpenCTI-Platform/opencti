@@ -49,6 +49,7 @@ jobs:
 
 
   opencti-frontend-e2e-test-ee:
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     name: Frontend e2e tests EE
     runs-on: ubuntu-latest
     steps:
