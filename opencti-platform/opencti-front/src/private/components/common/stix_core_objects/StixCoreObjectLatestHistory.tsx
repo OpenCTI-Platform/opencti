@@ -15,6 +15,7 @@ import {
 import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 type StixCoreObjectLatestHistoryProps = {
   stixCoreObjectId: string;
@@ -23,6 +24,7 @@ type StixCoreObjectLatestHistoryProps = {
 const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestHistoryProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const { tz, locale, unitSystem } = useAuth();
 
   const paginationOptions: StixCoreObjectHistoryLinesQuery$variables = {
     filters: {
@@ -39,6 +41,9 @@ const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestH
     first: 7,
     orderBy: 'timestamp',
     orderMode: 'desc',
+    tz,
+    locale: locale,
+    unit_system: unitSystem,
   };
 
   const queryRef = useQueryLoading<StixCoreObjectHistoryLinesQuery>(

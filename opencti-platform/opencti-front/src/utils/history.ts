@@ -2,7 +2,6 @@ import { displayEntityTypeForTranslation } from './String';
 import { isNotEmptyField } from './utils';
 import { useFormatter } from '../components/i18n';
 
-// eslint-disable-next-line import/prefer-default-export
 export const useGenerateAuditMessage = <T extends {
   entity_type?: string | null;
   event_type: string;

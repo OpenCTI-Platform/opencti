@@ -183,7 +183,7 @@ export const settingsMessages = {
   },
 };
 
-const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
+const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> } = {
   [ENTITY_TYPE_SETTINGS]: [
     { name: 'platform_title', label: 'Platform title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_organization', label: 'Platform organization', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
