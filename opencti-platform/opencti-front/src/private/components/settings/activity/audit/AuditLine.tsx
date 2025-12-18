@@ -1,31 +1,20 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
-import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import Drawer from '@components/common/drawer/Drawer';
 import { ListItemButton } from '@mui/material';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import { DataColumns } from '../../../../../components/list_lines';
-import { AuditLine_node$data, AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
+import { AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
-import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
 import { useGenerateAuditMessage } from '../../../../../utils/history';
 import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
+import AuditDrawer from './AuditDrawer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -70,7 +59,6 @@ const AuditLineFragment = graphql`
       id
       name
     }
-    raw_data
     context_data {
       entity_id
       entity_type
@@ -78,13 +66,6 @@ const AuditLineFragment = graphql`
       message
       from_id
       to_id
-      changes{
-        field
-        previous
-        new
-        added
-        removed
-      }
     }
   }
 `;
@@ -94,117 +75,22 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   node,
 }) => {
   const classes = useStyles();
-  const { t_i18n, fndt } = useFormatter();
+  const { fndt } = useFormatter();
   const theme = useTheme<Theme>();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
-  const message = useGenerateAuditMessage<AuditLine_node$data>(data);
+  const message = useGenerateAuditMessage(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
-  const changes = data?.context_data?.changes;
 
   return (
     <>
-      <Drawer
-        open={!!selectedLog}
-        title={t_i18n('Activity raw detail')}
-        onClose={() => setSelectedLog(null)}
-      >
-        <>
-          <div>
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('Message')}
-            </Typography>
-            <MarkdownDisplay
-              content={message}
-              remarkGfmPlugin={true}
-              commonmark={true}
-            />
-          </div>
-          {data.context_uri && (
-            <div style={{ marginTop: 16 }}>
-              <Typography variant="h4" gutterBottom={true}>
-                {t_i18n('Instance context')}
-              </Typography>
-              <Link to={data.context_uri}>View the element</Link>
-            </div>
-          )}
-          <div style={{ marginTop: 16 }}>
-            <Grid item xs={6}>
-              <Typography variant="h4" gutterBottom={true}>
-                {t_i18n('Details')}
-              </Typography>
-              <Paper style={{ marginTop: theme.spacing(1), position: 'relative' }}>
-                <div style={{ height: '100%', width: '100%' }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '100%',
-                    textAlign: 'center',
-                  }}
-                  >
-                    <TableContainer component={Paper}>
-                      <Table sx={{ minWidth: 650 }} size="small">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell></TableCell>
-                            <TableCell align="left">Previous value</TableCell>
-                            <TableCell align="left">New value</TableCell>
-                            <TableCell align="left">Added</TableCell>
-                            <TableCell align="left">Removed</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {changes && changes.length > 0 ? (changes.map((row) => (
-                            <TableRow
-                              key={row?.field}
-                              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                            >
-                              <TableCell component="th" scope="row">
-                                {row?.field}
-                              </TableCell>
-                              <TableCell align="left">{row?.previous && row.previous.length > 0
-                                ? row.previous.join(', ')
-                                : '-'}
-                              </TableCell>
-                              <TableCell align="left">{row?.new && row.new.length > 0
-                                ? row.new.join(', ')
-                                : '-'}
-                              </TableCell>
-                              <TableCell align="left">{row?.added && row.added.length > 0
-                                ? row.added.join(', ')
-                                : '-'}
-                              </TableCell>
-                              <TableCell align="left">{row?.removed && row.removed.length > 0
-                                ? row.removed.join(', ')
-                                : '-'}
-                              </TableCell>
-                            </TableRow>
-                          ))
-                          ) : (
-                            <TableRow>
-                              <TableCell align="center" colSpan={5}>
-                                {t_i18n('No detail available for this event')}
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-
-                  </div>
-                </div>
-              </Paper>
-            </Grid>
-          </div>
-          <div style={{ marginTop: 20 }}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('Raw data')}
-            </Typography>
-            <pre>{data.raw_data}</pre>
-          </div>
-        </>
-      </Drawer>
+      {selectedLog && (
+        <AuditDrawer
+          open={!!selectedLog}
+          logId={selectedLog}
+          onClose={() => setSelectedLog(null)}
+        />
+      )}
       <ListItemButton
         classes={{ root: classes.item }}
         divider={true}
@@ -248,11 +134,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                 style={{ width: dataColumns.message.width }}
               >
                 <span style={{ color }}>
-                  <MarkdownDisplay
-                    content={message}
-                    remarkGfmPlugin={true}
-                    commonmark={true}
-                  />
+                  <b>{data.user?.name}</b> {message}
                 </span>
               </div>
             </div>

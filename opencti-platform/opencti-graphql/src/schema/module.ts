@@ -50,7 +50,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   converter_2_1: ConvertFn<T, Z>;
   bundleResolver?: (context: AuthContext, user: AuthUser, id: string) => Promise<string>;
   overviewLayoutCustomization?: Array<OverviewWidgetCustomization>;
-  attributes: Array<AttributeDefinition>;
+  attributes: Array<AttributeDefinition<any>>;
   relations: Array<{
     name: string;
     targets: Array<RelationDefinition>;

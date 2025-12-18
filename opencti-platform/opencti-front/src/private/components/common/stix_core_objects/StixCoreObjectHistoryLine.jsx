@@ -28,7 +28,20 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 
 export const StixCoreObjectHistoryFragment = graphql`
-  fragment StixCoreObjectHistoryLine_node on Log {
+  fragment StixCoreObjectHistoryLine_node on Log @argumentDefinitions(
+    tz: {
+      type: "String",
+      defaultValue: null
+    }
+    locale: {
+      type: "String",
+      defaultValue: null
+    }
+    unit_system: {
+      type: "String",
+      defaultValue: null
+    }
+  ) {
     id
     event_type
     event_scope
@@ -36,7 +49,7 @@ export const StixCoreObjectHistoryFragment = graphql`
     user {
       name
     }
-    context_data {
+    context_data(tz: $tz, locale: $locale, unit_system: $unit_system) {
       message
       commit
       to_id
@@ -47,13 +60,6 @@ export const StixCoreObjectHistoryFragment = graphql`
         external_id
         url
         description
-      }
-      changes{
-        field
-        previous
-        new
-        added
-        removed
       }
     }
   }
@@ -66,22 +72,20 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState(null);
   const data = useFragment(StixCoreObjectHistoryFragment, node);
+  const hasExternalRefs = data.context_data.external_references && data.context_data.external_references.length > 0;
+
   const handleOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => setOpen(false);
-
   const handleOpenExternalLink = (url) => {
     setDisplayExternalLink(true);
     setExternalLink(url);
   };
-
   const handleCloseExternalLink = () => {
     setDisplayExternalLink(false);
     setExternalLink(null);
   };
-
   const handleBrowseExternalLink = () => {
     if (externalLink) window.open(externalLink, '_blank');
     handleCloseExternalLink();
@@ -141,88 +145,23 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
   };
 
   return (
-    <ListItem style={{
-      height: 40,
-      padding: 0 }}
-    >
-      <div style={{
-        float: 'left',
-        width: 30,
-        height: 30,
-        margin: '7px 0 0 0',
-      }}
-      >
-        <Badge
-          color="secondary"
-          overlap="circular"
-          badgeContent="M"
-          invisible={data.context_data.commit === null}
-        >
-          {renderIcon(
-            data.event_scope,
-            data.context_data.message,
-            data.context_data.commit,
-          )}
+    <ListItem style={{ height: 40, padding: 0 }}>
+      <div style={{ float: 'left', width: 30, height: 30, margin: '7px 0 0 0' }}>
+        <Badge color="secondary" overlap="circular" badgeContent="M" invisible={data.context_data.commit === null}>
+          {renderIcon(data.event_scope, data.context_data.message, data.context_data.commit)}
         </Badge>
       </div>
-      <div
-        style={{
-          flex: 1,
-          width: 'auto',
-          overflow: 'hidden',
-          height:
-          data.context_data.external_references
-          && data.context_data.external_references.length > 0
-            ? 'auto'
-            : 40,
-        }}
-      >
-        <Paper sx={{
-          width: '100%',
-          height: '100%',
-          padding: '8px 15px 0 15px',
-          background: 0,
-        }}
-        >
-          <div style={{
-            float: 'right',
-            textAlign: 'right',
-            width: 180,
-            paddingTop: 4,
-            fontSize: 11,
-          }}
-          >{nsdt(data.timestamp)}
+      <div style={{ flex: 1, width: 'auto', overflow: 'hidden', height: hasExternalRefs ? 'auto' : 40 }}>
+        <Paper sx={{ width: '100%', height: '100%', padding: '8px 15px 0 15px', background: 0 }}>
+          <div style={{ float: 'right', textAlign: 'right', width: 180, paddingTop: 4, fontSize: 11 }}>
+            {nsdt(data.timestamp)}
           </div>
-          <Tooltip
-            sx={{
-              maxWidth: '80%',
-              lineHeight: 2,
-              padding: 10,
-            }}
-            title={(
-              <MarkdownDisplay
-                content={`\`${data.user.name}\` ${data.context_data.message}`}
-                remarkGfmPlugin={true}
-                commonmark={true}
-              />
-            )}
-          >
-            <div style={{
-              height: '100%',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-            >
-              <MarkdownDisplay
-                content={`\`${data.user.name}\` ${data.context_data.message}`}
-                remarkGfmPlugin={true}
-                commonmark={true}
-              />
+          <Tooltip sx={{ maxWidth: '80%', lineHeight: 2, padding: 10 }} title={<><b>{data.user.name}</b> {data.context_data.message}</>}>
+            <div style={{ height: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <b>{data.user.name}</b> {data.context_data.message}
             </div>
           </Tooltip>
-          {data.context_data.external_references
-            && data.context_data.external_references.length > 0 && (
+          {hasExternalRefs && (
             <List>
               {data.context_data.external_references.map(
                 (externalReference) => {
@@ -269,10 +208,7 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
                           </ListItemIcon>
                           <ListItemText
                             primary={`${externalReference.source_name} ${externalReferenceId}`}
-                            secondary={truncate(
-                              externalReferenceSecondary,
-                              90,
-                            )}
+                            secondary={truncate(externalReferenceSecondary, 90)}
                           />
                         </ListItemButton>
                       </ListItem>
@@ -291,10 +227,7 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
                       </ListItemIcon>
                       <ListItemText
                         primary={`${externalReference.source_name} ${externalReferenceId}`}
-                        secondary={truncate(
-                          externalReference.description,
-                          120,
-                        )}
+                        secondary={truncate(externalReference.description, 120)}
                       />
                     </ListItemButton>
                   );
@@ -304,28 +237,11 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
           )}
         </Paper>
       </div>
-      <div style={{
-        display: 'block',
-        position: 'absolute',
-        top: 50,
-        left: 20,
-        width: 1,
-        height: 18,
-      }}
-      />
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={open}
-        onClose={handleClose}
-        fullWidth={true}
-      >
+      <div style={{ display: 'block', position: 'absolute', top: 50, left: 20, width: 1, height: 18 }} />
+      <Dialog slotProps={{ paper: { elevation: 1 } }} open={open} onClose={handleClose} fullWidth={true}>
         <DialogTitle>{t_i18n('Commit message')}</DialogTitle>
         <DialogContent>
-          <MarkdownDisplay
-            content={data.context_data.commit}
-            remarkGfmPlugin={true}
-            commonmark={true}
-          />
+          <MarkdownDisplay content={data.context_data.commit} remarkGfmPlugin={true} commonmark={true} />
         </DialogContent>
         <DialogActions>
           <Button color="primary" onClick={handleClose}>
@@ -333,28 +249,15 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayExternalLink}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseExternalLink}
-      >
+      <Dialog slotProps={{ paper: { elevation: 1 } }} open={displayExternalLink} keepMounted={true} slots={{ transition: Transition }} onClose={handleCloseExternalLink}>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to browse this external link?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseExternalLink}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={handleBrowseExternalLink}
-          >
-            {t_i18n('Browse the link')}
-          </Button>
+          <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
+          <Button color="secondary" onClick={handleBrowseExternalLink}>{t_i18n('Browse the link')}</Button>
         </DialogActions>
       </Dialog>
     </ListItem>
