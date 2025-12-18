@@ -1,4 +1,4 @@
-name: Publish and deploy to staging
+name: Publish package
 
 on:
   workflow_run:
@@ -8,13 +8,99 @@ on:
     branches: [issue/13571-build-images]
 
 jobs:
+  build_package_debian:
+    name: Build package debian
+    runs-on: ubuntu-latest
+    steps:
 
-  wf-build-image:
-      if: ${{ github.event.workflow_run.conclusion == 'success' }}
-      name: Build and push image
-      uses: ./.github/workflows/ci-docker-build.yml
+    - name: OpenCTI checkout
+      uses: actions/checkout@v6
+
+    - name: Generate package name
+      id: package_name
+      run: echo "value=opencti-$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+
+    - name: Build OpenCTI on debian
+      run: |
+        docker run--name build-package \
+          -v ${{ github.workspace }}:/home/workspace \
+          nikolaik/python-nodejs:python3.11-nodejs22 \
+          sh -c 'set -eux
+           apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl g++ make python3 python3-dev
+           npm install -g node-gyp
+           find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.ref_name }}#subdirectory=client-python|' -i {} \;
+           cd opencti-platform/opencti-graphql
+           yarn install
+           yarn build
+        '
+
+    - name: Build OpenCTI debian package
+      run: |
+        set -eux
+        sudo apt-get update -qq && sudo apt install curl
+        mkdir release
+        rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
+        cp -a ./opencti-platform/opencti-graphql release/opencti
+        cp -a ./opencti-platform/.yarnrc.yml release/opencti/
+        cp -a ./opencti-worker/src release/opencti/worker
+        git clone https://github.com/OpenCTI-Platform/docker release/opencti/docker
+        git clone https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
+        cd release
+        tar -zcvf "${{ steps.package_name.outputs.value }}.tar.gz" opencti
+#        curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
+
+    - name: Upload  OpenCTI debian package
+      uses: actions/upload-artifact@v5
       with:
-        image_tag: ${{ github.ref_name == 'master'  && "rolling" || github.ref_name == 'release/current' && "prerelease" || github.ref_name == 'issue/13571-build-images' && "test-13571"  }}
-        client_python_local: true
-      secrets: inherit
+        name: opencti-debian
+        path: release/${{ steps.package_name.outputs.value }}.tar.gz
+        retention-days: 1
 
+
+  build_package_musl:
+    name: Build package musl
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: OpenCTI checkout
+      uses: actions/checkout@v6
+
+    - name: Generate musl package name
+      id: package_name
+      run: echo "value=opencti-$(date +%Y%m%d)_musl" >> $GITHUB_OUTPUT
+
+    - name: Build OpenCTI on debian
+      run: |
+        docker run--name build-package \
+          -v ${{ github.workspace }}:/home/workspace \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -eux
+           apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
+           npm install -g node-gyp
+           find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ github.ref_name }}#subdirectory=client-python|' -i {} \;
+           cd opencti-platform/opencti-graphql
+           yarn install
+           yarn build
+        '
+
+    - name: Build OpenCTI musl package
+      run: |
+        set -eux
+        sudo apt-get update -qq && sudo apt install curl
+        mkdir release
+        rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
+        cp -a ./opencti-platform/opencti-graphql release/opencti
+        cp -a ./opencti-platform/.yarnrc.yml release/opencti/
+        cp -a ./opencti-worker/src release/opencti/worker
+        git clone https://github.com/OpenCTI-Platform/docker release/opencti/docker
+        git clone https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
+        cd release
+        tar -zcvf "${{ steps.package_name.outputs.value }}.tar.gz" opencti
+#        curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
+
+    - name: Upload  OpenCTI debian package
+      uses: actions/upload-artifact@v5
+      with:
+        name: opencti-debian
+        path: release/${{ steps.package_name.outputs.value }}.tar.gz
+        retention-days: 1
