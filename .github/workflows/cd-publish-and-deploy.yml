@@ -1,9 +1,7 @@
 name: Publish and deploy to staging
 
 on:
-  workflow_run:
-    workflows: [OpenCTI CI]
-    types: [completed]
+  push:
     # branches: [master,release/current]
     branches: [issue/13571-build-images]
 
