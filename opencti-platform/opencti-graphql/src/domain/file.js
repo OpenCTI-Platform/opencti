@@ -197,7 +197,7 @@ export const deleteImport = async (context, user, fileName) => {
 export const batchFileMarkingDefinitions = async (context, user, files) => {
   const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   return files.map((s) => {
-    const markings = (s.metaData.file_markings ?? []).map((id) => markingsFromCache.get(id));
+    const markings = (s.metaData.file_markings ?? []).map((id) => markingsFromCache.get(id)).filter((marking) => marking);
     return R.sortWith([
       R.ascend(R.propOr('TLP', 'definition_type')),
       R.descend(R.propOr(0, 'x_opencti_order')),

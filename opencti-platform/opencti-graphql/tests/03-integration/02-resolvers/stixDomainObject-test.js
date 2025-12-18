@@ -144,7 +144,7 @@ describe('StixDomainObject resolver standard behavior', () => {
     expect(stixDomainObject.data.stixDomainObjectAdd.name).toEqual('StixDomainObject');
     expect(stixDomainObject.data.stixDomainObjectAdd.objectLabel.length).toEqual(2);
     expect(stixDomainObject.data.stixDomainObjectAdd.x_opencti_stix_ids).toEqual(
-      expect.arrayContaining(['tool--84dddb68-f440-4cb5-b9f6-a59159079ef5'])
+      expect.arrayContaining(['tool--84dddb68-f440-4cb5-b9f6-a59159079ef5']),
     );
   });
   it('should stixDomainObject loaded by internal id', async () => {
@@ -267,7 +267,7 @@ describe('StixDomainObject resolver standard behavior', () => {
     upload.file = fileUpload;
     const importPushQueryResult = await queryAsAdmin({
       query: IMPORT_FILE_QUERY,
-      variables: { id: stixDomainObjectInternalId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
+      variables: { id: stixDomainObjectInternalId, file: upload, fileMarkings: [MARKING_TLP_GREEN] },
     });
     expect(importPushQueryResult.data.stixDomainObjectEdit.importPush.id).toBeDefined();
     const fileId = importPushQueryResult.data.stixDomainObjectEdit.importPush.id;
@@ -284,7 +284,7 @@ describe('StixDomainObject resolver standard behavior', () => {
     const fileDescription = 'TestDescription';
     const editFileQueryResult = await queryAsAdmin({
       query: EDIT_FILE_QUERY,
-      variables: { id: stixDomainObjectInternalId, input: { id: fileId, description: fileDescription } }
+      variables: { id: stixDomainObjectInternalId, input: { id: fileId, description: fileDescription } },
     });
     expect(editFileQueryResult.data.stixDomainObjectEdit.stixDomainObjectFileEdit.id).toBeDefined();
     // Read the stixDomainObject and check that importFiles contain the added and edited file
@@ -391,8 +391,8 @@ describe('StixDomainObject resolver standard behavior', () => {
   });
 
   it('should several stixDomainObject deleted at once', async () => {
-    const newTool = await addTool(testContext, ADMIN_USER, {name: 'SDO delete test Tool'});
-    const newMalware = await addMalware(testContext, ADMIN_USER, {name: 'SDO delete test Malware'});
+    const newTool = await addTool(testContext, ADMIN_USER, { name: 'SDO delete test Tool' });
+    const newMalware = await addMalware(testContext, ADMIN_USER, { name: 'SDO delete test Malware' });
 
     const DELETE_LIST_QUERY = gql`
       mutation stixDomainObjectsDelete($id: [ID]!) {
