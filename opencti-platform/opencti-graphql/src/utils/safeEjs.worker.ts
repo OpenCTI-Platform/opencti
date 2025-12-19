@@ -17,6 +17,9 @@ export interface WorkerReply {
 }
 
 export const customEscapeFunction = (value: any): string => {
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '';
+  }
   const result = JSON.stringify(value);
   return typeof result === 'string' && result.startsWith('"') && result.endsWith('"')
     ? result.slice(1, -1)
