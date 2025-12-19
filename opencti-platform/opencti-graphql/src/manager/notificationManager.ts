@@ -4,10 +4,7 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import type { Moment } from 'moment';
 import { type StreamProcessor } from '../database/stream/stream-utils';
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
-import {
-  redisGetManagerEventState,
-  redisSetManagerEventState,
-} from '../database/redis';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
