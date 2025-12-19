@@ -19,3 +19,8 @@ node_modules/
 .venv
 venv
 /licenses/
+
+
+
+.nx/cache
+.nx/workspace-data
