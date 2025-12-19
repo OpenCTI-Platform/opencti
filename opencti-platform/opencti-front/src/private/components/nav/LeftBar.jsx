@@ -515,38 +515,23 @@ const LeftBarComponent = ({ queryRef }) => {
         top: 0,
         height: '100vh',
         overflow: 'hidden',
+        transition: theme.transitions.create('width', {
+          easing: theme.transitions.easing.easeInOut,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
       }}
     >
-      <Box
-        // className={classes.logoContainer}
-        // style={{
-        //   marginTop: `calc(${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px)`,
-        // }}
-        sx={{
-          // padding: 2,
-          flexShrink: 0,
-        }}
-      >
-        <LeftBarHeader
-          logo={logo}
-          logoCollapsed={platformTheme?.theme_logo_collapsed}
-          navOpen={navOpen}
-          bannerHeightNumber={bannerHeightNumber}
-          settingsMessagesBannerHeight={settingsMessagesBannerHeight}
-          openAEVUrl={openAEVUrl}
-          xtmhubUrl={xtmhubUrl}
-          xtmhubStatus={xtmhubStatus}
-          hasXtmHubAccess={hasXtmHubAccess}
-        />
-
-        {/* <Link to="/dashboard">
-          <img
-            src={logo}
-            alt="logo"
-            style={{ height: 35, maxWidth: '100%', objectFit: 'contain' }}
-          />
-        </Link> */}
-      </Box>
+      <LeftBarHeader
+        logo={logo}
+        logoCollapsed={platformTheme?.theme_logo_collapsed}
+        navOpen={navOpen}
+        bannerHeightNumber={bannerHeightNumber}
+        settingsMessagesBannerHeight={settingsMessagesBannerHeight}
+        openAEVUrl={openAEVUrl}
+        xtmhubUrl={xtmhubUrl}
+        xtmhubStatus={xtmhubStatus}
+        hasXtmHubAccess={hasXtmHubAccess}
+      />
 
       <div
         ref={ref}

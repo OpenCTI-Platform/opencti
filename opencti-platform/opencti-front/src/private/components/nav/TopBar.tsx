@@ -220,6 +220,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         width: navOpen ? `calc(100% - ${OPEN_BAR_WIDTH}px)` : `calc(100% - ${SMALL_BAR_WIDTH}px)`,
         backdropFilter: 'blur(4px)',
         background: `linear-gradient(90deg, ${appBarGradient} 100%)`,
+        zIndex: 10000,
       }}
     >
       {/* Header and Footer Banners containing classification level of system */}

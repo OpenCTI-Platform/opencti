@@ -133,14 +133,14 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           marginTop: `calc(${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px)`,
         }}
         sx={{
-          padding: 2,
-          paddingRight: 0.5,
+          padding: navOpen ? 2 : '16px 0',
+          paddingRight: navOpen ? 1 : 0,
           width: '100%',
           flexShrink: 0,
           display: 'flex',
           alignItems: 'center',
           gap: 1,
-          justifyContent: 'space-between',
+          justifyContent: navOpen ? 'space-between' : 'center',
           '&:hover': hasConnectedPlatforms ? {
             backgroundColor: 'rgba(255, 255, 255, 0.05)',
             cursor: 'pointer',
@@ -153,7 +153,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           alt="logo"
           style={{
             height: 35,
-            maxWidth: '115px',
+            maxWidth: navOpen ? '110px' : '30px',
             objectFit: 'contain',
           }}
         />
