@@ -18,7 +18,7 @@ import generateAnalyticsConfig from './Analytics';
 import { RootMe_data$key } from './__generated__/RootMe_data.graphql';
 import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
 import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
-import 'filigran-chatbot/dist/web'; // allows to use <filigran-chatbot /> element
+import '@filigran/chatbot'; // allows to use <filigran-chatbot /> element
 import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
 import useActiveTheme from '../utils/hooks/useActiveTheme';

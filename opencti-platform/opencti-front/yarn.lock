@@ -32,16 +32,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ampproject/remapping@npm:^2.2.0":
-  version: 2.3.0
-  resolution: "@ampproject/remapping@npm:2.3.0"
-  dependencies:
-    "@jridgewell/gen-mapping": "npm:^0.3.5"
-    "@jridgewell/trace-mapping": "npm:^0.3.24"
-  checksum: 10c0/81d63cca5443e0f0c72ae18b544cc28c7c0ec2cea46e7cb888bb0e0f411a1191d0d6b7af798d54e30777d8d1488b2ec0732aac2be342d3d7d3ffd271c6f489ed
-  languageName: node
-  linkType: hard
-
 "@analytics/cookie-utils@npm:^0.2.14":
   version: 0.2.14
   resolution: "@analytics/cookie-utils@npm:0.2.14"
@@ -167,29 +157,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:7.28.3":
-  version: 7.28.3
-  resolution: "@babel/core@npm:7.28.3"
-  dependencies:
-    "@ampproject/remapping": "npm:^2.2.0"
-    "@babel/code-frame": "npm:^7.27.1"
-    "@babel/generator": "npm:^7.28.3"
-    "@babel/helper-compilation-targets": "npm:^7.27.2"
-    "@babel/helper-module-transforms": "npm:^7.28.3"
-    "@babel/helpers": "npm:^7.28.3"
-    "@babel/parser": "npm:^7.28.3"
-    "@babel/template": "npm:^7.27.2"
-    "@babel/traverse": "npm:^7.28.3"
-    "@babel/types": "npm:^7.28.2"
-    convert-source-map: "npm:^2.0.0"
-    debug: "npm:^4.1.0"
-    gensync: "npm:^1.0.0-beta.2"
-    json5: "npm:^2.2.3"
-    semver: "npm:^6.3.1"
-  checksum: 10c0/e6b3eb830c4b93f5a442b305776df1cd2bb4fafa4612355366f67c764f3e54a69d45b84def77fb2d4fd83439102667b0a92c3ea2838f678733245b748c602a7b
-  languageName: node
-  linkType: hard
-
 "@babel/core@npm:^7.23.5, @babel/core@npm:^7.28.5":
   version: 7.28.5
   resolution: "@babel/core@npm:7.28.5"
@@ -213,7 +180,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/generator@npm:^7.28.3, @babel/generator@npm:^7.28.5":
+"@babel/generator@npm:^7.28.5":
   version: 7.28.5
   resolution: "@babel/generator@npm:7.28.5"
   dependencies:
@@ -297,7 +264,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/helpers@npm:^7.28.3, @babel/helpers@npm:^7.28.4":
+"@babel/helpers@npm:^7.28.4":
   version: 7.28.4
   resolution: "@babel/helpers@npm:7.28.4"
   dependencies:
@@ -307,7 +274,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/parser@npm:^7.1.0, @babel/parser@npm:^7.20.7, @babel/parser@npm:^7.27.2, @babel/parser@npm:^7.28.3, @babel/parser@npm:^7.28.5":
+"@babel/parser@npm:^7.1.0, @babel/parser@npm:^7.20.7, @babel/parser@npm:^7.27.2, @babel/parser@npm:^7.28.5":
   version: 7.28.5
   resolution: "@babel/parser@npm:7.28.5"
   dependencies:
@@ -1892,6 +1859,21 @@ __metadata:
     sax: "npm:^1.4.1"
     strtok3: "npm:^10.3.4"
   checksum: 10c0/87000fc20a8f6757a69718dbc859827365fe37cad6a0769c0d024251128146a5dd75a433c32d6a408cbe70e983ecce617261b3bf61d2115c45a4a11baafca6c8
+  languageName: node
+  linkType: hard
+
+"@filigran/chatbot@npm:1.0.2":
+  version: 1.0.2
+  resolution: "@filigran/chatbot@npm:1.0.2"
+  dependencies:
+    "@microsoft/fetch-event-source": "npm:2.0.1"
+    "@ts-stack/markdown": "npm:1.5.0"
+    device-detector-js: "npm:3.0.3"
+    lodash: "npm:4.17.21"
+    solid-element: "npm:1.9.1"
+    solid-js: "npm:1.9.10"
+    uuid: "npm:13.0.0"
+  checksum: 10c0/3ee0f9561b3905ebc7691a5dd0ef7ea84d321a9684f42acb418e8a03baa569ae48560d4ace305229351772f95118f663761baaaea8fc96e14e7f92cce2e81d7b
   languageName: node
   linkType: hard
 
@@ -6976,18 +6958,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-env@npm:7.0.3":
-  version: 7.0.3
-  resolution: "cross-env@npm:7.0.3"
-  dependencies:
-    cross-spawn: "npm:^7.0.1"
-  bin:
-    cross-env: src/bin/cross-env.js
-    cross-env-shell: src/bin/cross-env-shell.js
-  checksum: 10c0/f3765c25746c69fcca369655c442c6c886e54ccf3ab8c16847d5ad0e91e2f337d36eedc6599c1227904bf2a228d721e690324446876115bc8e7b32a866735ecf
-  languageName: node
-  linkType: hard
-
 "cross-fetch@npm:^3.1.5":
   version: 3.2.0
   resolution: "cross-fetch@npm:3.2.0"
@@ -6997,7 +6967,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-spawn@npm:^7.0.1, cross-spawn@npm:^7.0.6":
+"cross-spawn@npm:^7.0.6":
   version: 7.0.6
   resolution: "cross-spawn@npm:7.0.6"
   dependencies:
@@ -8777,23 +8747,6 @@ __metadata:
   dependencies:
     flat-cache: "npm:^4.0.0"
   checksum: 10c0/9e2b5938b1cd9b6d7e3612bdc533afd4ac17b2fc646569e9a8abbf2eb48e5eb8e316bc38815a3ef6a1b456f4107f0d0f055a614ca613e75db6bf9ff4d72c1638
-  languageName: node
-  linkType: hard
-
-"filigran-chatbot@https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.7/filigran-chatbot-v0.1.7.tgz":
-  version: 0.1.7
-  resolution: "filigran-chatbot@https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.7/filigran-chatbot-v0.1.7.tgz"
-  dependencies:
-    "@babel/core": "npm:7.28.3"
-    "@microsoft/fetch-event-source": "npm:2.0.1"
-    "@ts-stack/markdown": "npm:1.5.0"
-    cross-env: "npm:7.0.3"
-    device-detector-js: "npm:3.0.3"
-    lodash: "npm:4.17.21"
-    prettier: "npm:3.1.0"
-    solid-element: "npm:1.9.1"
-    solid-js: "npm:1.9.9"
-  checksum: 10c0/f746c3e17f28543528122b0d8d9c71dd9ec2c50581041a15cbeb4ad1a6e8f792af488eeb6a42e06b5cab9fa1ed29184b813cbd7f7bfa72a9528bb4c0dec570f6
   languageName: node
   linkType: hard
 
@@ -12484,6 +12437,7 @@ __metadata:
     "@ckeditor/ckeditor5-react": "npm:9.5.0"
     "@eslint/js": "npm:9.39.2"
     "@faker-js/faker": "npm:10.1.0"
+    "@filigran/chatbot": "npm:1.0.2"
     "@fontsource/geologica": "npm:5.2.8"
     "@fontsource/ibm-plex-sans": "npm:5.2.8"
     "@graphiql/toolkit": "npm:0.11.3"
@@ -12545,7 +12499,6 @@ __metadata:
     eslint-plugin-react: "npm:7.37.5"
     express: "npm:5.2.1"
     extract-files: "npm:13.0.0"
-    filigran-chatbot: "https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.7/filigran-chatbot-v0.1.7.tgz"
     filigran-icon: "npm:0.21.0"
     formik: "npm:2.4.9"
     formik-mui: "npm:5.0.0-alpha.0"
@@ -12989,15 +12942,6 @@ __metadata:
   version: 1.2.1
   resolution: "prelude-ls@npm:1.2.1"
   checksum: 10c0/b00d617431e7886c520a6f498a2e14c75ec58f6d93ba48c3b639cf241b54232d90daa05d83a9e9b9fef6baa63cb7e1e4602c2372fea5bc169668401eb127d0cd
-  languageName: node
-  linkType: hard
-
-"prettier@npm:3.1.0":
-  version: 3.1.0
-  resolution: "prettier@npm:3.1.0"
-  bin:
-    prettier: bin/prettier.cjs
-  checksum: 10c0/a45ea70aa97fde162ea4c4aba3dfc7859aa6a732a1db34458d9535dc3c2c16d3bc3fb5689e6cd76aa835562555303b02d9449fd2e15af3b73c8053557e25c5b6
   languageName: node
   linkType: hard
 
@@ -14623,14 +14567,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"solid-js@npm:1.9.9":
-  version: 1.9.9
-  resolution: "solid-js@npm:1.9.9"
+"solid-js@npm:1.9.10":
+  version: 1.9.10
+  resolution: "solid-js@npm:1.9.10"
   dependencies:
     csstype: "npm:^3.1.0"
     seroval: "npm:~1.3.0"
     seroval-plugins: "npm:~1.3.0"
-  checksum: 10c0/bd3fda22b66c4955bb4f29236b622dcfb11b7f37ec7fa974f366292bef1076750fade2e656d584cd977f50354b23cfca4026e8ae5153e991c8c112b15b21c9e3
+  checksum: 10c0/ec397466b29ac36af79dfb8363ccdd79bdf77f8a12f16c740ab714c5b23207bc3961cd1171f488cf37b5d59baf28098db96e73a0c49a644e1b147f237f507357
   languageName: node
   linkType: hard
 
@@ -15904,6 +15848,15 @@ __metadata:
   bin:
     uuid: dist/esm/bin/uuid
   checksum: 10c0/34aa51b9874ae398c2b799c88a127701408cd581ee89ec3baa53509dd8728cbb25826f2a038f9465f8b7be446f0fbf11558862965b18d21c993684297628d4d3
+  languageName: node
+  linkType: hard
+
+"uuid@npm:13.0.0":
+  version: 13.0.0
+  resolution: "uuid@npm:13.0.0"
+  bin:
+    uuid: dist-node/bin/uuid
+  checksum: 10c0/950e4c18d57fef6c69675344f5700a08af21e26b9eff2bf2180427564297368c538ea11ac9fb2e6528b17fc3966a9fd2c5049361b0b63c7d654f3c550c9b3d67
   languageName: node
   linkType: hard
 
