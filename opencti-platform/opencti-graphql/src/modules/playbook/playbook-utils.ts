@@ -81,11 +81,6 @@ export const applyOperationFieldPatch = (element: StixObject, patchObject: {
   operation: 'add' | 'replace' | 'remove';
 }[]) => {
   if (isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS')) {
-    // TODO upsert_operations
-    //  should we consolidate operations ? or only append them ? => keep only one key per attribute
-    // key: 'objectLabel', value: ['label1'], operation: remove
-    // key: 'objectLabel', value: ['label2'], operation: remove => deduplicate?
-    //  should we only apply remove operations
     if (!element.extensions[STIX_EXT_OCTI].opencti_upsert_operations) {
       element.extensions[STIX_EXT_OCTI].opencti_upsert_operations = [];
     }

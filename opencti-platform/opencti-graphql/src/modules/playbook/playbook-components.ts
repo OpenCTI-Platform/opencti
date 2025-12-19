@@ -417,12 +417,6 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
     // This is needed as the rest of playbook expecting STIX2.1 format with extensions
     const stixBundle = extendsBundleElementsWithExtensions(bundle);
     if (previousStepBundle) {
-      // TODO Could be reactivated after improvement of enrichment connectors
-      //   const diffOperations = jsonpatch.compare(previousStepBundle.objects, bundle.objects);
-      //   if (diffOperations.length === 0) {
-      //     return { output_port: 'unmodified', bundle };
-      //   }
-
       // Check if new bundle objects has the same object ids of previous bundle objects
       const enrichedObjects = stixBundle.objects.map((newObj) => {
         const prevObj = previousStepBundle.objects.find((o) => o.id === newObj.id);
