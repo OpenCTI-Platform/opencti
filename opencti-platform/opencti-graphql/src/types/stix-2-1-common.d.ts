@@ -69,6 +69,7 @@ interface StixOpenctiExtension {
   authorized_members: Array<AuthorizedMember> | undefined;
   labels_ids: string[];
   created_by_ref_id: string;
+  created_by_ref_type: string;
   converter_csv?: string | undefined;
   opencti_operation?: string;
   metrics: Array<StixMetric>;
