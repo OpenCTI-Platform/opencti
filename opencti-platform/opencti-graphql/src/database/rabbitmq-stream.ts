@@ -15,7 +15,7 @@ export const streamRouting = (streamName = LIVE_STREAM_NAME) => `${RABBIT_QUEUE_
 const getRabbitMQStreamQueueName = (streamName: string) => {
   return `${RABBIT_QUEUE_PREFIX}stream_${streamName}`;
 };
-const buildStreamMessage = (event: string[]) => {
+const buildStreamMessage = <T extends BaseEvent> (event: T) => {
   const currentTime = utcEpochTime();
   const fullStreamData = [currentTime, event];
   return JSON.stringify(fullStreamData);
@@ -55,7 +55,7 @@ const initializeStreams = async () => {
   await registerStreamQueue(ACTIVITY_STREAM_NAME);
 };
 
-const rawPushToStream = async (context: AuthContext, user: AuthUser, event: string[]) => {
+const rawPushToStream = async <T extends BaseEvent> (event: T) => {
   const routingKey = streamRouting(LIVE_STREAM_NAME);
   const rabbitMessage = buildStreamMessage(event);
   const pushToStreamFn = async () => {
