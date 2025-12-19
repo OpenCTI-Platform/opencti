@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { render } from 'ejs';
 import { safeRender } from '../../../src/utils/safeEjs';
 import { safeRender as safeRenderClient } from '../../../src/utils/safeEjs.client';
+import { customEscapeFunction } from '../../../src/utils/safeEjs.worker';
 
 const testFilename = fileURLToPath(import.meta.url);
 
@@ -318,6 +319,7 @@ describe('check safeRender on real files', () => {
     'template-2.html',
     'template-3.html',
     'template-4.html',
+    'template-5.json',
     'template-6.json',
     'template-7.json',
   ];
@@ -327,9 +329,11 @@ describe('check safeRender on real files', () => {
     async ({ name }) => {
       const templateFile = `${testFilename.substring(0, testFilename.lastIndexOf('.'))}.${name}`;
       const template = await fs.readFile(templateFile, 'utf8');
-      const safeRendered = safeRender(template, data, { useNotificationTool: true });
+      const jsonFilesTemplates = ['template-5', 'template-6', 'template-7'];
+      const escape = jsonFilesTemplates.some((f) => name.includes(f)) ? customEscapeFunction : undefined;
+      const safeRendered = await safeRender(template, data, { useNotificationTool: true, escape });
       const unsafeRendered = render(template, data);
       expect(safeRendered).toEqual(unsafeRendered);
-    }
+    },
   );
 });
