@@ -46,7 +46,7 @@ import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatfo
 import type { BasicStoreEntitySecurityCoverage } from '../modules/securityCoverage/securityCoverage-types';
 import type { BasicStoreEntityEmailTemplate } from '../modules/emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityForm } from '../modules/form/form-types';
-import type { BasicStoreEntityDecayExclusionRule } from '../modules/singleSignOn/singleSignOn-types';
+import type { BasicStoreEntitySingleSignOn } from '../modules/singleSignOn/singleSignOn-types';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -357,19 +357,6 @@ export enum AdministrativeAreasOrdering {
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
-
-export type AdvancedConfigurationType = {
-  __typename?: 'AdvancedConfigurationType';
-  key: Scalars['String']['output'];
-  type: Scalars['String']['output'];
-  value: Scalars['String']['output'];
-};
-
-export type AdvancedConfigurationTypeInput = {
-  key: Scalars['String']['input'];
-  type: Scalars['String']['input'];
-  value: Scalars['String']['input'];
-};
 
 export type AiActivity = {
   __typename?: 'AiActivity';
@@ -4060,14 +4047,12 @@ export type ConfidenceLevelOverrideInput = {
 export type ConfigurationType = {
   __typename?: 'ConfigurationType';
   key: Scalars['String']['output'];
-  mandatory: Scalars['Boolean']['output'];
   type: Scalars['String']['output'];
   value: Scalars['String']['output'];
 };
 
 export type ConfigurationTypeInput = {
   key: Scalars['String']['input'];
-  mandatory: Scalars['Boolean']['input'];
   type: Scalars['String']['input'];
   value: Scalars['String']['input'];
 };
@@ -27538,7 +27523,7 @@ export type SettingsMessageInput = {
 
 export type SingleSignOn = BasicObject & InternalObject & {
   __typename?: 'SingleSignOn';
-  advanced_configuration?: Maybe<Array<AdvancedConfigurationType>>;
+  advanced_configuration?: Maybe<Array<ConfigurationType>>;
   auto_create_group?: Maybe<Scalars['Boolean']['output']>;
   configuration?: Maybe<Array<ConfigurationType>>;
   created_at: Scalars['DateTime']['output'];
@@ -27559,7 +27544,7 @@ export type SingleSignOn = BasicObject & InternalObject & {
 };
 
 export type SingleSignOnAddInput = {
-  advanced_configuration?: InputMaybe<Array<AdvancedConfigurationTypeInput>>;
+  advanced_configuration?: InputMaybe<Array<ConfigurationTypeInput>>;
   auto_create_group?: InputMaybe<Scalars['Boolean']['input']>;
   configuration?: InputMaybe<Array<ConfigurationTypeInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -35696,7 +35681,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntitySecurityCoverage )
     | ( BasicStoreEntitySecurityPlatform )
     | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
-    | ( BasicStoreEntityDecayExclusionRule )
+    | ( BasicStoreEntitySingleSignOn )
     | ( Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, vulnerabilities?: Maybe<_RefType['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<StixFile, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'obsContent' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, obsContent?: Maybe<_RefType['Artifact']>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntitySupportPackage )
@@ -35794,7 +35779,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<Role, 'capabilities' | 'capabilitiesInDraft' | 'editContext'> & { capabilities?: Maybe<Array<Maybe<_RefType['Capability']>>>, capabilitiesInDraft?: Maybe<Array<Maybe<_RefType['Capability']>>>, editContext?: Maybe<Array<_RefType['EditUserContext']>> } )
     | ( BasicStoreEntitySavedFilter )
     | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
-    | ( BasicStoreEntityDecayExclusionRule )
+    | ( BasicStoreEntitySingleSignOn )
     | ( BasicStoreEntitySupportPackage )
     | ( TaskTemplate )
     | ( BasicStoreEntityTheme )
@@ -36078,8 +36063,6 @@ export type ResolversTypes = ResolversObject<{
   AdministrativeAreaConnection: ResolverTypeWrapper<Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['AdministrativeAreaEdge']>> }>;
   AdministrativeAreaEdge: ResolverTypeWrapper<Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversTypes['AdministrativeArea'] }>;
   AdministrativeAreasOrdering: AdministrativeAreasOrdering;
-  AdvancedConfigurationType: ResolverTypeWrapper<AdvancedConfigurationType>;
-  AdvancedConfigurationTypeInput: AdvancedConfigurationTypeInput;
   AiActivity: ResolverTypeWrapper<AiActivity>;
   AiForecast: ResolverTypeWrapper<AiForecast>;
   AiHistory: ResolverTypeWrapper<AiHistory>;
@@ -36857,7 +36840,7 @@ export type ResolversTypes = ResolversObject<{
   SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']> }>;
   SettingsMessage: ResolverTypeWrapper<Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversTypes['Member']>> }>;
   SettingsMessageInput: SettingsMessageInput;
-  SingleSignOn: ResolverTypeWrapper<BasicStoreEntityDecayExclusionRule>;
+  SingleSignOn: ResolverTypeWrapper<BasicStoreEntitySingleSignOn>;
   SingleSignOnAddInput: SingleSignOnAddInput;
   SingleSignOnConnection: ResolverTypeWrapper<Omit<SingleSignOnConnection, 'edges'> & { edges: Array<ResolversTypes['SingleSignOnEdge']> }>;
   SingleSignOnEdge: ResolverTypeWrapper<Omit<SingleSignOnEdge, 'node'> & { node: ResolversTypes['SingleSignOn'] }>;
@@ -37126,8 +37109,6 @@ export type ResolversParentTypes = ResolversObject<{
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
   AdministrativeAreaConnection: Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['AdministrativeAreaEdge']>> };
   AdministrativeAreaEdge: Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversParentTypes['AdministrativeArea'] };
-  AdvancedConfigurationType: AdvancedConfigurationType;
-  AdvancedConfigurationTypeInput: AdvancedConfigurationTypeInput;
   AiActivity: AiActivity;
   AiForecast: AiForecast;
   AiHistory: AiHistory;
@@ -37794,7 +37775,7 @@ export type ResolversParentTypes = ResolversObject<{
   SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']> };
   SettingsMessage: Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversParentTypes['Member']>> };
   SettingsMessageInput: SettingsMessageInput;
-  SingleSignOn: BasicStoreEntityDecayExclusionRule;
+  SingleSignOn: BasicStoreEntitySingleSignOn;
   SingleSignOnAddInput: SingleSignOnAddInput;
   SingleSignOnConnection: Omit<SingleSignOnConnection, 'edges'> & { edges: Array<ResolversParentTypes['SingleSignOnEdge']> };
   SingleSignOnEdge: Omit<SingleSignOnEdge, 'node'> & { node: ResolversParentTypes['SingleSignOn'] };
@@ -38125,12 +38106,6 @@ export type AdministrativeAreaConnectionResolvers<ContextType = any, ParentType 
 export type AdministrativeAreaEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdministrativeAreaEdge'] = ResolversParentTypes['AdministrativeAreaEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['AdministrativeArea'], ParentType, ContextType>;
-}>;
-
-export type AdvancedConfigurationTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdvancedConfigurationType'] = ResolversParentTypes['AdvancedConfigurationType']> = ResolversObject<{
-  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type AiActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiActivity'] = ResolversParentTypes['AiActivity']> = ResolversObject<{
@@ -39302,7 +39277,6 @@ export type ConfidenceLevelOverrideResolvers<ContextType = any, ParentType exten
 
 export type ConfigurationTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigurationType'] = ResolversParentTypes['ConfigurationType']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  mandatory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
@@ -46148,7 +46122,7 @@ export type SettingsMessageResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type SingleSignOnResolvers<ContextType = any, ParentType extends ResolversParentTypes['SingleSignOn'] = ResolversParentTypes['SingleSignOn']> = ResolversObject<{
-  advanced_configuration?: Resolver<Maybe<Array<ResolversTypes['AdvancedConfigurationType']>>, ParentType, ContextType>;
+  advanced_configuration?: Resolver<Maybe<Array<ResolversTypes['ConfigurationType']>>, ParentType, ContextType>;
   auto_create_group?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   configuration?: Resolver<Maybe<Array<ResolversTypes['ConfigurationType']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -48616,7 +48590,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AdministrativeArea?: AdministrativeAreaResolvers<ContextType>;
   AdministrativeAreaConnection?: AdministrativeAreaConnectionResolvers<ContextType>;
   AdministrativeAreaEdge?: AdministrativeAreaEdgeResolvers<ContextType>;
-  AdvancedConfigurationType?: AdvancedConfigurationTypeResolvers<ContextType>;
   AiActivity?: AiActivityResolvers<ContextType>;
   AiForecast?: AiForecastResolvers<ContextType>;
   AiHistory?: AiHistoryResolvers<ContextType>;

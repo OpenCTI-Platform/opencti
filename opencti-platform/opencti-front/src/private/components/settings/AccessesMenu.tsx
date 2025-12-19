@@ -69,6 +69,14 @@ const AccessesMenu: FunctionComponent = () => {
       isEE: true,
     },
   ];
+  const singleSignOnEntries: MenuEntry[] = [
+    {
+      path: '/dashboard/settings/accesse/single_sign_on',
+      label: 'SSO definition',
+      icon: <div />,
+      isEE: true,
+    }
+  ]
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const setMarkings = useGranted([SETTINGS_SETMARKINGS]);
   const isOrgaAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
@@ -86,6 +94,7 @@ const AccessesMenu: FunctionComponent = () => {
   if (setAccess) {
     menuEntries.push(...emailTemplateEntries);
   }
+  menuEntries.push(...singleSignOnEntries);
   if (!setAccess && isOrgaAdmin) {
     menuEntries.push(
       ...[
