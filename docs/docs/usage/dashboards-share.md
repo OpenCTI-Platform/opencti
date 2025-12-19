@@ -55,7 +55,7 @@ You can create a public dashboard either from the list of public dashboards or f
 ![Share dashboard button](assets/share-dashboard-button.png)
 
 In this panel you will find two parts:
-- At the top you have a form allowing you to create public dashboards,
+- At the top, you have a form allowing you to create public dashboards,
 - And below, the list of the public dashboards you have created.
 
 ![Share dashboard panel](assets/share-public-dashboard-panel.png)
@@ -92,7 +92,7 @@ access on the platform **and the maximum sharable marking definitions** defined 
 
 !!! note "Define maximum shareable markings in groups"
 
-    As a platform administrator, you can define, for each group and for each type of marking definition, [Maximum marking definitions shareable](../administration/segregation.md) to be 
+    As a platform administrator, you can define, for each group and for each type of marking definition, [maximum marking definitions shareable](../administration/segregation.md) to be 
     shared through Public Dashboard, regardless of the definition set by users in their public dashboard.
 
 ![Share dashboard markings](assets/share-dashboard-markings.png)
