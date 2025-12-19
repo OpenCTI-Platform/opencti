@@ -7,7 +7,7 @@ export enum AuthType {
   AUTH_FORM = 'FORM',
 }
 
-export enum StrategyType {
+export enum EnvStrategyType {
   STRATEGY_LOCAL = 'LocalStrategy',
   STRATEGY_CERT = 'ClientCertStrategy',
   STRATEGY_HEADER = 'HeaderStrategy',
@@ -23,7 +23,7 @@ export enum StrategyType {
 interface ProviderConfiguration {
   name: string;
   type: AuthType;
-  strategy: StrategyType;
+  strategy: EnvStrategyType;
   provider: string;
   reqLoginHandler?: () => void;
   logout_uri?: string;
@@ -31,4 +31,4 @@ interface ProviderConfiguration {
 
 export const PROVIDERS: ProviderConfiguration[] = [];
 
-export const isStrategyActivated = (strategy: StrategyType) => PROVIDERS.map((p) => p.strategy).includes(strategy);
+export const isStrategyActivated = (strategy: EnvStrategyType) => PROVIDERS.map((p) => p.strategy).includes(strategy);

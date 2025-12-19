@@ -1,7 +1,7 @@
 import https from 'node:https';
 import http from 'node:http';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
-// eslint-disable-next-line import/extensions
+
 import nconf from 'nconf';
 import express from 'express';
 import { expressMiddleware } from '@as-integrations/express5';
@@ -14,7 +14,7 @@ import passport from 'passport/lib';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
-import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
+import { isStrategyActivated, EnvStrategyType } from '../config/providers-configuration';
 import { applicationSession } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { userEditField } from '../domain/user';
@@ -45,7 +45,7 @@ const createHttpServer = async () => {
       const key = loadCert(CERT_KEY_PATH);
       const cert = loadCert(CERT_KEY_CERT);
       const ca = CA_CERTS.map((path) => loadCert(path));
-      const requestCert = isStrategyActivated(StrategyType.STRATEGY_CERT);
+      const requestCert = isStrategyActivated(EnvStrategyType.STRATEGY_CERT);
       const passphrase = conf.get('app:https_cert:passphrase');
       const options = { key, cert, passphrase, requestCert, rejectUnauthorized, ca };
       httpServer = https.createServer(options, app);
