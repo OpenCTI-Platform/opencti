@@ -33,8 +33,8 @@ const initializeStreams = async () => {
 
 // region opencti data stream
 
-const rawPushToStream = async (context: AuthContext, user: AuthUser, eventMessage: string[]) => {
-  await rabbitStreamClient.rawPushToStream(context, user, eventMessage);
+const rawPushToStream = async <T extends BaseEvent> (event: T) => {
+  await rabbitStreamClient.rawPushToStream<T>(event);
 };
 
 const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
