@@ -18,13 +18,14 @@ import {
 } from './stream-utils';
 import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
-import { rawRedisStreamClient } from '../redis-stream';
+// import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
 import { rawJoinedRedisRabbitStreamClient } from './joined-redis-rabbit-stream';
-import { isFeatureEnabled } from '../../config/conf';
+// import { isFeatureEnabled } from '../../config/conf';
 
-const isRabbitStreamEnabled = isFeatureEnabled('RABBIT_STREAM_ENABLED');
-const streamClient: RawStreamClient = isRabbitStreamEnabled ? rawJoinedRedisRabbitStreamClient : rawRedisStreamClient;
+// const isRabbitStreamEnabled = isFeatureEnabled('RABBIT_STREAM_ENABLED');
+// const streamClient: RawStreamClient = isRabbitStreamEnabled ? rawJoinedRedisRabbitStreamClient : rawRedisStreamClient;
+const streamClient: RawStreamClient = rawJoinedRedisRabbitStreamClient;
 
 export const initializeStreamStack = async () => {
   if (streamClient.initializeStreams) {
