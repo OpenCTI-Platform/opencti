@@ -24,9 +24,22 @@ const AI_VERSION = conf.get('ai:version');
 const AI_AZURE_INSTANCE = conf.get('ai:ai_azure_instance');
 const AI_AZURE_DEPLOYMENT = conf.get('ai:ai_azure_deployment');
 
+let AI_ENABLED = true;
 let client: Mistral | OpenAI | AzureOpenAI | null = null;
 let nlqChat: ChatOpenAI | ChatMistralAI | AzureChatOpenAI | null = null;
-if (AI_TOKEN) {
+
+const resetClients = () => {
+  client = null;
+  nlqChat = null;
+};
+
+const initClients = () => {
+  if (client || nlqChat) {
+    return;
+  }
+  if (!AI_ENABLED || !AI_TOKEN) {
+    return;
+  }
   switch (AI_TYPE) {
     case 'mistralai':
       client = new Mistral({
@@ -98,10 +111,27 @@ if (AI_TOKEN) {
     default:
       throw UnsupportedError('Not supported AI type (currently support: mistralai, openai, azureopenai)', { type: AI_TYPE });
   }
+};
+
+export const setAiEnabled = (enabled: boolean) => {
+  AI_ENABLED = enabled;
+  if (!AI_ENABLED) {
+    resetClients();
+    return;
+  }
+  initClients();
+};
+
+if (AI_ENABLED && AI_TOKEN) {
+  initClients();
 }
 
 // Query MistralAI (Streaming)
 export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
+  if (!AI_ENABLED) {
+    throw UnsupportedError('AI is disabled in platform settings');
+  }
+  initClients();
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -142,6 +172,10 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
 
 // Query OpenAI (Streaming)
 export const queryChatGpt = async (busId: string | null, developerMessage: string, userMessage: string, user: AuthUser) => {
+  if (!AI_ENABLED) {
+    throw UnsupportedError('AI is disabled in platform settings');
+  }
+  initClients();
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -200,6 +234,10 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
     endpoint: AI_ENDPOINT,
     model: AI_MODEL,
   });
+  if (!AI_ENABLED) {
+    throw UnsupportedError('AI is disabled in platform settings');
+  }
+  initClients();
   if (!nlqChat) {
     throw badAiConfigError;
   }

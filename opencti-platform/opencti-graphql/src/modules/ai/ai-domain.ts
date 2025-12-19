@@ -19,7 +19,7 @@ import nconf from 'nconf';
 import { logApp } from '../../config/conf';
 import { FunctionalError, UnknownError } from '../../config/errors';
 import { getEntityFromCache } from '../../database/cache';
-import { queryAi, queryNLQAi } from '../../database/ai-llm';
+import { queryAi, queryNLQAi, setAiEnabled } from '../../database/ai-llm';
 import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
 import { isEmptyField } from '../../database/utils';
@@ -60,6 +60,7 @@ const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence an
 
 const checkPlatformAiEnabled = async (context: AuthContext) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  setAiEnabled(settings.platform_ai_enabled !== false);
   if (settings.platform_ai_enabled === false) {
     throw FunctionalError('AI is disabled in platform settings');
   }
