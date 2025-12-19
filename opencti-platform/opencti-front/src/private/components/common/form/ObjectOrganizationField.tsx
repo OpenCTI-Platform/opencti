@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { CSSProperties, HTMLAttributes, SyntheticEvent, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
@@ -8,10 +8,14 @@ import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import { Theme } from '../../../../components/Theme';
+import { FieldOption } from '../../../../utils/field';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { ObjectOrganizationFieldQuery$data } from '@components/common/form/__generated__/ObjectOrganizationFieldQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>(() => ({
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -43,21 +47,53 @@ export const searchObjectOrganizationFieldQuery = graphql`
   }
 `;
 
-const ObjectOrganizationField = (props) => {
-  const {
-    name,
-    label,
-    style,
-    onChange,
-    helpertext,
-    disabled,
-    defaultOrganizations,
-    outlined = true,
-    multiple = true,
-    alert = true,
-    filters = null,
-  } = props;
+interface ObjectOrganizationFieldBaseProps {
+  name: string;
+  label: string;
+  style: CSSProperties;
+  helpertext?: string;
+  disabled?: boolean;
+  defaultOrganizations?: { name: string; id: string }[];
+  outlined?: boolean;
+  alert?: boolean;
+  filters?: FilterGroup | null;
+}
 
+interface ObjectOrganizationFieldMultipleProps
+  extends ObjectOrganizationFieldBaseProps {
+  multiple?: true;
+  onChange?: (
+    name: string,
+    value: FieldOption[],
+    resetForm?: () => void,
+  ) => void;
+}
+
+interface ObjectOrganizationFieldSingleProps
+  extends ObjectOrganizationFieldBaseProps {
+  multiple: false;
+  onChange?: (
+    name: string,
+    value: FieldOption,
+    resetForm?: () => void,
+  ) => void;
+}
+
+type ObjectOrganizationFieldProps = ObjectOrganizationFieldMultipleProps | ObjectOrganizationFieldSingleProps;
+
+const ObjectOrganizationField = ({
+  name,
+  label,
+  style,
+  onChange,
+  helpertext,
+  disabled,
+  defaultOrganizations,
+  outlined = true,
+  multiple = true,
+  alert = true,
+  filters = null,
+}: ObjectOrganizationFieldProps) => {
   const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({
     label: n.name,
     value: n.id,
@@ -66,19 +102,21 @@ const ObjectOrganizationField = (props) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const searchOrganizations = (event) => {
-    fetchQuery(searchObjectOrganizationFieldQuery, {
-      search: (event && event.target && event.target.value) ?? '',
-      filters,
-    })
-      .toPromise()
-      .then((data) => {
-        const searchResults = data.organizations.edges.map((n) => ({
-          label: n.node.name,
-          value: n.node.id,
-        }));
-        setOrganizations(searchResults);
-      });
+  const searchOrganizations = (event?: SyntheticEvent<Element, Event>) => {
+    if (event?.target instanceof HTMLInputElement) {
+      fetchQuery(searchObjectOrganizationFieldQuery, {
+        search: event.target.value ?? '',
+        filters,
+      })
+        .toPromise()
+        .then((data) => {
+          const searchResults = (data as ObjectOrganizationFieldQuery$data).organizations?.edges.map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+          }));
+          setOrganizations(searchResults ?? []);
+        });
+    }
   };
 
   if (outlined === false) {
@@ -99,7 +137,10 @@ const ObjectOrganizationField = (props) => {
         options={organizations}
         onInputChange={searchOrganizations}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(renderProps, option) => (
+        renderOption={(
+          renderProps: HTMLAttributes<HTMLLIElement>,
+          option: { label: string },
+        ) => (
           <li {...renderProps}>
             <div className={classes.icon}>
               <ItemIcon type="Organization" />
@@ -127,7 +168,10 @@ const ObjectOrganizationField = (props) => {
       options={organizations}
       onInputChange={searchOrganizations}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(renderProps, option) => (
+      renderOption={(
+        renderProps: HTMLAttributes<HTMLLIElement>,
+        option: { label: string },
+      ) => (
         <li {...renderProps}>
           <div className={classes.icon}>
             <ItemIcon type="Organization" />
