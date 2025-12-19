@@ -2,16 +2,7 @@ import util from 'util';
 import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import { amqpExecute, amqpHttpClient, send, streamConsumeQueue } from './rabbitmq';
 import { RABBIT_QUEUE_PREFIX, wait } from './utils';
-import {
-  ACTIVITY_STREAM_NAME,
-  LIVE_STREAM_NAME,
-  mapStreamToJS,
-  NOTIFICATION_STREAM_NAME,
-  processStreamResult,
-  type RawStreamClient,
-  type StreamOption,
-  type StreamProcessor
-} from './stream/stream-utils';
+import { ACTIVITY_STREAM_NAME, LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamProcessor } from './stream/stream-utils';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BaseEvent, DataEvent, SseEvent } from '../types/event';
@@ -48,7 +39,7 @@ const registerStreamQueue = async (streamName: string) => {
         'x-queue-type': 'stream',
         'x-max-length-bytes': 20000000000, // in bytes, can be declared as policy (?)
         'x-max-age': '1M', // valid units: Y, M, D, h, m, s, can be declared as policy (?)
-        'x-stream-max-segment-size-bytes': 100000000 // max segment file size on disk, MUST BE SET AT QUEUE DECLARATION
+        'x-stream-max-segment-size-bytes': 100000000, // max segment file size on disk, MUST BE SET AT QUEUE DECLARATION
       },
     });
     // 03. bind queue for each connector scope
@@ -64,7 +55,7 @@ const initializeStreams = async () => {
   await registerStreamQueue(ACTIVITY_STREAM_NAME);
 };
 
-const rawPushToStream = async (context: AuthContext, user:AuthUser, event: string[]) => {
+const rawPushToStream = async (context: AuthContext, user: AuthUser, event: string[]) => {
   const routingKey = streamRouting(LIVE_STREAM_NAME);
   const rabbitMessage = buildStreamMessage(event);
   const pushToStreamFn = async () => {
@@ -86,7 +77,7 @@ const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
     rabbitMqFirstConnection = conn;
   };
   const queueConsumeFirstCallback = (data: string) => {
-    [lastEventTimestamp,] = JSON.parse(data);
+    [lastEventTimestamp] = JSON.parse(data);
     rabbitMqFirstConnection.close();
   };
   streamConsumeQueue(rabbitQueueName, connectionSetterFirstCallback, queueConsumeFirstCallback, { 'x-stream-offset': 'first' }).catch((e) => logApp.error('Could not retrieve stream first info', { error: e }));
@@ -97,11 +88,11 @@ const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   const connectionSetterLastCallback = (conn: any) => {
     rabbitMqLastConnection = conn;
   };
-  const queueConsumeLastCallback = ((data: string, ackCallback: () => void) => {
-    [firstEventTimestamp,] = JSON.parse(data);
+  const queueConsumeLastCallback = (data: string, ackCallback: () => void) => {
+    [firstEventTimestamp] = JSON.parse(data);
     firstEventRetrievalTime = utcEpochTime();
     ackCallback();
-  });
+  };
   streamConsumeQueue(rabbitQueueName, connectionSetterLastCallback, queueConsumeLastCallback, { 'x-stream-offset': 'last' }).catch((e) => logApp.error('Could not retrieve stream last info', { error: e }));
 
   // because last streamoffset doesn't give last message but last chunk, we have to iterate over the last chunk messages to get the last message
@@ -119,7 +110,7 @@ const RETRY_CONNECTION_PERIOD = 10000;
 const rawCreateStreamProcessor = <T extends BaseEvent> (
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
-  opts: StreamOption = {}
+  opts: StreamOption = {},
 ): StreamProcessor => {
   const isRunning = true;
   let processingLoopPromise: Promise<void>;
@@ -156,10 +147,10 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
     ackCallback();
   };
   const handleStreamConsume = async (startEventId = 'live') => {
-    let streamOffsetArg: string | { '!': string, value: number } = 'next';
+    let streamOffsetArg: string | { '!': string; value: number } = 'next';
     if (startEventId !== 'live') {
       let streamOffsetTime = '';
-      [streamOffsetTime,] = startEventId.split('-');
+      [streamOffsetTime] = startEventId.split('-');
       stertStreamOffsetTime = Number(streamOffsetTime);
       const offsetInSeconds = streamOffsetTime.slice(0, -3);
       streamOffsetArg = { '!': 'timestamp', value: Number(offsetInSeconds) };
@@ -182,7 +173,9 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
     running: () => isRunning,
     start: async (startEventId = 'live') => {
       logApp.info('[STREAM] Starting queue consuming', { provider, startEventId });
-      processingLoopPromise = (async () => { await handleStreamConsume(startEventId); })();
+      processingLoopPromise = (async () => {
+        await handleStreamConsume(startEventId);
+      })();
     },
     shutdown: async () => {
       logApp.info('[STREAM] Shutdown rabbit connection', { provider });

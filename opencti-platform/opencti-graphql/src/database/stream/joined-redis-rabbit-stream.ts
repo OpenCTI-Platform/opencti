@@ -1,5 +1,5 @@
 import type { BaseEvent, DataEvent, SseEvent } from '../../types/event';
-import { LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamInfo, type StreamOption, type StreamProcessor } from './stream-utils';
+import { LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamInfo, type StreamProcessor } from './stream-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { rawRedisStreamClient } from '../redis-stream';
 import { rawRabbitMQStreamClient } from '../rabbitmq-stream';

@@ -23,8 +23,8 @@ import { telemetry } from '../../config/tracing';
 import { rawJoinedRedisRabbitStreamClient } from './joined-redis-rabbit-stream';
 import { isFeatureEnabled } from '../../config/conf';
 
-const isDecayExclusionRuleEnabled = isFeatureEnabled('RABBIT_STREAM_ENABLED');
-const streamClient: RawStreamClient = isDecayExclusionRuleEnabled? rawJoinedRedisRabbitStreamClient : rawJoinedRedisRabbitStreamClient;
+const isRabbitStreamEnabled = isFeatureEnabled('RABBIT_STREAM_ENABLED');
+const streamClient: RawStreamClient = isRabbitStreamEnabled ? rawJoinedRedisRabbitStreamClient : rawRedisStreamClient;
 
 export const initializeStreamStack = async () => {
   if (streamClient.initializeStreams) {
