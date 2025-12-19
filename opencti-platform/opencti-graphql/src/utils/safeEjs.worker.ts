@@ -17,12 +17,10 @@ export interface WorkerReply {
 }
 
 export const customEscapeFunction = (value: any): string => {
-  if (typeof value === 'string') {
-    return value.startsWith('"') && value.endsWith('"')
-      ? value.slice(1, -1)
-      : value;
-  }
-  return value;
+  const result = JSON.stringify(value);
+  return typeof result === 'string' && result.startsWith('"') && result.endsWith('"')
+    ? result.slice(1, -1)
+    : result;
 };
 
 // Main worker execution
