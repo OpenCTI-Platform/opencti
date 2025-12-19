@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { ACTIVITY_STREAM_NAME, createStreamProcessor, storeNotificationEvent, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor, storeNotificationEvent } from '../database/stream/stream-handler';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -35,6 +35,7 @@ import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getNotifications
 import { isActivityEventMatchFilterGroup } from '../utils/filtering/filtering-activity-event/activity-event-filtering';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { lockResources } from '../lock/master-lock';
+import { ACTIVITY_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -158,7 +159,7 @@ const initActivityManager = () => {
       running = true;
       logApp.info('[OPENCTI-MODULE] Running activity manager');
       const streamOpts = { streamName: ACTIVITY_STREAM_NAME, bufferTime: 5000 };
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Activity manager', activityStreamHandler, streamOpts);
+      streamProcessor = createStreamProcessor('Activity manager', activityStreamHandler, streamOpts);
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();

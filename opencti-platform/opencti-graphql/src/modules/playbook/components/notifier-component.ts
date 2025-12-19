@@ -10,7 +10,7 @@ import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../../manager/notificationManager';
 import { generateCreateMessage, generateDeleteMessage } from '../../../database/generate-message';
 import { convertStixToInternalTypes } from '../../../schema/schemaUtils';
-import { storeNotificationEvent } from '../../../database/redis';
+import { storeNotificationEvent } from '../../../database/stream/stream-handler';
 import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
 import { isEventInPirRelationship } from '../../../manager/playbookManager/playbookManagerUtils';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';

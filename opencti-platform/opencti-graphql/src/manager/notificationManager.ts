@@ -2,7 +2,8 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent, type StreamProcessor } from '../database/redis';
+import { type StreamProcessor } from '../database/stream/stream-utils';
+import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
@@ -659,7 +660,7 @@ const initNotificationManager = () => {
       lock = await lockResources([NOTIFICATION_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running notification manager (live)');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Notification manager', notificationLiveStreamHandler);
+      streamProcessor = createStreamProcessor('Notification manager', notificationLiveStreamHandler);
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();

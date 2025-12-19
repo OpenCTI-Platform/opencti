@@ -19,7 +19,8 @@ import * as R from 'ramda';
 import type { BasicStoreSettings } from '../types/settings';
 import { EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from '../database/utils';
 import conf, { ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
-import { createStreamProcessor, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor } from '../database/stream/stream-handler';
+import { type StreamProcessor } from '../database/stream/stream-utils';
 import { lockResources } from '../lock/master-lock';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getEntityFromCache } from '../database/cache';
@@ -185,7 +186,7 @@ const initFileIndexManager = () => {
         lock = await lockResources([FILE_INDEX_MANAGER_STREAM_KEY], { retryCount: 0 });
         running = true;
         logApp.info('[OPENCTI-MODULE] Running file index manager stream handler');
-        streamProcessor = createStreamProcessor(SYSTEM_USER, 'File index manager', handleStreamEvents, { bufferTime: 5000 });
+        streamProcessor = createStreamProcessor('File index manager', handleStreamEvents, { bufferTime: 5000 });
         await streamProcessor.start('live');
         while (!shutdown && streamProcessor.running()) {
           lock.signal.throwIfAborted();
