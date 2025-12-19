@@ -1,11 +1,16 @@
 import util from 'util';
-import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import { amqpExecute, amqpHttpClient, send, streamConsumeQueue } from './rabbitmq';
 import { RABBIT_QUEUE_PREFIX, wait } from './utils';
-import { ACTIVITY_STREAM_NAME, LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamProcessor } from './stream/stream-utils';
-import { telemetry } from '../config/tracing';
-import type { AuthContext, AuthUser } from '../types/user';
-import type { BaseEvent, DataEvent, SseEvent } from '../types/event';
+import {
+  ACTIVITY_STREAM_NAME,
+  type FetchEventRangeOption,
+  LIVE_STREAM_NAME,
+  NOTIFICATION_STREAM_NAME,
+  type RawStreamClient,
+  type StreamProcessor,
+  type StreamProcessorOption,
+} from './stream/stream-utils';
+import type { ActivityStreamEvent, BaseEvent, SseEvent, StreamNotifEvent } from '../types/event';
 import { logApp } from '../config/conf';
 import { utcDate, utcEpochTime } from '../utils/format';
 
@@ -58,12 +63,7 @@ const initializeStreams = async () => {
 const rawPushToStream = async <T extends BaseEvent> (event: T) => {
   const routingKey = streamRouting(LIVE_STREAM_NAME);
   const rabbitMessage = buildStreamMessage(event);
-  const pushToStreamFn = async () => {
-    await send(STREAM_EXCHANGE, routingKey, rabbitMessage);
-  };
-  await telemetry(context, user, 'INSERT STREAM', {
-    [SEMATTRS_DB_NAME]: 'stream_engine',
-  }, pushToStreamFn);
+  await send(STREAM_EXCHANGE, routingKey, rabbitMessage);
 };
 const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   const rabbitQueueName = getRabbitMQStreamQueueName(streamName);
@@ -110,7 +110,7 @@ const RETRY_CONNECTION_PERIOD = 10000;
 const rawCreateStreamProcessor = <T extends BaseEvent> (
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
-  opts: StreamOption = {},
+  opts: StreamProcessorOption = {},
 ): StreamProcessor => {
   const isRunning = true;
   let processingLoopPromise: Promise<void>;
@@ -142,8 +142,11 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
       return;
     }
     const reconstructedStreamId = buildStreamId(messageTimestamp);
-    const reconstructedStreamEvent = [reconstructedStreamId, messageParsed[1]];
-    await processStreamResult([reconstructedStreamEvent], callback, withInternal);
+    const baseEvent = messageParsed[1] as any;
+    if (withInternal || ((baseEvent.scope ?? 'external') === 'external')) {
+      const reconstructedStreamEvent = { id: reconstructedStreamId, event: baseEvent.type, data: baseEvent } as SseEvent<T>;
+      await callback([reconstructedStreamEvent], reconstructedStreamId);
+    }
     ackCallback();
   };
   const handleStreamConsume = async (startEventId = 'live') => {
@@ -186,10 +189,10 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
     },
   };
 };
-const rawFetchStreamEventsRangeFromEventId = async (
+const rawFetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
   startEventId: string,
-  callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
-  opts: StreamOption = {},
+  callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
+  opts: FetchEventRangeOption = {},
 ) => {
   const { streamName = LIVE_STREAM_NAME, withInternal, streamBatchSize = 100 } = opts;
   const rabbitQueueName = getRabbitMQStreamQueueName(streamName);
@@ -227,10 +230,13 @@ const rawFetchStreamEventsRangeFromEventId = async (
       return;
     }
     const reconstructedStreamId = buildStreamId(messageTimestamp);
-    const reconstructedStreamEvent = [reconstructedStreamId, messageParsed[1]];
-    await processStreamResult([reconstructedStreamEvent], callback, withInternal);
+    const baseEvent = messageParsed[1] as any;
+    if (withInternal || ((baseEvent.scope ?? 'external') === 'external')) {
+      const reconstructedStreamEvent = { id: reconstructedStreamId, event: baseEvent.type, data: baseEvent } as SseEvent<T>;
+      callback([reconstructedStreamEvent], reconstructedStreamId);
+      totalCount += 1;
+    }
     eventRetrievalTime = utcEpochTime();
-    totalCount += 1;
     ackCallback();
   };
   const offsetInSeconds = startEpochTimeString.slice(0, -3);
@@ -244,7 +250,7 @@ const rawFetchStreamEventsRangeFromEventId = async (
   rabbitMqConnection.close();
   return { lastEventId: `${lastTimestamp}-${currentTimestampCount}` };
 };
-const rawStoreNotificationEvent = async (event: string[]) => {
+const rawStoreNotificationEvent = async <T extends StreamNotifEvent> (event: T) => {
   const routingKey = streamRouting(NOTIFICATION_STREAM_NAME);
   const rabbitMessage = buildStreamMessage(event);
   await send(STREAM_EXCHANGE, routingKey, rabbitMessage);
@@ -255,23 +261,11 @@ const rawFetchRangeNotifications = async <T extends BaseEvent> (start: Date, end
   const rangeNotifications: Array<T> = [];
   const startEpochTime = utcEpochTime(start as any);
   const endEpochTime = utcEpochTime(end as any);
-  let lastTimestamp: number;
-  let currentTimestampCount = 0;
   let eventRetrievalTime = -1;
 
   let rabbitMqConnection: { close: () => void } = { close: () => {} };
   const connectionSetterCallback = (conn: any) => {
     rabbitMqConnection = conn;
-  };
-  const buildStreamId = (messageTimestamp: number) => {
-    // because timestamps stored in rabbitmq might not be ordered properly (timestamps are computed in nodeJS when sending
-    if (lastTimestamp && messageTimestamp <= lastTimestamp) {
-      currentTimestampCount += 1;
-    } else {
-      currentTimestampCount = 0;
-      lastTimestamp = messageTimestamp;
-    }
-    return `${lastTimestamp}-${currentTimestampCount}`;
   };
   const queueConsumeCallback = async (message: string, ackCallback: () => void) => {
     const messageParsed = JSON.parse(message);
@@ -283,11 +277,9 @@ const rawFetchRangeNotifications = async <T extends BaseEvent> (start: Date, end
     if (messageTimestamp > endEpochTime) {
       return;
     }
-    const reconstructedStreamId = buildStreamId(messageTimestamp);
-    const reconstructedStreamEvent = [reconstructedStreamId, messageParsed[1]];
-    const eventData = mapStreamToJS(reconstructedStreamEvent);
-    if (eventData.event === 'live') {
-      rangeNotifications.push(eventData.data);
+    const baseEvent = messageParsed[1] as T;
+    if (baseEvent.type === 'live') {
+      rangeNotifications.push(baseEvent);
     }
     eventRetrievalTime = utcEpochTime();
     ackCallback();
@@ -303,7 +295,7 @@ const rawFetchRangeNotifications = async <T extends BaseEvent> (start: Date, end
   rabbitMqConnection.close();
   return rangeNotifications;
 };
-const rawStoreActivityEvent = async (event: string[]) => {
+const rawStoreActivityEvent = async (event: ActivityStreamEvent) => {
   const routingKey = streamRouting(ACTIVITY_STREAM_NAME);
   const rabbitMessage = buildStreamMessage(event);
   await send(STREAM_EXCHANGE, routingKey, rabbitMessage);

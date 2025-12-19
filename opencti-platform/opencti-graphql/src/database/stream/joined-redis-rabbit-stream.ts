@@ -1,6 +1,13 @@
-import type { BaseEvent, DataEvent, SseEvent } from '../../types/event';
-import { LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamInfo, type StreamProcessor } from './stream-utils';
-import type { AuthContext, AuthUser } from '../../types/user';
+import type { ActivityStreamEvent, BaseEvent, DataEvent, SseEvent, StreamNotifEvent } from '../../types/event';
+import {
+  type FetchEventRangeOption,
+  LIVE_STREAM_NAME,
+  NOTIFICATION_STREAM_NAME,
+  type RawStreamClient,
+  type StreamInfo,
+  type StreamProcessor,
+  type StreamProcessorOption,
+} from './stream-utils';
 import { rawRedisStreamClient } from '../redis-stream';
 import { rawRabbitMQStreamClient } from '../rabbitmq-stream';
 import { utcDate } from '../../utils/format';
@@ -49,14 +56,14 @@ const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
     lastEventDate: redisStreamInfo.lastEventDate,
     firstEventId: rabbitStreamInfo.firstEventId,
     firstEventDate: rabbitStreamInfo.firstEventDate,
-    streamSize: redisStreamInfo.streamSize + rabbitStreamInfo.streamSize
+    streamSize: redisStreamInfo.streamSize + rabbitStreamInfo.streamSize,
   };
 };
 
 const rawCreateStreamProcessor = <T extends BaseEvent> (
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
-  opts: StreamOption = {}
+  opts: StreamProcessorOption = {},
 ): StreamProcessor => {
   let isRabbitStreamProcessorActive = false;
   let redisLastEvendId: string;
@@ -122,7 +129,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
 const rawFetchStreamEventsRangeFromEventId = async (
   startEventId: string,
   callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
-  opts: StreamOption = {},
+  opts: FetchEventRangeOption = {},
 ) => {
   const { streamName } = opts;
   if (await isRedisStreamFullyDeprecated(streamName)) {
@@ -140,10 +147,10 @@ const rawFetchStreamEventsRangeFromEventId = async (
 };
 
 // region opencti notification stream
-const rawStoreNotificationEvent = async (event: string[]) => {
-  await rabbitStreamClient.rawStoreNotificationEvent(event);
+const rawStoreNotificationEvent = async <T extends StreamNotifEvent> (event: T) => {
+  await rabbitStreamClient.rawStoreNotificationEvent<T>(event);
 };
-const rawFetchRangeNotifications = async <T extends BaseEvent> (start: Date, end: Date): Promise<Array<T>> => {
+const rawFetchRangeNotifications = async <T extends StreamNotifEvent> (start: Date, end: Date): Promise<Array<T>> => {
   if (await isRedisStreamFullyDeprecated(NOTIFICATION_STREAM_NAME)) {
     return rabbitStreamClient.rawFetchRangeNotifications<T>(start, end);
   }
@@ -155,7 +162,7 @@ const rawFetchRangeNotifications = async <T extends BaseEvent> (start: Date, end
 // endregion
 
 // region opencti audit stream
-const rawStoreActivityEvent = async (event: string[]) => {
+const rawStoreActivityEvent = async (event: ActivityStreamEvent) => {
   await rabbitStreamClient.rawStoreActivityEvent(event);
 };
 // endregion
