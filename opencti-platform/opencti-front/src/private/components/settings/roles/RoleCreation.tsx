@@ -1,10 +1,11 @@
 import React from 'react';
 import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
-import { Button, useTheme } from '@mui/material';
+import { useTheme } from '@mui/material';
 import * as Yup from 'yup';
 import { ConnectionHandler, graphql } from 'react-relay';
 import { DataID, RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
+import Button from '@common/button/Button';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { PaginationOptions } from '../../../../components/list_lines';
@@ -134,7 +135,7 @@ const RoleCreation = ({ paginationOptions }: {
               }}
               >
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   style={{ marginLeft: theme.spacing(2) }}
@@ -142,8 +143,6 @@ const RoleCreation = ({ paginationOptions }: {
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting || !isValid}
                   style={{ marginLeft: theme.spacing(2) }}

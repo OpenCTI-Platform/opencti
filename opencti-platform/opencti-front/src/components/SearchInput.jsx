@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Link, useLocation } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
@@ -185,12 +185,11 @@ const SearchInput = (props) => {
                   onClick={handleRemoveAskAI}
                   component={Link}
                   to="/dashboard/search"
-                  size="medium"
-                  color={
-                    location.pathname.includes('/dashboard/search')
-                    && !location.pathname.includes('/dashboard/search_bulk')
-                    && !isNLQActivated ? 'primary' : 'inherit'
-                  }
+                // color={
+                //   location.pathname.includes('/dashboard/search')
+                //   && !location.pathname.includes('/dashboard/search_bulk')
+                //   && !isNLQActivated ? 'primary' : 'inherit'
+                // }
                 >
                   <BiotechOutlined fontSize="medium" />
                 </IconButton>
@@ -200,12 +199,11 @@ const SearchInput = (props) => {
                   onClick={handleRemoveAskAI}
                   component={Link}
                   to="/dashboard/search_bulk"
-                  size="medium"
-                  color={
-                    location.pathname.includes('/dashboard/search_bulk') && !isNLQActivated
-                      ? 'primary'
-                      : 'inherit'
-                  }
+                // color={
+                //   location.pathname.includes('/dashboard/search_bulk') && !isNLQActivated
+                //     ? 'primary'
+                //     : 'inherit'
+                // }
                 >
                   <ContentPasteSearchOutlined fontSize="medium" />
                 </IconButton>
@@ -213,7 +211,6 @@ const SearchInput = (props) => {
               {fullyActive && (
                 <EETooltip forAi={true} title={t_i18n('Ask AI')}>
                   <IconButton
-                    size="medium"
                     style={{ color: theme.palette.ai.main }}
                     onClick={isAIEnabled ? handleChangeAskAI : null}
                   >

@@ -1,8 +1,8 @@
-import { Button } from '@mui/material';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
+import Button from '@common/button/Button';
 import { UploadFileOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
@@ -11,8 +11,8 @@ import useDraftContext from '../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 
 interface UploadImportProps {
-  color?: 'primary' | 'inherit' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
-  size?: 'small' | 'medium' | 'large';
+  color?: 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
+  size?: 'small' | 'default';
   fontSize?: 'small' | 'medium' | 'large';
   variant?: 'text' | 'contained' | 'outlined' | 'icon';
   style?: React.CSSProperties;
@@ -22,7 +22,7 @@ interface UploadImportProps {
 
 const UploadImport = ({
   color = 'primary',
-  size = 'medium',
+  size = 'default',
   variant = 'icon',
   fontSize = 'medium',
   style,
@@ -66,7 +66,7 @@ const UploadImport = ({
           onClick={() => setOpenImportFilesDialog(true)}
           color={color}
           size={size}
-          variant={variant}
+          // variant={variant}
           aria-label={title}
           title={title}
           sx={style ?? { marginLeft: theme.spacing(1) }}

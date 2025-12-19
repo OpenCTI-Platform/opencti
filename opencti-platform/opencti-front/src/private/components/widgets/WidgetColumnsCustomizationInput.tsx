@@ -3,7 +3,7 @@ import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea
 import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetColumn } from '../../../utils/widget/widget';
@@ -139,7 +139,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
         </Box>
 
         <Box sx={{ display: 'flex', marginTop: 2, justifyContent: 'flex-end' }}>
-          <Button variant="outlined" onClick={() => onChange(defaultColumns)}>
+          <Button variant="secondary" onClick={() => onChange(defaultColumns)}>
             {t_i18n('Reset')}
           </Button>
         </Box>

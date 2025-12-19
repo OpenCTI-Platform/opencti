@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
@@ -151,7 +151,6 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
             color: 'inherit',
           }}
           onClick={handleClose}
-          size="large"
           color="primary"
         >
           <Close fontSize="small" color="primary" />

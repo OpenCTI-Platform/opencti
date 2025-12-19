@@ -3,7 +3,7 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { DeleteOutline } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { ObjectSchema } from 'yup';
 import TextField from '../../../../../components/TextField';
 import ColorPickerField from '../../../../../components/ColorPickerField';

@@ -25,7 +25,6 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
-import IconButton from '@mui/material/IconButton';
 import {
   AddOutlined,
   AutoFixHighOutlined,
@@ -53,7 +52,8 @@ import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Slide from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -1525,7 +1525,6 @@ class DataTableToolBar extends Component {
               onClick={() => this.setState({ containerCreation: true })}
               edge="end"
               style={{ position: 'absolute', top: 22, right: 48 }}
-              size="large"
             >
               <AddOutlined />
             </IconButton>
@@ -2274,10 +2273,8 @@ class DataTableToolBar extends Component {
                       numberOfSelectedElements === 0 || this.state.processing
                     }
                     onClick={handleClearSelectedElements.bind(this)}
-                    size="small"
-                    color="primary"
                   >
-                    <ClearOutlined fontSize="small" />
+                    <ClearOutlined />
                   </IconButton>
                 </div>
                 {displayEditButtons && (
@@ -2293,7 +2290,7 @@ class DataTableToolBar extends Component {
                               color="success"
                               size="small"
                             >
-                              <CheckCircleOutlined fontSize="small" />
+                              <CheckCircleOutlined />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -2306,7 +2303,7 @@ class DataTableToolBar extends Component {
                               color="warning"
                               size="small"
                             >
-                              <UnpublishedOutlined fontSize="small" />
+                              <UnpublishedOutlined />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -2326,7 +2323,7 @@ class DataTableToolBar extends Component {
                               || this.state.processing
                             }
                           >
-                            <LockOpenOutlined fontSize="small" color="primary" />
+                            <LockOpenOutlined />
                           </IconButton>
                         </Tooltip>
                       </Security>
@@ -2342,10 +2339,9 @@ class DataTableToolBar extends Component {
                                 || this.state.processing
                               }
                               onClick={this.handleOpenUpdate.bind(this)}
-                              color="primary"
                               size="small"
                             >
-                              <BrushOutlined fontSize="small" />
+                              <BrushOutlined />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -2374,10 +2370,9 @@ class DataTableToolBar extends Component {
                                     aria-label="update"
                                     disabled={buttonDisable}
                                     onClick={this.handleOpenRescan.bind(this)}
-                                    color="primary"
                                     size="small"
                                   >
-                                    <AutoFixHighOutlined fontSize="small" />
+                                    <AutoFixHighOutlined />
                                   </IconButton>
                                 </span>
                               </Tooltip>
@@ -2395,10 +2390,9 @@ class DataTableToolBar extends Component {
                                 > maxNumberOfObservablesToCopy
                               }
                               onClick={this.props.handleCopy}
-                              color="primary"
                               size="small"
                             >
-                              <ContentCopyOutlined fontSize="small" />
+                              <ContentCopyOutlined />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -2410,7 +2404,6 @@ class DataTableToolBar extends Component {
                               aria-label="enrichment"
                               disabled={this.state.processing}
                               onClick={this.handleOpenEnrichment.bind(this, stixCyberObservableSubTypes, stixDomainObjectSubTypes)}
-                              color="primary"
                               size="small"
                             >
                               <CloudRefreshOutline fontSize="small" />
@@ -2425,7 +2418,6 @@ class DataTableToolBar extends Component {
                               aria-label="promote"
                               disabled={this.state.processing}
                               onClick={this.handleOpenPromote.bind(this)}
-                              color="primary"
                               size="small"
                             >
                               <TransformOutlined fontSize="small" />
@@ -2449,7 +2441,6 @@ class DataTableToolBar extends Component {
                                 || this.state.processing
                               }
                               onClick={this.handleOpenMerge.bind(this)}
-                              color="primary"
                               size="small"
                             >
                               <MergeOutlined fontSize="small" />
@@ -2469,7 +2460,6 @@ class DataTableToolBar extends Component {
                                 || this.state.processing
                               }
                               onClick={this.handleOpenAddInContainer.bind(this)}
-                              color="primary"
                               size="small"
                             >
                               <MoveToInboxOutlined fontSize="small" />
@@ -2489,7 +2479,6 @@ class DataTableToolBar extends Component {
                                 || this.state.processing
                               }
                               onClick={this.handleLaunchRemove.bind(this)}
-                              color="primary"
                               size="small"
                             >
                               <LinkOffOutlined fontSize="small" />
@@ -2503,7 +2492,6 @@ class DataTableToolBar extends Component {
                         <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                           <EETooltip title={t('Share with organizations')}>
                             <IconButton
-                              color="primary"
                               aria-label="input"
                               onClick={isEnterpriseEdition ? this.handleOpenShare.bind(this) : null}
                               size="small"
@@ -2519,7 +2507,6 @@ class DataTableToolBar extends Component {
                         <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                           <EETooltip title={t('Unshare with organizations')}>
                             <IconButton
-                              color="primary"
                               aria-label="input"
                               onClick={isEnterpriseEdition ? this.handleOpenUnshare.bind(this) : null}
                               size="small"
@@ -2766,6 +2753,7 @@ class DataTableToolBar extends Component {
                 </DialogContent>
                 <DialogActions>
                   <Button
+                    variant="secondary"
                     onClick={this.handleCloseTask.bind(this)}
                     disabled={this.state.processing}
                   >
@@ -2773,7 +2761,6 @@ class DataTableToolBar extends Component {
                   </Button>
                   <Button
                     onClick={this.submitTask.bind(this, availableFilterKeys, isInDraft)}
-                    color="secondary"
                     disabled={this.state.processing}
                   >
                     {t('Launch')}
@@ -2793,8 +2780,6 @@ class DataTableToolBar extends Component {
                     aria-label="Close"
                     className={classes.closeButton}
                     onClick={this.handleCloseUpdate.bind(this)}
-                    size="large"
-                    color="primary"
                   >
                     <CloseOutlined fontSize="small" color="primary" />
                   </IconButton>
@@ -2848,22 +2833,19 @@ class DataTableToolBar extends Component {
                       </div>
                     ))}
                   <div className={classes.add}>
-                    <Button
+                    <IconButton
                       disabled={!this.areStepValid()}
-                      variant="contained"
-                      color="secondary"
+                      variant="secondary"
                       size="small"
                       onClick={this.handleAddStep.bind(this)}
                       classes={{ root: classes.buttonAdd }}
                     >
                       <AddOutlined fontSize="small" />
-                    </Button>
+                    </IconButton>
                   </div>
                   <div className={classes.buttons}>
                     <Button
                       disabled={!this.areStepValid()}
-                      variant="contained"
-                      color="primary"
                       onClick={this.handleLaunchUpdate.bind(this)}
                       classes={{ root: classes.button }}
                     >
@@ -2885,8 +2867,6 @@ class DataTableToolBar extends Component {
                     aria-label="Close"
                     className={classes.closeButton}
                     onClick={this.handleCloseMerge.bind(this)}
-                    size="large"
-                    color="primary"
                   >
                     <CloseOutlined fontSize="small" color="primary" />
                   </IconButton>
@@ -3046,8 +3026,6 @@ class DataTableToolBar extends Component {
                     aria-label="Close"
                     className={classes.closeButton}
                     onClick={this.handleCloseEnrichment.bind(this)}
-                    size="large"
-                    color="primary"
                   >
                     <CloseOutlined fontSize="small" color="primary" />
                   </IconButton>
@@ -3130,8 +3108,6 @@ class DataTableToolBar extends Component {
                     aria-label="Close"
                     className={classes.closeButton}
                     onClick={this.handleCloseRescan.bind(this)}
-                    size="large"
-                    color="primary"
                   >
                     <CloseOutlined fontSize="small" color="primary" />
                   </IconButton>
@@ -3248,7 +3224,6 @@ class DataTableToolBar extends Component {
                     onClick={() => this.setState({ containerCreation: true })}
                     edge="end"
                     style={{ position: 'absolute', top: 68, right: 48 }}
-                    size="large"
                   >
                     <AddOutlined />
                   </IconButton>
@@ -3349,7 +3324,6 @@ class DataTableToolBar extends Component {
                     onClick={() => this.setState({ organizationCreation: true })}
                     edge="end"
                     style={{ position: 'absolute', top: 68, right: 48 }}
-                    size="large"
                   >
                     <AddOutlined />
                   </IconButton>

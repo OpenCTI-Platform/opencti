@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
-import Button from '@mui/material/Button';
-import { IconButton } from '@mui/material';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import Paper from '@mui/material/Paper';
 import { useFormatter } from '../../../../components/i18n';
@@ -14,7 +14,7 @@ interface HeaderFieldAddProps {
   containerStyle: { marginTop: number; width: string };
   setFieldValue?: (name: string, value: unknown) => void;
 }
-// eslint-disable-next-line import/prefer-default-export
+
 export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({
   name,
   values,
@@ -62,7 +62,6 @@ export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    size="large"
                     style={{ position: 'absolute', right: 0, top: 5 }}
                   >
                     <DeleteOutlined />
@@ -72,8 +71,6 @@ export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({
               <Button
                 size="small"
                 startIcon={<AddOutlined />}
-                variant="contained"
-                color="primary"
                 aria-label="Add"
                 id="addHeader"
                 onClick={() => {

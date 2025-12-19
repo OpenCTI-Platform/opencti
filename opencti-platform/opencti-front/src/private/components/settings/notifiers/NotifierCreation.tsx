@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import CoreForm from '@rjsf/core';
 import * as Yup from 'yup';
 import JsonForm from '@rjsf/mui';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useQueryLoader } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -199,7 +199,6 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
           )}
           <div className={classes.buttons}>
             <Button
-              variant="contained"
               color="primary"
               onClick={() => {
                 notifierConfiguration.current = JSON.stringify(
@@ -213,7 +212,6 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
               {t_i18n('Test')}
             </Button>
             <Button
-              variant="contained"
               onClick={handleReset}
               disabled={isSubmitting}
               classes={{ root: classes.button }}
@@ -221,7 +219,6 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
               color="secondary"
               onClick={() => submitForm(values, formRef.current, {
                 setErrors,

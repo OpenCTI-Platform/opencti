@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
@@ -308,7 +308,6 @@ const StixDomainObjectEditionContainer = (props) => {
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large"
           color="primary"
         >
           <Close fontSize="small" color="primary" />

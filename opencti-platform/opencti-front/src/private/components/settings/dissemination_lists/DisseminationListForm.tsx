@@ -3,7 +3,7 @@ import { FormikHelpers } from 'formik/dist/types';
 import { useTheme } from '@mui/styles';
 import { Field, Formik } from 'formik';
 import { disseminationListValidator } from '@components/settings/dissemination_lists/DisseminationListUtils';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import TextField from '../../../../components/TextField';
@@ -106,7 +106,7 @@ const DisseminationListForm: FunctionComponent<DisseminationListFormProps> = ({
           {!isEdition && (
             <div style={{ marginTop: theme.spacing(2), textAlign: 'right' }}>
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
                 style={{ marginLeft: theme.spacing(2) }}
@@ -114,8 +114,6 @@ const DisseminationListForm: FunctionComponent<DisseminationListFormProps> = ({
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 style={{ marginLeft: theme.spacing(2) }}

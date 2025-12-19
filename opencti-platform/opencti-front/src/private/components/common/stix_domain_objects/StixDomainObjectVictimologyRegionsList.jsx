@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -282,7 +282,6 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                   <IconButton
                     onClick={this.handleToggleLine.bind(this, region.id)}
                     aria-haspopup="true"
-                    size="large"
                   >
                     {this.state.expandedLines[region.id] === true ? (
                       <ExpandLess />
@@ -352,7 +351,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                               )
                             }
                             secondary={
-                            // eslint-disable-next-line no-nested-ternary
+
                               stixCoreRelationship.description
                               && stixCoreRelationship.description.length > 0 ? (
                                     <MarkdownDisplay
@@ -400,7 +399,6 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                 country.id,
                               )}
                               aria-haspopup="true"
-                              size="large"
                             >
                               {this.state.expandedLines[country.id] === true ? (
                                 <ExpandLess />
@@ -485,7 +483,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                             )
                                       }
                                       secondary={
-                                      // eslint-disable-next-line no-nested-ternary
+
                                         stixCoreRelationship.description
                                         && stixCoreRelationship.description.length
                                         > 0 ? (
@@ -593,7 +591,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                                     )
                                               }
                                               secondary={
-                                              // eslint-disable-next-line no-nested-ternary
+
                                                 stixCoreRelationship.description
                                                 && stixCoreRelationship.description
                                                   .length > 0 ? (

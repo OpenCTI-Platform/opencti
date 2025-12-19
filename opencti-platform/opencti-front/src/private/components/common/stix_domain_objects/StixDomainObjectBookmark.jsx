@@ -10,7 +10,7 @@ import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import Avatar from '@mui/material/Avatar';
 import { StarBorderOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Skeleton from '@mui/material/Skeleton';
 import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';

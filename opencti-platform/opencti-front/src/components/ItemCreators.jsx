@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Security from '../utils/Security';
@@ -44,7 +44,7 @@ const ItemCreators = (props) => {
           >
             {systemUsers.includes(creator.id) ? (
               <Button
-                variant="outlined"
+                variant="secondary"
                 size="small"
                 classes={{ root: classes.button }}
                 style={{ cursor: 'default' }}
@@ -53,7 +53,7 @@ const ItemCreators = (props) => {
               </Button>
             ) : (
               <Button
-                variant="outlined"
+                variant="secondary"
                 size="small"
                 classes={{ root: classes.button }}
                 component={Link}

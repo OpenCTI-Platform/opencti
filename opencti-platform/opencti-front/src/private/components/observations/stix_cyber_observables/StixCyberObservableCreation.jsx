@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Fab from '@mui/material/Fab';
 import Alert from '@mui/lab/Alert';
 import { Add, Close } from '@mui/icons-material';
@@ -954,7 +954,7 @@ const StixCyberObservableCreation = ({
                       <div className={classes.buttons}>
                         {!isFromBulkRelation && (
                           <Button
-                            variant={contextual ? 'text' : 'contained'}
+                            variant={contextual ? 'tertiary' : 'default'}
                             onClick={() => selectType(null)}
                             disabled={isSubmitting}
                             classes={{ root: classes.button }}
@@ -963,7 +963,7 @@ const StixCyberObservableCreation = ({
                           </Button>
                         )}
                         <Button
-                          variant={contextual ? 'text' : 'contained'}
+                          variant={contextual ? 'tertiary' : 'default'}
                           onClick={handleReset}
                           disabled={isSubmitting}
                           classes={{ root: classes.button }}
@@ -971,7 +971,7 @@ const StixCyberObservableCreation = ({
                           {t_i18n('Cancel')}
                         </Button>
                         <Button
-                          variant={contextual ? 'text' : 'contained'}
+                          variant={contextual ? 'tertiary' : 'default'}
                           color="secondary"
                           onClick={submitForm}
                           disabled={isSubmitting}
@@ -1014,8 +1014,6 @@ const StixCyberObservableCreation = ({
               aria-label="Close"
               className={classes.closeButton}
               onClick={localHandleClose}
-              size="large"
-              color="primary"
             >
               <Close fontSize="small" color="primary" />
             </IconButton>

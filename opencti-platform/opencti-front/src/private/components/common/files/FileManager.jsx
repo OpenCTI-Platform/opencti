@@ -13,7 +13,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import DraftWorkspaceViewer from './draftWorkspace/DraftWorkspaceViewer';
 import ObjectMarkingField from '../form/ObjectMarkingField';
@@ -177,7 +177,7 @@ const FileManager = ({
     flatten(map((c) => c.connector_scope, connectorsExport)),
   );
   const exportConnsPerFormat = scopesConn(connectorsExport);
-  // eslint-disable-next-line max-len
+
   const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
   const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
   const handleOpenImport = (file) => setFileToImport(file);
@@ -407,11 +407,10 @@ const FileManager = ({
                   }
                 </DialogContent>
                 <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

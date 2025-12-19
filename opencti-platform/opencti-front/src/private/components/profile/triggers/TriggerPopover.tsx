@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
@@ -70,7 +70,6 @@ const TriggerPopover = ({
           onClick={handleOpen}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
-          size="medium"
           disabled={disabled}
           color="primary"
         >

@@ -9,7 +9,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { DataColumns } from '../../../../../components/list_lines';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
@@ -224,7 +224,7 @@ export const AlertingLineDummy = ({
       divider={true}
       secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <IconButton disabled={true} aria-haspopup="true" size="large">
+          <IconButton disabled={true} aria-haspopup="true">
             <MoreVert />
           </IconButton>
         </Box>

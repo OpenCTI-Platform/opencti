@@ -2,7 +2,7 @@ import React, { FunctionComponent, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { CloudUploadOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { resolveLink } from 'src/utils/Entity';
@@ -46,7 +46,7 @@ interface FileUploaderProps {
   entityId?: string;
   onUploadSuccess: (id?: string) => unknown;
   accept?: string;
-  size: 'small' | 'large' | 'medium' | undefined;
+  // size: 'small' | 'large' | 'medium' | undefined;
   nameInCallback?: boolean;
 }
 
@@ -54,7 +54,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
   entityId,
   onUploadSuccess,
   accept,
-  size,
+  // size,
   nameInCallback,
 }) => {
   const { t_i18n } = useFormatter();
@@ -151,7 +151,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
           title={`Uploading ${upload}`}
           aria-label={`Uploading ${upload}`}
         >
-          <IconButton disabled={true} size={size || 'large'}>
+          <IconButton disabled={true} size="small">
             <CircularProgress
               size={24}
               thickness={2}
@@ -165,7 +165,8 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
             onClick={handleOpenUpload}
             aria-haspopup="true"
             color="primary"
-            size={size || 'large'}
+            size="small"
+            variant="tertiary"
           >
             <CloudUploadOutlined />
           </IconButton>

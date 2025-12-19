@@ -124,7 +124,6 @@ const StixRelationshipsHorizontalBars = ({
     let selection = {};
     let filtersAndOptions;
     if (dataSelection) {
-      // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
     }

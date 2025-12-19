@@ -1,5 +1,5 @@
 import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { PaletteOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';

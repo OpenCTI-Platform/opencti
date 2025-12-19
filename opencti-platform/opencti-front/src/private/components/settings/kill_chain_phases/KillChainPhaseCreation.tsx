@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -123,7 +123,7 @@ const KillChainPhaseCreation: FunctionComponent<
               }}
               >
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   style={{ marginLeft: theme.spacing(2) }}
@@ -131,8 +131,6 @@ const KillChainPhaseCreation: FunctionComponent<
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   style={{ marginLeft: theme.spacing(2) }}

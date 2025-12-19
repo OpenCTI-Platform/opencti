@@ -5,7 +5,7 @@ import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import withStyles from '@mui/styles/withStyles';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
@@ -91,8 +91,6 @@ class UserEditionPasswordComponent extends Component {
             />
             <div className={classes.buttons}>
               <Button
-                variant="contained"
-                color="primary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}

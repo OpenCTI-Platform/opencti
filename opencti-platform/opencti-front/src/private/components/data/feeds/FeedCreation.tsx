@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -531,7 +531,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                 aria-label="Delete"
                                 className={classes.stepCloseButton}
                                 onClick={() => handleRemoveAttribute(i)}
-                                size="large"
                               >
                                 <CancelOutlined fontSize="small" />
                               </IconButton>
@@ -627,23 +626,21 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                             </div>
                           ))}
                           <div className={classes.buttonAdd}>
-                            <Button
+                            <IconButton
                               disabled={selectedTypes.length === 0}
-                              variant="contained"
-                              color="secondary"
                               size="small"
                               onClick={() => handleAddAttribute()}
                               classes={{ root: classes.buttonAdd }}
                             >
                               <AddOutlined fontSize="small" />
-                            </Button>
+                            </IconButton>
                           </div>
                         </div>
                       )}
                       <div className="clearfix" />
                       <div className={classes.buttons}>
                         <Button
-                          variant="contained"
+                          variant="secondary"
                           onClick={handleReset}
                           disabled={isSubmitting}
                           classes={{ root: classes.button }}
@@ -651,8 +648,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                           {t_i18n('Cancel')}
                         </Button>
                         <Button
-                          variant="contained"
-                          color="secondary"
                           onClick={submitForm}
                           disabled={isSubmitting || !areAttributesValid()}
                           classes={{ root: classes.button }}

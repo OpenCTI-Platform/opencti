@@ -1,7 +1,7 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
@@ -222,7 +222,7 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
           />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               style={{ marginLeft: 10 }}
@@ -230,8 +230,6 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
               style={{ marginLeft: 10 }}

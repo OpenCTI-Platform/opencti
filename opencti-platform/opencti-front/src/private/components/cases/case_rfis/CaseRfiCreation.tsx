@@ -1,4 +1,4 @@
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -375,7 +375,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
           )}
           <div className={classes.buttons}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               classes={{ root: classes.button }}
@@ -383,8 +383,6 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
               classes={{ root: classes.button }}
@@ -393,8 +391,6 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             </Button>
             {values.content.length > 0 && (
               <Button
-                variant="contained"
-                color="success"
                 onClick={() => {
                   setMapAfter(true);
                   submitForm();

@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 import { graphql, useFragment, useQueryLoader, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { FormEditionFragment_form$key } from '@components/data/forms/__generated__/FormEditionFragment_form.graphql';
 import { FormCreationQuery } from '@components/data/forms/__generated__/FormCreationQuery.graphql';
 import TextField from '@mui/material/TextField';
@@ -265,7 +265,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
 
       <div className={classes.buttons}>
         <Button
-          variant="contained"
+          variant="secondary"
           onClick={handleClose}
           disabled={isSaving}
           classes={{ root: classes.button }}
@@ -273,8 +273,6 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
           {t_i18n('Cancel')}
         </Button>
         <Button
-          variant="contained"
-          color="secondary"
           onClick={handleSubmit}
           disabled={isSaving || !formBuilderData}
           classes={{ root: classes.button }}

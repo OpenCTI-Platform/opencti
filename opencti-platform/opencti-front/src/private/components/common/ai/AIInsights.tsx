@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@mui/material/Dialog';
 import { createStyles } from '@mui/styles';
-import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import Typography from '@mui/material/Typography';
@@ -191,7 +191,7 @@ const AIInsights = ({
             </IconButton>
           ) : (
             <Button
-              variant="outlined"
+              variant="secondary"
               size="small"
               onClick={() => setDisplayEEDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
@@ -233,7 +233,7 @@ const AIInsights = ({
             </IconButton>
           ) : (
             <Button
-              variant="outlined"
+              variant="secondary"
               size="small"
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
@@ -276,7 +276,7 @@ const AIInsights = ({
           </IconButton>
         ) : (
           <Button
-            variant="outlined"
+            variant="secondary"
             size="small"
             onClick={() => setDisplay(true)}
             className={floating ? classes.chipFloating : classes.chip}
@@ -299,8 +299,6 @@ const AIInsights = ({
           <IconButton
             aria-label="Close"
             onClick={handleClose}
-            size="large"
-            color="primary"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
@@ -308,7 +306,7 @@ const AIInsights = ({
             {t_i18n('AI Insights')}
           </Typography>
           <Button
-            variant="outlined"
+            variant="secondary"
             size="small"
             className={classes.chipNoAction}
             startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}

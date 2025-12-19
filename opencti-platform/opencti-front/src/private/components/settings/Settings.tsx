@@ -2,7 +2,7 @@ import React, { ChangeEvent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Grid from '@mui/material/Grid2';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
@@ -316,8 +316,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         <>
                           <Button
                             size="small"
-                            variant="outlined"
-                            color="dangerZone"
+                            variant="secondary"
+                            intent="destructive"
                             onClick={() => setOpenEEChanges(true)}
                             disabled={disabled}
                             style={{
@@ -351,6 +351,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                             </DialogContent>
                             <DialogActions>
                               <Button
+                                variant="secondary"
                                 onClick={() => {
                                   setOpenEEChanges(false);
                                 }}
@@ -358,7 +359,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                                 {t_i18n('Cancel')}
                               </Button>
                               <Button
-                                color="secondary"
                                 onClick={() => {
                                   setOpenEEChanges(false);
                                   handleSubmitField('enterprise_license', '');

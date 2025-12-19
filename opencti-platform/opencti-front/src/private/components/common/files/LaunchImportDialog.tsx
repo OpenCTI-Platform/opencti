@@ -5,7 +5,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
@@ -242,11 +242,10 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
               )}
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleReset} disabled={isSubmitting}>
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting || !isValid || invalidCsvMapper || !selectedConnector}
               >

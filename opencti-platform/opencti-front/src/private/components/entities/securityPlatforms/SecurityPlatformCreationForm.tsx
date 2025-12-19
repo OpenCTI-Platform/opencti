@@ -1,5 +1,5 @@
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { securityPlatformCreationMutation } from '@components/entities/securityPlatforms/SecurityPlatformCreation';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -230,15 +230,13 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
             }}
             >
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 sx={{ marginLeft: 2 }}

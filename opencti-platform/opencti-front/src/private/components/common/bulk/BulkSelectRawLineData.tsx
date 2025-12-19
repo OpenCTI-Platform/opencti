@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
 import { BulkEntityTypeInfo, entityNameHeaderWidth, entityTypeHeaderWidth, matchHeaderWidth } from '@components/common/bulk/dialog/BulkRelationDialog';
 import { DeleteOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Autocomplete } from '@mui/material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';

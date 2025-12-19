@@ -1,13 +1,13 @@
 import React, { useEffect, useState, ChangeEvent, SyntheticEvent } from 'react';
 import { graphql } from 'react-relay';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { AddOutlined, MoveToInboxOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import Dialog from '@mui/material/Dialog';
 import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -273,11 +273,10 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleToggleAddInContainer(false)}>
+          <Button variant="secondary" onClick={handleToggleAddInContainer(false)}>
             {t_i18n('Cancel')}
           </Button>
           <Button
-            color="secondary"
             onClick={handleLaunchUpdate}
             disabled={processing || selectedContainers.length === 0}
           >

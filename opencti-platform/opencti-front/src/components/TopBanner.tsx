@@ -1,4 +1,4 @@
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import React, { useContext } from 'react';
 import { isNotEmptyField } from '../utils/utils';
@@ -52,7 +52,6 @@ const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onBu
       </span>
       { buttonText && (
         <Button
-          variant="contained"
           onClick={onButtonClick}
           sx={{
             marginLeft: 1,

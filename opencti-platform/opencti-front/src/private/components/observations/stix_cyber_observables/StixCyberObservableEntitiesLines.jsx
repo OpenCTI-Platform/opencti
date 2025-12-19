@@ -108,7 +108,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
               targetEntityType = targetEntity.entity_type;
             }
             const isReversed = node.from && node.from.id === stixCyberObservableId;
-            // eslint-disable-next-line no-nested-ternary
+
             const link = !restricted
               ? targetEntity.parent_types.includes('stix-core-relationship')
                 ? `/dashboard/observations/observables/${stixCyberObservableId}/knowledge/relations/${node.id}`
@@ -177,7 +177,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                           className={classes.bodyItem}
                           style={{ width: '22%' }}
                         >
-                          {/* eslint-disable-next-line no-nested-ternary */}
+                          { }
                           {!restricted
                             ? targetEntity.entity_type === 'stix_relation'
                             || targetEntity.entity_type === 'stix-relation'

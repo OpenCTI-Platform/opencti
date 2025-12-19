@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Button, TextField } from '@mui/material';
+import Button from '@common/button/Button';
+import { Box, TextField } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Field, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
@@ -73,6 +74,7 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
             />
             <Box sx={{ display: 'flex', marginLeft: 'auto' }}>
               <Button
+                variant="secondary"
                 disabled={isSubmitting}
                 onClick={() => {
                   handleReset();
@@ -82,7 +84,6 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                color="secondary"
                 disabled={isSubmitting || values.content.length === 0}
                 onClick={submitForm}
               >

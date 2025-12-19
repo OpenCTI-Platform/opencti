@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import LeftBarPage from "./menu/leftBar.pageModel";
+import LeftBarPage from './menu/leftBar.pageModel';
 
 export default class IntrusionSetPage {
   constructor(private page: Page) {}

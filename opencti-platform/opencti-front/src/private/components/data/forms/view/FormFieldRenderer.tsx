@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Field, FieldInputProps, FormikProps } from 'formik';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { CloudUploadOutlined } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import { graphql } from 'react-relay';
@@ -119,11 +119,10 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
                 />
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleReset} disabled={isSubmitting}>
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                 >

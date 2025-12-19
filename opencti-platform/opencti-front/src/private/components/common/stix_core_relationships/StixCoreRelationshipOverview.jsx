@@ -9,7 +9,8 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { ArrowRightAlt, EditOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
 import DialogContent from '@mui/material/DialogContent';
@@ -17,7 +18,6 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
 import { DraftChip } from '../draft/DraftChip';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
@@ -220,7 +220,7 @@ class StixCoreRelationshipContainer extends Component {
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
     const fromRestricted = from === null;
-    // eslint-disable-next-line no-nested-ternary
+
     const linkFrom = from
       ? from.relationship_type
         ? `${resolveLink(from.from.entity_type)}/${
@@ -229,7 +229,7 @@ class StixCoreRelationshipContainer extends Component {
         : resolveLink(from.entity_type)
       : '';
     const toRestricted = to === null;
-    // eslint-disable-next-line no-nested-ternary
+
     const linkTo = to
       ? to.relationship_type
         ? `${resolveLink(to.from.entity_type)}/${
@@ -253,9 +253,7 @@ class StixCoreRelationshipContainer extends Component {
             {!stixCoreRelationship.is_inferred && (
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IconButton
-                  color="primary"
                   onClick={this.handleOpenEdition.bind(this)}
-                  size="large"
                   sx={{ margin: '-15px 0px 0px -2px', float: 'left' }}
                 >
                   <EditOutlined fontSize="small" />
@@ -302,7 +300,7 @@ class StixCoreRelationshipContainer extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
+                      { }
                       {!fromRestricted
                         ? from.relationship_type
                           ? t('Relationship')
@@ -367,7 +365,7 @@ class StixCoreRelationshipContainer extends Component {
                     </div>
                     <div className={classes.type}>
                       {
-                        // eslint-disable-next-line no-nested-ternary
+
                         !toRestricted
                           ? to.relationship_type
                             ? t('Relationship')
@@ -582,18 +580,18 @@ class StixCoreRelationshipContainer extends Component {
                 />
               ))}
               {expandable && (
-                <Button
-                  variant="contained"
+                <IconButton
+                  variant="tertiary"
                   size="small"
                   onClick={this.handleToggleExpand.bind(this)}
                   classes={{ root: classes.buttonExpand }}
                 >
                   {expanded ? (
-                    <ExpandLessOutlined fontSize="small" />
+                    <ExpandLessOutlined />
                   ) : (
-                    <ExpandMoreOutlined fontSize="small" />
+                    <ExpandMoreOutlined />
                   )}
-                </Button>
+                </IconButton>
               )}
             </div>
           )}

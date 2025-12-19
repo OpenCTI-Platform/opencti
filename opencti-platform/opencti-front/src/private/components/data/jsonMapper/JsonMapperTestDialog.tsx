@@ -2,7 +2,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import React, { FunctionComponent, useState } from 'react';
 import DialogContent from '@mui/material/DialogContent';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Tooltip from '@mui/material/Tooltip';
 import { graphql } from 'react-relay';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
@@ -118,7 +118,6 @@ const JsonMapperTestDialog: FunctionComponent<JsonMapperTestDialogProps> = ({
           sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px' }}
         >
           <Button
-            variant="contained"
             color="secondary"
             disabled={!value || loading}
             onClick={onTest}

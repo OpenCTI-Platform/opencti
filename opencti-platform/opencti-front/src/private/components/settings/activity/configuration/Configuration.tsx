@@ -18,7 +18,7 @@ import * as R from 'ramda';
 import { Form, Formik } from 'formik';
 import { graphql, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import Grid from '@mui/material/Grid';
 import { Delete } from '@mui/icons-material';
@@ -244,7 +244,6 @@ const ConfigurationComponent: FunctionComponent<
                                   },
                                 });
                               }}
-                              size="large"
                             >
                               <Delete />
                             </IconButton>

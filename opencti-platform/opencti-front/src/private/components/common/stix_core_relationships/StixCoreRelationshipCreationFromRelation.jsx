@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
+import IconButton from '@common/button/IconButton';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import { Add, Close } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -355,7 +355,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     this.setState({ step: 1, targetEntity: stixDomainObject });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   renderFakeList() {
     return (
       <List>
@@ -412,7 +411,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
-            size="large"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
@@ -519,7 +517,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                   aria-label="Close"
                   className={classes.closeButton}
                   onClick={this.handleClose.bind(this)}
-                  size="large"
                 >
                   <Close fontSize="small" color="primary" />
                 </IconButton>
@@ -540,7 +537,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     );
   }
 
-  // eslint-disable-next-line
   renderLoader() {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -564,13 +560,13 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       <div>
         {variant === 'inLine' ? (
           <IconButton
-            color="primary"
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
-            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-            size="large"
+            style={{ float: 'left', margin: '-6px 0 10px 4px' }}
+            size="small"
+            variant="tertiary"
           >
-            <Add fontSize="small" />
+            <Add />
           </IconButton>
         ) : (
           <Fab

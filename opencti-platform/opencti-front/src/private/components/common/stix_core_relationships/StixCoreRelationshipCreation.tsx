@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
@@ -392,7 +392,7 @@ const StixCoreRelationshipCreation = ({
           objectMarking: values.objectMarking.map((k) => k.value),
           externalReferences: values.externalReferences.map((k) => k.value),
         };
-        // eslint-disable-next-line no-await-in-loop
+
         latestResponse = await handleCommitAddRelation(finalValues);
         handleResult(latestResponse as ObjectToParse);
         current += 1;
@@ -434,7 +434,6 @@ const StixCoreRelationshipCreation = ({
                   aria-label="Close"
                   className={classes.closeButton}
                   onClick={handleClose}
-                  size="large"
                 >
                   <Close fontSize="small" color="primary" />
                 </IconButton>
@@ -469,7 +468,6 @@ const StixCoreRelationshipCreation = ({
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
-            size="large"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>

@@ -1,7 +1,7 @@
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent } from 'react';
 import { OpenInNewOutlined } from '@mui/icons-material';
@@ -55,8 +55,8 @@ const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
-        <Button color="secondary" onClick={handleBrowseExternalLink}>
+        <Button variant="secondary" onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
+        <Button onClick={handleBrowseExternalLink}>
           {t_i18n('Browse the link')}
           <OpenInNewOutlined fontSize="small" sx={{ marginLeft: '2px' }} />
         </Button>

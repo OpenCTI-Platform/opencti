@@ -6,7 +6,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Slide from '@mui/material/Slide';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -134,7 +134,6 @@ class StixDomainObjectDetectDuplicate extends Component {
                         <IconButton
                           component={Link}
                           to={`${link}/${element.node.id}`}
-                          size="large"
                         >
                           <VisibilityOutlined />
                         </IconButton>

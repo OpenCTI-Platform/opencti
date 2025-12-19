@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import CreatorField from '@components/common/form/CreatorField';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -162,18 +162,16 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
               </DialogContent>
               <DialogActions>
                 <Button
+                  variant="secondary"
                   onClick={() => {
-                    setOpenDialog(false);
-                    resetForm();
+                    setOpenDialog(false); resetForm();
                   }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  color="secondary"
-                  onClick={() => {
-                    submitForm();
-                  }}
+                <Button onClick={() => {
+                  submitForm();
+                }}
                 >
                   {t_i18n('Confirm')}
                 </Button>

@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -142,8 +142,7 @@ const SupportPackages = () => {
           <Button
             onClick={generateSupportPackage}
             size="small"
-            variant="outlined"
-            color="primary"
+            variant="secondary"
             disabled={disabledInDraft}
           >
             {t_i18n('Generate Support Package')}

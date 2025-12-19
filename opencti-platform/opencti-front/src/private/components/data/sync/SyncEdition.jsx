@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import { CheckCircleOutlined, WarningOutlined } from '@mui/icons-material';
 import * as Yup from 'yup';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
@@ -298,7 +298,6 @@ const SyncEditionContainer = ({ synchronizer }) => {
           </Accordion>
           <div className={classes.buttons}>
             <Button
-              variant="contained"
               color="secondary"
               onClick={() => handleVerify(values)}
               classes={{ root: classes.button }}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRightAlt } from '@mui/icons-material';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { Field, Form, Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
@@ -205,9 +205,8 @@ const StixSightingRelationshipCreationForm = ({
                 <br />
                 {typeof handleReverseRelation === 'function' && (
                   <Button
-                    variant="outlined"
+                    variant="secondary"
                     onClick={handleReverseRelation}
-                    color="primary"
                     size="small"
                   >
                     {t_i18n('Reverse')}
@@ -331,7 +330,7 @@ const StixSightingRelationshipCreationForm = ({
             {typeof handleResetSelection === 'function' && (
               <div className={classes.buttonBack}>
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleResetSelection}
                   disabled={isSubmitting}
                 >
@@ -341,7 +340,7 @@ const StixSightingRelationshipCreationForm = ({
             )}
             <div className={classes.buttons}>
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
@@ -349,8 +348,6 @@ const StixSightingRelationshipCreationForm = ({
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}

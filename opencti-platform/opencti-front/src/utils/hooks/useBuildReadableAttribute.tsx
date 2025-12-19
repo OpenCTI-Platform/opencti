@@ -29,7 +29,6 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
       breaks: true,
       walkTokens: (token) => {
         if (token.type === 'text' && inTable) {
-          // eslint-disable-next-line no-param-reassign
           token.text = stringWithZeroWidthSpace(token.text);
         }
       },

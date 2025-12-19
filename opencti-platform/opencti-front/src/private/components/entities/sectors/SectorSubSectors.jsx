@@ -1,7 +1,7 @@
 import React from 'react';
 import { filter } from 'ramda';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Domain, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { AutoFix } from 'mdi-material-ui';
@@ -67,7 +67,6 @@ const SectorSubSectorsComponent = ({ sector }) => {
                 <IconButton
                   aria-label="Remove"
                   onClick={() => removeSubSector(subSectorEdge)}
-                  size="large"
                 >
                   <LinkOff />
                 </IconButton>

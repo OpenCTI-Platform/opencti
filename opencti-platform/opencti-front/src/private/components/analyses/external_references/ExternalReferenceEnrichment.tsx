@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { CloudRefreshOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { ExternalReferenceEnrichmentLinesQuery$data } from './__generated__/ExternalReferenceEnrichmentLinesQuery.graphql';
@@ -25,7 +25,8 @@ const ExternalReferenceEnrichment: FunctionComponent<ExternalReferenceEnrichment
           onClick={() => setOpen(true)}
           color="primary"
           aria-label="Refresh"
-          size="large"
+          size="small"
+          variant="tertiary"
         >
           <CloudRefreshOutline />
         </IconButton>

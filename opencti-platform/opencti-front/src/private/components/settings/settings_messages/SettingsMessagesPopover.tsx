@@ -1,4 +1,4 @@
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -69,7 +69,7 @@ const SettingsMessagesPopover = ({
 
   return (
     <div>
-      <IconButton onClick={handleOpen} aria-haspopup="true" size="large" color="primary">
+      <IconButton onClick={handleOpen} aria-haspopup="true" color="primary">
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

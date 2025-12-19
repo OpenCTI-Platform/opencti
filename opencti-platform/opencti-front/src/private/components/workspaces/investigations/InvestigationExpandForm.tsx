@@ -2,7 +2,7 @@ import { Field, Form, Formik } from 'formik';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import React, { Suspense, useEffect, useState } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
@@ -403,11 +403,10 @@ const InvestigationExpandFormContent = ({
           </DialogContent>
 
           <DialogActions>
-            <Button onClick={handleReset} disabled={isSubmitting}>
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
             >

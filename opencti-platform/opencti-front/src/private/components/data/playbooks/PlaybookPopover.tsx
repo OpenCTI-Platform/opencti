@@ -17,7 +17,7 @@ import React, { useState, UIEvent } from 'react';
 import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import ToggleButton from '@mui/material/ToggleButton';
 import { useNavigate } from 'react-router-dom';
@@ -179,7 +179,7 @@ const PlaybookPopover = ({
         aria-haspopup="true"
         value="popover"
         color="primary"
-        size={paginationOptions ? 'medium' : 'small'}
+        // size={paginationOptions ? 'medium' : 'small'}
       >
         {paginationOptions
           ? <MoreVert />

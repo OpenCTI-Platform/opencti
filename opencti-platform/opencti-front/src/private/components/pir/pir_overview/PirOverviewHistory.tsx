@@ -121,7 +121,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
               >
                 <Tooltip title={t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''))}>
                   <div>
-                    <ItemIcon size="large" type={context_data?.entity_type} />
+                    <ItemIcon type={context_data?.entity_type} />
                   </div>
                 </Tooltip>
                 <div>

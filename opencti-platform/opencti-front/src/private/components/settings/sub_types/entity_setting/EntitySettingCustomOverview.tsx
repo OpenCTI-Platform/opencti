@@ -4,7 +4,7 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import { RestartAlt } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { useFragment } from 'react-relay';
 import { useTheme } from '@mui/styles';

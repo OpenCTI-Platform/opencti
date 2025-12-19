@@ -46,7 +46,6 @@ const useFileFromTemplate = () => {
       // attribute widgets
       if (widget.type === 'attribute') {
         try {
-          // eslint-disable-next-line no-await-in-loop
           const attributesOutcomes = await buildAttributesOutcome(
             containerId,
             widget.dataSelection[0],
@@ -63,7 +62,6 @@ const useFileFromTemplate = () => {
         const filters = buildFiltersForTemplateWidgets(widget.dataSelection[0]?.filters ?? undefined, containerId, maxContentMarkings);
         try {
           if (widget.type === 'list') {
-            // eslint-disable-next-line no-await-in-loop
             outcome = await buildListOutcome(
               {
                 ...widget.dataSelection[0],
@@ -73,7 +71,7 @@ const useFileFromTemplate = () => {
             );
           } else if (widget.type === 'donut') {
             const { dynamicFrom, dynamicTo } = widget.dataSelection[0];
-            // eslint-disable-next-line no-await-in-loop
+
             outcome = await buildDonutOutcome({
               ...widget.dataSelection[0],
               filters,

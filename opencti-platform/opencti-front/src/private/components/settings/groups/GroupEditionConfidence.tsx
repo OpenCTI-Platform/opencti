@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import ConfidenceOverrideField from '@components/settings/users/edition/ConfidenceOverrideField';
@@ -177,7 +177,6 @@ const GroupEditionConfidenceComponent: FunctionComponent<GroupEditionConfidenceP
                     aria-label="Add"
                     onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: group.group_confidence_level?.max_confidence })}
                     style={{ marginTop: '5px' }}
-                    size="large"
                     disabled={values.overrides.some((o) => o.entity_type === '')}
                   >
                     <Add fontSize="small" />

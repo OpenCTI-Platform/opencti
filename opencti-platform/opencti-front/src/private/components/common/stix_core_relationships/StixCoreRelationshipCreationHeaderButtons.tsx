@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
@@ -58,7 +58,6 @@ const StixCoreRelationshipCreationHeaderButtons: FunctionComponent<
       {showSCOs && (
         <Button
           onClick={handleOpenCreateObservable}
-          variant="contained"
           style={{ marginRight: '10px' }}
         >
           {t_i18n('Create an observable')}

@@ -158,7 +158,6 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
           onClick={handleOpen}
           aria-haspopup="true"
           data-testid={`${theme.name}-popover`}
-          size="large"
           color="primary"
         >
           <MoreVert />

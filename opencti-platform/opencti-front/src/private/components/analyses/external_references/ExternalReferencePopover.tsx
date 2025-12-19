@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { MoreVertOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -99,8 +99,8 @@ const ExternalReferencePopover: FunctionComponent<
           onClick={handleOpen}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
-          size="large"
-          color="primary"
+          size="small"
+          variant="tertiary"
         >
           <MoreVertOutlined />
         </IconButton>

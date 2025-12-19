@@ -2,12 +2,12 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { Field, FieldArray, Form, Formik, FormikConfig } from 'formik';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as R from 'ramda';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import { AddOutlined, Delete } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
@@ -257,7 +257,7 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
           />
           <div className={classes.buttons}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               classes={{ root: classes.button }}
@@ -265,8 +265,6 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
               classes={{ root: classes.button }}

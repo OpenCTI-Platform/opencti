@@ -103,7 +103,7 @@ const TextField = (props: TextFieldProps) => {
       value={value ?? ''}
       error={showError}
       helperText={
-        // eslint-disable-next-line no-nested-ternary
+
         detectDuplicate && !showError ? (
           <StixDomainObjectDetectDuplicate
             types={detectDuplicate}

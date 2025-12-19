@@ -1,7 +1,7 @@
 import React, { SyntheticEvent } from 'react';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { DeleteOutlined } from '@mui/icons-material';
 import { AutocompleteOptionType, SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { Autocomplete } from '@mui/material';

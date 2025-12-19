@@ -5,7 +5,7 @@ import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { LockPattern } from 'mdi-material-ui';
 import { LinkOff } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -80,7 +80,6 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
                   onClick={() => removeSubAttackPattern(
                     subAttackPattern,
                   )}
-                  size="large"
                 >
                   <LinkOff />
                 </IconButton>

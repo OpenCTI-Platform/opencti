@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Typography from '@mui/material/Typography';
 import { Close } from '@mui/icons-material';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -97,7 +97,6 @@ class StixCyberObservableAddIndicators extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={handleClose.bind(this)}
-              size="large"
               color="primary"
             >
               <Close fontSize="small" color="primary" />

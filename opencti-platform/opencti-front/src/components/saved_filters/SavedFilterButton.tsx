@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { SaveOutlined } from '@mui/icons-material';
 import { useFormatter } from 'src/components/i18n';
 import Tooltip from '@mui/material/Tooltip';

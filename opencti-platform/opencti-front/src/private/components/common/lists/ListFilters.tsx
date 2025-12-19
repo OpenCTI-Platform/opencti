@@ -1,7 +1,7 @@
 import React, { useState, SyntheticEvent, ReactNode } from 'react';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { FilterListOffOutlined, FilterListOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
@@ -127,7 +127,7 @@ const ListFilters = ({
             value: key,
             label: t_i18n(filterDefinition?.label ?? key),
             numberOfOccurences: subEntityTypes.length,
-            // eslint-disable-next-line no-nested-ternary
+
             groupLabel: isFilterKeyForAllTypes
               ? t_i18n('Most used filters')
               : t_i18n('All other filters'),
@@ -151,8 +151,6 @@ const ListFilters = ({
       {variant === 'text' ? (
         <Tooltip title={tooltip}>
           <Button
-            variant="contained"
-            color={color}
             onClick={handleOpenFilters}
             startIcon={icon}
             size="small"

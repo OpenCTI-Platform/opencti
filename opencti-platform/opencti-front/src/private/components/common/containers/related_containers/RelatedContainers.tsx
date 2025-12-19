@@ -2,7 +2,7 @@ import React, { useMemo, useState, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { NorthEastOutlined, LoupeOutlined } from '@mui/icons-material';
 import { VectorLink } from 'mdi-material-ui';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
@@ -221,7 +221,6 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
               color="primary"
               component={Link}
               to={`${resolveLink(selectedContainer?.entity_type)}/${selectedContainer?.id}`}
-              size="medium"
               style={{ position: 'absolute', right: 12 }}
             >
               <NorthEastOutlined />

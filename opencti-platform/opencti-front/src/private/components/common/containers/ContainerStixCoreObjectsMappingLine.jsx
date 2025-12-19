@@ -10,7 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -209,7 +209,7 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
       classes={{ root: classes.item }}
       divider={true}
       secondaryAction={(
-        <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true" size="large">
+        <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true">
           <MoreVert />
         </IconButton>
       )}

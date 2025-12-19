@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -89,7 +89,6 @@ class IndicatorAddObservables extends Component {
           color="primary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
-          size="large"
         >
           <Add fontSize="small" />
         </IconButton>
@@ -107,7 +106,6 @@ class IndicatorAddObservables extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large"
               color="primary"
             >
               <Close fontSize="small" color="primary" />

@@ -161,7 +161,7 @@ class StixDomainObjectTimelineComponent extends Component {
                       </Typography>
                       <span style={{ color: '#a8a8a8' }}>
                         {truncate(
-                          // eslint-disable-next-line no-nested-ternary
+
                           stixRelationship.description
                           && stixRelationship.description.length > 0
                             ? stixRelationship.description

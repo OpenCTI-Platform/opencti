@@ -8,7 +8,7 @@ import {
 import { StixCoreObjectHistoryLines_data$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLines_data.graphql';
 import List from '@mui/material/List';
 import StixCoreObjectHistoryLine from '@components/common/stix_core_objects/StixCoreObjectHistoryLine';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
@@ -107,7 +107,6 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                       <Tooltip title={t_i18n('Browse the link')}>
                         <IconButton
                           onClick={() => handleOpen(log)}
-                          size="large"
                           color="primary"
                         >
                         </IconButton>

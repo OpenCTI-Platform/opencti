@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid2';
 import { GetAppOutlined } from '@mui/icons-material';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Divider from '@mui/material/Divider';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -64,7 +64,7 @@ const DownloadFileButtonMenu = ({ file, encodedFilePath }) => {
       <Typography variant="h3" gutterBottom={true}>{t_i18n('File')}</Typography>
 
       <Button
-        variant="outlined"
+        variant="secondary"
         color="secondary"
         size="small"
         startIcon={<GetAppOutlined />}

@@ -1,14 +1,14 @@
 import { graphql, useQueryLoader } from 'react-relay';
 import React, { Dispatch, FunctionComponent, UIEvent, useState } from 'react';
 import { PopoverProps } from '@mui/material/Popover';
-import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import DialogActions from '@mui/material/DialogActions';
 import IngestionCsvEditionContainer, { ingestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/IngestionCsvEditionContainer';
 import { ingestionCsvEditionPatch } from '@components/data/ingestionCsv/IngestionCsvEdition';
@@ -210,8 +210,6 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           onClick={handleOpen}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
-          size="large"
-          color="primary"
         >
           <MoreVert />
         </IconButton>
@@ -291,13 +289,13 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={handleCloseResetState}
               disabled={resetting}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={submitResetState}
               disabled={resetting}
             >

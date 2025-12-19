@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 
 export default class TopMenuProfilePage {
-  constructor(private page:Page) {}
+  constructor(private page: Page) {}
 
   getMenuProfile() {
     return this.page.getByLabel('Profile');

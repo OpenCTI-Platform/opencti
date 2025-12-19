@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
@@ -83,7 +83,7 @@ const ThreatActorIndividualDetailsChips: FunctionComponent<
           nodes.map(({ id, to }) => (
             <Button
               key={id}
-              variant="outlined"
+              variant="secondary"
               size="small"
               href={`${path}/${to?.id}`}
               style={{ margin: '0 5px 5px 0' }}

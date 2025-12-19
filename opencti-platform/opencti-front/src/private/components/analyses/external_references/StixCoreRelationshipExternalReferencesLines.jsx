@@ -9,7 +9,8 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -19,9 +20,8 @@ import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -228,15 +228,15 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                           dense={true}
                           divider={true}
                           secondaryAction={(
-                            <>
+                            <Stack direction="row" gap={1}>
                               <Tooltip title={t('Browse the link')}>
                                 <IconButton
                                   onClick={this.handleOpenExternalLink.bind(
                                     this,
                                     externalReference.url,
                                   )}
-                                  color="primary"
-                                  size="large"
+                                  size="small"
+                                  variant="tertiary"
                                 >
                                   <OpenInBrowserOutlined />
                                 </IconButton>
@@ -269,7 +269,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                                   variant="inLine"
                                 />
                               </Security>
-                            </>
+                            </Stack>
                           )}
                         >
                           <ListItemButton
@@ -313,7 +313,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                                 entityId={externalReference.id}
                                 onUploadSuccess={() => this.props.relay.refetchConnection(200)
                                 }
-                                color="inherit"
+                                // color="inherit"
                               />
                             </Security>
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -377,18 +377,17 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
             </div>
           )}
           {expandable && (
-            <Button
-              variant="contained"
+            <IconButton
               size="small"
               onClick={this.handleToggleExpand.bind(this)}
               classes={{ root: classes.buttonExpand }}
             >
               {expanded ? (
-                <ExpandLessOutlined fontSize="small" />
+                <ExpandLessOutlined />
               ) : (
-                <ExpandMoreOutlined fontSize="small" />
+                <ExpandMoreOutlined />
               )}
-            </Button>
+            </IconButton>
           )}
         </Paper>
         <Dialog
@@ -408,13 +407,13 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={this.handleCloseDialog.bind(this)}
               disabled={this.state.removing}
             >
               {t('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={this.handleRemoval.bind(this)}
               disabled={this.state.removing}
             >
@@ -435,12 +434,11 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseExternalLink.bind(this)}>
+            <Button variant="secondary" onClick={this.handleCloseExternalLink.bind(this)}>
               {t('Cancel')}
             </Button>
             <Button
               button={true}
-              color="secondary"
               onClick={this.handleBrowseExternalLink.bind(this)}
             >
               {t('Browse the link')}

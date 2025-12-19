@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
@@ -388,7 +388,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
           />
           <div className={classes.buttons}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               classes={{ root: classes.button }}
@@ -396,8 +396,6 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
               classes={{ root: classes.button }}

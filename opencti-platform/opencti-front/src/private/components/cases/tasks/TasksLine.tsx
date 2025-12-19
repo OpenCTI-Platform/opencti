@@ -105,7 +105,7 @@ export const tasksDataColumns: DataColumns = {
     label: 'Assignees',
     width: '18%',
     isSortable: true,
-    // eslint-disable-next-line @typescript-eslint/no-shadow
+
     render: (task: TasksLine_node$data) => ((task.objectAssignee ?? []).length > 0
       ? (task.objectAssignee ?? []).map((node) => node.name).join(', ')
       : '-'),

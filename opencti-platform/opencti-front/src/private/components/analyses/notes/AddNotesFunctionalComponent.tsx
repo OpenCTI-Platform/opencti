@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton } from '@mui/material';
+import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from 'src/components/i18n';
@@ -86,9 +87,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
             />
             <Button
               onClick={handleDialogOpen}
-              color="primary"
               size="small"
-              variant="contained"
               sx={{
                 marginLeft: '10px',
                 padding: '7px 10px',

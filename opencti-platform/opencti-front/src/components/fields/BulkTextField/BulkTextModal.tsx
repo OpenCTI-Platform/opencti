@@ -1,5 +1,6 @@
-import { DialogTitle, DialogContent, Alert, Dialog, DialogActions, TextField, Button, Typography, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { DialogTitle, DialogContent, Alert, Dialog, DialogActions, TextField, Typography, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../i18n';
 import { splitMultilines } from '../../../utils/String';
 
@@ -100,11 +101,10 @@ const BulkTextModal = ({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={close}>
+        <Button variant="secondary" onClick={close}>
           {t_i18n('Cancel')}
         </Button>
         <Button
-          color="secondary"
           onClick={validate}
           disabled={nbLines === 0 || nbLines > MAX_LINES || (availableKeys && !selectedKey)}
         >

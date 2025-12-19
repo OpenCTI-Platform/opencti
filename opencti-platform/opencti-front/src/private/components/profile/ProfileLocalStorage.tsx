@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Typography from '@mui/material/Typography';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -42,8 +42,6 @@ const ProfileLocalStorage: React.FC = () => {
         </Alert>
         <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
           <Button
-            variant="contained"
-            color="primary"
             onClick={() => setDisplayConfirmation(true)}
           >
             {t_i18n('Clear local storage')}
@@ -76,12 +74,12 @@ const ProfileLocalStorage: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={() => setDisplayConfirmation(false)}
           >
             {t_i18n('Cancel')}
           </Button>
           <Button
-            color="secondary"
             onClick={() => {
               localStorage.clear();
               setDisplayConfirmation(false);

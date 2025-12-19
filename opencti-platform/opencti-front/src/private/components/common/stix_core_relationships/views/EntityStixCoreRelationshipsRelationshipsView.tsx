@@ -274,7 +274,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       >
         <QueryRenderer
           query={
-            // eslint-disable-next-line no-nested-ternary
+
             allDirections
               ? entityStixCoreRelationshipsLinesAllQuery
               : isRelationReversed
@@ -283,7 +283,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
           }
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }: { props: unknown }) =>
-            /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
+
             (allDirections ? (
               <EntityStixCoreRelationshipsLinesAll
                 data={props}

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { Link } from 'react-router-dom';
 import { Handle, Position } from 'reactflow';
 import { useFormatter } from 'src/components/i18n';
@@ -47,7 +47,6 @@ const NodeContainer: FunctionComponent<NodeContainerProps> = ({
       <Button
         component={Link}
         to={link}
-        variant="contained"
         size="small"
         sx={{
           position: 'absolute',

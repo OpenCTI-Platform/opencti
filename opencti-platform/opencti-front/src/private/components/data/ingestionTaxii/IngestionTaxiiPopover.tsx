@@ -2,8 +2,8 @@ import React, { Dispatch, FunctionComponent, Suspense, useState } from 'react';
 import { graphql, useQueryLoader } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -176,7 +176,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}
-        size="large"
         color="primary"
       >
         <MoreVert />
@@ -234,13 +233,13 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={handleCloseResetState}
             disabled={resettingState}
           >
             {t_i18n('Cancel')}
           </Button>
           <Button
-            color="secondary"
             onClick={submitResetState}
             disabled={resettingState}
           >
@@ -262,6 +261,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={handleCloseStart}
             disabled={starting}
           >
@@ -269,7 +269,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
           </Button>
           <Button
             onClick={submitStart}
-            color="secondary"
             disabled={starting}
           >
             {t_i18n('Start')}
@@ -290,6 +289,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={handleCloseStop}
             disabled={stopping}
           >
@@ -297,7 +297,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
           </Button>
           <Button
             onClick={submitStop}
-            color="secondary"
             disabled={stopping}
           >
             {t_i18n('Stop')}

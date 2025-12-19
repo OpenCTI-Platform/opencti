@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -397,7 +397,6 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                     <IconButton
                       onClick={this.handleToggleLine.bind(this, sector.id)}
                       aria-haspopup="true"
-                      size="large"
                     >
                       {this.state.expandedLines[sector.id] === true ? (
                         <ExpandLess />
@@ -465,7 +464,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                 )
                               }
                               secondary={
-                              // eslint-disable-next-line no-nested-ternary
+
                                 stixCoreRelationship.description
                                 && stixCoreRelationship.description.length > 0 ? (
                                       <MarkdownDisplay
@@ -508,7 +507,6 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                   subsector.id,
                                 )}
                                 aria-haspopup="true"
-                                size="large"
                               >
                                 {this.state.expandedLines[subsector.id]
                                   === true ? (
@@ -603,7 +601,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                                 )
                                           }
                                           secondary={
-                                          // eslint-disable-next-line no-nested-ternary
+
                                             stixCoreRelationship.description
                                             && stixCoreRelationship.description
                                               .length > 0 ? (

@@ -11,8 +11,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { ListItem, ListItemButton } from '@mui/material';
@@ -142,7 +142,6 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
           color="primary"
           onClick={handleOpenAddOrCreateIndicatorMenu}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large"
         >
           <Add fontSize="small" />
         </IconButton>
@@ -220,6 +219,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={handleCloseCreateIndicatorMenu}
             disabled={isCreatingIndicator}
           >
@@ -227,7 +227,6 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
           </Button>
           <Button
             onClick={submitPromoteStix}
-            color="secondary"
             disabled={isCreatingIndicator}
           >
             {t_i18n('Create')}

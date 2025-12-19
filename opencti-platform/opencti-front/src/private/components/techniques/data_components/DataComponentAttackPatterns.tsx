@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { LockPattern } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
@@ -82,7 +82,6 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{
                     <IconButton
                       aria-label="Remove"
                       onClick={() => removeAttackPattern(attackPattern.id)}
-                      size="large"
                     >
                       <LinkOff />
                     </IconButton>

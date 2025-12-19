@@ -1,7 +1,7 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { TextField } from 'formik-mui';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
@@ -172,8 +172,6 @@ const VocabularyEdition = ({
           />
           <div className={classes.buttons}>
             <Button
-              variant="contained"
-              color="primary"
               onClick={submitForm}
               disabled={isSubmitting || !isValid}
               classes={{ root: classes.button }}

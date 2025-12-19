@@ -16,7 +16,7 @@ import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart'
 import { useFormatter } from '../../../../components/i18n';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 
 interface DecayDialogContentProps {
   indicator: IndicatorDetails_indicator$data;

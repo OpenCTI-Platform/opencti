@@ -6,7 +6,7 @@ import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { SpeakerNotesOutlined, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { ListItemButton } from '@mui/material';
@@ -70,7 +70,6 @@ class NarrativeSubNarrativesComponent extends Component {
                       this,
                       subNarrativeEdge,
                     )}
-                    size="large"
                   >
                     <LinkOff />
                   </IconButton>

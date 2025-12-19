@@ -6,7 +6,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { AutoModeOutlined, ContentCopyOutlined, HistoryOutlined } from '@mui/icons-material';
 import { AISummaryActivityStixCoreObjectAskAiActivityQuery$data } from '@components/common/ai/__generated__/AISummaryActivityStixCoreObjectAskAiActivityQuery.graphql';
 import Tooltip from '@mui/material/Tooltip';

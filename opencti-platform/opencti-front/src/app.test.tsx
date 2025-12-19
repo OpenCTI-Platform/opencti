@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import React from 'react';
 import { act, cleanup, render } from '@testing-library/react';
 import { OperationDescriptor, RelayEnvironmentProvider } from 'react-relay/hooks';

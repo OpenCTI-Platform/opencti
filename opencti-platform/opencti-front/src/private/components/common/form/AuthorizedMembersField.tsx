@@ -4,7 +4,7 @@ import ObjectMembersField, { OptionMember } from '@components/common/form/Object
 import FormHelperText from '@mui/material/FormHelperText';
 import { Field, FieldArray, FieldProps, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import React, { CSSProperties, useEffect, useState } from 'react';
@@ -433,7 +433,6 @@ const AuthorizedMembersField = ({
                     ))}
                   </Field>
                   <Button
-                    color="primary"
                     aria-label="More"
                     onClick={() => handleSubmit()}
                     disabled={

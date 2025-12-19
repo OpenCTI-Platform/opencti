@@ -1,4 +1,5 @@
-import { Box, Button, Tooltip } from '@mui/material';
+import Button from '@common/button/Button';
+import { Box, Tooltip } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import React from 'react';
@@ -71,8 +72,6 @@ const StixSightingRelationshipHeader = ({
         {canEdit && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <Button
-              variant="contained"
-              size="medium"
               aria-label={t_i18n('Update')}
               onClick={onOpenEdit}
               style={{ marginLeft: theme.spacing(0.5) }}

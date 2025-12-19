@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { useCookies } from 'react-cookie';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { Facebook, Github, Google, KeyOutline } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
@@ -173,8 +173,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
         <Button
           key={`${value.provider}_${index}`}
           type="submit"
-          variant="outlined"
-          size="small"
+          variant="secondary"
           component="a"
           href={`${APP_BASE_PATH}/auth/${value.provider}`}
           className={renderExternalAuthClassName(value.provider)}

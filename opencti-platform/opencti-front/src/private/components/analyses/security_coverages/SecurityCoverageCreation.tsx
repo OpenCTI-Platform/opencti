@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -589,7 +589,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
             </Box>
             <div className={classes.buttons} style={{ marginTop: 20 }}>
               <Button
-                variant="contained"
                 onClick={handleClose}
                 classes={{ root: classes.button }}
               >
@@ -792,7 +791,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
             />
             <div className={classes.buttons}>
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleClose}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
@@ -800,8 +799,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 type="submit"
                 disabled={isSubmitting || !values.name || (mode === 'manual' && (!values.coverage_information || values.coverage_information.length === 0))}
                 classes={{ root: classes.button }}

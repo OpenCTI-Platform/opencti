@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import { ArrowRightAlt } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import SelectField from '../../../../components/fields/SelectField';
@@ -153,7 +153,6 @@ const StixCoreRelationshipCreationForm = ({
   const isMultipleFrom = fromEntities.length > 1;
   const isMultipleTo = toEntities.length > 1;
 
-  // eslint-disable-next-line no-nested-ternary
   const defaultRelationshipType = R.head(relationshipTypes)
     ? R.head(relationshipTypes)
     : relationshipTypes.includes('related-to')
@@ -229,9 +228,8 @@ const StixCoreRelationshipCreationForm = ({
                 <br />
                 {typeof handleReverseRelation === 'function' && (
                   <Button
-                    variant="outlined"
+                    variant="secaondary"
                     onClick={handleReverseRelation}
-                    color="primary"
                     size="small"
                   >
                     {t_i18n('Reverse')}
@@ -357,7 +355,6 @@ const StixCoreRelationshipCreationForm = ({
             {typeof handleResetSelection === 'function' && (
               <div className={classes.buttonBack}>
                 <Button
-                  variant="contained"
                   onClick={handleResetSelection}
                   disabled={isSubmitting}
                 >
@@ -367,7 +364,6 @@ const StixCoreRelationshipCreationForm = ({
             )}
             <div className={classes.buttons}>
               <Button
-                variant="contained"
                 onClick={handleClose}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
@@ -375,8 +371,7 @@ const StixCoreRelationshipCreationForm = ({
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
+                // color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}

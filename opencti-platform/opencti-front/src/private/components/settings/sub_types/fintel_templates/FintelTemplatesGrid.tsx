@@ -5,7 +5,7 @@ import React, { BaseSyntheticEvent, useRef, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { Add as AddIcon, CloudUploadOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { graphql, useFragment } from 'react-relay';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';

@@ -2,7 +2,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { UIEvent } from 'react';
 import { playbookMutationFieldPatch } from '@components/data/playbooks/PlaybookEditionForm';
@@ -61,10 +61,10 @@ const PlaybookPopoverToggleDialog = ({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={close} disabled={commiting}>
+        <Button variant="secondary" onClick={close} disabled={commiting}>
           {t_i18n('Cancel')}
         </Button>
-        <Button onClick={submit} color="secondary" disabled={commiting}>
+        <Button onClick={submit} disabled={commiting}>
           {t_i18n('Confirm')}
         </Button>
       </DialogActions>

@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import { Add, Close, Delete } from '@mui/icons-material';
@@ -11,7 +11,7 @@ import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -842,7 +842,6 @@ const StixDomainObjectHeader = (props) => {
                             ? () => handleOpenCommitDelete(label)
                             : () => deleteAlias(label)
                         }
-                        size="large"
                       >
                         <Delete />
                       </IconButton>
@@ -905,7 +904,7 @@ const StixDomainObjectHeader = (props) => {
             </div>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleToggleOpenAliases} color="primary">
+            <Button onClick={handleToggleOpenAliases}>
               {t_i18n('Close')}
             </Button>
           </DialogActions>

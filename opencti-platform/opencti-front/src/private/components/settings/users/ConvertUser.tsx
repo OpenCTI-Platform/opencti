@@ -4,7 +4,7 @@ import Alert from '@mui/material/Alert';
 import { DialogTitle } from '@mui/material';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { graphql } from 'react-relay';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useTheme } from '@mui/styles';
@@ -84,8 +84,7 @@ const ConvertUser: FunctionComponent<ConvertUserProps> = ({ userId, userServiceA
   return (
     <div>
       <Button
-        variant="outlined"
-        size="medium"
+        variant="secondary"
         onClick={() => setOpenDialog(true)}
         value="convert-user"
       >
@@ -119,6 +118,7 @@ const ConvertUser: FunctionComponent<ConvertUserProps> = ({ userId, userServiceA
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={() => {
               handleClose();
             }}
@@ -126,7 +126,6 @@ const ConvertUser: FunctionComponent<ConvertUserProps> = ({ userId, userServiceA
             {t_i18n('Cancel')}
           </Button>
           <Button
-            color="secondary"
             onClick={onSubmit}
           >
             {t_i18n('Convert')}

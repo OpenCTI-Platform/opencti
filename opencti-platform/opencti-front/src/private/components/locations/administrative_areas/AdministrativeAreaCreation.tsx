@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
@@ -301,7 +301,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
             }}
             >
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
                 sx={{ marginLeft: 2 }}
@@ -309,8 +309,6 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 sx={{ marginLeft: 2 }}

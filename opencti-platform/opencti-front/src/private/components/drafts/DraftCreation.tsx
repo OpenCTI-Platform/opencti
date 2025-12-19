@@ -1,7 +1,7 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { DraftCreationMutation, DraftCreationMutation$variables } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
@@ -129,7 +129,7 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
           </div>
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               style={{ marginLeft: 10 }}
@@ -137,8 +137,6 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
               style={{ marginLeft: 10 }}

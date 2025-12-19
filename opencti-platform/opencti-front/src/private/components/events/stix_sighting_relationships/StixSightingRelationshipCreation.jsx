@@ -6,7 +6,7 @@ import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
@@ -365,7 +365,6 @@ class StixSightingRelationshipCreation extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
-            size="large"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
@@ -397,7 +396,6 @@ class StixSightingRelationshipCreation extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
-            size="large"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
@@ -608,7 +606,6 @@ class StixSightingRelationshipCreation extends Component {
     );
   }
 
-  // eslint-disable-next-line
   renderLoader() {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>

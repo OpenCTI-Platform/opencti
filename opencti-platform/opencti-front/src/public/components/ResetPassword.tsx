@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { Alert, AlertProps, Button } from '@mui/material';
+import { Alert, AlertProps } from '@mui/material';
+import Button from '@common/button/Button';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
@@ -271,8 +272,6 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
                 />
                 <Button
                   type="submit"
-                  variant="contained"
-                  color="primary"
                   disabled={isSubmitting || !isValid || resendCodeDisabled}
                   style={{ marginTop: theme.spacing(3) }}
                 >
@@ -316,8 +315,6 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
               />
               <Button
                 type="submit"
-                variant="contained"
-                color="primary"
                 disabled={isSubmitting || !isValid}
                 style={{ marginTop: theme.spacing(3) }}
               >
@@ -370,8 +367,6 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
               />
               <Button
                 type="submit"
-                variant="contained"
-                color="primary"
                 disabled={isSubmitting || !isValid}
                 style={{ marginTop: theme.spacing(3) }}
               >

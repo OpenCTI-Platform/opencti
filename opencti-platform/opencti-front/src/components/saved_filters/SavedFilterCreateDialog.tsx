@@ -2,7 +2,7 @@ import React, { useState, ChangeEvent } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import { useFormatter } from 'src/components/i18n';
 import TextField from '@mui/material/TextField';
@@ -101,8 +101,8 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>{t_i18n('Cancel')}</Button>
-        <Button onClick={handleSubmitSaveFilter} disabled={!filterName} color="secondary">{t_i18n('Save')}</Button>
+        <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
+        <Button onClick={handleSubmitSaveFilter} disabled={!filterName}>{t_i18n('Save')}</Button>
       </DialogActions>
     </Dialog>
   );

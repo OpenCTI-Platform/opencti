@@ -2,13 +2,13 @@ import React, { FunctionComponent, useState } from 'react';
 import { Badge, Tooltip } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { indigo } from '@mui/material/colors';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import DialogActions from '@mui/material/DialogActions';
 import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
 import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from '@components/profile/__generated__/NotificationsLinesPaginationQuery.graphql';
@@ -449,12 +449,11 @@ const Notifications: FunctionComponent = () => {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDelete}>
+            <Button variant="secondary" onClick={handleCloseDelete}>
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={() => handleDelete(notificationToDelete.id)}
-              color="secondary"
             >
               {t_i18n('Delete')}
             </Button>

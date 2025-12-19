@@ -273,7 +273,6 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               color="secondary"
               aria-label="Add"
               onClick={addTickRow}
-              size="large"
               classes={{ root: classes.createButton }}
             >
               <Add fontSize="small" />

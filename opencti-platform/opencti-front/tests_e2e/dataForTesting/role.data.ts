@@ -27,8 +27,8 @@ export const getRoles = () => `
 `;
 
 interface AddRoleInput {
-  name: string
-  capabilities?: string[]
+  name: string;
+  capabilities?: string[];
 }
 
 const addRole = (input: AddRoleInput) => `

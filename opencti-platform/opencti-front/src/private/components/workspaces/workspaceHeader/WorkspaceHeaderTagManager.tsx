@@ -1,4 +1,4 @@
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { CloseOutlined, Delete, AddOutlined } from '@mui/icons-material';
@@ -20,7 +20,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Chip from '@mui/material/Chip';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from 'src/utils/hooks/useGranted';
 import Security from 'src/utils/Security';
@@ -92,7 +92,6 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
               color="primary"
               aria-label="More"
               onClick={toggleTagDialog}
-              size="medium"
             >
               <DotsHorizontalCircleOutline fontSize="small" />
             </IconButton>
@@ -102,7 +101,6 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                 color="primary"
                 aria-label="Add tag"
                 onClick={toggleTagInput}
-                size="medium"
               >
                 {isTagInputOpen ? (
                   <CloseOutlined fontSize="small" />
@@ -178,10 +176,9 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                       <ListItemText primary={label} />
                       <ListItemSecondaryAction>
                         <IconButton
-                          edge="end"
+                        // edge="end"
                           aria-label="delete"
                           onClick={deleteTag(label)}
-                          size="large"
                         >
                           <Delete />
                         </IconButton>

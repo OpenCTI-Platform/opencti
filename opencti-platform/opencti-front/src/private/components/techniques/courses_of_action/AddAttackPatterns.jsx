@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
@@ -50,7 +50,6 @@ class AddAttackPatterns extends Component {
           aria-label="Attack Pattern"
           onClick={this.handleOpen.bind(this)}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large"
         >
           <Add fontSize="small" />
         </IconButton>

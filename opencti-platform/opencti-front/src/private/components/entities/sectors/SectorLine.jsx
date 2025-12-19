@@ -92,7 +92,7 @@ class SectorLineComponent extends Component {
           <List style={{ margin: 0, padding: 0 }}>
             {map(
               (subSector) => (
-                // eslint-disable-next-line @typescript-eslint/no-use-before-define
+
                 <SectorLine
                   key={subSector.id}
                   node={subSector}

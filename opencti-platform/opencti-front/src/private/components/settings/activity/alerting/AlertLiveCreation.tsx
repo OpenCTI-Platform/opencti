@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Close } from '@mui/icons-material';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
@@ -243,7 +242,6 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
-            size="large"
             color="primary"
           >
             <Close fontSize="small" color="primary" />
@@ -268,7 +266,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
                 {liveFields(setFieldValue, values)}
                 <div className={classes.buttons}>
                   <Button
-                    variant="contained"
+                    variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
@@ -276,8 +274,6 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
-                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
@@ -311,10 +307,10 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
             <DialogTitle>{t_i18n('Create a live activity trigger')}</DialogTitle>
             <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
             <DialogActions classes={{ root: classes.dialogActions }}>
-              <Button onClick={handleReset} disabled={isSubmitting}>
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </DialogActions>

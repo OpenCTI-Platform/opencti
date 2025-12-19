@@ -1,5 +1,5 @@
 import { DialogContent } from '@mui/material';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -181,6 +181,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
               </DialogContent>
               <DialogActions>
                 <Button
+                  variant="secondary"
                   onClick={() => {
                     handleReset();
                     setOpenCreation(false);
@@ -190,7 +191,6 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                 >

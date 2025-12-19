@@ -11,7 +11,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ArchitectureOutlined, CheckCircleOutlined, DeleteOutlined, WarningOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Slide from '@mui/material/Slide';
 import { useNavigate } from 'react-router-dom';

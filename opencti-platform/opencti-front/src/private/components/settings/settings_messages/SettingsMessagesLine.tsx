@@ -6,7 +6,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Box from '@mui/material/Box';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { DataColumns } from '../../../../components/list_lines';
@@ -109,7 +109,7 @@ export const SettingsMessagesLineDummy = ({
       classes={{ root: classes.item }}
       secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <IconButton disabled={true} aria-haspopup="true" size="large">
+          <IconButton disabled={true} aria-haspopup="true">
             <MoreVert />
           </IconButton>
         </Box>

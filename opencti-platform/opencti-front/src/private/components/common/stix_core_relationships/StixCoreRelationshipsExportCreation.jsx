@@ -6,7 +6,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Slide from '@mui/material/Slide';
 import { Add, InfoOutlined } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -136,7 +136,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
       R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
     );
     const exportConnsPerFormat = scopesConn(connectorsExport);
-    // eslint-disable-next-line max-len
+
     const isExportActive = (format) => exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
     const isExportPossible = exportScopes.filter((x) => isExportActive(x)).length > 0;
     return (
@@ -244,11 +244,10 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                               }}
                             />
                             <DialogActions>
-                              <Button onClick={handleReset} disabled={isSubmitting}>
+                              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                                 {t('Cancel')}
                               </Button>
                               <Button
-                                color="secondary"
                                 onClick={submitForm}
                                 disabled={isSubmitting}
                               >

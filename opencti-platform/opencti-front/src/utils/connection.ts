@@ -4,7 +4,6 @@ type Connection<T> = {
   } | null | undefined> | null | undefined;
 } | null | undefined;
 
-// eslint-disable-next-line import/prefer-default-export
 export function getNodes<T>(data?: Connection<T>) {
   return (data?.edges ?? []).flatMap((e) => {
     if (!e?.node) return [];

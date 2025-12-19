@@ -41,7 +41,7 @@ export default class DraftsPage {
     return this.page.getByTestId('draft-creation-form');
   }
 
-  async createDraft({ name = 'E2E Test Draft', authorizedMembers = [] }: { name?: string; authorizedMembers: Array<{ name: string, permission: AccessLevelLocator }> }) {
+  async createDraft({ name = 'E2E Test Draft', authorizedMembers = [] }: { name?: string; authorizedMembers: Array<{ name: string; permission: AccessLevelLocator }> }) {
     await this.navigate();
     await this.getCreateDraftButton().click();
     const createDraftDrawer = this.getCreateDraftDrawer();
@@ -50,7 +50,6 @@ export default class DraftsPage {
     await createDraftDrawer.getByTestId('draft-creation-form-name-input').locator('input').fill(name);
 
     for (const member of authorizedMembers) {
-      // eslint-disable-next-line no-await-in-loop
       await this.accessRestriction.addAccess(member.name, member.permission);
     }
     await this.page.getByRole('button', { name: 'Create' }).click();

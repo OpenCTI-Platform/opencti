@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState, ChangeEvent, useEffect } from 'reac
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import BulkSelectRawLineData from '@components/common/bulk/BulkSelectRawLineData';
 import EntityRelationshipCard from '@components/common/bulk/EntityRelationshipCard';
@@ -553,8 +553,8 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>{t_i18n('Cancel')}</Button>
-          <Button onClick={handleSubmit} disabled={isSubmitDisable || isSubmitting} color="secondary">
+          <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
+          <Button onClick={handleSubmit} disabled={isSubmitDisable || isSubmitting}>
             {t_i18n('Create')}
           </Button>
         </DialogActions>

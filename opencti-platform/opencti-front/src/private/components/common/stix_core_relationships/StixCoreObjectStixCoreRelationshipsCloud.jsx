@@ -5,7 +5,7 @@ import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { SettingsInputComponent } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import { QueryRenderer } from '../../../../relay/environment';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
@@ -43,7 +43,6 @@ const StixCyberObservableEditionContainer = (props) => {
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large"
           color="primary"
         >
           <Close fontSize="small" color="primary" />

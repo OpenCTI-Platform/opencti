@@ -1,10 +1,10 @@
 import MoreVert from '@mui/icons-material/MoreVert';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
@@ -136,7 +136,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
 
   return (
     <div className={classes.container}>
-      <IconButton onClick={handleOpen} aria-haspopup="true" size="large" color="primary">
+      <IconButton onClick={handleOpen} aria-haspopup="true" color="primary">
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
@@ -164,10 +164,10 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseUnlink} disabled={unlinking}>
+          <Button variant="secondary" onClick={handleCloseUnlink} disabled={unlinking}>
             {t_i18n('Cancel')}
           </Button>
-          <Button color="secondary" onClick={submitUnlink} disabled={unlinking}>
+          <Button onClick={submitUnlink} disabled={unlinking}>
             {t_i18n('Unlink')}
           </Button>
         </DialogActions>

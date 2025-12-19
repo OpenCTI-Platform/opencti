@@ -120,7 +120,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
           ) {
             const data = props.stixCoreRelationshipsDistribution.map((n) => ({
               x:
-              // eslint-disable-next-line no-nested-ternary
+
                 field === 'internal_id'
                   ? getMainRepresentative(n.entity, t_i18n('Restricted'))
                   : field === 'entity_type'
@@ -207,7 +207,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
         gutterBottom={true}
         style={{
           margin:
-          // eslint-disable-next-line no-nested-ternary
+
             variant === 'inEntity'
               ? 0
               : variant !== 'inLine'

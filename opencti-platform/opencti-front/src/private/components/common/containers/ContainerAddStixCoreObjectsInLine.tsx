@@ -1,6 +1,7 @@
-import { Button, IconButton, Tooltip, Typography } from '@mui/material';
+import { IconButton, Tooltip, Typography } from '@mui/material';
 import React, { FunctionComponent, Suspense, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
@@ -29,7 +30,6 @@ const ControlledDial = ({ onOpen, title }: ControlledDialProps) => {
   const theme = useTheme<Theme>();
   return (
     <Button
-      variant="contained"
       style={{ marginLeft: theme.spacing(0.5) }}
       aria-label={title}
       size="small"
@@ -238,8 +238,6 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
           <div style={{ marginRight: '10px' }}>
             {showSDOCreation && (
               <Button
-                style={{ fontSize: 'small' }}
-                variant="contained"
                 disableElevation
                 size="small"
                 aria-label={t_i18n('Create an entity')}
@@ -251,7 +249,6 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
             {showSCOCreation && (
               <Button
                 style={{ fontSize: 'small', marginLeft: '3px' }}
-                variant="contained"
                 disableElevation
                 size="small"
                 aria-label={t_i18n('Create an observable')}

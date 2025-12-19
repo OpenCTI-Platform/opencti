@@ -14,6 +14,7 @@ import { ContainerStixObjectsOrStixRelationships_container$data } from './__gene
 import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
 import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { ContainerStixObjectOrStixRelationshipLineDummy } from './ContainerStixObjectOrStixRelationshipLine';
+import { Stack } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -123,30 +124,34 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
   };
   return (
     <div style={{ height: '100%' }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{ float: 'left', paddingBottom: 11 }}
-      >
-        {title ?? t_i18n('Related entities')}
-      </Typography>
-      {container && (
-        <Security needs={security}>
-          <ContainerAddStixCoreObjects
-            containerId={container.id}
-            containerStixCoreObjects={container.objects?.edges ?? []}
-            paginationOptions={paginationOptions}
-            simple={true}
-            targetStixCoreObjectTypes={
-              types ?? ['Stix-Domain-Object', 'Stix-Cyber-Observable']
-            }
-            defaultCreatedBy={container.createdBy ?? null}
-            defaultMarkingDefinitions={container.objectMarking ?? []}
-            confidence={container.confidence}
-            enableReferences={enableReferences}
-          />
-        </Security>
-      )}
+      <Stack direction="row" alignItems="center" gap={1} sx={{ marginBottom: '8px' }}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          sx={{ margin: 0 }}
+        >
+          {title ?? t_i18n('Related entities')}
+        </Typography>
+        {
+          container && (
+            <Security needs={security}>
+              <ContainerAddStixCoreObjects
+                containerId={container.id}
+                containerStixCoreObjects={container.objects?.edges ?? []}
+                paginationOptions={paginationOptions}
+                simple={true}
+                targetStixCoreObjectTypes={
+                  types ?? ['Stix-Domain-Object', 'Stix-Cyber-Observable']
+                }
+                defaultCreatedBy={container.createdBy ?? null}
+                defaultMarkingDefinitions={container.objectMarking ?? []}
+                confidence={container.confidence}
+                enableReferences={enableReferences}
+              />
+            </Security>
+          )
+        }
+      </Stack>
       <div className="clearfix" />
       {variant !== 'noPaper' ? (
         <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">

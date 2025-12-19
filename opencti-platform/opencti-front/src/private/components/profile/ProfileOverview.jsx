@@ -8,7 +8,7 @@ import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { LockOutlined, NoEncryptionOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
@@ -18,7 +18,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/styles';
 import { ListItem, ListItemText, Switch } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Box from '@mui/material/Box';
 import NotifierField from '../common/form/NotifierField';
 import inject18n, { useFormatter } from '../../../components/i18n';
@@ -514,7 +514,6 @@ const ProfileOverviewComponent = (props) => {
           {useOtp && (
             <Button
               type="button"
-              color="primary"
               startIcon={<NoEncryptionOutlined />}
               onClick={disableOtp}
               classes={{ root: classes.button }}

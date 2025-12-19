@@ -7,8 +7,8 @@ import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -285,7 +285,6 @@ class ContainerStixCoreObjectPopover extends Component {
           onClick={this.handleOpen.bind(this)}
           disabled={this.props.menuDisable ?? false}
           aria-haspopup="true"
-          size="large"
         >
           <MoreVert />
         </IconButton>
@@ -328,13 +327,13 @@ class ContainerStixCoreObjectPopover extends Component {
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={this.handleCloseDeleteMapping.bind(this)}
               disabled={this.state.deletingMapping}
             >
               {t('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={this.handleSubmitDeleteMapping.bind(this)}
               disabled={this.state.deletingMapping}
             >
@@ -359,13 +358,13 @@ class ContainerStixCoreObjectPopover extends Component {
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={this.handleCloseRemove.bind(this)}
               disabled={this.state.removing}
             >
               {t('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={this.handleSubmitRemove.bind(this)}
               disabled={this.state.removing}
             >
@@ -421,13 +420,13 @@ class ContainerStixCoreObjectPopover extends Component {
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
             >
               {t('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >

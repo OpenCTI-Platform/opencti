@@ -7,7 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -55,9 +55,9 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
   const classes = useStyles();
   const { fd } = useFormatter();
   const restrictedWithFrom = node.from === null;
-  // eslint-disable-next-line no-nested-ternary
+
   const link = node.relationship_type
-  // eslint-disable-next-line no-nested-ternary
+
     ? node.relationship_type === 'stix-sighting-relationship'
       ? `${resolveLink(node.relationship_type)}/${node.id}`
       : !restrictedWithFrom
@@ -716,7 +716,7 @@ export const ContainerStixObjectOrStixRelationshipLineDummy = ({
       classes={{ root: classes.item }}
       divider={true}
       secondaryAction={(
-        <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true" size="large">
+        <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true">
           <MoreVert />
         </IconButton>
       )}

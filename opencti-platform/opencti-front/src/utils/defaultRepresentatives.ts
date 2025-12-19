@@ -53,7 +53,6 @@ export const defaultValueMarking = (n: any) => {
     const definition = R.toPairs(n.definition);
     if (definition[0]) {
       if (definition[0][1].includes(':')) {
-        // eslint-disable-next-line prefer-destructuring
         def = definition[0][1];
       } else {
         def = `${definition[0][0]}:${definition[0][1]}`;

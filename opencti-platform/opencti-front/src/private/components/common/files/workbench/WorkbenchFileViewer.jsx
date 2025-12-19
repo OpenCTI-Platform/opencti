@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import { TEN_SECONDS } from '../../../../../utils/Time';
 import inject18n from '../../../../../components/i18n';
@@ -26,9 +26,6 @@ const styles = () => ({
     marginTop: -2,
     borderRadius: 4,
   },
-  createButton: {
-    marginTop: -15,
-  },
 });
 
 const WorkbenchFileViewerBase = ({
@@ -37,7 +34,6 @@ const WorkbenchFileViewerBase = ({
   connectors,
   relay,
   t,
-  classes,
 }) => {
   const { id, pendingFiles } = entity;
   const { edges } = pendingFiles;
@@ -70,8 +66,9 @@ const WorkbenchFileViewerBase = ({
               color="primary"
               aria-label="Add"
               onClick={() => setOpenCreate(true)}
-              classes={{ root: classes.createButton }}
-              size="large"
+              sx={{ marginTop: -1.5 }}
+              size="small"
+              variant="tertiary"
             >
               <Add fontSize="small" />
             </IconButton>
@@ -84,7 +81,7 @@ const WorkbenchFileViewerBase = ({
           entity={entity}
         />
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+        <Paper className="paper-for-grid" variant="outlined">
           {edges.length ? (
             <List>
               {edges.map((file) => (

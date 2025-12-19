@@ -1,6 +1,6 @@
 import { graphql } from 'react-relay';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import GradientButton from '../../../../components/GradientButton';
@@ -267,9 +267,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
       <>
         <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
           <Button
-            variant="outlined"
+            variant="secondary"
             size="small"
-            color="dangerZone"
+            intent="destructive"
             onClick={handleOpenDialog}
           >
             {getButtonText()}

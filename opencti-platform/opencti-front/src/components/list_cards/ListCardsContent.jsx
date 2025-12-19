@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';

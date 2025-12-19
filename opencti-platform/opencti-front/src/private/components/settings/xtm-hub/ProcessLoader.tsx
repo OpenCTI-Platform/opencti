@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
+import Button from '@common/button/Button';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface ProcessLoaderProps {
@@ -22,7 +23,7 @@ const ProcessLoader: FunctionComponent<ProcessLoaderProps> = ({
       }}
     >
       <Loader variant={LoaderVariant.inElement} />
-      <Button sx={{ marginTop: 4 }} variant="contained" onClick={onFocusTab}>
+      <Button sx={{ marginTop: 4 }} onClick={onFocusTab}>
         {buttonText}
       </Button>
     </Box>

@@ -174,7 +174,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
 
   const matchCase = (text: string, pattern: string) => {
     let result = '';
-    // eslint-disable-next-line no-plusplus
+
     for (let i = 0; i < text.length; i++) {
       const c = text.charAt(i);
       const p = pattern.charCodeAt(i);

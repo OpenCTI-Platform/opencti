@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useRef, useState } from 'react';
-import { IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
+import { Paper, Stack, Tooltip, Typography } from '@mui/material';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import { Disposable, graphql } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -162,7 +163,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
 
   return (
     <>
-      <Stack direction="row" alignItems="center" gap={1} sx={{ marginBottom: 0, marginTop: -0.7 }}>
+      <Stack direction="row" alignItems="center" gap={1} sx={{ marginBottom: 0, marginTop: -0.2 }}>
         <Typography variant="h4" sx={{ margin: 0 }}>{t_i18n('Themes')}</Typography>
 
         <Box>

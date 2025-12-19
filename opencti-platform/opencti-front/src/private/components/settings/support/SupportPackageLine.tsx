@@ -5,7 +5,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { FileOutline } from 'mdi-material-ui';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { DeleteOutlined, DownloadingOutlined, GetAppOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -191,7 +191,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               <span>
                 <IconButton
                   disabled={!isReady && !isTooLong}
-                  color="inherit"
+                  // color='inherit'
                   onClick={handleOpenDelete}
                   size="small"
                 >

@@ -5,11 +5,11 @@ import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { DrawerProps, Tooltip } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import { ArchitectureOutlined, DeleteOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -298,7 +298,6 @@ const FileWorksComponent = ({
                   <IconButton
                     color="primary"
                     onClick={() => work.draft_context && navigateToDraft(work.draft_context)}
-                    size="large"
                   >
                     <ArchitectureOutlined fontSize="small" />
                   </IconButton>
@@ -310,7 +309,6 @@ const FileWorksComponent = ({
                   disabled={work?.status === 'deleting'}
                   color="primary"
                   onClick={() => setDisplayDelete(work?.id)}
-                  size="large"
                 >
                   <DeleteOutlined fontSize="small" />
                 </IconButton>
@@ -342,11 +340,10 @@ const FileWorksComponent = ({
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDisplayDelete(undefined)}>
+            <Button variant="secondary" onClick={() => setDisplayDelete(undefined)}>
               {t_i18n('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={() => deleteWork(displayDelete)}
               disabled={deleting}
             >
@@ -427,9 +424,7 @@ const ImportWorksDrawer = ({
             {!isWorkbench && (
               <Button
                 onClick={() => setOpenLaunchImport(true)}
-                color="primary"
                 size="small"
-                variant="contained"
                 aria-label={launchImportTitle}
                 title={launchImportTitle}
                 sx={{ marginLeft: 'auto', marginRight: 2 }}

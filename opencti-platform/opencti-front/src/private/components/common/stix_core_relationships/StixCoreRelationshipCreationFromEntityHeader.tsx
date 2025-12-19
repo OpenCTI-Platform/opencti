@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import {
@@ -73,7 +73,7 @@ const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<
       {/* The controlled dial to open the drawer */}
       <Button
         onClick={handleOpen}
-        variant="outlined"
+        variant="secondary"
         style={{ marginLeft: '6px' }}
       >
         {t_i18n('Create Relationship')}

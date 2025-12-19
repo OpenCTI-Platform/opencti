@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface Props {

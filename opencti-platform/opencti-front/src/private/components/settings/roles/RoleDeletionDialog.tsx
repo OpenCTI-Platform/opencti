@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material';
+import { Dialog, DialogActions, DialogTitle } from '@mui/material';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Transition from '../../../../components/Transition';
@@ -61,13 +62,13 @@ const RoleDeletionDialog: FunctionComponent<RoleDeletionDialogProps> = ({
       <DialogTitle>{t_i18n('Do you want to delete this role?')}</DialogTitle>
       <DialogActions>
         <Button
+          variant="secondary"
           onClick={handleClose}
           disabled={deleting}
         >
           {t_i18n('Cancel')}
         </Button>
         <Button
-          color="secondary"
           onClick={submitDelete}
           disabled={deleting}
         >

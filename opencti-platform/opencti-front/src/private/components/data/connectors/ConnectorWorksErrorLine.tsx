@@ -1,13 +1,13 @@
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import React, { FunctionComponent, useState } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { ParsedWorkMessage, ResolvedEntity } from '@components/data/connectors/parseWorkErrors';
@@ -147,7 +147,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleToggleModalError} color="primary">
+          <Button onClick={handleToggleModalError}>
             {t_i18n('Close')}
           </Button>
         </DialogActions>

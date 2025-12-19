@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
@@ -35,10 +35,6 @@ const useStyles = makeStyles((theme) => ({
     bottom: 30,
     right: 280,
     zIndex: 1100,
-  },
-  createButtonSimple: {
-    float: 'left',
-    marginTop: -15,
   },
   speedDial: {
     position: 'fixed',
@@ -387,10 +383,10 @@ const ContainerAddStixCoreObjects = (props) => {
       return (
         <Tooltip title={t_i18n('Add an entity to this container')}>
           <IconButton
-            color="primary"
             aria-label="Add"
             onClick={() => setOpen(true)}
-            size="large"
+            variant="tertiary"
+            size="small"
           >
             <Add />
           </IconButton>
@@ -400,13 +396,12 @@ const ContainerAddStixCoreObjects = (props) => {
     if (simple) {
       return (
         <IconButton
-          color="primary"
           aria-label="Add"
           onClick={() => setOpen(true)}
-          classes={{ root: classes.createButtonSimple }}
-          size="large"
+          variant="tertiary"
+          size="small"
         >
-          <Add fontSize="small" />
+          <Add />
         </IconButton>
       );
     }

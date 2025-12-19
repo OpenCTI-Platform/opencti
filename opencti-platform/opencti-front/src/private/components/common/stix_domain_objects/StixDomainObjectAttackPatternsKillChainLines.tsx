@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -136,7 +136,6 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                   <IconButton
                     onClick={() => handleToggleLine(element.id)}
                     aria-haspopup="true"
-                    size="large"
                   >
                     {expandedLines[element.id]
                       === false ? (
@@ -180,7 +179,6 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                   <IconButton
                                     onClick={() => handleToggleLine(attackPattern.id)}
                                     aria-haspopup="true"
-                                    size="large"
                                   >
                                     {expandedLines[attackPattern.id] === false ? (
                                       <ExpandMore />

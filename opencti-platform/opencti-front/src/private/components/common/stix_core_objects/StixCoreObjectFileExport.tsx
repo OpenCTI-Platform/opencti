@@ -401,6 +401,7 @@ const StixCoreObjectFileExportComponent = ({
     }
   };
   const isContainer = ['Report', 'Case-Incident', 'Case-RFI'].includes(stixCoreObject?.entity_type ?? 'Unknown');
+
   return (
     <>
       <OpenFormComponent

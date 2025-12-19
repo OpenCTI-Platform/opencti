@@ -15,10 +15,10 @@ export const getUsers = () => `
 `;
 
 interface AddUserInput {
-  name: string
-  user_email: string
-  password: string
-  groups: string[]
+  name: string;
+  user_email: string;
+  password: string;
+  groups: string[];
 }
 
 const addUser = (input: AddUserInput) => `

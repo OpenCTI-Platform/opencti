@@ -2,7 +2,7 @@ import React, { FunctionComponent, Suspense, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { StixCoreObjectFormsFormsQuery, StixCoreObjectFormsFormsQuery$variables } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFormsFormsQuery.graphql';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { AssignmentOutlined } from '@mui/icons-material';
 import StixCoreObjectFormSelector from '@components/common/stix_core_objects/StixCoreObjectFormSelector';
 import { useFormatter } from '../../../../components/i18n';
@@ -46,7 +46,6 @@ const StixCoreObjectFormsComponent: FunctionComponent<StixCoreObjectFormsCompone
           <IconButton
             onClick={() => setIsFormSelectorOpen(true)}
             color="primary"
-            size="medium"
             style={{
               border: '1px solid',
               borderRadius: '4px',

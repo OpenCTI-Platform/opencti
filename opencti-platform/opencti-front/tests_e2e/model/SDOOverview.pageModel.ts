@@ -12,14 +12,13 @@ export default class SDOOverview {
 
   getLabel(label: string) {
     return this.page
-        .getByRole('heading', { name: 'Labels' })
-        .locator('..')
-        .locator('..')
-        .getByLabel(label);
+      .getByRole('heading', { name: 'Labels' })
+      .locator('..')
+      .locator('..')
+      .getByLabel(label);
   }
 
   getParticipant(participant: string) {
     return this.page.getByTestId('sdo-overview-participants').getByLabel(participant);
   }
-
 }

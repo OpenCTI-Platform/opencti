@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Add, DeleteOutlined, AddCircleOutlined } from '@mui/icons-material';
-import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Button, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
+import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import {
@@ -806,7 +807,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 </Box>
               ))}
               <Button
-                variant="outlined"
+                variant="secondary"
                 size="small"
                 startIcon={<Add />}
                 onClick={() => {
@@ -1156,7 +1157,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             </Typography>
             {entityFields.map((field, idx) => renderField(field, idx, entity.entityType))}
             <Button
-              variant="outlined"
+              variant="secondary"
               startIcon={<Add />}
               onClick={() => handleAddField(entity.id, entity.entityType)}
               className={classes.addButton}
@@ -1175,7 +1176,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               .filter((field) => field.attributeMapping.attributeName !== entity.parseFieldMapping)
               .map((field, idx) => renderField(field, idx, entity.entityType))}
             <Button
-              variant="outlined"
+              variant="secondary"
               startIcon={<Add />}
               onClick={() => handleAddField(entity.id, entity.entityType)}
               className={classes.addButton}
@@ -1326,7 +1327,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               relationshipIndex,
             ))}
             <Button
-              variant="outlined"
+              variant="secondary"
               startIcon={<Add />}
               onClick={() => {
                 const fieldId = generateFieldId();
@@ -1604,7 +1605,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                         .filter((field) => field.attributeMapping.attributeName !== formData.mainEntityParseFieldMapping)
                         .map((field, idx) => renderField(field, idx, formData.mainEntityType))}
                       <Button
-                        variant="outlined"
+                        variant="secondary"
                         startIcon={<Add />}
                         onClick={() => handleAddField('main_entity', formData.mainEntityType)}
                         className={classes.addButton}
@@ -1623,7 +1624,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 </Typography>
                 {(fieldsByEntity.main_entity || []).map((field, idx) => renderField(field, idx, formData.mainEntityType))}
                 <Button
-                  variant="outlined"
+                  variant="secondary"
                   startIcon={<Add />}
                   onClick={() => handleAddField('main_entity', formData.mainEntityType)}
                   className={classes.addButton}
@@ -1640,7 +1641,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         <div className={classes.tabPanel}>
           {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
           <Button
-            variant="outlined"
+            variant="secondary"
             startIcon={<AddCircleOutlined />}
             onClick={handleAddAdditionalEntity}
             className={classes.addButton}
@@ -1657,7 +1658,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Typography>
           {formData.relationships.map((relationship, idx) => renderRelationship(relationship, idx))}
           <Button
-            variant="outlined"
+            variant="secondary"
             startIcon={<Add />}
             onClick={handleAddRelationship}
             className={classes.addButton}

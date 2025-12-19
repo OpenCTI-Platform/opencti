@@ -5,7 +5,7 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import Axios from 'axios';
 import ItemIcon from 'src/components/ItemIcon';
 import Loader from 'src/components/Loader';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { now } from 'src/utils/Time';
@@ -227,7 +227,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                   }
                   <div style={{ marginTop: 20, textAlign: 'right' }}>
                     <Button
-                      variant="contained"
+                      variant="secondary"
                       disabled={isSubmitting}
                       style={{ marginLeft: 16 }}
                       onClick={onClose}
@@ -235,8 +235,6 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                       {t_i18n('Cancel')}
                     </Button>
                     <Button
-                      variant="contained"
-                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       style={{ marginLeft: 16 }}

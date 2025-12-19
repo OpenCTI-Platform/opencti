@@ -1,4 +1,4 @@
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import React, { useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
@@ -49,8 +49,8 @@ const EnterpriseEditionButton = ({
       {isAdmin ? (
         <Button
           size="small"
-          variant="outlined"
-          color="ee"
+          variant="secondary"
+          // color="ee"
           onClick={() => setOpenEnterpriseEditionConsent(true)}
           startIcon={<RocketLaunchOutlined style={{ color: disabled ? theme.palette.dangerZone.main : undefined }} />}
           disabled={disabled}
@@ -64,8 +64,7 @@ const EnterpriseEditionButton = ({
         </Button>
       ) : (
         <Button
-          color="primary"
-          variant="outlined"
+          variant="secondary"
           size="small"
           disabled={disabled}
           onClick={() => setFeedbackCreation(true)}

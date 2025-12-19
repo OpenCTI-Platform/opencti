@@ -2,7 +2,7 @@ import { useTheme } from '@mui/material/styles';
 import React, { useState } from 'react';
 import MuiAccordion from '@mui/material/Accordion';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';

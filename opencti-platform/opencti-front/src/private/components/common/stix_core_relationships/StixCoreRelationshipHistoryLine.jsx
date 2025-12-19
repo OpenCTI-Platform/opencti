@@ -14,9 +14,9 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import DialogContentText from '@mui/material/DialogContentText';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
 import { Link } from 'react-router-dom';
@@ -248,7 +248,6 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
                             onClick={() =>
                               handleOpenExternalLink(externalReference.url)
                             }
-                            size="large"
                             color="primary"
                           >
                             <OpenInBrowserOutlined />
@@ -322,7 +321,7 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button color="primary" onClick={handleClose}>
+          <Button onClick={handleClose}>
             {t_i18n('Close')}
           </Button>
         </DialogActions>
@@ -340,8 +339,8 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
-          <Button color="secondary" onClick={handleBrowseExternalLink}>
+          <Button variant="secondary" onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
+          <Button onClick={handleBrowseExternalLink}>
             {t_i18n('Browse the link')}
           </Button>
         </DialogActions>

@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Box, Button } from '@mui/material';
+import Button from '@common/button/Button';
+import { Box } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { graphql } from 'react-relay';
 import { Field, Formik } from 'formik';
@@ -182,15 +183,13 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
               <CircularProgress size={30} thickness={2} />
             )}
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting || inProgress}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting || inProgress}
             >

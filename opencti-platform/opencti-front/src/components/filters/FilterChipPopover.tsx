@@ -35,7 +35,7 @@ import useAttributes from '../../utils/hooks/useAttributes';
 import BasicFilterInput from './BasicFilterInput';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 import DateRangeFilter from './DateRangeFilter';
-// eslint-disable-next-line import/no-cycle
+
 import FilterFiltersInput from './FilterFiltersInput';
 import stopEvent from '../../utils/domEvent';
 

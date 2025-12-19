@@ -12,8 +12,8 @@ import Typography from '@mui/material/Typography';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import classNames from 'classnames';
 import { representationLabel } from '@components/data/csvMapper/representations/RepresentationUtils';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
 import CsvMapperConditionalEntityMapping from '@components/data/csvMapper/representations/CsvMapperConditionalEntityMapping';
 import { useFormatter } from '../../../../../components/i18n';
@@ -142,7 +142,11 @@ const CsvMapperRepresentationForm: FunctionComponent<
               {representationLabel(index, value, t_i18n)}
             </Typography>
             <Tooltip title={t_i18n('Delete')}>
-              <IconButton color="error" onClick={handleOpenDelete}>
+              <IconButton
+                variant="tertiary"
+                intent="destructive"
+                onClick={handleOpenDelete}
+              >
                 <DeleteOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -196,7 +200,6 @@ const CsvMapperRepresentationForm: FunctionComponent<
             </div>
             <div style={{ textAlign: 'right', marginTop: '20px' }}>
               <Button
-                variant="contained"
                 color="error"
                 onClick={handleOpenDelete}
               >

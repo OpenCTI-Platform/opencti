@@ -8,7 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Button from '@mui/material/Button';
+import IconButton from '@common/button/IconButton';
 import { ListItemButton } from '@mui/material';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../Loader';
@@ -571,18 +571,17 @@ const RelationshipDetailsComponent: FunctionComponent<
       {fldt(stixRelationship.created_at)}
       {computeNotGenericDetails()}
       {expandable && (
-        <Button
-          variant="contained"
+        <IconButton
           size="small"
           onClick={handleToggleExpand}
           className={classes.buttonExpand}
         >
           {expanded ? (
-            <ExpandLessOutlined fontSize="small" />
+            <ExpandLessOutlined />
           ) : (
-            <ExpandMoreOutlined fontSize="small" />
+            <ExpandMoreOutlined />
           )}
-        </Button>
+        </IconButton>
       )}
     </div>
   );

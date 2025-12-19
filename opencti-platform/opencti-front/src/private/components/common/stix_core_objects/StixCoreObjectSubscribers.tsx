@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
@@ -61,8 +61,7 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
     <React.Fragment>
       <Button
         size="small"
-        variant="text"
-        color={hasSetAccess ? 'primary' : 'inherit'}
+        variant="tertiary"
         style={{
           cursor: hasSetAccess ? 'pointer' : 'default',
           marginRight: 10,

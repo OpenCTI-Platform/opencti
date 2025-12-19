@@ -158,8 +158,8 @@ test('Incident Response Creation', async ({ page }) => {
   const revoked = incidentResponseDetailsPage.getTextForHeading('Revoked', 'NO');
   await expect(revoked).toBeVisible();
 
-  await expect( incidentResponseDetailsPage.overview.getLabel('campaign')).toBeVisible();
-  await expect( incidentResponseDetailsPage.overview.getLabel('report')).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('campaign')).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('report')).toBeVisible();
 
   const creators = incidentResponseDetailsPage.getTextForHeading('Creators', 'ADMIN');
   await expect(creators).toBeVisible();

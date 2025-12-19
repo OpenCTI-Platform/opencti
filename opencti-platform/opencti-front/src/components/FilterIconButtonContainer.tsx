@@ -12,7 +12,7 @@ import type { Theme } from './Theme';
 import { convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
-// eslint-disable-next-line import/no-cycle
+
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
 import DisplayFilterGroup from './filters/DisplayFilterGroup';
 import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';

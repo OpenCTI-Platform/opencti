@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
@@ -13,7 +12,8 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { TextFieldAskAIFixSpellingMutation, TextFieldAskAIFixSpellingMutation$data } from '@components/common/form/__generated__/TextFieldAskAIFixSpellingMutation.graphql';
 import { TextFieldAskAIMakeShorterMutation, TextFieldAskAIMakeShorterMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeShorterMutation.graphql';
 import { TextFieldAskAIMakeLongerMutation, TextFieldAskAIMakeLongerMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeLongerMutation.graphql';
@@ -24,7 +24,7 @@ import { useTheme } from '@mui/styles';
 import FiligranIcon from '@components/common/FiligranIcon';
 import EETooltip from '../entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
-// eslint-disable-next-line import/no-cycle
+
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -319,7 +319,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             </FormControl>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseToneOptions}>
+            <Button variant="secondary" onClick={handleCloseToneOptions}>
               {t_i18n('Cancel')}
             </Button>
             <Button
@@ -327,7 +327,6 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
                 handleCloseToneOptions();
                 handleAskAi('tone');
               }}
-              color="secondary"
             >
               {t_i18n('Generate')}
             </Button>

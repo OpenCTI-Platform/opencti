@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import { Filter, FilterGroup, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import { emptyFilterGroup, isFilterGroupNotEmpty, sanitizeFiltersStructure, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 import useFiltersState from '../../utils/filters/useFiltersState';
-// eslint-disable-next-line import/no-cycle
+
 import FilterIconButton from '../FilterIconButton';
 
 interface BasicFilterInputProps {

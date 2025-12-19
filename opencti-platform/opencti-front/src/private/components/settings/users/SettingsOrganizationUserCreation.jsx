@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
 import { Add } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import EmailTemplateField from '../../common/form/EmailTemplateField';
 import Drawer from '../../common/drawer/Drawer';
 import GroupField from '../../common/form/GroupField';
@@ -145,7 +145,6 @@ const SettingsOrganizationUserCreation = ({
               aria-label="Add"
               onClick={() => setOpenAddUser(true)}
               classes={{ root: classes.createButton }}
-              size="large"
             >
               <Add fontSize="small" />
             </IconButton>
@@ -294,7 +293,7 @@ const SettingsOrganizationUserCreation = ({
               />
               <div className={classes.buttons}>
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -302,8 +301,6 @@ const SettingsOrganizationUserCreation = ({
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}

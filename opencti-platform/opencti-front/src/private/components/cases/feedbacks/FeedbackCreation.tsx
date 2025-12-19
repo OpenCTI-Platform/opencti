@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -188,14 +188,12 @@ const FeedbackCreation: FunctionComponent<{
               <Button
                 onClick={handleReset}
                 disabled={isSubmitting}
-                variant="contained"
+                variant="secondary"
                 classes={{ root: classes.button }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}

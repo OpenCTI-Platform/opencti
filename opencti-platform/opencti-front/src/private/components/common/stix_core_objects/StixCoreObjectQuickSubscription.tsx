@@ -1,10 +1,10 @@
 import { ExpandLess, ExpandMore, NotificationsOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import type { OverridableStringUnion } from '@mui/types';
 import Checkbox from '@mui/material/Checkbox';
 import Collapse from '@mui/material/Collapse';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
@@ -357,7 +357,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                 style={{ marginTop: firstTrigger ? 20 : 40 }}
               >
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={
                     multipleInstanceTrigger
                       ? () => submitRemove(values.id, values.filters)
@@ -369,8 +369,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                   {multipleInstanceTrigger ? t_i18n('Remove') : t_i18n('Delete')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
+                  // color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.updateButton }}
@@ -447,7 +446,6 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                   <IconButton
                     onClick={handleToggleLine}
                     aria-haspopup="true"
-                    size="large"
                   >
                     {expandedLines ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>

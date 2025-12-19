@@ -4,7 +4,7 @@ import Alert from '@mui/material/Alert';
 import parse from 'html-react-parser';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { AutoModeOutlined, ContentCopyOutlined } from '@mui/icons-material';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { AISummaryForecastStixCoreObjectAskAiForecastQuery$data } from '@components/common/ai/__generated__/AISummaryForecastStixCoreObjectAskAiForecastQuery.graphql';

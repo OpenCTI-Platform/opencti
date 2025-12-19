@@ -2,10 +2,10 @@ import { APIRequestContext } from '@playwright/test';
 import { graphqlQuery } from './query-utils';
 
 interface AddRelationshipInput {
-  relationship_type: string
-  fromId: string
-  toId: string
-  createdBy: string
+  relationship_type: string;
+  fromId: string;
+  toId: string;
+  createdBy: string;
 }
 
 const addRelationshipMutation = (input: AddRelationshipInput) => `
@@ -29,9 +29,9 @@ export const addRelationship = async (
 };
 
 interface DeleteRelationshipInput {
-  relationship_type: string
-  fromId: string
-  toId: string
+  relationship_type: string;
+  fromId: string;
+  toId: string;
 }
 
 const deleteRelationshipMutation = (input: DeleteRelationshipInput) => `

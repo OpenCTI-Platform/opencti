@@ -11,10 +11,10 @@ import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
 import { Add, BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { Formik } from 'formik';
 import { useTheme } from '@mui/material/styles';
 import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOverview';
@@ -270,22 +270,21 @@ const StixDomainObjectOverview = ({
             )}
             {displayAssignees && (
               <div data-testid="sdo-overview-assignees">
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
                   <Typography
                     variant="h3"
                     gutterBottom={true}
-                    style={{ marginTop: 20 }}
                   >
                     {t_i18n('Assignees')}
                   </Typography>
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     <IconButton
-                      color="primary"
+                      variant="tertiary"
+                      size="small"
                       aria-label={t_i18n('Add new assignees')}
                       title={t_i18n('Add new assignees')}
                       onClick={handleToggleAddAssignee}
-                      style={{ margin: '0 0 -14px 0' }}
-                      size="large"
+                      sx={{ marginTop: -0.6 }}
                     >
                       <Add fontSize="small" />
                     </IconButton>
@@ -296,22 +295,21 @@ const StixDomainObjectOverview = ({
             )}
             {displayParticipants && (
               <div data-testid="sdo-overview-participants">
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
                   <Typography
                     variant="h3"
                     gutterBottom={true}
-                    style={{ marginTop: 20 }}
                   >
                     {t_i18n('Participants')}
                   </Typography>
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     <IconButton
-                      color="primary"
+                      variant="tertiary"
+                      size="small"
                       aria-label={t_i18n('Add new participants')}
                       title={t_i18n('Add new participants')}
                       onClick={handleToggleAddParticipant}
-                      style={{ margin: '0 0 -14px 0' }}
-                      size="large"
+                      sx={{ marginTop: -0.6 }}
                     >
                       <Add fontSize="small" />
                     </IconButton>
@@ -376,13 +374,13 @@ const StixDomainObjectOverview = ({
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
                   <IconButton
+                    variant="tertiary"
                     aria-label="Close"
                     size="small"
                     disabled={stixIds.length === 0}
                     onClick={handleToggleOpenStixIds}
                   >
                     <BrushOutlined
-                      fontSize="small"
                       color={stixIds.length === 0 ? 'inherit' : 'primary'}
                     />
                   </IconButton>
@@ -427,7 +425,6 @@ const StixDomainObjectOverview = ({
                       edge="end"
                       aria-label="delete"
                       onClick={() => deleteStixId(stixId)}
-                      size="large"
                     >
                       <Delete />
                     </IconButton>
@@ -442,7 +439,6 @@ const StixDomainObjectOverview = ({
         <DialogActions>
           <Button
             onClick={handleToggleOpenStixIds}
-            color="primary"
           >
             {t_i18n('Close')}
           </Button>
@@ -470,13 +466,13 @@ const StixDomainObjectOverview = ({
             </DialogContent>
             <DialogActions>
               <Button
+                variant="secondary"
                 onClick={handleReset}
               >
                 {t_i18n('Close')}
               </Button>
               <Button
                 onClick={submitForm}
-                color="secondary"
               >
                 {t_i18n('Add')}
               </Button>
@@ -506,13 +502,13 @@ const StixDomainObjectOverview = ({
             </DialogContent>
             <DialogActions>
               <Button
+                variant="secondary"
                 onClick={handleToggleAddParticipant}
               >
                 {t_i18n('Close')}
               </Button>
               <Button
                 onClick={submitForm}
-                color="secondary"
               >
                 {t_i18n('Add')}
               </Button>

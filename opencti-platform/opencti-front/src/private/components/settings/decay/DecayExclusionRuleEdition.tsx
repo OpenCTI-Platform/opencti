@@ -12,7 +12,7 @@ import FilterIconButton from 'src/components/FilterIconButton';
 import useFiltersState from 'src/utils/filters/useFiltersState';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from 'src/utils/filters/filtersUtils';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -149,7 +149,7 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
               />
               <div style={{ marginTop: 20, textAlign: 'right' }}>
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   style={{ marginLeft: 16 }}
@@ -157,8 +157,6 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   style={{ marginLeft: 16 }}

@@ -1,4 +1,5 @@
-import { Button, ButtonProps, Tooltip, Box } from '@mui/material';
+import { ButtonProps, Tooltip, Box } from '@mui/material';
+import Button from '@common/button/Button';
 import React from 'react';
 import { useFormatter } from '../../i18n';
 
@@ -15,8 +16,7 @@ const BulkTextModalButton = ({ onClick, title, disabled, sx = {} }: BulkTextModa
   const bulkButton = (
     <Box sx={{ marginLeft: 'auto', marginRight: 2, ...sx }}>
       <Button
-        color="primary"
-        variant="outlined"
+        variant="tertiary"
         onClick={onClick}
         disabled={disabled}
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
@@ -43,7 +43,6 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
   return (
     <div style={{ marginLeft: theme.spacing(1) }}>
       <Button
-        variant="contained"
         sx={{ marginRight: theme.spacing(1) }}
         onClick={handleOpenCreateDigest}
       >
@@ -53,7 +52,6 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
         })}
       </Button>
       <Button
-        variant="contained"
         onClick={handleOpenCreateLive}
       >
         {t_i18n('', {

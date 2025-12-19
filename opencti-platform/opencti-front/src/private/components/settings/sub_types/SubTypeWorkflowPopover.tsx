@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Edit } from '@mui/icons-material';
 import { InformationOutline } from 'mdi-material-ui';
 import { Tooltip } from '@mui/material';
@@ -31,7 +31,6 @@ const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ su
         aria-label="Workflow"
         onClick={handleOpenUpdate}
         aria-haspopup="true"
-        size="large"
       >
         <Edit fontSize="small" />
       </IconButton>

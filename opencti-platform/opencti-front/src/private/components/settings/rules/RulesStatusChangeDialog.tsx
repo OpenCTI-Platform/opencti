@@ -2,7 +2,7 @@ import React from 'react';
 import DialogContent from '@mui/material/DialogContent';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import { useTheme } from '@mui/material/styles';
 import { graphql } from 'react-relay';
@@ -92,10 +92,10 @@ const RulesStatusChangeDialog = ({
         </Alert>
       </DialogContent>
       <DialogActions>
-        <Button onClick={close} disabled={processing}>
+        <Button variant="secondary" onClick={close} disabled={processing}>
           {t_i18n('Cancel')}
         </Button>
-        <Button onClick={submit} color="secondary" disabled={processing}>
+        <Button onClick={submit} disabled={processing}>
           {status === 'enable' ? t_i18n('Enable') : t_i18n('Disable')}
         </Button>
       </DialogActions>

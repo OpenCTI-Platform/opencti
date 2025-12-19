@@ -1,5 +1,6 @@
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Drawer from '@components/common/drawer/Drawer';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTheme } from '@mui/styles';
@@ -22,7 +23,6 @@ import {
 import IngestionCreationUserHandling, { BasicUserHandlingValues } from '@components/data/IngestionCreationUserHandling';
 import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
 import { Launch } from 'mdi-material-ui';
-import IconButton from '@mui/material/IconButton';
 import { HubOutlined, LibraryBooksOutlined } from '@mui/icons-material';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import Tooltip from '@mui/material/Tooltip';
@@ -253,48 +253,52 @@ const IngestionCatalogConnectorCreation = ({
       onClose={onClose}
       header={(
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
-          <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
-            <Button
-              variant="outlined"
-              component={Link}
-              size="small"
-              to={buildConnectorsUrl()}
-              startIcon={<HubOutlined />}
-              color="warning"
-              disabled={deploymentCount === 0}
-            >
-              {`${deploymentCount} ${t_i18n('instances deployed')}`}
-            </Button>
-          </Tooltip>
-
-          <Tooltip title={t_i18n('Vendor contact')}>
-            <span> {/** keep span so tooltip is still displayed if button is disabled * */}
-              <IconButton
-                aria-label="Vendor contact"
+          <Stack direction="row" alignItems="center">
+            <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
+              <Button
+                variant="secondary"
                 component={Link}
-                to={connector.subscription_link}
-                target="blank"
-                rel="noopener noreferrer"
-                disabled={!connector.subscription_link}
+                size="small"
+                to={buildConnectorsUrl()}
+                startIcon={<HubOutlined />}
+                color="warning"
+                disabled={deploymentCount === 0}
               >
-                <Launch />
-              </IconButton>
-            </span>
-          </Tooltip>
+                {`${deploymentCount} ${t_i18n('instances deployed')}`}
+              </Button>
+            </Tooltip>
 
-          <Tooltip title={t_i18n('Source code')}>
-            <span>
-              <IconButton
-                aria-label="Go to"
-                component={Link}
-                to={connector.source_code}
-                target="blank"
-                rel="noopener noreferrer"
-              >
-                <LibraryBooksOutlined />
-              </IconButton>
-            </span>
-          </Tooltip>
+            <Tooltip title={t_i18n('Vendor contact')}>
+              <span> {/** keep span so tooltip is still displayed if button is disabled * */}
+                <IconButton
+                  variant="tertiary"
+                  aria-label="Vendor contact"
+                  component={Link}
+                  to={connector.subscription_link}
+                  target="blank"
+                  rel="noopener noreferrer"
+                  disabled={!connector.subscription_link}
+                >
+                  <Launch />
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Tooltip title={t_i18n('Source code')}>
+              <span>
+                <Button
+                  variant="tertiary"
+                  aria-label="Go to"
+                  component={Link}
+                  to={connector.source_code}
+                  target="blank"
+                  rel="noopener noreferrer"
+                >
+                  <LibraryBooksOutlined />
+                </Button>
+              </span>
+            </Tooltip>
+          </Stack>
         </div>
       )}
     >
@@ -419,8 +423,7 @@ const IngestionCatalogConnectorCreation = ({
 
                 <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
                   <Button
-                    variant="contained"
-                    color="primary"
+                    variant="secondary"
                     onClick={() => {
                       resetForm();
                     }}
@@ -430,8 +433,7 @@ const IngestionCatalogConnectorCreation = ({
                   {
                     hasActiveManagers && (
                       <Button
-                        variant="contained"
-                        color="secondary"
+                        // color="secondary"
                         style={{ marginLeft: theme.spacing(2) }}
                         onClick={() => {
                           submitConnectorManagementCreation(values, {

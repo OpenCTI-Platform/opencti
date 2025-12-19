@@ -14,7 +14,7 @@ import {
   IngestionCsvEditionFragment_ingestionCsv$key,
 } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import CsvMapperField, { CsvMapperFieldOption, csvMapperQuery } from '@components/common/form/CsvMapperField';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import IngestionCsvFeedTestDialog from '@components/data/ingestionCsv/IngestionCsvFeedTestDialog';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -675,7 +675,6 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             </Box>
             <div style={{ marginTop: 20, textAlign: 'right' }}>
               <Button
-                variant="contained"
                 color="secondary"
                 onClick={() => setOpen(true)}
                 style={{ marginLeft: theme.spacing(2) }}

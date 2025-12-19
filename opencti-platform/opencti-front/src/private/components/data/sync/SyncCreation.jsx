@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -318,7 +318,6 @@ const SyncCreation = ({ paginationOptions }) => {
                   <div className={classes.buttons}>
                     {streams.length === 0 && (
                       <Button
-                        variant="contained"
                         color="secondary"
                         onClick={() => handleGetStreams(values, setErrors, errors)
                         }
@@ -330,8 +329,6 @@ const SyncCreation = ({ paginationOptions }) => {
                     )}
                     {streams.length > 0 && (
                       <Button
-                        variant="contained"
-                        color="primary"
                         onClick={() => {
                           setFieldValue('stream_id', '');
                           setVerified(false);
@@ -428,7 +425,7 @@ const SyncCreation = ({ paginationOptions }) => {
                 </Accordion>
                 <div className={classes.buttons}>
                   <Button
-                    variant="contained"
+                    variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
@@ -436,7 +433,6 @@ const SyncCreation = ({ paginationOptions }) => {
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
                     color="secondary"
                     onClick={() => handleVerify(values, setErrors)}
                     disabled={!values.stream_id || isSubmitting}
@@ -445,7 +441,6 @@ const SyncCreation = ({ paginationOptions }) => {
                     {t_i18n('Verify')}
                   </Button>
                   <Button
-                    variant="contained"
                     color="secondary"
                     onClick={submitForm}
                     disabled={!values.stream_id || !verified || isSubmitting}

@@ -3,7 +3,6 @@ import { Filter, FilterGroup } from './filtersHelpers-types';
 
 // --- convert filters in the old format (before 5.12) to the new one
 
-// eslint-disable-next-line import/prefer-default-export
 export const convertFiltersFromOldFormat = (filters: string): FilterGroup => {
   const filterKeysConvertor = new Map([
     ['labelledBy', 'objectLabel'],

@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+import Button, { ButtonVariant } from '@common/button/Button';
 import React, { FunctionComponent } from 'react';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -6,12 +6,13 @@ import { DrawerControlledDialProps } from '../private/components/common/drawer/D
 import { useFormatter } from './i18n';
 import useDraftContext from '../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
+import { ButtonSize } from './common/button/Button.types';
 
 interface CreateEntityControlledDialProps extends DrawerControlledDialProps {
   entityType: string;
-  color?: 'primary' | 'inherit' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
-  size?: 'small' | 'medium' | 'large';
-  variant?: 'text' | 'contained' | 'outlined';
+  color?: 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
+  size?: ButtonSize;
+  variant?: ButtonVariant;// 'text' | 'contained' | 'outlined';
   style?: React.CSSProperties;
 }
 
@@ -19,8 +20,8 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
   onOpen,
   entityType,
   color = 'primary',
-  size = 'medium',
-  variant = 'contained',
+  size = 'default',
+  variant = 'primary',
   style,
 }) => {
   const theme = useTheme<Theme>();

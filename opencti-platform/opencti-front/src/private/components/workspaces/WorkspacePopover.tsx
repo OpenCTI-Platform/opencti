@@ -1,7 +1,7 @@
 import React, { UIEvent, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Box from '@mui/material/Box';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { useNavigate } from 'react-router-dom';

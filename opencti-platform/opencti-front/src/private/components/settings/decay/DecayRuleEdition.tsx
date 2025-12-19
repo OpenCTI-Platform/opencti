@@ -4,7 +4,7 @@ import { Field, FieldArray, Form, Formik } from 'formik';
 import Drawer from '@components/common/drawer/Drawer';
 import * as R from 'ramda';
 import { AddOutlined, Delete } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';

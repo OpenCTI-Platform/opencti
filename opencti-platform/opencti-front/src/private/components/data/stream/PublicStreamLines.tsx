@@ -128,14 +128,14 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
             )}
           >
             <span>
-              <IconButton onClick={copyClick} size="large" color="primary">
+              <IconButton onClick={copyClick} color="primary">
                 <ContentCopy />
               </IconButton>
             </span>
           </Tooltip>
           <Tooltip title={t_i18n('Access stream directly in your browser')}>
             <span>
-              <IconButton onClick={browseClick} size="large" color="primary">
+              <IconButton onClick={browseClick} color="primary">
                 <OpenInNew />
               </IconButton>
             </span>

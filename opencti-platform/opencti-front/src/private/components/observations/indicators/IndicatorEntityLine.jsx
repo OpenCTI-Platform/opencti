@@ -117,7 +117,7 @@ class IndicatorEntityLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.name.width }}
                 >
-                  {/* eslint-disable-next-line no-nested-ternary */}
+                  { }
                   {!restricted
                     ? element.entity_type === 'stix_relation'
                     || element.entity_type === 'stix-relation'

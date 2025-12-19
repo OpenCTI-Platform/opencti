@@ -17,7 +17,7 @@ import {
   ViewListOutline,
 } from 'mdi-material-ui';
 import React from 'react';
-// eslint-disable-next-line import/extensions
+
 import type { WidgetDataSelection } from './widget';
 
 const widgetVisualizationTypes = [

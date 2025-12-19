@@ -36,16 +36,16 @@ export const bytesFormat = (number, digits = 2) => {
   const sizes = [' Bytes', 'KB', 'MB', 'GB', 'TB'];
   if (number === 0) {
     return {
-      // eslint-disable-next-line no-restricted-properties
+
       number: 0,
       symbol: ' Bytes',
       original: number,
     };
   }
-  // eslint-disable-next-line radix
+
   const i = parseInt(Math.floor(Math.log(number) / Math.log(1024)));
   return {
-    // eslint-disable-next-line no-restricted-properties
+
     number: (number / 1024 ** i).toFixed(digits).replace(rx, '$1'),
     symbol: sizes[i],
     original: number,

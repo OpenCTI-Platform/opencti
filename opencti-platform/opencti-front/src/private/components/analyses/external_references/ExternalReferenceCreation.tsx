@@ -7,7 +7,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
@@ -261,7 +261,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                 />
                 <div style={{ marginTop: 20, textAlign: 'right' }}>
                   <Button
-                    variant="contained"
+                    variant="secondary"
                     onClick={handleReset}
                     disabled={isSubmitting}
                     style={buttonStyle}
@@ -269,8 +269,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
-                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                     style={buttonStyle}
@@ -352,13 +350,13 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                 </DialogContent>
                 <DialogActions>
                   <Button
+                    variant="secondary"
                     onClick={handleCloseContextual || handleReset}
                     disabled={isSubmitting}
                   >
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
-                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

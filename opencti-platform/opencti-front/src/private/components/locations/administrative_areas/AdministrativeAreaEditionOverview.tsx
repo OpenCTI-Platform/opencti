@@ -133,7 +133,6 @@ interface AdministrativeAreaEditionFormValues {
   objectMarking?: FieldOption[];
 }
 
-// eslint-disable-next-line max-len
 const AdministrativeAreaEditionOverview: FunctionComponent<
   AdministrativeAreaEditionOverviewProps
 > = ({

@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { UIEvent, useState } from 'react';
 import MoreVert from '@mui/icons-material/MoreVert';
-import Button from '@mui/material/Button';
+import IconButton from '@common/button/IconButton';
 import { Menu, MenuItem, PopoverProps } from '@mui/material';
 import { graphql, useFragment } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
@@ -53,15 +53,15 @@ const PirPopover = ({ data }: PirPopoverProps) => {
 
   return (
     <>
-      <Button
+      <IconButton
         onClick={onOpenMenu}
         aria-haspopup="true"
         className="icon-outlined"
-        variant="outlined"
+        variant="secondary"
         aria-label={t_i18n('Popover of actions')}
       >
         <MoreVert fontSize="small" />
-      </Button>
+      </IconButton>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
         <PirDeletion

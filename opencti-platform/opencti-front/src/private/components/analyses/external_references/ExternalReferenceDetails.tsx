@@ -5,12 +5,12 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import { OpenInBrowserOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Tooltip from '@mui/material/Tooltip';
 import DialogTitle from '@mui/material/DialogTitle';
 import { ExternalReferenceDetails_externalReference$data } from './__generated__/ExternalReferenceDetails_externalReference.graphql';
@@ -89,7 +89,6 @@ const ExternalReferenceDetailsComponent = ({
                 <IconButton
                   onClick={() => handleOpenExternalLink(externalReference.url ?? '')
                   }
-                  size="medium"
                   color="primary"
                   style={{ position: 'absolute', right: 0, top: 0 }}
                   disabled={!externalReference.url}
@@ -117,8 +116,8 @@ const ExternalReferenceDetailsComponent = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
-          <Button color="secondary" onClick={handleBrowseExternalLink}>
+          <Button variant="secondary" onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
+          <Button onClick={handleBrowseExternalLink}>
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>

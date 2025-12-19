@@ -11,8 +11,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -271,10 +271,10 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} disabled={removing}>
+          <Button variant="secondary" onClick={handleCloseDialog} disabled={removing}>
             {t_i18n('Cancel')}
           </Button>
-          <Button onClick={handleRemoval} color="secondary" disabled={removing}>
+          <Button onClick={handleRemoval} disabled={removing}>
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>

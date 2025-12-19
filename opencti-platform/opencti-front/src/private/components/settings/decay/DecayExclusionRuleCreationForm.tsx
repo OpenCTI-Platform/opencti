@@ -3,7 +3,7 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import { useFormatter } from 'src/components/i18n';
 import * as Yup from 'yup';
 import { fieldSpacingContainerStyle } from 'src/utils/field';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import useFiltersState from 'src/utils/filters/useFiltersState';
@@ -153,7 +153,7 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
             />
             <div style={{ marginTop: 20, textAlign: 'right' }}>
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
                 style={{ marginLeft: 16 }}
@@ -161,8 +161,6 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 style={{ marginLeft: 16 }}
