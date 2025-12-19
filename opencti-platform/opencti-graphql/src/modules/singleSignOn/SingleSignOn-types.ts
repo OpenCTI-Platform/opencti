@@ -22,17 +22,6 @@ interface GroupsManagement {
   read_userinfo: boolean;
 }
 
-// # Examples : declare here specific keys for each type of SSO
-// SAML keys from notion :
-// Page : SSO in GUI - Overall task => resources => "List of fields to be included in each Auth Type"
-export const SAML_CONFIGURATION_MANDATORY_KEY_LIST = ['name', 'label', 'issuer', 'cert', 'saml_callback_url', 'entry_point'];
-// export const LDAP_CONFIGURATION_KEY_LIST = [];
-export const CONFIGURATION_MANDATORY_KEY_LIST = {
-  [StrategyType.STRATEGY_SAML]: SAML_CONFIGURATION_MANDATORY_KEY_LIST,
-  // [StrategyType.STRATEGY_LDAP]: LDAP_CONFIGURATION_KEY_LIST,
-  // [...]
-}
-
 export interface BasicStoreEntitySingleSignOn extends BasicStoreEntity {
   name: string;
   description: string;

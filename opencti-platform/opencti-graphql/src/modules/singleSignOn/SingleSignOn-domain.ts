@@ -19,8 +19,6 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { StrategyType } from '../../config/providers-configuration';
 const isSingleSignOnEnabled = isFeatureEnabled('SINGLE_SIGN_ON_ENABLED');
 
-export const getConfigurationKeyList = (strategy: StrategyType) => CONFIGURATION_MANDATORY_KEY_LIST[strategy];
-
 // Create a function to check all mandatory fields before creation
 
 export const getStrategyAttributes = (strategy: StrategyType) => {
@@ -30,11 +28,29 @@ export const getStrategyAttributes = (strategy: StrategyType) => {
   // If this solution is used, maybe we will not have to keep the value on resolver : mandatoryFields
   // something like :
   /*
-    const STRATEGY_ATTRIBUTES = {
+    export enum AttributeType {
+      STRING = 'string',
+      NUMBER = 'number',
+      BOOLEAN = 'boolean',
+      STRATEGY_LDAP = 'LdapStrategy',
+    }
+
+    type StrategyAttributesType = {
+      ["string"]: {
+        key: string;
+        displayName: string;
+        type: AttributeType;
+        mandatory: boolean;
+        tooltip?: string;
+      }
+    }
+
+    const STRATEGY_ATTRIBUTES: StrategyAttributesType = {
       [StrategyType.STRATEGY_SAML]: [
-        { key: 'name', type: 'string', mandatory: true, order: 1 },
-        { key: 'description', type: 'string', mandatory: false, order: 2 },
-        { key: 'issuer', type: 'string', mandatory: true,; order: 3 },
+        { key: 'name', displayName: 'name', type: AttributeType.STRING , mandatory: true, order: 1 },
+        { key: 'description', displayName: 'description', type: AttributeType.BOOLEAN, mandatory: false, order: 2 },
+        { key: 'issuer', displayName: 'issuer', type:  AttributeType.STRING, mandatory: true, order: 3 },
+        { key: 'cert', displayName: 'certificat', type: AttributeType.STRING, mandatory: true, order: 4, tooltip: 'Here is a tooltip' },
         {....}
       ],
       [StrategyType.STRATEGY_LDAP]: [{....}],

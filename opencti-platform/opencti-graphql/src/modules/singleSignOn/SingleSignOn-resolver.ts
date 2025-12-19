@@ -1,15 +1,12 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findSingleSignOnById, findSingleSignOnPaginated, addSingleSignOn, fieldPatchSingleSignOn, deleteSingleSignOn, getConfigurationKeyList, getStrategyAttributes } from './SingleSignOn-domain';
+import { findSingleSignOnById, findSingleSignOnPaginated, addSingleSignOn, fieldPatchSingleSignOn, deleteSingleSignOn } from './SingleSignOn-domain';
 
 const singleSignOnResolver: Resolvers = {
   Query: {
     singleSignOn: (_, { id }, context) => findSingleSignOnById(context, context.user, id),
     singleSignOns: (_, args, context) => findSingleSignOnPaginated(context, context.user, args),
-    // singleSignOnAttributes: (_, { strategy }, context) => getStrategyAttributes(strategy),
-  },
-  SingleSignOn: {
-    // used to have all mandatory fields for strategy
-    mandatoryFields:  (singleSignOn) => getConfigurationKeyList(singleSignOn.strategy),
+    // to be fetched when strategy is selected in front
+    // strategyAttributes: (_, { strategy }, context) => getStrategyAttributes(strategy),
   },
   Mutation: {
     singleSignOnAdd: (_, { input }, context) => {
