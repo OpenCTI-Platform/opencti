@@ -35,7 +35,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             log_level=self.log_level,
             json_logging=self.json_logging,
             ssl_verify=self.ssl_verify,
-            provider="pushHandler/" + __version__,
+            provider="worker/" + __version__,
         )
 
     def send_bundle_to_specific_queue(
