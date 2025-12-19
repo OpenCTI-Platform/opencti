@@ -5,6 +5,23 @@ import { queryAsAdmin } from '../../utils/testQuery';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 
+const UPDATE_SETTINGS_QUERY = gql`
+  mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        platform_ai_enabled
+      }
+    }
+  }
+`;
+
+const AI_FIX_SPELLING_MUTATION = gql`
+  mutation AiFixSpelling($id: String!, $content: String!) {
+    aiFixSpelling(id: $id, content: $content)
+  }
+`;
+
 const ABOUT_QUERY = gql`
   query about {
     about {
@@ -132,6 +149,29 @@ describe('Settings resolver standard behavior', () => {
     const readResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
     const { editContext } = readResult.data.settings;
     expect(editContext.length).toEqual(0);
+  });
+
+  it('should block AI operations when platform AI is disabled', async () => {
+    const settingsInternalId = await settingsId();
+    await queryAsAdmin({
+      query: UPDATE_SETTINGS_QUERY,
+      variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [false] }] },
+    });
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+
+    const aiResult = await queryAsAdmin({
+      query: AI_FIX_SPELLING_MUTATION,
+      variables: { id: 'ai-test', content: 'Some content to check.' },
+    });
+    expect(aiResult).not.toBeNull();
+    expect(aiResult.errors.length).toEqual(1);
+    expect(aiResult.errors.at(0).message).toEqual('AI is disabled in platform settings');
+
+    await queryAsAdmin({
+      query: UPDATE_SETTINGS_QUERY,
+      variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [true] }] },
+    });
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   });
 });
 
