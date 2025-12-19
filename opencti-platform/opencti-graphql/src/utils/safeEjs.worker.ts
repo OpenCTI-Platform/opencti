@@ -26,7 +26,9 @@ const executeWorker = async () => {
     // Recreate the escape function for JSON stringification
     safeEjsOptions.escape = (value: any) => {
       const result = JSON.stringify(value);
-      return result.startsWith('"') && result.endsWith('"') ? result.slice(1, -1) : result;
+      return typeof result === 'string' && result.startsWith('"') && result.endsWith('"')
+        ? result.slice(1, -1)
+        : result;
     };
   }
 

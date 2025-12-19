@@ -238,7 +238,6 @@ export const internalProcessNotification = async (
   notificationData: NotificationData[],
   triggerList: BasicStoreEntityTrigger[],
   usersMap: Map<string, AuthUser>,
-  // eslint-disable-next-line consistent-return
 ): Promise<void> => {
   if (notificationUser.user_service_account) {
     throw UnsupportedError('Cannot send notification to service account user');
