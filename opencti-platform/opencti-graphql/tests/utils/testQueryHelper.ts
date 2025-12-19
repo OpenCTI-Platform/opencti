@@ -189,7 +189,7 @@ export const createUploadFromTestDataFile = async (filePathRelativeFromData: str
 };
 
 /**
- * Enable Enterprise edition and set the platform organisation.
+ * Set the platform organisation.
  * @param organization organization to use as platform organisation.
  */
 export const setOrganization = async (organization: OrganizationTestData) => {
@@ -206,7 +206,7 @@ export const setOrganization = async (organization: OrganizationTestData) => {
 };
 
 /**
- * Remove any platform organization and go back to community edition.
+ * Remove any platform organization
  */
 export const unSetOrganization = async () => {
   const platformSettings: any = await getSettings(testContext);
