@@ -9755,6 +9755,8 @@ type Mutation {
   stixRefRelationshipEdit(id: ID!): StixRefRelationshipEditMutations
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
+  inferredRelationAdd(jsonInput: String!): ID
+  inferredEntityAdd(jsonInput: String!): ID
   channelAdd(input: ChannelAddInput!): Channel
   channelDelete(id: ID!): ID
   channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel
