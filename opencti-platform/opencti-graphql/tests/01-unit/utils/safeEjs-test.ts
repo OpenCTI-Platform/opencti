@@ -329,8 +329,8 @@ describe('check safeRender on real files', () => {
     async ({ name }) => {
       const templateFile = `${testFilename.substring(0, testFilename.lastIndexOf('.'))}.${name}`;
       const template = await fs.readFile(templateFile, 'utf8');
-      const jsonFilesTemplates = ['template-5', 'template-6', 'template-7'];
-      const escape = jsonFilesTemplates.some((f) => name.includes(f)) ? customEscapeFunction : undefined;
+      const jsonFilesTestCases = fileTestCases.filter((fileName) => fileName.endsWith('.json'));
+      const escape = jsonFilesTestCases.some((f) => name.includes(f)) ? customEscapeFunction : undefined;
       const safeRendered = await safeRender(template, data, { useNotificationTool: true, escape });
       const unsafeRendered = render(template, data);
       expect(safeRendered).toEqual(unsafeRendered);
