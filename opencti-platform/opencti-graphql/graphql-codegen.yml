@@ -69,6 +69,7 @@ generates:
         SecurityCoverage: ../modules/securityCoverage/securityCoverage-types#BasicStoreEntitySecurityCoverage
         EmailTemplate: ../modules/emailTemplate/emailTemplate-types#BasicStoreEntityEmailTemplate
         Form: ../modules/form/form-types#BasicStoreEntityForm
+        SingleSignOn: ../modules/singleSignOn/singleSignOn-types#BasicStoreEntityDecayExclusionRule
 
   ./graphql.schema.json:
     plugins:

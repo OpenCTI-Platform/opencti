@@ -1,0 +1,133 @@
+type SingleSignOn implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  metrics:[Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  # SingleSignOn
+  name: String!
+  description: String
+  enabled: Boolean!
+  strategy: StrategyType!
+  auto_create_group: Boolean
+  prevent_default_groups: Boolean
+  logout_remote: Boolean
+  organizations_management: [OrganizationsManagement!]
+  groups_management: [GroupsManagement!]
+  configuration: [ConfigurationType!]
+  advanced_configuration: [AdvancedConfigurationType!]
+}
+
+type OrganizationsManagement {
+  organizations_path: [String]!
+  organizations_mapping: [String]!
+}
+
+type GroupsManagement {
+  groups_attributes: [String]!
+  groups_path: [String]!
+  groups_mapping: [String]!
+  read_userinfo: Boolean!
+}
+
+type ConfigurationType {
+  key: String!
+  value: String!
+  type: String!
+  mandatory: Boolean!
+}
+
+type AdvancedConfigurationType {
+  key: String!
+  value: String!
+  type: String!
+}
+
+enum StrategyType {
+  LocalStrategy
+  ClientCertStrategy
+  HeaderStrategy
+  LdapStrategy
+  OpenIDConnectStrategy
+  FacebookStrategy
+  SamlStrategy
+  GoogleStrategy
+  GithubStrategy
+  Auth0Strategy
+}
+
+enum SingleSignOnOrdering {
+  name
+  enabled
+  strategy
+  _score
+}
+
+type SingleSignOnEdge {
+  cursor: String!
+  node: SingleSignOn!
+}
+
+type SingleSignOnConnection {
+  pageInfo: PageInfo!
+  edges: [SingleSignOnEdge!]!
+}
+
+type Query {
+  singleSignOn(id: String!): SingleSignOn @auth(for: [SETTINGS])
+  singleSignOns(
+    first: Int
+    after: ID
+    orderBy: SingleSignOnOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): SingleSignOnConnection @auth(for: [SETTINGS])
+}
+
+input OrganizationsManagementInput {
+  organizations_path: [String]!
+  organizations_mapping: [String]!
+}
+
+input GroupsManagementInput {
+  groups_attributes: [String]!
+  groups_path: [String]!
+  groups_mapping: [String]!
+  read_userinfo: Boolean!
+}
+
+input ConfigurationTypeInput {
+  key: String!
+  value: String!
+  type: String!
+  mandatory: Boolean!
+}
+
+input AdvancedConfigurationTypeInput {
+  key: String!
+  value: String!
+  type: String!
+}
+
+input SingleSignOnAddInput {
+  name: String!
+  description: String
+  enabled: Boolean!
+  strategy: StrategyType!
+  auto_create_group: Boolean
+  prevent_default_groups: Boolean
+  logout_remote: Boolean
+  organizations_management: [OrganizationsManagementInput!]
+  groups_management: [GroupsManagementInput!]
+  configuration: [ConfigurationTypeInput!]
+  advanced_configuration: [AdvancedConfigurationTypeInput!]
+}
+
+type Mutation {
+  singleSignOnAdd(input: SingleSignOnAddInput!): SingleSignOn @auth(for: [SETTINGS])
+  singleSignOnFieldPatch(id: ID!, input: [EditInput!]!): SingleSignOn @auth(for: [SETTINGS])
+  singleSignOnDelete(id: ID!): ID @auth(for: [SETTINGS])
+}

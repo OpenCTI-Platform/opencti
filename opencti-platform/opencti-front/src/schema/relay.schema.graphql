@@ -9106,6 +9106,8 @@ type Query {
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
+  singleSignOn(id: String!): SingleSignOn
+  singleSignOns(first: Int, after: ID, orderBy: SingleSignOnOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SingleSignOnConnection
 }
 
 type Subscription {
@@ -10034,6 +10036,9 @@ type Mutation {
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
+  singleSignOnAdd(input: SingleSignOnAddInput!): SingleSignOn
+  singleSignOnFieldPatch(id: ID!, input: [EditInput!]!): SingleSignOn
+  singleSignOnDelete(id: ID!): ID
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -14866,4 +14871,119 @@ type Metric {
 input PatchMetricInput {
   name: String!
   value: Float!
+}
+
+type SingleSignOn implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  description: String
+  enabled: Boolean!
+  strategy: StrategyType!
+  auto_create_group: Boolean
+  prevent_default_groups: Boolean
+  logout_remote: Boolean
+  organizations_management: [OrganizationsManagement!]
+  groups_management: [GroupsManagement!]
+  configuration: [ConfigurationType!]
+  advanced_configuration: [AdvancedConfigurationType!]
+}
+
+type OrganizationsManagement {
+  organizations_path: [String]!
+  organizations_mapping: [String]!
+}
+
+type GroupsManagement {
+  groups_attributes: [String]!
+  groups_path: [String]!
+  groups_mapping: [String]!
+  read_userinfo: Boolean!
+}
+
+type ConfigurationType {
+  key: String!
+  value: String!
+  type: String!
+  mandatory: Boolean!
+}
+
+type AdvancedConfigurationType {
+  key: String!
+  value: String!
+  type: String!
+}
+
+enum StrategyType {
+  LocalStrategy
+  ClientCertStrategy
+  HeaderStrategy
+  LdapStrategy
+  OpenIDConnectStrategy
+  FacebookStrategy
+  SamlStrategy
+  GoogleStrategy
+  GithubStrategy
+  Auth0Strategy
+}
+
+enum SingleSignOnOrdering {
+  name
+  enabled
+  strategy
+  _score
+}
+
+type SingleSignOnEdge {
+  cursor: String!
+  node: SingleSignOn!
+}
+
+type SingleSignOnConnection {
+  pageInfo: PageInfo!
+  edges: [SingleSignOnEdge!]!
+}
+
+input OrganizationsManagementInput {
+  organizations_path: [String]!
+  organizations_mapping: [String]!
+}
+
+input GroupsManagementInput {
+  groups_attributes: [String]!
+  groups_path: [String]!
+  groups_mapping: [String]!
+  read_userinfo: Boolean!
+}
+
+input ConfigurationTypeInput {
+  key: String!
+  value: String!
+  type: String!
+  mandatory: Boolean!
+}
+
+input AdvancedConfigurationTypeInput {
+  key: String!
+  value: String!
+  type: String!
+}
+
+input SingleSignOnAddInput {
+  name: String!
+  description: String
+  enabled: Boolean!
+  strategy: StrategyType!
+  auto_create_group: Boolean
+  prevent_default_groups: Boolean
+  logout_remote: Boolean
+  organizations_management: [OrganizationsManagementInput!]
+  groups_management: [GroupsManagementInput!]
+  configuration: [ConfigurationTypeInput!]
+  advanced_configuration: [AdvancedConfigurationTypeInput!]
 }
