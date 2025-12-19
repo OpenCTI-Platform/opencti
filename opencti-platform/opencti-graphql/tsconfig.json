@@ -1,22 +1,16 @@
 {
-  "include": ["./*", "./src/**/*", "./tests/**/*", "./script/**/*", ".eslintrc.js"],
+  "extends": "../../tsconfig.base.json",
+  "include": ["./*", "./src/**/*", "./tests/**/*", "./script/**/*", "eslint.config.mjs"],
   "files": ["src/generated/graphql.ts"],
   "compilerOptions": {
+    "moduleResolution": "node",
     "target": "es2020",
     "module": "es2020",
     "lib": ["es2022"],
-    "strict": true,
-    "allowJs": true,
     "noImplicitAny": true,
-    "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
     "verbatimModuleSyntax": true,
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "typeRoots": ["node_modules/@types", "src/types"],
+    
   }
 }
