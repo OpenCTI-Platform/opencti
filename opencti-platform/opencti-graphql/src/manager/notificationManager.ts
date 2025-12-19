@@ -4,6 +4,7 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import type { Moment } from 'moment';
 import { type StreamProcessor } from '../database/stream/stream-utils';
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
@@ -38,6 +39,7 @@ import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
+const NOTIFICATION_MANAGER_NAME = 'notification_manager';
 export const EVENT_NOTIFICATION_VERSION = '1';
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
@@ -260,7 +262,7 @@ export const isRelationFromOrToMatchFilters = (
   } else if (instance.type === STIX_TYPE_RELATION) {
     stixIdsToSearch.push((instance as StixRelation).source_ref, (instance as StixRelation).target_ref);
   }
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const value of listenedInstanceIdsMap.values()) {
     if (stixIdsToSearch.includes(value.id)) {
       return true;
@@ -511,7 +513,6 @@ export const buildTargetEvents = async (
               targets.push({ user: notificationUser, type: translatedType, message });
             }
         } else { // useSideEventMatching = true: Case side events for instance triggers
-          // eslint-disable-next-line no-lonely-if
           if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible
             const listenedInstanceIdsMap = await resolveFiltersMapForUser(userContext, user, finalFilters);
             // eslint-disable-next-line max-len
@@ -570,7 +571,7 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
     if (streamEvents.length === 0) {
       return;
     }
-    const context = executionContext('notification_manager');
+    const context = executionContext(NOTIFICATION_MANAGER_NAME);
     const liveNotifications = await getLiveNotifications(context);
     const version = EVENT_NOTIFICATION_VERSION;
     for (let index = 0; index < streamEvents.length; index += 1) {
@@ -594,6 +595,7 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
           }
         }
       }
+      await redisSetManagerEventState(NOTIFICATION_MANAGER_NAME, streamEvent.id);
     }
   } catch (e) {
     logApp.error('[OPENCTI-MODULE] Notification manager error', { cause: e, manager: 'NOTIFICATION_MANAGER' });
@@ -661,7 +663,8 @@ const initNotificationManager = () => {
       running = true;
       logApp.info('[OPENCTI-MODULE] Running notification manager (live)');
       streamProcessor = createStreamProcessor('Notification manager', notificationLiveStreamHandler);
-      await streamProcessor.start('live');
+      const lastEventState = await redisGetManagerEventState(NOTIFICATION_MANAGER_NAME);
+      await streamProcessor.start(lastEventState ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
@@ -680,7 +683,7 @@ const initNotificationManager = () => {
   };
 
   const notificationDigestHandler = async () => {
-    const context = executionContext('notification_manager');
+    const context = executionContext(NOTIFICATION_MANAGER_NAME);
     let lock;
     try {
       // Lock the manager
