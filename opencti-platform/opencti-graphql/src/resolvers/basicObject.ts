@@ -15,7 +15,9 @@ const basicObjectResolvers: Resolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    parent_types(obj) { return obj.parent_types.filter((t) => t); },
+    parent_types(obj) {
+      return obj.parent_types.filter((t) => t);
+    },
     metrics(obj) {
       return obj.metrics ? obj.metrics : [];
     },
