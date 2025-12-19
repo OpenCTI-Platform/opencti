@@ -15,7 +15,6 @@ import { notify } from './redis';
 import { isEmptyField } from './utils';
 import { addNlqQueryCount } from '../manager/telemetryManager';
 
-const AI_ENABLED = conf.get('ai:enabled');
 const AI_TYPE = conf.get('ai:type');
 const AI_ENDPOINT = conf.get('ai:endpoint');
 const AI_TOKEN = conf.get('ai:token');
@@ -27,7 +26,7 @@ const AI_AZURE_DEPLOYMENT = conf.get('ai:ai_azure_deployment');
 
 let client: Mistral | OpenAI | AzureOpenAI | null = null;
 let nlqChat: ChatOpenAI | ChatMistralAI | AzureChatOpenAI | null = null;
-if (AI_ENABLED && AI_TOKEN) {
+if (AI_TOKEN) {
   switch (AI_TYPE) {
     case 'mistralai':
       client = new Mistral({
@@ -104,7 +103,7 @@ if (AI_ENABLED && AI_TOKEN) {
 // Query MistralAI (Streaming)
 export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
   if (!client) {
-    throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
+    throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
     logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: userMessage.substring(0, 100) });
@@ -144,7 +143,7 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
 // Query OpenAI (Streaming)
 export const queryChatGpt = async (busId: string | null, developerMessage: string, userMessage: string, user: AuthUser) => {
   if (!client) {
-    throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
+    throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
     logApp.info('[AI] Querying OpenAI with prompt', { type: AI_TYPE });
@@ -197,7 +196,6 @@ export const queryAi = async (busId: string | null, developerMessage: string | n
 // NLQ AI Query with LangChain's Chat Models
 export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
   const badAiConfigError = UnsupportedError('Incorrect AI configuration for NLQ', {
-    enabled: AI_ENABLED,
     type: AI_TYPE,
     endpoint: AI_ENDPOINT,
     model: AI_MODEL,
