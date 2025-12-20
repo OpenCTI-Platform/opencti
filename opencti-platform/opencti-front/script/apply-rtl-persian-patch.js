@@ -518,7 +518,21 @@ export const useDocumentDirectionModifier = (direction: 'rtl' | 'ltr') => {
         console.log('   ⚠️  lang/front/fa.json exists but appears to be untranslated (identical to English)');
         needsTranslation = true;
       } else {
-        console.log('   ✅ lang/front/fa.json already exists and appears to be translated');
+        // Check for new keys in English file that don't exist in Persian file
+        const enKeys = Object.keys(enContent);
+        const faKeys = Object.keys(faContent);
+        const newKeys = enKeys.filter(key => !(key in faContent));
+        const untranslatedKeys = enKeys.filter(key => key in faContent && faContent[key] === enContent[key]);
+        
+        if (newKeys.length > 0 || untranslatedKeys.length > 0) {
+          console.log(`   📝 lang/front/fa.json exists but has ${newKeys.length} new key(s) and ${untranslatedKeys.length} untranslated key(s)`);
+          if (newKeys.length > 0) {
+            console.log(`      New keys: ${newKeys.slice(0, 5).join(', ')}${newKeys.length > 5 ? '...' : ''}`);
+          }
+          needsTranslation = true;
+        } else {
+          console.log('   ✅ lang/front/fa.json already exists and appears to be fully translated');
+        }
       }
     } catch (error) {
       console.log('   ⚠️  lang/front/fa.json exists but may be corrupted, will attempt translation');
@@ -544,7 +558,21 @@ export const useDocumentDirectionModifier = (direction: 'rtl' | 'ltr') => {
         console.log('   ⚠️  lang/back/fa.json exists but appears to be untranslated (identical to English)');
         needsTranslation = true;
       } else {
-        console.log('   ✅ lang/back/fa.json already exists and appears to be translated');
+        // Check for new keys in English file that don't exist in Persian file
+        const enKeys = Object.keys(enContent);
+        const faKeys = Object.keys(faContent);
+        const newKeys = enKeys.filter(key => !(key in faContent));
+        const untranslatedKeys = enKeys.filter(key => key in faContent && faContent[key] === enContent[key]);
+        
+        if (newKeys.length > 0 || untranslatedKeys.length > 0) {
+          console.log(`   📝 lang/back/fa.json exists but has ${newKeys.length} new key(s) and ${untranslatedKeys.length} untranslated key(s)`);
+          if (newKeys.length > 0) {
+            console.log(`      New keys: ${newKeys.slice(0, 5).join(', ')}${newKeys.length > 5 ? '...' : ''}`);
+          }
+          needsTranslation = true;
+        } else {
+          console.log('   ✅ lang/back/fa.json already exists and appears to be fully translated');
+        }
       }
     } catch (error) {
       console.log('   ⚠️  lang/back/fa.json exists but may be corrupted, will attempt translation');
@@ -558,59 +586,98 @@ export const useDocumentDirectionModifier = (direction: 'rtl' | 'ltr') => {
     const subscriptionKey = process.env.SUBSCRIPTION_KEY;
     const zaiApiKey = process.env.ZAI_API_KEY;
     
+    // Check if files already exist (incremental translation needed)
+    const frontFileExists = fs.existsSync(langFrontFaPath);
+    const backFileExists = fs.existsSync(langBackFaPath);
+    const needsIncremental = frontFileExists || backFileExists;
+    
     if (subscriptionKey) {
       console.log('✅ SUBSCRIPTION_KEY found, using DeepL for translation...');
       console.log('   This may take a few minutes...\n');
       
-      try {
-        // Translate front file
-        if (fs.existsSync(langFrontFaPath)) {
-          console.log('   Translating lang/front/fa.json...');
-          const frontCommand = `i18n-auto-translation -a deepl-free -p ${langFrontEnPath} -t fa -k ${subscriptionKey}`;
-          try {
-            const { stdout } = await execAsync(frontCommand);
-            console.log('   ✅ Front translation completed');
-          } catch (error) {
-            console.error('   ⚠️  Error translating front file:', error.message);
-            console.log('   ℹ️  Trying Z.AI as fallback...');
-            // Try Z.AI as fallback
-            await tryZAITranslation(langFrontEnPath, langFrontFaPath);
+      // If files exist, use Z.AI for incremental translation (better for new keys)
+      // Otherwise use DeepL for full translation
+      if (needsIncremental && zaiApiKey) {
+        console.log('   ℹ️  Files exist, using Z.AI for incremental translation (only new/changed keys)...');
+        try {
+          const { translateFile } = require('./translate-with-zai.js');
+          const baselineDir = path.join(__dirname, './local');
+          if (!fs.existsSync(baselineDir)) {
+            fs.mkdirSync(baselineDir, { recursive: true });
           }
-        }
-        
-        // Translate back file
-        if (fs.existsSync(langBackFaPath)) {
-          console.log('   Translating lang/back/fa.json...');
-          const backCommand = `i18n-auto-translation -a deepl-free -p ${langBackEnPath} -t fa -k ${subscriptionKey}`;
-          try {
-            const { stdout } = await execAsync(backCommand);
-            console.log('   ✅ Back translation completed');
-          } catch (error) {
-            console.error('   ⚠️  Error translating back file:', error.message);
-            console.log('   ℹ️  Trying Z.AI as fallback...');
-            // Try Z.AI as fallback
-            await tryZAITranslation(langBackEnPath, langBackFaPath);
+          if (frontFileExists) {
+            await translateFile(langFrontEnPath, langFrontFaPath, baselineDir);
           }
+          if (backFileExists) {
+            await translateFile(langBackEnPath, langBackFaPath, baselineDir);
+          }
+          console.log('\n   ✨ Incremental translation completed!');
+        } catch (error) {
+          console.error('   ⚠️  Error with Z.AI incremental translation:', error.message);
+          console.log('   ℹ️  Falling back to DeepL full translation...');
+          // Fall through to DeepL translation
         }
-        
-        console.log('\n   ✨ Auto-translation completed!');
-      } catch (error) {
-        console.error('   ❌ Error during auto-translation:', error.message);
-        if (zaiApiKey) {
-          console.log('   ℹ️  Trying Z.AI as fallback...');
-          await tryZAITranslation(langFrontEnPath, langFrontFaPath);
-          await tryZAITranslation(langBackEnPath, langBackFaPath);
-        } else {
-      console.log('   ℹ️  You can translate files manually or run:');
-      console.log('      Linux/Mac/Git Bash:');
-      console.log('        export SUBSCRIPTION_KEY=your_key && node script/auto-translate.js');
-      console.log('        export ZAI_API_KEY=your_key && node script/translate-with-zai.js');
-      console.log('      Windows PowerShell:');
-      console.log('        $env:SUBSCRIPTION_KEY="your_key"; node script/auto-translate.js');
-      console.log('        $env:ZAI_API_KEY="your_key"; node script/translate-with-zai.js');
-      console.log('      Windows CMD:');
-      console.log('        set SUBSCRIPTION_KEY=your_key && node script/auto-translate.js');
-      console.log('        set ZAI_API_KEY=your_key && node script/translate-with-zai.js');
+      }
+      
+      // Use DeepL for full translation if files don't exist or Z.AI failed
+      if (!needsIncremental || !zaiApiKey) {
+        try {
+          // Translate front file
+          if (fs.existsSync(langFrontFaPath) || shouldTranslate) {
+            console.log('   Translating lang/front/fa.json...');
+            const frontCommand = `i18n-auto-translation -a deepl-free -p ${langFrontEnPath} -t fa -k ${subscriptionKey}`;
+            try {
+              const { stdout } = await execAsync(frontCommand);
+              console.log('   ✅ Front translation completed');
+            } catch (error) {
+              console.error('   ⚠️  Error translating front file:', error.message);
+              console.log('   ℹ️  Trying Z.AI as fallback...');
+              // Try Z.AI as fallback
+              await tryZAITranslation(langFrontEnPath, langFrontFaPath);
+            }
+          }
+          
+          // Translate back file
+          if (fs.existsSync(langBackFaPath) || shouldTranslate) {
+            console.log('   Translating lang/back/fa.json...');
+            const backCommand = `i18n-auto-translation -a deepl-free -p ${langBackEnPath} -t fa -k ${subscriptionKey}`;
+            try {
+              const { stdout } = await execAsync(backCommand);
+              console.log('   ✅ Back translation completed');
+            } catch (error) {
+              console.error('   ⚠️  Error translating back file:', error.message);
+              console.log('   ℹ️  Trying Z.AI as fallback...');
+              // Try Z.AI as fallback
+              await tryZAITranslation(langBackEnPath, langBackFaPath);
+            }
+          }
+          
+          if (!needsIncremental || !zaiApiKey) {
+            console.log('\n   ✨ Auto-translation completed!');
+          }
+        } catch (error) {
+          console.error('   ❌ Error during auto-translation:', error.message);
+          if (zaiApiKey) {
+            console.log('   ℹ️  Trying Z.AI as fallback...');
+            const { translateFile } = require('./translate-with-zai.js');
+            const baselineDir = path.join(__dirname, './local');
+            if (!fs.existsSync(baselineDir)) {
+              fs.mkdirSync(baselineDir, { recursive: true });
+            }
+            await translateFile(langFrontEnPath, langFrontFaPath, baselineDir);
+            await translateFile(langBackEnPath, langBackFaPath, baselineDir);
+          } else {
+            console.log('   ℹ️  You can translate files manually or run:');
+            console.log('      Linux/Mac/Git Bash:');
+            console.log('        export SUBSCRIPTION_KEY=your_key && node script/auto-translate.js');
+            console.log('        export ZAI_API_KEY=your_key && node script/translate-with-zai.js');
+            console.log('      Windows PowerShell:');
+            console.log('        $env:SUBSCRIPTION_KEY="your_key"; node script/auto-translate.js');
+            console.log('        $env:ZAI_API_KEY="your_key"; node script/translate-with-zai.js');
+            console.log('      Windows CMD:');
+            console.log('        set SUBSCRIPTION_KEY=your_key && node script/auto-translate.js');
+            console.log('        set ZAI_API_KEY=your_key && node script/translate-with-zai.js');
+          }
         }
       }
     } else if (zaiApiKey) {
@@ -629,13 +696,13 @@ export const useDocumentDirectionModifier = (direction: 'rtl' | 'ltr') => {
         console.log('\n   ✨ Auto-translation completed!');
       } catch (error) {
         console.error('   ❌ Error during Z.AI translation:', error.message);
-      console.log('   ℹ️  You can translate files manually or run:');
-      console.log('      Linux/Mac/Git Bash:');
-      console.log('        export ZAI_API_KEY=your_key && node script/translate-with-zai.js');
-      console.log('      Windows PowerShell:');
-      console.log('        $env:ZAI_API_KEY="your_key"; node script/translate-with-zai.js');
-      console.log('      Windows CMD:');
-      console.log('        set ZAI_API_KEY=your_key && node script/translate-with-zai.js');
+        console.log('   ℹ️  You can translate files manually or run:');
+        console.log('      Linux/Mac/Git Bash:');
+        console.log('        export ZAI_API_KEY=your_key && node script/translate-with-zai.js');
+        console.log('      Windows PowerShell:');
+        console.log('        $env:ZAI_API_KEY="your_key"; node script/translate-with-zai.js');
+        console.log('      Windows CMD:');
+        console.log('        set ZAI_API_KEY=your_key && node script/translate-with-zai.js');
       }
     } else {
       console.log('⚠️  No translation API key found.');

@@ -147,6 +147,7 @@ interface DonutChartProps {
 
 const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
 
   const chartData = useMemo(() => data.map((item) => item.value), [data]);
   const labels = useMemo(() => data.map((item) => item.label), [data]);
@@ -234,7 +235,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
                 fontWeight: 400,
                 color: theme.palette.text?.secondary || '#757575',
                 offsetY: -10,
-                formatter: () => 'Total',
+                formatter: () => t_i18n('Total'),
               },
               value: {
                 show: true,
@@ -248,7 +249,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
               total: {
                 show: true,
                 showAlways: true,
-                label: 'Total',
+                label: t_i18n('Total'),
                 fontSize: '14px',
                 fontFamily: '"IBM Plex Sans", sans-serif',
                 fontWeight: 400,
@@ -325,28 +326,28 @@ const RessaDWM = () => {
 
   const stats = [
     {
-      title: 'All New Leaks',
+      title: t_i18n('All New Leaks'),
       value: 129,
       change: 30,
       icon: <SendOutlined />,
       isPositive: true,
     },
     {
-      title: 'Dark Web',
+      title: t_i18n('Dark Web'),
       value: 43,
       change: 19,
       icon: <Github />,
       isPositive: false,
     },
     {
-      title: 'Web',
+      title: t_i18n('Web'),
       value: 26,
       change: 63,
       icon: <WebOutlined />,
       isPositive: true,
     },
     {
-      title: 'Telegram',
+      title: t_i18n('Telegram'),
       value: 32,
       change: 39,
       icon: <MessageOutlined />,
@@ -392,20 +393,20 @@ const RessaDWM = () => {
                     fontSize: '1rem',
                   }}
                 >
-                  Monitored Sources
+                  {t_i18n('Monitored Sources')}
                 </Typography>
                 <DonutChart
                   data={[
-                    { label: 'Web', value: 25000, color: '#1565c0' },
-                    { label: 'Forums', value: 12000, color: '#64b5f6' },
-                    { label: 'Telegram', value: 15000, color: '#42a5f5' },
-                    { label: 'Dark Web', value: 18000, color: '#0d47a1' },
-                    { label: 'Social Media', value: 10000, color: '#42a5f5' },
-                    { label: 'Deep Web', value: 8000, color: '#90caf9' },
-                    { label: 'Chat Apps', value: 7000, color: '#42a5f5' },
-                    { label: 'Email', value: 5000, color: '#0d47a1' },
-                    { label: 'Gaming Platforms', value: 3000, color: '#42a5f5' },
-                    { label: 'File Sharing', value: 1670, color: '#90caf9' },
+                    { label: t_i18n('Web'), value: 25000, color: '#1565c0' },
+                    { label: t_i18n('Forums'), value: 12000, color: '#64b5f6' },
+                    { label: t_i18n('Telegram'), value: 15000, color: '#42a5f5' },
+                    { label: t_i18n('Dark Web'), value: 18000, color: '#0d47a1' },
+                    { label: t_i18n('Social Media'), value: 10000, color: '#42a5f5' },
+                    { label: t_i18n('Deep Web'), value: 8000, color: '#90caf9' },
+                    { label: t_i18n('Chat Apps'), value: 7000, color: '#42a5f5' },
+                    { label: t_i18n('Email'), value: 5000, color: '#0d47a1' },
+                    { label: t_i18n('Gaming Platforms'), value: 3000, color: '#42a5f5' },
+                    { label: t_i18n('File Sharing'), value: 1670, color: '#90caf9' },
                   ]}
                   total={98670}
                 />
@@ -426,7 +427,7 @@ const RessaDWM = () => {
                     fontSize: '1rem',
                   }}
                 >
-                  Top Leaks
+                  {t_i18n('Top Leaks')}
                 </Typography>
                 <ProgressList
                   items={[
@@ -454,7 +455,7 @@ const RessaDWM = () => {
                     fontSize: '1rem',
                   }}
                 >
-                  Top Damageable
+                  {t_i18n('Top Damageable')}
                 </Typography>
                 <ProgressList
                   items={[
@@ -485,22 +486,22 @@ const RessaDWM = () => {
                     fontSize: '1rem',
                   }}
                 >
-                  Vulnerability Trends Over Time (by Source)
+                  {t_i18n('Vulnerability Trends Over Time (by Source)')}
                 </Typography>
                 <TrendChart
                   series={[
                     {
-                      name: 'Dark Web',
+                      name: t_i18n('Dark Web'),
                       data: [220, 240, 280, 320, 350, 380, 360, 400, 450, 500, 550, 580],
                       color: '#64b5f6',
                     },
                     {
-                      name: 'Telegram',
+                      name: t_i18n('Telegram'),
                       data: [450, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 580],
                       color: '#42a5f5',
                     },
                     {
-                      name: 'Web',
+                      name: t_i18n('Web'),
                       data: [650, 680, 700, 720, 750, 780, 760, 800, 820, 840, 860, 880],
                       color: '#1565c0',
                     },
@@ -523,22 +524,22 @@ const RessaDWM = () => {
                     fontSize: '1rem',
                   }}
                 >
-                  Data Leak Trends Over Time (by Source)
+                  {t_i18n('Data Leak Trends Over Time (by Source)')}
                 </Typography>
                 <TrendChart
                   series={[
                     {
-                      name: 'Dark Web',
+                      name: t_i18n('Dark Web'),
                       data: [220, 240, 280, 320, 350, 380, 360, 400, 450, 500, 550, 580],
                       color: '#64b5f6',
                     },
                     {
-                      name: 'Telegram',
+                      name: t_i18n('Telegram'),
                       data: [450, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 580],
                       color: '#42a5f5',
                     },
                     {
-                      name: 'Web',
+                      name: t_i18n('Web'),
                       data: [650, 680, 700, 720, 750, 780, 760, 800, 820, 840, 860, 880],
                       color: '#1565c0',
                     },
@@ -564,8 +565,22 @@ interface TrendChartProps {
 
 const TrendChart: React.FC<TrendChartProps> = ({ series }) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
 
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    t_i18n('Jan'),
+    t_i18n('Feb'),
+    t_i18n('Mar'),
+    t_i18n('Apr'),
+    t_i18n('May'),
+    t_i18n('Jun'),
+    t_i18n('Jul'),
+    t_i18n('Aug'),
+    t_i18n('Sep'),
+    t_i18n('Oct'),
+    t_i18n('Nov'),
+    t_i18n('Dec'),
+  ];
 
   const chartSeries = series.map((s) => ({
     name: s.name,
@@ -647,6 +662,7 @@ interface ChatMessage {
 
 const ChatInterface: React.FC = () => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const isDark = theme.palette.mode === 'dark';
   
   const pinnedChats: ChatItem[] = [
@@ -678,7 +694,7 @@ const ChatInterface: React.FC = () => {
     },
     {
       id: '2',
-      sender: 'Me',
+      sender: t_i18n('Me'),
       avatar: 'ME',
       message: 'W July_Promotion',
       time: '2:25 PM',
@@ -736,7 +752,7 @@ const ChatInterface: React.FC = () => {
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: theme.palette.text?.primary }}>
-                Telegram
+                {t_i18n('Telegram')}
               </Typography>
               <ArrowDropDown sx={{ color: theme.palette.text?.primary }} />
             </Box>
@@ -767,7 +783,7 @@ const ChatInterface: React.FC = () => {
                   textTransform: 'uppercase',
                 }}
               >
-                Pinned
+                {t_i18n('Pinned')}
               </Typography>
               <List sx={{ padding: 0 }}>
                 {pinnedChats.map((chat) => (
@@ -790,7 +806,7 @@ const ChatInterface: React.FC = () => {
                   textTransform: 'uppercase',
                 }}
               >
-                Recent
+                {t_i18n('Recent')}
               </Typography>
               <List sx={{ padding: 0 }}>
                 {recentChats.map((chat) => (
@@ -830,7 +846,7 @@ const ChatInterface: React.FC = () => {
                 <GridView sx={{ fontSize: '1.25rem', color: '#ffffff' }} />
               </Box>
               <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: theme.palette.text?.primary }}>
-                Channel Name
+                {t_i18n('Channel Name')}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -849,7 +865,7 @@ const ChatInterface: React.FC = () => {
                   },
                 }}
               >
-                Meet now
+                {t_i18n('Meet now')}
               </Button>
               <Box sx={{ display: 'flex', borderRadius: 1, overflow: 'hidden' }}>
                 <Button
@@ -869,7 +885,7 @@ const ChatInterface: React.FC = () => {
                     },
                   }}
                 >
-                  New meeting
+                  {t_i18n('New meeting')}
                 </Button>
                 <Button
                   variant="contained"
@@ -911,7 +927,7 @@ const ChatInterface: React.FC = () => {
           >
             <TextField
               fullWidth
-              placeholder="Type a message..."
+              placeholder={t_i18n('Type a message...')}
               variant="outlined"
               size="small"
               InputProps={{
