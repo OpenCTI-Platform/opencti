@@ -3078,23 +3078,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:0.3.59":
-  version: 0.3.59
-  resolution: "@langchain/core@npm:0.3.59"
+"@langchain/core@npm:1.1.7":
+  version: 1.1.7
+  resolution: "@langchain/core@npm:1.1.7"
   dependencies:
     "@cfworker/json-schema": "npm:^4.0.2"
     ansi-styles: "npm:^5.0.0"
     camelcase: "npm:6"
     decamelize: "npm:1.2.0"
     js-tiktoken: "npm:^1.0.12"
-    langsmith: "npm:^0.3.33"
+    langsmith: "npm:>=0.4.0 <1.0.0"
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
-    p-retry: "npm:4"
     uuid: "npm:^10.0.0"
-    zod: "npm:^3.25.32"
-    zod-to-json-schema: "npm:^3.22.3"
-  checksum: 10c0/14bb426231208409bf2b93a12f80ff370194644105a66f12096ef56469e8b827e9d2ab959fb3a7accf75e952a79a27e189835da5b22a33524f7bbaeb6f4282df
+    zod: "npm:^3.25.76 || ^4"
+  checksum: 10c0/c31286ad6734039bb2b9b47a9b9959cb99f4fecf4b0654a75fcd768e065579501ecc0737e9108b3a3835e2d157c1f09398ba3054804e125cb57c2fae4edd2e68
   languageName: node
   linkType: hard
 
@@ -5000,13 +4998,6 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10c0/46849136a3b5246105bca0303aab80552a9ff67e024e77ef1845a806a24c1a621dfcba0e4ee5a00ebad17f51edb80928f2dd6dc510a1d9897f3bc22ed64e5cbd
-  languageName: node
-  linkType: hard
-
-"@types/retry@npm:0.12.0":
-  version: 0.12.0
-  resolution: "@types/retry@npm:0.12.0"
-  checksum: 10c0/7c5c9086369826f569b83a4683661557cab1361bac0897a1cefa1a915ff739acd10ca0d62b01071046fe3f5a3f7f2aec80785fe283b75602dc6726781ea3e328
   languageName: node
   linkType: hard
 
@@ -9730,9 +9721,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langsmith@npm:^0.3.33":
-  version: 0.3.82
-  resolution: "langsmith@npm:0.3.82"
+"langsmith@npm:>=0.4.0 <1.0.0":
+  version: 0.4.0
+  resolution: "langsmith@npm:0.4.0"
   dependencies:
     "@types/uuid": "npm:^10.0.0"
     chalk: "npm:^4.1.2"
@@ -9754,7 +9745,7 @@ __metadata:
       optional: true
     openai:
       optional: true
-  checksum: 10c0/359cadb04616ecb233ca6a6b9bdd6fff0f423261c32d9d6f576c93d8c6ac53ed21770c68c779b861861e5efb3894966e8a3be4c71c9ae79292066fe1569465bd
+  checksum: 10c0/aa2a136b01fa70ab113ad5f94b479be8037d7e827e1efe99877631e049ced0207f2292b9f122cbcc0304961809c459ae686c69ae9dc3f183e6997ca413cdd4e9
   languageName: node
   linkType: hard
 
@@ -10875,7 +10866,7 @@ __metadata:
     "@graphql-tools/schema": "npm:10.0.30"
     "@graphql-tools/utils": "npm:10.11.0"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:0.3.59"
+    "@langchain/core": "npm:1.1.7"
     "@langchain/mistralai": "npm:0.2.0"
     "@langchain/openai": "npm:0.5.5"
     "@lezer/javascript": "npm:1.5.4"
@@ -11140,16 +11131,6 @@ __metadata:
     eventemitter3: "npm:^4.0.4"
     p-timeout: "npm:^3.2.0"
   checksum: 10c0/5739ecf5806bbeadf8e463793d5e3004d08bb3f6177bd1a44a005da8fd81bb90f80e4633e1fb6f1dfd35ee663a5c0229abe26aebb36f547ad5a858347c7b0d3e
-  languageName: node
-  linkType: hard
-
-"p-retry@npm:4":
-  version: 4.6.2
-  resolution: "p-retry@npm:4.6.2"
-  dependencies:
-    "@types/retry": "npm:0.12.0"
-    retry: "npm:^0.13.1"
-  checksum: 10c0/d58512f120f1590cfedb4c2e0c42cb3fa66f3cea8a4646632fcb834c56055bb7a6f138aa57b20cc236fb207c9d694e362e0b5c2b14d9b062f67e8925580c73b0
   languageName: node
   linkType: hard
 
@@ -11898,7 +11879,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"retry@npm:0.13.1, retry@npm:^0.13.1":
+"retry@npm:0.13.1":
   version: 0.13.1
   resolution: "retry@npm:0.13.1"
   checksum: 10c0/9ae822ee19db2163497e074ea919780b1efa00431d197c7afdb950e42bf109196774b92a49fc9821f0b8b328a98eea6017410bfc5e8a0fc19c85c6d11adb3772
@@ -14122,9 +14103,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.25.76, zod@npm:^3.20.0, zod@npm:^3.22.4, zod@npm:^3.23.8, zod@npm:^3.25.32":
+"zod@npm:3.25.76, zod@npm:^3.20.0, zod@npm:^3.22.4, zod@npm:^3.23.8":
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.25.76 || ^4":
+  version: 4.2.1
+  resolution: "zod@npm:4.2.1"
+  checksum: 10c0/ecb5219bddf76a42d092a843fb98ad4cb78f1e1077082772b03ef032ee5cbc80790a4051836b962d26fb4af854323bc784d628bd1b8d9898149eba7af21c5560
   languageName: node
   linkType: hard
