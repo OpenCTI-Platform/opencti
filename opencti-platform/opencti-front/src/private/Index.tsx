@@ -19,6 +19,7 @@ import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
 import Loader from '../components/Loader';
 import useDraftContext from '../utils/hooks/useDraftContext';
+import '../static/css/fluentTheme.scss';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
@@ -71,6 +72,12 @@ const Index = ({ settings }: IndexProps) => {
   // Change the theme body attribute when the mode changes in
   // the palette because some components like CKEditor uses this
   // body attribute to display correct styles.
+  useEffect(() => {
+    const html = document.querySelector('html');
+    if (html) {
+      html.setAttribute('data-theme', 'fluent');
+    }
+  }, []);
   useEffect(() => {
     const body = document.querySelector('body');
     if (body) {

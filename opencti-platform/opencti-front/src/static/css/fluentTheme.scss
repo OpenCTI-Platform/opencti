@@ -1,0 +1,272 @@
+html[data-theme="fluent"] {
+  --fluent-color-primary: #006da0;
+  --fluent-color-border: #ccd1dd;
+  --fluent-color-border-hover: #5d616b;
+  body {
+    a {
+      color: var(--fluent-color-primary);
+    }
+  }
+  .MuiTab-root {
+    color: #151515;
+    &.Mui-selected {
+      color: var(--fluent-color-primary) !important;
+    }
+  }
+  .MuiMenuItem-root {
+    &.Mui-selected {
+      background-color: rgba(#006da0, 0.1) !important;
+      &:hover {
+        box-shadow: 2px 0 var(--fluent-color-primary) inset;
+      }
+    }
+  }
+  .MuiTabs-indicator {
+    background-color: var(--fluent-color-primary) !important;
+  }
+  .MuiButtonBase-root {
+    border-radius: 4px;
+    box-shadow: none;
+    &.MuiButton-containedPrimary {
+      --variant-containedBg: var(--fluent-color-primary);
+    }
+    &.MuiIconButton-colorPrimary {
+      color: var(--fluent-color-primary);
+    }
+    &.MuiButton-outlinedPrimary {
+      --variant-outlinedColor: var(--fluent-color-primary);
+    }
+    &.MuiButton-outlined {
+      &.MuiButton-outlinedPrimary {
+        --variant-outlinedBorder: var(--fluent-color-primary);
+      }
+    }
+    &.MuiButton-text {
+      &.MuiButton-textPrimary {
+        color: var(--fluent-color-primary);
+      }
+    }
+  }
+  .MuiSvgIcon-root {
+    &.MuiSvgIcon-colorPrimary {
+      color: var(--fluent-color-primary);
+    }
+  }
+  div {
+    &:hover {
+      > .react-draggable {
+        background-color: var(--fluent-color-primary) !important;
+      }
+    }
+  }
+
+  .MuiFormControl-root {
+    .MuiFormLabel-root {
+      &.MuiInputLabel-standard {
+        font-weight: 600;
+        font-size: 14px;
+        position: relative !important;
+        transform: none !important;
+        color: #21242d;
+        &.Mui-focused {
+          color: #21242d !important;
+        }
+      }
+      margin-bottom: 4px !important;
+      + .MuiInputBase-root {
+        margin-top: 0 !important;
+      }
+    }
+    .MuiInputBase-root {
+      &::after {
+        border-bottom: 1px solid var(--fluent-color-primary);
+      }
+      &::before {
+        border-bottom: none !important;
+      }
+      &.MuiInput-underline {
+        border: 1px solid var(--fluent-color-border) !important;
+        border-width: 1px !important;
+        border-color: var(--fluent-color-border) !important;
+        border-bottom-color: var(--fluent-color-border-hover) !important;
+        border-radius: 4px !important;
+        padding: 6px 12px !important;
+      }
+    }
+  }
+  .MuiInputBase-root {
+    fieldset {
+      border-color: var(--fluent-color-border) !important;
+      border-bottom-color: var(--fluent-color-border-hover) !important;
+      border-radius: 4px !important;
+      &::after {
+        --variant-containedBg: var(--fluent-color-primary);
+        box-sizing: border-box;
+        content: "";
+        position: absolute;
+        left: -1px;
+        bottom: -1px;
+        right: -1px;
+        height: max(2px, 4px);
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+        border-bottom: 2px solid var(--variant-containedBg);
+        clip-path: inset(calc(100% - 2px) 0px 0px);
+        transform: scaleX(0);
+        transition-property: transform;
+        transition-duration: 50ms;
+        transition-delay: cubic-bezier(1, 0, 1, 1);
+      }
+    }
+    &.Mui-focused {
+      fieldset {
+        border-color: var(--fluent-color-border) !important;
+        border-width: 1px !important;
+        &::after {
+          --durationNormal: 200ms;
+          --curveDecelerateMid: cubic-bezier(0, 0, 0, 1);
+          transform: scaleX(1);
+          transition-property: transform;
+          transition-duration: var(--durationNormal);
+          transition-delay: var(--curveDecelerateMid);
+        }
+      }
+    }
+  }
+  .MuiFormLabel-root {
+    &.MuiInputLabel-shrink {
+      font-weight: 600;
+      font-size: 14px;
+      transform: none;
+      margin-bottom: 4px;
+    }
+    &.Mui-focused {
+      color: var(--fluent-color-primary) !important;
+    }
+  }
+  .react-mde {
+    &.react-mde-tabbed-layout {
+      border: 1px solid var(--fluent-color-border) !important;
+      border-radius: 4px !important;
+      .mde-header {
+        .mde-tabs {
+          button.selected {
+            border-radius: 4px;
+            border-color: var(--fluent-color-primary) !important;
+            color: var(--fluent-color-primary) !important;
+          }
+        }
+      }
+    }
+    .mde-textarea-wrapper {
+      textarea {
+        transition: border-bottom 0.3s;
+        border-bottom: 1px solid var(--fluent-color-border-hover) !important;
+        &:hover {
+          border-bottom: 1px solid var(--fluent-color-border-hover) !important;
+        }
+        &:focus {
+          border-bottom: 2px solid var(--fluent-color-primary) !important;
+        }
+      }
+    }
+  }
+  .MuiAutocomplete-root {
+    + .MuiIconButton-edgeEnd {
+      position: absolute;
+      top: auto !important;
+      bottom: 10px !important;
+      right: 40px !important;
+      padding: 0;
+    }
+  }
+  .MuiCheckbox-root {
+    &.MuiCheckbox-colorPrimary {
+      --fui-Checkbox__indicator--borderColor: #b3b3b3;
+      --colorNeutralStrokeAccessible: #adadad;
+      border-radius: 2px;
+      color: var(
+        --fui-Checkbox__indicator--borderColor,
+        var(--colorNeutralStrokeAccessible)
+      );
+      &.Mui-checked {
+        color: var(--fluent-color-primary);
+      }
+    }
+    .MuiTouchRipple-root {
+      display: none;
+    }
+  }
+  .MuiChip-root {
+    padding: 0 4px;
+    gap: 8px;
+    &.MuiChip-outlined {
+      border-radius: 999px !important;
+      background-color: transparent !important;
+    }
+    &.MuiChip-sizeMedium {
+      height: 24px !important;
+      font-size: 12px !important;
+      padding: 4px 8px !important;
+    }
+    .MuiChip-label {
+      padding: 0 !important;
+    }
+  }
+  form {
+    .MuiFormLabel-root {
+      + .MuiBox-root {
+        border: 1px solid var(--fluent-color-border) !important;
+        border-radius: 4px !important;
+        padding: 6px 12px !important;
+        display: flex !important;
+        flex-direction: row-reverse;
+        justify-content: space-between;
+        height: 40px;
+        border-bottom: 1px solid var(--fluent-color-border-hover) !important;
+      }
+    }
+  }
+  .MuiSwitch-root {
+    width: 40px;
+    height: 20px;
+    padding: 0;
+    position: relative;
+    margin-right: 8px;
+    .MuiSwitch-switchBase {
+      border: 1px solid var(--fluent-color-border) !important;
+      background-color: #fff !important;
+      opacity: 1 !important;
+      width: 100% !important;
+      height: 20px !important;
+      border-radius: 10px !important;
+      padding: 1px 4px !important;
+      display: block;
+      transition: all 0.3s;
+      .MuiSwitch-thumb {
+        width: 16px;
+        height: 16px;
+        display: block;
+        background: var(--fluent-color-border-hover);
+        transition: all 0.3s;
+      }
+      .MuiTouchRipple-root {
+        display: none !important;
+      }
+      &.Mui-checked {
+        background-color: var(--fluent-color-primary) !important;
+        border-color: var(--fluent-color-primary) !important;
+        transform: none !important;
+        .MuiSwitch-thumb {
+          width: 16px;
+          height: 16px;
+          transform: translateX(16px) !important;
+          background: #fff;
+        }
+      }
+      + .MuiSwitch-track {
+        display: none !important;
+      }
+    }
+  }
+}
