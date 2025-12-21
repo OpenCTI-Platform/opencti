@@ -737,327 +737,224 @@ class StreamAlive(threading.Thread):
         self.exit_event.set()
 
 
-class ListenStreamBatch(threading.Thread):
+class BatchCallbackWrapper:
+    """Wraps a batch callback to work with single-message listen_stream.
+
+    This class accumulates individual messages and processes them in batches
+    based on batch_size or batch_timeout conditions. It can be used as a
+    callback with the listen_stream method to enable batch processing.
+
+    Usage:
+        batch_callback = helper.create_batch_callback(
+            process_batch_func,
+            batch_size=100,
+            batch_timeout=30,
+            max_batches_per_minute=10
+        )
+        helper.listen_stream(message_callback=batch_callback)
+    """
+
     def __init__(
         self,
         helper,
-        callback,
-        url,
-        token,
-        verify_ssl,
-        start_timestamp,
-        live_stream_id,
-        listen_delete,
-        no_dependencies,
-        recover_iso_date,
-        with_inferences,
-        batch_size,
-        batch_timeout,
-        max_batches_per_minute,
+        batch_callback: Callable,
+        batch_size: Optional[int] = None,
+        batch_timeout: Optional[float] = None,
+        max_batches_per_minute: Optional[int] = None,
     ) -> None:
-        threading.Thread.__init__(self)
+        """Initialize the batch callback wrapper.
+
+        :param helper: OpenCTIConnectorHelper instance
+        :param batch_callback: Function to call with batched events
+        :param batch_size: Process batch when this many events accumulated
+        :param batch_timeout: Process batch after this many seconds
+        :param max_batches_per_minute: Rate limit batch processing
+        """
         self.helper = helper
-        self.callback = callback
-        self.url = url
-        self.token = token
-        self.verify_ssl = verify_ssl
-        self.start_timestamp = start_timestamp
-        self.live_stream_id = live_stream_id
-        self.listen_delete = listen_delete
-        self.no_dependencies = no_dependencies
-        self.recover_iso_date = recover_iso_date
-        self.with_inferences = with_inferences
+        self.batch_callback = batch_callback
         self.batch_size = batch_size
         self.batch_timeout = batch_timeout
-        self.exit_event = threading.Event()
-        self.batch_start_time = None  # Will be initialized in run()
+        self.max_batches_per_minute = max_batches_per_minute
+
+        # Batch state
+        self.batch: List = []
+        self.batch_start_time: Optional[float] = None
+        self.last_msg_id: Optional[str] = None
+        self._lock = threading.Lock()
+        self._processing_lock = threading.Lock()
 
         # Rate limiting state
-        self.max_batches_per_minute = max_batches_per_minute
         if max_batches_per_minute is not None:
             from collections import deque
 
-            self.batch_timestamps = deque()
+            self.batch_timestamps: deque = deque()
         else:
             self.batch_timestamps = None
 
-    def _process_batch_and_update_state(
-        self, batch, last_msg_id, trigger_reason="unknown"
-    ):
-        """Process a batch of messages and update connector state.
+        # Timer thread for timeout-based batch processing
+        self._stop_event = threading.Event()
+        self._timer_thread: Optional[threading.Thread] = None
+        if batch_timeout is not None:
+            self._start_timeout_timer()
 
-        This method handles:
-        - Logging batch processing with metadata
-        - Invoking user callback with batch
-        - Updating connector state with last processed message ID
-        - Handling state reset scenarios
+        # Heartbeat queue for rate limit waiting
+        self._heartbeat_queue: Optional[Queue] = None
 
-        Note: If callback fails, state will NOT be updated and exception will propagate.
-        This matches ListenStream behavior where failed messages are retried on restart.
+    def set_heartbeat_queue(self, q: Queue) -> None:
+        """Set the heartbeat queue for sending keepalive signals during rate limiting.
 
-        Args:
-            batch: List of SSE message objects to process
-            last_msg_id: Message ID of the last event in the batch
-            trigger_reason: String describing what triggered batch processing
-                           (e.g., "size_limit", "timeout", "final_batch")
-
-        Returns:
-            bool: True if processing succeeded and thread should continue,
-                  False if state was reset and thread should exit
+        :param q: Queue used by StreamAlive for heartbeat monitoring
         """
-        # Skip processing empty batches
-        if len(batch) == 0:
-            return True
-        elapsed = time.time() - self.batch_start_time
+        self._heartbeat_queue = q
 
-        self.helper.connector_logger.debug(
-            f"Processing batch due to {trigger_reason}",
-            {
-                "batch_size": len(batch),
-                "elapsed_time": elapsed,
-            },
-        )
+    def _start_timeout_timer(self) -> None:
+        """Start the background timer thread for timeout-based batch processing.
+
+        The timer thread periodically checks if the batch timeout has elapsed
+        and triggers batch processing if needed. This runs independently of
+        message arrival, ensuring batches are processed even during idle periods.
+        """
+
+        def timer_loop():
+            while not self._stop_event.is_set():
+                # Sleep in small chunks to allow quick shutdown
+                self._stop_event.wait(timeout=1.0)
+                if self._stop_event.is_set():
+                    break
+
+                with self._lock:
+                    if (
+                        self.batch_start_time is not None
+                        and len(self.batch) > 0
+                        and self.batch_timeout is not None
+                    ):
+                        elapsed = time.time() - self.batch_start_time
+                        if elapsed >= self.batch_timeout:
+                            self._process_batch("timeout")
+
+        self._timer_thread = threading.Thread(target=timer_loop, daemon=True)
+        self._timer_thread.start()
+
+    def __call__(self, msg) -> None:
+        """Process a single message, accumulating into batches.
+
+        This method is called by listen_stream for each data message.
+        Messages are accumulated and processed when batch conditions are met.
+        Timeout is handled by a separate timer thread.
+
+        :param msg: SSE message object from the stream
+        """
+        with self._lock:
+            if self.batch_start_time is None:
+                self.batch_start_time = time.time()
+
+            self.batch.append(msg)
+            self.last_msg_id = msg.id
+
+            if self.batch_size and len(self.batch) >= self.batch_size:
+                self._process_batch("size_limit")
+
+    def _process_batch(self, trigger_reason: str) -> None:
+        """Process batch with two-lock pattern. Must be called with _lock held.
+
+        :param trigger_reason: What triggered batch processing
+        """
+        if len(self.batch) == 0:
+            return
+
+        elapsed = time.time() - self.batch_start_time if self.batch_start_time else 0
+
         self.helper.connector_logger.info(
             "Processing batch",
             {
-                "batch_size": len(batch),
+                "batch_size": len(self.batch),
                 "elapsed_time": elapsed,
                 "trigger": trigger_reason,
             },
         )
 
-        # Prepare batch data with metadata
+        # Copy batch data while holding _lock
         batch_data = {
-            "events": batch,
+            "events": self.batch.copy(),
             "batch_metadata": {
-                "batch_size": len(batch),
+                "batch_size": len(self.batch),
                 "trigger_reason": trigger_reason,
                 "elapsed_time": elapsed,
                 "timestamp": time.time(),
             },
         }
+        last_msg_id = self.last_msg_id
 
-        self.callback(batch_data)
-        state = self.helper.get_state()
-        if state is None:
-            # State was reset from UI during processing
-            self.helper.connector_logger.warning(
-                "State was reset during batch processing, stopping thread",
-                {
-                    "batch_size": len(batch),
-                    "trigger": trigger_reason,
-                },
-            )
-            self.exit_event.set()
-            return False
+        # Reset batch state (still under _lock)
+        self.batch = []
+        self.batch_start_time = time.time()
 
-        # Update and save state
-        state["start_from"] = str(last_msg_id)
-        self.helper.set_state(state)
+        # Release _lock, acquire _processing_lock for callback
+        self._lock.release()
+        try:
+            with self._processing_lock:
+                self._wait_for_rate_limit()
+                self.batch_callback(batch_data)
+                if last_msg_id is not None:
+                    state = self.helper.get_state()
+                    if state is not None:
+                        state["start_from"] = str(last_msg_id)
+                        self.helper.set_state(state)
+        finally:
+            self._lock.acquire()
 
-        return True
-
-    def _wait_for_rate_limit(self, q):
-        """Apply rate limiting before processing batch.
+    def _wait_for_rate_limit(self) -> float:
+        """Rate limiting. Called with _processing_lock held, _lock NOT held.
 
         Uses a sliding window algorithm to enforce max_batches_per_minute.
         Sleeps if necessary to stay within the limit.
 
-        Note: No lock needed - this method is only called by the run() method
-        in a single-threaded context. Instance variables are not shared across threads.
-
-        Args:
-            q: Queue for sending heartbeat signals to StreamAlive thread
-
-        Returns:
-            float: Time spent waiting (seconds), 0 if no wait needed
+        :return: Time spent waiting (seconds), 0 if no wait needed
         """
         if self.max_batches_per_minute is None:
-            return 0.0  # No rate limiting
+            return 0.0
 
         now = time.time()
-        cutoff_time = now - 60.0  # 60 seconds ago
+        cutoff_time = now - 60.0
 
-        # Remove timestamps older than 60 seconds (sliding window cleanup)
         while self.batch_timestamps and self.batch_timestamps[0] < cutoff_time:
             self.batch_timestamps.popleft()
 
-        # Check if we've reached the rate limit
         wait_time = 0.0
         if len(self.batch_timestamps) >= self.max_batches_per_minute:
-            # Calculate how long to wait until oldest batch expires
             oldest_timestamp = self.batch_timestamps[0]
-            time_since_oldest = now - oldest_timestamp
-            wait_time = 60.0 - time_since_oldest
+            wait_time = 60.0 - (now - oldest_timestamp)
 
             if wait_time > 0:
-                # Log the rate limit delay
                 self.helper.connector_logger.info(
-                    "Rate limit reached, delaying batch processing",
-                    {
-                        "max_batches_per_minute": self.max_batches_per_minute,
-                        "current_batch_count": len(self.batch_timestamps),
-                        "wait_seconds": round(wait_time, 2),
-                    },
+                    "Rate limit reached, delaying",
+                    {"wait_seconds": round(wait_time, 2)},
                 )
 
                 chunk_size = 30.0
                 total_slept = 0.0
-
-                while total_slept < wait_time:
+                while total_slept < wait_time and not self._stop_event.is_set():
                     sleep_duration = min(chunk_size, wait_time - total_slept)
                     time.sleep(sleep_duration)
                     total_slept += sleep_duration
 
-                    # Send heartbeat to keep StreamAlive alive during long waits
-                    q.put("rate_limit_heartbeat", block=False)
+                    # Send heartbeat to keep StreamAlive alive during long waits to avoid process kills
+                    if self._heartbeat_queue is not None:
+                        try:
+                            self._heartbeat_queue.put(
+                                "rate_limit_heartbeat", block=False
+                            )
+                        except queue.Full:
+                            pass
 
-                    if self.exit_event.is_set():
-                        break
-
-                # Cleanup again after sleep
+                # Cleanup after sleep
                 now = time.time()
                 cutoff_time = now - 60.0
                 while self.batch_timestamps and self.batch_timestamps[0] < cutoff_time:
                     self.batch_timestamps.popleft()
 
-        # Record this batch timestamp
-        self.batch_timestamps.append(now)
-
+        self.batch_timestamps.append(time.time())
         return wait_time
-
-    def run(self) -> None:
-        try:
-            self.helper.connector_logger.info("Starting ListenStreamBatch thread")
-            current_state = self.helper.get_state()
-            start_from = self.start_timestamp
-            recover_until = self.recover_iso_date
-            if current_state is None:
-                if start_from is None:
-                    start_from = "0-0"
-                if recover_until is None:
-                    recover_until = self.helper.date_now_z()
-                self.helper.set_state(
-                    {"start_from": start_from, "recover_until": recover_until}
-                )
-            else:
-                if "connectorLastEventId" in current_state:
-                    start_from = current_state["connectorLastEventId"]
-                else:
-                    start_from = current_state["start_from"]
-                if "connectorStartTime" in current_state:
-                    recover_until = current_state["connectorStartTime"]
-                else:
-                    recover_until = current_state["recover_until"]
-
-            q = Queue(maxsize=1)
-            stream_alive = StreamAlive(self.helper, q)
-            stream_alive.start()
-
-            live_stream_url = self.url
-            if recover_until is not False and recover_until not in [
-                "no",
-                "none",
-                "No",
-                "None",
-                "false",
-                "False",
-            ]:
-                live_stream_url = live_stream_url + "?recover=" + recover_until
-            listen_delete = str(self.listen_delete).lower()
-            no_dependencies = str(self.no_dependencies).lower()
-            with_inferences = str(self.with_inferences).lower()
-            self.helper.connector_logger.info(
-                "Starting to listen stream events in batch mode",
-                {
-                    "live_stream_url": live_stream_url,
-                    "listen_delete": listen_delete,
-                    "no_dependencies": no_dependencies,
-                    "with_inferences": with_inferences,
-                    "batch_size": self.batch_size,
-                    "batch_timeout": self.batch_timeout,
-                },
-            )
-            messages = SSEClient(
-                live_stream_url,
-                start_from,
-                headers={
-                    "authorization": "Bearer " + self.token,
-                    "listen-delete": listen_delete,
-                    "no-dependencies": no_dependencies,
-                    "with-inferences": with_inferences,
-                },
-                verify=self.verify_ssl,
-            )
-
-            batch = []
-            self.batch_start_time = time.time()
-            last_msg_id = None
-
-            for msg in messages:
-                if self.exit_event.is_set():
-                    stream_alive.stop()
-                    break
-                if msg.id is not None:
-                    try:
-                        q.put(msg.event, block=False)
-                    except queue.Full:
-                        pass
-
-                    if self.batch_timeout and len(batch) > 0:
-                        elapsed = time.time() - self.batch_start_time
-                        if elapsed >= self.batch_timeout:
-                            self._wait_for_rate_limit(q)
-
-                            should_continue = self._process_batch_and_update_state(
-                                batch, last_msg_id, trigger_reason="timeout"
-                            )
-                            if not should_continue:
-                                break
-                            batch = []
-                            self.batch_start_time = time.time()
-
-                    if msg.event == "heartbeat" or msg.event == "connected":
-                        state = self.helper.get_state()
-                        if state is None:
-                            self.exit_event.set()
-                        else:
-                            # Only update state if batch is empty to prevent message loss
-                            # If batch has unprocessed messages, state will be updated after batch processing
-                            if len(batch) == 0:
-                                state["start_from"] = str(msg.id)
-                                self.helper.set_state(state)
-                        last_msg_id = msg.id
-                    else:
-                        batch.append(msg)
-                        last_msg_id = msg.id
-
-                        if self.batch_size and len(batch) >= self.batch_size:
-                            self._wait_for_rate_limit(q)
-                            should_continue = self._process_batch_and_update_state(
-                                batch, last_msg_id, trigger_reason="size_limit"
-                            )
-                            if not should_continue:
-                                break
-                            batch = []
-                            self.batch_start_time = time.time()
-
-            if len(batch) > 0:
-                self._process_batch_and_update_state(
-                    batch, last_msg_id, trigger_reason="final_batch"
-                )
-
-        except Exception as ex:
-            self.helper.connector_logger.error(
-                "Error in ListenStreamBatch loop, exit.", {"reason": str(ex)}
-            )
-            sys.excepthook(*sys.exc_info())
-
-    def stop(self):
-        self.helper.connector_logger.info(
-            "Preparing ListenStreamBatch for clean shutdown"
-        )
-        self.exit_event.set()
 
 
 class ListenStream(threading.Thread):
@@ -1125,6 +1022,9 @@ class ListenStream(threading.Thread):
             q = Queue(maxsize=1)
             stream_alive = StreamAlive(self.helper, q)
             stream_alive.start()
+            # Pass heartbeat queue to BatchCallbackWrapper if applicable
+            if hasattr(self.callback, "set_heartbeat_queue"):
+                self.callback.set_heartbeat_queue(q)
             # Computing args building
             live_stream_url = self.url
             # In case no recover is explicitely set
@@ -2155,9 +2055,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     ) -> dict:
         """Resolve stream connection parameters from arguments or configuration.
 
-        This helper method consolidates parameter resolution logic used by both
-        listen_stream() and listen_stream_batch() to eliminate code duplication.
-
         :param url: OpenCTI URL (defaults to configured URL)
         :param token: Authentication token (defaults to configured token)
         :param verify_ssl: SSL verification flag (defaults to configured value)
@@ -2280,51 +2177,48 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.listen_stream.start()
         return self.listen_stream
 
-    def listen_stream_batch(
+    def create_batch_callback(
         self,
-        message_callback,
-        batch_size=None,
-        batch_timeout=None,
-        max_batches_per_minute=None,
-        url=None,
-        token=None,
-        verify_ssl=None,
-        start_timestamp=None,
-        live_stream_id=None,
-        listen_delete=None,
-        no_dependencies=None,
-        recover_iso_date=None,
-        with_inferences=None,
-    ) -> ListenStreamBatch:
-        """Listen for stream messages and process them in batches.
+        batch_callback: Callable,
+        batch_size: Optional[int] = None,
+        batch_timeout: Optional[float] = None,
+        max_batches_per_minute: Optional[int] = None,
+    ) -> BatchCallbackWrapper:
+        """Create a callback wrapper that batches messages.
 
-        Collects events and processes them in batches based on either:
-        - Number of events (batch_size): Process when batch contains N events
-        - Time window (batch_timeout): Process batch every X seconds
-        - Both: Process when either condition is met (whichever comes first)
+        This factory method creates a BatchCallbackWrapper that can be used
+        with listen_stream to enable batch processing of events.
 
-        :param message_callback: Callback function to process batch of messages.
-                                 Receives a list of SSE message objects.
-                                 If the callback raises an exception, it is caught and logged,
-                                 but the connector continues processing (see Error Handling above).
-        :type message_callback: Callable[[List], None]
-        :param batch_size: Number of events to collect before processing batch (optional)
+        Usage:
+            batch_callback = helper.create_batch_callback(
+                process_batch_func,
+                batch_size=100,
+                batch_timeout=30,
+                max_batches_per_minute=10
+            )
+            helper.listen_stream(message_callback=batch_callback)
+
+        The batch callback receives a dictionary with the following structure:
+            {
+                "events": [list of SSE messages],
+                "batch_metadata": {
+                    "batch_size": int,
+                    "trigger_reason": str,  # "size_limit", "timeout"
+                    "elapsed_time": float,
+                    "timestamp": float,
+                }
+            }
+
+        :param batch_callback: Function to call with batched events
+        :type batch_callback: Callable[[dict], None]
+        :param batch_size: Process batch when this many events accumulated (optional)
         :type batch_size: int or None
-        :param batch_timeout: Time in seconds to wait before processing batch (optional)
+        :param batch_timeout: Process batch after this many seconds (optional)
         :type batch_timeout: float or None
         :param max_batches_per_minute: Maximum batches to process per 60-second window (optional)
         :type max_batches_per_minute: int or None
-        :param url: OpenCTI URL (defaults to configured URL)
-        :param token: Authentication token (defaults to configured token)
-        :param verify_ssl: SSL verification flag (defaults to configured value)
-        :param start_timestamp: Starting timestamp for stream (optional)
-        :param live_stream_id: Stream ID to consume from (optional)
-        :param listen_delete: Whether to listen for delete events (defaults to configured value)
-        :param no_dependencies: Whether to exclude dependencies (defaults to configured value)
-        :param recover_iso_date: ISO date to recover from (optional)
-        :param with_inferences: Whether to include inferences (defaults to configured value)
-        :return: ListenStreamBatch thread instance
-        :rtype: ListenStreamBatch
+        :return: BatchCallbackWrapper instance for use with listen_stream
+        :rtype: BatchCallbackWrapper
         :raises ValueError: If neither batch_size nor batch_timeout is specified
         """
         if batch_size is None and batch_timeout is None:
@@ -2343,42 +2237,19 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     {"max_batches_per_minute": max_batches_per_minute},
                 )
 
-        params = self._resolve_stream_parameters(
-            url=url,
-            token=token,
-            verify_ssl=verify_ssl,
-            start_timestamp=start_timestamp,
-            live_stream_id=live_stream_id,
-            listen_delete=listen_delete,
-            no_dependencies=no_dependencies,
-            recover_iso_date=recover_iso_date,
-            with_inferences=with_inferences,
-        )
-
         if max_batches_per_minute is not None:
             self.connector_logger.info(
                 "Batch rate limiting enabled",
                 {"max_batches_per_minute": max_batches_per_minute},
             )
 
-        self._listen_stream_batch_thread = ListenStreamBatch(
-            self,
-            message_callback,
-            params["url"],
-            params["token"],
-            params["verify_ssl"],
-            params["start_timestamp"],
-            params["live_stream_id"],
-            params["listen_delete"],
-            params["no_dependencies"],
-            params["recover_iso_date"],
-            params["with_inferences"],
-            batch_size,
-            batch_timeout,
-            max_batches_per_minute,
+        return BatchCallbackWrapper(
+            helper=self,
+            batch_callback=batch_callback,
+            batch_size=batch_size,
+            batch_timeout=batch_timeout,
+            max_batches_per_minute=max_batches_per_minute,
         )
-        self._listen_stream_batch_thread.start()
-        return self._listen_stream_batch_thread
 
     def get_opencti_url(self) -> Optional[Union[bool, int, str]]:
         """Get the OpenCTI URL.
