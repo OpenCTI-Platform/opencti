@@ -11,20 +11,13 @@ import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { FieldOption } from '../../../../utils/field';
 
-type IdentityOption = {
-  label: string;
-  value: string;
-  type: string;
-  entity: any;
-};
-
 interface CreatedByFieldProps {
   name: string;
   style?: React.CSSProperties;
   label?: string;
   setFieldValue: (field: string, value: FieldOption) => void;
-  onChange?: (name: string, value: IdentityOption) => void;
-  helpertext?: string;
+  onChange?: (name: string, value: FieldOption) => void;
+  helpertext?: React.ReactNode;
   disabled?: boolean;
   dryrun?: boolean;
   required?: boolean;
@@ -89,7 +82,7 @@ const CreatedByField = ({
 
     const edges = data?.identities?.edges ?? [];
 
-    const mapped: IdentityOption[] = edges
+    const mapped = edges
       .filter((edge) => {
         if (!featureFlagAccessRestriction) return true;
 
@@ -158,7 +151,7 @@ const CreatedByField = ({
         onInputChange={handleSearch}
         openCreate={() => setIdentityCreation(true)}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: IdentityOption) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
           <li {...props}>
             <span
               style={{
@@ -191,7 +184,7 @@ const CreatedByField = ({
         handleClose={() => setIdentityCreation(false)}
         dryrun={dryrun}
         creationCallback={(data: any) => {
-          const value: IdentityOption = {
+          const value = {
             label: data.identityAdd.name,
             value: data.identityAdd.id,
             type: data.identityAdd.entity_type,
