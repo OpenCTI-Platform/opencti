@@ -153,9 +153,6 @@ describe('Organization sharing standard behavior for container', () => {
     expect(purgeQueryResult.data.reportEdit.delete).toEqual(reportInternalId);
   });
   it('should plateform organization sharing and EE deactivated', async () => {
-    // Deactivate EE at the end of this test - back to CE
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     await unSetOrganization();
   });
 });

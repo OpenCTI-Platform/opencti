@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import type { CaseIncident, EntitySettingEdge } from '../../../src/generated/graphql';
 import {
@@ -17,7 +17,6 @@ import { adminQueryWithSuccess, unSetOrganization, setOrganization, queryAsUserI
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 import conf from '../../../src/config/conf';
 import { authorizedMembers } from '../../../src/schema/attribute-definition';
-import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const CREATE_QUERY = gql`
   mutation CaseIncidentAdd($input: CaseIncidentAddInput!) {
@@ -489,11 +488,6 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRCreateQueryResult?.data?.caseIncidentAdd.authorized_members).not.toBeUndefined();
     caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
   });
-  it('should EE activated', async () => {
-    // Activate EE for this test
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
-  });
   it('should share Case Incident Response with Organization', async () => {
     // Get organization id
     organizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
@@ -531,11 +525,6 @@ describe('Case Incident Response and organization sharing standard behavior with
     const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();
-  });
-  it('should EE deactivated', async () => {
-    // Deactivate EE at the end of this test - back to CE
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
   });
 });
 
@@ -707,9 +696,6 @@ describe('Restricted entities listing', () => {
   let userEditorId: string;
   let reportId: string;
   it('should platform organization sharing and EE activated', async () => {
-    // Activate EE for this test
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
     await setOrganization(PLATFORM_ORGANIZATION);
   });
   it('should Case Incident Response created', async () => {
@@ -812,9 +798,6 @@ describe('Restricted entities listing', () => {
     expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(2);
   });
   it('should platform organization sharing and EE deactivated', async () => {
-    // Deactivate EE at the end of this test - back to CE
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     await unSetOrganization();
   });
   it('should Case Incident Response deleted', async () => {
