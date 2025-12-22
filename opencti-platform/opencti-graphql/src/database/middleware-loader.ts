@@ -470,8 +470,7 @@ export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity
   relationType: string,
   entityType: string | string[],
   reverse_relation: boolean,
-  args: EntityOptions<T> = {}
-,
+  args: EntityOptions<T> = {},
 ): Promise<BasicConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {

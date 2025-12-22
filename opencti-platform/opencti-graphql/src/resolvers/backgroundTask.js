@@ -14,7 +14,6 @@ const taskResolvers = {
     deleteBackgroundTask: (_, { id }, context) => deleteTask(context, context.user, id),
   },
   BackgroundTask: {
-     
     __resolveType(obj) {
       if (obj.type === 'QUERY') return 'QueryTask';
       if (obj.type === 'LIST') return 'ListTask';

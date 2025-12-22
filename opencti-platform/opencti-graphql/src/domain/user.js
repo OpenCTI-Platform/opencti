@@ -222,7 +222,9 @@ export const findUserPaginated = async (context, user, args) => {
 };
 
 const postResolveMembersFunction = (context, user) => {
-  return (async (usersResult) => { return filterMembersUsersWithUsersOrgs(context, user, usersResult, FilterMembersMode.EXCLUDE); });
+  return async (usersResult) => {
+    return filterMembersUsersWithUsersOrgs(context, user, usersResult, FilterMembersMode.EXCLUDE);
+  };
 };
 
 export const findCreators = (context, user, args) => {
@@ -993,7 +995,7 @@ export const bookmarks = async (context, user, args) => {
   // handle filters
   if (filters) {
     // check filters are supported
-    // i.e. filters can only contains filters with key=entity_type
+    // i.e. filters can only contain filters with key=entity_type
     if (extractFilterKeys(filters).filter((f) => f !== 'entity_type').length > 0) {
       throw UnsupportedError('Bookmarks widgets only support filter with key=entity_type.');
     }

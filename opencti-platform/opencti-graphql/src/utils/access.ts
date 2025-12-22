@@ -1103,10 +1103,10 @@ export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity
     };
     const finalAlwaysVisibleUsersFilter = filters
       ? {
-        mode: FilterMode.And,
-        filters: [],
-        filterGroups: [filters, alwaysVisibleUsersFilter],
-      }
+          mode: FilterMode.And,
+          filters: [],
+          filterGroups: [filters, alwaysVisibleUsersFilter],
+        }
       : alwaysVisibleUsersFilter;
     const usersAlwaysVisible = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: finalAlwaysVisibleUsersFilter });
     // list organizations and groups
