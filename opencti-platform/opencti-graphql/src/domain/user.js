@@ -94,7 +94,6 @@ const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
-export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
 const ME_USER_MODIFIABLE_ATTRIBUTES = [
@@ -222,7 +221,9 @@ export const findUserPaginated = async (context, user, args) => {
 };
 
 const postResolveMembersFunction = (context, user) => {
-  return (async (usersResult) => { return filterMembersUsersWithUsersOrgs(context, user, usersResult, FilterMembersMode.EXCLUDE); });
+  return async (usersResult) => {
+    return filterMembersUsersWithUsersOrgs(context, user, usersResult, FilterMembersMode.EXCLUDE);
+  };
 };
 
 export const findCreators = (context, user, args) => {
@@ -993,7 +994,7 @@ export const bookmarks = async (context, user, args) => {
   // handle filters
   if (filters) {
     // check filters are supported
-    // i.e. filters can only contains filters with key=entity_type
+    // i.e. filters can only contain filters with key=entity_type
     if (extractFilterKeys(filters).filter((f) => f !== 'entity_type').length > 0) {
       throw UnsupportedError('Bookmarks widgets only support filter with key=entity_type.');
     }
