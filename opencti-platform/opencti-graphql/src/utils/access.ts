@@ -1087,10 +1087,13 @@ export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity
       [ENTITY_TYPE_IDENTITY_ORGANIZATION],
       { filters: buildRegardingOfDirectParticipateToFilters([user.id], undefined) },
     );
-    const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
-    const userDirectOrganizationsFilters = buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, filters);
-    // list the users that are in the user direct organizations
-    const usersWithinUserOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userDirectOrganizationsFilters });
+    let usersWithinUserOrga;
+    if (userDirectOrganizations.edges.length > 0) {
+      // list the users that are in the user direct organizations
+      const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
+      const userDirectOrganizationsFilters = buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, filters);
+      usersWithinUserOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userDirectOrganizationsFilters });
+    }
     // list the users always visible: users in no organizations OR internal_users OR users with user_service_account=true
     const alwaysVisibleUsersFilter = {
       mode: FilterMode.Or,
@@ -1111,25 +1114,34 @@ export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity
     const usersAlwaysVisible = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: finalAlwaysVisibleUsersFilter });
     // list organizations and groups
     const typesWithoutUser = types.filter((t) => t !== ENTITY_TYPE_USER);
-    let groupsAndOrganizations: BasicConnection<T> | T[] = [];
+    let groupsAndOrganizations: BasicConnection<T> | T[] | undefined;
     if (typesWithoutUser.length > 0) {
       groupsAndOrganizations = await membersFetchFunction(context, user, typesWithoutUser, args);
     }
     // concat users, organizations and groups (cant be done in one query for now because 'or' global mode not working with regardingOf filter)
     if (isResultConnection) {
-      const typedUsersWithinUserOrga = usersWithinUserOrga as BasicConnection<T>;
       const typedUsersWithNoOrga = usersAlwaysVisible as BasicConnection<T>;
-      const typedGroupsAndOrganizations = groupsAndOrganizations as BasicConnection<T>;
-      const concatedMembersNodes = [...typedUsersWithinUserOrga.edges, ...typedUsersWithNoOrga.edges, ...typedGroupsAndOrganizations.edges];
-      const totalCount = typedUsersWithinUserOrga.pageInfo.globalCount + typedUsersWithNoOrga.pageInfo.globalCount + typedGroupsAndOrganizations.pageInfo.globalCount;
+      const typedUsersWithinUserOrga = usersWithinUserOrga as BasicConnection<T> | undefined;
+      const typedGroupsAndOrganizations = groupsAndOrganizations as BasicConnection<T> | undefined;
+
+      const concatedMembersNodes = typedUsersWithNoOrga.edges;
+      let totalCount = typedUsersWithNoOrga.pageInfo.globalCount;
+      if (typedUsersWithinUserOrga) {
+        concatedMembersNodes.push(...typedUsersWithinUserOrga.edges);
+        totalCount = totalCount + typedUsersWithinUserOrga.pageInfo.globalCount;
+      }
+      if (typedGroupsAndOrganizations) {
+        concatedMembersNodes.push(...typedGroupsAndOrganizations.edges);
+        totalCount = totalCount + typedGroupsAndOrganizations?.pageInfo.globalCount;
+      }
       return buildPaginationFromEdges(args.first ?? ES_DEFAULT_PAGINATION, args.after, concatedMembersNodes, totalCount);
     } else {
-      const typedUsersWithinUserOrga = usersWithinUserOrga as T[];
+      const typedUsersWithinUserOrga = (usersWithinUserOrga ?? []) as T[];
       const typedUsersWithNoOrga = usersAlwaysVisible as T[];
-      const typedGroupsAndOrganizations = groupsAndOrganizations as T[];
+      const typedGroupsAndOrganizations = (groupsAndOrganizations ?? []) as T[];
       return [...typedUsersWithinUserOrga, ...typedUsersWithNoOrga, ...typedGroupsAndOrganizations];
     }
-  } else { // case 3. no users to fetch, so no special restriction user visibility
+  } else { // case 3. no users to fetch, so no special restriction on user visibility
     return membersFetchFunction(context, user, types, args);
   }
 };
