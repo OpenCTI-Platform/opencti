@@ -1,0 +1,267 @@
+# Platform development
+
+## Introduction
+This summary should give you a detailed setup description for initiating the OpenCTI setup environment 
+necessary for developing on the OpenCTI platform, a client library or the connectors. 
+This page document how to set up an "All-in-One" development **environment** for OpenCTI. 
+The devenv will contain data of 3 different repositories:
+
+- Platform and Client python: [https://github.com/OpenCTI-Platform/opencti](https://github.com/OpenCTI-Platform/opencti)
+- Connectors: [https://github.com/OpenCTI-Platform/connectors](https://github.com/OpenCTI-Platform/connectors)
+
+### Platform
+Contains the platform OpenCTI project code base:
+
+- docker-compose (docker or podman) `~/opencti/opencti-platform/opencti-dev`
+- Web frontend (nodejs / react) `~/opencti/opencti-platform/opencti-graphql`
+- Backend (nodejs) `~/opencti/opencti-platform/opencti-frontend`
+- Worker (nodejs / python) `~/opencti/opencti-worker`
+- Client python (python) `~/opencti/client-python`
+
+### Connectors
+Contains a lot of developed connectors, as a source of inspiration for your new connector.
+
+### Client python
+Contains the source code of the python library used in worker or connectors.
+
+## Prerequisites
+
+Some tools are needed before starting to develop. Please check [Ubuntu prerequisites](environment_ubuntu.md) or [Windows prerequisites](environment_windows.md)
+
+## Clone the projects
+
+Fork and clone the git repositories
+
+- [https://github.com/OpenCTI-Platform/opencti/](https://github.com/OpenCTI-Platform/opencti/) - frontend / backend
+- [https://github.com/OpenCTI-Platform/connectors](https://github.com/OpenCTI-Platform/connectors) - connectors
+- [https://github.com/OpenCTI-Platform/docker](https://github.com/OpenCTI-Platform/docker) - docker stack
+
+## Dependencies containers
+
+In development dependencies are deployed trough containers.
+A development compose file is available in `~/opencti/opencti-platform/opencti-dev`
+
+```bash
+cd ~/docker
+#Start the stack in background
+docker-compose -f ./docker-compose-dev.yml up -d
+```
+
+You now have all the dependencies of OpenCTI running and waiting for product to run.
+
+## Backend / API
+
+### Python virtual env
+
+The GraphQL API is developed in JS and with some python code. 
+As it's an "all-in-one" installation, the python environment will be installed in a virtual environment.
+
+```bash
+cd ~/opencti/opencti-platform/opencti-graphql
+python3 -m venv .venv --prompt "graphql"
+source .venv/bin/activate
+pip install --upgrade pip wheel setuptools
+yarn install
+yarn install:python 
+deactivate
+```
+
+### Development configuration
+
+The API can be specifically configured with files depending on the starting profile.
+By default, the default.json file is used and will be correctly configured for local usage **except for admin password**.
+
+So you need to create a development profile file. You can duplicate the default file and adapt if you need.
+```bash
+cd ~/opencti/opencti-platform/opencti-graphql/config
+cp default.json development.json
+```
+
+At minimum adapt the admin part for the password and token.
+```json
+    "admin": {
+      "email": "admin@opencti.io",
+      "password": "MyNewPassord",
+      "token": "UUID generated with https://www.uuidgenerator.net"
+    }
+```
+
+### Install / start
+
+Before starting the backend you need to install the nodejs modules
+
+```bash
+cd ~/opencti/opencti-platform/opencti-graphql
+yarn install
+```
+
+Then you can simply start the backend API with the yarn start command
+
+```bash
+cd ~/opencti/opencti-platform/opencti-graphql
+yarn start
+```
+
+The platform will start logging some interesting information
+
+```log
+{"category":"APP","level":"info","message":"[OPENCTI] Starting platform","timestamp":"2023-07-02T16:37:10.984Z","version":"5.8.7"}
+{"category":"APP","level":"info","message":"[OPENCTI] Checking dependencies statuses","timestamp":"2023-07-02T16:37:10.987Z","version":"5.8.7"}
+{"category":"APP","level":"info","message":"[SEARCH] Elasticsearch (8.5.2) client selected / runtime sorting enabled","timestamp":"2023-07-02T16:37:11.014Z","version":"5.8.7"}
+{"category":"APP","level":"info","message":"[CHECK] Search engine is alive","timestamp":"2023-07-02T16:37:11.015Z","version":"5.8.7"}
+...
+{"category":"APP","level":"info","message":"[INIT] Platform initialization done","timestamp":"2023-07-02T16:37:11.622Z","version":"5.8.7"}
+{"category":"APP","level":"info","message":"[OPENCTI] API ready on port 4000","timestamp":"2023-07-02T16:37:12.382Z","version":"5.8.7"}
+```
+
+If you want to start on another profile you can use the -e parameter.
+For example here to use the profile.json configuration file.
+
+```bash
+yarn start -e profile
+```
+### Code check
+
+Before pushing your code you need to validate the syntax and ensure the testing will be validated.
+
+#### For validation
+
+`yarn lint`
+
+`yarn check-ts`
+
+#### For testing
+
+For starting the test you will need to create a test.json configuration file.
+You can use the same dependencies by only adapting all prefix for all dependencies.
+
+Tests are using dedicated indices in the Elastic database (prefixed with `test-*` or the prefix that you have set up in test.json).
+
+The following command will run the complete test suite using vitest, which might take more than 30 minutes.
+It starts by cleaning up the test database and seeding a minimal dataset.
+The file `vitest.config.test.ts` can be edited to run only a specific file pattern.
+
+`yarn test:dev`
+
+We also provide utility scripts to ease the development of new tests, especially integration tests that rely on the sample data 
+loaded after executing `00-inject/loader-test.ts`.
+
+To solely initialize the test database with this sample dataset run:
+
+`yarn test:dev:init`
+
+And then, execute the following command to run the pattern specified in the file `vitest.config.test.ts`, or add a file name
+to the command line to run only this test file.
+
+`yarn test:dev:resume`
+
+This last command will NOT cleanup & initialize the test database and thus will be quicker to execute. 
+
+## Frontend
+
+### Install / start
+
+Before starting the backend you need to install the nodejs modules
+
+```bash
+cd ~/opencti/opencti-platform/opencti-front
+yarn install
+```
+
+Then you can simply start the frontend with the yarn start command
+
+```bash
+cd ~/opencti/opencti-platform/opencti-front
+yarn start
+```
+
+The frontend will start with some interesting information
+
+```log
+[INFO] [default] compiling...
+[INFO] [default] compiled documents: 1592 reader, 1072 normalization, 1596 operation text
+[INFO] Compilation completed.
+[INFO] Done.
+[HPM] Proxy created: /stream  -> http://localhost:4000
+[HPM] Proxy created: /storage  -> http://localhost:4000
+[HPM] Proxy created: /taxii2  -> http://localhost:4000
+[HPM] Proxy created: /feeds  -> http://localhost:4000
+[HPM] Proxy created: /graphql  -> http://localhost:4000
+[HPM] Proxy created: /auth/**  -> http://localhost:4000
+[HPM] Proxy created: /static/flags/**  -> http://localhost:4000
+```
+
+The web UI should be accessible on [http://127.0.0.1:3000](http://127.0.0.1:3000)
+
+### Code check
+
+Before pushing your code you need to validate the syntax and ensure the testing will be validated.
+
+#### For validation
+
+`yarn lint`
+
+`yarn check-ts`
+
+#### For testing
+
+`yarn test`
+
+## Worker
+
+Running a worker is required when you want to develop on the ingestion or import/export connectors.
+
+### Python virtual env
+
+```bash
+cd ~/opencti/opencti-worker/src
+python3 -m venv .venv --prompt "worker"
+source .venv/bin/activate
+pip3 install --upgrade pip wheel setuptools
+pip3 install -r requirements.txt
+deactivate
+```
+
+### Install / start
+
+```bash
+cd ~/opencti/opencti-worker/src
+source .venv/bin/activate
+python worker.py
+```
+
+## Connectors
+
+For connectors development, please take a look to [Connectors](connectors.md) development dedicated page.
+
+## Production build
+
+Based on development source you can build the package for production.
+This package will be minified and optimized with esbuild.
+
+```bash
+$ cd opencti-frontend
+$ yarn build
+$ cd ../opencti-graphql
+$ yarn build
+```
+
+After the build you can start the production build with yarn serv.
+**This build will use the production.json configuration file**.
+
+```bash
+$ cd ../opencti-graphql
+$ yarn serv
+```
+
+## Continuous Integration and features cross repository
+
+When a feature requires changes in two or more repositories in opencti, connectors then some specific convention must be used to have the continuous integration build them all together.
+
+### Naming convention of branch
+
+The Pull Request on ***opencti*** repository should be (issue or bug)/number + optional, example: `issue/7062-contributing`
+
+The pull request on ***connector*** should refer to the opencti one by starting with "opencti/" and then the same name. Example: `opencti/issue/7062-contributing`
+
+Note that if there are several matches, the first one is taken. So for example having `issue/7062-contributing` and `issue/7062` that are both marked as "multi-repository" is not a good idea.

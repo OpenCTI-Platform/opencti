@@ -1,4 +1,4 @@
-import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
+import { createEntity, patchAttribute } from '../../database/middleware';
 import {
   type EntityOptions,
   internalFindByIds,
@@ -24,6 +24,7 @@ import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreEntity } from '../../types/store';
 import { checkScore } from '../../utils/format';
+import { stixDomainObjectDelete } from '../../domain/stixDomainObject';
 
 // region CRUD
 export const findById = (context: AuthContext, user: AuthUser, organizationId: string) => {
@@ -148,7 +149,7 @@ export const organizationDelete = async (context: AuthContext, user: AuthUser, o
     throw AlreadyDeletedError({ organizationId });
   }
   await verifyCanDeleteOrganization(context, user, organization);
-  await deleteElementById(context, user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  await stixDomainObjectDelete(context, user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, organizationId, user);
   return organizationId;
 };

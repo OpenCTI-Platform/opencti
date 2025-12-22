@@ -67,7 +67,7 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { stixLoadByIds } from '../../database/middleware';
 import { usableNotifiers } from '../notifier/notifier-domain';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
-import { storeNotificationEvent } from '../../database/redis';
+import { storeNotificationEvent } from '../../database/stream/stream-handler';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { createStixPattern } from '../../python/pythonBridge';
@@ -842,31 +842,36 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const { access_restrictions: accessRestrictions, all } = playbookNode.configuration;
-    // Resolve potential dyanmic access rights
+    // Resolve potential dynamic access rights
     const baseData = extractBundleBaseElement(dataInstanceId, bundle) as StixObject;
     const finalAccessRestrictions = [];
     for (let index = 0; index < accessRestrictions.length; index += 1) {
       const accessRestriction = accessRestrictions[index];
       if (accessRestriction.value === 'AUTHOR') {
-        finalAccessRestrictions.push({ ...accessRestriction, value: baseData.extensions[STIX_EXT_OCTI].created_by_ref_id });
+        // If dynamic binding of author and an author is really defined in the data
+        const createdById = baseData.extensions[STIX_EXT_OCTI].created_by_ref_id;
+        const createdByType = baseData.extensions[STIX_EXT_OCTI].created_by_ref_type;
+        if (isNotEmptyField(createdById) && createdByType === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
+          finalAccessRestrictions.push({ ...accessRestriction, value: createdById });
+        }
       } else if (accessRestriction.value === 'CREATORS') {
-        const creators = baseData.extensions[STIX_EXT_OCTI].creator_ids;
+        const creators = (baseData.extensions[STIX_EXT_OCTI].creator_ids ?? []).filter((id) => isNotEmptyField(id));
         for (let index2 = 0; index2 < creators.length; index2 += 1) {
           finalAccessRestrictions.push({ ...accessRestriction, value: creators[index2] });
         }
       } else if (accessRestriction.value === 'ASSIGNEES') {
-        const creators = baseData.extensions[STIX_EXT_OCTI].assignee_ids;
-        for (let index2 = 0; index2 < creators.length; index2 += 1) {
-          finalAccessRestrictions.push({ ...accessRestriction, value: creators[index2] });
+        const assignees = (baseData.extensions[STIX_EXT_OCTI].assignee_ids ?? []).filter((id) => isNotEmptyField(id));
+        for (let index2 = 0; index2 < assignees.length; index2 += 1) {
+          finalAccessRestrictions.push({ ...accessRestriction, value: assignees[index2] });
         }
       } else if (accessRestriction.value === 'PARTICIPANTS') {
-        const creators = baseData.extensions[STIX_EXT_OCTI].participant_ids;
-        for (let index2 = 0; index2 < creators.length; index2 += 1) {
-          finalAccessRestrictions.push({ ...accessRestriction, value: creators[index2] });
+        const participants = (baseData.extensions[STIX_EXT_OCTI].participant_ids ?? []).filter((id) => isNotEmptyField(id));
+        for (let index2 = 0; index2 < participants.length; index2 += 1) {
+          finalAccessRestrictions.push({ ...accessRestriction, value: participants[index2] });
         }
       } else if (accessRestriction.value === 'BUNDLE_ORGANIZATIONS') {
         const bundleOrganizations = bundle.objects.filter((o) => o.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
-        const bundleOrganizationsIds = bundleOrganizations.map((o) => o.extensions[STIX_EXT_OCTI].id);
+        const bundleOrganizationsIds = bundleOrganizations.map((o) => o.extensions[STIX_EXT_OCTI].id).filter((id) => isNotEmptyField(id));
         for (let index2 = 0; index2 < bundleOrganizationsIds.length; index2 += 1) {
           finalAccessRestrictions.push({ ...accessRestriction, value: bundleOrganizationsIds[index2] });
         }

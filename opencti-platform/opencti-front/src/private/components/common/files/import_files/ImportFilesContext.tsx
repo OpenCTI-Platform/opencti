@@ -214,7 +214,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   useEffect(() => {
     setActiveStep(initalActiveStep);
     setImportMode(initialImportMode);
-  }, [initialValue]);
+  }, [initialValue.activeStep, initialValue.importMode]);
 
   return queryRef && (
     <React.Suspense>

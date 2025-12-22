@@ -214,7 +214,6 @@ export const connectorConfig = (id, listen_callback_uri = undefined) => ({
 });
 
 export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
-
 export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
 
 export const registerConnectorQueues = async (id, name, type, scope) => {

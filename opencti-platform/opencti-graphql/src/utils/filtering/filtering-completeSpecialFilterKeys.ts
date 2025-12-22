@@ -13,8 +13,8 @@ import {
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
   isComplexConversionFilterKey,
-  LAST_PIR_SCORE_DATE_FILTER_PREFIX,
-  PIR_SCORE_FILTER_PREFIX,
+  LAST_PIR_SCORE_DATE_FILTER,
+  PIR_SCORE_FILTER,
   RELATION_DYNAMIC_FROM_FILTER,
   RELATION_DYNAMIC_SUBFILTER,
   RELATION_DYNAMIC_TO_FILTER,
@@ -524,22 +524,21 @@ const adaptFilterToIsInferredFilterKey = (filter: Filter) => {
 };
 
 const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, filterKey: string, filter: Filter) => {
-  // the key should be of format: pir_score.PIR_ID
-  const splittedKey = filterKey.split('.');
-  if (splittedKey.length !== 2) {
-    throw FunctionalError('The filter key should be followed by a dot and the Pir ID', { filterKey });
+  const pirIds: string[] = filter.values.find((v) => v.key === 'pir_ids')?.values ?? [];
+  if (pirIds.length === 0) {
+    throw FunctionalError('This filter should be related to at least 1 Pir', { filter });
   }
-  const pirKey = splittedKey[0];
-  const pirId = splittedKey[1];
   // check the user has access to the PIR
-  await getPirWithAccessCheck(context, user, pirId);
-  // push the nested pir_score filter associated to the given PIR ID
+  await Promise.all(pirIds.map((pirId) => getPirWithAccessCheck(context, user, pirId)));
+  // push the nested pir filter associated to the given PIR IDs
+  const subKey = filterKey === PIR_SCORE_FILTER ? 'score' : 'date';
+  const subFilter = filter.values.find((v) => v.key === subKey);
   const newFilter = {
     key: ['pir_information'],
     values: [],
     nested: [
-      { ...filter, key: pirKey },
-      { key: 'pir_id', values: [pirId], operator: FilterOperator.Eq },
+      { ...subFilter, key: filterKey },
+      { key: 'pir_id', values: pirIds, operator: FilterOperator.Eq },
     ],
   };
   return { newFilter, newFilterGroup: undefined };
@@ -811,7 +810,7 @@ export const completeSpecialFilterKeys = async (
           finalFilterGroups.push(newFilterGroup);
         }
       }
-      if (filterKey.startsWith(PIR_SCORE_FILTER_PREFIX) || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)) {
+      if (filterKey === PIR_SCORE_FILTER || filterKey === LAST_PIR_SCORE_DATE_FILTER) {
         const { newFilter } = await adaptFilterToPirFilterKeys(context, user, filterKey, filter);
         finalFilters.push(newFilter);
       }

@@ -1,5 +1,5 @@
 ---
-name: Feature request OCTI
+name: Feature request OpenCTI
 about: Ask for a new feature to be implemented in OpenCTI
 title: ''
 labels: needs triage, feature

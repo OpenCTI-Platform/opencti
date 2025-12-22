@@ -15039,6 +15039,7 @@ export type Mutation = {
   checkXTMHubConnectivity: CheckXtmHubConnectivityResponse;
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
+  contactUsXtmHub: Success;
   containerEdit?: Maybe<ContainerEditMutations>;
   countryAdd?: Maybe<Country>;
   countryEdit?: Maybe<CountryEditMutations>;
@@ -15285,6 +15286,7 @@ export type Mutation = {
   ruleManagerClean: RuleManager;
   ruleSetActivation: Rule;
   rulesRescan?: Maybe<Scalars['Boolean']['output']>;
+  runMigration: Scalars['Boolean']['output'];
   savedFilterAdd?: Maybe<SavedFilter>;
   savedFilterDelete?: Maybe<Scalars['ID']['output']>;
   savedFilterFieldPatch?: Maybe<SavedFilter>;
@@ -17123,6 +17125,11 @@ export type MutationRuleSetActivationArgs = {
 
 export type MutationRulesRescanArgs = {
   elementId: Scalars['ID']['input'];
+};
+
+
+export type MutationRunMigrationArgs = {
+  migrationName: Scalars['String']['input'];
 };
 
 
@@ -43031,6 +43038,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkXTMHubConnectivity?: Resolver<ResolversTypes['CheckXTMHubConnectivityResponse'], ParentType, ContextType>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
+  contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType>;
   containerEdit?: Resolver<Maybe<ResolversTypes['ContainerEditMutations']>, ParentType, ContextType, RequireFields<MutationContainerEditArgs, 'id'>>;
   countryAdd?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<MutationCountryAddArgs, 'input'>>;
   countryEdit?: Resolver<Maybe<ResolversTypes['CountryEditMutations']>, ParentType, ContextType, RequireFields<MutationCountryEditArgs, 'id'>>;
@@ -43277,6 +43285,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ruleManagerClean?: Resolver<ResolversTypes['RuleManager'], ParentType, ContextType, Partial<MutationRuleManagerCleanArgs>>;
   ruleSetActivation?: Resolver<ResolversTypes['Rule'], ParentType, ContextType, RequireFields<MutationRuleSetActivationArgs, 'enable' | 'id'>>;
   rulesRescan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRulesRescanArgs, 'elementId'>>;
+  runMigration?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRunMigrationArgs, 'migrationName'>>;
   savedFilterAdd?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterAddArgs, 'input'>>;
   savedFilterDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSavedFilterDeleteArgs, 'id'>>;
   savedFilterFieldPatch?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterFieldPatchArgs, 'id'>>;

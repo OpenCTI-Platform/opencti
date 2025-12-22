@@ -21,7 +21,7 @@ while :; do
   fi
 
   # Capture wget output quietly
-  output=$(wget --tries=1  --retry-connrefused=0 --server-response --spider -O /dev/null "$URL" 2>&1 >/dev/null)
+  output=$(wget --tries=1  --retry-connrefused=0 --server-response -O /dev/null "$URL" 2>&1 >/dev/null)
   # Extract HTTP code if present
   code=$(printf "%s" "$output" | awk '/^  HTTP/{print $2; exit}')
 

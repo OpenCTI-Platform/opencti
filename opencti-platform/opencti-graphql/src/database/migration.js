@@ -2,14 +2,16 @@ import * as R from 'ramda';
 import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
 import { logApp, logMigration, PLATFORM_VERSION } from '../config/conf';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, FunctionalError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
 import { createEntity, createRelation, loadEntity, patchAttribute } from './middleware';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-// eslint-disable-next-line import/extensions,import/no-unresolved
-import migrations, { filenames as migrationsFilenames } from '../migrations/*.js';
 import { fullEntitiesThroughRelationsToList } from './middleware-loader';
+import fs from 'fs/promises';
+import path from 'path';
+
+const MIGRATION_DIRECTORY_PATH = path.join(__dirname, '../src/migrations');
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
@@ -18,21 +20,37 @@ const normalizeMigrationName = (rawName) => {
   return rawName;
 };
 
-const retrieveMigrations = () => {
-  const knexMigrations = migrations.map((migration, i) => ({
-    name: migrationsFilenames[i].substring('../migrations/'.length),
-    migration,
-  }));
-  return knexMigrations.map(({ name, migration }) => {
-    const title = normalizeMigrationName(name);
-    const [time] = title.split('-');
-    const timestamp = parseInt(time, 10);
-    return { title, up: migration.up, down: migration.down, timestamp };
+const buildMigrationObject = (migration, name) => {
+  const title = normalizeMigrationName(name);
+  const [time] = title.split('-');
+  const timestamp = parseInt(time, 10);
+  return { title, timestamp, up: migration.up, down: migration.down };
+};
+
+export const retrieveMigration = async (migrationFileName) => {
+  try {
+    const migration = await import(`../migrations/${migrationFileName}.js`);
+    return buildMigrationObject(migration, `${migrationFileName}.js`);
+  } catch (e) {
+    throw FunctionalError('No migration found with this name', { cause: e, migrationFileName });
+  }
+};
+
+const retrieveMigrations = async () => {
+  const migrationsFilenames = (await fs.readdir(MIGRATION_DIRECTORY_PATH))
+    .filter((f) => f.endsWith('.js'));
+
+  const migrations = await Promise.all(
+    migrationsFilenames.map((file) => import(`../migrations/${file}`)));
+
+  return migrations.map((migration, i) => {
+    const name = migrationsFilenames[i];
+    return buildMigrationObject(migration, name);
   });
 };
 
-export const lastAvailableMigrationTime = () => {
-  const allMigrations = retrieveMigrations();
+export const lastAvailableMigrationTime = async () => {
+  const allMigrations = await retrieveMigrations();
   const lastMigration = R.last(allMigrations);
   return lastMigration && lastMigration.timestamp;
 };
@@ -89,17 +107,17 @@ const migrationStorage = {
   },
 };
 
-export const applyMigration = (context) => {
+export const applyMigration = async (context) => {
   const set = new MigrationSet(migrationStorage);
   return new Promise((resolve, reject) => {
-    migrationStorage.load((err, state) => {
+    migrationStorage.load(async (err, state) => {
       if (err) {
         throw DatabaseError('[MIGRATION] Error applying migration', { cause: err });
       }
       // Set last run date on the set
       set.lastRun = state.lastRun;
       // Read migrations from webpack
-      const filesMigrationSet = retrieveMigrations();
+      const filesMigrationSet = await retrieveMigrations();
       // Filter migration to apply. Should be > lastRun
       const [lastMigrationTime] = state.lastRun.split('-');
       const lastMigrationDate = new Date(parseInt(lastMigrationTime, 10));
@@ -136,7 +154,7 @@ export const applyMigration = (context) => {
       reject(reason);
     });
   }).then(async (state) => {
-    // After migration, path the current version runtime
+    // After migration, patch the current version runtime
     const statusPatch = { platformVersion: PLATFORM_VERSION };
     await patchAttribute(context, SYSTEM_USER, state.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
     logApp.info(`[MIGRATION] Platform version updated to ${PLATFORM_VERSION}`);

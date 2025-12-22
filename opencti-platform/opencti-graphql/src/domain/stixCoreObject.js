@@ -19,7 +19,8 @@ import {
   storeLoadByIds,
 } from '../database/middleware-loader';
 import { findStixCoreRelationshipsPaginated } from './stixCoreRelationship';
-import { delEditContext, notify, setEditContext, storeUpdateEvent } from '../database/redis';
+import { delEditContext, notify, setEditContext } from '../database/redis';
+import { storeUpdateEvent } from '../database/stream/stream-handler';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
@@ -932,13 +933,13 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const message = is_upsert
         ? `adds a new version of \`${up.name}\` in \`files\` and \`external_references\``
         : `adds \`${up.name}\` in \`files\` and \`external_references\``;
-      await storeUpdateEvent(context, user, previous, instance, message, { noHistory: embedded ?? false });
+      await storeUpdateEvent(context, user, previous, instance, message, [], { noHistory: embedded ?? false });
     } else {
       const instance = { ...previous, x_opencti_files: resolvedFiles };
       const message = is_upsert
         ? `adds a new version of \`${up.name}\` in \`files\``
         : `adds \`${up.name}\` in \`files\``;
-      await storeUpdateEvent(context, user, previous, instance, message, { noHistory: embedded ?? false });
+      await storeUpdateEvent(context, user, previous, instance, message, [], { noHistory: embedded ?? false });
     }
     // Add in activity only for notifications
     const contextData = buildContextDataForFile(previous, filePath, up.name, up.metaData.file_markings, { is_upsert });
@@ -1028,7 +1029,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(context, user, previous, instance, `removes \`${baseDocument.name}\` in \`files\``);
+    await storeUpdateEvent(context, user, previous, instance, `removes \`${baseDocument.name}\` in \`files\``, []);
     // Add in activity only for notifications
     const contextData = buildContextDataForFile(previous, fileId, baseDocument.name);
     await publishUserAction({
@@ -1188,17 +1189,17 @@ export const aiActivityForThreats = async (context, user, stixCoreObject, langua
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topCountries = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topRegions = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
@@ -1304,17 +1305,17 @@ export const aiForecastForThreats = async (context, user, stixCoreObject, langua
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topCountries = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topRegions = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
@@ -1377,12 +1378,12 @@ export const aiActivityForVictims = async (context, user, stixCoreObject, langua
   const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topIntrusionSets = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topMalwares = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
@@ -1484,12 +1485,12 @@ export const aiForecastForVictims = async (context, user, stixCoreObject, langua
   const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topIntrusionSets = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topMalwares = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }

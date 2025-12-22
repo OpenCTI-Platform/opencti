@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.9.0",
+  "version": "6.9.3",
   "private": true,
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -23,11 +23,12 @@
     "serv": "node build/back.js",
     "insert:dev": "node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,poisonivy",
     "insert:dev:e2e": "ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy",
-    "test:dev:init": "INIT_TEST_PLATFORM=true vitest run --config vitest.config.dev.ts --testNamePattern=\"Should import creation succeed\" tests/02-integration/00-inject/loader-test.ts",
+    "test:dev:init": "INIT_TEST_PLATFORM=true vitest run --config vitest.config.dev.ts --testNamePattern=\"Should import creation succeed\" tests/02-dataInjection/00-inject/loader-test.ts",
     "test:dev:resume": "SKIP_CLEANUP_PLATFORM=true vitest run --config vitest.config.dev.ts",
     "test:dev": "vitest run --config vitest.config.dev.ts",
     "test:ci-unit": "vitest --bail 1 run --config vitest.config.ci-unit.ts",
     "test:ci-integration": "vitest --bail 1 run --config vitest.config.ci-integration.ts",
+    "test:ci-integration-sync": "vitest --bail 1 run --config vitest.config.ci-integration-sync.ts",
     "test:ci-rules-and-others": "vitest --bail 1 run --config vitest.config.ci-rules-and-others.ts",
     "test:watch:resume": "SKIP_CLEANUP_PLATFORM=true vitest watch --config vitest.config.dev.ts",
     "test:watch": "vitest watch --config vitest.config.dev.ts",
@@ -154,7 +155,7 @@
     "passport-local": "1.0.0",
     "python-shell": "5.0.0",
     "ramda": "0.32.0",
-    "rate-limiter-flexible": "9.0.0",
+    "rate-limiter-flexible": "9.0.1",
     "semver": "7.7.3",
     "set-interval-async": "3.0.3",
     "source-map": "0.7.6",
@@ -171,7 +172,7 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.1",
+    "@eslint/js": "9.39.2",
     "@graphql-codegen/cli": "6.1.0",
     "@graphql-codegen/introspection": "5.0.0",
     "@graphql-codegen/typescript-resolvers": "5.1.4",
@@ -196,14 +197,14 @@
     "esbuild": "0.27.1",
     "esbuild-plugin-copy": "2.1.1",
     "esbuild-plugin-import-glob": "0.1.1",
-    "eslint": "9.39.1",
+    "eslint": "9.39.2",
     "eslint-import-resolver-typescript": "4.4.4",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "1.4.0",
     "globals": "16.5.0",
     "graphql-tag": "2.12.6",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.48.1",
+    "typescript-eslint": "8.49.0",
     "vitest": "3.2.4"
   },
   "resolutions": {

@@ -49,7 +49,7 @@ interface IndexProps {
 
 const Index = ({ settings }: IndexProps) => {
   const theme = useTheme<Theme>();
-  const { isTrashEnable, isFeatureEnable } = useHelper();
+  const { isTrashEnable } = useHelper();
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
@@ -81,13 +81,12 @@ const Index = ({ settings }: IndexProps) => {
       }
     }
   }, [theme]);
-  const featureFlagFreeTrials = isFeatureEnable('FREE_TRIALS');
 
   return (
     <>
       <SystemBanners settings={settings} />
-      {featureFlagFreeTrials && <LicenceBanner />}
-      {featureFlagFreeTrials && <StartTrialBanner />}
+      <LicenceBanner />
+      <StartTrialBanner />
       {(settings.platform_session_idle_timeout ?? 0) > 0 && <TimeoutLock />}
       <SettingsMessagesBanner />
       <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />

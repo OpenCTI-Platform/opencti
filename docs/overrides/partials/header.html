@@ -1,0 +1,230 @@
+{% set class = "md-header" %}
+{% if "navigation.tabs.sticky" in features %}
+  {% set class = class ~ " md-header--shadow md-header--lifted" %}
+{% elif "navigation.tabs" not in features %}
+  {% set class = class ~ " md-header--shadow" %}
+{% endif %}
+
+<!-- Header -->
+<header class="{{ class }}" data-md-component="header">
+  <nav
+    class="md-header__inner md-grid"
+    aria-label="{{ lang.t('header') }}"
+  >
+
+    <!-- Link to home -->
+    <a
+      href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}"
+      title="{{ config.site_name | e }}"
+      class="md-header__button md-logo"
+      aria-label="{{ config.site_name }}"
+      data-md-component="logo"
+    >
+      {% include "partials/logo.html" %}
+    </a>
+
+    <!-- Button to open drawer -->
+    <label class="md-header__button md-icon" for="__drawer">
+      {% include ".icons/material/menu" ~ ".svg" %}
+    </label>
+
+    <!-- Header title -->
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Color palette -->
+    {% if config.theme.palette %}
+      {% if not config.theme.palette is mapping %}
+        <form class="md-header__option" data-md-component="palette">
+          {% for option in config.theme.palette %}
+            {% set scheme  = option.scheme  | d("default", true) %}
+            {% set primary = option.primary | d("indigo", true) %}
+            {% set accent  = option.accent  | d("indigo", true) %}
+            <input
+              class="md-option"
+              data-md-color-media="{{ option.media }}"
+              data-md-color-scheme="{{ scheme | replace(' ', '-') }}"
+              data-md-color-primary="{{ primary | replace(' ', '-') }}"
+              data-md-color-accent="{{ accent | replace(' ', '-') }}"
+              {% if option.toggle %}
+                aria-label="{{ option.toggle.name }}"
+              {% else  %}
+                aria-hidden="true"
+              {% endif %}
+              type="radio"
+              name="__palette"
+              id="__palette_{{ loop.index }}"
+            />
+            {% if option.toggle %}
+              <label
+                class="md-header__button md-icon"
+                title="{{ option.toggle.name }}"
+                for="__palette_{{ loop.index0 or loop.length }}"
+                hidden
+              >
+                {% include ".icons/" ~ option.toggle.icon ~ ".svg" %}
+              </label>
+            {% endif %}
+          {% endfor %}
+        </form>
+      {% endif %}
+    {% endif %}
+
+    <!-- Site language selector -->
+    {% if config.extra.alternate %}
+      <div class="md-header__option">
+        <div class="md-select">
+          {% set icon = config.theme.icon.alternate or "material/translate" %}
+          <button
+            class="md-header__button md-icon"
+            aria-label="{{ lang.t('select.language') }}"
+          >
+            {% include ".icons/" ~ icon ~ ".svg" %}
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              {% for alt in config.extra.alternate %}
+                <li class="md-select__item">
+                  <a
+                    href="{{ alt.link | url }}"
+                    hreflang="{{ alt.lang }}"
+                    class="md-select__link"
+                  >
+                    {{ alt.name }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Button to open search modal -->
+    {% if "material/search" in config.plugins %}
+      <label class="md-header__button md-icon" for="__search">
+        {% include ".icons/material/magnify.svg" %}
+      </label>
+
+      <!-- Search interface -->
+      {% include "partials/search.html" %}
+    {% endif %}
+
+    <!-- Repository information -->
+    {% if config.repo_url %}
+      <div class="md-header__source">
+        {% include "partials/source.html" %}
+      </div>
+    {% endif %}
+  </nav>
+
+  <!-- Navigation tabs (sticky) -->
+  {% if "navigation.tabs.sticky" in features %}
+    {% if "navigation.tabs" in features %}
+      {% include "partials/tabs.html" %}
+    {% endif %}
+  {% endif %}
+
+  <script type="text/javascript"> !function(){var e,t,n;e="58d967e3f3ca784",t=function(){Reo.init({clientID:"58d967e3f3ca784"})},(n=document.createElement("script")).src="https://static.reo.dev/"+e+"/reo.js",n.async=!0,n.onload=t,document.head.appendChild(n)}(); </script>
+
+  <script type="module">
+    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    Chatbot.init({
+      chatflowid: "46a94d00-5058-4550-bf5f-39f908919836",
+      apiHost: "https://platform.filigran.ai",
+      chatflowConfig: {
+        "startState": "[{ \"key\": \"username\", \"value\": \"Anonymous User\" }, { \"key\": \"context\", \"value\": \"OpenCTI Documentation\" }]",
+      },
+      observersConfig: {
+        /* Observers Config */
+      },
+      theme: {
+        button: {
+          backgroundColor: '#001BDA',
+          right: 20,
+          bottom: 20,
+          size: 48,
+          dragAndDrop: true,
+          iconColor: 'white',
+          customIconSrc: 'https://filigran.io/app/uploads/2025/05/ai-chat.png',
+          autoWindowOpen: {
+            autoOpen: false,
+            openDelay: 2,
+            autoOpenOnMobile: false
+          }
+        },
+        tooltip: {
+          showTooltip: false,
+        },
+        customCSS: `
+          * {
+            font-family: "IBM Plex Sans" !important;
+          }
+        `,
+        chatWindow: {
+          showTitle: true,
+          showAgentMessages: false,
+          title: 'Ariane Docs Assistant',
+          titleAvatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_blanc.png',
+          welcomeMessage: 'Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?',
+          errorMessage: 'Sorry, an error has occurred, please try again later.',
+          backgroundColor: '#ffffff',
+          height: 700,
+          width: 400,
+          fontSize: 14,
+          starterPromptFontSize: 13,
+          clearChatOnReload: false,
+          sourceDocsTitle: 'Sources:',
+          renderHTML: true,
+          botMessage: {
+            backgroundColor: '#f7f8ff',
+            textColor: '#000000',
+            showAvatar: true,
+            avatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_background.png'
+          },
+          userMessage: {
+            backgroundColor: '#001BDA',
+            textColor: '#ffffff',
+            showAvatar: false,
+          },
+          textInput: {
+            placeholder: 'Ask a question...',
+            backgroundColor: '#ffffff',
+            textColor: '#303235',
+            sendButtonColor: '#001BDA',
+            maxChars: 100,
+            maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
+            autoFocus: true,
+            sendMessageSound: false,
+            receiveMessageSound: false,
+          },
+          feedback: {
+            color: '#303235'
+          },
+          dateTimeToggle: {
+            date: true,
+            time: true
+          },
+          footer: {
+            textColor: '#303235',
+            text: 'Powered by',
+            company: 'Filigran Ariane AI',
+            companyLink: 'https://filigran.io'
+          }
+        }
+      }
+    })
+  </script>
+</header>
