@@ -96,6 +96,12 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
   if (!INTERNAL_USERS[user.id] && !user.no_creators) {
     updatePatch.creator_id = [user.id];
   }
+  // Handle "created" upsert
+  // Only upsert created if before the existing one
+  if (isNotEmptyField(updatePatch.created)) {
+    const { date: alignedCreated } = computeExtendedDateValues(updatePatch.created, resolvedElement.created, ALIGN_OLDEST);
+    updatePatch.created = alignedCreated;
+  }
   // Handle "x_opencti_modified_at" upsert
   // Only upsert modified if after the existing one
   if (isNotEmptyField(updatePatch.x_opencti_modified_at)) {
