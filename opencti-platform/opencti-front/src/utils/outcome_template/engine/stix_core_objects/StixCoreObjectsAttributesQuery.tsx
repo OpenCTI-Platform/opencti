@@ -83,6 +83,7 @@ const stixCoreObjectsAttributesQuery = graphql`
                 description
                 report_types
                 x_opencti_reliability
+                report_content: content
             }
             ... on Grouping {
                 name

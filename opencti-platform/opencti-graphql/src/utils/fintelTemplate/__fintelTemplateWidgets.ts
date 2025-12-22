@@ -29,6 +29,7 @@ export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
         { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
         { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reliabilitySelf' },
         { label: 'Report types', attribute: 'report_types', variableName: 'reportTypes' },
+        { label: 'Content', attribute: 'report_content', variableName: 'content' },
       ],
       instance_id: SELF_ID,
     }],

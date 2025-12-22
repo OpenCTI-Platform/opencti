@@ -43,6 +43,7 @@ export const OPENVOCAB_FIELD_MAPPINGS: VocabularyMapping[] = [
 
   // Report attributes
   { attribute: 'report_types', vocabularyType: 'report_types_ov', label: 'Report types', multiple: true },
+  { attribute: 'report_content', vocabularyType: 'report_content_ov', label: 'Content', multiple: false },
 
   // Grouping attributes
   { attribute: 'context', vocabularyType: 'grouping-context-ov', label: 'Context', multiple: false },
