@@ -19,7 +19,7 @@ import {
   elReindexElements,
   ES_INDEX_PATTERN_SUFFIX,
   ES_MAX_PAGINATION,
-  searchEngineInit
+  searchEngineInit,
 } from '../../../src/database/engine';
 import {
   DEPRECATED_INDICES,
@@ -30,7 +30,7 @@ import {
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_RELATIONSHIPS_INDICES,
-  WRITE_PLATFORM_INDICES
+  WRITE_PLATFORM_INDICES,
 } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, buildStandardUser, testContext, TESTING_GROUPS, TESTING_ORGS } from '../../utils/testQuery';
@@ -133,8 +133,8 @@ describe('Elasticsearch computation', () => {
       READ_DATA_INDICES,
       {
         types: ['Stix-Domain-Object'],
-        field: 'entity_type'
-      }
+        field: 'entity_type',
+      },
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(2);
@@ -156,7 +156,7 @@ describe('Elasticsearch computation', () => {
           filters: [{ key: ['name'], values: ['Paradise Ransomware'] }],
           filterGroups: [],
         },
-      }
+      },
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.size).toEqual(1);
@@ -177,7 +177,7 @@ describe('Elasticsearch computation', () => {
           filters: [{ key: [buildRefRelationKey(RELATION_OBJECT_MARKING)], values: [marking.internal_id] }],
           filterGroups: [],
         },
-      }
+      },
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(1);
@@ -228,7 +228,7 @@ describe('Elasticsearch computation', () => {
       testContext,
       ADMIN_USER,
       READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'day', startDate: '2019-09-29T00:00:00.000Z', endDate: new Date().toISOString() }
+      { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'day', startDate: '2019-09-29T00:00:00.000Z', endDate: new Date().toISOString() },
     );
     expect(data.length).toEqual(1);
     // noinspection JSUnresolvedVariable
@@ -241,7 +241,7 @@ describe('Elasticsearch computation', () => {
       testContext,
       ADMIN_USER,
       READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { types: ['Stix-Domain-Object'], field: 'created', interval: 'month', startDate: '2019-09-23T00:00:00.000Z', endDate: '2020-03-02T00:00:00.000Z' }
+      { types: ['Stix-Domain-Object'], field: 'created', interval: 'month', startDate: '2019-09-23T00:00:00.000Z', endDate: '2020-03-02T00:00:00.000Z' },
     );
     expect(data.length).toEqual(7);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -265,7 +265,7 @@ describe('Elasticsearch computation', () => {
         interval: 'year',
         startDate: '2019-09-23T00:00:00.000Z',
         endDate: '2020-03-02T00:00:00.000Z',
-      }
+      },
     );
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -289,7 +289,7 @@ describe('Elasticsearch computation', () => {
           filters: [{ key: [buildRefRelationKey(RELATION_USES)], values: [attackPattern.internal_id] }],
           filterGroups: [],
         },
-      }
+      },
     );
     expect(data.length).toEqual(1);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -311,8 +311,8 @@ describe('Elasticsearch computation', () => {
           mode: 'and',
           filters: [{ key: [buildRefRelationKey('*')], values: [attackPattern.internal_id] }],
           filterGroups: [],
-        }
-      }
+        },
+      },
     );
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -333,7 +333,7 @@ describe('Elasticsearch computation', () => {
           filters: [{ key: ['name'], values: ['ANSSI'] }],
           filterGroups: [],
         },
-      }
+      },
     );
     expect(data.length).toEqual(1);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -514,7 +514,7 @@ describe('Elasticsearch pagination', () => {
     expect(malware.name).toEqual('Paradise Ransomware');
     expect(malware._index).not.toBeNull();
     expect(malware.parent_types).toEqual(
-      expect.arrayContaining(['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'])
+      expect.arrayContaining(['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object']),
     );
   });
   it('should entity paginate everything for standard user', async () => {
@@ -670,13 +670,13 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Incident')).toBe(entitiesCounter.Incident);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(entitiesCounter.KillChainPhase);
     expect(entityTypeMap.get('Malware-Analysis')).toBe(entitiesCounter.MalwareAnalysis);
-    expect(entityTypeMap.get('Marking-Definition')).toBe(9);
+    expect(entityTypeMap.get('Marking-Definition')).toBe(8);
     expect(entityTypeMap.get('Note')).toBe(entitiesCounter.Note);
     expect(entityTypeMap.get('Notifier')).toBe(entitiesCounter.Notifier);
     expect(entityTypeMap.get('Opinion')).toBe(entitiesCounter.Opinion);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(1); // because of created filter
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
-    expect(data.edges.length).toEqual(entitiesCounter.Vocabulary + TESTING_ORGS.length + 26);
+    expect(data.edges.length).toEqual(entitiesCounter.Vocabulary + TESTING_ORGS.length + 25);
     filters = {
       mode: 'and',
       filters: [
@@ -692,7 +692,7 @@ describe('Elasticsearch pagination', () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       orderBy: 'created',
       orderMode: 'asc',
-      first: ES_MAX_PAGINATION
+      first: ES_MAX_PAGINATION,
     });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.Capability);
@@ -925,7 +925,7 @@ describe('Elasticsearch pagination', () => {
           values: [],
         }],
         filterGroups: [],
-      }
+      },
     });
     expect(data).not.toBeNull();
   });

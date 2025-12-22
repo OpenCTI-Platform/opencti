@@ -508,7 +508,7 @@ export const created: AttributeDefinition = {
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
-  upsert: false,
+  upsert: true,
   isFilterable: true,
 };
 export const modified: AttributeDefinition = {
