@@ -15,6 +15,10 @@ import { getSettings, settingsEditField } from '../../../src/domain/settings';
 import { getEntityFromCache, resetCacheForEntity } from '../../../src/database/cache';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import { SYSTEM_USER } from '../../../src/utils/access';
+import { storeLoadById } from '../../../src/database/middleware-loader';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { RELATION_OBJECT_ASSIGNEE } from '../../../src/schema/stixRefRelationship';
+import type { AuthUser } from '../../../src/types/user';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -120,6 +124,7 @@ describe('Users visibility according to their direct organizations', () => {
   let orgaAInternalId: string;
   let orgaBInternalId: string;
   let orgaABInternalId: string;
+  const reportStandardId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
 
   beforeAll(async () => {
     // ------ Create the context with users and organizations -------
@@ -211,6 +216,28 @@ describe('Users visibility according to their direct organizations', () => {
     // check the inferred relationships have been created
     inferredParticipateToRelationships = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreRelation[];
     expect(inferredParticipateToRelationships.length).toBe(2);
+
+    // 04. Assign the 4 users to a report
+    const REPORT_UPDATE_QUERY = gql`
+      mutation ReportEdit($id: ID!, $input: [EditInput]!) {
+        reportEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            name
+            objectAssignee {
+              id
+              name
+            }
+          }
+        }
+      }
+    `;
+    const value = [userAInternalId, userBInternalId, userABInternalId, userOInternalId];
+    const queryResult = await queryAsAdmin({
+      query: REPORT_UPDATE_QUERY,
+      variables: { id: reportStandardId, input: { key: 'objectAssignee', value } },
+    });
+    expect(queryResult.data?.reportEdit.fieldPatch.objectAssignee.length).toEqual(4);
   });
 
   afterAll(async () => {
@@ -355,13 +382,15 @@ describe('Users visibility according to their direct organizations', () => {
   });
 
   describe('should fetch all the users if organization sharing is not activated', async () => {
-    const USER_A = await resolveUserByIdFromCache(testContext, userAInternalId);
+    const USER_A = await resolveUserByIdFromCache(testContext, userAInternalId) as AuthUser;
 
-    it('should load members fetch all the users if no organization sharing', async () => {
+    beforeAll(async () => {
       // check there is no platform organization
       const settings = await getEntityFromCache<BasicStoreSettings>(testContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
       expect(settings.platform_organization).toEqual(undefined);
+    });
 
+    it('should load members fetch all the users if no organization sharing', async () => {
       const filters = {
         mode: 'and',
         filters: [{
@@ -375,6 +404,11 @@ describe('Users visibility according to their direct organizations', () => {
 
       const membersResult = await findMembersPaginated(testContext, USER_A, { filters }) as BasicConnection<BasicStoreEntity>;
       expect(membersResult.edges.filter((n: any) => n.entity_type === ENTITY_TYPE_USER).length).toEqual(4); // the users visible by userA: userA and userO
+    });
+
+    it('should fetch all the assignees if no organization sharing', async () => {
+      const report = await storeLoadById(testContext, USER_A, reportStandardId, ENTITY_TYPE_CONTAINER_REPORT);
+      expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(4);
     });
   });
 
