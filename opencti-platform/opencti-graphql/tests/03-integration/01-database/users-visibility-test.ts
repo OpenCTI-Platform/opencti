@@ -5,10 +5,12 @@ import { getInferences } from '../../utils/rule-utils';
 import ParticipateToPartsRule from '../../../src/rules/participate-to-parts/ParticipateToPartsRule';
 import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
 import { adminQueryWithSuccess } from '../../utils/testQueryHelper';
-import type { BasicStoreBase, BasicStoreRelation } from '../../../src/types/store';
+import type { BasicConnection, BasicStoreBase, BasicStoreEntity, BasicStoreRelation } from '../../../src/types/store';
 import { createRuleContent } from '../../../src/rules/rules-utils';
 import { createInferredRelation, deleteInferredRuleElement } from '../../../src/database/middleware';
 import { ID_SUBFILTER, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from '../../../src/utils/filtering/filtering-constants';
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { findMembersPaginated, resolveUserByIdFromCache } from '../../../src/domain/user';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -92,6 +94,20 @@ const DELETE_ORGANIZATION_QUERY = gql`
   }
 `;
 
+const READ_MEMBERS_QUERY = gql`
+  query members($entityTypes: [MemberType!]) {
+    members(entityTypes: $entityTypes) {
+      edges {
+        node {
+          id
+          entity_type
+          name
+        }
+      }
+    }
+  }
+`;
+
 describe('Users visibility according to their direct organizations', () => {
   let userAInternalId: string;
   let userBInternalId: string;
@@ -108,7 +124,7 @@ describe('Users visibility according to their direct organizations', () => {
     // userC part of orgaAB
     // userO part of no organization
     // with ParticipateToPartsRule inference rule activated: userA and userB participate-to orgaAB via inferred relationships
-    
+
     // 01. Create the organizations
     const ORGANIZATIONS_TO_CREATE = [
       { input: { name: 'orgaA' } },
@@ -227,13 +243,13 @@ describe('Users visibility according to their direct organizations', () => {
       if (relationshipType) {
         values.push({
           key: RELATION_TYPE_SUBFILTER,
-          values: [relationshipType]
+          values: [relationshipType],
         });
       }
       if (isInferredSubFilterValue) {
         values.push({
           key: RELATION_INFERRED_SUBFILTER,
-          values: [isInferredSubFilterValue]
+          values: [isInferredSubFilterValue],
         });
       };
       if (organizationIds) {
@@ -253,7 +269,7 @@ describe('Users visibility according to their direct organizations', () => {
             key: 'regardingOf',
             operator: regardingOfOperator,
             values,
-          }
+          },
         ],
         filterGroups: [],
       };
@@ -331,6 +347,25 @@ describe('Users visibility according to their direct organizations', () => {
       expect(queryResult.data?.users.edges.length).toEqual(2); // users having a direct relationship with orgaA or orgaAB
       expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userA')).toBeTruthy();
       expect(queryResult.data?.users.edges.map((n: any) => n.node.name).includes('userAB')).toBeTruthy();
+    });
+  });
+
+  describe('should fetch members according to the user visibility', async () => {
+    it('should load all the members according to the user visibility', async () => {
+      const filters = {
+        mode: 'and',
+        filters: [{
+          key: 'name',
+          values: ['userA', 'userB', 'userAB', 'userO'], // we only consider the users created in this file
+        }],
+        filterGroups: [],
+      };
+      const queryResult = await queryAsAdmin({ query: READ_MEMBERS_QUERY, variables: { filters } });
+      expect(queryResult.data?.members.edges.filter((n: any) => n.entity_type === ENTITY_TYPE_USER).length).toEqual(4); // the admin can see all the users
+
+      const USER_A = await resolveUserByIdFromCache(testContext, userAInternalId);
+      const membersResult = await findMembersPaginated(testContext, USER_A, { filters }) as BasicConnection<BasicStoreEntity>;
+      expect(membersResult.edges.filter((n: any) => n.entity_type === ENTITY_TYPE_USER).length).toEqual(2); // the users visible by userA: userA and userO
     });
   });
 });
