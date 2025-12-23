@@ -40,8 +40,8 @@ const retrieveMigrations = async () => {
   const migrationsFilenames = (await fs.readdir(MIGRATION_DIRECTORY_PATH))
     .filter((f) => f.endsWith('.js'));
 
-  const migrations = await Promise.all(
-    migrationsFilenames.map((file) => import(`../migrations/${file}`)));
+  const migrations = await Promise.all(migrationsFilenames
+    .map((file) => import(`../migrations/${file.replace('.js', '')}.js`))); // .js removed and added because extension require in vite dynamic var imports
 
   return migrations.map((migration, i) => {
     const name = migrationsFilenames[i];
