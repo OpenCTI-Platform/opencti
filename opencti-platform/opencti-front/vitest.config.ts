@@ -30,6 +30,7 @@ export default defineConfig({
     alias: {
       'src': path.resolve(__dirname, './src'),
       '@components': path.resolve(__dirname, './src/private/components'),
+      '@common': path.resolve(__dirname, './src/components/common')
     },
   }
 })

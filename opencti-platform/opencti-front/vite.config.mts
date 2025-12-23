@@ -198,6 +198,7 @@ export default defineConfig({
     alias: {
       '@components': path.resolve(__dirname, './src/private/components'),
       'src': path.resolve(__dirname, './src'),
+      '@common': path.resolve(__dirname, './src/components/common')
     },
     extensions: ['.tsx', '.jsx', '.ts', '.js', '.json'],
   },
