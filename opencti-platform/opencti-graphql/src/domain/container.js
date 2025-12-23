@@ -5,7 +5,6 @@ import { distributionEntities, fullEntitiesOrRelationsList, timeSeriesEntities }
 import {
   internalFindByIds,
   internalLoadById,
-  fullEntitiesList,
   fullEntitiesThroughRelationsToList,
   topEntitiesList,
   pageEntitiesConnection,
@@ -31,9 +30,7 @@ import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
-import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import { checkEnterpriseEdition, isEnterpriseEdition } from '../enterprise-edition/ee';
-import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
+import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { getContainerKnowledge, resolveFiles } from '../utils/ai/dataResolutionHelpers';
 import { queryAi } from '../database/ai-llm';
 import { notify } from '../database/redis';
@@ -280,41 +277,6 @@ export const containerEditAuthorizedMembers = async (context, user, entityId, in
     throw FunctionalError('Cant find element to update', { entityId });
   }
   return editAuthorizedMembers(context, user, args);
-};
-
-export const getFilesFromTemplate = async (context, user, container, args) => {
-  const isEE = await isEnterpriseEdition(context);
-  if (!isEE) {
-    return null;
-  }
-  const { first, prefixMimeType } = args;
-  const opts = { first, prefixMimeTypes: prefixMimeType ? [prefixMimeType] : null, entity_id: container.id, entity_type: container.entity_type };
-  return paginatedForPathWithEnrichment(context, user, `fromTemplate/${container.entity_type}/${container.id}`, container.id, opts);
-};
-
-export const getFintelTemplates = async (context, user, container) => {
-  const isEE = await isEnterpriseEdition(context);
-  if (!isEE) {
-    return null;
-  }
-  const nowDate = new Date().getTime();
-  const filters = {
-    mode: 'and',
-    filters: [
-      {
-        key: 'settings_types',
-        values: [container.entity_type],
-        operator: 'eq',
-      },
-      {
-        key: 'start_date',
-        values: [nowDate],
-        operator: 'lte',
-      },
-    ],
-    filterGroups: [],
-  };
-  return fullEntitiesList(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
 };
 
 export const aiSummary = async (context, user, args) => {

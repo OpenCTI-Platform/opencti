@@ -99,6 +99,16 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
   # Container
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
@@ -144,16 +154,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     filters: FilterGroup
   ): FileConnection
   exportFiles(first: Int): FileConnection
-  filesFromTemplate(
-    first: Int
-    prefixMimeType: String
-    after: ID
-    orderBy: FileOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FileConnection
-  fintelTemplates: [FintelTemplate!]
   editContext: [EditUserContext!]
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
