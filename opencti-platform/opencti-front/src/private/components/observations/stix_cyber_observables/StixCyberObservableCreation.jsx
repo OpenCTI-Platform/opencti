@@ -139,6 +139,9 @@ const stixCyberObservableMutation = graphql`
     $Credential: CredentialAddInput
     $Persona: PersonaAddInput
     $SSHKey: SSHKeyAddInput
+    $IMEI: IMEIAddInput
+    $ICCID: ICCIDAddInput
+    $IMSI: IMSIAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -182,6 +185,9 @@ const stixCyberObservableMutation = graphql`
       Credential: $Credential
       Persona: $Persona
       SSHKey: $SSHKey
+      IMEI: $IMEI
+      ICCID: $ICCID
+      IMSI: $IMSI
     ) {
       id
       draftVersion {
@@ -234,6 +240,9 @@ const BULK_OBSERVABLES = [
   { type: 'Domain-Name', keys: ['value'] },
   { type: 'Email-Addr', keys: ['value'] },
   { type: 'Hostname', keys: ['value'] },
+  { type: 'ICCID', keys: ['value'] },
+  { type: 'IMEI', keys: ['value'] },
+  { type: 'IMSI', keys: ['value'] },
   { type: 'IPv4-Addr', keys: ['value'] },
   { type: 'IPv6-Addr', keys: ['value'] },
   { type: 'Mac-Addr', keys: ['value'] },
@@ -379,6 +388,10 @@ const StixCyberObservableCreation = ({
             hash: adaptedValue['hashes_SHA-512'],
           });
         }
+      }
+      // remove any non-numbers from imie on submit
+      if (bulkConf.type === 'IMEI') {
+        adaptedValue.value = adaptedValue.value.replace(/[^0-9]/g, '');
       }
       adaptedValue = pipe(
         dissoc('x_opencti_description'),
@@ -605,6 +618,30 @@ const StixCyberObservableCreation = ({
                   ['hashes_SHA-256', 'hashes_SHA-512'],
                   ['hashes_SHA-256', 'name'],
                   ['hashes_SHA-512', 'name'],
+                ];
+              } else if (status.type === 'IMEI') {
+                const imeiRegex = /(\d{2})([^a-z\d]{1})?(\d{4})([^a-z\d]{1})?(\d{2})([^a-z\d]{1})?(\d{6})([^a-z\d]{1})?(\d{1,2})$/i;
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')).matches(imeiRegex, t_i18n('IMEI values must be 15 to 16 digits. Special characters are accepted as delimiters.')),
+                };
+                requiredOneOfFields = [
+                  [attribute.value],
+                ];
+              } else if (status.type === 'ICCID') {
+                const iccidRegex = /(^[0-9]{18,22})$/i;
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')).matches(iccidRegex, t_i18n('ICCID values can only include 0-9, 18 to 22 characters')),
+                };
+                requiredOneOfFields = [
+                  [attribute.value],
+                ];
+              } else if (status.type === 'IMSI') {
+                const imsiRegex = /(^[0-9]{14,15})$/i;
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string().required(t_i18n('This field is required')).matches(imsiRegex, t_i18n('IMSI values can only include 0-9, 14 to 15 characters')),
+                };
+                requiredOneOfFields = [
+                  [attribute.value],
                 ];
               } else if (attribute.value === 'value') {
                 initialValues[attribute.value] = inputValue || '';

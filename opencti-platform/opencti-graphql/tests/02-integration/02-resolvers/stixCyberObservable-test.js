@@ -45,7 +45,13 @@ describe('StixCyberObservable resolver standard behavior', () => {
   let networkTrafficInternalId;
   const stixCyberObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
   const sshKeyStixId = 'ssh-key--921c202b-5706-499d-9484-b5cf9bc6f70c';
+  const iccidStixId = 'iccid--921c202b-5706-499d-9484-b5cf9bc6f70c';
+  const imeiStixId = 'imei--921c202b-5706-499d-9484-b5cf9bc6f70c';
+  const imsiStixId = 'imsi--921c202b-5706-499d-9484-b5cf9bc6f70c';
   let SSHInternalId;
+  let ICCIDInternalId;
+  let IMEIInternalId;
+  let IMSIInternalId;
 
   const CREATE_QUERY = gql`
     mutation StixCyberObservableAdd(
@@ -54,14 +60,20 @@ describe('StixCyberObservable resolver standard behavior', () => {
       $NetworkTraffic: NetworkTrafficAddInput,
       $SSHKey: SSHKeyAddInput,
       $Text: TextAddInput,
-      $x_opencti_score: Int
+      $x_opencti_score: Int,
+      $ICCID: ICCIDAddInput,
+      $IMEI: IMEIAddInput,
+      $IMSI: IMSIAddInput
     ) {
       stixCyberObservableAdd(type: $type,
         IPv4Addr: $IPv4Addr,
         NetworkTraffic: $NetworkTraffic,
         SSHKey: $SSHKey,
-        Text: $Text
-        x_opencti_score: $x_opencti_score
+        Text: $Text,
+        x_opencti_score: $x_opencti_score,
+        ICCID: $ICCID,
+        IMEI: $IMEI,
+        IMSI: $IMSI
       ) {
         id
         observable_value
@@ -79,6 +91,15 @@ describe('StixCyberObservable resolver standard behavior', () => {
           key_type
           public_key
           fingerprint_sha256
+        }
+        ... on ICCID {
+          value
+        }
+        ... on IMEI {
+          value
+        }
+        ... on IMSI {
+          value
         }
       }
     }
@@ -438,6 +459,230 @@ describe('StixCyberObservable resolver standard behavior', () => {
     });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.stixCyberObservable).toBeNull();
+  });
+  it('should not create invalid ICCID stixCyberObservable', async () => {
+    // Create the ICCID stixCyberObservable
+    const STIX_OBSERVABLE_TO_CREATE = {
+      type: 'ICCID',
+      stix_id: iccidStixId,
+      ICCID: {
+        value: 'ABC123'
+      }
+    };
+    const stixCyberObservableICCID = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: STIX_OBSERVABLE_TO_CREATE,
+    });
+    console.log(stixCyberObservableICCID);
+    expect(stixCyberObservableICCID.errors[0].message).toEqual('Observable is not correctly formatted');
+  });
+  it('should stixCyberObservable ICCID create', async () => {
+    // Create the ICCID stixCyberObservable
+    const STIX_OBSERVABLE_TO_CREATE = {
+      type: 'ICCID',
+      stix_id: iccidStixId,
+      ICCID: {
+        value: '123456789012345678',
+      },
+    };
+    const stixCyberObservableICCID = await await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: STIX_OBSERVABLE_TO_CREATE,
+    });
+    expect(stixCyberObservableICCID).not.toBeNull();
+    expect(stixCyberObservableICCID.data.stixCyberObservableAdd).not.toBeNull();
+    expect(stixCyberObservableICCID.data.stixCyberObservableAdd.observable_value).toEqual('123456789012345678');
+    ICCIDInternalId = stixCyberObservableICCID.data.stixCyberObservableAdd.id;
+  });
+  it('should not update invalid ICCID stixCyberObservable', async () => {
+    // Update ICCID
+    const stixCyberObservableUpdated = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: ICCIDInternalId,
+        input: { key: 'value', value: 'ABC123' },
+      },
+    });
+    expect(stixCyberObservableUpdated.errors[0].message).toEqual('Observable of is not correctly formatted');
+  });
+  it('should stixCyberObservable ICCID update', async () => {
+    // Update ICCID
+    const stixCyberObservableUpdated = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: ICCIDInternalId,
+        input: { key: 'value', value: '1234567890123456789' },
+      },
+    });
+    expect(stixCyberObservableUpdated.data.stixCyberObservableEdit.fieldPatch.observable_value).toEqual('1234567890123456789');
+  });
+  it('should stixCyberObservable ICCID delete', async () => {
+    // Delete ICCID
+    const DELETE_QUERY = gql`
+      mutation stixCyberObservableDelete($id: ID!) {
+        stixCyberObservableEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+    await queryAsAdminWithSuccess({
+      query: DELETE_QUERY,
+      variables: { id: ICCIDInternalId},
+    });
+    // Verify is no longer found
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: iccidStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.stixCyberObservable).toBeNull();
+  });
+  it('should not create invalid IMEI stixCyberObservable', async () => {
+    // Create the IMEI stixCyberObservable
+    const STIX_OBSERVABLE_TO_CREATE = {
+      type: 'IMEI',
+      stix_id: imeiStixId,
+      IMEI: {
+        value: 'ABC123'
+      }
+    };
+    const stixCyberObservableIMEI = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: STIX_OBSERVABLE_TO_CREATE,
+    });
+    console.log(stixCyberObservableIMEI);
+    expect(stixCyberObservableIMEI.errors[0].message).toEqual('Observable is not correctly formatted');
+  });
+  it('should stixCyberObservable IMEI created', async () => {
+    // Create the IMEI stixCyberObservable
+    const STIX_OBSERVABLE_TO_CREATE = {
+      type: 'IMEI',
+      stix_id: imeiStixId,
+      IMEI: {
+        value: '112222223333334'
+      }
+    };
+    const stixCyberObservableIMEI = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: STIX_OBSERVABLE_TO_CREATE,
+    });
+    expect(stixCyberObservableIMEI).not.toBeNull();
+    expect(stixCyberObservableIMEI.data.stixCyberObservableAdd).not.toBeNull();
+    expect(stixCyberObservableIMEI.data.stixCyberObservableAdd.observable_value).toEqual('112222223333334');
+    IMEIInternalId = stixCyberObservableIMEI.data.stixCyberObservableAdd.id;
+  });
+  it('should not update invalid IMEI stixCyberObservable', async () => {
+    // Update IMEI
+    const stixCyberObservableUpdated = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: IMEIInternalId,
+        input: { key: 'value', value: 'ABC123' }
+      },
+    });
+    expect(stixCyberObservableUpdated.errors[0].message).toEqual('Observable of is not correctly formatted');
+  });
+  it('should stixCyberObservable IMEI update', async () => {
+    // Update IMEI
+    const stixCyberObservableUpdated = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: IMEIInternalId,
+        input: { key: 'value', value: '112222223333335' }
+      },
+    });
+    expect(stixCyberObservableUpdated.data.stixCyberObservableEdit.fieldPatch.observable_value).toEqual('112222223333335');
+  });
+  it('should stixCyberObservable IMEI delete', async () => {
+    // Delete IMEI
+    const DELETE_QUERY = gql`
+      mutation stixCyberObservableDelete($id: ID!) {
+        stixCyberObservableEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+
+    await queryAsAdminWithSuccess({
+      query: DELETE_QUERY,
+      variables: { id: IMEIInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: imeiStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.stixCyberObservable).toBeNull();
+  });
+  it('should not create invalid IMSI stixCyberObservable', async () => {
+    // Create the IMSI stixCyberObservable
+    const STIX_OBSERVABLE_TO_CREATE = {
+      type: 'IMSI',
+      stix_id: imsiStixId,
+      IMSI: {
+        value: 'ABC123'
+      }
+    };
+    const stixCyberObservableIMSI = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: STIX_OBSERVABLE_TO_CREATE,
+    });
+    console.log(stixCyberObservableIMSI);
+    expect(stixCyberObservableIMSI.errors[0].message).toEqual('Observable is not correctly formatted');
+  });
+  it('should stixCyberObservable IMSI created', async () => {
+    // Create the IMSI stixCyberObservable
+    const STIX_OBSERVABLE_TO_CREATE = {
+      type: 'IMSI',
+      stix_id: imsiStixId,
+      IMSI: {
+        value: '313460000000001'
+      }
+    };
+    const stixCyberObservableIMSI = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: STIX_OBSERVABLE_TO_CREATE,
+    });
+    expect(stixCyberObservableIMSI).not.toBeNull();
+    expect(stixCyberObservableIMSI.data.stixCyberObservableAdd).not.toBeNull();
+    expect(stixCyberObservableIMSI.data.stixCyberObservableAdd.observable_value).toEqual('313460000000001');
+    IMSIInternalId = stixCyberObservableIMSI.data.stixCyberObservableAdd.id;
+  });
+  it('should not update invalid IMSI stixCyberObservable', async () => {
+    // Update IMSI
+    const stixCyberObservableUpdated = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: IMSIInternalId,
+        input: { key: 'value', value: 'ABC123' }
+      },
+    });
+    expect(stixCyberObservableUpdated.errors[0].message).toEqual('Observable of is not correctly formatted');
+  });
+  it('should stixCyberObservable IMSI update', async () => {
+    // Update IMSI
+    const stixCyberObservableUpdated = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: IMSIInternalId,
+        input: { key: 'value', value: '313460000000002' }
+      },
+    });
+    expect(stixCyberObservableUpdated.data.stixCyberObservableEdit.fieldPatch.observable_value).toEqual('313460000000002');
+  });
+  it('should stixCyberObservable IMSI delete', async () => {
+    // Delete IMSI
+    const DELETE_QUERY = gql`
+      mutation stixCyberObservableDelete($id: ID!) {
+        stixCyberObservableEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+
+    await queryAsAdminWithSuccess({
+      query: DELETE_QUERY,
+      variables: { id: IMSIInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: imsiStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.stixCyberObservable).toBeNull();
   });
