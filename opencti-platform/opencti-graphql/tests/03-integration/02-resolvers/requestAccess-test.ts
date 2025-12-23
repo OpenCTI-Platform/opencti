@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import {
   ADMIN_USER,
@@ -26,7 +26,6 @@ import { internalDeleteElementById } from '../../../src/database/middleware';
 import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
-import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 export const CREATE_REQUEST_ACCESS_QUERY = gql`
     mutation RequestAccessAdd($input: RequestAccessAddInput!) {
@@ -224,6 +223,8 @@ const ADD_REQUEST_ACCESS_STATUS_MUTATION = gql`
         }
     }
 `;
+
+// TODO : find a way to mock EE
 
 describe('Add Request Access to an entity and create an RFI.', async () => {
   let caseRfiIdForApproval: string;
@@ -501,12 +502,12 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   it('should accept the created Case RFI first time be ok', async () => {
     // FIXME use a user and not admin !
     /*
-    const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
-      query: APPROVE_RFI_QUERY,
-      variables: { id: caseRfiIdForApproval },
-    });
-    expect(approvalResult?.data?.caseRfiApprove.x_opencti_workflow_id).toBe(approvedStatusId);
-  */
+      const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+        query: APPROVE_RFI_QUERY,
+        variables: { id: caseRfiIdForApproval },
+      });
+      expect(approvalResult?.data?.caseRfiApprove.x_opencti_workflow_id).toBe(approvedStatusId);
+    */
 
     const approvalResult = await queryAsAdminWithSuccess({
       query: APPROVE_RFI_QUERY,
@@ -532,11 +533,11 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   it('should accept the created Case RFI second time be ok too', async () => {
     // FIXME use a user and not admin !
     /*
-    const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
-      query: APPROVE_RFI_QUERY,
-      variables: { id: caseRfiIdForApproval },
-    });
-    */
+      const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+        query: APPROVE_RFI_QUERY,
+        variables: { id: caseRfiIdForApproval },
+      });
+      */
     const approvalResult = await queryAsAdminWithSuccess({
       query: APPROVE_RFI_QUERY,
       variables: { id: caseRfiIdForApproval },
@@ -591,11 +592,11 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
 
   it('should be ok to accept the Case RFI when already rejected', async () => {
     /* FIXME
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
-      query: APPROVE_RFI_QUERY,
-      variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
-    });
-    */
+      const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+        query: APPROVE_RFI_QUERY,
+        variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
+      });
+      */
     const queryResult = await queryAsAdminWithSuccess({
       query: APPROVE_RFI_QUERY,
       variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },

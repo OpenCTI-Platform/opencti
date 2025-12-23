@@ -9,6 +9,8 @@ import { addDisseminationCount, fetchTelemetryData, TELEMETRY_GAUGE_DISSEMINATIO
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../../../src/database/redis';
 import { waitInSec } from '../../../src/database/utils';
 
+// TODO : find a way to mock EE
+
 describe('Telemetry manager test coverage', () => {
   test('Verify that metrics get collected from both elastic and redis', async () => {
     // GIVEN a configured telemetry
@@ -16,7 +18,7 @@ describe('Telemetry manager test coverage', () => {
       [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
       [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
       [SEMRESATTRS_SERVICE_INSTANCE_ID]: 'api-test-telemetry-id',
-      'service.instance.creation': new Date().toUTCString()
+      'service.instance.creation': new Date().toUTCString(),
     });
     const resource = Resource.default().merge(filigranResource);
 
