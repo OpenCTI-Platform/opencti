@@ -211,6 +211,23 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
 
   setTitle(t_i18n('Parameters | Settings'));
 
+  // generate AI Powered label and tooltip
+  let aiPoweredLabel;
+  let aiPoweredTooltip;
+  if (!isEnterpriseEditionValid) {
+    aiPoweredLabel = t_i18n('Disabled');
+    aiPoweredTooltip = t_i18n('You should activate EE to use this feature');
+  } else if (!settings.platform_ai_enabled) {
+    aiPoweredLabel = t_i18n('Disabled');
+    aiPoweredTooltip = t_i18n('AI is not enabled');
+  } else if (settings.platform_ai_has_token) {
+    aiPoweredLabel = settings.platform_ai_type;
+    aiPoweredTooltip = `${settings.platform_ai_type} - ${settings.platform_ai_model}`;
+  } else {
+    aiPoweredLabel = `${settings.platform_ai_type} - ${t_i18n('Missing token')}`;
+    aiPoweredTooltip = t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.');
+  };
+
   const settingsValidation = () => Yup.object().shape({
     platform_title: Yup.string().required(t_i18n('This field is required')),
     platform_favicon: Yup.string().nullable(),
@@ -688,16 +705,18 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     </ListItem>
                     <ListItem divider={true}>
                       <ListItemText
-                        primary={t_i18n('AI Powered')}
+                        primary={(
+                          <>
+                            {t_i18n('AI Powered')}
+                            <EEChip />
+                          </>
+                        )}
                       />
                       <ItemBoolean
                         variant="large"
-                        label={
-
-                          !settings.platform_ai_enabled ? t_i18n('Disabled') : settings.platform_ai_has_token
-                            ? settings.platform_ai_type : `${settings.platform_ai_type} - ${t_i18n('Missing token')}`}
-                        status={settings.platform_ai_enabled && settings.platform_ai_has_token}
-                        tooltip={settings.platform_ai_has_token ? `${settings.platform_ai_type} - ${settings.platform_ai_model}` : t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.')}
+                        label={aiPoweredLabel}
+                        status={isEnterpriseEditionValid && settings.platform_ai_enabled && settings.platform_ai_has_token}
+                        tooltip={aiPoweredTooltip}
                       />
                     </ListItem>
                     <ListItem divider={true}>
