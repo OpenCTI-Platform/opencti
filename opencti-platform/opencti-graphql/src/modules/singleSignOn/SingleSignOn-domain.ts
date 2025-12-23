@@ -1,13 +1,8 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import {
-  ENTITY_TYPE_SINGLE_SIGN_ON,
-  type BasicStoreEntitySingleSignOn,
-  type StoreEntitySingleSignOn,
-  CONFIGURATION_MANDATORY_KEY_LIST,
-} from './SingleSignOn-types';
+import { ENTITY_TYPE_SINGLE_SIGN_ON, type BasicStoreEntitySingleSignOn, type StoreEntitySingleSignOn } from './singleSignOn-types';
 import type { SingleSignOnAddInput } from '../../generated/graphql';
-import { EditInput } from '../../generated/graphql';
+import type { EditInput } from '../../generated/graphql';
 import { now } from '../../utils/format';
 import { createInternalObject } from '../../domain/internalObject';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
@@ -58,17 +53,17 @@ export const getStrategyAttributes = (strategy: StrategyType) => {
 
     return STRATEGY_ATTRIBUTES[strategy];
   */
-}
+};
 
-export const findSingleSignOnById = (context: AuthContext, user: AuthUser, id: string) => {
+export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
   if (!isSingleSignOnEnabled) throw UnsupportedError('Feature not yet available');
   return storeLoadById<BasicStoreEntitySingleSignOn>(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON);
-}
+};
 
 export const findSingleSignOnPaginated = (context: AuthContext, user: AuthUser, args: any) => {
   if (!isSingleSignOnEnabled) throw UnsupportedError('Feature not yet available');
   return pageEntitiesConnection<BasicStoreEntitySingleSignOn>(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON], args);
-}
+};
 
 export const addSingleSignOn = (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
   if (!isSingleSignOnEnabled) throw UnsupportedError('Feature not yet available');
@@ -76,11 +71,11 @@ export const addSingleSignOn = (context: AuthContext, user: AuthUser, input: Sin
   const defaultOps = { created_at: now(), updated_at: now() };
   const singleSignOnInput = { ...input, ...defaultOps };
   return createInternalObject<StoreEntitySingleSignOn>(context, user, singleSignOnInput, ENTITY_TYPE_SINGLE_SIGN_ON);
-}
+};
 
 export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   if (!isSingleSignOnEnabled) throw UnsupportedError('Feature not yet available');
-  const singleSignOn = await findSingleSignOnById<StoreEntitySingleSignOn>(context, user, id);
+  const singleSignOn = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOn) {
     throw FunctionalError(`Single sign on ${id} cannot be found`);
@@ -97,11 +92,11 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
   });
 
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
-}
+};
 
 export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, id: string) => {
   if (!isSingleSignOnEnabled) throw UnsupportedError('Feature not yet available');
-  const singleSignOn = await findSingleSignOnById<StoreEntitySingleSignOn>(context, user, id);
+  const singleSignOn = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOn) {
     throw FunctionalError(`Single sign on ${id} cannot be found`);
@@ -118,4 +113,4 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
   });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, singleSignOn, user);
   return id;
-}
+};

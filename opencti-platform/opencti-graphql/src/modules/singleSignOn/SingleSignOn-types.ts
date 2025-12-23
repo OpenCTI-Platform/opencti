@@ -2,7 +2,7 @@ import type { StixObject } from '../../types/stix-2-1-common';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import { StrategyType } from '../../config/providers-configuration';
 
-export const ENTITY_TYPE_SINGLE_SIGN_ON = "SingleSignOn";
+export const ENTITY_TYPE_SINGLE_SIGN_ON = 'SingleSignOn';
 
 export interface ConfigurationType {
   key: string;
@@ -28,7 +28,7 @@ export interface BasicStoreEntitySingleSignOn extends BasicStoreEntity {
   created_at: Date;
   updated_at: Date;
   enabled: boolean;
-  strategy: StrategyType
+  strategy: StrategyType;
   label?: string;
   auto_create_group?: boolean;
   prevent_default_groups?: boolean;
@@ -45,7 +45,7 @@ export interface StoreEntitySingleSignOn extends StoreEntity {
   created_at: Date;
   updated_at: Date;
   enabled: boolean;
-  strategy: StrategyType
+  strategy: StrategyType;
   label?: string;
   auto_create_group?: boolean;
   prevent_default_groups?: boolean;
@@ -60,6 +60,6 @@ export interface StixSingleSignOn extends StixObject {
   name: string;
   description: string;
   enabled: boolean;
-  strategy: StrategyType
+  strategy: StrategyType;
   label?: string;
 }

@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_SINGLE_SIGN_ON, type StixSingleSignOn, type StoreEntitySingleSignOn } from './SingleSignOn-types';
+import { ENTITY_TYPE_SINGLE_SIGN_ON, type StixSingleSignOn, type StoreEntitySingleSignOn } from './singleSignOn-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertSingleSignOnToStix from './SingleSignOn-converter';
 import { isFeatureEnabled } from '../../config/conf';
@@ -21,7 +21,7 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
     },
   },
   attributes: [
-    { name: 'name', label: "Name", type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'name', label: 'Name', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', mandatoryType: 'customizable', type: 'string', format: 'text', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'enabled', label: 'Enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'strategy', label: 'Strategy', mandatoryType: 'internal', type: 'string', format: 'enum', values: StrategyTypeList, editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -36,9 +36,9 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
   ],
   relations: [],
   representative: (stix: StixSingleSignOn) => {
-    return stix.name
+    return stix.name;
   },
-  converter_2_1: convertSingleSignOnToStix
+  converter_2_1: convertSingleSignOnToStix,
 };
 
 const isSingleSignOnEnabled = isFeatureEnabled('SINGLE_SIGN_ON_ENABLED');

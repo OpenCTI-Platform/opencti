@@ -14891,7 +14891,7 @@ type SingleSignOn implements InternalObject & BasicObject {
   organizations_management: [OrganizationsManagement!]
   groups_management: [GroupsManagement!]
   configuration: [ConfigurationType!]
-  advanced_configuration: [AdvancedConfigurationType!]
+  advanced_configuration: [ConfigurationType!]
 }
 
 type OrganizationsManagement {
@@ -14907,13 +14907,6 @@ type GroupsManagement {
 }
 
 type ConfigurationType {
-  key: String!
-  value: String!
-  type: String!
-  mandatory: Boolean!
-}
-
-type AdvancedConfigurationType {
   key: String!
   value: String!
   type: String!
@@ -14965,13 +14958,6 @@ input ConfigurationTypeInput {
   key: String!
   value: String!
   type: String!
-  mandatory: Boolean!
-}
-
-input AdvancedConfigurationTypeInput {
-  key: String!
-  value: String!
-  type: String!
 }
 
 input SingleSignOnAddInput {
@@ -14985,5 +14971,5 @@ input SingleSignOnAddInput {
   organizations_management: [OrganizationsManagementInput!]
   groups_management: [GroupsManagementInput!]
   configuration: [ConfigurationTypeInput!]
-  advanced_configuration: [AdvancedConfigurationTypeInput!]
+  advanced_configuration: [ConfigurationTypeInput!]
 }

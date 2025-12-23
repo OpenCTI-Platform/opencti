@@ -8,10 +8,12 @@ import {
   PermIdentityOutlined,
   ReceiptOutlined,
   SecurityOutlined,
+  LoginOutlined,
 } from '@mui/icons-material';
 import { AccountGroupOutline } from 'mdi-material-ui';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
 import useGranted, { SETTINGS_SETACCESSES, SETTINGS_SETDISSEMINATION, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const AccessesMenu: FunctionComponent = () => {
   const entries: MenuEntry[] = [
@@ -73,14 +75,16 @@ const AccessesMenu: FunctionComponent = () => {
     {
       path: '/dashboard/settings/accesse/single_sign_on',
       label: 'SSO definition',
-      icon: <div />,
+      icon: <LoginOutlined fontSize="medium" />,
       isEE: true,
-    }
-  ]
+    },
+  ];
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const setMarkings = useGranted([SETTINGS_SETMARKINGS]);
   const isOrgaAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const setDissemination = useGranted([SETTINGS_SETDISSEMINATION]);
+  const { isFeatureEnable } = useHelper();
+  const featureFlagSingleSignOn = isFeatureEnable('SINGLE_SIGN_ON_ENABLED');
   const menuEntries = [];
   if (setAccess) {
     menuEntries.push(...entries);
@@ -94,7 +98,9 @@ const AccessesMenu: FunctionComponent = () => {
   if (setAccess) {
     menuEntries.push(...emailTemplateEntries);
   }
-  menuEntries.push(...singleSignOnEntries);
+  if (setAccess && featureFlagSingleSignOn) {
+    menuEntries.push(...singleSignOnEntries);
+  }
   if (!setAccess && isOrgaAdmin) {
     menuEntries.push(
       ...[
