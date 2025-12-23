@@ -13390,6 +13390,7 @@ input StixCoreRelationshipAddInput {
   # Technical
   clientMutationId: String
   update: Boolean
+  upsertOperations: [EditInput!]
 }
 
 ############## StixSightingRelationships
@@ -13500,6 +13501,7 @@ input StixSightingRelationshipAddInput {
   update: Boolean
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  upsertOperations: [EditInput!]
 }
 
 ############## StixRefRelationships
@@ -15541,6 +15543,7 @@ type Mutation {
     externalReferences: [String]
     clientMutationId: String
     update: Boolean
+    upsertOperations: [EditInput!]
     AutonomousSystem: AutonomousSystemAddInput
     Directory: DirectoryAddInput
     DomainName: DomainNameAddInput
