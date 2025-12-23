@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { now } from 'moment';
 import { ADMIN_USER, buildStandardUser, ONE_MINUTE, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator, PirType, StatsOperation } from '../../../src/generated/graphql';
@@ -14,6 +14,7 @@ import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import { connectorsForWorker } from '../../../src/database/repository';
 import { pirRelationshipsDistribution, pirRelationshipsMultiTimeSeries } from '../../../src/modules/pir/pir-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { LAST_PIR_SCORE_DATE_FILTER, PIR_SCORE_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
 const LIST_QUERY = gql`
@@ -125,6 +126,9 @@ describe('PIR resolver standard behavior', () => {
   let relationshipAuthorId: string = ''; // id of Allied Universal
 
   beforeAll(async () => {
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
     const author = await internalLoadById<BasicStoreEntity>(
       testContext,
       SYSTEM_USER,
@@ -154,8 +158,8 @@ describe('PIR resolver standard behavior', () => {
           mode: FilterMode.And,
           filterGroups: [],
           filters: [
-            { key: ['confidence'], values: ['80'], operator: FilterOperator.Gt }
-          ]
+            { key: ['confidence'], values: ['80'], operator: FilterOperator.Gt },
+          ],
         },
         pir_criteria: [
           {
@@ -164,8 +168,8 @@ describe('PIR resolver standard behavior', () => {
               mode: FilterMode.And,
               filterGroups: [],
               filters: [
-                { key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] }
-              ]
+                { key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] },
+              ],
             },
           },
           {
@@ -174,11 +178,11 @@ describe('PIR resolver standard behavior', () => {
               mode: FilterMode.And,
               filterGroups: [],
               filters: [
-                { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] }
-              ]
+                { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] },
+              ],
             },
           },
-        ]
+        ],
       },
     };
     const PIR_TO_CREATE_2 = {
@@ -190,8 +194,8 @@ describe('PIR resolver standard behavior', () => {
           mode: FilterMode.And,
           filterGroups: [],
           filters: [
-            { key: ['confidence'], values: ['60'], operator: FilterOperator.Gt }
-          ]
+            { key: ['confidence'], values: ['60'], operator: FilterOperator.Gt },
+          ],
         },
         pir_criteria: [
           {
@@ -200,8 +204,8 @@ describe('PIR resolver standard behavior', () => {
               mode: FilterMode.And,
               filterGroups: [],
               filters: [
-                { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] } // this id is also present in pir1 criteria
-              ]
+                { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] }, // this id is also present in pir1 criteria
+              ],
             },
           },
           {
@@ -210,11 +214,11 @@ describe('PIR resolver standard behavior', () => {
               mode: FilterMode.And,
               filterGroups: [],
               filters: [
-                { key: ['toId'], values: ['527e5e30-02c5-4ba9-a698-45954d1f3763'] }
-              ]
+                { key: ['toId'], values: ['527e5e30-02c5-4ba9-a698-45954d1f3763'] },
+              ],
             },
           },
-        ]
+        ],
       },
     };
     const pir1 = await queryAsAdmin({
@@ -323,7 +327,7 @@ describe('PIR resolver standard behavior', () => {
       filters: {
         mode: FilterMode.And,
         filters: [
-          { key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] }
+          { key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] },
         ],
         filterGroups: [],
       },
@@ -571,8 +575,8 @@ describe('PIR resolver standard behavior', () => {
         mode: FilterMode.And,
         filterGroups: [],
         filters: [
-          { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] }
-        ]
+          { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] },
+        ],
       },
       weight: 1,
     };
