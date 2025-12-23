@@ -118,83 +118,110 @@ describe('Group resolver standard behavior', () => {
 
     describe('when a group has a default dashboard', () => {
       let dashboardId = '';
+      let dashboardUpdatedId: string;
+      const dashboardToDeleteIds: string[] = [];
+      const CREATE_DASHBOARD_QUERY = gql`
+        mutation CreateDashboard($input: WorkspaceAddInput!){
+          workspaceAdd(input: $input){
+            id
+          }
+        }`;
+      const EDIT_DEFAULT_DASHBOARD_MUTATION = gql`
+        mutation setDefaultDashboard($groupId: ID!, $editInput: [EditInput]!) {
+          groupEdit(id: $groupId) {
+            fieldPatch(input: $editInput) {
+              default_dashboard {
+                id
+                name
+              }
+            }
+          }
+        }`;
 
       beforeAll(async () => {
         const dashboardCreationQuery = await queryAsAdmin({
-          query: gql`
-            mutation CreateDashboard($input: WorkspaceAddInput!){
-              workspaceAdd(input: $input){
-                id
-              }
-            }`,
+          query: CREATE_DASHBOARD_QUERY,
           variables: {
             input: {
               type: 'dashboard',
-              name: 'dashboard de test'
-            }
-          }
+              name: 'dashboard de test',
+            },
+          },
         });
         dashboardId = dashboardCreationQuery?.data?.workspaceAdd.id;
+        dashboardToDeleteIds.push(dashboardId);
       });
 
       afterAll(async () => {
-        await queryAsAdmin({
-          query: gql`
-            mutation workspaceDelete($id: ID!) {
-              workspaceDelete(id: $id)
-            }`,
-          variables: {
-            id: dashboardId
-          }
-        });
+        // Delete the groups
+        for (let i = 0; i < dashboardToDeleteIds.length; i += 1) {
+          const dashboardId = dashboardToDeleteIds[i];
+          await queryAsAdmin({
+            query: gql`
+              mutation workspaceDelete($id: ID!) {
+                workspaceDelete(id: $id)
+              }`,
+            variables: {
+              id: dashboardId,
+            },
+          });
+        }
       });
 
       it('can have a reference to it', async () => {
         const setDefaultDashboardMutation = await queryAsAdmin({
-          query: gql`
-            mutation setDefaultDashboard($groupId: ID!, $editInput: [EditInput]!) {
-              groupEdit(id: $groupId) {
-                fieldPatch(input: $editInput) {
-                  default_dashboard {
-                    id
-                    name
-                  }
-                }
-              }
-            }`,
+          query: EDIT_DEFAULT_DASHBOARD_MUTATION,
           variables: {
             groupId: groupInternalId,
             editInput: [{
               key: 'default_dashboard',
-              value: dashboardId
-            }]
-          }
+              value: dashboardId,
+            }],
+          },
         });
 
         expect(setDefaultDashboardMutation?.data?.groupEdit.fieldPatch.default_dashboard.id).toEqual(dashboardId);
         expect(setDefaultDashboardMutation?.data?.groupEdit.fieldPatch.default_dashboard.name).toEqual('dashboard de test');
       });
 
-      it('can remove the reference to the default dashboard', async () => {
-        const removeDefaultDashboardMutation = await queryAsAdmin({
-          query: gql`
-            mutation removeDefaultDashboardMutation($groupId: ID!, $editInput: [EditInput]!) {
-              groupEdit(id: $groupId) {
-                fieldPatch(input: $editInput) {
-                  default_dashboard {
-                    id
-                    name
-                  }
-                }
-              }
-            }`,
+      it('should edit default dashboard', async () => {
+        // Create new dashboard
+        const newDashboardCreationQuery = await queryAsAdmin({
+          query: CREATE_DASHBOARD_QUERY,
+          variables: {
+            input: {
+              type: 'dashboard',
+              name: 'new dashboard',
+            },
+          },
+        });
+        dashboardUpdatedId = newDashboardCreationQuery?.data?.workspaceAdd.id;
+        dashboardToDeleteIds.push(dashboardUpdatedId);
+
+        // Edit default dashboard
+        const editDefaultDashboardMutation = await queryAsAdmin({
+          query: EDIT_DEFAULT_DASHBOARD_MUTATION,
           variables: {
             groupId: groupInternalId,
             editInput: [{
               key: 'default_dashboard',
-              value: [null]
-            }]
-          }
+              value: [dashboardUpdatedId],
+            }],
+          },
+        });
+        expect(editDefaultDashboardMutation?.data?.groupEdit.fieldPatch.default_dashboard.id).toEqual(dashboardUpdatedId);
+      });
+
+      it('can remove the reference to the default dashboard', async () => {
+        const removeDefaultDashboardMutation = await queryAsAdmin({
+          query: EDIT_DEFAULT_DASHBOARD_MUTATION,
+          variables: {
+            groupId: groupInternalId,
+            editInput: [{
+              key: 'default_dashboard',
+              value: [null],
+            }],
+          },
         });
         expect(removeDefaultDashboardMutation?.data?.groupEdit.fieldPatch.default_dashboard).toBeNull();
       });
@@ -239,13 +266,13 @@ describe('Group resolver standard behavior', () => {
             {
               key: 'auto_integration_assignation',
               values: [
-                'global'
-              ]
-            }
+                'global',
+              ],
+            },
           ],
-          filterGroups: []
-        }
-      }
+          filterGroups: [],
+        },
+      },
     });
     expect(queryDefaultIngestionGroup?.data?.groups.edges.length).toBe(1);
     expect(queryDefaultIngestionGroup?.data?.groups.edges[0].node.name).toBe('Connectors');
@@ -275,7 +302,7 @@ describe('Group resolver standard behavior', () => {
           defaultIngestionGroupCount
         }
       `,
-      variables: {}
+      variables: {},
     });
     expect(defaultIngestionGroupCountResultNoGroup?.data?.defaultIngestionGroupCount).toBe(0);
 
@@ -293,7 +320,7 @@ describe('Group resolver standard behavior', () => {
           defaultIngestionGroupCount
         }
       `,
-      variables: {}
+      variables: {},
     });
     expect(defaultIngestionGroupCountResult?.data?.defaultIngestionGroupCount).toBe(1);
   });
@@ -329,7 +356,7 @@ describe('Group resolver standard behavior', () => {
           defaultIngestionGroupCount
         }
       `,
-      variables: {}
+      variables: {},
     });
     expect(defaultIngestionGroupCountResult?.data?.defaultIngestionGroupCount).toBe(1);
   });
@@ -449,7 +476,7 @@ describe('Group resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
-        input: { key: 'group_confidence_level', value: [group_confidence_level] }
+        input: { key: 'group_confidence_level', value: [group_confidence_level] },
       },
     });
     expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual(group_confidence_level);
@@ -459,7 +486,7 @@ describe('Group resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
-        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/max_confidence', value: [87] }
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/max_confidence', value: [87] },
       },
     });
     expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
@@ -475,9 +502,9 @@ describe('Group resolver standard behavior', () => {
           object_path: '/group_confidence_level/overrides',
           value: [
             { entity_type: 'Report', max_confidence: 70 },
-            { entity_type: 'Malware', max_confidence: 25 }
+            { entity_type: 'Malware', max_confidence: 25 },
           ],
-        }
+        },
       },
     });
     expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
@@ -491,7 +518,7 @@ describe('Group resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
-        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/0', value: [{ entity_type: 'Case-Rfi', max_confidence: 70 }] }
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/0', value: [{ entity_type: 'Case-Rfi', max_confidence: 70 }] },
       },
     });
     expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
@@ -505,7 +532,7 @@ describe('Group resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
-        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/1/max_confidence', value: [63] }
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/1/max_confidence', value: [63] },
       },
     });
     expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
@@ -519,7 +546,7 @@ describe('Group resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
-        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/1', value: [], operation: 'remove' }
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/1', value: [], operation: 'remove' },
       },
     });
     expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
@@ -532,7 +559,7 @@ describe('Group resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
-        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides', value: [] }
+        input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides', value: [] },
       },
     });
     expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
@@ -559,9 +586,9 @@ describe('Group resolver standard behavior', () => {
           object_path: '/group_confidence_level/overrides',
           value: [
             { entity_type: 'Report', max_confidence: 70 },
-            { entity_type: 'Malware', max_confidence: null }
+            { entity_type: 'Malware', max_confidence: null },
           ],
-        }
+        },
       },
     }, 'Validation against schema failed on attribute [max_confidence]: this mandatory field cannot be nil');
 
@@ -573,11 +600,11 @@ describe('Group resolver standard behavior', () => {
           input: {
             key: 'group_confidence_level',
             object_path: '/group_confidence_level/overrides/1',
-            value: { entity_type: 'Malware' }
-          }
+            value: { entity_type: 'Malware' },
+          },
         },
       },
-      'Validation against schema failed on attribute [overrides]: mandatory field [max_confidence] is not present'
+      'Validation against schema failed on attribute [overrides]: mandatory field [max_confidence] is not present',
     );
 
     await adminQueryWithError(
@@ -589,11 +616,11 @@ describe('Group resolver standard behavior', () => {
             key: 'group_confidence_level',
             value: {
               max_confidence: 87,
-            }
-          }
+            },
+          },
         },
       },
-      'Validation against schema failed on attribute [group_confidence_level]: mandatory field [overrides] is not present'
+      'Validation against schema failed on attribute [group_confidence_level]: mandatory field [overrides] is not present',
     );
 
     await adminQueryWithError(
@@ -603,11 +630,11 @@ describe('Group resolver standard behavior', () => {
           id: groupInternalId,
           input: {
             key: 'group_confidence_level',
-            value: 45
-          }
+            value: 45,
+          },
         },
       },
-      'Validation against schema failed on attribute [group_confidence_level]: value must be an object'
+      'Validation against schema failed on attribute [group_confidence_level]: value must be an object',
     );
   });
   it('should context patch group', async () => {
