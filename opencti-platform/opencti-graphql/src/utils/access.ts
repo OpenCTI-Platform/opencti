@@ -11,7 +11,7 @@ import { buildPaginationFromEdges, extractIdsFromStoreObject, isNotEmptyField, R
 import { type Creator, type FilterGroup, FilterMode, FilterOperator, type Participant } from '../generated/graphql';
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
@@ -23,7 +23,6 @@ import type { UpdateEvent } from '../types/event';
 import { fullEntitiesList, pageEntitiesConnection } from '../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
-import { MEMBERS_ENTITY_TYPES } from '../domain/user';
 import { ES_DEFAULT_PAGINATION } from '../database/engine';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
@@ -32,6 +31,8 @@ import type { BasicConnection, BasicStoreCommon, BasicStoreEntity } from '../typ
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
+
+export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 
 export const BYPASS = 'BYPASS';
 export const KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE = 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE';
