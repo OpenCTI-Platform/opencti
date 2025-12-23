@@ -1,4 +1,4 @@
-import type { StoreCommon, StoreEntity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
+import type { BasicStoreCommon, StoreCommon, StoreEntity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import type * as S from '../types/stix-2-0-common';
 import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
@@ -282,14 +282,16 @@ export const convertStoreToStix_2_0 = (instance: StoreCommon): S.StixObject => {
 export const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
   checkInstanceCompletion(instance);
   const stixRelationship = buildStixRelationship(instance);
+  const resolvedFrom = instance.from as BasicStoreCommon;
+  const resolvedTo = instance.to as BasicStoreCommon;
   return {
     ...stixRelationship,
     description: instance.description,
     first_seen: convertToStixDate(instance.first_seen),
     last_seen: convertToStixDate(instance.last_seen),
     count: instance.attribute_count,
-    sighting_of_ref: instance.from.standard_id,
-    where_sighted_refs: [instance.to.standard_id],
+    sighting_of_ref: resolvedFrom.standard_id,
+    where_sighted_refs: [resolvedTo.standard_id],
     x_opencti_negative: instance.x_opencti_negative,
   };
 };
