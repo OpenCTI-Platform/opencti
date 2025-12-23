@@ -191,11 +191,21 @@ export const containerTypes = [
 ];
 
 export const typesWithFintelTemplates = [
+  // Containers
   'Report',
   'Grouping',
   'Case-Incident',
   'Case-Rfi',
   'Case-Rft',
+  // Stix Domain Objects
+  'Threat-Actor',
+  'Threat-Actor-Individual',
+  'Threat-Actor-Group',
+  'Intrusion-Set',
+  'Campaign',
+  'Malware',
+  'Vulnerability',
+  'Incident',
 ];
 
 export const aliasedTypes = [
