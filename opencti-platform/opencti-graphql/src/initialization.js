@@ -67,7 +67,7 @@ const refreshMappingsAndIndices = async () => {
 
 const initializeMigration = async (context) => {
   logApp.info('[INIT] Creating migration structure');
-  const time = await lastAvailableMigrationTime();
+  const time = lastAvailableMigrationTime();
   const lastRun = `${time}-init`;
   const migrationStatus = { internal_id: uuidv4(), lastRun };
   await createEntity(context, SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
