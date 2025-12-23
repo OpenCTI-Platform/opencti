@@ -271,6 +271,7 @@ input GroupingAddInput {
     update: Boolean
     file: Upload
     authorized_members: [MemberAccessInput!]
+    upsertOperations: [EditInput!]
 }
 
 type Mutation {

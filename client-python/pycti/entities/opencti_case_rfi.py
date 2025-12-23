@@ -716,6 +716,7 @@ class CaseRfi:
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
         information_types = kwargs.get("information_types", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Case Rfi", {"name": name})
@@ -757,6 +758,7 @@ class CaseRfi:
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
                         "information_types": information_types,
+                        "upsertOperations": upsert_operations,
                     }
                 },
             )
@@ -902,6 +904,12 @@ class CaseRfi:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -976,6 +984,11 @@ class CaseRfi:
                 information_types=(
                     stix_object["information_types"]
                     if "information_types" in stix_object
+                    else None
+                ),
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
                     else None
                 ),
             )

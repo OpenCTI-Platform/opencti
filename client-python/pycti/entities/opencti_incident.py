@@ -416,6 +416,7 @@ class Incident:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Incident", {"name": name})
@@ -457,6 +458,7 @@ class Incident:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "upsertOperations": upsert_operations,
                     }
                 },
             )
@@ -493,7 +495,12 @@ class Incident:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
-
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
+                )
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
@@ -563,6 +570,11 @@ class Incident:
                     else None
                 ),
                 update=update,
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(
