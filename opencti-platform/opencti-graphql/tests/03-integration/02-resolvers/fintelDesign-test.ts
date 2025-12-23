@@ -1,6 +1,7 @@
-import { expect, it, describe } from 'vitest';
+import { expect, it, describe, beforeEach, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const LIST_QUERY = gql`
   query fintelDesigns(
@@ -82,6 +83,12 @@ describe('Fintel Design resolver standard behavior', () => {
     gradiantToColor: '#000000',
     textColor: '#333333',
   };
+
+  beforeEach(() => {
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+  });
 
   it('should create Fintel Design', async () => {
     // Create fintel design
