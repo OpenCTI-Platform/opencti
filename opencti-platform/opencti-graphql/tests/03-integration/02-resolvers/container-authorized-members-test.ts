@@ -173,6 +173,8 @@ const LIST_RESTRICTED_ENTITIES = gql`
   }
 `;
 
+// TODO : find a way to mock EE
+
 describe('Case Incident Response standard behavior with authorized_members activation from entity', () => {
   let caseIncident: CaseIncident;
   let userEditorId: string;

@@ -105,6 +105,8 @@ const READ_QUERY = gql`
   }
 `;
 
+// TODO : find a way to mock EE
+
 describe('Report resolver standard behavior', () => {
   let reportInternalId;
   let datasetReportInternalId;
@@ -457,7 +459,7 @@ describe('Report resolver standard behavior', () => {
           }
         `,
         variables: {
-          id: reportInternalId
+          id: reportInternalId,
         },
       });
     };
@@ -481,7 +483,7 @@ describe('Report resolver standard behavior', () => {
             }],
             filterGroups: [],
           },
-          noFiltersChecking: true
+          noFiltersChecking: true,
         },
       );
       await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));

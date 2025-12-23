@@ -75,6 +75,8 @@ const DELETE_PLAYBOOK = gql`
   }
 `;
 
+// TODO : find a way to mock EE
+
 describe('Playbook resolver standard behavior', () => {
   let playbookId = '';
   const playbookName = 'Playbook1';
@@ -93,7 +95,7 @@ describe('Playbook resolver standard behavior', () => {
     const input = {
       input: {
         name: playbookName,
-      }
+      },
     };
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
       query: CREATE_PLAYBOOK,
@@ -104,7 +106,7 @@ describe('Playbook resolver standard behavior', () => {
     const input = {
       input: {
         name: playbookName,
-      }
+      },
     };
     const queryResult = await queryAsUserWithSuccess(USER_SECURITY.client, {
       query: CREATE_PLAYBOOK,
@@ -129,8 +131,8 @@ describe('Playbook resolver standard behavior', () => {
         id: playbookId,
         input: [
           { key: 'name', value: ['Playbook1 - updated'] },
-        ]
-      }
+        ],
+      },
     });
   });
   it('should update playbook with Manage Playbooks capability', async () => {
@@ -140,8 +142,8 @@ describe('Playbook resolver standard behavior', () => {
         id: playbookId,
         input: [
           { key: 'name', value: ['Playbook1 - updated'] },
-        ]
-      }
+        ],
+      },
     });
     expect(queryResult.data?.playbookFieldPatch.name).toEqual('Playbook1 - updated');
   });
@@ -163,7 +165,7 @@ describe('Playbook resolver standard behavior', () => {
       variables: {
         id: playbookId,
         input: addNodeInput,
-      }
+      },
     });
     const queryResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
     const playbookNodes = JSON.parse(queryResult.data?.playbook.playbook_definition).nodes;
@@ -192,10 +194,10 @@ describe('Playbook resolver standard behavior', () => {
         variables: {
           id: playbookId,
           input: addNodeInput,
-        }
+        },
       },
       'Playbook multiple entrypoint is not supported',
-      UNSUPPORTED_ERROR
+      UNSUPPORTED_ERROR,
     );
   });
   it('should not add unknown component to a playbook', async () => {
@@ -217,10 +219,10 @@ describe('Playbook resolver standard behavior', () => {
         variables: {
           id: playbookId,
           input: addNodeInput,
-        }
+        },
       },
       'Playbook related component not found',
-      UNSUPPORTED_ERROR
+      UNSUPPORTED_ERROR,
     );
   });
   it('should not add node with incorrect filters for PLAYBOOK_INTERNAL_DATA_CRON component', async () => {
@@ -246,10 +248,10 @@ describe('Playbook resolver standard behavior', () => {
         variables: {
           id: playbookId,
           input: addNodeInput,
-        }
+        },
       },
       'Incorrect filter keys not existing in any schema definition',
-      UNSUPPORTED_ERROR
+      UNSUPPORTED_ERROR,
     );
   });
   it('should not add node with incorrect filters for components with stix filtering', async () => {
@@ -275,10 +277,10 @@ describe('Playbook resolver standard behavior', () => {
         variables: {
           id: playbookId,
           input: addNodeInput,
-        }
+        },
       },
       'Stix filtering is not compatible with the provided filter key',
-      UNSUPPORTED_ERROR
+      UNSUPPORTED_ERROR,
     );
   });
   it('should not delete playbook if no Manage Playbooks capability', async () => {
