@@ -173,7 +173,7 @@ export const convertToolToStix = (instance: StoreEntity): SDO.StixTool => {
     tool_types: instance.tool_types,
     aliases: instance.aliases,
     kill_chain_phases: buildKillChainPhases(instance),
-    tool_version: instance.tool_version
+    tool_version: instance.tool_version,
   };
 };
 
