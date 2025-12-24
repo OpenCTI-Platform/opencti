@@ -1,14 +1,12 @@
 import { DescriptionOutlined, DiamondOutlined } from '@mui/icons-material';
-import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { Biohazard, ShieldSearch } from 'mdi-material-ui';
 import { assoc, head, last, map, pluck } from 'ramda';
 import React, { Suspense } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
+import Card from '@common/card/Card';
 import { PLATFORM_DASHBOARD } from './DashboardSettings';
 import StixRelationshipsDistributionList from './common/stix_relationships/StixRelationshipsDistributionList';
 import StixRelationshipsPolarArea from './common/stix_relationships/StixRelationshipsPolarArea';
@@ -37,16 +35,6 @@ const useStyles = makeStyles((theme) => ({
     marginRight: -20,
     paddingRight: 20,
     paddingBottom: 30,
-  },
-  card: {
-    width: '100%',
-    borderRadius: 4,
-    position: 'relative',
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 0,
-    overflow: 'hidden',
   },
   title: {
     marginTop: 5,
@@ -121,7 +109,10 @@ const dashboardStixCoreRelationshipsDistributionQuery = graphql`
     }
   }
 `;
+
 const TargetedCountriesComponent = ({ queryRef }) => {
+  const { t_i18n } = useFormatter();
+
   const data = usePreloadedQuery(
     dashboardStixCoreRelationshipsDistributionQuery,
     queryRef,
@@ -137,12 +128,14 @@ const TargetedCountriesComponent = ({ queryRef }) => {
   );
   return (
     <LocationMiniMapTargets
+      title={t_i18n('Targeted countries (Last 3 months)')}
       center={[48.8566969, 2.3514616]}
       countries={countries}
       zoom={2}
     />
   );
 };
+
 const TargetedCountries = ({ timeField }) => {
   const queryOptions = {
     field: 'internal_id',
@@ -183,11 +176,7 @@ const DefaultDashboard = ({ timeField }) => {
     >
       <Grid container={true} spacing={3}>
         <Grid item xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
+          <Card>
             <CardContent>
               <div className={classes.title}>{t_i18n('Intrusion Sets')}</div>
               <StixCoreObjectsNumber
@@ -214,11 +203,7 @@ const DefaultDashboard = ({ timeField }) => {
           </Card>
         </Grid>
         <Grid item xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
+          <Card>
             <CardContent>
               <div className={classes.title}>{t_i18n('Malwares')}</div>
               <StixCoreObjectsNumber
@@ -245,11 +230,7 @@ const DefaultDashboard = ({ timeField }) => {
           </Card>
         </Grid>
         <Grid item xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
+          <Card>
             <CardContent>
               <div className={classes.title}>{t_i18n('Reports')}</div>
               <StixCoreObjectsNumber
@@ -276,11 +257,7 @@ const DefaultDashboard = ({ timeField }) => {
           </Card>
         </Grid>
         <Grid item xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
+          <Card>
             <CardContent>
               <div className={classes.title}>{t_i18n('Indicators')}</div>
               <StixCoreObjectsNumber
@@ -386,7 +363,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3} style={{ marginTop: 25 }}>
+        <Grid item xs={3}>
           <StixRelationshipsPolarArea
             title={t_i18n('Most active malware (Last 3 months)')}
             height={400}
@@ -412,7 +389,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3} style={{ marginTop: 25 }}>
+        <Grid item xs={3}>
           <StixRelationshipsDistributionList
             overflow="hidden"
             title={t_i18n('Most active vulnerabilities (Last 3 months)')}
@@ -440,26 +417,18 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={6} style={{ marginTop: 25 }}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Targeted countries (Last 3 months)')}
-          </Typography>
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ height: 400 }}
+        <Grid item xs={6}>
+          <Suspense
+            fallback={(
+              <LocationMiniMapTargets
+                title={t_i18n('Targeted countries (Last 3 months)')}
+                center={[48.8566969, 2.3514616]}
+                zoom={2}
+              />
+            )}
           >
-            <Suspense
-              fallback={(
-                <LocationMiniMapTargets
-                  center={[48.8566969, 2.3514616]}
-                  zoom={2}
-                />
-              )}
-            >
-              <TargetedCountries timeField={timeField} />
-            </Suspense>
-          </Paper>
+            <TargetedCountries timeField={timeField} />
+          </Suspense>
         </Grid>
         <Grid item xs={8}>
           <StixCoreObjectsList

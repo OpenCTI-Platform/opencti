@@ -120,7 +120,7 @@ interface AuditsPolarAreaProps {
   endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters: WidgetParameters;
-  variant: string;
+  variant?: string;
   height?: CSSProperties['height'];
   withExportPopover?: boolean;
   isReadOnly?: boolean;

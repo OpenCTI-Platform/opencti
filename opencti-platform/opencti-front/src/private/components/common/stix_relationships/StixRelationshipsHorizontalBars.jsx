@@ -1,4 +1,3 @@
-import React from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -105,7 +104,6 @@ export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
 const StixRelationshipsHorizontalBars = ({
   title,
   variant,
-  withoutTitle,
   height,
   field,
   isWidget = true,
@@ -124,7 +122,6 @@ const StixRelationshipsHorizontalBars = ({
     let selection = {};
     let filtersAndOptions;
     if (dataSelection) {
-      // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
     }
@@ -178,7 +175,6 @@ const StixRelationshipsHorizontalBars = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Distribution of entities')}
       variant={variant}
-      withoutTitle={withoutTitle}
     >
       {renderContent()}
     </WidgetContainer>

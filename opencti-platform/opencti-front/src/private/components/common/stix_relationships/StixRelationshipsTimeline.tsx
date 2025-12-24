@@ -971,7 +971,7 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
 `;
 
 interface StixRelationshipsTimelineProps {
-  variant: string;
+  variant?: string;
   height?: number;
   startDate: string | null;
   endDate: string | null;

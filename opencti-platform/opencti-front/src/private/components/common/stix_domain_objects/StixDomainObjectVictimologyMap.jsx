@@ -1,5 +1,4 @@
-import React, { Suspense } from 'react';
-import { Typography, Paper } from '@mui/material';
+import { Suspense } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
@@ -52,7 +51,7 @@ const stixDomainObjectVictimologyMapQuery = graphql`
   }
 `;
 
-const VictimologyMap = ({ queryRef }) => {
+const VictimologyMap = ({ queryRef, title }) => {
   const { stixCoreRelationshipsDistribution } = usePreloadedQuery(
     stixDomainObjectVictimologyMapQuery,
     queryRef,
@@ -70,6 +69,7 @@ const VictimologyMap = ({ queryRef }) => {
 
   return (
     <LocationMiniMapTargets
+      title={title}
       center={[48.8566969, 2.3514616]}
       countries={countries}
       zoom={2}
@@ -79,7 +79,6 @@ const VictimologyMap = ({ queryRef }) => {
 
 const StixDomainObjectVictimologyMap = ({
   title,
-  variant,
   stixDomainObjectId,
   startDate,
   endDate,
@@ -107,33 +106,12 @@ const StixDomainObjectVictimologyMap = ({
   }
 
   return (
-    <div style={{ height: '100%', paddingBottom: variant !== 'inLine' ? 0 : 10 }}>
-      <Typography
-        gutterBottom={true}
-        variant={variant === 'inEntity' ? 'h3' : 'h4'}
-        style={{ margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px' }}
-      >
-        {title || t_i18n('Victimology map')}
-      </Typography>
-      {variant === 'inLine' || variant === 'inEntity' ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <VictimologyMap queryRef={queryRef} />
-        </Suspense>
-      ) : (
-        <Paper
-          variant="outlined"
-          sx={{
-            height: '100%',
-            margin: '4px 0 0 0',
-            borderRadius: 1,
-          }}
-        >
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <VictimologyMap queryRef={queryRef} />
-          </Suspense>
-        </Paper>
-      )}
-    </div>
+    <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <VictimologyMap
+        queryRef={queryRef}
+        title={title || t_i18n('Victimology map')}
+      />
+    </Suspense>
   );
 };
 

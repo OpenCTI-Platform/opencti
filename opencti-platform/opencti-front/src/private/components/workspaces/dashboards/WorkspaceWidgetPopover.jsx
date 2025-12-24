@@ -24,8 +24,9 @@ const useStyles = makeStyles({
   container: {
     margin: 0,
     position: 'absolute',
-    top: 0,
+    top: 27,
     right: 0,
+    zIndex: 999,
   },
 });
 

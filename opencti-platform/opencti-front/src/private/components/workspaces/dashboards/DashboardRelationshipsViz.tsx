@@ -59,7 +59,7 @@ const DashboardRelationshipsViz = ({
     case 'number':
       return (
         <StixRelationshipsNumber
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
@@ -70,7 +70,7 @@ const DashboardRelationshipsViz = ({
     case 'list':
       return (
         <StixRelationshipsList
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           widgetId={widget.id}
@@ -82,7 +82,7 @@ const DashboardRelationshipsViz = ({
     case 'distribution-list':
       return (
         <StixRelationshipsDistributionList // TODO idem
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
@@ -96,7 +96,7 @@ const DashboardRelationshipsViz = ({
     case 'vertical-bar':
       return (
         <StixRelationshipsMultiVerticalBars
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -109,7 +109,7 @@ const DashboardRelationshipsViz = ({
     case 'line':
       return (
         <StixRelationshipsMultiLineChart
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -122,7 +122,7 @@ const DashboardRelationshipsViz = ({
     case 'area':
       return (
         <StixRelationshipsMultiAreaChart
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -137,7 +137,7 @@ const DashboardRelationshipsViz = ({
     case 'timeline':
       return (
         <StixRelationshipsTimeline
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
@@ -148,7 +148,7 @@ const DashboardRelationshipsViz = ({
     case 'donut':
       return (
         <StixRelationshipsDonut
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -167,7 +167,7 @@ const DashboardRelationshipsViz = ({
       ) {
         return (
           <StixRelationshipsMultiHorizontalBars
-            variant="inLine"
+            variant={undefined} // because calling js component in ts
             endDate={endDate}
             startDate={startDate}
             isReadOnly={isReadonly}
@@ -182,7 +182,7 @@ const DashboardRelationshipsViz = ({
       }
       return (
         <StixRelationshipsHorizontalBars
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -192,7 +192,6 @@ const DashboardRelationshipsViz = ({
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
-          withoutTitle={undefined} // because calling js component in ts
           fromId={undefined} // because calling js component in ts
           relationshipType={undefined} // because calling js component in ts
         />
@@ -200,7 +199,7 @@ const DashboardRelationshipsViz = ({
     case 'radar':
       return (
         <StixRelationshipsRadar
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -215,7 +214,7 @@ const DashboardRelationshipsViz = ({
     case 'polar-area':
       return (
         <StixRelationshipsPolarArea
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -230,7 +229,7 @@ const DashboardRelationshipsViz = ({
     case 'heatmap':
       return (
         <StixRelationshipsMultiHeatMap
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -243,7 +242,7 @@ const DashboardRelationshipsViz = ({
     case 'tree':
       return (
         <StixRelationshipsTreeMap
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -258,7 +257,7 @@ const DashboardRelationshipsViz = ({
     case 'map':
       return (
         <StixRelationshipsMap
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
@@ -271,7 +270,7 @@ const DashboardRelationshipsViz = ({
     case 'wordcloud':
       return (
         <StixRelationshipsWordCloud
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}

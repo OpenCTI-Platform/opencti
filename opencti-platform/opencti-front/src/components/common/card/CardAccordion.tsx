@@ -26,6 +26,7 @@ const CardAccordion = ({
 
   const summarySx: SxProps = {
     padding: 0,
+    minHeight: 0,
     '.MuiAccordionSummary-content': {
       margin: 0,
     },

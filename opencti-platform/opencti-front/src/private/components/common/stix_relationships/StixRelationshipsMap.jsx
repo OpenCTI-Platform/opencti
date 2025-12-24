@@ -98,7 +98,6 @@ const StixRelationshipsMap = ({
     let selection = {};
     let filtersAndOptions;
     if (dataSelection) {
-      // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
     }
@@ -166,6 +165,7 @@ const StixRelationshipsMap = ({
   };
   return (
     <WidgetContainer
+      noPadding
       height={height}
       title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
       variant={variant}

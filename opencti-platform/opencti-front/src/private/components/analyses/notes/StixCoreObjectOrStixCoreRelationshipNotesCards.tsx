@@ -1,13 +1,10 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
 import IconButton from '@mui/material/IconButton';
 import { EditOutlined, ExpandLessOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
 import { Field, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import { Stack, Box } from '@mui/material';
@@ -40,6 +37,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import AddNotesFunctionalComponent from './AddNotesFunctionalComponent';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import CardTitle from '../../../../components/common/card/CardTitle';
+import CardAccordion from '../../../../components/common/card/CardAccordion';
 
 export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipNotesCardsQuery(
@@ -467,37 +465,21 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
         })}
 
         <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
-          <Accordion
-            expanded={open}
-            variant="outlined"
-            sx={{
-              spacing: 1,
-              borderBottomLeftRadius: '4px!important', // override mui theme accordion
-              borderBottomRightRadius: '4px!important',
-              borderRadius: 1,
-              '&:before': { backgroundColor: 'transparent' },
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreOutlined />}
-              onClick={handleToggleWrite}
-              sx={{ spacing: 1 }}
-            >
+          <CardAccordion
+            preview={(
               <Stack direction="row" spacing={1}>
                 <RateReviewOutlined />
                 <Typography>{t_i18n('Write a note')}</Typography>
               </Stack>
-            </AccordionSummary>
-
-            <AccordionDetails>
-              <NoteForm
-                defaultMarkings={defaultMarkings}
-                onToggleWrite={handleToggleWrite}
-                onToggleMore={handleMore}
-                onSubmit={onSubmit}
-              />
-            </AccordionDetails>
-          </Accordion>
+            )}
+          >
+            <NoteForm
+              defaultMarkings={defaultMarkings}
+              onToggleWrite={handleToggleWrite}
+              onToggleMore={handleMore}
+              onSubmit={onSubmit}
+            />
+          </CardAccordion>
         </Security>
       </Stack>
     </div>

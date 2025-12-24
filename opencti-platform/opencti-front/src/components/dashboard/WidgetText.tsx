@@ -5,7 +5,7 @@ import WidgetContainer from './WidgetContainer';
 import type { Theme } from '../Theme';
 
 interface WidgetTextProps {
-  variant: string;
+  variant?: string;
   height?: CSSProperties['height'];
   parameters?: {
     title?: string | null;
