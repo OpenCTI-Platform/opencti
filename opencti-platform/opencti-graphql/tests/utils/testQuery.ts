@@ -75,11 +75,11 @@ export const executeExternalQuery = async (client: AxiosInstance, uri: string, q
 };
 
 interface QueryOption {
-  workId?: string
-  eventId?: string
-  previousStandard?: string
-  synchronizedUpsert?: string
-  applicantId?: string
+  workId?: string;
+  eventId?: string;
+  previousStandard?: string;
+  synchronizedUpsert?: string;
+  applicantId?: string;
 }
 export const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}, options: QueryOption = {}) => {
   const headers: any = {};
@@ -98,17 +98,17 @@ export const internalAdminQuery = async (query: unknown, variables = {}, options
 
 // Roles
 interface Role {
-  id: string,
-  name: string,
-  description: string,
-  capabilities: string[]
+  id: string;
+  name: string;
+  description: string;
+  capabilities: string[];
 }
 export const TESTING_ROLES: Role[] = [];
 const ROLE_PARTICIPATE: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge and participate' }),
   name: 'Access knowledge and participate',
   description: 'Only participate',
-  capabilities: ['KNOWLEDGE_KNPARTICIPATE', 'EXPLORE_EXUPDATE_EXDELETE']
+  capabilities: ['KNOWLEDGE_KNPARTICIPATE', 'EXPLORE_EXUPDATE_EXDELETE'],
 };
 TESTING_ROLES.push(ROLE_PARTICIPATE);
 export const ROLE_EDITOR: Role = {
@@ -121,8 +121,8 @@ export const ROLE_EDITOR: Role = {
     'EXPLORE_EXUPDATE_EXDELETE',
     'EXPLORE_EXUPDATE_PUBLISH',
     'TAXIIAPI_SETCOLLECTIONS',
-    'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'
-  ]
+    'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
+  ],
 };
 TESTING_ROLES.push(ROLE_EDITOR);
 
@@ -130,7 +130,7 @@ export const ROLE_SECURITY: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration/settings and edit/delete' }),
   name: 'Access knowledge/exploration/settings and edit/delete',
   description: 'Knowledge/exploration/settings edit/delete',
-  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'KNOWLEDGE_KNUPDATE_KNMERGE', 'EXPLORE_EXUPDATE_EXDELETE', 'INVESTIGATION_INUPDATE_INDELETE', 'SETTINGS_SETACCESSES', 'SETTINGS_SECURITYACTIVITY', 'AUTOMATION_AUTMANAGE']
+  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'KNOWLEDGE_KNUPDATE_KNMERGE', 'EXPLORE_EXUPDATE_EXDELETE', 'INVESTIGATION_INUPDATE_INDELETE', 'SETTINGS_SETACCESSES', 'SETTINGS_SECURITYACTIVITY', 'AUTOMATION_AUTMANAGE'],
 };
 TESTING_ROLES.push(ROLE_SECURITY);
 
@@ -152,7 +152,7 @@ export const ROLE_TEST_CONNECTOR: Role = {
     'TAXIIAPI',
     'SETTINGS_SETMARKINGS',
     'SETTINGS_SETLABELS',
-  ]
+  ],
 };
 TESTING_ROLES.push(ROLE_TEST_CONNECTOR);
 
@@ -174,7 +174,7 @@ export const ROLE_DISINFORMATION_ANALYST: Role = {
     'INGESTION_SETINGESTIONS',
     'CSVMAPPERS',
     'SETTINGS_SETLABELS',
-  ]
+  ],
 };
 TESTING_ROLES.push(ROLE_DISINFORMATION_ANALYST);
 
@@ -189,19 +189,19 @@ export const ROLE_PLATFORM_ADMIN: Role = {
     'SETTINGS_FILEINDEXING',
     'SETTINGS_SUPPORT',
     'MODULES_MODMANAGE',
-    'EXPLORE_EXUPDATE_PUBLISH'
-  ]
+    'EXPLORE_EXUPDATE_PUBLISH',
+  ],
 };
 TESTING_ROLES.push(ROLE_PLATFORM_ADMIN);
 
 // Groups
 export interface GroupTestData {
-  id: string,
-  name: string,
-  markings: string[],
-  roles: Role[],
-  group_confidence_level: ConfidenceLevel,
-  max_shareable_markings: string[],
+  id: string;
+  name: string;
+  markings: string[];
+  roles: Role[];
+  group_confidence_level: ConfidenceLevel;
+  max_shareable_markings: string[];
 }
 
 export const TESTING_GROUPS: GroupTestData[] = [];
@@ -286,8 +286,8 @@ TESTING_GROUPS.push(PLATFORM_ADMIN_GROUP);
 
 // Organization
 export interface OrganizationTestData {
-  name: string,
-  id: string
+  name: string;
+  id: string;
 }
 
 export const TESTING_ORGS: OrganizationTestData[] = [];
@@ -305,13 +305,13 @@ TESTING_ORGS.push(PLATFORM_ORGANIZATION);
 
 // Users
 interface UserTestData {
-  id: string,
-  email: string,
-  password: string,
-  roles?: Role[],
-  organizations?: OrganizationTestData[],
-  groups: GroupTestData[],
-  client: AxiosInstance,
+  id: string;
+  email: string;
+  password: string;
+  roles?: Role[];
+  organizations?: OrganizationTestData[];
+  groups: GroupTestData[];
+  client: AxiosInstance;
 }
 
 export const ADMIN_USER: AuthUser = {
@@ -351,7 +351,7 @@ export const USER_PARTICIPATE: UserTestData = {
   password: 'participate',
   organizations: [TEST_ORGANIZATION],
   groups: [GREEN_GROUP],
-  client: createHttpClient('participate@opencti.io', 'participate')
+  client: createHttpClient('participate@opencti.io', 'participate'),
 };
 TESTING_USERS.push(USER_PARTICIPATE);
 export const USER_EDITOR: UserTestData = {
@@ -360,7 +360,7 @@ export const USER_EDITOR: UserTestData = {
   password: 'editor',
   organizations: [TEST_ORGANIZATION],
   groups: [AMBER_GROUP],
-  client: createHttpClient('editor@opencti.io', 'editor')
+  client: createHttpClient('editor@opencti.io', 'editor'),
 };
 TESTING_USERS.push(USER_EDITOR);
 
@@ -370,7 +370,7 @@ export const USER_SECURITY: UserTestData = {
   password: 'security',
   organizations: [PLATFORM_ORGANIZATION],
   groups: [AMBER_STRICT_GROUP],
-  client: createHttpClient('security@opencti.io', 'security')
+  client: createHttpClient('security@opencti.io', 'security'),
 };
 TESTING_USERS.push(USER_SECURITY);
 
@@ -379,7 +379,7 @@ export const USER_CONNECTOR: UserTestData = {
   email: 'connector@opencti.io',
   password: 'connector',
   groups: [CONNECTOR_GROUP],
-  client: createHttpClient('connector@opencti.io', 'connector')
+  client: createHttpClient('connector@opencti.io', 'connector'),
 };
 TESTING_USERS.push(USER_CONNECTOR);
 
@@ -389,7 +389,7 @@ export const USER_DISINFORMATION_ANALYST: UserTestData = {
   password: 'disinformation',
   organizations: [PLATFORM_ORGANIZATION],
   groups: [GREEN_DISINFORMATION_ANALYST_GROUP],
-  client: createHttpClient('anais@opencti.io', 'disinformation')
+  client: createHttpClient('anais@opencti.io', 'disinformation'),
 };
 TESTING_USERS.push(USER_DISINFORMATION_ANALYST);
 
@@ -398,7 +398,7 @@ export const USER_PLATFORM_ADMIN: UserTestData = {
   email: 'platform@opencti.io',
   password: 'platformadmin',
   groups: [PLATFORM_ADMIN_GROUP],
-  client: createHttpClient('platform@opencti.io', 'platformadmin')
+  client: createHttpClient('platform@opencti.io', 'platformadmin'),
 };
 TESTING_USERS.push(USER_PLATFORM_ADMIN);
 
@@ -457,7 +457,7 @@ const GROUP_ASSIGN_MUTATION = `
 `;
 const createGroup = async (input: GroupTestData): Promise<string> => {
   const { data } = await internalAdminQuery(GROUP_CREATION_MUTATION, {
-    input: { name: input.name, group_confidence_level: input.group_confidence_level }
+    input: { name: input.name, group_confidence_level: input.group_confidence_level },
   });
   for (let index = 0; index < input.markings.length; index += 1) {
     const marking = input.markings[index];
@@ -468,7 +468,7 @@ const createGroup = async (input: GroupTestData): Promise<string> => {
     await internalAdminQuery(GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION, { groupId: data.groupAdd.id,
       input: {
         key: 'max_shareable_markings',
-        value: [{ type: 'TLP', value: maxMarking }]
+        value: [{ type: 'TLP', value: maxMarking }],
       } });
   }
   for (let index = 0; index < input.roles.length; index += 1) {
@@ -556,7 +556,7 @@ const ROLE_EDITION_MUTATION = `
     }
   }
 `;
-const createRole = async (input: { name: string, description: string, capabilities: string[] }): Promise<string> => {
+const createRole = async (input: { name: string; description: string; capabilities: string[] }): Promise<string> => {
   const { data } = await internalAdminQuery(ROLE_CREATION_MUTATION, { name: input.name, description: input.description });
   for (let index = 0; index < input.capabilities.length; index += 1) {
     const capability = input.capabilities[index];
@@ -695,7 +695,7 @@ type markingType = { standard_id: string; internal_id: string };
 export const buildStandardUser = (
   allowedMarkings: markingType[],
   allMarkings?: markingType[],
-  capabilities?: { name: string }[]
+  capabilities?: { name: string }[],
 ): AuthUser => {
   return {
     administrated_organizations: [],
@@ -751,7 +751,9 @@ const serverFromUser = new ApolloServer<AuthContext>({
 
 export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
   const execContext = executionContext('test', ADMIN_USER, draftContext ?? undefined);
-  execContext.changeDraftContext = (draftId) => { execContext.draft_context = draftId; };
+  execContext.changeDraftContext = (draftId) => {
+    execContext.draft_context = draftId;
+  };
   execContext.batch = computeLoaders(execContext, ADMIN_USER);
   const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: execContext });
   if (body.kind === 'single') {

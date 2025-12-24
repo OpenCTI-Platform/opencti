@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const READ_TEMPLATE_QUERY = gql`
   query emailTemplate($id: ID!) {
@@ -53,18 +54,19 @@ const generateEmailTemplateToCreate = (value: number) => ({
   name: `emailTemplate${value}`,
   email_object: `email@template${value}.com`,
   sender_email: `sender@email${value}.com`,
-  template_body: `templateBody${value}`
+  template_body: `templateBody${value}`,
 });
 
 describe('Email template resolver standard behavior', () => {
   const emailTemplateIds: string[] = [];
+
   describe('Email template creation', () => {
     it('should create email template', async () => {
       const emailTemplate = await queryAsAdmin({
         query: CREATE_TEMPLATE_MUTATION,
         variables: {
           input: generateEmailTemplateToCreate(1),
-        }
+        },
       });
 
       expect(emailTemplate).not.toBeNull();
@@ -78,7 +80,7 @@ describe('Email template resolver standard behavior', () => {
         query: CREATE_TEMPLATE_MUTATION,
         variables: {
           input: generateEmailTemplateToCreate(2),
-        }
+        },
       });
 
       expect(emailTemplate).not.toBeNull();
@@ -89,14 +91,20 @@ describe('Email template resolver standard behavior', () => {
   });
 
   describe('Email template field patch', () => {
+    beforeEach(() => {
+      // Activate EE for this test
+      vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+      vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    });
+
     it('should edit the name', async () => {
       if (!emailTemplateIds.length) return;
       const emailTemplate = await queryAsAdmin({
         query: EDIT_TEMPLATE_MUTATION,
         variables: {
           id: emailTemplateIds[0],
-          input: [{ key: 'name', value: ['emailTemplate11'] }]
-        }
+          input: [{ key: 'name', value: ['emailTemplate11'] }],
+        },
       });
 
       expect(emailTemplate).not.toBeNull();
@@ -105,12 +113,17 @@ describe('Email template resolver standard behavior', () => {
   });
 
   describe('Email template query', () => {
+    beforeEach(() => {
+      // Activate EE for this test
+      vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+      vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    });
     it('find one', async () => {
       const emailTemplate = await queryAsAdmin({
         query: READ_TEMPLATE_QUERY,
         variables: {
           id: emailTemplateIds[0],
-        }
+        },
       });
 
       expect(emailTemplate).not.toBeNull();
@@ -121,7 +134,7 @@ describe('Email template resolver standard behavior', () => {
       const listResult = await queryAsAdmin({
         query: READ_TEMPLATES_QUERY,
         variables: {
-          orderMode: 'desc'
+          orderMode: 'desc',
         },
       });
 
@@ -136,8 +149,8 @@ describe('Email template resolver standard behavior', () => {
       await queryAsAdmin({
         query: DELETE_TEMPLATE_MUTATION,
         variables: {
-          id: emailTemplateIds[0]
-        }
+          id: emailTemplateIds[0],
+        },
       });
 
       const emailTemplate = await elLoadById(testContext, ADMIN_USER, emailTemplateIds[0]);
@@ -148,8 +161,8 @@ describe('Email template resolver standard behavior', () => {
       await queryAsAdmin({
         query: DELETE_TEMPLATE_MUTATION,
         variables: {
-          id: emailTemplateIds[1]
-        }
+          id: emailTemplateIds[1],
+        },
       });
 
       const emailTemplate = await elLoadById(testContext, ADMIN_USER, emailTemplateIds[0]);

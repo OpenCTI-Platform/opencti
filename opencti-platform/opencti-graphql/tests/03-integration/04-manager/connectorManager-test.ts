@@ -8,25 +8,27 @@ import type { RegisterConnectorInput } from '../../../src/generated/graphql';
 import { ConnectorType } from '../../../src/generated/graphql';
 import { elIndex } from '../../../src/database/engine';
 import { ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
-import { INDEX_HISTORY } from '../../../src/database/utils';
+import { INDEX_HISTORY, RABBIT_QUEUE_PREFIX } from '../../../src/database/utils';
 import { deleteCompletedWorks } from '../../../src/manager/connectorManager';
 import type { BasicStoreEntityConnector } from '../../../src/types/connector';
 import type { Work } from '../../../src/types/work';
+import { unregisterConnector, metrics } from '../../../src/database/rabbitmq';
 
 describe('Old work of connector cleanup test', () => {
   let testConnector: BasicStoreEntityConnector;
+  const testConnectorId = uuid();
 
   const createConnectorForTest = async () => {
     const connectorData: RegisterConnectorInput = {
-      id: uuid(),
+      id: testConnectorId,
       name: 'test-connector-manager-fake-connector',
-      type: ConnectorType.ExternalImport
+      type: ConnectorType.ExternalImport,
     };
     testConnector = await registerConnector(testContext, ADMIN_USER, connectorData);
     expect(testConnector.id).toBeDefined();
   };
 
-  const createWorkForTest = async (name:string, dateForWork: Date, status: string) => {
+  const createWorkForTest = async (name: string, dateForWork: Date, status: string) => {
     // cheat and create a work in the past in elastic
     const dateForWorkStr = dateForWork.toISOString();
     const workId = `work_${testConnector.id}_${dateForWorkStr}`;
@@ -86,5 +88,17 @@ describe('Old work of connector cleanup test', () => {
     expect(allWorkAfterCleanup.some((workItem: Work) => workItem.name === 'Work 2 days old and complete')).toBeTruthy();
     expect(allWorkAfterCleanup.some((workItem: Work) => workItem.name === 'Work 9 days old and not complete')).toBeTruthy();
     expect(allWorkAfterCleanup.some((workItem: Work) => workItem.name === 'Work 8 days old and complete')).toBeFalsy();
+  });
+
+  it('should delete connector', async () => {
+    const unregister = await unregisterConnector(testConnectorId);
+    expect(unregister.listen).not.toBeNull();
+    expect(unregister.listen.messageCount).toEqual(0);
+    expect(unregister.push).not.toBeNull();
+    expect(unregister.push.messageCount).toEqual(0);
+    const data = await metrics(testContext, ADMIN_USER);
+    const aggregationMap = new Map(data.queues.map((queue: any) => [queue.name, queue]));
+    expect(aggregationMap.get(`${RABBIT_QUEUE_PREFIX}listen_${testConnectorId}`)).toBeUndefined();
+    expect(aggregationMap.get(`${RABBIT_QUEUE_PREFIX}push_${testConnectorId}`)).toBeUndefined();
   });
 });

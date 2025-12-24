@@ -7,6 +7,8 @@ import { getGroupEntity } from '../../utils/domainQueryHelper';
 import { AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { MEMBER_ACCESS_RIGHT_VIEW } from '../../../src/utils/access';
 
+// TODO : find a way to mock EE ?
+
 describe('Taxii collection resolver coverage', () => {
   let publicCollectionId: string;
   let amberRestrictedCollectionId: string;
@@ -20,7 +22,7 @@ describe('Taxii collection resolver coverage', () => {
       taxii_public: true,
       include_inferences: true,
       score_to_confidence: false,
-      filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['Credential'], mode: 'or' }], filterGroups: [] })
+      filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['Credential'], mode: 'or' }], filterGroups: [] }),
     };
 
     const publicTaxiiResponse = await queryAsAdminWithSuccess({
@@ -39,7 +41,7 @@ describe('Taxii collection resolver coverage', () => {
                     }
                 },
             `,
-      variables: { input: publicTaxiiInput }
+      variables: { input: publicTaxiiInput },
     });
 
     logApp.info('publicTaxiiResponse:', publicTaxiiResponse);
@@ -62,7 +64,7 @@ describe('Taxii collection resolver coverage', () => {
       include_inferences: true,
       score_to_confidence: false,
       filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['Report'], mode: 'or' }], filterGroups: [] }),
-      authorized_members: [{ id: amberGroup.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }]
+      authorized_members: [{ id: amberGroup.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }],
     };
 
     const amberRestrictedTaxiiResponse = await queryAsAdminWithSuccess({
@@ -81,7 +83,7 @@ describe('Taxii collection resolver coverage', () => {
                     }
                 },
             `,
-      variables: { input: amberRestrictedTaxiiInput }
+      variables: { input: amberRestrictedTaxiiInput },
     });
 
     logApp.info('amberRestrictedTaxiiResponse:', amberRestrictedTaxiiResponse);
@@ -102,7 +104,7 @@ describe('Taxii collection resolver coverage', () => {
       taxii_public: false,
       include_inferences: true,
       score_to_confidence: false,
-      filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['Campaign'], mode: 'or' }], filterGroups: [] })
+      filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['Campaign'], mode: 'or' }], filterGroups: [] }),
     };
 
     const restrictedTaxiiResponse = await queryAsAdminWithSuccess({
@@ -121,7 +123,7 @@ describe('Taxii collection resolver coverage', () => {
                     }
                 },
             `,
-      variables: { input: restrictedTaxiiInput }
+      variables: { input: restrictedTaxiiInput },
     });
 
     logApp.info('amberRestrictedTaxiiResponse:', restrictedTaxiiResponse);
@@ -153,7 +155,7 @@ describe('Taxii collection resolver coverage', () => {
                     }
                 },
             `,
-      variables: {}
+      variables: {},
     });
 
     logApp.info('allTaxiisResponse:', allTaxiisResponse);
@@ -188,7 +190,7 @@ describe('Taxii collection resolver coverage', () => {
                     }
                 },
             `,
-      variables: {}
+      variables: {},
     });
 
     logApp.info('allTaxiisResponse:', allTaxiisResponse);
@@ -223,7 +225,7 @@ describe('Taxii collection resolver coverage', () => {
                     }
                 },
             `,
-      variables: {}
+      variables: {},
     });
 
     logApp.info('allTaxiisResponse:', allTaxiisResponse);
@@ -249,7 +251,7 @@ describe('Taxii collection resolver coverage', () => {
                     }
                 },
             `,
-      variables: { id: publicCollectionId }
+      variables: { id: publicCollectionId },
     });
     logApp.info('deletePublicTaxiiResponse:', deletePublicTaxiiResponse);
     expect(deletePublicTaxiiResponse?.data?.taxiiCollectionEdit?.delete).toBeDefined();
@@ -264,7 +266,7 @@ describe('Taxii collection resolver coverage', () => {
                     }
                 },
             `,
-      variables: { id: amberRestrictedCollectionId }
+      variables: { id: amberRestrictedCollectionId },
     });
     logApp.info('deleteGroupRestrictedTaxiiResponse:', deleteGroupRestrictedTaxiiResponse);
     expect(deleteGroupRestrictedTaxiiResponse?.data?.taxiiCollectionEdit?.delete).toBeDefined();
@@ -279,7 +281,7 @@ describe('Taxii collection resolver coverage', () => {
                     }
                 },
             `,
-      variables: { id: restrictedCollectionId }
+      variables: { id: restrictedCollectionId },
     });
     logApp.info('deleteRestrictedTaxiiResponse:', deleteRestrictedTaxiiResponse);
     expect(deleteRestrictedTaxiiResponse?.data?.taxiiCollectionEdit?.delete).toBeDefined();

@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
-import { disableEE, enableEE } from '../../utils/testQueryHelper';
 import { type FintelTemplateWidgetAddInput, WidgetPerspective } from '../../../src/generated/graphql';
 import { SELF_ID } from '../../../src/utils/fintelTemplate/__fintelTemplateWidgets';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const FINTEL_TEMPLATE_SETTINGS_LIST_QUERY = gql`
   query entitySettings(
@@ -110,12 +110,13 @@ describe('Fintel template resolver standard behavior', () => {
       name: 'Fintel template 1',
       description: 'My fintel template description',
       start_date: '2025-01-01T19:00:05.000Z',
-      settings_types: ['Report']
+      settings_types: ['Report'],
     },
   };
   it('should fintel template created', async () => {
-    // Activate EE
-    await enableEE();
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
     // Create the fintel template
     const fintelTemplate = await queryAsAdmin({
       query: CREATE_QUERY,
@@ -160,7 +161,7 @@ describe('Fintel template resolver standard behavior', () => {
       variables: {
         id: fintelTemplateInternalId,
         input: [{ key: 'description', value: ['new description'] }],
-      }
+      },
     });
     const fintelTemplateDescription = queryResult.data?.fintelTemplateFieldPatch.description;
     expect(fintelTemplateDescription).toEqual('new description');
@@ -197,7 +198,7 @@ describe('Fintel template resolver standard behavior', () => {
       variables: {
         id: fintelTemplateInternalId,
         input: [{ key: 'fintel_template_widgets', object_path: 'fintel_template_widgets/1', value: [fintelTemplateWidgetAddInput] }],
-      }
+      },
     });
     const fintelTemplateWidgets = queryResult.data?.fintelTemplateFieldPatch.fintel_template_widgets;
     expect(fintelTemplateWidgets.length).toEqual(4); // 4 widgets : the modified one and the built-in
@@ -233,7 +234,7 @@ describe('Fintel template resolver standard behavior', () => {
       variables: {
         id: fintelTemplateInternalId,
         input: [{ key: 'fintel_template_widgets', value: [fintelTemplateAttributeWidgetAddInput], operation: 'add' }],
-      }
+      },
     });
     expect(attributeQueryResult.errors?.length).toBe(1);
     expect(attributeQueryResult.errors?.[0].message).toEqual('Attributes should all have a variable name');
@@ -258,7 +259,7 @@ describe('Fintel template resolver standard behavior', () => {
         id: fintelTemplateInternalId,
         input: [{ key: 'fintel_template_widgets', value: [fintelTemplateWidgetAddInput], operation: 'add' }],
 
-      }
+      },
     });
     expect(queryResult.errors?.length).toBe(1);
     expect(queryResult.errors?.[0].message).toEqual('Variable names should not contain spaces or special chars (except - and _)');
@@ -284,7 +285,7 @@ describe('Fintel template resolver standard behavior', () => {
       variables: {
         id: fintelTemplateInternalId,
         input: [{ key: 'fintel_template_widgets', value: [fintelTemplateAttributeWidgetAddInput], operation: 'add' }],
-      }
+      },
     });
     expect(attributeQueryResult.errors?.length).toBe(1);
     expect(attributeQueryResult.errors?.[0].message).toEqual('Variable names should not contain spaces or special chars (except - and _)');
@@ -304,7 +305,5 @@ describe('Fintel template resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.fintelTemplate).toBeNull();
-    // Deactivate EE
-    await disableEE();
   });
 });

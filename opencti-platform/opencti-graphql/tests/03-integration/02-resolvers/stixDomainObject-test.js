@@ -69,6 +69,8 @@ const READ_QUERY = gql`
   }
 `;
 
+// TODO : find a way to mock EE
+
 describe('StixDomainObject resolver standard behavior', () => {
   let stixDomainObjectInternalId;
   const stixDomainObjectStixId = 'tool--34c9875d-8206-4f4b-bf17-f58d9cf7ebec';

@@ -150,7 +150,7 @@ const initFileIndexManager = () => {
   const fileIndexHandler = async () => {
     const context = executionContext(FILE_INDEX_MANAGER_NAME);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    if (settings.valid_enterprise_edition === true) {
+    if (settings && settings.valid_enterprise_edition === true) {
       let lock;
       try {
         // Lock the manager

@@ -1,7 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { AuthUser } from '../../../src/types/user';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
-import { enableCEAndUnSetOrganization, enableEE, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
+import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { AMBER_GROUP, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { DEFAULT_ROLE, SYSTEM_USER } from '../../../src/utils/access';
@@ -11,6 +11,7 @@ import type { Group } from '../../../src/types/group';
 import { internalDeleteElementById } from '../../../src/database/middleware';
 import { now } from '../../../src/utils/format';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 describe('Middleware test coverage on restricted_members configuration', () => {
   let userPlatformOrgGreenGroup: AuthUser;
@@ -26,7 +27,10 @@ describe('Middleware test coverage on restricted_members configuration', () => {
   const idToDelete: string[] = [];
 
   beforeAll(async () => {
-    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    await setOrganization(PLATFORM_ORGANIZATION);
 
     platformOrganizationEntity = await getOrganizationEntity(PLATFORM_ORGANIZATION);
     testOrganizationEntity = await getOrganizationEntity(TEST_ORGANIZATION);
@@ -59,10 +63,13 @@ describe('Middleware test coverage on restricted_members configuration', () => {
   });
 
   afterAll(async () => {
+    // Deactivate EE at the end of this test - back to CE
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     for (let i = 0; i < idToDelete.length; i += 1) {
       await internalDeleteElementById(testContext, SYSTEM_USER, idToDelete[i], ENTITY_TYPE_CONTAINER_CASE_RFI); // +5 RFI deleted
     }
-    await enableCEAndUnSetOrganization();
+    await unSetOrganization();
   });
 
   it('should User in intersection group X org has access', async () => {
@@ -73,10 +80,10 @@ describe('Middleware test coverage on restricted_members configuration', () => {
         {
           id: platformOrganizationEntity.id,
           access_right: 'admin',
-          groups_restriction_ids: [greenGroup.id]
-        }
+          groups_restriction_ids: [greenGroup.id],
+        },
       ],
-      revoked: false
+      revoked: false,
     };
     const requestForInformation = await addCaseRfi(testContext, SYSTEM_USER, rfiInput);
     idToDelete.push(requestForInformation.id);
@@ -91,12 +98,11 @@ describe('Middleware test coverage on restricted_members configuration', () => {
   });
   it('Should everyone has access if no restricted member and no org platform', async () => {
     // disable org sharing
-    await enableCEAndUnSetOrganization();
-    await enableEE();
+    await unSetOrganization();
     const rfiInput: CaseRfiAddInput = {
       name: 'CaseRFI no restricted members',
       created: now(),
-      revoked: false
+      revoked: false,
     };
     const requestForInformation = await addCaseRfi(testContext, SYSTEM_USER, rfiInput);
     idToDelete.push(requestForInformation.id);
@@ -108,7 +114,9 @@ describe('Middleware test coverage on restricted_members configuration', () => {
     expect(result_userTestOrgGreenGroup).toBeDefined();
 
     // enable EE and org sharing
-    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    await setOrganization(PLATFORM_ORGANIZATION);
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
   });
   it('Should User not in group X org but in additional User restricted member has access', async () => {
     const rfiInput: CaseRfiAddInput = {
@@ -118,14 +126,14 @@ describe('Middleware test coverage on restricted_members configuration', () => {
         {
           id: platformOrganizationEntity.id,
           access_right: 'admin',
-          groups_restriction_ids: [greenGroup.id]
+          groups_restriction_ids: [greenGroup.id],
         },
         {
           id: userTestOrgAmberGroup.id,
           access_right: 'admin',
-        }
+        },
       ],
-      revoked: false
+      revoked: false,
     };
     const requestForInformation = await addCaseRfi(testContext, SYSTEM_USER, rfiInput);
     idToDelete.push(requestForInformation.id);
@@ -142,14 +150,14 @@ describe('Middleware test coverage on restricted_members configuration', () => {
         {
           id: platformOrganizationEntity.id,
           access_right: 'admin',
-          groups_restriction_ids: [greenGroup.id]
+          groups_restriction_ids: [greenGroup.id],
         },
         {
           id: amberGroup.id,
           access_right: 'admin',
-        }
+        },
       ],
-      revoked: false
+      revoked: false,
     };
     const requestForInformation = await addCaseRfi(testContext, SYSTEM_USER, rfiInput);
     idToDelete.push(requestForInformation.id);
@@ -166,14 +174,14 @@ describe('Middleware test coverage on restricted_members configuration', () => {
         {
           id: platformOrganizationEntity.id,
           access_right: 'admin',
-          groups_restriction_ids: [greenGroup.id]
+          groups_restriction_ids: [greenGroup.id],
         },
         {
           id: testOrganizationEntity.id,
           access_right: 'admin',
-        }
+        },
       ],
-      revoked: false
+      revoked: false,
     };
     const requestForInformation = await addCaseRfi(testContext, SYSTEM_USER, rfiInput);
     idToDelete.push(requestForInformation.id);

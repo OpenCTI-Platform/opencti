@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { disableEE, enableEE } from '../../utils/testQueryHelper';
+import { describe, it, expect, vi } from 'vitest';
 import { queryAsAdmin } from '../../utils/testQuery';
 import gql from 'graphql-tag';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const CREATE_QUERY = gql`
   mutation DisseminationListAdd($input: DisseminationListAddInput!) {
@@ -51,12 +51,14 @@ describe('Dissemination list resolver', () => {
       name: 'dissemination list 1',
       description: 'My dissemination list description',
       emails: ['email1@test.com', 'email2@test.com', 'email3@test.com'],
-    }
+    },
   };
   const NEW_DESCRIPTION = 'New description';
 
   it('should dissemination list created', async () => {
-    await enableEE();
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
     const disseminationList = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: DISSEMINATION_LIST_TO_CREATE,
@@ -83,7 +85,7 @@ describe('Dissemination list resolver', () => {
       variables: {
         id: disseminationListInternalId,
         input: [{ key: 'description', value: [NEW_DESCRIPTION] }],
-      }
+      },
     });
     const disseminationListDescription = queryResult.data?.disseminationListFieldPatch.description;
     expect(disseminationListDescription).toEqual(NEW_DESCRIPTION);
@@ -99,7 +101,5 @@ describe('Dissemination list resolver', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: disseminationListInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.disseminationList).toBeNull();
-    await disableEE();
   });
-
 });
