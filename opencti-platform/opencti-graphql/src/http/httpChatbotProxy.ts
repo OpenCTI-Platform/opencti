@@ -25,7 +25,7 @@ export const getChatbotProxy = async (req: Express.Request, res: Express.Respons
     const isChatbotCGUAccepted: boolean = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
     const license_pem = getEnterpriseEditionActivePem(settings.enterprise_license);
     const licenseInfo = getEnterpriseEditionInfo(settings);
-    const isLicenseValidated = licenseInfo.license_validated;
+    const isLicenseValidated = license_pem !== undefined && licenseInfo.license_validated;
 
     if (!isChatbotCGUAccepted || !isLicenseValidated) {
       logApp.error('Error in chatbot proxy', { cguStatus: settings.filigran_chatbot_ai_cgu_status, isLicenseValidated, chatbotUrl: XTM_ONE_CHATBOT_URL });
