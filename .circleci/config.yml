@@ -6,7 +6,7 @@ jobs:
 # Client-python steps
   ensure_formatting_pycti:
     docker:
-      - image: cimg/python:3.13
+      - image: cimg/python:3.14
     working_directory: ~/repo
     steps:
       - checkout
@@ -52,7 +52,7 @@ jobs:
   build_pycti:
     working_directory: ~/repo
     docker:
-      - image: cimg/python:3.13
+      - image: cimg/python:3.14
     steps:
       - checkout
       - run:
@@ -84,7 +84,7 @@ jobs:
   deploy_pycti:
     working_directory: ~/repo
     docker:
-      - image: cimg/python:3.13
+      - image: cimg/python:3.14
     steps:
       - checkout
       - attach_workspace:
