@@ -138,7 +138,7 @@
     "@testing-library/user-event": "14.6.1",
     "@types/d3-scale": "4.0.9",
     "@types/html-to-pdfmake": "2.4.4",
-    "@types/node": "22.19.3",
+    "@types/node": "24.10.4",
     "@types/qrcode": "1.5.6",
     "@types/ramda": "0.31.1",
     "@types/react": "19.2.7",
