@@ -70,8 +70,10 @@ interface StixOpenctiExtension {
   labels_ids: string[];
   created_by_ref_id: string;
   converter_csv?: string | undefined;
-  opencti_operation?: string;
   metrics: Array<StixMetric>;
+  opencti_operation?: string;
+  opencti_field_patch?: EditInput[];
+  opencti_upsert_operations?: EditInput[];
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {
