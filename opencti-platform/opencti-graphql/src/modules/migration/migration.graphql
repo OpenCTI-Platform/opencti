@@ -1,0 +1,3 @@
+type Mutation {
+  runMigration(migrationName: String!): Boolean! @auth(for: [BYPASS])
+}

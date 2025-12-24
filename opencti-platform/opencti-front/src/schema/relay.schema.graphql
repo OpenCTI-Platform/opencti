@@ -10035,6 +10035,7 @@ type Mutation {
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   contactUsXtmHub: Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
+  runMigration(migrationName: String!): Boolean!
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
