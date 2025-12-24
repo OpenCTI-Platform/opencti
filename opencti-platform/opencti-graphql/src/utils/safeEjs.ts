@@ -111,10 +111,11 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
         },
 
     [safeName('property')]: (propertyName: unknown) => {
-      if (typeof propertyName === 'string' && (propertyName.startsWith(safeReservedPrefix) || forbiddenProperties.has(propertyName))) {
-        throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName })}`);
+      const name = String(propertyName);
+      if (name.startsWith(safeReservedPrefix) || forbiddenProperties.has(name)) {
+        throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName: name })}`);
       }
-      return propertyName;
+      return name;
     },
 
     [safeName('Object')]: Object.freeze({
@@ -127,11 +128,12 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
           .filter((src) => src && typeof src === 'object')
           .forEach((src) => {
             Object.entries(src).forEach(([key, value]) => {
-              if (key.startsWith(safeReservedPrefix) || forbiddenProperties.has(key)) {
-                throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName: key })}`);
+              const name = String(key); // key should already be a string, but enforce it anyway
+              if (name.startsWith(safeReservedPrefix) || forbiddenProperties.has(name)) {
+                throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName: name })}`);
               }
 
-              target[key] = value;
+              target[name] = value;
             });
           });
         return target;
