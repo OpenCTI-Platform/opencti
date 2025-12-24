@@ -4,7 +4,6 @@ import { FilterMode, type FilterGroup } from '../../generated/graphql';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, NodeDefinition } from '../../modules/playbook/playbook-types';
 import type { PirStreamConfiguration } from '../../modules/playbook/components/data-stream-pir-component';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { isStixRelation } from '../../schema/stixRelationship';
 import type { SseEvent, StreamDataEvent } from '../../types/event';
 import type { StixBundle, StixCoreObject, StixObject } from '../../types/stix-2-1-common';
@@ -173,8 +172,7 @@ export const listenPirEvents = async (
         context,
         AUTOMATION_MANAGER_USER,
         data.source_ref,
-        ABSTRACT_STIX_CORE_OBJECT,
-      ) as unknown as StixObject; ;
+      ) as StixObject;
     } else if (isUpdateEvent) {
       // Event update on flagged entity.
       stixEntity = data;
@@ -184,8 +182,7 @@ export const listenPirEvents = async (
         context,
         AUTOMATION_MANAGER_USER,
         stixIdLinked,
-        ABSTRACT_STIX_CORE_OBJECT,
-      ) as unknown as StixObject; ;
+      ) as StixObject;
     }
 
     // Having an entity means we have a matched PIR.

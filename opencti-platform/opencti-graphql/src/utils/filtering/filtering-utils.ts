@@ -266,7 +266,7 @@ export const addFilter = (filterGroup: FilterGroup | undefined | null, newKey: s
     valuesArray = Array.isArray(newValues) ? newValues : [newValues];
   }
   return {
-    mode: 'and',
+    mode: FilterMode.And,
     filters: [
       {
         key: keyArray,
@@ -566,19 +566,16 @@ export const filtersEntityIdsMappingResult = (inputFilters: FilterGroup, keysToR
           const valuesIds = f.values.filter((v) => v.key === 'id').map((v) => v.values).flat();
           const resolvedValuesIds = valuesIds.map((v) => valuesIdsMap.get(v)).filter((v) => !!v);
           if (resolvedValuesIds.length > 0) {
-            // eslint-disable-next-line no-param-reassign
             f.values = [
               ...f.values.filter((v) => v.key !== 'id'),
               { key: 'id', values: resolvedValuesIds },
             ];
           } else {
-            // eslint-disable-next-line no-param-reassign
             f.values = [
               ...f.values.filter((v) => v.key !== 'id'),
             ];
           }
         } else {
-          // eslint-disable-next-line no-param-reassign
           f.values = f.values
             .map((v) => valuesIdsMap.get(v))
             .filter((v) => !!v);

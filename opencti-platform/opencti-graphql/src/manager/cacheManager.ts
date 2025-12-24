@@ -56,6 +56,7 @@ import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-ty
 import { fromB64 } from '../utils/base64';
 import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import type * as S from '../types/stix-2-1-common';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -139,7 +140,7 @@ const platformResolvedFilters = (context: AuthContext) => {
     // Resolve the filters ids
     if (filteringIds.length > 0) {
       const resolvingIds = R.uniq(filteringIds);
-      const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, resolvingIds);
+      const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, resolvingIds) as S.StixObject[];
       return new Map(loadedDependencies.map((l: StixObject) => [l.extensions[STIX_EXT_OCTI].id, l]));
     }
     return new Map();
@@ -154,7 +155,7 @@ const platformResolvedFilters = (context: AuthContext) => {
         idsToSolve.push(id);
       }
     });
-    const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, R.uniq(idsToSolve)); // fetch the stix instance of the ids
+    const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, R.uniq(idsToSolve)) as S.StixObject[]; // fetch the stix instance of the ids
     // Add resolved stix entities to the cache map
     loadedDependencies.forEach((l: StixObject) => currentFiltersValues.set(l.extensions[STIX_EXT_OCTI].id, l));
     return currentFiltersValues;

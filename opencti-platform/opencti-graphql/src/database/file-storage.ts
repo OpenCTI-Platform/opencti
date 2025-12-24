@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import { Readable } from 'stream';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityDocument } from '../modules/internal/document/document-types';
-import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject } from '../types/store';
+import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, StoreFile } from '../types/store';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
@@ -281,7 +281,7 @@ export const copyFile = async (
 /**
  * Convert File object coming from uploadToStorage/upload functions to x_opencti_file format.
  */
-export const storeFileConverter = (user: AuthUser, file: LoadedFile) => {
+export const storeFileConverter = (_user: AuthUser, file: LoadedFile): StoreFile => {
   return {
     id: file.id,
     name: file.name,
@@ -649,7 +649,7 @@ export const streamConverter = (stream: Readable): Promise<string> => {
   });
 };
 export interface FileUploadOpts {
-  entity?: BasicStoreBase; // entity on which the file is uploaded
+  entity?: BasicStoreBase | null; // entity on which the file is uploaded
   meta?: Record<string, any>;
   noTriggerImport?: boolean;
   errorOnExisting?: boolean;
@@ -790,7 +790,7 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot merge all files in draft');
   }
-  const updatedXOpenctiFiles: Array<{ id: string; name: string; version?: string; mime_type?: string; file_markings: string[] }> = [];
+  const updatedXOpenctiFiles: Array<StoreFile> = [];
   for (let folderI = 0; folderI < ALL_MERGEABLE_FOLDERS.length; folderI += 1) {
     try {
       const sourcePath = `${ALL_MERGEABLE_FOLDERS[folderI]}/${sourceEntity.entity_type}/${sourceEntity.internal_id}`;

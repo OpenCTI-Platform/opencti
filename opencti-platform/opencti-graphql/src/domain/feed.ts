@@ -1,10 +1,9 @@
-/* eslint-disable camelcase */
 import { ENTITY_TYPE_FEED } from '../schema/internalObject';
 import { createEntity, deleteElementById } from '../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { FeedAddInput, MemberAccessInput, QueryFeedsArgs } from '../generated/graphql';
-import type { BasicStoreEntityFeed } from '../types/store';
+import type { BasicStoreEntityFeed, StoreEntity } from '../types/store';
 import { elReplace } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
@@ -100,7 +99,7 @@ export const findFeedPaginated = (context: AuthContext, user: AuthUser, opts: Qu
   return pageEntitiesConnection<BasicStoreEntityFeed>(context, SYSTEM_USER, [ENTITY_TYPE_FEED], publicArgs);
 };
 export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: string) => {
-  const deleted = await deleteElementById(context, user, feedId, ENTITY_TYPE_FEED);
+  const deleted = await deleteElementById<StoreEntity>(context, user, feedId, ENTITY_TYPE_FEED);
   await publishUserAction({
     user,
     event_type: 'mutation',

@@ -1,11 +1,10 @@
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
-import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
+import type { BasicStoreEntityEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { EditInput, EntitySettingFintelTemplatesArgs, QueryEntitySettingsArgs } from '../../generated/graphql';
-import { FilterMode } from '../../generated/graphql';
+import { type EditInput, type EntitySettingFintelTemplatesArgs, FilterMode, type QueryEntitySettingsArgs } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -21,7 +20,7 @@ import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewL
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import type { BasicStoreEntity, BasicConnection } from '../../types/store';
+import type { BasicConnection, BasicStoreEntity } from '../../types/store';
 import { emptyPaginationResult } from '../../database/utils';
 import { findAllMembers } from '../../domain/user';
 import { authorizedMembers } from '../../schema/attribute-definition';
@@ -29,15 +28,15 @@ import { authorizedMembers } from '../../schema/attribute-definition';
 // -- LOADING --
 
 export const findById = async (context: AuthContext, user: AuthUser, entitySettingId: string): Promise<BasicStoreEntityEntitySetting> => {
-  return storeLoadById(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING);
+  return storeLoadById<BasicStoreEntityEntitySetting>(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING);
 };
 
 export const findByType = async (context: AuthContext, user: AuthUser, targetType: string): Promise<BasicStoreEntityEntitySetting> => {
   const findByTypeFn = async () => {
-    return loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
+    return loadEntity<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
       filters: {
-        mode: 'and',
-        filters: [{ key: 'target_type', values: [targetType] }],
+        mode: FilterMode.And,
+        filters: [{ key: ['target_type'], values: [targetType] }],
         filterGroups: [],
       },
     });
@@ -85,7 +84,7 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
       throw FunctionalError('It should have at least one member with admin access');
     }
   }
-  const { element } = await updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
+  const { element } = await updateAttribute<StoreEntityEntitySetting>(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
   await publishUserAction({
     user,
     event_type: 'mutation',

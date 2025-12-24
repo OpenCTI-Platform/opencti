@@ -20,6 +20,7 @@ import {
   elPaginate,
   ES_DEFAULT_PAGINATION,
   UNIMPACTED_ENTITIES_ROLE,
+  type ElFindByIdsOpts,
 } from './engine';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -71,7 +72,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
 }
 
 // entities
-interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
+export interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   fromOrToId?: string | Array<string>;
   fromId?: string | Array<string>;
   fromRole?: string;
@@ -94,7 +95,7 @@ export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters
 }
 
 // relations
-interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
+export interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   relationFilter?: {
     relation: string;
     id: string;
@@ -172,7 +173,7 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
   return { filters: { mode: 'and', filters: filtersContent, filterGroups: [] } };
 };
 
-export const buildRelationsFilter = <T extends BasicStoreCommon>(relationTypes: string | Array<string> | undefined, args: RelationFilters<T>) => {
+export const buildRelationsFilter = <T extends BasicStoreCommon>(relationTypes: string | Array<string> | undefined | null, args: RelationFilters<T>) => {
   const types = !relationTypes || isEmptyField(relationTypes) ? [ABSTRACT_STIX_CORE_RELATIONSHIP] : relationTypes;
   const {
     relationFilter,
@@ -302,12 +303,12 @@ export const pageRelationsConnection = async <T extends BasicStoreRelation>(cont
   return await elPaginate(context, user, computedIndices, { ...paginateArgs, connectionFormat: true }) as BasicConnection<T>;
 };
 
-export const fullRelationsList = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
+export const fullRelationsList = async <T extends BasicStoreRelation>(context: AuthContext, user: AuthUser, type: string | Array<string> | undefined | null,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, type, args.withInferences);
   const paginateArgs = buildRelationsFilter(type, args);
-  return elList(context, user, computedIndices, paginateArgs);
+  return elList<T>(context, user, computedIndices, paginateArgs);
 };
 
 export const buildAggregationRelationFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string>, args: RelationFilters<T>) => {
@@ -322,7 +323,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(entityTypes: stri
   return buildRelationsFilter(types, args);
 };
 
-export const buildThingsFilters = <T extends BasicStoreCommon>(thingTypes: string | Array<string> | undefined, args: RelationFilters<T> = {}) => {
+export const buildThingsFilters = <T extends BasicStoreCommon>(thingTypes: string | Array<string> | undefined | null, args: RelationFilters<T> = {}) => {
   const types = !thingTypes || isEmptyField(thingTypes) ? [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP] : thingTypes;
   return buildRelationsFilter(types, args);
 };
@@ -545,9 +546,9 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
     toMap?: boolean;
     mapWithAllIds?: boolean;
     baseFields?: string[];
-  } & Record<string, string | string[] | boolean>,
+  } & ElFindByIdsOpts,
 ) => {
-  return await elFindByIds(context, user, ids, args) as unknown as T[];
+  return await elFindByIds<T>(context, user, ids, args);
 };
 
 // Similar to internalFindByIds but forcing toMap: true in type.
