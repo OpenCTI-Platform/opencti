@@ -8,10 +8,3 @@ export interface FieldOption {
   type?: string;
   standard_id?: string;
 }
-
-// TODO move this interface inside file KillChainPhasesField
-// when it has been transformed it TypeScript.
-export interface KillChainPhaseFieldOption extends FieldOption {
-  kill_chain_name: string;
-  phase_name: string;
-}

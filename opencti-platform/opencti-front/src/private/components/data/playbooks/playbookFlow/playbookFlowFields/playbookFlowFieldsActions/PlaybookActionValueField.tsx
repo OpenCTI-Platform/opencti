@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { Field, useFormikContext } from 'formik';
 import SwitchField from '../../../../../../../components/fields/SwitchField';
-import { FieldOption, KillChainPhaseFieldOption } from '../../../../../../../utils/field';
+import { FieldOption } from '../../../../../../../utils/field';
 import { isEmptyField } from '../../../../../../../utils/utils';
 import CreatedByField from '../../../../../common/form/CreatedByField';
 import KillChainPhasesField from '../../../../../common/form/KillChainPhasesField';
@@ -250,7 +250,7 @@ const PlaybookActionValueField = ({
       return (
         <KillChainPhasesField
           name={formValueName}
-          onChange={(_: string, killChainPhases: KillChainPhaseFieldOption[]) => {
+          onChange={(_, killChainPhases) => {
             setFieldValue(
               valueName,
               killChainPhases.map((kcp) => ({
