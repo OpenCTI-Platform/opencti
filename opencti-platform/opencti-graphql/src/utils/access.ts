@@ -7,11 +7,11 @@ import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
-import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
+import { buildPaginationFromEdges, extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
+import { type Creator, type FilterGroup, FilterMode, FilterOperator, type Participant } from '../generated/graphql';
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
@@ -20,13 +20,19 @@ import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import type { UpdateEvent } from '../types/event';
+import { fullEntitiesList, pageEntitiesConnection } from '../database/middleware-loader';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { isFilterGroupNotEmpty } from './filtering/filtering-utils';
+import { ES_DEFAULT_PAGINATION } from '../database/engine';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { BasicStoreCommon } from '../types/store';
+import type { BasicConnection, BasicStoreCommon, BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
+
+export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 
 export const BYPASS = 'BYPASS';
 export const KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE = 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE';
@@ -52,6 +58,7 @@ export const KNOWLEDGE_KNDISSEMINATION = 'KNOWLEDGE_KNDISSEMINATION';
 export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
+export const SETTINGS_SETCUSTOMIZATION = 'SETTINGS_SETCUSTOMIZATION';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 export const PIRAPI = 'PIRAPI';
 export const AUTOMATION = 'AUTOMATION';
@@ -958,48 +965,65 @@ type ParticipantWithOrgIds = Participant & Creator & {
 };
 
 export enum FilterMembersMode {
-  RESTRICT = 'restrict',
-  EXCLUDE = 'exclude',
+  RESTRICT = 'restrict', // remove restricted users
+  EXCLUDE = 'exclude', // replace restricted users by a user named 'RESTRICTED'
 }
-export const filterMembersWithUsersOrgs = async (
+
+/**
+ * Post-Filter a list of users by applying orga restriction on users visibility
+ */
+export const filterMembersUsersWithUsersOrgs = async (
   context: AuthContext,
   user: AuthUser,
   members: ParticipantWithOrgIds[],
   filterMode = FilterMembersMode.RESTRICT,
 ): Promise<ParticipantWithOrgIds[]> => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
-  if (!userInPlatformOrg) {
-    const userOrgIds = (user.organizations || []).map((org) => org.id);
-    const resultMembers = [];
-    for (let i = 0; i < members.length; i += 1) {
-      const member = members[i];
-      if (member.id === user.id || INTERNAL_USERS[member.id] || member.user_service_account) {
+  const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
+  const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+
+  // case 1. no orga restriction on user visibility
+  if (userCanViewAllUsers || !platformSettings.platform_organization || platformSettings.view_all_users) {
+    return members;
+  }
+
+  // case 2. apply orga restriction on users
+  // fetch organizations directly linked to the user
+  const userDirectOrganizations = await pageEntitiesConnection(
+    context,
+    user,
+    [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+    { filters: buildRegardingOfDirectParticipateToFilters([user.id], undefined) },
+  );
+  const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
+
+  const resultMembers = [];
+  for (let i = 0; i < members.length; i += 1) {
+    const member = members[i];
+    if (member.id === user.id || INTERNAL_USERS[member.id] || member.user_service_account) {
+      resultMembers.push(member);
+    } else {
+      const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? []; // TODO fetch only not-inferred orga
+      const noOrg = memberOrgIds.length === 0;
+      const sameOrg = memberOrgIds.some((id) => userDirectOrganizationsIds.includes(id));
+      if (sameOrg || noOrg) {
         resultMembers.push(member);
       } else {
-        const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
-        const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
-        if (sameOrg) {
-          resultMembers.push(member);
-        } else {
-          if (filterMode === FilterMembersMode.RESTRICT) {
-            const restrictedMember = {
-              ...member,
-              name: RESTRICTED_USER.name,
-              user_email: RESTRICTED_USER.user_email,
-              representative: {
-                main: RESTRICTED_USER.name,
-                secondary: RESTRICTED_USER.name,
-              },
-            };
-            resultMembers.push(restrictedMember);
-          }
+        if (filterMode === FilterMembersMode.RESTRICT) {
+          const restrictedMember = {
+            ...member,
+            name: RESTRICTED_USER.name,
+            user_email: RESTRICTED_USER.user_email,
+            representative: {
+              main: RESTRICTED_USER.name,
+              secondary: RESTRICTED_USER.name,
+            },
+          };
+          resultMembers.push(restrictedMember);
         }
       }
     }
-    return resultMembers;
   }
-  return members;
+  return resultMembers;
 };
 
 interface ListArgs {
@@ -1008,43 +1032,119 @@ interface ListArgs {
   [key: string]: any;
 }
 
-export const applyOrganizationRestriction = async (
+export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filters?: FilterGroup) => {
+  return {
+    mode: FilterMode.And,
+    filters: [
+      {
+        key: ['regardingOf'],
+        operator: FilterOperator.Eq,
+        values: [
+          {
+            key: 'relationship_type',
+            values: ['participate-to'],
+          },
+          {
+            key: 'id',
+            values: ids,
+          },
+          {
+            key: 'is_inferred',
+            values: ['false'],
+          },
+        ],
+      },
+    ],
+    filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
+  };
+};
+
+export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity>(
   context: AuthContext,
   user: AuthUser,
-  args: ListArgs,
+  args: ListArgs = {},
+  isResultConnection = false,
 ) => {
-  const { filters: argsFilters } = args;
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
+  const membersFetchFunction = isResultConnection ? pageEntitiesConnection : fullEntitiesList;
+  const { entityTypes = null, filters = undefined } = args;
+  if (entityTypes && entityTypes.some((t) => !MEMBERS_ENTITY_TYPES.includes(t))) {
+    throw FunctionalError('Members types can only be User, Organization and Group', { entityTypes });
+  }
+  const types = entityTypes || MEMBERS_ENTITY_TYPES;
+  if (types.includes(ENTITY_TYPE_USER)) { // add organization restriction for users if necessary
+    const userCanViewAllUsers = [SETTINGS_SET_ACCESSES, AUTOMATION_AUTMANAGE, SETTINGS_SETCUSTOMIZATION].some((capa) => isUserHasCapability(user, capa));
+    const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
-  if (!userInPlatformOrg) {
-    const userOrgIds = (user.organizations || []).map((org) => org.id);
-    const membersFilters = {
-      key: ['participate-to'],
-      values: userOrgIds,
-      operator: 'eq',
-    };
-    const userTypeFilters = {
-      key: ['entity_type'],
-      values: [ENTITY_TYPE_USER],
-      operator: 'not_eq',
-    };
-    const userMembersFilter = {
+    // case 1. no orga restriction on user visibility
+    if (userCanViewAllUsers || !platformSettings.platform_organization || platformSettings.view_all_users) {
+      return membersFetchFunction(context, user, types, args);
+    }
+
+    // case 2. add orga restriction on user visibility
+    // fetch organizations directly linked to the user to construct the filter
+    const userDirectOrganizations = await pageEntitiesConnection(
+      context,
+      user,
+      [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+      { filters: buildRegardingOfDirectParticipateToFilters([user.id], undefined) },
+    );
+    let usersWithinUserOrga;
+    if (userDirectOrganizations.edges.length > 0) {
+      // list the users that are in the user direct organizations
+      const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
+      const userDirectOrganizationsFilters = buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, filters);
+      usersWithinUserOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userDirectOrganizationsFilters });
+    }
+    // list the users always visible: users in no organizations OR internal_users OR users with user_service_account=true
+    const alwaysVisibleUsersFilter = {
       mode: FilterMode.Or,
-      filters: [membersFilters, userTypeFilters],
+      filters: [
+        { key: [RELATION_PARTICIPATE_TO], values: [], operator: FilterOperator.Nil },
+        { key: ['user_service_account'], values: ['true'] },
+        { key: ['id'], values: Object.keys(INTERNAL_USERS) },
+      ],
       filterGroups: [],
     };
-    const filters = {
-      mode: FilterMode.And,
-      filters: [],
-      filterGroups: argsFilters ? [argsFilters, userMembersFilter] : [userMembersFilter],
-    };
-    return {
-      ...args,
-      filters,
-    };
+    const finalAlwaysVisibleUsersFilter = filters
+      ? {
+          mode: FilterMode.And,
+          filters: [],
+          filterGroups: [filters, alwaysVisibleUsersFilter],
+        }
+      : alwaysVisibleUsersFilter;
+    const usersAlwaysVisible = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: finalAlwaysVisibleUsersFilter });
+    // list organizations and groups
+    const typesWithoutUser = types.filter((t) => t !== ENTITY_TYPE_USER);
+    let groupsAndOrganizations: BasicConnection<T> | T[] | undefined;
+    if (typesWithoutUser.length > 0) {
+      groupsAndOrganizations = await membersFetchFunction(context, user, typesWithoutUser, args);
+    }
+    // concat users, organizations and groups (cant be done in one query for now because 'or' global mode not working with regardingOf filter)
+    if (isResultConnection) {
+      const typedUsersWithNoOrga = usersAlwaysVisible as BasicConnection<T>;
+      const typedUsersWithinUserOrga = usersWithinUserOrga as BasicConnection<T> | undefined;
+      const typedGroupsAndOrganizations = groupsAndOrganizations as BasicConnection<T> | undefined;
+
+      const concatedMembersNodes = typedUsersWithNoOrga.edges;
+      let totalCount = typedUsersWithNoOrga.pageInfo.globalCount;
+      if (typedUsersWithinUserOrga) {
+        concatedMembersNodes.push(...typedUsersWithinUserOrga.edges);
+        totalCount = totalCount + typedUsersWithinUserOrga.pageInfo.globalCount;
+      }
+      if (typedGroupsAndOrganizations) {
+        concatedMembersNodes.push(...typedGroupsAndOrganizations.edges);
+        totalCount = totalCount + typedGroupsAndOrganizations?.pageInfo.globalCount;
+      }
+      return buildPaginationFromEdges(args.first ?? ES_DEFAULT_PAGINATION, args.after, concatedMembersNodes, totalCount);
+    } else {
+      const typedUsersWithinUserOrga = (usersWithinUserOrga ?? []) as T[];
+      const typedUsersWithNoOrga = usersAlwaysVisible as T[];
+      const typedGroupsAndOrganizations = (groupsAndOrganizations ?? []) as T[];
+      return [...typedUsersWithinUserOrga, ...typedUsersWithNoOrga, ...typedGroupsAndOrganizations];
+    }
+  } else { // case 3. no users to fetch, so no special restriction on user visibility
+    return membersFetchFunction(context, user, types, args);
   }
-  return args;
 };
 
 export const CAPABILITIES_IN_DRAFT_NAMES = [

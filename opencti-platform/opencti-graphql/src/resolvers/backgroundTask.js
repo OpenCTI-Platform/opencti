@@ -1,6 +1,7 @@
 import { deleteTask, createQueryTask, findBackgroundTaskPaginated, findById } from '../domain/backgroundTask';
 import { createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { loadCreator } from '../database/members';
 
 const taskResolvers = {
   Query: {
@@ -13,7 +14,6 @@ const taskResolvers = {
     deleteBackgroundTask: (_, { id }, context) => deleteTask(context, context.user, id),
   },
   BackgroundTask: {
-    // eslint-disable-next-line
     __resolveType(obj) {
       if (obj.type === 'QUERY') return 'QueryTask';
       if (obj.type === 'LIST') return 'ListTask';
@@ -21,7 +21,7 @@ const taskResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    initiator: (task, _, context) => context.batch.creatorBatchLoader.load(task.initiator_id),
+    initiator: (task, _, context) => loadCreator(context, context.user, task.initiator_id),
     work: (task, _, context) => {
       return task.work_id ? context.batch.idsBatchLoader.load({ id: task.work_id, type: ENTITY_TYPE_WORK }) : undefined;
     },

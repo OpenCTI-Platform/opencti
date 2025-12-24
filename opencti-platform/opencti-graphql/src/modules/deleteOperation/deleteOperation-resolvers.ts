@@ -1,5 +1,6 @@
 import type { Resolvers } from '../../generated/graphql';
 import { findDeleteOperationPaginated, findById, restoreDelete, confirmDelete } from './deleteOperation-domain';
+import { loadCreator } from '../../database/members';
 
 const deleteOperationResolvers: Resolvers = {
   Query: {
@@ -8,7 +9,7 @@ const deleteOperationResolvers: Resolvers = {
   },
   DeleteOperation: {
     objectMarking: (deleteOperation, _, context) => context.batch.markingsBatchLoader.load(deleteOperation),
-    deletedBy: (deleteOperation, _, context) => context.batch.creatorBatchLoader.load(deleteOperation.creator_id?.[0]),
+    deletedBy: (deleteOperation, _, context) => loadCreator(context, context.user, deleteOperation.creator_id?.[0]),
   },
   Mutation: {
     deleteOperationRestore: (_, { id }, context) => restoreDelete(context, context.user, id),

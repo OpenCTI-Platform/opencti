@@ -1,8 +1,6 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findTaskPaginated, findById, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
-import { loadThroughDenormalized } from '../../resolvers/stix';
-import { INPUT_PARTICIPANT } from '../../schema/general';
-import { filterMembersWithUsersOrgs } from '../../utils/access';
+import { findById, findTaskPaginated, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
+import { loadParticipants } from '../../database/members';
 
 const taskResolvers: Resolvers = {
   Query: {
@@ -13,13 +11,7 @@ const taskResolvers: Resolvers = {
     },
   },
   Task: {
-    objectParticipant: async (container, _, context) => {
-      const participants = await loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' });
-      if (!participants) {
-        return [];
-      }
-      return filterMembersWithUsersOrgs(context, context.user, participants);
-    },
+    objectParticipant: async (container, _, context) => loadParticipants(context, context.user, container),
   },
   Mutation: {
     taskAdd: (_, { input }, context) => taskAdd(context, context.user, input),

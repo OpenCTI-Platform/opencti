@@ -197,15 +197,15 @@ export const queryDefaultValuesAttributesForSetting = async (
           filterGroups: [],
         },
       };
-      const members = await findAllMembers(context, user, args);
+      const members = await findAllMembers(context, user, args) as BasicStoreEntity[];
       const membersDefaultValues = defaultValuesParsed.map((d) => {
         const defaultValueObject = { ...d };
         const memberId = defaultValueObject.id;
-        const member = members.find((m) => (m as BasicStoreEntity).id === memberId) as BasicStoreEntity;
+        const member = members.find((m) => m.id === memberId);
         defaultValueObject.name = member?.name ?? '';
         defaultValueObject.entity_type = member?.entity_type ?? '';
         defaultValueObject.groups_restriction = (defaultValueObject.groups_restriction_ids ?? []).map((groupId: string) => {
-          const group = members.find((m) => (m as BasicStoreEntity).id === groupId) as BasicStoreEntity;
+          const group = members.find((m) => m.id === groupId);
           return { id: groupId, name: group?.name ?? 'unknown' };
         });
         const jsonValue = JSON.stringify(defaultValueObject);
