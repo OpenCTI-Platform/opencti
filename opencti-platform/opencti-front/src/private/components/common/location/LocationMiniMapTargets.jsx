@@ -30,7 +30,7 @@ const pointerIcon = new L.Icon({
   iconSize: [25, 25],
 });
 
-const LocationMiniMapTargets = ({ center, zoom, cities, countries, title }) => {
+const LocationMiniMapTargets = ({ center, zoom, cities, countries, title = undefined }) => {
   const theme = useTheme();
 
   const { settings: privateSettings } = useContext(UserContext);

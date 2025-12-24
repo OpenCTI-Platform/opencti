@@ -61,6 +61,10 @@ interface ExtendedBackground extends TypeBackground {
   secondary: string;
 }
 
+interface ExtendedText extends TypeText {
+  light: string;
+}
+
 interface ExtendedPaletteOptions extends PaletteOptions {
   common: Partial<CommonColors & { grey: string; lightGrey: string }>;
   background: Partial<ExtendedBackground>;
@@ -83,7 +87,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   gradient: Partial<ExtendedColor>;
   secondary: Partial<ExtendedColor>;
   mode: PaletteMode;
-  text: Partial<ExtendedColor>;
+  text: Partial<ExtendedText>;
 }
 
 interface ExtendedThemeOptions extends ThemeOptions {
