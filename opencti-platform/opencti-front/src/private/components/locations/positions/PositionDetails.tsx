@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
@@ -14,21 +13,16 @@ import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { PositionDetails_positionRelationships$key } from './__generated__/PositionDetails_positionRelationships.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
   chip: {
     fontSize: 12,
     lineHeight: '12px',
     backgroundColor: theme.palette.background.accent,
     borderRadius: 4,
-    color: theme.palette.text?.primary,
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
@@ -158,10 +152,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
   const areas = getTargetedEntities('Administrative-Area');
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Details')}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+      <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h3" gutterBottom={true}>
@@ -267,7 +258,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
             </FieldOrEmpty>
           </Grid>
         </Grid>
-      </Paper>
+      </Card>
     </div>
   );
 };

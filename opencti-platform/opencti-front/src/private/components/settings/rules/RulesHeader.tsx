@@ -1,11 +1,9 @@
 import { graphql, useFragment } from 'react-relay';
 import { Grid2 as Grid } from '@mui/material';
-import React from 'react';
 import { AutoFix, Database, GraphOutline } from 'mdi-material-ui';
 import { useTheme } from '@mui/material/styles';
 import { SettingsSuggestOutlined } from '@mui/icons-material';
 import Chart from '@components/common/charts/Chart';
-import Paper from '@mui/material/Paper';
 import { ApexOptions } from 'apexcharts';
 import RulesHeaderGridCard from './RulesHeaderGridCard';
 import { RULES_LOCAL_STORAGE_KEY } from './rules-utils';
@@ -20,6 +18,7 @@ import { parse } from '../../../../utils/Time';
 import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import useAuth from '../../../../utils/hooks/useAuth';
+import Card from '../../../../components/common/card/Card';
 
 const fragmentData = graphql`
   fragment RulesHeader_data on Query 
@@ -124,72 +123,57 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
         style={{ marginBottom: theme.spacing(3) }}
       />
       <Grid container spacing={3}>
-        <Grid size={{ xs: 6 }}>
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 6 }}>
-              <RulesHeaderGridCard
-                title={t_i18n('Total inferred entities')}
-                icon={<Database color="inherit" fontSize="large" />}
-              >
-                <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: 30 }}>{n(totalEntities)}</span>
-                  <ItemNumberDifference
-                    difference={differenceEntities}
-                    description={t_i18n('24 hours')}
-                  />
-                </div>
-              </RulesHeaderGridCard>
-            </Grid>
-            <Grid size={{ xs: 6 }}>
-              <RulesHeaderGridCard
-                title={t_i18n('Total inferred relations')}
-                icon={<GraphOutline color="inherit" fontSize="large" />}
-              >
-                <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: 30 }}>{n(totalRelations)}</span>
-                  <ItemNumberDifference
-                    difference={differenceRelations}
-                    description={t_i18n('24 hours')}
-                  />
-                </div>
-              </RulesHeaderGridCard>
-            </Grid>
-            <Grid size={{ xs: 6 }}>
-              <RulesHeaderGridCard
-                title={t_i18n('Rules engine status')}
-                icon={<AutoFix color="inherit" fontSize="large" />}
-              >
-                <div style={{ marginTop: theme.spacing(3) }}>
-                  <ItemBoolean
-                    status={isEngineEnabled}
-                    label={isEngineEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
-                  />
-                </div>
-              </RulesHeaderGridCard>
-            </Grid>
-            <Grid size={{ xs: 6 }}>
-              <RulesHeaderGridCard
-                title={t_i18n('Last event processed')}
-                icon={<SettingsSuggestOutlined color="inherit" fontSize="large" />}
-              >
-                <div style={{ marginTop: theme.spacing(3) }}>
-                  {nsdt(parse(lastEventTimestamp))}
-                </div>
-              </RulesHeaderGridCard>
-            </Grid>
+        <Grid size={{ xs: 6 }} container spacing={3}>
+          <Grid size={{ xs: 6 }}>
+            <RulesHeaderGridCard
+              title={t_i18n('Total inferred entities')}
+              icon={<Database color="inherit" fontSize="large" />}
+            >
+              <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                <span style={{ fontSize: 30 }}>{n(totalEntities)}</span>
+                <ItemNumberDifference
+                  difference={differenceEntities}
+                  description={t_i18n('24 hours')}
+                />
+              </div>
+            </RulesHeaderGridCard>
+          </Grid>
+          <Grid size={{ xs: 6 }}>
+            <RulesHeaderGridCard
+              title={t_i18n('Total inferred relations')}
+              icon={<GraphOutline color="inherit" fontSize="large" />}
+            >
+              <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                <span style={{ fontSize: 30 }}>{n(totalRelations)}</span>
+                <ItemNumberDifference
+                  difference={differenceRelations}
+                  description={t_i18n('24 hours')}
+                />
+              </div>
+            </RulesHeaderGridCard>
+          </Grid>
+          <Grid size={{ xs: 6 }}>
+            <RulesHeaderGridCard
+              title={t_i18n('Rules engine status')}
+              icon={<AutoFix color="inherit" fontSize="large" />}
+            >
+              <ItemBoolean
+                status={isEngineEnabled}
+                label={isEngineEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
+              />
+            </RulesHeaderGridCard>
+          </Grid>
+          <Grid size={{ xs: 6 }}>
+            <RulesHeaderGridCard
+              title={t_i18n('Last event processed')}
+              icon={<SettingsSuggestOutlined color="inherit" fontSize="large" />}
+            >
+              <div>{nsdt(parse(lastEventTimestamp))}</div>
+            </RulesHeaderGridCard>
           </Grid>
         </Grid>
         <Grid size={{ xs: 6 }}>
-          <Paper
-            variant="outlined"
-            style={{
-              maxHeight: 252,
-              minHeight: 252,
-              marginTop: 0,
-              padding: theme.spacing(2),
-              overflow: 'hidden',
-            }}
-          >
+          <Card title={t_i18n('Inferred entities')}>
             <Chart
               type="area"
               width="100%"
@@ -206,7 +190,7 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
                 { name: t_i18n('Inferred relationships'), data: chartDataRelations },
               ]}
             />
-          </Paper>
+          </Card>
         </Grid>
       </Grid>
     </>

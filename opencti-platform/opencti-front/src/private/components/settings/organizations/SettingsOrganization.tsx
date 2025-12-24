@@ -4,11 +4,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
@@ -30,21 +28,17 @@ import useGranted, { BYPASS, SETTINGS_SETACCESSES } from '../../../../utils/hook
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
   },
   gridContainer: {
     marginBottom: 20,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
   },
   title: {
     float: 'left',
@@ -170,163 +164,158 @@ const SettingsOrganization = ({
           <SettingsOrganizationDetails settingsOrganization={organization} />
         </Grid>
         <Grid item xs={6}>
-          <div style={{ height: '100%' }}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('More information')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
-              <Grid container={true} spacing={3}>
-                <Grid item xs={12}>
-                  <SettingsOrganizationHiddenTypesChipList
-                    organizationData={organization}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Parent organizations')}
-                  </Typography>
-                  <FieldOrEmpty source={parentOrganizations}>
-                    <List>
-                      {parentOrganizations.map((parentOrganization) => (
-                        <ListItemButton
-                          key={parentOrganization.node.id}
-                          dense={true}
-                          divider={true}
-                          component={Link}
-                          to={`/dashboard/settings/accesses/organizations/${parentOrganization.node.id}`}
-                        >
-                          <ListItemIcon>
-                            <ItemIcon type="Organization" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={parentOrganization.node.name}
-                          />
-                        </ListItemButton>
-                      ))}
-                    </List>
-                  </FieldOrEmpty>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Child organizations')}
-                  </Typography>
-                  <FieldOrEmpty source={subOrganizations}>
-                    <List>
-                      {subOrganizations.map((subOrganization) => (
-                        <ListItemButton
-                          key={subOrganization.node.id}
-                          dense={true}
-                          divider={true}
-                          component={Link}
-                          to={`/dashboard/settings/accesses/organizations/${subOrganization.node.id}`}
-                        >
-                          <ListItemIcon>
-                            <ItemIcon type="Organization" />
-                          </ListItemIcon>
-                          <ListItemText primary={subOrganization.node.name} />
-                        </ListItemButton>
-                      ))}
-                    </List>
-                  </FieldOrEmpty>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Default dashboard')}
-                  </Typography>
-                  <FieldOrEmpty source={organization.default_dashboard}>
-                    <List>
-                      <ListItem
+          <Card title={t_i18n('More information')}>
+            <Grid container={true} spacing={3}>
+              <Grid item xs={12}>
+                <SettingsOrganizationHiddenTypesChipList
+                  organizationData={organization}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Parent organizations')}
+                </Typography>
+                <FieldOrEmpty source={parentOrganizations}>
+                  <List>
+                    {parentOrganizations.map((parentOrganization) => (
+                      <ListItemButton
+                        key={parentOrganization.node.id}
                         dense={true}
                         divider={true}
-                        secondaryAction={!canAccessDashboard && (
+                        component={Link}
+                        to={`/dashboard/settings/accesses/organizations/${parentOrganization.node.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="Organization" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={parentOrganization.node.name}
+                        />
+                      </ListItemButton>
+                    ))}
+                  </List>
+                </FieldOrEmpty>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Child organizations')}
+                </Typography>
+                <FieldOrEmpty source={subOrganizations}>
+                  <List>
+                    {subOrganizations.map((subOrganization) => (
+                      <ListItemButton
+                        key={subOrganization.node.id}
+                        dense={true}
+                        divider={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/organizations/${subOrganization.node.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="Organization" />
+                        </ListItemIcon>
+                        <ListItemText primary={subOrganization.node.name} />
+                      </ListItemButton>
+                    ))}
+                  </List>
+                </FieldOrEmpty>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Default dashboard')}
+                </Typography>
+                <FieldOrEmpty source={organization.default_dashboard}>
+                  <List>
+                    <ListItem
+                      dense={true}
+                      divider={true}
+                      secondaryAction={!canAccessDashboard && (
+                        <Tooltip
+                          title={t_i18n(
+                            'You need to authorize this organization to access this dashboard in the permissions of the workspace.',
+                          )}
+                        >
+                          <WarningOutlined color="warning" />
+                        </Tooltip>
+                      )}
+                    >
+                      <ListItemButton
+                        component={Link}
+                        to={`/dashboard/workspaces/dashboards/${organization.default_dashboard?.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="Dashboard" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={truncate(
+                            organization.default_dashboard?.name,
+                            40,
+                          )}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  </List>
+                </FieldOrEmpty>
+              </Grid>
+              <Grid item xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Grantable groups by organization administrators')}
+                </Typography>
+                <FieldOrEmpty source={organization.grantable_groups}>
+                  <List>
+                    {(organization.grantable_groups ?? []).map((group) => (!isOrganizationAdmin ? (
+                      <ListItemButton
+                        key={group.id}
+                        dense={true}
+                        divider={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/groups/${group.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="Group" />
+                        </ListItemIcon>
+                        <ListItemText primary={group.name} />
+                        {(capabilitiesPerGroup
+                          .get(group.id)
+                          ?.includes(SETTINGS_SETACCESSES)
+                          || capabilitiesPerGroup
+                            .get(group.id)
+                            ?.includes(BYPASS)) && (
                           <Tooltip
                             title={t_i18n(
-                              'You need to authorize this organization to access this dashboard in the permissions of the workspace.',
+                              'This Group allows the user to bypass restriction. It should not be added here.',
                             )}
                           >
                             <WarningOutlined color="warning" />
                           </Tooltip>
                         )}
-                      >
-                        <ListItemButton
-                          component={Link}
-                          to={`/dashboard/workspaces/dashboards/${organization.default_dashboard?.id}`}
-                        >
-                          <ListItemIcon>
-                            <ItemIcon type="Dashboard" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={truncate(
-                              organization.default_dashboard?.name,
-                              40,
+                      </ListItemButton>
+                    ) : (
+                      <ListItem key={group.id} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <ItemIcon type="Group" />
+                        </ListItemIcon>
+                        <ListItemText primary={group.name} />
+                        {(capabilitiesPerGroup
+                          .get(group.id)
+                          ?.includes(SETTINGS_SETACCESSES)
+                          || capabilitiesPerGroup
+                            .get(group.id)
+                            ?.includes(BYPASS)) && (
+                          <Tooltip
+                            title={t_i18n(
+                              'This Group allows the user to bypass restriction. It should not be added here.',
                             )}
-                          />
-                        </ListItemButton>
+                          >
+                            <WarningOutlined color="warning" />
+                          </Tooltip>
+                        )}
                       </ListItem>
-                    </List>
-                  </FieldOrEmpty>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Grantable groups by organization administrators')}
-                  </Typography>
-                  <FieldOrEmpty source={organization.grantable_groups}>
-                    <List>
-                      {(organization.grantable_groups ?? []).map((group) => (!isOrganizationAdmin ? (
-                        <ListItemButton
-                          key={group.id}
-                          dense={true}
-                          divider={true}
-                          component={Link}
-                          to={`/dashboard/settings/accesses/groups/${group.id}`}
-                        >
-                          <ListItemIcon>
-                            <ItemIcon type="Group" />
-                          </ListItemIcon>
-                          <ListItemText primary={group.name} />
-                          {(capabilitiesPerGroup
-                            .get(group.id)
-                            ?.includes(SETTINGS_SETACCESSES)
-                            || capabilitiesPerGroup
-                              .get(group.id)
-                              ?.includes(BYPASS)) && (
-                            <Tooltip
-                              title={t_i18n(
-                                'This Group allows the user to bypass restriction. It should not be added here.',
-                              )}
-                            >
-                              <WarningOutlined color="warning" />
-                            </Tooltip>
-                          )}
-                        </ListItemButton>
-                      ) : (
-                        <ListItem key={group.id} dense={true} divider={true}>
-                          <ListItemIcon>
-                            <ItemIcon type="Group" />
-                          </ListItemIcon>
-                          <ListItemText primary={group.name} />
-                          {(capabilitiesPerGroup
-                            .get(group.id)
-                            ?.includes(SETTINGS_SETACCESSES)
-                            || capabilitiesPerGroup
-                              .get(group.id)
-                              ?.includes(BYPASS)) && (
-                            <Tooltip
-                              title={t_i18n(
-                                'This Group allows the user to bypass restriction. It should not be added here.',
-                              )}
-                            >
-                              <WarningOutlined color="warning" />
-                            </Tooltip>
-                          )}
-                        </ListItem>
-                      )))}
-                    </List>
-                  </FieldOrEmpty>
-                </Grid>
+                    )))}
+                  </List>
+                </FieldOrEmpty>
               </Grid>
-            </Paper>
-          </div>
+            </Grid>
+          </Card>
         </Grid>
         {setAccess || isEnterpriseEdition ? (
           <>

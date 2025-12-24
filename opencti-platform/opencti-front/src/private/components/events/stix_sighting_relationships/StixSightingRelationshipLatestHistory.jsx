@@ -1,11 +1,8 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import StixSightingRelationshipHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixSightingRelationshipHistoryLines';
-import { useFormatter } from 'src/components/i18n';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 
 const StixSightingRelationshipLatestHistory = ({ stixSightingRelationshipId }) => {
-  const { t_i18n } = useFormatter();
   const paginationOptions = {
     filters: {
       mode: 'and',
@@ -25,9 +22,6 @@ const StixSightingRelationshipLatestHistory = ({ stixSightingRelationshipId }) =
   );
   return (
     <>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Most recent history')}
-      </Typography>
       {queryRef && (
         <React.Suspense fallback={<div />}>
           <StixSightingRelationshipHistoryLines
@@ -37,8 +31,7 @@ const StixSightingRelationshipLatestHistory = ({ stixSightingRelationshipId }) =
             paginationOptions={paginationOptions}
           />
         </React.Suspense>
-      )
-      }
+      )}
     </>
   );
 };

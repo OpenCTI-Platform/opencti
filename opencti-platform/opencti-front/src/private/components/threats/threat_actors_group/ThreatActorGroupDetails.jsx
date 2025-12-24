@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
@@ -20,6 +19,7 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel from '../../../../components/ImageCarousel';
 import ThreatActorGroupLocation from './ThreatActorGroupLocation';
 import { truncate } from '../../../../utils/String';
+import Card from '@common/card/Card';
 
 const styles = (theme) => ({
   paper: {
@@ -50,216 +50,212 @@ class ThreatActorGroupDetailsComponent extends Component {
     const hasImages = (threatActorGroup.images?.edges ?? []).filter(
       (n) => n?.node?.metaData?.inCarousel,
     ).length > 0;
+
     return (
-      <>
-        <Typography variant="h4">
-          {t('Details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
-          <Grid container={true} spacing={3}>
-            <Grid item xs={hasImages ? 7 : 6}>
-              <Grid container={true} spacing={3}>
-                {hasImages && (
-                  <Grid item xs={4}>
-                    <ImageCarousel data={threatActorGroup} />
-                  </Grid>
-                )}
-                <Grid item xs={hasImages ? 8 : 12}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t('Threat actor types')}
-                  </Typography>
-                  <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
-                    {threatActorGroup.threat_actor_types
-                      && threatActorGroup.threat_actor_types.map(
-                        (threatActorGroupType) => (
-                          <Chip
-                            key={threatActorGroupType}
-                            classes={{ root: classes.chip }}
-                            label={threatActorGroupType}
-                          />
-                        ),
-                      )}
-                  </FieldOrEmpty>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Description')}
-                  </Typography>
-                  <ExpandableMarkdown
-                    source={threatActorGroup.description}
-                    limit={hasImages ? 400 : 600}
-                  />
+      <Card title={t('Details')}>
+        <Grid container={true} spacing={3}>
+          <Grid item xs={hasImages ? 7 : 6}>
+            <Grid container={true} spacing={3}>
+              {hasImages && (
+                <Grid item xs={4}>
+                  <ImageCarousel data={threatActorGroup} />
                 </Grid>
+              )}
+              <Grid item xs={hasImages ? 8 : 12}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Threat actor types')}
+                </Typography>
+                <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
+                  {threatActorGroup.threat_actor_types
+                    && threatActorGroup.threat_actor_types.map(
+                      (threatActorGroupType) => (
+                        <Chip
+                          key={threatActorGroupType}
+                          classes={{ root: classes.chip }}
+                          label={threatActorGroupType}
+                        />
+                      ),
+                    )}
+                </FieldOrEmpty>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Description')}
+                </Typography>
+                <ExpandableMarkdown
+                  source={threatActorGroup.description}
+                  limit={hasImages ? 400 : 600}
+                />
               </Grid>
             </Grid>
-            <Grid item xs={hasImages ? 5 : 6}>
-              <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('First seen')}
-              </Typography>
-              {fldt(threatActorGroup.first_seen)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Last seen')}
-              </Typography>
-              {fldt(threatActorGroup.last_seen)}
-            </Grid>
           </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item xs={4}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Sophistication')}
-              </Typography>
-              <FieldOrEmpty source={threatActorGroup.sophistication}>
-                <ItemOpenVocab
-                  type="threat-actor-group-sophistication-ov"
-                  value={threatActorGroup.sophistication}
-                />
-              </FieldOrEmpty>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Resource level')}
-              </Typography>
-              <FieldOrEmpty source={threatActorGroup.resource_level}>
-                <ItemOpenVocab
-                  type="attack-resource-level-ov"
-                  value={threatActorGroup.resource_level}
-                />
-              </FieldOrEmpty>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Primary motivation')}
-              </Typography>
-              <FieldOrEmpty source={threatActorGroup.primary_motivation}>
-                <ItemOpenVocab
-                  type="attack-motivation-ov"
-                  value={threatActorGroup.primary_motivation}
-                />
-              </FieldOrEmpty>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Roles')}
-              </Typography>
-              <FieldOrEmpty source={threatActorGroup.roles}>
-                {threatActorGroup.roles && (
-                  <List>
-                    {threatActorGroup.roles.map((role) => (
-                      <ListItem key={role} dense={true} divider={true}>
+          <Grid item xs={hasImages ? 5 : 6}>
+            <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('First seen')}
+            </Typography>
+            {fldt(threatActorGroup.first_seen)}
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Last seen')}
+            </Typography>
+            {fldt(threatActorGroup.last_seen)}
+          </Grid>
+        </Grid>
+        <Grid container={true} spacing={3}>
+          <Grid item xs={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Sophistication')}
+            </Typography>
+            <FieldOrEmpty source={threatActorGroup.sophistication}>
+              <ItemOpenVocab
+                type="threat-actor-group-sophistication-ov"
+                value={threatActorGroup.sophistication}
+              />
+            </FieldOrEmpty>
+          </Grid>
+          <Grid item xs={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Resource level')}
+            </Typography>
+            <FieldOrEmpty source={threatActorGroup.resource_level}>
+              <ItemOpenVocab
+                type="attack-resource-level-ov"
+                value={threatActorGroup.resource_level}
+              />
+            </FieldOrEmpty>
+          </Grid>
+          <Grid item xs={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Primary motivation')}
+            </Typography>
+            <FieldOrEmpty source={threatActorGroup.primary_motivation}>
+              <ItemOpenVocab
+                type="attack-motivation-ov"
+                value={threatActorGroup.primary_motivation}
+              />
+            </FieldOrEmpty>
+          </Grid>
+          <Grid item xs={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Roles')}
+            </Typography>
+            <FieldOrEmpty source={threatActorGroup.roles}>
+              {threatActorGroup.roles && (
+                <List>
+                  {threatActorGroup.roles.map((role) => (
+                    <ListItem key={role} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <DramaMasks />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={(
+                          <ItemOpenVocab
+                            type="threat-actor-group-role-ov"
+                            value={role}
+                          />
+                        )}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+            </FieldOrEmpty>
+          </Grid>
+          <Grid item xs={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Goals')}
+            </Typography>
+            <FieldOrEmpty source={threatActorGroup.goals}>
+              {threatActorGroup.goals && (
+                <List>
+                  {threatActorGroup.goals.map((goal, index) => (
+                    <ListItem key={`${index}:${goal}`} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <BullseyeArrow />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={(
+                          <pre className={classes.smallPre}>
+                            <Tooltip title={goal}>
+                              {truncate(goal, 12)}
+                            </Tooltip>
+                          </pre>
+                        )}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+            </FieldOrEmpty>
+          </Grid>
+          <Grid item xs={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Secondary motivations')}
+            </Typography>
+            <FieldOrEmpty source={threatActorGroup.secondary_motivations}>
+              {threatActorGroup.secondary_motivations && (
+                <List>
+                  {threatActorGroup.secondary_motivations.map(
+                    (secondaryMotivation) => (
+                      <ListItem
+                        key={secondaryMotivation}
+                        dense={true}
+                        divider={true}
+                      >
                         <ListItemIcon>
-                          <DramaMasks />
+                          <ArmFlexOutline />
                         </ListItemIcon>
                         <ListItemText
                           primary={(
                             <ItemOpenVocab
-                              type="threat-actor-group-role-ov"
-                              value={role}
+                              type="attack-motivation-ov"
+                              value={secondaryMotivation}
                             />
                           )}
                         />
                       </ListItem>
-                    ))}
-                  </List>
-                )}
-              </FieldOrEmpty>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Goals')}
-              </Typography>
-              <FieldOrEmpty source={threatActorGroup.goals}>
-                {threatActorGroup.goals && (
-                  <List>
-                    {threatActorGroup.goals.map((goal, index) => (
-                      <ListItem key={`${index}:${goal}`} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <BullseyeArrow />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={(
-                            <pre className={classes.smallPre}>
-                              <Tooltip title={goal}>
-                                {truncate(goal, 12)}
-                              </Tooltip>
-                            </pre>
-                          )}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                )}
-              </FieldOrEmpty>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Secondary motivations')}
-              </Typography>
-              <FieldOrEmpty source={threatActorGroup.secondary_motivations}>
-                {threatActorGroup.secondary_motivations && (
-                  <List>
-                    {threatActorGroup.secondary_motivations.map(
-                      (secondaryMotivation) => (
-                        <ListItem
-                          key={secondaryMotivation}
-                          dense={true}
-                          divider={true}
-                        >
-                          <ListItemIcon>
-                            <ArmFlexOutline />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={(
-                              <ItemOpenVocab
-                                type="attack-motivation-ov"
-                                value={secondaryMotivation}
-                              />
-                            )}
-                          />
-                        </ListItem>
-                      ),
-                    )}
-                  </List>
-                )}
-              </FieldOrEmpty>
-            </Grid>
+                    ),
+                  )}
+                </List>
+              )}
+            </FieldOrEmpty>
           </Grid>
-        </Paper>
-      </>
+        </Grid>
+      </Card>
     );
   }
 }

@@ -1,7 +1,5 @@
-import Typography from '@mui/material/Typography';
-import React, { CSSProperties } from 'react';
+import React from 'react';
 import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
 import { RestartAlt } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
@@ -18,6 +16,7 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../../components/Theme';
+import Card from '../../../../../components/common/card/Card';
 
 interface EntitySettingCustomOverviewProps {
   entitySettingsData: EntitySettingsOverviewLayoutCustomization_entitySetting$key;
@@ -51,23 +50,15 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
 
   const layout = entitySetting.overview_layout_customization;
 
-  const paperStyle: CSSProperties = {
-    marginTop: theme.spacing(1),
-    padding: theme.spacing(2),
-    borderRadius: theme.spacing(0.5),
-    position: 'relative',
-  };
-
   return layout ? (
     <>
       <Grid item xs={6}>
-        <Typography variant="h4" gutterBottom={true} sx={{ marginBottom: 3 }}>
-          <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
-            <span>{t_i18n('Overview layout customization')}</span>
+        <Card
+          title={t_i18n('Overview layout customization')}
+          action={(
             <IconButton
               onClick={() => resetLayout()}
               aria-haspopup="true"
-              sx={{ marginLeft: 1 }}
               size="small"
               color="primary"
             >
@@ -75,27 +66,15 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
                 <RestartAlt fontSize="small" color="primary" />
               </Tooltip>
             </IconButton>
-          </Box>
-        </Typography>
-        <Paper
-          variant="outlined"
-          className="paper-for-grid"
-          style={paperStyle}
+          )}
         >
           <EntitySettingsOverviewLayoutCustomization
             entitySettingsData={entitySetting as EntitySettingsOverviewLayoutCustomizationData}
           />
-        </Paper>
+        </Card>
       </Grid>
       <Grid item xs={6}>
-        <Typography variant="h4" gutterBottom={true} sx={{ marginTop: 1, marginBottom: 2 }}>
-          {t_i18n('Preview')}
-        </Typography>
-        <Paper
-          variant="outlined"
-          className="paper-for-grid"
-          style={paperStyle}
-        >
+        <Card title={t_i18n('Preview')}>
           <Grid container>
             {layout.map(({ key, width, label }) => (
               <Grid item xs={width} key={key}>
@@ -119,7 +98,7 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
               </Grid>
             ))}
           </Grid>
-        </Paper>
+        </Card>
       </Grid>
     </>
   ) : null;

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { dissoc, filter, includes, map, pipe, toPairs } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid2';
 import { GetAppOutlined } from '@mui/icons-material';
@@ -10,7 +9,7 @@ import Divider from '@mui/material/Divider';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/styles';
+import Card from '@common/card/Card';
 import StixCyberObservableNestedEntities from './StixCyberObservableNestedEntities';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -111,8 +110,6 @@ const LabelItemCopy = ({ label, value }) => {
 };
 
 const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
-  const theme = useTheme();
-
   const { t_i18n, fldt } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { dateAttributes, ignoredAttributes } = useAttributes();
@@ -153,13 +150,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
 
   return (
     <div style={{ height: '100%' }} className="break">
-      <Typography variant="h4" gutterBottom={true}>{t_i18n('Details')}</Typography>
-
-      <Paper
-        sx={{ padding: '15px', marginTop: theme.spacing(1) }}
-        className="paper-for-grid"
-        variant="outlined"
-      >
+      <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
           {file && (
             <Grid item size={6}>
@@ -259,7 +250,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
             />
           )}
         </Box>
-      </Paper>
+      </Card>
     </div>
   );
 };

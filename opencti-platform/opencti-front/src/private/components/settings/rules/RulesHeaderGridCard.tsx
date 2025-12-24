@@ -1,8 +1,8 @@
-import React, { CSSProperties, PropsWithChildren, ReactNode } from 'react';
-import { Card, CardContent } from '@mui/material';
-import Typography from '@mui/material/Typography';
+import { CSSProperties, PropsWithChildren, ReactNode } from 'react';
 import { useTheme } from '@mui/material/styles';
+import { Stack } from '@mui/material';
 import type { Theme } from '../../../../components/Theme';
+import Card from '../../../../components/common/card/Card';
 
 interface RulesHeaderGridCardProps extends PropsWithChildren {
   title: string;
@@ -16,32 +16,20 @@ const RulesHeaderGridCard = ({
 }: RulesHeaderGridCardProps) => {
   const theme = useTheme<Theme>();
 
-  const styleCard: CSSProperties = {
-    position: 'relative',
-    height: 114,
-    display: 'flex',
-    alignItems: 'center',
-  };
-  const styleTitle: CSSProperties = {
-    textTransform: 'uppercase',
-    fontSize: 12,
-    fontWeight: 500,
-    color: theme.palette.text?.secondary,
-  };
   const styleIcon: CSSProperties = {
-    position: 'absolute',
     color: theme.palette.primary.main,
-    top: 35,
-    right: 20,
   };
 
   return (
-    <Card style={styleCard} variant="outlined">
-      <CardContent sx={{ '&:last-child': { padding: 2 } }}>
-        <Typography style={styleTitle}>{title}</Typography>
+    <Card title={title}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+      >
         {children}
         <div style={styleIcon}>{icon}</div>
-      </CardContent>
+      </Stack>
     </Card>
   );
 };

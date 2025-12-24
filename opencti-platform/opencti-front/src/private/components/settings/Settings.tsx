@@ -3,15 +3,13 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } fr
 import { Field, Form, Formik } from 'formik';
 import Grid from '@mui/material/Grid2';
 import Button from '@mui/material/Button';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/styles';
-import { Box, Switch } from '@mui/material';
+import { Switch } from '@mui/material';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -45,6 +43,7 @@ import { SettingsQuery } from './__generated__/SettingsQuery.graphql';
 import type { Theme } from '../../../components/Theme';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import Card from '../../../components/common/card/Card';
 
 const settingsQuery = graphql`
   query SettingsQuery {
@@ -298,92 +297,79 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       {isEnterpriseEditionActivated && (
         <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
           <Grid size={6}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h4" gutterBottom={true}>
-                {t_i18n('Enterprise Edition')}
-              </Typography>
-              {!isEnterpriseEditionByConfig && (
-                <div style={{ marginTop: theme.spacing(-2.6), position: 'relative' }}>
-                  <DangerZoneBlock
-                    type="ce_ee_toggle"
-                    sx={{
-                      root: { border: 'none', padding: 0, margin: 0 },
-                      title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
-                    }}
-                  >
-                    {({ disabled }) => {
-                      return (
-                        <>
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            color="dangerZone"
-                            onClick={() => setOpenEEChanges(true)}
-                            disabled={disabled}
-                            style={{
-                              color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
-                              borderColor: theme.palette.dangerZone.main,
-                            }}
-                          >
-                            {t_i18n('Disable Enterprise Edition')}
-                          </Button>
-                          <Dialog
-                            slotProps={{ paper: { elevation: 1 } }}
-                            open={openEEChanges}
-                            keepMounted
-                            slots={{ transition: Transition }}
-                            onClose={() => setOpenEEChanges(false)}
-                          >
-                            <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
-                            <DialogContent>
-                              <DialogContentText component="div">
-                                <Alert
-                                  severity="warning"
-                                  variant="outlined"
-                                  color="dangerZone"
-                                  style={{ borderColor: theme.palette.dangerZone.main }}
-                                >
-                                  {t_i18n(getEEWarningMessage(isLtsPlatform))}
-                                  <br /><br />
-                                  <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
-                                </Alert>
-                              </DialogContentText>
-                            </DialogContent>
-                            <DialogActions>
-                              <Button
-                                onClick={() => {
-                                  setOpenEEChanges(false);
-                                }}
+            <Card
+              titleSx={{ alignItems: 'end' }}
+              title={t_i18n('Enterprise Edition')}
+              action={!isEnterpriseEditionByConfig && (
+                <DangerZoneBlock
+                  type="ce_ee_toggle"
+                  sx={{
+                    root: { position: 'relative', border: 'none', padding: 0, margin: 0 },
+                    title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
+                  }}
+                >
+                  {({ disabled }) => {
+                    return (
+                      <>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="dangerZone"
+                          onClick={() => setOpenEEChanges(true)}
+                          disabled={disabled}
+                          style={{
+                            color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
+                            borderColor: theme.palette.dangerZone.main,
+                          }}
+                        >
+                          {t_i18n('Disable Enterprise Edition')}
+                        </Button>
+                        <Dialog
+                          slotProps={{ paper: { elevation: 1 } }}
+                          open={openEEChanges}
+                          keepMounted
+                          slots={{ transition: Transition }}
+                          onClose={() => setOpenEEChanges(false)}
+                        >
+                          <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
+                          <DialogContent>
+                            <DialogContentText component="div">
+                              <Alert
+                                severity="warning"
+                                variant="outlined"
+                                color="dangerZone"
+                                style={{ borderColor: theme.palette.dangerZone.main }}
                               >
-                                {t_i18n('Cancel')}
-                              </Button>
-                              <Button
-                                color="secondary"
-                                onClick={() => {
-                                  setOpenEEChanges(false);
-                                  handleSubmitField('enterprise_license', '');
-                                }}
-                              >
-                                {t_i18n('Validate')}
-                              </Button>
-                            </DialogActions>
-                          </Dialog>
-                        </>
-                      );
-                    }}
-                  </DangerZoneBlock>
-                </div>
+                                {t_i18n(getEEWarningMessage(isLtsPlatform))}
+                                <br /><br />
+                                <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
+                              </Alert>
+                            </DialogContentText>
+                          </DialogContent>
+                          <DialogActions>
+                            <Button
+                              onClick={() => {
+                                setOpenEEChanges(false);
+                              }}
+                            >
+                              {t_i18n('Cancel')}
+                            </Button>
+                            <Button
+                              color="secondary"
+                              onClick={() => {
+                                setOpenEEChanges(false);
+                                handleSubmitField('enterprise_license', '');
+                              }}
+                            >
+                              {t_i18n('Validate')}
+                            </Button>
+                          </DialogActions>
+                        </Dialog>
+                      </>
+                    );
+                  }}
+                </DangerZoneBlock>
               )}
-            </Box>
-            <div className="clearfix" />
-            <Paper
-              className="paper-for-grid"
-              style={{
-                marginTop: 6,
-                padding: 20,
-                borderRadius: 4,
-              }}
-              variant="outlined"
             >
               <List style={{ marginTop: -20 }}>
                 <ListItem divider={true}>
@@ -411,28 +397,15 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                   />
                 </ListItem>
               </List>
-            </Paper>
+            </Card>
           </Grid>
           <Grid size={6}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h4" gutterBottom={true}>
-                {t_i18n('License')}
-              </Typography>
-              {!isEnterpriseEditionByConfig && (
-                <div style={{ marginTop: theme.spacing(-1.8), position: 'relative' }}>
-                  <EnterpriseEditionButton inLine={true} />
-                </div>
+            <Card
+              titleSx={{ alignItems: 'end' }}
+              title={t_i18n('License')}
+              action={!isEnterpriseEditionByConfig && (
+                <EnterpriseEditionButton inLine={true} />
               )}
-            </Box>
-            <div className="clearfix" />
-            <Paper
-              className="paper-for-grid"
-              style={{
-                marginTop: 6,
-                padding: 20,
-                borderRadius: 4,
-              }}
-              variant="outlined"
             >
               <List style={{ marginTop: -20 }}>
                 {!settings.platform_enterprise_edition.license_expired && settings.platform_enterprise_edition.license_expiration_prevention && (
@@ -474,25 +447,14 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                   />
                 </ListItem>
               </List>
-            </Paper>
+            </Card>
           </Grid>
         </Grid>
       )}
 
       <Grid container={true} spacing={3} sx={{ marginBottom: 10 }}>
         <Grid size={6}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Configuration')}
-          </Typography>
-          <Paper
-            className="paper-for-grid"
-            style={{
-              marginTop: theme.spacing(1),
-              padding: 20,
-              borderRadius: 4,
-            }}
-            variant="outlined"
-          >
+          <Card title={t_i18n('Configuration')}>
             <Formik
               onSubmit={() => {
               }}
@@ -605,29 +567,15 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 </Form>
               )}
             </Formik>
-          </Paper>
+          </Card>
         </Grid>
 
         <Grid size={6}>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('OpenCTI platform')}
-            </Typography>
-            <div style={{ marginTop: theme.spacing(-4.5), position: 'relative' }}>
-              {!isEnterpriseEditionActivated && (
-                <EnterpriseEditionButton inLine={true} />
-              )}
-            </div>
-          </Box>
-          <div className="clearfix" />
-          <Paper
-            className="paper-for-grid"
-            style={{
-              marginTop: 4,
-              padding: 20,
-              borderRadius: 4,
-            }}
-            variant="outlined"
+          <Card
+            title={t_i18n('OpenCTI platform')}
+            action={!isEnterpriseEditionActivated && (
+              <EnterpriseEditionButton inLine={true} />
+            )}
           >
             <Formik
               onSubmit={() => {}}
@@ -728,7 +676,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 </Form>
               )}
             </Formik>
-          </Paper>
+          </Card>
         </Grid>
 
         <Grid size={8}>
@@ -751,19 +699,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         </Grid>
 
         <Grid size={6}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Tools')}
-          </Typography>
-          <Paper
-            style={{
-              marginTop: theme.spacing(1),
-              padding: 20,
-              borderRadius: 4,
-              height: '100%',
-            }}
-            className="paper-for-grid"
-            variant="outlined"
-          >
+          <Card title={t_i18n('Tools')}>
             <List style={{ marginTop: -20 }}>
               {modules?.map((module) => {
                 const isEeModule = ['ACTIVITY_MANAGER', 'PLAYBOOK_MANAGER', 'FILE_INDEX_MANAGER'].includes(module.id);
@@ -793,7 +729,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 </ListItem>
               ))}
             </List>
-          </Paper>
+          </Card>
         </Grid>
       </Grid>
     </div>

@@ -1,8 +1,6 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import {
   SupportPackageLinesPaginationQuery,
   SupportPackageLinesPaginationQuery$variables,
@@ -19,6 +17,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import Card from '../../../../components/common/card/Card';
 
 const LOCAL_STORAGE_KEY = 'support-packages';
 
@@ -123,48 +122,42 @@ const SupportPackages = () => {
 
   return (
     <>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Support packages')}
-      </Typography>
-      <Tooltip title={(
-        <Alert
-          severity="warning"
-          variant="outlined"
-          style={{ position: 'relative', marginTop: 20, marginBottom: 20 }}
-        >
-          {disabledInDraft
-            ? t_i18n('You cannot generate a support package while in draft mode. Make sure to be out of draft to generate one.')
-            : t_i18n('We are doing our best to remove any sensitive information from support packages but we encourage you to check the content before sharing a support package depending on your security policy.')}
-        </Alert>
-      )}
-      >
-        <span style={{ float: 'right', marginTop: '-34px', display: 'inline-block' }}>
-          <Button
-            onClick={generateSupportPackage}
-            size="small"
-            variant="outlined"
-            color="primary"
-            disabled={disabledInDraft}
-          >
-            {t_i18n('Generate Support Package')}
-          </Button>
-        </span>
-      </Tooltip>
-      <div className="clearfix" />
-      <Paper
-        className="paper-for-grid"
-        variant="outlined"
+      <Card
+        title={t_i18n('Support packages')}
+        titleSx={{ alignItems: 'end' }}
         sx={{
-          height: '100%',
           maxHeight: '600px',
           overflowY: 'auto',
-          margin: '10px 0 0 0',
-          padding: '0 15px 0 15px',
-          borderRadius: 1,
         }}
+        action={(
+          <Tooltip title={(
+            <Alert
+              severity="warning"
+              variant="outlined"
+              style={{ position: 'relative', marginTop: 20, marginBottom: 20 }}
+            >
+              {disabledInDraft
+                ? t_i18n('You cannot generate a support package while in draft mode. Make sure to be out of draft to generate one.')
+                : t_i18n('We are doing our best to remove any sensitive information from support packages but we encourage you to check the content before sharing a support package depending on your security policy.')}
+            </Alert>
+          )}
+          >
+            <span style={{ float: 'right', marginTop: '-34px', display: 'inline-block' }}>
+              <Button
+                onClick={generateSupportPackage}
+                size="small"
+                variant="outlined"
+                color="primary"
+                disabled={disabledInDraft}
+              >
+                {t_i18n('Generate Support Package')}
+              </Button>
+            </span>
+          </Tooltip>
+        )}
       >
         {renderLines()}
-      </Paper>
+      </Card>
     </>
   );
 };

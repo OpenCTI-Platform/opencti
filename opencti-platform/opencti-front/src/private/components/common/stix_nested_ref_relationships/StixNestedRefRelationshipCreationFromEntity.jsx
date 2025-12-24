@@ -917,8 +917,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
           color="primary"
           aria-label="Label"
           onClick={handleOpen}
-          style={{ float: 'left', margin: '-15px 0 0 -2px', zIndex: 1 }}
-          size="large"
+          size="small"
         >
           <Add fontSize="small" />
         </IconButton>

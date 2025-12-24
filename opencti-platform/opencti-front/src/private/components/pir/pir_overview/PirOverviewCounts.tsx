@@ -21,12 +21,13 @@ import { useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PirOverviewCountsQuery } from './__generated__/PirOverviewCountsQuery.graphql';
 import { PirOverviewCountsFragment$key } from './__generated__/PirOverviewCountsFragment.graphql';
-import Paper from '../../../../components/Paper';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
 import NumberDifference from '../../../../components/NumberDifference';
 import type { Theme } from '../../../../components/Theme';
 import ItemIcon from '../../../../components/ItemIcon';
+import Card from '../../../../components/common/card/Card';
+import CardTitle from '../../../../components/common/card/CardTitle';
 
 const PirOverviewCountsDummy = () => {
   const theme = useTheme<Theme>();
@@ -77,11 +78,11 @@ const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => 
 
   return (
     <Grid key={label} size={{ xs: 3 }}>
-      <Paper style={{ padding: theme.spacing(1.5), paddingTop: theme.spacing(1) }}>
+      <Card>
         <div style={{ display: 'flex', alignItems: 'start' }}>
           <Typography
-            color={theme.palette.text?.secondary}
-            sx={{ marginTop: 0.5, textTransform: 'uppercase', flex: 1 }}
+            color={theme.palette.text.light}
+            sx={{ marginTop: 0.5, flex: 1 }}
             variant="body2"
             gutterBottom
           >
@@ -107,7 +108,7 @@ const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => 
             description={t_i18n('24 hours')}
           />
         </div>
-      </Paper>
+      </Card>
     </Grid>
   );
 };
@@ -191,9 +192,9 @@ const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
 
   return (
     <Grid size={{ xs: 12 }}>
-      <Typography variant="h4">
+      <CardTitle>
         {t_i18n('Number of threats')}
-      </Typography>
+      </CardTitle>
       <Grid container spacing={3}>
         <Suspense fallback={<PirOverviewCountsDummy />}>
           {countsQueryRef && counts24hQueryRef && (

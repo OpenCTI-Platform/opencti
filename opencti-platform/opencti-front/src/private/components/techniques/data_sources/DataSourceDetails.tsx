@@ -1,15 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/material/styles';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { DataSourceDetails_dataSource$data, DataSourceDetails_dataSource$key } from './__generated__/DataSourceDetails_dataSource.graphql';
 import DataSourceDataComponents from './DataSourceDataComponents';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Card from '../../../../components/common/card/Card';
 
 const DataSourceDetailsFragment = graphql`
   fragment DataSourceDetails_dataSource on DataSource {
@@ -35,7 +34,6 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
   dataSource,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
 
   const data: DataSourceDetails_dataSource$data = useFragment(
     DataSourceDetailsFragment,
@@ -44,18 +42,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
 
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Details')}
-      </Typography>
-      <Paper
-        style={{
-          marginTop: theme.spacing(1),
-          padding: '15px',
-          borderRadius: 4,
-        }}
-        className="paper-for-grid"
-        variant="outlined"
-      >
+      <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -101,7 +88,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
             <DataSourceDataComponents dataSource={data} />
           </Grid>
         </Grid>
-      </Paper>
+      </Card>
     </div>
   );
 };

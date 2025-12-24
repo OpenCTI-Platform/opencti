@@ -34,10 +34,6 @@ const useStyles = makeStyles((theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
 }));
 
 const userMutation = graphql`
@@ -144,8 +140,7 @@ const SettingsOrganizationUserCreation = ({
               color="primary"
               aria-label="Add"
               onClick={() => setOpenAddUser(true)}
-              classes={{ root: classes.createButton }}
-              size="large"
+              size="small"
             >
               <Add fontSize="small" />
             </IconButton>

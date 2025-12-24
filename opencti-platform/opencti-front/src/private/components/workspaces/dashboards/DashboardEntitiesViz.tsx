@@ -59,7 +59,7 @@ const DashboardEntitiesViz = ({
     case 'bookmark':
       return (
         <StixDomainObjectBookmarksList
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
@@ -68,7 +68,7 @@ const DashboardEntitiesViz = ({
     case 'number':
       return (
         <StixCoreObjectsNumber
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
@@ -80,7 +80,7 @@ const DashboardEntitiesViz = ({
     case 'list':
       return (
         <StixCoreObjectsList
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           widgetId={widget.id}
@@ -93,7 +93,7 @@ const DashboardEntitiesViz = ({
     case 'distribution-list':
       return (
         <StixCoreObjectsDistributionList
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
@@ -104,7 +104,7 @@ const DashboardEntitiesViz = ({
     case 'vertical-bar':
       return (
         <StixCoreObjectsMultiVerticalBars
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -117,7 +117,7 @@ const DashboardEntitiesViz = ({
     case 'line':
       return (
         <StixCoreObjectsMultiLineChart
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -130,7 +130,7 @@ const DashboardEntitiesViz = ({
     case 'area':
       return (
         <StixCoreObjectsMultiAreaChart
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -143,7 +143,7 @@ const DashboardEntitiesViz = ({
     case 'timeline':
       return (
         <StixCoreObjectsTimeline
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
@@ -154,7 +154,7 @@ const DashboardEntitiesViz = ({
     case 'donut':
       return (
         <StixCoreObjectsDonut
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -167,7 +167,7 @@ const DashboardEntitiesViz = ({
     case 'polar-area':
       return (
         <StixCoreObjectsPolarArea
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -183,7 +183,7 @@ const DashboardEntitiesViz = ({
       ) {
         return (
           <StixCoreObjectsMultiHorizontalBars
-            variant="inLine"
+            variant={undefined} // because calling js component in ts
             endDate={endDate}
             startDate={startDate}
             isReadOnly={isReadonly}
@@ -196,7 +196,7 @@ const DashboardEntitiesViz = ({
       }
       return (
         <StixCoreObjectsHorizontalBars
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -209,7 +209,7 @@ const DashboardEntitiesViz = ({
     case 'radar':
       return (
         <StixCoreObjectsRadar
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -222,7 +222,7 @@ const DashboardEntitiesViz = ({
     case 'heatmap':
       return (
         <StixCoreObjectsMultiHeatMap
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -235,7 +235,7 @@ const DashboardEntitiesViz = ({
     case 'tree':
       return (
         <StixCoreObjectsTreeMap
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -248,7 +248,7 @@ const DashboardEntitiesViz = ({
     case 'wordcloud':
       return (
         <StixCoreObjectsWordCloud
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}

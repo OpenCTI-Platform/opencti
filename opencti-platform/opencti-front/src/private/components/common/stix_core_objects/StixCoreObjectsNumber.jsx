@@ -1,4 +1,3 @@
-import React from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -44,6 +43,8 @@ const StixCoreObjectsNumber = ({
   withoutTitle,
 }) => {
   const { t_i18n } = useFormatter();
+  const defaultTitle = withoutTitle ? undefined : t_i18n('Entities number');
+
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
@@ -77,9 +78,8 @@ const StixCoreObjectsNumber = ({
   return (
     <WidgetContainer
       height={height}
-      title={parameters.title ?? t_i18n('Entities number')}
+      title={parameters.title ?? defaultTitle}
       variant={variant}
-      withoutTitle={withoutTitle}
     >
       {renderContent()}
     </WidgetContainer>

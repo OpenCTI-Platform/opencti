@@ -1,4 +1,3 @@
-import Card from '@mui/material/Card';
 import React from 'react';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
@@ -18,6 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import type { Theme } from '../../../../components/Theme';
+import Card from '../../../../components/common/card/Card';
 
 export interface IngestionCatalogCardProps {
   node: IngestionConnector;
@@ -146,7 +146,6 @@ const IngestionCatalogCard = ({
 
   return (
     <Card
-      variant="outlined"
       onClick={handleCardClick}
       sx={{
         height: 330,

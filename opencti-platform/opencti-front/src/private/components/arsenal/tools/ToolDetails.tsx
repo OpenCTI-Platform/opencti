@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -14,6 +13,7 @@ import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/St
 import { truncate } from '../../../../utils/String';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
+import Card from '../../../../components/common/card/Card';
 
 const ToolDetailsFragment = graphql`
  fragment ToolDetails_tool on Tool {
@@ -43,18 +43,7 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
   );
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Details')}
-      </Typography>
-      <Paper
-        className="paper-for-grid"
-        variant="outlined"
-        style={{
-          marginTop: '8px',
-          padding: '15px',
-          borderRadius: 4,
-        }}
-      >
+      <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -97,7 +86,7 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
             <StixCoreObjectKillChainPhasesView killChainPhases={tool.killChainPhases ?? []} />
           </Grid>
         </Grid>
-      </Paper>
+      </Card>
     </div>
   );
 };

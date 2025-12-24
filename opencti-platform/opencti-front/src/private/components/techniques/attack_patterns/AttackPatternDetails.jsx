@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -12,6 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { PermIdentity, SettingsApplications } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
+import Card from '@common/card/Card';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -42,10 +42,7 @@ class AttackPatternDetailsComponent extends Component {
     const { t, classes, attackPattern } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+        <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
               {attackPattern.isSubAttackPattern && (
@@ -143,7 +140,7 @@ class AttackPatternDetailsComponent extends Component {
               <AttackPatternDataComponents attackPattern={attackPattern} />
             </Grid>
           </Grid>
-        </Paper>
+        </Card>
       </div>
     );
   }

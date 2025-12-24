@@ -2,39 +2,20 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
+import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
-const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-  item: {
-    paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-  },
-});
-
 class SystemDetailsComponent extends Component {
   render() {
-    const { t, classes, system } = this.props;
+    const { t, system } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+        <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -61,7 +42,7 @@ class SystemDetailsComponent extends Component {
               />
             </Grid>
           </Grid>
-        </Paper>
+        </Card>
       </div>
     );
   }
@@ -69,7 +50,6 @@ class SystemDetailsComponent extends Component {
 
 SystemDetailsComponent.propTypes = {
   system: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
@@ -85,4 +65,4 @@ const SystemDetails = createFragmentContainer(SystemDetailsComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(SystemDetails);
+export default compose(inject18n)(SystemDetails);

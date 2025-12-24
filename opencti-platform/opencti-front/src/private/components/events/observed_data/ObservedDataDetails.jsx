@@ -2,24 +2,15 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
+import Card from '@common/card/Card';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import inject18n from '../../../../components/i18n';
 
-const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-});
-
 class ObservedDataDetailsComponent extends Component {
   render() {
-    const { t, fldt, classes, observedData } = this.props;
+    const { t, fldt, observedData } = this.props;
     const observablesDataSelection = [
       {
         attribute: 'entity_type',
@@ -44,10 +35,7 @@ class ObservedDataDetailsComponent extends Component {
     ];
     return (
       <div style={{ height: '100%' }} data-testid="observed-data-details-page">
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Entity details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+        <Card title={t('Entity details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -77,7 +65,7 @@ class ObservedDataDetailsComponent extends Component {
             variant="inEntity"
             height={300}
           />
-        </Paper>
+        </Card>
       </div>
     );
   }
@@ -85,7 +73,6 @@ class ObservedDataDetailsComponent extends Component {
 
 ObservedDataDetailsComponent.propTypes = {
   observedData: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
   fld: PropTypes.func,
@@ -105,4 +92,4 @@ const ObservedDataDetails = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(ObservedDataDetails);
+export default compose(inject18n)(ObservedDataDetails);

@@ -67,6 +67,10 @@ const ThemeLight = (
       nav: nav || THEME_LIGHT_DEFAULT_NAV,
       accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
       shadow: 'rgba(0, 0, 0, .15)',
+      secondary: '#FFFFFF',
+    },
+    text: {
+      light: '#494A50',
     },
   },
   typography: {

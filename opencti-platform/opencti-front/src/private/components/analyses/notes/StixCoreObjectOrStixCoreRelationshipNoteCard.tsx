@@ -2,7 +2,6 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { OpenInNewOutlined } from '@mui/icons-material';
-import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
@@ -35,6 +34,7 @@ import ItemLikelihood from '../../../../components/ItemLikelihood';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import Card from '../../../../components/common/card/Card';
 
 const StixCoreObjectOrStixCoreRelationshipNoteCardFragment = graphql`
   fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
@@ -123,10 +123,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
   const authorLink = note.createdBy ? `${resolveLink(note.createdBy.entity_type)}/${note.createdBy.id}` : null;
 
   return (
-    <Card
-      sx={{ marginBottom: 2 }}
-      variant="outlined"
-    >
+    <Card>
       <CardHeader
         style={{
           borderBottom: `1px solid ${theme.palette.divider}`,
@@ -149,7 +146,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
                 <Typography variant="body2" sx={{ fontWeight: 800 }}>
                   {authorLink ? <Link to={authorLink}>{authorName}</Link> : t_i18n('Unknown')}
                 </Typography>
-                <Typography variant="body2" sx={{ color: theme.palette.text?.secondary }}>
+                <Typography variant="body2" sx={{ color: theme.palette.text.light }}>
                   {t_i18n('added a note')} {t_i18n('on')} {nsdt(note.created)}
                 </Typography>
               </Stack>

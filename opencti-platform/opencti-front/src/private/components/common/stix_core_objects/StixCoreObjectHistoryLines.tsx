@@ -1,6 +1,5 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import {
   StixCoreObjectHistoryLinesQuery,
   StixCoreObjectHistoryLinesQuery$variables,
@@ -17,6 +16,7 @@ import useInterval from '../../../../utils/hooks/useInterval';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import { StixCoreObjectHistoryLine_node$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLine_node.graphql';
+import Card from '../../../../components/common/card/Card';
 
 export const stixCoreObjectHistoryLinesQuery = graphql`
   query StixCoreObjectHistoryLinesQuery(
@@ -51,12 +51,16 @@ export const StixCoreObjectHistoryLinesFragment = graphql`
 `;
 
 interface StixCoreObjectHistoryLinesProps {
+  title: string;
+  action?: ReactNode;
   queryRef: PreloadedQuery<StixCoreObjectHistoryLinesQuery>;
   isRelationLog: boolean;
   paginationOptions: StixCoreObjectHistoryLinesQuery$variables;
 }
 
 const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesProps> = ({
+  title,
+  action,
   queryRef,
   isRelationLog,
   paginationOptions,
@@ -85,13 +89,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
   };
 
   return (
-    <Paper
-      style={{
-        borderRadius: 4,
-      }}
-      className="paper-for-grid"
-      variant="outlined"
-    >
+    <Card title={title} action={action}>
       {logs.length > 0 ? (
         <List>
           {logs.filter((l) => !!l).map((logEdge) => {
@@ -160,7 +158,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
           </span>
         </div>
       )}
-    </Paper>
+    </Card>
   );
 };
 

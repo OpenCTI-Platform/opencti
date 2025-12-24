@@ -1,30 +1,17 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
-import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { useComputeLink } from '../../../../utils/hooks/useAppData';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 4,
-  },
-}));
+import Card from '@common/card/Card';
 
 const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const computeLink = useComputeLink();
 
@@ -33,15 +20,11 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
 
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Linked objects')}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
-        <List classes={{ root: classes.list }}>
+      <Card title={t_i18n('Linked objects')}>
+        <List>
           {stixCoreObjects.map((stixCoreObjectOrRelationship) => (
             <ListItemButton
               key={stixCoreObjectOrRelationship.id}
-              classes={{ root: classes.menuItem }}
               divider={true}
               component={Link}
               to={`${computeLink(stixCoreObjectOrRelationship)}`}
@@ -59,7 +42,7 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
             </ListItemButton>
           ))}
         </List>
-      </Paper>
+      </Card>
     </div>
   );
 };

@@ -30,7 +30,6 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
 
   const chartLabelBackgroundColor = theme.palette.background.paper;
   const chartInfoTextColor = theme.palette.text.primary;
-  const chartBackgroundColor = theme.palette.background.default;
   const graphLineThickness = 3;
 
   // Time in millisecond cannot be set as number in GraphQL because it's too long
@@ -137,7 +136,6 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
       id: 'Decay graph',
       toolbar: { show: false },
       type: 'line',
-      background: chartBackgroundColor,
       selection: { enabled: false },
       zoom: { enabled: false },
     },

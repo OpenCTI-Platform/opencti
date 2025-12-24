@@ -10,7 +10,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { ArrowRightAlt } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
@@ -40,6 +39,7 @@ import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabels
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
+import Card from '@common/card/Card';
 
 const styles = (theme) => ({
   container: {
@@ -212,7 +212,7 @@ class StixSightingRelationshipContainer extends Component {
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
     const fromRestricted = from === null;
-    // eslint-disable-next-line no-nested-ternary
+
     const linkFrom = from
       ? from.relationship_type
         ? `${resolveLink(from.from.entity_type)}/${
@@ -221,7 +221,7 @@ class StixSightingRelationshipContainer extends Component {
         : resolveLink(from.entity_type)
       : '';
     const toRestricted = to === null;
-    // eslint-disable-next-line no-nested-ternary
+
     const linkTo = to
       ? to.relationship_type
         ? `${resolveLink(to.from.entity_type)}/${
@@ -237,15 +237,7 @@ class StixSightingRelationshipContainer extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Relationship')}
-            </Typography>
-            <Paper
-              classes={{ root: classes.paperWithoutPadding }}
-              variant="outlined"
-              style={{ position: 'relative' }}
-              className="paper-for-grid"
-            >
+            <Card title={t('Relationship')}>
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
                 <div
                   className={classes.item}
@@ -275,7 +267,7 @@ class StixSightingRelationshipContainer extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
+                      { }
                       {!fromRestricted
                         ? from.relationship_type
                           ? t('Relationship')
@@ -338,7 +330,7 @@ class StixSightingRelationshipContainer extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
+                      { }
                       {!toRestricted
                         ? to.relationship_type
                           ? t('Relationship')
@@ -442,13 +434,10 @@ class StixSightingRelationshipContainer extends Component {
                   </Grid>
                 </Grid>
               </div>
-            </Paper>
+            </Card>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Details')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+            <Card title={t('Details')}>
               <Grid container={true} spacing={3}>
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -526,7 +515,7 @@ class StixSightingRelationshipContainer extends Component {
                   />
                 </Grid>
               </Grid>
-            </Paper>
+            </Card>
           </Grid>
           {stixSightingRelationship.x_opencti_inferences !== null ? (
             <Grid item xs={12}>

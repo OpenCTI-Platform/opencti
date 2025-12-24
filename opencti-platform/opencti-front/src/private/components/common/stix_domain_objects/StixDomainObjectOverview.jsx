@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { InformationOutline } from 'mdi-material-ui';
@@ -17,6 +16,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Formik } from 'formik';
 import { useTheme } from '@mui/material/styles';
+import Card from '@common/card/Card';
 import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOverview';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
@@ -138,18 +138,7 @@ const StixDomainObjectOverview = ({
 
   return (
     <>
-      <Typography variant="h4">
-        {t_i18n('Basic information')}
-      </Typography>
-      <Paper
-        style={{
-          marginTop: theme.spacing(1),
-          padding: '15px',
-          borderRadius: 4,
-        }}
-        className="paper-for-grid"
-        variant="outlined"
-      >
+      <Card title={t_i18n('Basic information')}>
         <Grid container={false} spacing={3}>
           {isRequestAccessRFI && (
             <ProcessingStatusOverview data={stixDomainObject} />
@@ -405,7 +394,7 @@ const StixDomainObjectOverview = ({
             </div>
           </Grid>
         </Grid>
-      </Paper>
+      </Card>
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={openStixIds}

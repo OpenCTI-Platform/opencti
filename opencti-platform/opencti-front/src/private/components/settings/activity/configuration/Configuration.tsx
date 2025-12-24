@@ -25,8 +25,6 @@ import { Delete } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Alert from '@mui/material/Alert';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/styles';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
@@ -47,10 +45,11 @@ import { SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted
 import Security from '../../../../../utils/Security';
 import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
 import { FieldOption } from '../../../../../utils/field';
+import Card from '../../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   alert: {
     width: '100%',
     marginBottom: 20,
@@ -58,11 +57,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
     padding: '0 200px 50px 0',
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 20,
-    borderRadius: 4,
   },
 }));
 
@@ -148,10 +142,7 @@ const ConfigurationComponent: FunctionComponent<
           <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
           <Grid container={true} spacing={3}>
             <Grid item xs={12}>
-              <Typography variant="h4" gutterBottom={true}>
-                {t_i18n('Extended activity logging')}
-              </Typography>
-              <Paper classes={{ root: classes.paper }} variant="outlined">
+              <Card title={t_i18n('Extended activity logging')}>
                 <Alert
                   icon={false}
                   classes={{ root: classes.alert, message: classes.message }}
@@ -269,7 +260,7 @@ const ConfigurationComponent: FunctionComponent<
                     );
                   })}
                 </List>
-              </Paper>
+              </Card>
             </Grid>
           </Grid>
         </div>

@@ -1,12 +1,12 @@
 import { v4 as uuid } from 'uuid';
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import Typography from '@mui/material/Typography';
 import { useQueryLoader } from 'react-relay';
 import { LogsOrdering, OrderingMode, UserHistoryLinesQuery, UserHistoryLinesQuery$variables } from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { StorageOutlined } from '@mui/icons-material';
 import { VectorRadius } from 'mdi-material-ui';
+import { Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
@@ -14,11 +14,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
 import UserHistoryLines, { userHistoryLinesQuery } from './UserHistoryLines';
 import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';
-
-const createdByUserRedirectButton = {
-  float: 'left',
-  marginTop: '-15px',
-};
+import Card from '../../../../components/common/card/Card';
 
 interface UserHistoryProps {
   userId: string;
@@ -80,40 +76,41 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
     loadQuery(args, { fetchPolicy: 'store-and-network' });
   };
   return (
-    <>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('History')}
-      </Typography>
-      <div style={{ float: 'right', marginTop: -12 }}>
-        <SearchInput
-          variant="thin"
-          onSubmit={handleSearchEntity}
-          keyword={entitySearchTerm}
-        />
-      </div>
-      <Tooltip title={t_i18n('View all entities created by user')}>
-        <IconButton
-          sx={createdByUserRedirectButton}
-          component={Link}
-          to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
-          size="large"
-          color="primary"
-        >
-          <StorageOutlined fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title={t_i18n('View all relationships created by user')}>
-        <IconButton
-          sx={createdByUserRedirectButton}
-          component={Link}
-          to={`/dashboard/data/relationships/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
-          size="large"
-          color="primary"
-        >
-          <VectorRadius fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <div className="clearfix" />
+    <Card
+      title={t_i18n('History')}
+      action={(
+        <Stack direction="row" gap={1}>
+          <div>
+            <Tooltip title={t_i18n('View all entities created by user')}>
+              <IconButton
+                component={Link}
+                to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
+                size="small"
+                color="primary"
+              >
+                <StorageOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t_i18n('View all relationships created by user')}>
+              <IconButton
+                component={Link}
+                to={`/dashboard/data/relationships/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
+                size="small"
+                color="primary"
+              >
+                <VectorRadius fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </div>
+          <SearchInput
+            style={{ transform: 'translateY(-5px)' }}
+            variant="thin"
+            onSubmit={handleSearchEntity}
+            keyword={entitySearchTerm}
+          />
+        </Stack>
+      )}
+    >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <UserHistoryLines
@@ -126,7 +123,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
       ) : (
         <Loader variant={LoaderVariant.inElement} />
       )}
-    </>
+    </Card>
   );
 };
 

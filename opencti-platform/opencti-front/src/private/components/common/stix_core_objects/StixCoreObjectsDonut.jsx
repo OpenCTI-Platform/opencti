@@ -1,4 +1,3 @@
-import React from 'react';
 import { graphql } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -99,6 +98,8 @@ const StixCoreObjectsDonut = ({
   withoutTitle = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const defaultTitle = withoutTitle ? undefined : t_i18n('Distribution of entities');
+
   const renderContent = () => {
     const selection = dataSelection[0];
     const dataSelectionTypes = ['Stix-Core-Object'];
@@ -145,9 +146,8 @@ const StixCoreObjectsDonut = ({
   return (
     <WidgetContainer
       height={height}
-      title={parameters.title ?? t_i18n('Distribution of entities')}
+      title={parameters.title ?? defaultTitle}
       variant={variant}
-      withoutTitle={withoutTitle}
     >
       {renderContent()}
     </WidgetContainer>

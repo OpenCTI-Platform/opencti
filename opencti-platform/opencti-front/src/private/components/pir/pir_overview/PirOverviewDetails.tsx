@@ -29,7 +29,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { minutesBetweenDates, streamEventIdToDate, stringFormatMinutes } from '../../../../utils/Time';
 import PirCriteriaDisplay from '../PirCriteriaDisplay';
 import type { Theme } from '../../../../components/Theme';
-import PaperAccordion from '../../../../components/PaperAccordion';
+import CardAccordion from '../../../../components/common/card/CardAccordion';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 const detailsFragment = graphql`
@@ -77,7 +77,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
 
   return (
     <Grid size={{ xs: 12 }}>
-      <PaperAccordion
+      <CardAccordion
         title="PIR Details"
         preview={(
           <div style={{
@@ -166,7 +166,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
             <PirCriteriaDisplay criteria={criteria} full />
           </div>
         </div>
-      </PaperAccordion>
+      </CardAccordion>
     </Grid>
   );
 };

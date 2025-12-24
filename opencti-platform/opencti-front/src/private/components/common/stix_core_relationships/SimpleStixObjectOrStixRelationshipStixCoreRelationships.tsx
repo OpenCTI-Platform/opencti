@@ -1,6 +1,4 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -17,15 +15,11 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines, {
 } from './SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 4,
-  },
   item: {
     height: 50,
     minHeight: 50,
@@ -95,63 +89,58 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
     paginationOptions,
   );
   return (
-    <>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Latest created relationships')}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
-        {queryRef && (
-          <React.Suspense fallback={(
-            <List>
-              {Array.from(Array(5), (e, i) => (
-                <ListItem
-                  key={i}
-                  dense={true}
-                  divider={true}
-                >
-                  <ListItemIcon classes={{ root: classes.itemIcon }}>
+    <Card title={t_i18n('Latest created relationships')}>
+      {queryRef && (
+        <React.Suspense fallback={(
+          <List>
+            {Array.from(Array(5), (e, i) => (
+              <ListItem
+                key={i}
+                dense={true}
+                divider={true}
+              >
+                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <Skeleton
+                    animation="wave"
+                    variant="circular"
+                    width={30}
+                    height={30}
+                  />
+                </ListItemIcon>
+                <ListItemText
+                  primary={(
                     <Skeleton
                       animation="wave"
-                      variant="circular"
-                      width={30}
-                      height={30}
+                      variant="rectangular"
+                      width="90%"
+                      height={15}
+                      style={{ marginBottom: 10 }}
                     />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={(
-                      <Skeleton
-                        animation="wave"
-                        variant="rectangular"
-                        width="90%"
-                        height={15}
-                        style={{ marginBottom: 10 }}
-                      />
-                    )}
-                    secondary={(
-                      <Skeleton
-                        animation="wave"
-                        variant="rectangular"
-                        width="90%"
-                        height={15}
-                      />
-                    )}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
-          >
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines
-              stixObjectOrStixRelationshipId={stixObjectOrStixRelationshipId}
-              stixObjectOrStixRelationshipLink={stixObjectOrStixRelationshipLink}
-              queryRef={queryRef}
-              dataColumns={dataColumns}
-              paginationOptions={paginationOptions}
-            />
-          </React.Suspense>
+                  )}
+                  secondary={(
+                    <Skeleton
+                      animation="wave"
+                      variant="rectangular"
+                      width="90%"
+                      height={15}
+                    />
+                  )}
+                />
+              </ListItem>
+            ))}
+          </List>
         )}
-      </Paper>
-    </>
+        >
+          <SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines
+            stixObjectOrStixRelationshipId={stixObjectOrStixRelationshipId}
+            stixObjectOrStixRelationshipLink={stixObjectOrStixRelationshipLink}
+            queryRef={queryRef}
+            dataColumns={dataColumns}
+            paginationOptions={paginationOptions}
+          />
+        </React.Suspense>
+      )}
+    </Card>
   );
 };
 

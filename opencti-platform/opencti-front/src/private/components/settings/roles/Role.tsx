@@ -3,7 +3,6 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -21,22 +20,17 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import type { Theme } from '../../../../components/Theme';
 import useHelper from '../../../../utils/hooks/useHelper';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
   },
   gridContainer: {
     marginBottom: 20,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-    height: 'auto',
   },
 }));
 
@@ -95,10 +89,7 @@ const Role = ({
         classes={{ container: classes.gridContainer }}
       >
         <Grid item xs={12}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Basic information')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+          <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={3}>
               <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -131,14 +122,11 @@ const Role = ({
                 </div>
               </Grid>
             </Grid>
-          </Paper>
+          </Card>
         </Grid>
         <Grid container={true} item xs={12} spacing={3}>
           <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('Capabilities')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
+            <Card title={t_i18n('Capabilities')}>
               <Grid container={true} spacing={3}>
                 <Grid item xs={12} style={{ paddingTop: 10 }}>
                   {queryRef && (
@@ -148,29 +136,29 @@ const Role = ({
                   )}
                 </Grid>
               </Grid>
-            </Paper>
+            </Card>
           </Grid>
-          {isCapabilitiesInDraftEnabled
-            && (
-              <Grid item xs={6}>
-                <Typography variant="h4" gutterBottom={true}>
+          {isCapabilitiesInDraftEnabled && (
+            <Grid item xs={6}>
+              <Card title={(
+                <>
                   {t_i18n('Capabilities in Draft')}
                   <EEChip feature={t_i18n('Capabilities in Draft')} />
-                </Typography>
-                <Paper classes={{ root: classes.paper }} variant="outlined">
-                  <Grid container={true} spacing={3}>
-                    <Grid item xs={12} style={{ paddingTop: 10 }}>
-                      {queryRef && (
-                        <React.Suspense>
-                          <CapabilitiesList queryRef={queryRef} role={role} isCapabilitiesInDraft />
-                        </React.Suspense>
-                      )}
-                    </Grid>
+                </>
+              )}
+              >
+                <Grid container={true} spacing={3}>
+                  <Grid item xs={12} style={{ paddingTop: 10 }}>
+                    {queryRef && (
+                      <React.Suspense>
+                        <CapabilitiesList queryRef={queryRef} role={role} isCapabilitiesInDraft />
+                      </React.Suspense>
+                    )}
                   </Grid>
-                </Paper>
-              </Grid>
-            )
-          }
+                </Grid>
+              </Card>
+            </Grid>
+          )}
         </Grid>
       </Grid>
     </div>

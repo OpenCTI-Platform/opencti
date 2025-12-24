@@ -36,10 +36,6 @@ const useStyles = makeStyles((theme) => ({
     right: 280,
     zIndex: 1100,
   },
-  createButtonSimple: {
-    float: 'left',
-    marginTop: -15,
-  },
   speedDial: {
     position: 'fixed',
     bottom: 30,
@@ -403,8 +399,7 @@ const ContainerAddStixCoreObjects = (props) => {
           color="primary"
           aria-label="Add"
           onClick={() => setOpen(true)}
-          classes={{ root: classes.createButtonSimple }}
-          size="large"
+          size="small"
         >
           <Add fontSize="small" />
         </IconButton>

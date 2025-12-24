@@ -1,8 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
 import GroupField from '@components/common/form/GroupField';
 import { GroupSetDefaultGroupForIngestionUsersQuery } from '@components/settings/groups/__generated__/GroupSetDefaultGroupForIngestionUsersQuery.graphql';
@@ -11,6 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
+import Card from '../../../../components/common/card/Card';
 
 export const groupSetDefaultGroupForIngestionUsersFragment = graphql`
   fragment GroupSetDefaultGroupForIngestionUsersFragment on Group {
@@ -96,18 +95,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
 
   return (
     <Grid item xs={6}>
-      <Typography variant="h4" gutterBottom={true}>
-        { t_i18n('Service account policy')}
-      </Typography>
-      <Paper
-        style={{
-          marginTop: 8,
-          padding: 20,
-          borderRadius: 4,
-        }}
-        className="paper-for-grid"
-        variant="outlined"
-      >
+      <Card title={t_i18n('Service account policy')}>
         <Alert severity="info" variant="outlined">
           {t_i18n('Define a group that will be assigned to each service account created on the fly for each ingestion type. \n'
             + 'Service accounts will have specific rights (no ability to login via UI). ')}
@@ -119,7 +107,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
           multiple={false}
           onChange={handleChange}
         />
-      </Paper>
+      </Card>
     </Grid>
   );
 };

@@ -23,13 +23,13 @@ import PirThreatMapTooltip from './PirThreatMapTooltip';
 import useBuildScatterData from './useBuildScatterData';
 import WidgetScatter from '../../../../../components/dashboard/WidgetScatter';
 import type { Theme } from '../../../../../components/Theme';
-import Paper from '../../../../../components/Paper';
 import { useFormatter } from '../../../../../components/i18n';
 import { PirThreatMapFragment$key } from './__generated__/PirThreatMapFragment.graphql';
 import { getNodes } from '../../../../../utils/connection';
 import PirThreatMapLegend from './PirThreatMapLegend';
 import { uniqueArray } from '../../../../../utils/utils';
 import { PirThreatMapMarker } from './pirThreatMapUtils';
+import Card from '../../../../../components/common/card/Card';
 
 const pirThreatMapFragment = graphql`
   fragment PirThreatMapFragment on Query {
@@ -114,7 +114,7 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
         <InfoOutlined
           color="primary"
           fontSize="small"
-          style={{ paddingBottom: 4, paddingTop: 1 }}
+          style={{ paddingBottom: 2, paddingTop: 2 }}
         />
       </Tooltip>
     </div>
@@ -122,7 +122,7 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
 
   return (
     <Grid size={{ xs: 12 }}>
-      <Paper title={title}>
+      <Card title={title}>
         <div style={containerStyle}>
           <div style={{ height: CHART_SIZE }}>
             <WidgetScatter
@@ -163,7 +163,7 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
           y={tooltipPos.y}
           onMouseLeave={() => setTooltipData(undefined)}
         />
-      </Paper>
+      </Card>
     </Grid>
   );
 };

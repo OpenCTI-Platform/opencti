@@ -1,10 +1,7 @@
 import Grid from '@mui/material/Grid';
 import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import { CaseUtils_case$key } from '@components/cases/__generated__/CaseUtils_case.graphql';
-import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import { convertMarkings } from '../../../../utils/edition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -24,6 +21,7 @@ import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import Card from '../../../../components/common/card/Card';
 
 interface CaseIncidentProps {
   caseIncidentData: CaseUtils_case$key;
@@ -31,7 +29,6 @@ interface CaseIncidentProps {
 }
 
 const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableReferences }) => {
-  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const caseIncident = useFragment(caseFragment, caseIncidentData);
@@ -100,21 +97,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                       <React.Suspense
                         fallback={(
                           <div style={{ height: '100%' }}>
-                            <Typography
-                              variant="h4"
-                              gutterBottom={true}
-                              style={{ marginBottom: 10 }}
-                            >
-                              {t_i18n('Tasks')}
-                            </Typography>
-                            <Paper
-                              style={{
-                                marginTop: theme.spacing(1),
-                                padding: 0,
-                                borderRadius: 4,
-                              }}
-                              variant="outlined"
-                            >
+                            <Card title={t_i18n('Tasks')}>
                               <ListLines
                                 sortBy={sortBy}
                                 orderAsc={orderAsc}
@@ -129,7 +112,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                                     <CaseTasksLineDummy key={idx} />
                                   ))}
                               </ListLines>
-                            </Paper>
+                            </Card>
                           </div>
                         )}
                       >

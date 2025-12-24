@@ -5,7 +5,6 @@ import { FintelDesignQuery } from '@components/settings/fintel_design/__generate
 import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
-import Paper from '@mui/material/Paper';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import CustomizationMenu from '@components/settings/CustomizationMenu';
 import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
@@ -24,6 +23,7 @@ import PdfViewer from '../../../../components/PdfViewer';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import FintelDesignDeletion from './FintelDesignDeletion';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import Card from '../../../../components/common/card/Card';
 
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
@@ -116,7 +116,6 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             >
               {fintelDesign.name}
             </Typography>
-            <div className="clearfix" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ display: 'flex' }}>
@@ -152,43 +151,21 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
         <Grid
           container
           spacing={3}
-          sx={{ marginTop: 2 }}
         >
           <Grid size={{ xs: 4 }}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('Configuration')}
-            </Typography>
-            <Paper
-              style={{
-                marginTop: theme.spacing(1),
-                padding: '15px',
-                borderRadius: 6,
-              }}
-              variant="outlined"
-            >
+            <Card title={t_i18n('Configuration')}>
               <FintelDesignForm
                 fintelDesign={fintelDesign}
                 onFileUploaded={buildPreview}
               />
-            </Paper>
+            </Card>
           </Grid>
           <Grid size={{ xs: 8 }} sx={{ height: 'calc(100vh - 250px)' }}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t_i18n('Preview')}
-            </Typography>
-            <Paper
-              style={{
-                marginTop: theme.spacing(1),
-                padding: '15px',
-                borderRadius: 6,
-                height: '100%',
-              }}
-              variant="outlined"
-            >
+            <Card title={t_i18n('Preview')}>
               {pdf && (
                 <PdfViewer pdf={pdf} />
               )}
-            </Paper>
+            </Card>
           </Grid>
         </Grid>
       </PageContainer>

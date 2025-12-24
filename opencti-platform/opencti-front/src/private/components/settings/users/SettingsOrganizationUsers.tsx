@@ -1,7 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import { AccountCircleOutlined, AdminPanelSettingsOutlined, ManageAccountsOutlined, PersonOutlined } from '@mui/icons-material';
 import SettingsOrganizationUserCreation from '@components/settings/users/SettingsOrganizationUserCreation';
 import { SettingsOrganization_organization$data } from '@components/settings/organizations/__generated__/SettingsOrganization_organization.graphql';
@@ -19,6 +17,7 @@ import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import Card from '../../../../components/common/card/Card';
 
 export const settingsOrganizationUsersQuery = graphql`
   query SettingsOrganizationUsersPaginationQuery(
@@ -204,21 +203,15 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
 
   return (
     <Grid item xs={12} style={{ marginTop: 0 }}>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('Users')}
-      </Typography>
-      <SettingsOrganizationUserCreation
-        paginationOptions={queryPaginationOptions}
-        organization={organization}
-        variant="standard"
-      />
-      <Paper
-        className="paper-for-grid"
-        variant="outlined"
-        sx={{
-          marginTop: '28px',
-          padding: '15px',
-        }}
+      <Card
+        title={t_i18n('Users')}
+        action={(
+          <SettingsOrganizationUserCreation
+            paginationOptions={queryPaginationOptions}
+            organization={organization}
+            variant="standard"
+          />
+        )}
       >
         {queryRef && (
           <DataTable
@@ -250,7 +243,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
             taskScope="USER"
           />
         )}
-      </Paper>
+      </Card>
     </Grid>
   );
 };

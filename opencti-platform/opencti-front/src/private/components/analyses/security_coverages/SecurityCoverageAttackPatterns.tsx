@@ -6,13 +6,12 @@ import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
 import React, { useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import StixCoreRelationshipPopover from '@components/common/stix_core_relationships/StixCoreRelationshipPopover';
-import { Box, ListItemButton } from '@mui/material';
+import { Box, ListItemButton, Stack } from '@mui/material';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -26,6 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
+import Card from '../../../../components/common/card/Card';
 
 const securityCoverageAttackPatternsFragment = graphql`
   fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
@@ -128,12 +128,10 @@ const SecurityCoverageAttackPatterns = ({
   }, [killChains.length, selectedKillChain]); // Use killChains.length instead of killChains to avoid dependency array issues
 
   return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 15, justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant="h4" style={{ whiteSpace: 'nowrap', marginRight: 10 }}>
-            {t_i18n('Attack patterns coverage')}
-          </Typography>
+    <Card
+      title={t_i18n('Attack patterns coverage')}
+      action={(
+        <Stack direction="row" spacing={1}>
           <StixCoreRelationshipCreationFromEntity
             entityId={securityCoverage.id}
             objectId={securityCoverage.id}
@@ -148,8 +146,6 @@ const SecurityCoverageAttackPatterns = ({
             isCoverage={true}
             variant="inLine"
           />
-        </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <ToggleButtonGroup
             size="small"
             value={viewMode}
@@ -207,77 +203,69 @@ const SecurityCoverageAttackPatterns = ({
             variant="thin"
             onSubmit={setSearchTerm}
           />
-        </div>
-      </div>
-      <Paper
-        variant="outlined"
-        style={{
-          padding: 15,
-          borderRadius: 4,
-        }}
-        className="paper-for-grid"
-      >
-        {viewMode === 'matrix' ? (
-          <SecurityCoverageAttackPatternsMatrix
-            securityCoverage={securityCoverage}
-            searchTerm={searchTerm}
-            selectedKillChain={selectedKillChain}
-          />
-        ) : (
-          <>
-            <div className="clearfix" />
-            <List style={{ marginTop: -10 }}>
-              <FieldOrEmpty source={securityCoverage.attPatterns?.edges || []}>
-                {(securityCoverage.attPatterns?.edges || []).map((attackPatternEdge) => {
-                  const attackPattern = attackPatternEdge.node.to;
-                  const coverage = attackPatternEdge.node.coverage_information || [];
-                  return (
-                    <ListItem
-                      key={attackPatternEdge.node.id}
-                      dense={true}
-                      divider={true}
-                      disablePadding={true}
-                      secondaryAction={(
-                        <StixCoreRelationshipPopover
-                          objectId={securityCoverage.id}
-                          connectionKey="Pagination_attPatterns"
-                          stixCoreRelationshipId={attackPatternEdge.node.id}
-                          paginationOptions={paginationOptions}
-                          isCoverage={true}
-                        />
-                      )}
+        </Stack>
+      )}
+    >
+      {viewMode === 'matrix' ? (
+        <SecurityCoverageAttackPatternsMatrix
+          securityCoverage={securityCoverage}
+          searchTerm={searchTerm}
+          selectedKillChain={selectedKillChain}
+        />
+      ) : (
+        <>
+          <div className="clearfix" />
+          <List style={{ marginTop: -10 }}>
+            <FieldOrEmpty source={securityCoverage.attPatterns?.edges || []}>
+              {(securityCoverage.attPatterns?.edges || []).map((attackPatternEdge) => {
+                const attackPattern = attackPatternEdge.node.to;
+                const coverage = attackPatternEdge.node.coverage_information || [];
+                return (
+                  <ListItem
+                    key={attackPatternEdge.node.id}
+                    dense={true}
+                    divider={true}
+                    disablePadding={true}
+                    secondaryAction={(
+                      <StixCoreRelationshipPopover
+                        objectId={securityCoverage.id}
+                        connectionKey="Pagination_attPatterns"
+                        stixCoreRelationshipId={attackPatternEdge.node.id}
+                        paginationOptions={paginationOptions}
+                        isCoverage={true}
+                      />
+                    )}
+                  >
+                    <ListItemButton
+                      component={Link}
+                      to={`/dashboard/analyses/security_coverages/${securityCoverage?.id}/relations/${attackPatternEdge.node.id}`}
+                      style={{ width: '100%' }}
                     >
-                      <ListItemButton
-                        component={Link}
-                        to={`/dashboard/analyses/security_coverages/${securityCoverage?.id}/relations/${attackPatternEdge.node.id}`}
-                        style={{ width: '100%' }}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon color={theme.palette.primary.main} type="attack-pattern" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={(
-                            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                              <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
-                              <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
-                                <SecurityCoverageInformation
-                                  coverage_information={coverage}
-                                  variant="header"
-                                />
-                              </Box>
+                      <ListItemIcon>
+                        <ItemIcon color={theme.palette.primary.main} type="attack-pattern" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={(
+                          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                            <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
+                            <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
+                              <SecurityCoverageInformation
+                                coverage_information={coverage}
+                                variant="header"
+                              />
                             </Box>
-                          )}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  );
-                })}
-              </FieldOrEmpty>
-            </List>
-          </>
-        )}
-      </Paper>
-    </div>
+                          </Box>
+                        )}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </FieldOrEmpty>
+          </List>
+        </>
+      )}
+    </Card>
   );
 };
 

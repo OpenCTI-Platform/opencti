@@ -1,11 +1,9 @@
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { BackupTableOutlined, CampaignOutlined } from '@mui/icons-material';
-import Paper from '@mui/material/Paper';
 import React, { FunctionComponent, useRef, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { Stack } from '@mui/material';
 import TriggerLiveCreation from '../../profile/triggers/TriggerLiveCreation';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import TriggersLines, { triggersLinesQuery } from '../../profile/triggers/TriggersLines';
@@ -18,22 +16,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
 import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
 import { GqlFilterGroup, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
-  paper: {
-    margin: 0,
-    padding: '15px',
-    borderRadius: 4,
-    position: 'relative',
-    listStyleType: 'none',
-  },
-}));
+import Card from '../../../../components/common/card/Card';
 
 interface TriggersProps {
   recipientId: string;
@@ -43,7 +26,6 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   recipientId,
   filterKey,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const {
@@ -113,79 +95,78 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const [openDigest, setOpenDigest] = useState(false);
   return (
     <Grid item xs={12} style={{ marginTop: 10 }}>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('Triggers and Digests')}
-      </Typography>
-      <div style={{ float: 'right', marginTop: -12 }}>
-        <SearchInput
-          variant="thin"
-          onSubmit={helpers.handleSearch}
-          keyword={searchTerm}
-        />
-      </div>
-      <Tooltip title={t_i18n('Add a live trigger')}>
-        <IconButton
-          aria-label="Add"
-          className={classes.createButton}
-          onClick={() => setOpenLive(true)}
-          size="large"
-          color="primary"
-        >
-          <CampaignOutlined fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <TriggerLiveCreation
-        paginationOptions={paginationOptions}
-        open={openLive}
-        handleClose={() => setOpenLive(false)}
-        recipientId={recipientId}
-      />
-      <Tooltip title={t_i18n('Add a regular digest')}>
-        <IconButton
-          aria-label="Add"
-          className={classes.createButton}
-          onClick={() => setOpenDigest(true)}
-          size="large"
-          color="primary"
-        >
-          <BackupTableOutlined fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <div className="clearfix" />
-      <Paper
-        ref={ref}
-        variant="outlined"
-        classes={{ root: classes.paper }}
-      >
-        <ColumnsLinesTitles
-          dataColumns={dataColumns}
-          sortBy={sortBy}
-          orderAsc={orderAsc}
-          handleSort={helpers.handleSort}
-          secondaryAction={true}
-        />
-        {queryRef && (
-          <React.Suspense
-            fallback={(
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <TriggerLineDummy key={idx} dataColumns={dataColumns} />
-                  ))}
-              </>
-            )}
-          >
-            <TriggersLines
-              queryRef={queryRef}
-              containerRef={ref}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              bypassEditionRestriction={true}
+      <Card
+        title={t_i18n('Triggers and Digests')}
+        action={(
+          <Stack direction="row" gap={1}>
+            <div>
+              <Tooltip title={t_i18n('Add a live trigger')}>
+                <IconButton
+                  aria-label="Add"
+                  onClick={() => setOpenLive(true)}
+                  size="small"
+                  color="primary"
+                >
+                  <CampaignOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <TriggerLiveCreation
+                paginationOptions={paginationOptions}
+                open={openLive}
+                handleClose={() => setOpenLive(false)}
+                recipientId={recipientId}
+              />
+              <Tooltip title={t_i18n('Add a regular digest')}>
+                <IconButton
+                  aria-label="Add"
+                  onClick={() => setOpenDigest(true)}
+                  size="small"
+                  color="primary"
+                >
+                  <BackupTableOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </div>
+            <SearchInput
+              style={{ transform: 'translateY(-5px)' }}
+              variant="thin"
+              onSubmit={helpers.handleSearch}
+              keyword={searchTerm}
             />
-          </React.Suspense>
+          </Stack>
         )}
-      </Paper>
+      >
+        <div ref={ref}>
+          <ColumnsLinesTitles
+            dataColumns={dataColumns}
+            sortBy={sortBy}
+            orderAsc={orderAsc}
+            handleSort={helpers.handleSort}
+            secondaryAction={true}
+          />
+          {queryRef && (
+            <React.Suspense
+              fallback={(
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <TriggerLineDummy key={idx} dataColumns={dataColumns} />
+                    ))}
+                </>
+              )}
+            >
+              <TriggersLines
+                queryRef={queryRef}
+                containerRef={ref}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                bypassEditionRestriction={true}
+              />
+            </React.Suspense>
+          )}
+        </div>
+      </Card>
       <TriggerDigestCreation
         paginationOptions={paginationOptions}
         open={openDigest}

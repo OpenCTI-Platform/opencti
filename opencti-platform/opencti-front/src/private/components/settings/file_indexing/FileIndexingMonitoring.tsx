@@ -16,7 +16,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { FunctionComponent, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import { ClearOutlined, FolderOutlined, PauseOutlined, PlayArrowOutlined, StorageOutlined, SyncDisabledOutlined, SyncOutlined } from '@mui/icons-material';
@@ -33,7 +32,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { FileIndexingConfigurationQuery$data } from '@components/settings/file_indexing/__generated__/FileIndexingConfigurationQuery.graphql';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
-import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { handleError, MESSAGING$ } from '../../../../relay/environment';
@@ -41,17 +39,13 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import Card from '../../../../components/common/card/Card';
 
 const interval$ = interval(TEN_SECONDS);
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
   header: {
     textTransform: 'uppercase',
   },
@@ -101,7 +95,6 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   queryRef,
   refetch,
 }) => {
-  const theme = useTheme<Theme>();
   const { n, t_i18n, fldt, b } = useFormatter();
   const classes = useStyles();
   const { indexedFilesMetrics } = usePreloadedQuery<FileIndexingMonitoringQuery>(
@@ -165,17 +158,13 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
   return (
     <Grid container={true} spacing={3}>
       <Grid item xs={6}>
-        <Typography variant="h4">{t_i18n('Status')}</Typography>
-        <Paper
-          variant="outlined"
-          style={{
+        <Card
+          title={t_i18n('Status')}
+          sx={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: theme.spacing(2),
-            height: 'fit-content',
           }}
-          className="paper-for-grid"
         >
           <ItemBoolean
             label={isStarted ? t_i18n('Running') : t_i18n('Stopped')}
@@ -194,50 +183,45 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           ) : (
             <SyncDisabledOutlined color="primary" sx={{ fontSize: 40 }} />
           )}
-        </Paper>
+        </Card>
       </Grid>
       <Grid item xs={3}>
-        <Typography variant="h4">{t_i18n('Indexed files')}</Typography>
-        <Paper
-          variant="outlined"
-          style={{
+        <Card
+          title={t_i18n('Indexed files')}
+          sx={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: theme.spacing(2),
           }}
-          className="paper-for-grid"
         >
           <Typography variant="h2" style={{ margin: 0 }}>
             {indexedFiles} / {totalFiles}
           </Typography>
           <FolderOutlined color="primary" sx={{ fontSize: 40 }} />
-        </Paper>
+        </Card>
       </Grid>
       <Grid item xs={3}>
-        <Typography variant="h4">{t_i18n('Volume indexed')}</Typography>
-        <Paper
-          variant="outlined"
-          style={{
+        <Card
+          title={t_i18n('Volume indexed')}
+          sx={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: theme.spacing(2),
           }}
-          className="paper-for-grid"
         >
           <Typography variant="h2" style={{ margin: 0 }}>
             {indexedFiles ? n(volumeIndexed) : 0}
           </Typography>
           <StorageOutlined color="primary" sx={{ fontSize: 40 }} />
-        </Paper>
+        </Card>
       </Grid>
       <Grid item xs={4}>
         <DangerZoneBlock
           type="file_indexing"
+          displayTitle={false}
           title={t_i18n('Control')}
-          component={({ disabled, style }) => (
-            <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined" style={style}>
+          component={({ disabled, style, title }) => (
+            <Card title={title} sx={style}>
               <Grid container={true} spacing={3}>
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -295,15 +279,12 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                   {fldt(lastIndexationDate)}
                 </Grid>
               </Grid>
-            </Paper>
+            </Card>
           )}
         />
       </Grid>
       <Grid item xs={4}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t_i18n('Information')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+        <Card title={t_i18n('Information')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -374,7 +355,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
               </List>
             </Grid>
           </Grid>
-        </Paper>
+        </Card>
       </Grid>
       <Grid item xs={4}>
         <FileIndexingConfiguration

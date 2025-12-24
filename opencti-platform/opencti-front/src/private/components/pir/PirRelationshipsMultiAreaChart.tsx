@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
 import { graphql } from 'react-relay';
 import { PirRelationshipsMultiAreaChartTimeSeriesQuery$data } from '@components/pir/__generated__/PirRelationshipsMultiAreaChartTimeSeriesQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
@@ -24,7 +23,7 @@ import WidgetContainer from '../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../components/dashboard/WidgetMultiAreas';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import type { PirWidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
+import type { PirWidgetDataSelection } from '../../../utils/widget/widget';
 
 const pirRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
   query PirRelationshipsMultiAreaChartTimeSeriesQuery(
@@ -52,33 +51,18 @@ const pirRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
 `;
 
 interface PirRelationshipsMultiAreaChartProps {
-  dataSelection: PirWidgetDataSelection[];
-  parameters: WidgetParameters;
-  relationshipTypes: string[];
-  variant?: string;
-  title?: string;
-  height?: number;
-  startDate?: string | null;
-  endDate?: string | null;
-  withExportPopover?: boolean;
-  isReadOnly?: boolean;
-  withoutTitle?: boolean;
+  pirId: string;
 }
 
 const PirRelationshipsMultiAreaChart = ({
-  dataSelection,
-  parameters,
-  relationshipTypes,
-  variant,
-  title = undefined,
-  height,
-  startDate,
-  endDate,
-  withExportPopover = false,
-  isReadOnly = false,
-  withoutTitle = false,
+  pirId,
 }: PirRelationshipsMultiAreaChartProps) => {
   const { t_i18n } = useFormatter();
+  const dataSelection: PirWidgetDataSelection[] = [{
+    field: 'created_at',
+    pirId,
+  }];
+
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
@@ -99,10 +83,10 @@ const PirRelationshipsMultiAreaChart = ({
         query={pirRelationshipsMultiAreaChartTimeSeriesQuery}
         variables={{
           operation: 'count',
-          startDate: startDate ?? monthsAgo(12),
-          endDate: endDate ?? now(),
-          interval: parameters.interval ?? 'day',
-          relationship_type: relationshipTypes,
+          startDate: monthsAgo(6),
+          endDate: now(),
+          interval: 'month',
+          relationship_type: ['in-pir'],
           timeSeriesParameters,
         }}
         render={({ props }: { props: PirRelationshipsMultiAreaChartTimeSeriesQuery$data }) => {
@@ -118,11 +102,9 @@ const PirRelationshipsMultiAreaChart = ({
                     }),
                   ),
                 })) as ApexAxisChartSeries}
-                interval={parameters.interval}
-                isStacked={parameters.stacked ?? undefined}
-                hasLegend={parameters.legend ?? undefined}
-                withExport={withExportPopover}
-                readonly={isReadOnly}
+                interval="month"
+                withExport={false}
+                readonly
               />
             );
           }
@@ -134,12 +116,11 @@ const PirRelationshipsMultiAreaChart = ({
       />
     );
   };
+
   return (
     <WidgetContainer
-      height={height}
-      title={parameters.title ?? title ?? t_i18n('Entities history')}
-      variant={variant}
-      withoutTitle={withoutTitle}
+      height={250}
+      variant="inLine"
     >
       {renderContent()}
     </WidgetContainer>

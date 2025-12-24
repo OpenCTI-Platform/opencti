@@ -1,19 +1,16 @@
 import { graphql, PreloadedQuery, usePreloadedQuery, UseQueryLoaderLoadQueryOptions } from 'react-relay';
-import { ExclusionListsStatusQuery, ExclusionListsStatusQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
-import Paper from '@mui/material/Paper';
-import { useTheme } from '@mui/styles';
 import React, { FunctionComponent, useEffect } from 'react';
 import { EventRepeatOutlined, UpdateOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
-import type { Theme } from 'src/components/Theme';
 import { interval } from 'rxjs';
 import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
+import { ExclusionListsStatusQuery, ExclusionListsStatusQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsStatusQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import Card from '../../../../components/common/card/Card';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -33,7 +30,6 @@ interface ExclusionListsStatusComponentProps {
 }
 
 const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusComponentProps> = ({ queryRef, refetch }) => {
-  const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
   const { exclusionListCacheStatus } = usePreloadedQuery(
     exclusionListsStatusQuery,
@@ -56,22 +52,16 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
     };
   }, []);
 
+  const statusSx = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  };
+
   return (
     <Grid container spacing={2}>
       <Grid item xs={4}>
-        <Typography variant="h4">
-          {t_i18n('Status')}
-        </Typography>
-        <Paper
-          variant="outlined"
-          style={{
-            display: 'flex',
-            padding: theme.spacing(2),
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-          className="paper-for-grid"
-        >
+        <Card title={t_i18n('Status')} sx={statusSx}>
           <ItemBoolean
             neutralLabel="In progress"
             label="Synchronized"
@@ -84,43 +74,25 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
               color="primary"
             />
           )}
-        </Paper>
+        </Card>
       </Grid>
       <Grid item xs={4}>
-        <Typography variant="h4">
-          {t_i18n('Last modification date')}
-        </Typography>
-        <Paper
-          variant="outlined"
-          style={{
-            display: 'flex',
-            padding: theme.spacing(2),
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-          className="paper-for-grid"
+        <Card
+          title={t_i18n('Last modification date')}
+          sx={statusSx}
         >
           <div>{fldt(refreshDate)}</div>
           <UpdateOutlined color="primary" style={{ fontSize: 40 }} />
-        </Paper>
+        </Card>
       </Grid>
       <Grid item xs={4}>
-        <Typography variant="h4">
-          {t_i18n('Current cache version date')}
-        </Typography>
-        <Paper
-          variant="outlined"
-          style={{
-            display: 'flex',
-            padding: theme.spacing(2),
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-          className="paper-for-grid"
+        <Card
+          title={t_i18n('Current cache version date')}
+          sx={statusSx}
         >
           <div>{fldt(cacheDate)}</div>
           <EventRepeatOutlined color="primary" style={{ fontSize: 40 }} />
-        </Paper>
+        </Card>
       </Grid>
     </Grid>
   );

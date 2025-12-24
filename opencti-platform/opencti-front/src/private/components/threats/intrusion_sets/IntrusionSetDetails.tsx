@@ -1,6 +1,5 @@
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
@@ -8,7 +7,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { BullseyeArrow, ArmFlexOutline } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
-import { useTheme } from '@mui/material/styles';
 import { IntrusionSetDetails_intrusionSet$data } from '@components/threats/intrusion_sets/__generated__/IntrusionSetDetails_intrusionSet.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,6 +14,7 @@ import IntrusionSetLocations from './IntrusionSetLocations';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ImageCarousel, { ImagesData } from '../../../../components/ImageCarousel';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Card from '../../../../components/common/card/Card';
 
 type IntrusionSetDetailsProps = {
   intrusionSet: IntrusionSetDetails_intrusionSet$data;
@@ -23,7 +22,6 @@ type IntrusionSetDetailsProps = {
 
 const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps) => {
   const { t_i18n, fldt } = useFormatter();
-  const theme = useTheme();
 
   const imagesCarousel: { images: ImagesData } = {
     images: {
@@ -37,18 +35,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
 
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4">
-        {t_i18n('Details')}
-      </Typography>
-      <Paper
-        sx={{
-          marginTop: theme.spacing(1),
-          padding: '15px',
-          borderRadius: '4px',
-        }}
-        className="paper-for-grid"
-        variant="outlined"
-      >
+      <Card title={t_i18n('Details')}>
         <Grid container spacing={3}>
           <Grid item xs={hasImages ? 7 : 6}>
             <Grid container spacing={3}>
@@ -191,7 +178,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             </FieldOrEmpty>
           </Grid>
         </Grid>
-      </Paper>
+      </Card>
     </div>
   );
 };

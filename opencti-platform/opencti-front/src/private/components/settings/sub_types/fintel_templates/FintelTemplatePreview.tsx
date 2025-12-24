@@ -1,7 +1,5 @@
-import React, { CSSProperties, useEffect, useState } from 'react';
-import { Paper } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/styles';
-import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
 import { FintelDesign } from '@components/common/form/FintelDesignField';
 import { useFintelTemplateContext } from './FintelTemplateContext';
@@ -12,6 +10,7 @@ import useFileFromTemplate from '../../../../../utils/outcome_template/engine/us
 import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
 import PdfViewer from '../../../../../components/PdfViewer';
 import { FintelTemplatePreview_template$key } from './__generated__/FintelTemplatePreview_template.graphql';
+import Card from '../../../../../components/common/card/Card';
 
 const previewFragment = graphql`
   fragment FintelTemplatePreview_template on FintelTemplate {
@@ -67,12 +66,6 @@ const FintelTemplatePreview = ({
     data,
   );
 
-  const paperStyle: CSSProperties = {
-    padding: theme.spacing(2),
-    flex: 1,
-    overflow: 'hidden',
-  };
-
   const buildPreview = async (
     scoId: string,
     scoName: string,
@@ -115,21 +108,15 @@ const FintelTemplatePreview = ({
     }}
     >
       <div style={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t_i18n('Configuration')}
-        </Typography>
-        <Paper style={paperStyle} variant="outlined">
+        <Card title={t_i18n('Configuration')}>
           <FintelTemplatePreviewForm
             onChange={(values) => setFormValues(values)}
           />
-        </Paper>
+        </Card>
       </div>
 
       <div style={{ flex: 5, display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t_i18n('Preview')}
-        </Typography>
-        <Paper style={paperStyle} variant="outlined">
+        <Card title={t_i18n('Preview')}>
           {pdf ? (
             <PdfViewer pdf={pdf} />
           ) : (
@@ -143,7 +130,7 @@ const FintelTemplatePreview = ({
               {t_i18n('Please select an entity on the left form to preview the template')}
             </div>
           )}
-        </Paper>
+        </Card>
       </div>
     </div>
   );

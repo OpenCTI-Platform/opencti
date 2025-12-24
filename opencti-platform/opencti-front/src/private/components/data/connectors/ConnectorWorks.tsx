@@ -9,6 +9,7 @@ import { ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQue
 import { ConnectorWorks_data$data } from './__generated__/ConnectorWorks_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
+import Card from '../../../../components/common/card/Card';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -59,19 +60,13 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
 
   return (
     <>
-      <Typography variant="h4" gutterBottom={true}>
-        {inProgress ? t_i18n('In progress works') : t_i18n('Completed works')}{` (${works.length})`}
-      </Typography>
       <div>
         {works.length === 0 && (
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-          >
+          <Card title={`${inProgress ? t_i18n('In progress works') : t_i18n('Completed works')}${` (${works.length})`}`}>
             <Typography align="center">
               {t_i18n('No work')}
             </Typography>
-          </Paper>
+          </Card>
         )}
         {works.map((workEdge) => {
           const work = workEdge?.node;

@@ -926,14 +926,12 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
 
   return (
     <>
-      { }
       {variant === 'inLine' && (
         <IconButton
           color="primary"
           aria-label="Label"
           onClick={() => setOpen(true)}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large"
+          size="small"
         >
           <Add fontSize="small" />
         </IconButton>
