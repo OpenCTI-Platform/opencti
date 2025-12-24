@@ -95,7 +95,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_EMAIL_TEMPLATE,
   ENTITY_TYPE_FORM,
 ];
-const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
+const HISTORY_OBJECTS = [ENTITY_TYPE_WORK, ENTITY_TYPE_HISTORY];
 
 export const isInternalObject = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_INTERNAL_OBJECT) || type === ABSTRACT_INTERNAL_OBJECT;
 export const isDatedInternalObject = (type: string) => DATED_INTERNAL_OBJECTS.includes(type);

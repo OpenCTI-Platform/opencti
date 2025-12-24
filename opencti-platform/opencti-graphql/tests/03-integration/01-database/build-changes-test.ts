@@ -15,7 +15,7 @@ describe('buildChanges standard behavior', async () => {
     ];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
-      field: 'Description',
+      field: 'description',
       previous: ['description'],
       new: ['new description'],
     }]);
@@ -30,7 +30,7 @@ describe('buildChanges standard behavior', async () => {
     ];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
-      field: 'Description',
+      field: 'description',
       previous: [],
       new: ['description'],
     }]);
@@ -45,7 +45,7 @@ describe('buildChanges standard behavior', async () => {
     ];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
     expect(changes).toEqual([{
-      field: 'Description',
+      field: 'description',
       previous: ['description'],
       new: [],
     }]);
@@ -53,7 +53,7 @@ describe('buildChanges standard behavior', async () => {
   it('should build changes for "Malware types" added', async () => {
     const inputs = [{ key: 'malware_types', previous: ['backdoor'], value: ['backdoor', 'bootkit'] }];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
-    expect(changes).toEqual([{ field: 'Malware types', previous: ['backdoor'], new: ['backdoor', 'bootkit'], added: ['bootkit'], removed: [] }]);
+    expect(changes).toEqual([{ field: 'malware_types', previous: ['backdoor'], new: ['backdoor', 'bootkit'], added: ['bootkit'], removed: [] }]);
   });
   it('should build changes for "Malware types" removed', async () => {
     const inputs = [
@@ -64,7 +64,7 @@ describe('buildChanges standard behavior', async () => {
       },
     ];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_MALWARE, inputs);
-    expect(changes).toEqual([{ field: 'Malware types', previous: ['backdoor', 'bootkit'], new: ['backdoor'], added: [], removed: ['bootkit'] }]);
+    expect(changes).toEqual([{ field: 'malware_types', previous: ['backdoor', 'bootkit'], new: ['backdoor'], added: [], removed: ['bootkit'] }]);
   });
   it('should build changes for "participant" added ', async () => {
     const inputs = [{
@@ -74,10 +74,12 @@ describe('buildChanges standard behavior', async () => {
         entity_type: 'User',
         id: '9b854803-7158-4e4e-a492-f8845ac33aad',
         name: 'User 1',
-        user_email: 'user1@user1.com' }] }];
+        user_email: 'user1@user1.com',
+      }],
+    }];
 
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Participants', previous: [], new: ['User 1'], added: ['User 1'], removed: [] }]);
+    expect(changes).toEqual([{ field: 'objectParticipant', previous: [], new: ['User 1'], added: ['User 1'], removed: [] }]);
   });
   it('should build changes for second "participant" added ', async () => {
     const inputs = [{
@@ -96,7 +98,7 @@ describe('buildChanges standard behavior', async () => {
       }] }];
 
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Participants', previous: ['User 1'], new: ['User 1', 'User 2'], added: ['User 2'], removed: [] }]);
+    expect(changes).toEqual([{ field: 'objectParticipant', previous: ['User 1'], new: ['User 1', 'User 2'], added: ['User 2'], removed: [] }]);
   });
   it('should build changes for "marking" added', async () => {
     const inputs = [
@@ -140,7 +142,7 @@ describe('buildChanges standard behavior', async () => {
     ];
 
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Markings', previous: [], new: ['TLP:GREEN'], added: ['TLP:GREEN'], removed: [] }]);
+    expect(changes).toEqual([{ field: 'objectMarking', previous: [], new: ['TLP:GREEN'], added: ['TLP:GREEN'], removed: [] }]);
   });
   it('should build changes for second "marking" added', async () => {
     const inputs = [
@@ -237,7 +239,7 @@ describe('buildChanges standard behavior', async () => {
     ];
 
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Markings', previous: ['PAP:GREEN'], new: ['PAP:GREEN', 'TLP:GREEN'], added: ['TLP:GREEN'], removed: [] }]);
+    expect(changes).toEqual([{ field: 'objectMarking', previous: ['PAP:GREEN'], new: ['PAP:GREEN', 'TLP:GREEN'], added: ['TLP:GREEN'], removed: [] }]);
   });
   it('should build changes for second "marking" removed', async () => {
     const inputs = [
@@ -371,12 +373,12 @@ describe('buildChanges standard behavior', async () => {
     ];
 
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Markings', previous: ['PAP:GREEN', 'TLP:GREEN'], new: ['PAP:GREEN'], added: [], removed: ['TLP:GREEN'] }]);
+    expect(changes).toEqual([{ field: 'objectMarking', previous: ['PAP:GREEN', 'TLP:GREEN'], new: ['PAP:GREEN'], added: [], removed: ['TLP:GREEN'] }]);
   });
   it('should build changes for integer (like confidence level)', async () => {
     const inputs = [{ key: 'confidence', previous: [58], value: [52] }];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Confidence', previous: [58], new: [52] }]);
+    expect(changes).toEqual([{ field: 'confidence', previous: [58], new: [52] }]);
   });
   it('should build changes for labels removed', async () => {
     const inputs
@@ -509,7 +511,7 @@ describe('buildChanges standard behavior', async () => {
         },
       ];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Label', previous: ['anti-sandbox', 'angie'], new: ['angie'], removed: ['anti-sandbox'], added: [] }]);
+    expect(changes).toEqual([{ field: 'objectLabel', previous: ['anti-sandbox', 'angie'], new: ['angie'], removed: ['anti-sandbox'], added: [] }]);
   });
   it('should build changes for status replaced', async () => {
     // we use data-initialization statuses
@@ -520,7 +522,7 @@ describe('buildChanges standard behavior', async () => {
       value: [statuses[1].id],
     }];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Workflow status', previous: [statuses[0].name], new: [statuses[1].name] }]);
+    expect(changes).toEqual([{ field: 'x_opencti_workflow_id', previous: [statuses[0].name], new: [statuses[1].name] }]);
   });
   it('should build changes for creator add', async () => {
     const securityId = await getUserIdByEmail(USER_SECURITY.email);
@@ -531,6 +533,6 @@ describe('buildChanges standard behavior', async () => {
       value: [securityId, editorId],
     }];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{ field: 'Creators', previous: ['security@opencti.io'], new: ['security@opencti.io', 'editor@opencti.io'], added: ['editor@opencti.io'], removed: [] }]);
+    expect(changes).toEqual([{ field: 'creator_id', previous: ['security@opencti.io'], new: ['security@opencti.io', 'editor@opencti.io'], added: ['editor@opencti.io'], removed: [] }]);
   });
 });

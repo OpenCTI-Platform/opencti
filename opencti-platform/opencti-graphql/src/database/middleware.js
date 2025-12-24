@@ -201,7 +201,7 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, getKeyName, getKeyValuesFromPatchElements } from './generate-message';
+import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, getKeyValuesFromPatchElements } from './generate-message';
 import {
   authorizedMembers,
   authorizedMembersActivationDate,
@@ -2062,24 +2062,56 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
 
-const buildAttribute = async (context, user, key, array) => {
+// Convert an input attribute value to his "translated" value for human
+const buildAttribute = async (context, user, entityType, key, array) => {
+  const attributeDef = schemaAttributesDefinition.getAttribute(entityType, key);
+  const refDef = schemaRelationsRefDefinition.getRelationRef(entityType, key);
+  const attribute = attributeDef || refDef;
   const results = await Promise.all(array.map(async (item) => {
     if (!item) {
       return item;
     }
-    if (typeof item === 'object') {
-      if (item?.entity_type !== undefined) {
-        return extractEntityRepresentativeName(item, 250);
-      } else {
-        return item?.toString();
+    // Complex object
+    if (attribute.type === 'ref') {
+      return extractEntityRepresentativeName(item, 250);
+    }
+    if (attribute.type === 'object') {
+      // DO WE NEED TO HAVE SPECIFIC HUMAN CONVERTER FOR EACH COMPLEX OBJECT?
+      // If unknown
+      return JSON.stringify(item);
+    }
+    if (attribute.type === 'string' && attribute.format === 'id') {
+      // Specific case for x_opencti_workflow_id
+      // It can't be a simple resolution, because the name is located on the template
+      if (key === X_WORKFLOW_ID) {
+        const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
+        const status = platformStatuses.find((p) => p.id === item);
+        if (status) {
+          return status.name;
+        }
       }
-    } else if (typeof item === 'string' && key === creatorsAttribute.name) {
-      const users = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_USER);
-      const creator = users.get(item);
-      if (creator) {
-        return extractEntityRepresentativeName(creator, 250);
+      // Standard id case
+      const resolved = await internalLoadById(context, user, item);
+      if (resolved) {
+        return extractEntityRepresentativeName(resolved, 250);
       }
     }
+    // Native object
+    if (attribute.type === 'string') {
+      // DO WE NEED TO TRUNCATE TO PREVENT OVERSIZING THE HISTORY?
+      return item;
+    }
+    if (attribute.type === 'date') {
+      return item;
+    }
+    if (attribute.type === 'boolean') {
+      return item;
+    }
+    if (attribute.type === 'numeric') {
+      return item;
+    }
+    // Native type
+    logApp.warn(`Unknown buildAttribute type ${attribute.type} for key ${key}`);
     return item;
   }));
   return results.filter((item) => item !== null && item !== undefined);
@@ -2088,22 +2120,19 @@ const buildAttribute = async (context, user, key, array) => {
 export const buildChanges = async (context, user, entityType, inputs) => {
   const changes = [];
   for (const input of inputs) {
-    const { key, previous, value, operation } = input;
-    if (!key) continue;
-    const field = getKeyName(entityType, key);
-    const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
-    const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
-    let isMultiple = false;
-    if (attributeDefinition) {
-      isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
-    } else if (relationsRefDefinition) {
-      isMultiple = relationsRefDefinition.multiple;
+    const { key: field, previous, value, operation } = input;
+    if (!field) {
+      continue;
     }
+    const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, field);
+    const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, field);
+    const attribute = attributeDefinition || relationsRefDefinition;
+    const isMultiple = attribute.multiple;
 
     const previousArrayFull = Array.isArray(previous) ? previous : [previous];
     const valueArrayFull = Array.isArray(value) ? value : [value];
-    const previousArray = await buildAttribute(context, user, key, previousArrayFull);
-    const valueArray = await buildAttribute(context, user, key, valueArrayFull);
+    const previousArray = await buildAttribute(context, user, entityType, field, previousArrayFull);
+    const valueArray = await buildAttribute(context, user, entityType, field, valueArrayFull);
 
     if (isMultiple) {
       let added = [];
@@ -2121,7 +2150,6 @@ export const buildChanges = async (context, user, entityType, inputs) => {
         added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
         newValues = valueArray;
       }
-
       if (added.length > 0 || removed.length > 0) {
         changes.push({
           field,
@@ -2131,27 +2159,12 @@ export const buildChanges = async (context, user, entityType, inputs) => {
           removed,
         });
       }
-    } else if (isMultiple === false) {
-      const isStatusChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
-      const platformStatuses = isStatusChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
-      const resolvedValue = (array) => {
-        if (field === 'Workflow status') {
-          // we want the status name and not its internal id
-          const statusId = array[0];
-          const status = statusId ? platformStatuses.find((p) => p.id === statusId) : statusId;
-          return status ? [status.name] : null;
-        }
-        return array;
-      };
-
+    } else {
       changes.push({
         field,
-        previous: resolvedValue(previousArray),
-        new: resolvedValue(valueArray),
+        previous: previousArray,
+        new: valueArray,
       });
-    } else {
-      // This should not happen so better at least log at info level to be able to debug.
-      logApp.info('Changes cannot be computed', { inputs, entityType });
     }
   }
   return changes;

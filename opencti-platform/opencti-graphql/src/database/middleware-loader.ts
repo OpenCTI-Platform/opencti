@@ -64,7 +64,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
   after?: string | undefined | null;
   orderBy?: any;
   baseData?: boolean;
-  orderMode?: InputMaybe<OrderingMode>;
+  orderMode?: InputMaybe<OrderingMode> | OrderingMode;
   filters?: FilterGroupWithNested | null;
   noFiltersChecking?: boolean;
   callback?: (result: Array<T>) => Promise<boolean | void>;

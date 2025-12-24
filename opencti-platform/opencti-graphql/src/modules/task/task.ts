@@ -1,10 +1,11 @@
 import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { NAME_FIELD, normalizeName } from '../../schema/identifier';
+import { NAME_FIELD, normalizeName, X_WORKFLOW_ID } from '../../schema/identifier';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { createdBy, objectAssignee, objectOrganization, objectParticipant } from '../../schema/stixRefRelationship';
 import { convertCaseTaskToStix_2_1 } from './task-converter';
 import type { StixTask, StoreEntityTask } from './task-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from './task-types';
+import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 
 const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
   type: {
@@ -33,7 +34,7 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'due_date', label: 'Due date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_opencti_workflow_id', label: 'Workflow status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: X_WORKFLOW_ID, label: 'Workflow status', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_STATUS], mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'content_mapping', label: 'Content mapping', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],

@@ -39,6 +39,7 @@ type BasicDefinition = {
   editDefault: boolean; // TO CHECK ?????
   update?: boolean; // If attribute can be updated (null = true)
   featureFlag?: string; // if attribute is on feature flag, null by default
+  requiredCapabilities?: string[];
 };
 
 export type MappingDefinition = AttributeDefinition & {
@@ -277,6 +278,7 @@ export const authorizedMembers: AttributeDefinition = {
   multiple: true,
   upsert: false,
   isFilterable: false,
+  requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
   mappings: [
     id,
     { name: 'access_right', label: 'Access right', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
