@@ -67,7 +67,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                 } else if (unit === 'D') {
                   durationString = `P${value}D`;
                 } else if (unit === 'H') {
-                  durationString = `P${value}H`;
+                  durationString = `PT${value}H`;
                 } else {
                   durationString = `PT${value}${unit}`;
                 }
