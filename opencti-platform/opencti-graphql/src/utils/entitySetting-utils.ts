@@ -5,26 +5,35 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ENTITY_TYPE_CONTAINER,
   INPUT_AUTHORIZED_MEMBERS,
+  INPUT_GRANTED_REFS,
   INPUT_MARKINGS,
-} from '../../schema/general';
-import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
-import { UnsupportedError } from '../../config/errors';
-import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './entitySetting-types';
-import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
-import { getEntitiesListFromCache } from '../../database/cache';
-import { MEMBER_ACCESS_CREATOR, SYSTEM_USER } from '../../utils/access';
-import type { AuthContext } from '../../types/user';
-import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
-import { isStixCyberObservable } from '../../schema/stixCyberObservable';
-import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
-import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
-import { isBooleanAttribute, isNumericAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { isEmptyField } from '../../database/utils';
-import type { MandatoryType } from '../../schema/attribute-definition';
-import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+} from '../schema/general';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import {
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  isStixDomainObject,
+  isStixDomainObjectContainer,
+  STIX_ORGANIZATIONS_RESTRICTED,
+  STIX_ORGANIZATIONS_UNRESTRICTED,
+} from '../schema/stixDomainObject';
+import { UnsupportedError } from '../config/errors';
+import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { getEntitiesListFromCache } from '../database/cache';
+import { MEMBER_ACCESS_CREATOR, SYSTEM_USER } from './access';
+import type { AuthContext } from '../types/user';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixCyberObservable } from '../schema/stixCyberObservable';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
+import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
+import { isBooleanAttribute, isNumericAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import { isEmptyField } from '../database/utils';
+import type { MandatoryType } from '../schema/attribute-definition';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { getParentTypes } from '../schema/schemaUtils';
 
 export type typeAvailableSetting = boolean | string;
 
@@ -144,52 +153,61 @@ export const getDefaultValues = (attributeConfiguration: AttributeConfiguration,
   return undefined;
 };
 
-export const fillDefaultValues = (user: any, input: any, entitySetting: any) => {
-  const attributesConfiguration = getAttributesConfiguration(entitySetting);
-  if (!attributesConfiguration) {
-    return input;
-  }
+export const isSegregationEntityCheck = (targetType: BasicStoreEntityEntitySetting['target_type']) =>
+  !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(targetType).includes(o))
+  || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === targetType || getParentTypes(targetType).includes(o));
+
+export const fillDefaultValues = (context: AuthContext, user: any, input: any, entitySetting: any) => {
   const filledValues = new Map();
-  attributesConfiguration.filter((attr) => attr.default_values)
-    .forEach((attr) => {
-      // Do not compute default value if we already have a value in the input.
-      // Empty is a valid value (i.e. [] for arrays or "" for strings).
-      if (input[attr.name] === undefined || input[attr.name] === null) {
-        const attributeDef = schemaAttributesDefinition.getAttribute(entitySetting.target_type, attr.name);
-        const refDef = schemaRelationsRefDefinition.getRelationRef(entitySetting.target_type, attr.name);
-        let isMultiple = false;
-        if (attributeDef) {
-          isMultiple = attributeDef.multiple;
-        } else if (refDef) {
-          isMultiple = refDef.multiple;
-        }
-        const defaultValue = getDefaultValues(attr, isMultiple);
-
-        const isNumeric = isNumericAttribute(attr.name);
-        const isBoolean = isBooleanAttribute(attr.name);
-        let parsedValue: any = defaultValue;
-        if (isNumeric) parsedValue = Number(defaultValue);
-        if (isBoolean) parsedValue = defaultValue === 'true';
-
-        if (attr.name === INPUT_AUTHORIZED_MEMBERS && parsedValue) {
-          const defaultAuthorizedMembers = (parsedValue as string[]).map((v) => JSON.parse(v));
-          // Replace dynamic creator rule with the id of the user making the query.
-          const creatorRule = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
-          if (creatorRule) {
-            creatorRule.id = user.id;
+  if (!input[INPUT_GRANTED_REFS] && entitySetting?.target_type) {
+    const isSegregationEntity = isSegregationEntityCheck(entitySetting.target_type);
+    if (isSegregationEntity && !context.user_inside_platform_organization && user?.organizations?.length > 0) {
+      filledValues.set(INPUT_GRANTED_REFS, user.organizations);
+    }
+  }
+  const attributesConfiguration = getAttributesConfiguration(entitySetting);
+  if (attributesConfiguration) {
+    attributesConfiguration.filter((attr) => attr.default_values)
+      .forEach((attr) => {
+        // Do not compute default value if we already have a value in the input.
+        // Empty is a valid value (i.e. [] for arrays or "" for strings).
+        if (input[attr.name] === undefined || input[attr.name] === null) {
+          const attributeDef = schemaAttributesDefinition.getAttribute(entitySetting.target_type, attr.name);
+          const refDef = schemaRelationsRefDefinition.getRelationRef(entitySetting.target_type, attr.name);
+          let isMultiple = false;
+          if (attributeDef) {
+            isMultiple = attributeDef.multiple;
+          } else if (refDef) {
+            isMultiple = refDef.multiple;
           }
-          filledValues.set(attr.name, defaultAuthorizedMembers);
-        } else if (attr.name === INPUT_MARKINGS && parsedValue) {
-          const defaultMarkings = user?.default_marking ?? [];
-          const globalDefaultMarking = (defaultMarkings.find((entry: any) => entry.entity_type === 'GLOBAL')?.values ?? []).map((m: any) => m.id);
-          if (!isEmptyField(globalDefaultMarking)) {
-            filledValues.set(INPUT_MARKINGS, globalDefaultMarking);
+          const defaultValue = getDefaultValues(attr, isMultiple);
+
+          const isNumeric = isNumericAttribute(attr.name);
+          const isBoolean = isBooleanAttribute(attr.name);
+          let parsedValue: any = defaultValue;
+          if (isNumeric) parsedValue = Number(defaultValue);
+          if (isBoolean) parsedValue = defaultValue === 'true';
+
+          if (attr.name === INPUT_AUTHORIZED_MEMBERS && parsedValue) {
+            const defaultAuthorizedMembers = (parsedValue as string[]).map((v) => JSON.parse(v));
+            // Replace dynamic creator rule with the id of the user making the query.
+            const creatorRule = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
+            if (creatorRule) {
+              creatorRule.id = user.id;
+            }
+            filledValues.set(attr.name, defaultAuthorizedMembers);
+          } else if (attr.name === INPUT_MARKINGS && parsedValue) {
+            const defaultMarkings = user?.default_marking ?? [];
+            const globalDefaultMarking = (defaultMarkings.find((entry: any) => entry.entity_type === 'GLOBAL')?.values ?? []).map((m: any) => m.id);
+            if (!isEmptyField(globalDefaultMarking)) {
+              filledValues.set(INPUT_MARKINGS, globalDefaultMarking);
+            }
+          } else {
+            filledValues.set(attr.name, parsedValue);
           }
-        } else {
-          filledValues.set(attr.name, parsedValue);
         }
-      }
-    });
+      });
+  }
 
   return { ...input, ...Object.fromEntries(filledValues) };
 };
