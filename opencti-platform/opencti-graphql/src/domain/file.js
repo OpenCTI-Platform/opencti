@@ -22,7 +22,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { UnsupportedError } from '../config/errors';
 import { isDraftFile } from '../database/draft-utils';
 import { askJobImport } from './connector';
-import { addWorkbenchUploadCount } from '../manager/telemetryManager';
+import { addTelemetryCount, TELEMETRY_COUNT } from '../manager/telemetryManager';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -129,7 +129,7 @@ export const uploadPending = async (context, user, args) => {
 
   const { upload: up } = await uploadToStorage(context, user, 'import/pending', finalFile, { meta, file_markings, errorOnExisting, entity });
   const contextData = buildContextDataForFile(entity, 'import/pending', up.name, up.metaData.file_markings);
-  await addWorkbenchUploadCount();
+  await addTelemetryCount(TELEMETRY_COUNT.GAUGE_WORKBENCH_UPLOAD);
   await publishUserAction({
     user,
     event_type: 'file',

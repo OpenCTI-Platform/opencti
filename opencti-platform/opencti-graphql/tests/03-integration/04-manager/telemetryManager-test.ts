@@ -5,7 +5,7 @@ import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentele
 import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../../../src/telemetry/TelemetryMeterManager';
 import { PLATFORM_VERSION } from '../../../src/config/conf';
-import { addDisseminationCount, fetchTelemetryData, TELEMETRY_GAUGE_DISSEMINATION, TELEMETRY_GAUGE_DRAFT_CREATION } from '../../../src/manager/telemetryManager';
+import { addTelemetryCount, fetchTelemetryData, TELEMETRY_COUNT } from '../../../src/manager/telemetryManager';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../../../src/database/redis';
 import { waitInSec } from '../../../src/database/utils';
 
@@ -16,7 +16,7 @@ describe('Telemetry manager test coverage', () => {
       [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
       [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
       [SEMRESATTRS_SERVICE_INSTANCE_ID]: 'api-test-telemetry-id',
-      'service.instance.creation': new Date().toUTCString()
+      'service.instance.creation': new Date().toUTCString(),
     });
     const resource = Resource.default().merge(filigranResource);
 
@@ -26,25 +26,25 @@ describe('Telemetry manager test coverage', () => {
     filigranTelemetryMeterManager.registerFiligranTelemetry();
     // AND Given starting from clean state in redis
     await redisClearTelemetry();
-    const disseminationGaugeValueReset = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
+    const disseminationGaugeValueReset = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_DISSEMINATION);
     expect(disseminationGaugeValueReset).toBe(0);
-    const draftGaugeValue = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_CREATION);
+    const draftGaugeValue = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_DRAFT_CREATION);
     expect(draftGaugeValue).toBe(0);
 
     // AND GIVEN some "user event" from this node
     const DISSEMINATION_EVENT_NODE1 = 5;
     const DISSEMINATION_EVENT_NODE2 = 3;
     for (let i = 0; i < DISSEMINATION_EVENT_NODE1; i += 1) {
-      await addDisseminationCount();
+      await addTelemetryCount(TELEMETRY_COUNT.GAUGE_DISSEMINATION);
     }
     // AND GIVEN some "user event" from another node (simulated by a direct redis update)
-    await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, DISSEMINATION_EVENT_NODE2);
+    await redisSetTelemetryAdd(TELEMETRY_COUNT.GAUGE_DISSEMINATION, DISSEMINATION_EVENT_NODE2);
 
     const loopCount = 3; // 3' max
     let loopCurrent = 0;
 
     const isRedisUpdatedCallback = async () => {
-      const disseminationGaugeValue = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
+      const disseminationGaugeValue = await redisGetTelemetry(TELEMETRY_COUNT.GAUGE_DISSEMINATION);
       return disseminationGaugeValue === (DISSEMINATION_EVENT_NODE1 + DISSEMINATION_EVENT_NODE2);
     };
     let isRedisUpdated = await isRedisUpdatedCallback();

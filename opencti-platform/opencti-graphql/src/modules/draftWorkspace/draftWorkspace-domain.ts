@@ -21,7 +21,7 @@ import {
   type QueryDraftWorkspaceSightingRelationshipsArgs,
 } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
+import { addTelemetryCount, TELEMETRY_COUNT } from '../../manager/telemetryManager';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
@@ -215,7 +215,7 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
       await loadDraftElement(contextInDraft, user, draftInEntity);
     }
   }
-  await addDraftCreationCount();
+  await addTelemetryCount(TELEMETRY_COUNT.GAUGE_DRAFT_CREATION);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -387,7 +387,7 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
   await notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, element, user);
   await deleteDraftContextFromUsers(context, user, draft_id);
 
-  await addDraftValidationCount();
+  await addTelemetryCount(TELEMETRY_COUNT.GAUGE_DRAFT_VALIDATION);
 
   return work;
 };

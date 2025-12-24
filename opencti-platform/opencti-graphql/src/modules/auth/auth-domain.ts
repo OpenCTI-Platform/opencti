@@ -16,7 +16,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
 import { logApp } from '../../config/conf';
 import type { SendMailArgs } from '../../types/smtp';
-import { addForgotPasswordCount } from '../../manager/telemetryManager';
+import { addTelemetryCount, TELEMETRY_COUNT } from '../../manager/telemetryManager';
 import { sanitizeSettings } from '../../utils/templateContextSanitizer';
 import { safeRender } from '../../utils/safeEjs.client';
 
@@ -100,7 +100,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       message: `Failed to send password reset code to ${input.email}`,
     });
   }
-  await addForgotPasswordCount();
+  await addTelemetryCount(TELEMETRY_COUNT.FORGOT_PASSWORD);
 
   // In all cases, return the transaction ID
   return transactionId;

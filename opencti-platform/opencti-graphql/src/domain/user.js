@@ -81,7 +81,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
+import { addTelemetryCount, TELEMETRY_COUNT } from '../manager/telemetryManager';
 import { sendMail, smtpComputeFrom } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
@@ -684,7 +684,7 @@ export const sendEmailToUser = async (context, user, input) => {
     identifier: `user-${targetUser.id}`,
     category: 'user-notification',
   });
-  await addUserEmailSendCount();
+  await addTelemetryCount(TELEMETRY_COUNT.GAUGE_USER_EMAIL_SEND);
   await publishUserAction({
     user,
     event_type: 'command',
@@ -866,7 +866,7 @@ export const roleAddRelation = async (context, user, roleId, input) => {
   });
   await roleUsersCacheRefresh(context, user, roleId);
   if (input.relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT) {
-    await addCapabilitiesInDraftUpdatedCount();
+    await addTelemetryCount(TELEMETRY_COUNT.GAUGE_CAPABILITIES_IN_DRAFT_UPDATED);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
 };
@@ -891,7 +891,7 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
   });
   await roleUsersCacheRefresh(context, user, roleId);
   if (input.relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT) {
-    await addCapabilitiesInDraftUpdatedCount();
+    await addTelemetryCount(TELEMETRY_COUNT.GAUGE_CAPABILITIES_IN_DRAFT_UPDATED);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
@@ -971,14 +971,14 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     // Turn User into Service Account
     if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
       inputs.push({ key: 'password', value: [null] });
-      await addUserIntoServiceAccountCount();
+      await addTelemetryCount(TELEMETRY_COUNT.GAUGE_USER_INTO_SERVICE_ACCOUNT);
     }
     // Turn Service Account into User
     if (input.key === 'user_service_account' && userToUpdate.user_service_account && input.value[0] === false) {
       const userPassword = uuid();
       await checkPasswordFromPolicy(context, userPassword);
       inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
-      await addServiceAccountIntoUserCount();
+      await addTelemetryCount(TELEMETRY_COUNT.GAUGE_SERVICE_ACCOUNT_INTO_USER);
     }
 
     if (!skipThisInput) {
