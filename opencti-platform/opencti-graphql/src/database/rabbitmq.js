@@ -58,7 +58,7 @@ export const config = () => {
   };
 };
 
-const amqpHttpClient = async () => {
+export const amqpHttpClient = async () => {
   const ssl = USE_SSL_MGMT ? 's' : '';
   const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
   const httpClientOptions = {
@@ -107,7 +107,7 @@ export const getConnectorQueueDetails = async (connectorId) => {
   }
 };
 
-const amqpExecute = async (execute) => {
+export const amqpExecute = async (execute) => {
   const connOptions = USE_SSL ? {
     ...amqpCred(),
     ...configureCA(RABBITMQ_CA),
@@ -417,6 +417,65 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
                   logApp.error('[QUEUEING] Consumption fail', {
                     connectorId,
                     cause: consumeError,
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    } catch (globalError) {
+      reject(globalError);
+    }
+  });
+};
+
+export const streamConsumeQueue = async (queueName, connectionSetterCallback, callback, consumeArgs = {}) => {
+  const connOptions = USE_SSL ? {
+    ...amqpCred(),
+    ...configureCA(RABBITMQ_CA),
+    cert: RABBITMQ_CA_CERT,
+    key: RABBITMQ_CA_KEY,
+    pfx: RABBITMQ_CA_PFX,
+    passphrase: RABBITMQ_CA_PASSPHRASE,
+    rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
+  } : amqpCred();
+  return new Promise((_, reject) => {
+    try {
+      amqp.connect(amqpUri(), connOptions, (err, conn) => {
+        if (err) {
+          reject(err);
+        } else { // Connection success
+          logApp.debug('[QUEUEING] Starting connector queue consuming', { queueName });
+          conn.on('close', (onConnectError) => {
+            if (onConnectError) {
+              reject(onConnectError);
+            }
+          });
+          conn.on('error', (onConnectError) => {
+            reject(onConnectError);
+          });
+          connectionSetterCallback(conn);
+          conn.createChannel((channelError, channel) => {
+            if (channelError) {
+              reject(channelError);
+            } else {
+              channel.on('error', (onChannelError) => {
+                reject(onChannelError);
+              });
+              channel.prefetch(1);
+              channel.consume(queueName, (data) => {
+                const ackCallback = () => { channel.ack(data); };
+                if (data !== null) {
+                  callback(data.content.toString(), ackCallback);
+                } else {
+                  ackCallback();
+                }
+              }, { arguments: consumeArgs }, (consumeError) => {
+                if (consumeError) {
+                  logApp.error('[QUEUEING] Consumption fail', {
+                    queueName,
+                    cause: consumeError
                   });
                 }
               });
