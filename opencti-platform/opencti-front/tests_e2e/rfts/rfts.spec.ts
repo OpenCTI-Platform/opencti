@@ -5,7 +5,7 @@ import CaseRftPage from '../model/caseRft.pageModel';
 import CaseRftDetailsPage from '../model/caseRftDetails.pageModel';
 import CaseRftFormPage from '../model/form/caseRftForm.pageModel';
 
-test('Request for takedown CRUD', async ({ page }) => {
+test('Request for takedown CRUD', { tag: ['@ce'] }, async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
   const caseRftPage = new CaseRftPage(page);
   const caseRftDetailsPage = new CaseRftDetailsPage(page);

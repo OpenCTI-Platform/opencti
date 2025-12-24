@@ -17,7 +17,7 @@ import DashboardWidgetsPageModel from '../model/DashboardWidgets.pageModel';
 import DashboardDetailsPage from '../model/dashboardDetails.pageModel';
 import AccessRestrictionPageModel from '../model/AccessRestriction.pageModel';
 
-test('Dashboard restriction access', async ({ page }) => {
+test('Dashboard restriction access', { tag: ['@ce'] }, async ({ page }) => {
   const leftBar = new LeftBarPage(page);
   const topBar = new TopMenuProfilePage(page);
   const dashboardPage = new DashboardPage(page);

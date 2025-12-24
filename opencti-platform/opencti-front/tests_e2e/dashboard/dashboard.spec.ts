@@ -25,7 +25,7 @@ test.describe.configure({ mode: 'serial' });
  * Export/Import a dashboard.
  * Create Widget - see values - Delete Widget
  */
-test('Dashboard CRUD', async ({ page }) => {
+test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
   const dashboardPage = new DashboardPage(page);
   const dashboardForm = new DashboardFormPage(page, 'Create dashboard');

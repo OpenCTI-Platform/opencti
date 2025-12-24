@@ -3,7 +3,7 @@ import TopMenuProfilePage from './model/menu/topMenuProfile.pageModel';
 import LoginFormPageModel from './model/form/loginForm.pageModel';
 import DashboardPage from './model/dashboard.pageModel';
 
-test('test logout', async ({ page }) => {
+test('test logout', { tag: ['@ce'] }, async ({ page }) => {
   const loginPage = new LoginFormPageModel(page);
   const topMenu = new TopMenuProfilePage(page);
   const dashboardPage = new DashboardPage(page);

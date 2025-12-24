@@ -12,7 +12,7 @@ const openThemeEditMenu = async (themeName: string, page: Page) => {
     .click();
 };
 
-test('Check Logo replacement', async ({ page }) => {
+test('Check Logo replacement', { tag: ['@ce'] }, async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
 
   await page.goto('/');

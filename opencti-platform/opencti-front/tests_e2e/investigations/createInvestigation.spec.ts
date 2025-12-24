@@ -3,7 +3,7 @@ import InvestigationDetailsPage from '../model/investigationDetails.pageModel';
 import InvestigationsFormPage from '../model/form/investigationsForm.pageModel';
 import InvestigationsPage from '../model/investigations.pageModel';
 
-test('Create a new investigations page', async ({ page }) => {
+test('Create a new investigations page', { tag: ['@ce'] }, async ({ page }) => {
   const investigationsPage = new InvestigationsPage(page);
   const investigationDetailsPage = new InvestigationDetailsPage(page);
   const investigationsForm = new InvestigationsFormPage(page, 'Create investigation');

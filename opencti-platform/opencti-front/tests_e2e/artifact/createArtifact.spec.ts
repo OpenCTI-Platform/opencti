@@ -2,7 +2,7 @@ import ArtifactPage from '../model/Artifact.pageModel';
 import ArtifactImportPage from '../model/ArtifactImport.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 
-test('Artifact error message in the absence of a file.', async ({ page }) => {
+test('Artifact error message in the absence of a file.', { tag: ['@ce'] }, async ({ page }) => {
   const artifactPage = new ArtifactPage(page);
   const artifactImport = new ArtifactImportPage(page);
   await page.goto('/dashboard/observations/artifacts');

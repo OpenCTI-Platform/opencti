@@ -3,7 +3,7 @@ import { expect, test } from '../fixtures/baseFixtures';
 import InvestigationDetailsPage from '../model/investigationDetails.pageModel';
 import InvestigationsFormPage from '../model/form/investigationsForm.pageModel';
 
-test('Create a new investigation page and test update', async ({ page }) => {
+test('Create a new investigation page and test update', { tag: ['@ce'] }, async ({ page }) => {
   const investigationsPage = new InvestigationsPage(page);
   const investigationDetailsPage = new InvestigationDetailsPage(page);
   const investigationsForm = new InvestigationsFormPage(page, 'Create investigation');
