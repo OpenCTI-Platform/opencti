@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs } from '../../../src/database/utils';
+import {
+  buildPaginationFromEdges,
+  extractObjectsPirsFromInputs,
+  extractObjectsRestrictionsFromInputs,
+} from '../../../src/database/utils';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { EditOperation } from '../../../src/generated/graphql';
 
@@ -178,5 +182,19 @@ describe('Function extractObjectsPirsFromInputs()', () => {
   it('should return empty array if not a container', () => {
     const { pir_ids } = extractObjectsPirsFromInputs(pirInputs, ENTITY_TYPE_MALWARE);
     expect(pir_ids).toEqual([]);
+  });
+});
+
+describe('buildPaginationFromEdges()', () => {
+  it('should set hasNextPage=true when raw page size (edges + filteredCount) reaches limit', () => {
+    const edges = Array.from({ length: 7 }, (_, i) => ({ node: { id: i }, cursor: `c${i}` } as any));
+    const result = buildPaginationFromEdges(10, null, edges, 100, 3);
+    expect(result.pageInfo.hasNextPage).toEqual(true);
+  });
+
+  it('should set hasNextPage=false when raw page size is below limit', () => {
+    const edges = Array.from({ length: 7 }, (_, i) => ({ node: { id: i }, cursor: `c${i}` } as any));
+    const result = buildPaginationFromEdges(10, null, edges, 100, 0);
+    expect(result.pageInfo.hasNextPage).toEqual(false);
   });
 });
