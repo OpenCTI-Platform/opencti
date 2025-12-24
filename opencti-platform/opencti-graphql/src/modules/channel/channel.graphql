@@ -2,7 +2,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
-    parent_types: [String]!
+    parent_types: [String!]!
     metrics:[Metric]
     # StixObject
     representative: Representative!
