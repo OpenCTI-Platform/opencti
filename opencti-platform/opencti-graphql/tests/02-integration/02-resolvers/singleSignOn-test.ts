@@ -1,8 +1,7 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { StrategyType } from '../../../src/config/providers-configuration';
-import type { StoreEntitySingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-types';
 import type { SingleSignOnAddInput, StrategyType as StrategyTypeEnum } from '../../../src/generated/graphql';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
@@ -46,45 +45,46 @@ export const SINGLE_SIGN_ON_DELETE = gql`
 `;
 
 describe('Single Sign On', () => {
-  let createdSingleSignOn_1: StoreEntitySingleSignOn;
-  let createdSingleSignOn_2: StoreEntitySingleSignOn;
+  let createdSingleSignOn1Id: string;
+  let createdSingleSignOn2Id: string;
+  const createdSingleSighOns: string[] = [];
 
   describe('Create', async () => {
-    const createInput: SingleSignOnAddInput = {
-      name: 'test name 1',
-      strategy: StrategyType.STRATEGY_SAML as unknown as StrategyTypeEnum,
-      enabled: true,
-    };
-    const createInput2: SingleSignOnAddInput = {
-      name: 'test name 2',
-      strategy: StrategyType.STRATEGY_OPENID as unknown as StrategyTypeEnum,
-      enabled: false,
-    };
-
-    beforeAll(async () => {
+    it('should create single sign on entity', async () => {
+      const createInput: SingleSignOnAddInput = {
+        name: 'test name 1',
+        strategy: StrategyType.STRATEGY_SAML as unknown as StrategyTypeEnum,
+        enabled: true,
+      };
       const singleSignOn = await queryAsAdminWithSuccess({
         query: SINGLE_SIGN_ON_CREATE,
         variables: { input: createInput },
       });
+
+      expect(singleSignOn).toBeDefined();
+      expect(singleSignOn?.data?.singleSignOnAdd.name).toBe('test name 1');
+      createdSingleSignOn1Id = singleSignOn?.data?.singleSignOnAdd.id;
+      createdSingleSighOns.push(createdSingleSignOn1Id);
+    });
+    it('should create another single sign on entity', async () => {
+      const createInput2: SingleSignOnAddInput = {
+        name: 'test name 2',
+        strategy: StrategyType.STRATEGY_OPENID as unknown as StrategyTypeEnum,
+        enabled: false,
+      };
       const singleSignOn2 = await queryAsAdminWithSuccess({
         query: SINGLE_SIGN_ON_CREATE,
         variables: { input: createInput2 },
       });
-      createdSingleSignOn_1 = singleSignOn?.data?.singleSignOnAdd as StoreEntitySingleSignOn;
-      createdSingleSignOn_2 = singleSignOn2?.data?.singleSignOnAdd as StoreEntitySingleSignOn;
-    });
 
-    it('should create single sign on entity', () => {
-      expect(createdSingleSignOn_1.id).toBeDefined();
-      expect(createdSingleSignOn_1.name).toBe('test name 1');
-    });
-    it('should create another single sign on entity', () => {
-      expect(createdSingleSignOn_2.id).toBeDefined();
-      expect(createdSingleSignOn_2.name).toBe('test name 2');
+      expect(singleSignOn2).toBeDefined();
+      expect(singleSignOn2?.data?.singleSignOnAdd.name).toBe('test name 2');
+      createdSingleSignOn2Id = singleSignOn2?.data?.singleSignOnAdd.id;
+      createdSingleSighOns.push(createdSingleSignOn2Id);
     });
   });
   describe('Find List', () => {
-    it('should find a single sign on list', async () => {
+    it('should list single sign on', async () => {
       const singleSignOnList = await queryAsAdminWithSuccess({
         query: SINGLE_SIGN_ON_LIST_QUERY,
         variables: { first: 10 },
@@ -95,11 +95,11 @@ describe('Single Sign On', () => {
     });
   });
   describe('Update', () => {
-    it('should edit the name of the single sign on entity', async () => {
+    it('should edit single sign on entity', async () => {
       const result = await queryAsAdminWithSuccess({
         query: SINGLE_SIGN_ON_UPDATE,
         variables: {
-          id: createdSingleSignOn_1.id,
+          id: createdSingleSignOn1Id,
           input: { key: 'name', value: 'updated name 1' },
         },
       });
@@ -109,18 +109,13 @@ describe('Single Sign On', () => {
     });
   });
   describe('Delete', () => {
-    beforeAll(async () => {
-      await queryAsAdminWithSuccess({
-        query: SINGLE_SIGN_ON_DELETE,
-        variables: { id: createdSingleSignOn_1.id },
-      });
-      await queryAsAdminWithSuccess({
-        query: SINGLE_SIGN_ON_DELETE,
-        variables: { id: createdSingleSignOn_2.id },
-      });
-    });
-
-    it('should have deleted all single sign on entities', async () => {
+    it('should delete all single sign on entities', async () => {
+      for (let i = 0; i < createdSingleSighOns.length; i += 1) {
+        await queryAsAdminWithSuccess({
+          query: SINGLE_SIGN_ON_DELETE,
+          variables: { id: createdSingleSighOns[i] },
+        });
+      }
       const singleSignOnList = await queryAsAdminWithSuccess({
         query: SINGLE_SIGN_ON_LIST_QUERY,
         variables: { first: 10 },
