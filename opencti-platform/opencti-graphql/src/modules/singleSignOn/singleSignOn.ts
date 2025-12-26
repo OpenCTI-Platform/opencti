@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_SINGLE_SIGN_ON, type StixSingleSignOn, type StoreEntitySingleSignOn } from './singleSignOn-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import convertSingleSignOnToStix from './SingleSignOn-converter';
+import convertSingleSignOnToStix from './singleSignOn-converter';
 import { isFeatureEnabled } from '../../config/conf';
 import { StrategyType } from '../../config/providers-configuration';
 
@@ -41,7 +41,7 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
   converter_2_1: convertSingleSignOnToStix,
 };
 
-const isSingleSignOnEnabled = isFeatureEnabled('SINGLE_SIGN_ON_ENABLED');
+export const isSingleSignOnEnabled = isFeatureEnabled('SINGLE_SIGN_ON_ENABLED');
 
 if (isSingleSignOnEnabled) {
   registerDefinition(SINGLE_SIGN_ON_DEFINITION);

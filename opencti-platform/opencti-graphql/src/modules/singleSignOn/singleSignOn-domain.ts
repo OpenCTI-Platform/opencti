@@ -9,10 +9,10 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { StrategyType } from '../../config/providers-configuration';
-const isSingleSignOnEnabled = isFeatureEnabled('SINGLE_SIGN_ON_ENABLED');
+import { isSingleSignOnEnabled } from './singleSignOn';
 
 // Create a function to check all mandatory fields before creation
 

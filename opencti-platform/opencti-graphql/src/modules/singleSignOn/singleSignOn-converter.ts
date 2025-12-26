@@ -1,6 +1,6 @@
 import { buildStixObject } from '../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import type { StixSingleSignOn, StoreEntitySingleSignOn } from './SingleSignOn-types';
+import type { StixSingleSignOn, StoreEntitySingleSignOn } from './singleSignOn-types';
 import { cleanObject } from '../../database/stix-converter-utils';
 
 const convertSingleSignOnToStix = (instance: StoreEntitySingleSignOn): StixSingleSignOn => {
@@ -18,7 +18,7 @@ const convertSingleSignOnToStix = (instance: StoreEntitySingleSignOn): StixSingl
         extension_type: 'new-sdo',
       }),
     },
-  }
-}
+  };
+};
 
 export default convertSingleSignOnToStix;

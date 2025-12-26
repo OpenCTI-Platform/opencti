@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findSingleSignOnById, findSingleSignOnPaginated, addSingleSignOn, fieldPatchSingleSignOn, deleteSingleSignOn } from './SingleSignOn-domain';
+import { findSingleSignOnById, findSingleSignOnPaginated, addSingleSignOn, fieldPatchSingleSignOn, deleteSingleSignOn } from './singleSignOn-domain';
 
 const singleSignOnResolver: Resolvers = {
   Query: {
