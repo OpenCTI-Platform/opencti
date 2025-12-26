@@ -13,6 +13,7 @@ import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { Theme } from '../../../../components/Theme';
+import { Box } from '@mui/material';
 
 type StixCoreObjectHistoryProps = {
   stixCoreObjectId: string;
@@ -125,13 +126,17 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           >
             {t_i18n('Entity')}
           </Typography>
-          <div style={{ float: 'right', marginTop: -15 }}>
+          <Box sx={{
+            marginTop: '-10px',
+            float: 'right',
+          }}
+          >
             <SearchInput
               variant="thin"
               onSubmit={handleSearchEntity}
               keyword={entitySearchTerm}
             />
-          </div>
+          </Box>
           <div className="clearfix" />
           {objectsQueryRef
             && (
@@ -156,13 +161,17 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
             >
               {t_i18n('Relations of the entity')}
             </Typography>
-            <div style={{ float: 'right', marginTop: -15 }}>
+            <Box sx={{
+              marginTop: '-10px',
+              float: 'right',
+            }}
+            >
               <SearchInput
                 variant="thin"
                 onSubmit={handleSearchRelations}
                 keyword={relationsSearchTerm}
               />
-            </div>
+            </Box>
             <div className="clearfix" />
             {relationsQueryRef
               && (
