@@ -54,7 +54,7 @@ export const relationsCounter = {
   'attributed-to': 2,
   'created-by': 22,
   'external-reference': 7,
-  'has-capability': 65,
+  'has-capability': 66,
   'has-role': 9,
   indicates: 4,
   'kill-chain-phase': 3,
