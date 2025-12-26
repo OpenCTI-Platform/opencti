@@ -11,7 +11,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import type { StrategyType } from '../../config/providers-configuration';
+// import type { StrategyType } from '../../config/providers-configuration';
 import { isSingleSignOnEnabled } from './singleSignOn';
 
 // Create a function to check all mandatory fields before creation
