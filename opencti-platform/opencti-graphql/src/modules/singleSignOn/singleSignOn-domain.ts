@@ -16,7 +16,7 @@ import { isSingleSignOnEnabled } from './singleSignOn';
 
 // Create a function to check all mandatory fields before creation
 
-export const getStrategyAttributes = (strategy: StrategyType) => {
+//export const getStrategyAttributes = (strategy: StrategyType) => {
   // in case of a creation, we do not resolve the mandatory field list because we do not fetch anything before creating
   // maybe we should create a record, map or something like that to have all attributes for a strategy ( mandatory, optional, ... )
   // Need to be fetched in front, when the strategy is selected, to generate the form
