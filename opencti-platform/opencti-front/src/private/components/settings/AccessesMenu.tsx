@@ -12,13 +12,7 @@ import {
 } from '@mui/icons-material';
 import { AccountGroupOutline } from 'mdi-material-ui';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
-import useGranted, {
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETAUTH,
-  SETTINGS_SETDISSEMINATION,
-  SETTINGS_SETMARKINGS,
-  VIRTUAL_ORGANIZATION_ADMIN
-} from '../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETDISSEMINATION, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
 
 const AccessesMenu: FunctionComponent = () => {
