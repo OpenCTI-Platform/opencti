@@ -91,6 +91,12 @@ describe('Single Sign On', () => {
     });
   });
   describe('Find List', () => {
+    it('should not list single sign on without SETAUTH capa', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+        query: SINGLE_SIGN_ON_LIST_QUERY,
+        variables: { first: 10 },
+      });
+    });
     it('should list single sign on', async () => {
       const singleSignOnList = await queryAsAdminWithSuccess({
         query: SINGLE_SIGN_ON_LIST_QUERY,
@@ -102,6 +108,15 @@ describe('Single Sign On', () => {
     });
   });
   describe('Update', () => {
+    it('should not edit single sign on without SETAUTH capa', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+        query: SINGLE_SIGN_ON_UPDATE,
+        variables: {
+          id: createdSingleSignOn1Id,
+          input: { key: 'name', value: 'updated name 1' },
+        },
+      });
+    });
     it('should edit single sign on entity', async () => {
       const result = await queryAsAdminWithSuccess({
         query: SINGLE_SIGN_ON_UPDATE,
@@ -116,6 +131,12 @@ describe('Single Sign On', () => {
     });
   });
   describe('Delete', () => {
+    it('should not delete single sign on without SETAUTH capa', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+        query: SINGLE_SIGN_ON_DELETE,
+        variables: { id: createdSingleSignOn1Id },
+      });
+    });
     it('should delete all single sign on entities', async () => {
       for (let i = 0; i < createdSingleSighOns.length; i += 1) {
         await queryAsAdminWithSuccess({
