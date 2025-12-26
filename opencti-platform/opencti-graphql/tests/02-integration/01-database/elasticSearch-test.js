@@ -739,7 +739,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(entitiesCounter.KillChainPhase);
     expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
     expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
-    expect(data.edges.length).toEqual(221 + entitiesCounter.Vocabulary);
+    expect(data.edges.length).toEqual(222 + entitiesCounter.Vocabulary);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
