@@ -4,7 +4,7 @@ export const entitiesCounter = {
   AdministrativeArea: 1,
   AttackPattern: 2,
   Campaign: 1,
-  Capability: 51,
+  Capability: 52,
   City: 1,
   Country: 1,
   CourseOfAction: 1,

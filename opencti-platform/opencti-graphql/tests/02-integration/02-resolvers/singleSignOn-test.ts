@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { StrategyType } from '../../../src/config/providers-configuration';
 import type { SingleSignOnAddInput, StrategyType as StrategyTypeEnum } from '../../../src/generated/graphql';
+import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
   query singleSignOns($first: Int) {
@@ -50,13 +51,19 @@ describe('Single Sign On', () => {
   const createdSingleSighOns: string[] = [];
 
   describe('Create', async () => {
-    it('should create single sign on entity', async () => {
-      const createInput: SingleSignOnAddInput = {
-        name: 'test name 1',
-        strategy: StrategyType.STRATEGY_SAML as unknown as StrategyTypeEnum,
-        enabled: true,
-      };
-      const singleSignOn = await queryAsAdminWithSuccess({
+    const createInput: SingleSignOnAddInput = {
+      name: 'test name 1',
+      strategy: StrategyType.STRATEGY_SAML as unknown as StrategyTypeEnum,
+      enabled: true,
+    };
+    it('should not create single sign on entity without SETAUTH capa', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+        query: SINGLE_SIGN_ON_CREATE,
+        variables: { input: createInput },
+      });
+    });
+    it('should create single sign on entity with SETAUTH capa', async () => {
+      const singleSignOn = await queryAsUserWithSuccess(USER_SECURITY.client, {
         query: SINGLE_SIGN_ON_CREATE,
         variables: { input: createInput },
       });

@@ -1,11 +1,11 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_SINGLE_SIGN_ON, type BasicStoreEntitySingleSignOn, type StoreEntitySingleSignOn } from './singleSignOn-types';
-import type { SingleSignOnAddInput } from '../../generated/graphql';
+import { Capabilities, type SingleSignOnAddInput } from '../../generated/graphql';
 import type { EditInput } from '../../generated/graphql';
 import { now } from '../../utils/format';
 import { createInternalObject } from '../../domain/internalObject';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
@@ -13,6 +13,7 @@ import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 // import type { StrategyType } from '../../config/providers-configuration';
 import { isSingleSignOnEnabled } from './singleSignOn';
+import { isUserHasCapability } from '../../utils/access';
 
 // Create a function to check all mandatory fields before creation
 

@@ -2068,6 +2068,7 @@ export enum Capabilities {
   SettingsFileindexing = 'SETTINGS_FILEINDEXING',
   SettingsSecurityactivity = 'SETTINGS_SECURITYACTIVITY',
   SettingsSetaccesses = 'SETTINGS_SETACCESSES',
+  SettingsSetauth = 'SETTINGS_SETAUTH',
   SettingsSetcasetemplates = 'SETTINGS_SETCASETEMPLATES',
   SettingsSetcustomization = 'SETTINGS_SETCUSTOMIZATION',
   SettingsSetdissemination = 'SETTINGS_SETDISSEMINATION',
