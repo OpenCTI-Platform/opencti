@@ -16,6 +16,9 @@ jobs:
         publish_to_registry: true
       secrets: inherit
 
+  wf-publish-package:
+      name: Publish OpenCTI platform packages
+      uses: ./.github/workflows/cd-publish-package.yml
 
   deploy-staging:
     name: Deploy images on staging
