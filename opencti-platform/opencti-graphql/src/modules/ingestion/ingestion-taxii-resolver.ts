@@ -5,7 +5,7 @@ import {
   ingestionDelete,
   ingestionEditField,
   ingestionTaxiiResetState,
-  ingestionTaxiiAddAutoUser
+  ingestionTaxiiAddAutoUser,
 } from './ingestion-taxii-domain';
 import type { Resolvers } from '../../generated/graphql';
 
