@@ -218,7 +218,6 @@ const SettingsMessagesBannerComponent = ({
       {messageToDisplay.dismissible && (
         <IconButton
           aria-label="close"
-          // color="inherit"
           size="small"
           className={classes.button}
           style={{ color }}

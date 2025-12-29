@@ -580,9 +580,7 @@ const ProfileOverviewComponent = (props) => {
                 />
                 <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
                   <Button
-                    variant="contained"
                     type="button"
-                    color="primary"
                     onClick={submitForm}
                     disabled={external || isSubmitting}
                     classes={{ root: classes.button }}
@@ -641,7 +639,7 @@ const ProfileOverviewComponent = (props) => {
           </pre>
           {me.id !== OPENCTI_ADMIN_UUID && (
             <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
-              <Button variant="contained" color="primary" onClick={renewToken}>
+              <Button onClick={renewToken}>
                 {t('Renew')}
               </Button>
             </div>
@@ -697,8 +695,6 @@ const ProfileOverviewComponent = (props) => {
           { isPlaygroundEnable() && (
             <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
               <Button
-                variant="contained"
-                color="primary"
                 component={Link}
                 to="/public/graphql"
                 target="_blank"
