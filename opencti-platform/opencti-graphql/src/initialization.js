@@ -93,7 +93,11 @@ const isCompatiblePlatform = async (context) => {
 const platformInit = async (withMarkings = true) => {
   let lock;
   try {
-    lock = await lockResources([PLATFORM_LOCK_ID]);
+    const isDevelopmentMode = environment === 'development' || environment === 'dev';
+    const lockOptions = isDevelopmentMode ? {
+      retryCount: 50, // Some retries in dev mode for edge cases after force-clear
+    } : {};
+    lock = await lockResources([PLATFORM_LOCK_ID], lockOptions);
     const context = executionContext('platform_initialization');
     logApp.info('[INIT] Starting platform initialization');
     const alreadyExists = await isExistingPlatform(context);

@@ -1,5 +1,7 @@
 {
-  "watch": ["build"],
+  "watch": [
+    "build"
+  ],
   "ext": "js",
   "ignore": [
     "node_modules/**",
@@ -7,11 +9,11 @@
     "logs/**",
     ".yarn/**"
   ],
-  "exec": "node --enable-source-maps build/back.js",
+  "exec": "NODE_ENV=development node --enable-source-maps build/back.js",
   "env": {
     "NODE_ENV": "development"
   },
-  "delay": 2000,
+  "delay": 100,
   "signal": "SIGTERM",
   "verbose": false,
   "events": {
