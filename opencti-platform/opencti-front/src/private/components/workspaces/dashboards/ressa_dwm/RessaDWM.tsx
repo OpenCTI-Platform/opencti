@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useFormatter } from '../../../../../components/i18n';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
@@ -8,323 +8,34 @@ import {
   CardContent,
   Grid,
   Typography,
-  LinearProgress,
-  Avatar,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Divider,
-  Button,
-  IconButton,
-  TextField,
-  Paper,
+  Alert,
 } from '@mui/material';
 import {
   SendOutlined,
   WebOutlined,
   MessageOutlined,
-  Menu,
-  Edit,
-  GridView,
-  ArrowDropDown,
-  VideoCall,
-  Add,
-  MoreVert,
-  ThumbUp,
-  Favorite,
-  SentimentSatisfied,
 } from '@mui/icons-material';
 import { Github } from 'mdi-material-ui';
-import { ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
-import type { ApexOptions } from 'apexcharts';
-import Chart from '@components/common/charts/Chart';
-import { lineChartOptions, donutChartOptions } from '../../../../../utils/Charts';
 import type { Theme } from '../../../../../components/Theme';
-
-interface StatCardProps {
-  title: string;
-  value: number;
-  change: number;
-  icon: React.ReactNode;
-  isPositive: boolean;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ title, value, change, icon, isPositive }) => {
-  const theme = useTheme<Theme>();
-  const isDark = theme.palette.mode === 'dark';
-  
-  const changeColor = isPositive 
-    ? (isDark ? '#f44336' : '#d32f2f')
-    : (isDark ? '#66bb6a' : '#2e7d32');
-  const changeBgColor = isPositive
-    ? (isDark ? 'rgba(244, 67, 54, 0.2)' : '#ffebee')
-    : (isDark ? 'rgba(102, 187, 106, 0.2)' : '#e8f5e9');
-
-  return (
-    <Card
-      variant="outlined"
-      sx={{
-        height: '100%',
-        position: 'relative',
-        backgroundColor: theme.palette.background?.paper || theme.palette.background?.default,
-      }}
-    >
-      <CardContent sx={{ padding: 2.5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-          {/* Icon on the left */}
-          <Box
-            sx={{
-              color: theme.palette.text?.secondary,
-              marginRight: 2,
-              display: 'flex',
-              alignItems: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <Box sx={{ fontSize: '2.5rem' }}>
-              {icon}
-            </Box>
-          </Box>
-          {/* Content on the right - two rows */}
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            {/* First row: Title */}
-            <Typography
-              variant="body2"
-              sx={{
-                color: theme.palette.text?.secondary,
-                fontWeight: 500,
-                fontSize: '0.875rem',
-                marginBottom: 1.5,
-              }}
-            >
-              {title}
-            </Typography>
-            {/* Second row: Value and change percentage */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 600,
-                  color: theme.palette.text?.primary,
-                  fontSize: '1.2rem',
-                }}
-              >
-                {value.toLocaleString()}
-              </Typography>
-              <Box
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '4px 8px',
-                  borderRadius: '12px',
-                  backgroundColor: changeBgColor,
-                  color: changeColor,
-                  fontSize: '0.75rem',
-                  fontWeight: 500,
-                }}
-              >
-                {Math.abs(change)}%
-                {isPositive ? (
-                  <ArrowUpward sx={{ fontSize: '0.875rem', marginLeft: 0.5 }} />
-                ) : (
-                  <ArrowDownward sx={{ fontSize: '0.875rem', marginLeft: 0.5 }} />
-                )}
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-};
-
-interface DonutChartProps {
-  data: { label: string; value: number; color: string }[];
-  total: number;
-}
-
-const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
-  const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
-
-  const chartData = useMemo(() => data.map((item) => item.value), [data]);
-  const labels = useMemo(() => data.map((item) => item.label), [data]);
-  const colors = useMemo(() => data.map((item) => item.color), [data]);
-
-  const options: ApexOptions = useMemo(() => {
-    const baseOptions = donutChartOptions(
-      theme,
-      labels,
-      'right',
-      false,
-      colors,
-      true, // displayLegend: true - legend چارت را فعال می‌کنیم
-      false, // displayLabels: false - درصد‌ها را از روی نمودار برمی‌داریم
-      true,
-      true,
-      70,
-      false,
-    ) as ApexOptions;
-
-    // محاسبه درصد برای هر آیتم
-    const percentages = chartData.map((value) => ((value / total) * 100).toFixed(1));
-
-    return {
-      ...baseOptions,
-      labels: labels, // اضافه کردن labels برای نمایش در legend
-      chart: {
-        ...baseOptions.chart,
-        events: {
-          ...baseOptions.chart?.events,
-          mounted: (chartContext: any) => {
-            // اطمینان از نمایش همیشگی labels
-            if (chartContext && chartContext.w) {
-              const apexChart = chartContext.w.globals;
-              if (apexChart) {
-                // Force update برای نمایش labels
-                setTimeout(() => {
-                  chartContext.updateSeries(chartData, true);
-                }, 100);
-              }
-            }
-          },
-        },
-      },
-      legend: {
-        ...baseOptions.legend,
-        position: 'right',
-        horizontalAlign: 'center',
-        floating: false,
-        fontSize: '12px',
-        fontFamily: '"IBM Plex Sans", sans-serif',
-        fontColor: theme.palette.text?.primary,
-        labels: {
-          colors: theme.palette.text?.primary,
-        },
-        itemMargin: {
-          horizontal: 10,
-          vertical: 5,
-        },
-        formatter: (seriesName: string, opts: { seriesIndex: number }) => {
-          const percentage = percentages[opts.seriesIndex];
-          return `${seriesName} ${percentage}%`;
-        },
-      },
-      dataLabels: {
-        ...baseOptions.dataLabels,
-        enabled: false, // درصد‌ها را از روی نمودار برمی‌داریم
-      },
-      tooltip: {
-        ...baseOptions.tooltip,
-        enabled: true,
-      },
-      plotOptions: {
-        ...baseOptions.plotOptions,
-        pie: {
-          ...baseOptions.plotOptions?.pie,
-          donut: {
-            ...baseOptions.plotOptions?.pie?.donut,
-            labels: {
-              show: true,
-              name: {
-                show: true,
-                fontSize: '14px',
-                fontFamily: '"IBM Plex Sans", sans-serif',
-                fontWeight: 400,
-                color: theme.palette.text?.secondary || '#757575',
-                offsetY: -10,
-                formatter: () => t_i18n('Total'),
-              },
-              value: {
-                show: true,
-                fontSize: '24px',
-                fontFamily: '"IBM Plex Sans", sans-serif',
-                fontWeight: 600,
-                color: theme.palette.text?.primary || '#212121',
-                offsetY: 10,
-                formatter: () => total.toLocaleString(),
-              },
-              total: {
-                show: true,
-                showAlways: true,
-                label: t_i18n('Total'),
-                fontSize: '14px',
-                fontFamily: '"IBM Plex Sans", sans-serif',
-                fontWeight: 400,
-                color: theme.palette.text?.secondary || '#757575',
-                formatter: () => total.toLocaleString(),
-              },
-            },
-          },
-        },
-      },
-    };
-  }, [theme, labels, colors, total, chartData]);
-
-  return (
-    <Box sx={{ height: 300 }}>
-      <Chart
-        options={options}
-        series={chartData}
-        type="donut"
-        width="100%"
-        height="100%"
-      />
-    </Box>
-  );
-};
-
-interface ProgressListProps {
-  items: { name: string; value: number }[];
-}
-
-const ProgressList: React.FC<ProgressListProps> = ({ items }) => {
-  const theme = useTheme<Theme>();
-  const maxValue = Math.max(...items.map((item) => item.value));
-
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {items.map((item, index) => (
-        <Box key={index}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0.5 }}>
-            <Typography variant="body2" sx={{ fontSize: '0.875rem', color: theme.palette.text?.secondary }}>
-              {item.name}
-            </Typography>
-            <Typography variant="body2" sx={{ fontSize: '0.875rem', fontWeight: 600, color: theme.palette.text?.primary }}>
-              {item.value}
-            </Typography>
-          </Box>
-          <LinearProgress
-            variant="determinate"
-            value={(item.value / maxValue) * 100}
-            sx={{
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: theme.palette.mode === 'dark' 
-                ? 'rgba(255, 255, 255, 0.1)' 
-                : 'rgba(0, 0, 0, 0.08)',
-              '& .MuiLinearProgress-bar': {
-                borderRadius: 4,
-                backgroundColor: theme.palette.primary?.main || '#1976d2',
-              },
-            }}
-          />
-        </Box>
-      ))}
-    </Box>
-  );
-};
+import Loader from '../../../../../components/Loader';
+import StatCard from './StatCard';
+import DonutChart from './DonutChart';
+import ProgressList from './ProgressList';
+import TrendChart from './TrendChart';
+import ChatInterface from './ChatInterface';
+import { useRessaDWMData } from './useRessaDWMData';
 
 const RessaDWM = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const { data, loading, error } = useRessaDWMData();
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Ressa DWM'));
 
-  const stats = [
+  // Default data for fallback or while loading
+  const defaultStats = [
     {
       title: t_i18n('All New Leaks'),
       value: 129,
@@ -355,6 +66,111 @@ const RessaDWM = () => {
     },
   ];
 
+  const defaultMonitoredSources = [
+    { label: t_i18n('Web'), value: 25000, color: '#1565c0' },
+    { label: t_i18n('Forums'), value: 12000, color: '#64b5f6' },
+    { label: t_i18n('Telegram'), value: 15000, color: '#42a5f5' },
+    { label: t_i18n('Dark Web'), value: 18000, color: '#0d47a1' },
+    { label: t_i18n('Social Media'), value: 10000, color: '#42a5f5' },
+    { label: t_i18n('Deep Web'), value: 8000, color: '#90caf9' },
+    { label: t_i18n('Chat Apps'), value: 7000, color: '#42a5f5' },
+    { label: t_i18n('Email'), value: 5000, color: '#0d47a1' },
+    { label: t_i18n('Gaming Platforms'), value: 3000, color: '#42a5f5' },
+    { label: t_i18n('File Sharing'), value: 1670, color: '#90caf9' },
+  ];
+
+  const defaultTopLeaks = [
+    { name: 'IRLeaks', value: 150 },
+    { name: 'bakhtak', value: 120 },
+    { name: 'We Red Evils Original', value: 100 },
+    { name: 'OnHex', value: 60 },
+    { name: 'CVE Notify', value: 35 },
+  ];
+
+  const defaultTopDamageable = [
+    { name: 'Tapsi.ir', value: 109 },
+    { name: 'Snapp.ir', value: 85 },
+    { name: 'Varzesh3.com', value: 78 },
+    { name: 'Irancell.com', value: 66 },
+    { name: 'mci.ir', value: 47 },
+  ];
+
+  const defaultTrendSeries = [
+    {
+      name: t_i18n('Dark Web'),
+      data: [220, 240, 280, 320, 350, 380, 360, 400, 450, 500, 550, 580],
+      color: '#64b5f6',
+    },
+    {
+      name: t_i18n('Telegram'),
+      data: [450, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 580],
+      color: '#42a5f5',
+    },
+    {
+      name: t_i18n('Web'),
+      data: [650, 680, 700, 720, 750, 780, 760, 800, 820, 840, 860, 880],
+      color: '#1565c0',
+    },
+  ];
+
+  // Use API data if available, otherwise use defaults
+  const stats = data ? [
+    {
+      title: t_i18n('All New Leaks'),
+      value: data.stats.allNewLeaks.value,
+      change: data.stats.allNewLeaks.change,
+      icon: <SendOutlined />,
+      isPositive: data.stats.allNewLeaks.change > 0,
+    },
+    {
+      title: t_i18n('Dark Web'),
+      value: data.stats.darkWeb.value,
+      change: data.stats.darkWeb.change,
+      icon: <Github />,
+      isPositive: data.stats.darkWeb.change > 0,
+    },
+    {
+      title: t_i18n('Web'),
+      value: data.stats.web.value,
+      change: data.stats.web.change,
+      icon: <WebOutlined />,
+      isPositive: data.stats.web.change > 0,
+    },
+    {
+      title: t_i18n('Telegram'),
+      value: data.stats.telegram.value,
+      change: data.stats.telegram.change,
+      icon: <MessageOutlined />,
+      isPositive: data.stats.telegram.change > 0,
+    },
+  ] : defaultStats;
+
+  const monitoredSources = data?.monitoredSources || defaultMonitoredSources;
+  const topLeaks = data?.topLeaks || defaultTopLeaks;
+  const topDamageable = data?.topDamageable || defaultTopDamageable;
+  const vulnerabilityTrends = data?.vulnerabilityTrends || defaultTrendSeries;
+  const dataLeakTrends = data?.dataLeakTrends || defaultTrendSeries;
+  const monitoredSourcesTotal = monitoredSources.reduce((sum, item) => sum + item.value, 0);
+
+  if (loading) {
+    return (
+      <>
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Dashboards') },
+            { label: t_i18n('Ressa DWM'), current: true },
+          ]}
+        />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+          <Loader />
+        </Box>
+      </>
+    );
+  }
+
+  // Show error banner if there's an error, but still render dashboard with default data
+  const showErrorBanner = error && !data;
+
   return (
     <>
       <Breadcrumbs
@@ -363,6 +179,13 @@ const RessaDWM = () => {
           { label: t_i18n('Ressa DWM'), current: true },
         ]}
       />
+      {showErrorBanner && (
+        <Box sx={{ padding: 2, paddingBottom: 0 }}>
+          <Alert severity="warning" sx={{ marginBottom: 2 }}>
+            {t_i18n('Error loading dashboard data')}: {error}. {t_i18n('Using default data.')}
+          </Alert>
+        </Box>
+      )}
       <Box sx={{ padding: 0 }}>
         <Grid container spacing={3} sx={{ marginBottom: 3 }}>
           {stats.map((stat) => (
@@ -396,19 +219,8 @@ const RessaDWM = () => {
                   {t_i18n('Monitored Sources')}
                 </Typography>
                 <DonutChart
-                  data={[
-                    { label: t_i18n('Web'), value: 25000, color: '#1565c0' },
-                    { label: t_i18n('Forums'), value: 12000, color: '#64b5f6' },
-                    { label: t_i18n('Telegram'), value: 15000, color: '#42a5f5' },
-                    { label: t_i18n('Dark Web'), value: 18000, color: '#0d47a1' },
-                    { label: t_i18n('Social Media'), value: 10000, color: '#42a5f5' },
-                    { label: t_i18n('Deep Web'), value: 8000, color: '#90caf9' },
-                    { label: t_i18n('Chat Apps'), value: 7000, color: '#42a5f5' },
-                    { label: t_i18n('Email'), value: 5000, color: '#0d47a1' },
-                    { label: t_i18n('Gaming Platforms'), value: 3000, color: '#42a5f5' },
-                    { label: t_i18n('File Sharing'), value: 1670, color: '#90caf9' },
-                  ]}
-                  total={98670}
+                  data={monitoredSources}
+                  total={monitoredSourcesTotal}
                 />
               </CardContent>
             </Card>
@@ -430,13 +242,7 @@ const RessaDWM = () => {
                   {t_i18n('Top Leaks')}
                 </Typography>
                 <ProgressList
-                  items={[
-                    { name: 'IRLeaks', value: 150 },
-                    { name: 'bakhtak', value: 120 },
-                    { name: 'We Red Evils Original', value: 100 },
-                    { name: 'OnHex', value: 60 },
-                    { name: 'CVE Notify', value: 35 },
-                  ]}
+                  items={topLeaks}
                 />
               </CardContent>
             </Card>
@@ -458,13 +264,7 @@ const RessaDWM = () => {
                   {t_i18n('Top Damageable')}
                 </Typography>
                 <ProgressList
-                  items={[
-                    { name: 'Tapsi.ir', value: 109 },
-                    { name: 'Snapp.ir', value: 85 },
-                    { name: 'Varzesh3.com', value: 78 },
-                    { name: 'Irancell.com', value: 66 },
-                    { name: 'mci.ir', value: 47 },
-                  ]}
+                  items={topDamageable}
                 />
               </CardContent>
             </Card>
@@ -489,23 +289,7 @@ const RessaDWM = () => {
                   {t_i18n('Vulnerability Trends Over Time (by Source)')}
                 </Typography>
                 <TrendChart
-                  series={[
-                    {
-                      name: t_i18n('Dark Web'),
-                      data: [220, 240, 280, 320, 350, 380, 360, 400, 450, 500, 550, 580],
-                      color: '#64b5f6',
-                    },
-                    {
-                      name: t_i18n('Telegram'),
-                      data: [450, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 580],
-                      color: '#42a5f5',
-                    },
-                    {
-                      name: t_i18n('Web'),
-                      data: [650, 680, 700, 720, 750, 780, 760, 800, 820, 840, 860, 880],
-                      color: '#1565c0',
-                    },
-                  ]}
+                  series={vulnerabilityTrends}
                 />
               </CardContent>
             </Card>
@@ -527,23 +311,7 @@ const RessaDWM = () => {
                   {t_i18n('Data Leak Trends Over Time (by Source)')}
                 </Typography>
                 <TrendChart
-                  series={[
-                    {
-                      name: t_i18n('Dark Web'),
-                      data: [220, 240, 280, 320, 350, 380, 360, 400, 450, 500, 550, 580],
-                      color: '#64b5f6',
-                    },
-                    {
-                      name: t_i18n('Telegram'),
-                      data: [450, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 580],
-                      color: '#42a5f5',
-                    },
-                    {
-                      name: t_i18n('Web'),
-                      data: [650, 680, 700, 720, 750, 780, 760, 800, 820, 840, 860, 880],
-                      color: '#1565c0',
-                    },
-                  ]}
+                  series={dataLeakTrends}
                 />
               </CardContent>
             </Card>
@@ -559,613 +327,4 @@ const RessaDWM = () => {
   );
 };
 
-interface TrendChartProps {
-  series: { name: string; data: number[]; color: string }[];
-}
-
-const TrendChart: React.FC<TrendChartProps> = ({ series }) => {
-  const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
-
-  const months = [
-    t_i18n('Jan'),
-    t_i18n('Feb'),
-    t_i18n('Mar'),
-    t_i18n('Apr'),
-    t_i18n('May'),
-    t_i18n('Jun'),
-    t_i18n('Jul'),
-    t_i18n('Aug'),
-    t_i18n('Sep'),
-    t_i18n('Oct'),
-    t_i18n('Nov'),
-    t_i18n('Dec'),
-  ];
-
-  const chartSeries = series.map((s) => ({
-    name: s.name,
-    data: s.data,
-  }));
-
-  const options: ApexOptions = useMemo(() => {
-    const baseOptions = lineChartOptions(
-      theme,
-      false,
-      undefined,
-      (value: number) => value.toString(),
-      undefined,
-      false,
-      true,
-    ) as ApexOptions;
-
-    return {
-      ...baseOptions,
-      colors: series.map((s) => s.color),
-      xaxis: {
-        ...baseOptions.xaxis,
-        categories: months,
-      },
-      yaxis: {
-        ...baseOptions.yaxis,
-        min: 0,
-        max: 1000,
-        tickAmount: 5,
-      },
-      legend: {
-        ...baseOptions.legend,
-        position: 'top',
-        horizontalAlign: 'left',
-      },
-      chart: {
-        ...baseOptions.chart,
-        toolbar: {
-          show: false,
-        },
-      },
-    };
-  }, [theme, series, months]);
-
-  return (
-    <Box sx={{ height: 300 }}>
-      <Chart
-        options={options}
-        series={chartSeries}
-        type="line"
-        width="100%"
-        height="100%"
-      />
-    </Box>
-  );
-};
-
-interface ChatItem {
-  id: string;
-  name: string;
-  avatar: string;
-  lastMessage: string;
-  time: string;
-  isOnline?: boolean;
-  isGroup?: boolean;
-}
-
-interface ChatMessage {
-  id: string;
-  sender: string;
-  avatar: string;
-  message: string;
-  time: string;
-  isOnline?: boolean;
-  isOwn?: boolean; // آیا پیام از کاربر فعلی است
-  reactions?: { type: string; count: number }[];
-  attachment?: string;
-}
-
-const ChatInterface: React.FC = () => {
-  const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
-  const isDark = theme.palette.mode === 'dark';
-  
-  const pinnedChats: ChatItem[] = [
-    { id: '1', name: 'Ray Tanaka', avatar: 'RT', lastMessage: 'Hey, how are you?', time: '2:30 PM', isOnline: true },
-    { id: '2', name: 'Beth Davies', avatar: 'BD', lastMessage: 'See you tomorrow', time: '1:15 PM', isOnline: true },
-    { id: '3', name: 'Kayo Miwa', avatar: 'KM', lastMessage: 'Thanks for the update', time: '12:45 PM', isOnline: true },
-    { id: '4', name: 'Will, Kayo, Eric, +2', avatar: 'G', lastMessage: 'Meeting at 3 PM', time: '11:20 AM', isGroup: true },
-    { id: '5', name: 'August Bergman', avatar: 'AB', lastMessage: 'Got it, thanks!', time: '10:10 AM', isOnline: true },
-  ];
-
-  const recentChats: ChatItem[] = [
-    { id: '6', name: 'Amanda Brady', avatar: 'AB', lastMessage: 'Can we schedule a call?', time: '9:30 AM' },
-    { id: '7', name: 'Emiliano Ceballos', avatar: 'EC', lastMessage: '😂😂', time: 'Yesterday' },
-    { id: '8', name: 'Oscar Krogh', avatar: 'OK', lastMessage: 'Perfect!', time: 'Yesterday' },
-    { id: '9', name: 'Daichi Fukuda', avatar: 'DF', lastMessage: 'Working on it...', time: '2 days ago', isOnline: true },
-    { id: '10', name: 'Kian Lambert', avatar: 'KL', lastMessage: 'See you later', time: '2 days ago' },
-    { id: '11', name: 'Team Design Template', avatar: 'TD', lastMessage: 'New design ready', time: '3 days ago', isGroup: true },
-  ];
-
-  const messages: ChatMessage[] = [
-    {
-      id: '1',
-      sender: 'Marie Beaudouin',
-      avatar: 'MB',
-      message: 'Thank you for always being so positive!',
-      time: '2:30 PM',
-      isOnline: true,
-      isOwn: false,
-    },
-    {
-      id: '2',
-      sender: t_i18n('Me'),
-      avatar: 'ME',
-      message: 'W July_Promotion',
-      time: '2:25 PM',
-      attachment: 'file',
-      isOwn: true,
-    },
-    {
-      id: '3',
-      sender: 'Daichi Fukuda',
-      avatar: 'DF',
-      message: 'Cupcake ipsum dolor sit amet muffin sesame snaps caramels. Gingerbread chupa chups cupcake tiramisu croissant. Pastry apple pie halvah cheesecake candy tiramisu cake.',
-      time: '2:20 PM',
-      isOnline: true,
-      isOwn: false,
-      reactions: [
-        { type: 'thumb', count: 9 },
-        { type: 'heart', count: 8 },
-        { type: 'smile', count: 7 },
-      ],
-    },
-    {
-      id: '4',
-      sender: 'Me',
-      avatar: 'ME',
-      message: 'Great work on the project!',
-      time: '2:15 PM',
-      isOwn: true,
-    },
-  ];
-
-  return (
-    <Card variant="outlined" sx={{ backgroundColor: theme.palette.background?.paper || theme.palette.background?.default, height: 600 }}>
-      <Box sx={{ display: 'flex', height: '100%' }}>
-        {/* Left Sidebar - Chat List */}
-        <Box
-          sx={{
-            width: '25%',
-            borderRight: `1px solid ${theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')}`,
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: theme.palette.background?.paper || theme.palette.background?.default,
-          }}
-        >
-          {/* Header */}
-          <Box
-            sx={{
-              padding: 2,
-              borderBottom: `1px solid ${theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              minHeight: '64px',
-              height: '64px',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem', color: theme.palette.text?.primary }}>
-                {t_i18n('Telegram')}
-              </Typography>
-              <ArrowDropDown sx={{ color: theme.palette.text?.primary }} />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
-                <Menu fontSize="small" />
-              </IconButton>
-              <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
-                <Edit fontSize="small" />
-              </IconButton>
-              <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
-                <GridView fontSize="small" />
-              </IconButton>
-            </Box>
-          </Box>
-
-          {/* Chat List */}
-          <Box sx={{ flex: 1, overflowY: 'auto' }}>
-            {/* Pinned Section */}
-            <Box>
-              <Typography
-                variant="caption"
-                sx={{
-                  padding: '8px 16px',
-                  color: theme.palette.text?.secondary,
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                }}
-              >
-                {t_i18n('Pinned')}
-              </Typography>
-              <List sx={{ padding: 0 }}>
-                {pinnedChats.map((chat) => (
-                  <ChatListItem key={chat.id} chat={chat} />
-                ))}
-              </List>
-            </Box>
-
-            <Divider />
-
-            {/* Recent Section */}
-            <Box>
-              <Typography
-                variant="caption"
-                sx={{
-                  padding: '8px 16px',
-                  color: theme.palette.text?.secondary,
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                }}
-              >
-                {t_i18n('Recent')}
-              </Typography>
-              <List sx={{ padding: 0 }}>
-                {recentChats.map((chat) => (
-                  <ChatListItem key={chat.id} chat={chat} />
-                ))}
-              </List>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Right Side - Chat Content */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: theme.palette.background?.default }}>
-          {/* Chat Header */}
-          <Box
-            sx={{
-              padding: 2,
-              borderBottom: `1px solid ${theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')}`,
-              backgroundColor: theme.palette.background?.paper || theme.palette.background?.default,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              minHeight: '64px',
-              height: '64px',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Box
-                sx={{
-                  backgroundColor: theme.palette.primary?.main || '#1976d2',
-                  borderRadius: 1,
-                  padding: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <GridView sx={{ fontSize: '1.25rem', color: '#ffffff' }} />
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: theme.palette.text?.primary }}>
-                {t_i18n('Channel Name')}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<VideoCall />}
-                sx={{
-                  textTransform: 'none',
-                  fontSize: '0.875rem',
-                  color: theme.palette.text?.secondary,
-                  borderColor: theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'),
-                  '&:hover': {
-                    borderColor: theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'),
-                    backgroundColor: theme.palette.action?.hover,
-                  },
-                }}
-              >
-                {t_i18n('Meet now')}
-              </Button>
-              <Box sx={{ display: 'flex', borderRadius: 1, overflow: 'hidden' }}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<Add />}
-                  sx={{
-                    textTransform: 'none',
-                    fontSize: '0.875rem',
-                    backgroundColor: theme.palette.primary?.main || '#1976d2',
-                    color: '#ffffff',
-                    borderRadius: 0,
-                    borderTopLeftRadius: 4,
-                    borderBottomLeftRadius: 4,
-                    '&:hover': {
-                      backgroundColor: theme.palette.primary?.dark || '#1565c0',
-                    },
-                  }}
-                >
-                  {t_i18n('New meeting')}
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{
-                    minWidth: 'auto',
-                    padding: '6px 8px',
-                    backgroundColor: theme.palette.primary?.main || '#1976d2',
-                    color: '#ffffff',
-                    borderRadius: 0,
-                    borderTopRightRadius: 4,
-                    borderBottomRightRadius: 4,
-                    borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
-                    '&:hover': {
-                      backgroundColor: theme.palette.primary?.dark || '#1565c0',
-                    },
-                  }}
-                >
-                  <ArrowDropDown />
-                </Button>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Messages */}
-          <Box sx={{ flex: 1, overflowY: 'auto', padding: 2 }}>
-            {messages.map((msg) => (
-              <ChatMessageItem key={msg.id} message={msg} />
-            ))}
-          </Box>
-
-          {/* Input Area */}
-          <Box
-            sx={{
-              padding: 2,
-              borderTop: `1px solid ${theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')}`,
-              backgroundColor: theme.palette.background?.paper || theme.palette.background?.default,
-            }}
-          >
-            <TextField
-              fullWidth
-              placeholder={t_i18n('Type a message...')}
-              variant="outlined"
-              size="small"
-              InputProps={{
-                endAdornment: (
-                  <IconButton size="small" color="primary">
-                    <SendOutlined />
-                  </IconButton>
-                ),
-              }}
-            />
-          </Box>
-        </Box>
-      </Box>
-    </Card>
-  );
-};
-
-const ChatListItem: React.FC<{ chat: ChatItem }> = ({ chat }) => {
-  const theme = useTheme<Theme>();
-  const isDark = theme.palette.mode === 'dark';
-  
-  return (
-    <ListItem
-      sx={{
-        padding: '8px 16px',
-        cursor: 'pointer',
-        '&:hover': { backgroundColor: theme.palette.action?.hover },
-      }}
-    >
-      <ListItemAvatar>
-        <Box sx={{ position: 'relative' }}>
-          <Avatar
-            sx={{
-              width: 40,
-              height: 40,
-              backgroundColor: chat.isGroup ? (theme.palette.secondary?.main || '#9c27b0') : (theme.palette.primary?.main || '#1976d2'),
-              fontSize: '0.875rem',
-            }}
-          >
-            {chat.avatar}
-          </Avatar>
-          {chat.isOnline && (
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: -2,
-                right: 12,
-                width: 14,
-                height: 14,
-                borderRadius: '50%',
-                backgroundColor: '#4caf50',
-                border: `2px solid ${theme.palette.background?.paper || '#ffffff'}`,
-                zIndex: 1,
-              }}
-            />
-          )}
-        </Box>
-      </ListItemAvatar>
-      <ListItemText
-        primary={
-          <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem', color: theme.palette.text?.primary }}>
-            {chat.name}
-          </Typography>
-        }
-        secondary={
-          <Typography
-            variant="caption"
-            sx={{
-              fontSize: '0.75rem',
-              color: theme.palette.text?.secondary,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {chat.lastMessage}
-          </Typography>
-        }
-      />
-      <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.text?.secondary, marginLeft: 1 }}>
-        {chat.time}
-      </Typography>
-    </ListItem>
-  );
-};
-
-const ChatMessageItem: React.FC<{ message: ChatMessage }> = ({ message }) => {
-  const theme = useTheme<Theme>();
-  const isDark = theme.palette.mode === 'dark';
-  const isOwn = message.isOwn || false;
-
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        gap: 1,
-        marginBottom: 2,
-        flexDirection: 'row',
-        justifyContent: isOwn ? 'flex-end' : 'flex-start',
-      }}
-    >
-      {!isOwn && (
-        <Box sx={{ position: 'relative' }}>
-          <Avatar
-            sx={{
-              width: 36,
-              height: 36,
-              backgroundColor: theme.palette.primary?.main || '#1976d2',
-              fontSize: '0.75rem',
-            }}
-          >
-            {message.avatar}
-          </Avatar>
-          {message.isOnline && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 26,
-                right: -4,
-                width: 14,
-                height: 14,
-                borderRadius: '50%',
-                backgroundColor: '#4caf50',
-                border: `2px solid ${theme.palette.background?.paper || '#ffffff'}`,
-              }}
-            />
-          )}
-        </Box>
-      )}
-      <Box sx={{ flex: 1, maxWidth: '70%', display: 'flex', flexDirection: 'column', alignItems: isOwn ? 'flex-end' : 'flex-start' }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            marginBottom: 0.5,
-            flexDirection: 'row',
-            justifyContent: isOwn ? 'flex-end' : 'flex-start',
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: theme.palette.text?.primary }}>
-            {message.sender}
-          </Typography>
-          <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.text?.secondary }}>
-            {message.time}
-          </Typography>
-        </Box>
-        {message.attachment ? (
-          <Paper
-            sx={{
-              padding: 1.5,
-              backgroundColor: isOwn 
-                ? (isDark ? 'rgba(25, 118, 210, 0.2)' : '#e3f2fd')
-                : (isDark ? 'rgba(255, 255, 255, 0.05)' : '#f5f5f5'),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: 1,
-              borderRadius: 2,
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" sx={{ fontSize: '0.875rem', color: theme.palette.text?.primary }}>
-                {message.message}
-              </Typography>
-            </Box>
-            <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
-              <MoreVert fontSize="small" />
-            </IconButton>
-          </Paper>
-        ) : (
-          <Paper
-            sx={{
-              padding: 1.5,
-              backgroundColor: isOwn
-                ? (isDark ? 'rgba(25, 118, 210, 0.2)' : '#e3f2fd')
-                : (theme.palette.background?.paper || theme.palette.background?.default),
-              borderRadius: 2,
-              marginBottom: message.reactions ? 1 : 0,
-            }}
-          >
-            <Typography variant="body2" sx={{ fontSize: '0.875rem', color: theme.palette.text?.primary }}>
-              {message.message}
-            </Typography>
-          </Paper>
-        )}
-        {message.reactions && (
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 1,
-              marginTop: 0.5,
-              flexDirection: 'row',
-              justifyContent: isOwn ? 'flex-end' : 'flex-start',
-            }}
-          >
-            {message.reactions.map((reaction, index) => (
-              <Box
-                key={index}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  padding: '2px 8px',
-                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#f5f5f5',
-                  borderRadius: 1,
-                  fontSize: '0.75rem',
-                }}
-              >
-                {reaction.type === 'thumb' && <ThumbUp sx={{ fontSize: '0.875rem', color: theme.palette.text?.primary }} />}
-                {reaction.type === 'heart' && <Favorite sx={{ fontSize: '0.875rem', color: '#f44336' }} />}
-                {reaction.type === 'smile' && <SentimentSatisfied sx={{ fontSize: '0.875rem', color: theme.palette.text?.primary }} />}
-                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.text?.primary }}>
-                  {reaction.count}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
-        )}
-      </Box>
-      {isOwn && (
-        <Box sx={{ position: 'relative' }}>
-          <Avatar
-            sx={{
-              width: 36,
-              height: 36,
-              backgroundColor: theme.palette.secondary?.main || '#9c27b0',
-              fontSize: '0.75rem',
-              color: '#ffffff',
-            }}
-          >
-            {message.avatar}
-          </Avatar>
-        </Box>
-      )}
-    </Box>
-  );
-};
-
 export default RessaDWM;
-
