@@ -384,8 +384,7 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
     const schemaElement = { properties: { connector: { oneOf: elements } } };
     return R.mergeDeepRight<JSONSchemaType<ConnectorConfiguration>, any>(PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA, schemaElement);
   },
-  notify: async ({ executionId, eventId, playbookId, playbookNode,
-                   previousPlaybookNodeId, dataInstanceId, bundle }) => {
+  notify: async ({ executionId, eventId, playbookId, playbookNode, previousPlaybookNodeId, dataInstanceId, bundle }) => {
     if (playbookNode.configuration.connector) {
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const message = {
@@ -415,23 +414,21 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
     // Add extensions if needed
     // This is needed as the rest of playbook expecting STIX2.1 format with extensions
     const stixBundle = extendsBundleElementsWithExtensions(bundle);
+    const resolveDuplicate = (a: any, b: any) => {
+      if (Array.isArray(a) && Array.isArray(b)) {
+        return R.uniq([...a, ...b]);
+      }
+      return b;
+    };
     if (previousStepBundle) {
-      // TODO Could be reactivated after improvement of enrichment connectors
-      //   const diffOperations = jsonpatch.compare(previousStepBundle.objects, bundle.objects);
-      //   if (diffOperations.length === 0) {
-      //     return { output_port: 'unmodified', bundle };
-      //   }
-
+      const previousObjectsIndex: Record<string, StixObject> = {};
+      previousStepBundle.objects.forEach((obj) => {
+        previousObjectsIndex[obj.id] = obj;
+      });
       // Check if new bundle objects has the same object ids of previous bundle objects
-      const enrichedObjects = stixBundle.objects.map(newObj => {
-        const prevObj = previousStepBundle.objects.find(o => o.id === newObj.id);
+      const enrichedObjects = stixBundle.objects.map((newObj) => {
+        const prevObj = previousObjectsIndex[newObj.id];
         if (prevObj) {
-          const resolveDuplicate = (a: any, b: any) => {
-            if (Array.isArray(a) && Array.isArray(b)) {
-              return R.uniq([...a, ...b]);
-            }
-            return b;
-          };
           // Merge both objects if same ids
           return R.mergeDeepWith<StixObject, StixObject>(resolveDuplicate, prevObj, newObj);
         }
@@ -439,12 +436,13 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
       });
 
       // Check if new bundle contains objects of previous bundle and add them if not in it
-      previousStepBundle.objects.forEach(prevObj => {
-        const existsInCurrent = stixBundle.objects.some(o => o.id === prevObj.id);
-        if (!existsInCurrent) {
-          enrichedObjects.push(prevObj);
-        }
-      });
+      const existingIds = new Set(stixBundle.objects.map((o) => o.id));
+      const missingObjects = previousStepBundle.objects.filter(
+        (prevObj) => !existingIds.has(prevObj.id),
+      );
+      if (missingObjects.length > 0) {
+        enrichedObjects.push(...missingObjects);
+      }
       stixBundle.objects = enrichedObjects;
       return { output_port: 'out', bundle: stixBundle };
     }
