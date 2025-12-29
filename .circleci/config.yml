@@ -862,38 +862,6 @@ jobs:
           event: fail
           template: basic_fail_1
 
-  deploy_testing:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - kubernetes/install-kubectl
-      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment -l app=opencti
-
-  deploy_prerelease:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - kubernetes/install-kubectl
-      - add_ssh_keys:
-          fingerprints:
-            - "SHA256:huG64qM1OJQCRwOB50xF4k+RZ7l4+rUuIetpM+Sf1MA"
-      - run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -H 13.38.189.26 >> ~/.ssh/known_hosts
-          cat ~/.ssh/known_hosts
-          ssh admin@13.38.189.26 "kubectl -n customer-prerelease-aws rollout restart deployment -l app=opencti"
-
-  deploy_dev:
-    docker:
-      - image: cimg/base:stable
-    steps:
-      - checkout
-      - kubernetes/install-kubectl
-      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_DEV -n customer-dev rollout restart deployment -l app=opencti
-
   notify_rolling:
     docker:
       - image: "cimg/base:stable"
