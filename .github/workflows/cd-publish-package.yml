@@ -21,7 +21,7 @@ jobs:
 
     - name: Build OpenCTI on debian
       run: |
-        docker run--name build-package \
+        docker run --name build-package \
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22 \
           sh -c "set -eux
@@ -71,7 +71,7 @@ jobs:
 
     - name: Build OpenCTI on debian
       run: |
-        docker run--name build-package \
+        docker run --name build-package \
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
           sh -c "set -eux
