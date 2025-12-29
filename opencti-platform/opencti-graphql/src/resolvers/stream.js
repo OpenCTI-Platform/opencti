@@ -8,7 +8,7 @@ import {
   streamCollectionCleanContext,
 } from '../domain/stream';
 import { getAuthorizedMembers } from '../utils/authorizedMembers';
-import { fetchStreamInfo } from '../database/redis';
+import { fetchStreamInfo } from '../database/stream/stream-handler';
 
 const streamResolvers = {
   Query: {

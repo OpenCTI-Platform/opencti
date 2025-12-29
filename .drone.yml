@@ -313,7 +313,7 @@ services:
   - name: redis
     image: redis:8.4.0
   - name: elastic
-    image: elasticsearch:8.19.8
+    image: elasticsearch:8.19.9
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
@@ -325,7 +325,7 @@ services:
       MINIO_ROOT_PASSWORD: ChangeMe
     command: [server, /data]
   - name: rabbitmq
-    image: rabbitmq:4.2.1-management
+    image: rabbitmq:4.2.2-management
 
   - name: opencti-raw-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine

@@ -1,4 +1,4 @@
-import { lstatSync, readFileSync } from 'node:fs';
+import { lstatSync, readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import nconf from 'nconf';
 import * as R from 'ramda';
@@ -86,7 +86,13 @@ const { timestamp } = format;
 const currentPath = process.env.INIT_CWD || process.cwd();
 const resolvePath = (relativePath) => path.join(currentPath, relativePath);
 export const environment = nconf.get('env') || nconf.get('node_env') || process.env.NODE_ENV || DEFAULT_ENV;
-const resolveEnvFile = (env) => path.join(resolvePath('config'), `${env.toLowerCase()}.json`);
+const resolveEnvFile = (env) => {
+  const filePath = path.join(resolvePath('config'), `${env.toLowerCase()}.json`);
+  if (env.toLowerCase() === 'dev' && !existsSync(filePath)) {
+    return path.join(resolvePath('config'), 'development.json');
+  }
+  return filePath;
+};
 export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');
 export const NODE_INSTANCE_ID = nconf.get('app:node_identifier') || uuid();

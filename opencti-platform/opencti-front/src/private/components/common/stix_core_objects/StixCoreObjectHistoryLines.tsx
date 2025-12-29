@@ -17,6 +17,8 @@ import useInterval from '../../../../utils/hooks/useInterval';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import { StixCoreObjectHistoryLine_node$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLine_node.graphql';
+import { useTheme } from '@mui/material/styles';
+import type { Theme } from '../../../../components/Theme';
 
 export const stixCoreObjectHistoryLinesQuery = graphql`
   query StixCoreObjectHistoryLinesQuery(
@@ -62,6 +64,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const [open, setOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<StixCoreObjectHistoryLine_node$key | undefined>(undefined);
   const queryData = usePreloadedQuery(stixCoreObjectHistoryLinesQuery, queryRef);
@@ -88,6 +91,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
     <Paper
       style={{
         borderRadius: 4,
+        marginTop: theme.spacing(1),
       }}
       className="paper-for-grid"
       variant="outlined"

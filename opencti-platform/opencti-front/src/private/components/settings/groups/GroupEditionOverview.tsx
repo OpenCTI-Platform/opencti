@@ -264,6 +264,7 @@ const GroupEditionOverview = createFragmentContainer(
           name
           authorizedMembers {
             id
+            member_id
           }
         }
         ...GroupHiddenTypesField_group

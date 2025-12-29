@@ -152,6 +152,7 @@ export const groupDelete = async (context, user, groupId) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].DELETE_TOPIC, group, user).then(() => groupId);
 };
 
+const groupAttributesUserCacheNoReset = ['name', 'description'];
 export const groupEditField = async (context, user, groupId, input) => {
   const { element } = await updateAttribute(context, user, groupId, ENTITY_TYPE_GROUP, input);
   await publishUserAction({
@@ -162,8 +163,8 @@ export const groupEditField = async (context, user, groupId, input) => {
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for group \`${element.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input },
   });
-  // on editing the group confidence level, all members might have changed their effective level
-  if (input.find((i) => ['group_confidence_level', 'max_shareable_markings', 'restrict_delete'].includes(i.key))) {
+  // On editing the group, refresh the cache (only when really needed)
+  if (input.find((i) => !groupAttributesUserCacheNoReset.includes(i.key))) {
     await groupUsersCacheRefresh(context, user, groupId);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);

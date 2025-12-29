@@ -1,7 +1,8 @@
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
-import { createStreamProcessor, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor } from '../database/stream/stream-handler';
+import { type StreamProcessor } from '../database/stream/stream-utils';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
@@ -293,7 +294,7 @@ const initHistoryManager = () => {
       lock = await lockResources([HISTORY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running history manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler, { bufferTime: 5000, withInternal: true });
+      streamProcessor = createStreamProcessor('History manager', historyStreamHandler, { bufferTime: 5000, withInternal: true });
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();

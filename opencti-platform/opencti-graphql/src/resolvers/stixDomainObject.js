@@ -78,7 +78,7 @@ const stixDomainObjectResolvers = {
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ABSTRACT_STIX_DOMAIN_OBJECT),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

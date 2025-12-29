@@ -105,11 +105,12 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
 const buildStixObject = (instance: StoreObject): S.StixObject => {
   return {
     id: buildStixId(instance.entity_type, instance.standard_id),
-    x_opencti_id: instance.id,
+    type: convertTypeToStix2Type(instance.entity_type),
     spec_version: '2.0',
+    // extensions
+    x_opencti_id: instance.id,
     x_opencti_type: instance.entity_type,
     x_opencti_modified_at: convertToStixDate(instance.x_opencti_modified_at),
-    type: convertTypeToStix2Type(instance.entity_type),
     x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
     x_opencti_workflow_id: instance.x_opencti_workflow_id,
     x_opencti_files: ((instance.x_opencti_files ?? []).map((file: StoreFileWithRefs) => ({
@@ -119,6 +120,9 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
       version: file.version,
       object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
     }))),
+    // TODO Add missing attribute 2.1 extension
+    // x_created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
+    // x_created_by_ref_type: instance[INPUT_CREATED_BY]?.entity_type,
   };
 };
 

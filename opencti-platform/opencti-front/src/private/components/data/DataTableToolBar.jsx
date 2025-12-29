@@ -2145,10 +2145,15 @@ class DataTableToolBar extends Component {
       warning,
       warningMessage,
       taskScope,
-      displayEditButtons,
     } = this.props;
-    const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
-
+    const {
+      actions,
+      keptEntityId,
+      mergingElement,
+      actionsInputs,
+      promoteToContainer,
+      displayEditButtons,
+    } = this.state;
     const isUserDatatable = taskScope === 'USER';
 
     let deleteCapability = KNOWLEDGE_KNUPDATE_KNDELETE;

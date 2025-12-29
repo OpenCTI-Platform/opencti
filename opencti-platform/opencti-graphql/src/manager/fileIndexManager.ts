@@ -19,7 +19,9 @@ import * as R from 'ramda';
 import type { BasicStoreSettings } from '../types/settings';
 import { EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from '../database/utils';
 import conf, { ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
-import { createStreamProcessor, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor } from '../database/stream/stream-handler';
+import { type StreamProcessor } from '../database/stream/stream-utils';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getEntityFromCache } from '../database/cache';
@@ -41,6 +43,7 @@ const FILE_INDEX_MANAGER_KEY = conf.get('file_index_manager:lock_key');
 const SCHEDULE_TIME = conf.get('file_index_manager:interval') || 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
 const FILE_INDEX_MANAGER_STREAM_KEY = conf.get('file_index_manager:stream_lock_key');
+const FILE_INDEX_MANAGER_NAME = 'file_index_manager';
 
 interface FileToIndexObject {
   id: string;
@@ -102,13 +105,12 @@ export const indexImportedFiles = async (context: AuthContext, indexFromDate: st
     }
   }
 };
-
 const handleStreamEvents = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
   try {
     if (streamEvents.length === 0) {
       return;
     }
-    const context = executionContext('file_index_manager');
+    const context = executionContext(FILE_INDEX_MANAGER_NAME);
     for (let index = 0; index < streamEvents.length; index += 1) {
       const event = streamEvents[index];
       if (event.data.type === EVENT_TYPE_UPDATE) {
@@ -126,6 +128,7 @@ const handleStreamEvents = async (streamEvents: Array<SseEvent<StreamDataEvent>>
           await elUpdateFilesWithEntityRestrictions(entity);
         }
       }
+      await redisSetManagerEventState(FILE_INDEX_MANAGER_NAME, event.id);
     }
   } catch (e) {
     logApp.error('[OPENCTI-MODULE] File index manager handling error', { cause: e, manager: 'FILE_INDEX_MANAGER' });
@@ -145,7 +148,7 @@ const initFileIndexManager = () => {
     });
   };
   const fileIndexHandler = async () => {
-    const context = executionContext('file_index_manager');
+    const context = executionContext(FILE_INDEX_MANAGER_NAME);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     if (settings.valid_enterprise_edition === true) {
       let lock;
@@ -176,7 +179,7 @@ const initFileIndexManager = () => {
     }
   };
   const fileIndexStreamHandler = async () => {
-    const context = executionContext('file_index_manager');
+    const context = executionContext(FILE_INDEX_MANAGER_NAME);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     if (settings.valid_enterprise_edition === true) {
       let lock;
@@ -185,8 +188,9 @@ const initFileIndexManager = () => {
         lock = await lockResources([FILE_INDEX_MANAGER_STREAM_KEY], { retryCount: 0 });
         running = true;
         logApp.info('[OPENCTI-MODULE] Running file index manager stream handler');
-        streamProcessor = createStreamProcessor(SYSTEM_USER, 'File index manager', handleStreamEvents, { bufferTime: 5000 });
-        await streamProcessor.start('live');
+        streamProcessor = createStreamProcessor('File index manager', handleStreamEvents, { bufferTime: 5000 });
+        const lastEventState = await redisGetManagerEventState(FILE_INDEX_MANAGER_NAME);
+        await streamProcessor.start(lastEventState ?? 'live');
         while (!shutdown && streamProcessor.running()) {
           lock.signal.throwIfAborted();
           await wait(WAIT_TIME_ACTION);

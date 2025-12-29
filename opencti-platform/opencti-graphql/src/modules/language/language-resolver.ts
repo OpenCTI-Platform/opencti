@@ -3,11 +3,12 @@ import { addLanguage, findLanguagePaginated, findById } from './language-domain'
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
+import { ENTITY_TYPE_LANGUAGE } from './language-types';
 
 const languageResolvers: Resolvers = {
   Query: {
@@ -19,7 +20,7 @@ const languageResolvers: Resolvers = {
       return addLanguage(context, context.user, input);
     },
     languageDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_LANGUAGE);
     },
     languageFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });

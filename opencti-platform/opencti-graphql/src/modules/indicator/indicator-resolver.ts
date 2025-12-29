@@ -16,8 +16,8 @@ import {
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
 } from '../../domain/stixDomainObject';
 import { distributionEntities } from '../../database/middleware';
@@ -59,7 +59,7 @@ const indicatorResolvers: Resolvers = {
   Mutation: {
     indicatorAdd: (_, { input }, context) => addIndicator(context, context.user, input),
     indicatorDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_INDICATOR);
     },
     indicatorFieldPatch: (_, { id, input, commitMessage, references }, context) => indicatorEditField(context, context.user, id, input, { commitMessage, references }),
     indicatorContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),

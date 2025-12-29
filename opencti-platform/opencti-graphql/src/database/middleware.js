@@ -90,7 +90,8 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
-import { notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
+import { notify, redisAddDeletions } from './redis';
+import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
 import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -3063,12 +3064,13 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
         instance[key] = [...(instance[key] ?? []), targetElement];
       }
       const message = await generateUpdateMessage(context, user, instance.entity_type, inputs);
+      const changes = await buildChanges(context, user, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
         external_references: references.map((ref) => convertExternalReferenceToStix(ref)),
       } : undefined;
-      event = await storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
+      event = await storeUpdateEvent(context, user, previous, instance, message, changes, { ...opts, commit });
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
     } else {
       const createdRelation = { ...resolvedInput, ...dataRel.element };
@@ -3511,7 +3513,7 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
       } : undefined;
       await elDeleteElements(context, user, [element]);
       // Publish event in the stream
-      const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
+      const eventPromise = storeUpdateEvent(context, user, previous, instance, message, [], { ...opts, commit });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
       const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);
       event = updateEvent;

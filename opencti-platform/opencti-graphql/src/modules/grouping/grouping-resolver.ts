@@ -65,7 +65,7 @@ const groupingResolvers: Resolvers = {
       return addGrouping(context, context.user, input);
     },
     groupingDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_GROUPING);
     },
     groupingFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });

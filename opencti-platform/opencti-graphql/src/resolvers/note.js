@@ -19,6 +19,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_NOTE } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../utils/access';
@@ -70,7 +71,7 @@ const noteResolvers = {
     noteEdit: (_, { id }, context) => ({
       delete: async () => {
         await checkUserAccess(context, context.user, id);
-        return stixDomainObjectDelete(context, context.user, id);
+        return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_NOTE);
       },
       fieldPatch: async ({ input, commitMessage, references }) => {
         await checkUserAccess(context, context.user, id);
