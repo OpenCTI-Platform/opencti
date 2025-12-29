@@ -102,6 +102,6 @@ jobs:
     - name: Upload  OpenCTI debian package
       uses: actions/upload-artifact@v5
       with:
-        name: opencti-debian
+        name: opencti-musl
         path: release/${{ steps.package_name.outputs.value }}.tar.gz
         retention-days: 1
