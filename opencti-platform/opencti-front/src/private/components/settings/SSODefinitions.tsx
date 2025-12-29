@@ -113,10 +113,10 @@ const SSODefinitions = () => {
       percentWidth: 25,
       render: (node: { strategy: string }) => <div>{node.strategy}</div>,
     },
-    enable: {
-      label: 'Enable',
+    enabled: {
+      label: 'Enabled',
       percentWidth: 25,
-      render: (node: { enable: boolean }) => <div>{node.enable}</div>,
+      render: (node: { enabled: boolean }) => <div>{node.enabled}</div>,
     },
     name: {
       label: 'Name',
@@ -161,12 +161,6 @@ const SSODefinitions = () => {
           contextFilters={contextFilters}
           lineFragment={ssoDefinitionsLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
-          icon={(data) => {
-            const { x_opencti_color } = data;
-            return (
-              <MarkingIcon theme={theme} color={x_opencti_color} />
-            );
-          }}
           // actions={(ssoDefinition) => (
           //   <SSODefinitionPopover
           //     ssoDefinition={ssoDefinition}

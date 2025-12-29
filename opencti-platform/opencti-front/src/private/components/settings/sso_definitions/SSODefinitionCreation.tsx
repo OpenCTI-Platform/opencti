@@ -49,14 +49,14 @@ const SSODefinitionCreation: FunctionComponent<
   const theme = useTheme<Theme>();
 
   const ssoDefinitionValidation = Yup.object().shape({
-    strategy_type: Yup.string().required(t_i18n('This field is required')),
+    strategy: Yup.string().required(t_i18n('This field is required')),
     name: Yup.string().required(t_i18n('This field is required')),
   });
 
   const initialValues = {
     name: '',
-    strategy_type: '',
-    enable: true,
+    strategy: '',
+    enabled: true,
   };
 
   const onSubmit = (
@@ -106,20 +106,22 @@ const SSODefinitionCreation: FunctionComponent<
               <Field
                 component={SwitchField}
                 variant="standard"
-                name="enable"
+                name="enabled"
                 label="Enable authentication methode"
+                containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
               <Field
                 component={SelectField}
                 variant="standard"
-                name="strategy_type"
+                name="strategy"
                 label={t_i18n('Authentication Type')}
-                fullWidth={true}
+                containerstyle={{ width: '100%', marginTop: 20 }}
               >
-                <MenuItem key="openID" value="openID">{t_i18n('OpenID')}</MenuItem>
-                <MenuItem key="saml" value="saml">{t_i18n('SAML')}</MenuItem>
-                <MenuItem key="certificate" value="certificate">{t_i18n('Certificate')}</MenuItem>
-                <MenuItem key="header" value="header">{t_i18n('Header')}</MenuItem>
+                <MenuItem key="openID" value="OpenIDConnectStrategy">{t_i18n('OpenID')}</MenuItem>
+                <MenuItem key="saml" value="SamlStrategy">{t_i18n('SAML')}</MenuItem>
+                <MenuItem key="header" value="HeaderStrategy">{t_i18n('Header')}</MenuItem>
+                <MenuItem key="client-cert" value="ClientCertStrategy">{t_i18n('Client')}</MenuItem>
+                <MenuItem key="local" value="LocalStrategy">{t_i18n('Local')}</MenuItem>
               </Field>
               <Field
                 component={TextField}
