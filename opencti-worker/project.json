@@ -27,6 +27,18 @@
       "metadata": {
         "description": "Run the OpenCTI worker in development mode"
       }
+    },
+    "dev:graphql": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "dev:graphql" }],
+      "options": {
+        "cwd": "opencti-worker/src",
+        "command": "python worker.py"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI worker in development mode with GraphQL hot reload"
+      }
     }
   }
 }

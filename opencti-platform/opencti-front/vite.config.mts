@@ -192,6 +192,8 @@ const backProxy = (ws = false) => ({
   ws,
 });
 
+const watchGraphQL = process.env.WATCH_GRAPHQL === 'true';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
@@ -235,7 +237,7 @@ export default defineConfig({
           .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`)
       }
     },
-    {
+    (watchGraphQL ? {
       name: 'relay-schema-watcher',
       apply: 'serve',
       configureServer(server) {
@@ -268,8 +270,9 @@ export default defineConfig({
                 console.log('✅ Relay compiler finished successfully');
                 
                 // Only trigger reload after successful completion
-                console.log('🔄 Triggering full reload...\n');
+                console.log('🔄 Triggering full reload');
                 server.ws.send({ type: 'full-reload', path: '*' });
+                console.log('✅ Frontend is up to date with GraphQL schema changes\n');
               } catch (error) {
                 console.error('❌ Relay compiler error:', error);
                 console.log('⚠️  Skipping reload due to error\n');
@@ -280,7 +283,7 @@ export default defineConfig({
           }
         });
       },
-    },
+    }: undefined),
     react(),
     relay
   ],
