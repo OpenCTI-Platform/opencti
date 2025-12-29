@@ -15,6 +15,7 @@ import { SSODefinitionsLinesPaginationQuery } from '@components/settings/__gener
 import { SSODefinitionsLines_data$data } from '@components/settings/__generated__/SSODefinitionsLines_data.graphql';
 import ItemCopy from '../../../components/ItemCopy';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -107,13 +108,27 @@ const SSODefinitions = () => {
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
 
   const dataColumns = {
+    strategy: {
+      label: 'Authentication strategy',
+      percentWidth: 25,
+      render: (node: { strategy: string }) => <div>{node.strategy}</div>,
+    },
+    enable: {
+      label: 'Enable',
+      percentWidth: 25,
+      render: (node: { enable: boolean }) => <div>{node.enable}</div>,
+    },
+    name: {
+      label: 'Name',
+      percentWidth: 25,
+      render: (node: { name: boolean }) => <div>{node.name}</div>,
+    },
     id: {
       label: 'ID',
       percentWidth: 25,
       isSortable: true,
       render: (node: { id: string }) => <ItemCopy content={node.id} variant="inLine" />,
     },
-    created: { percentWidth: 15 },
   };
 
   const queryRef = useQueryLoading(
@@ -163,7 +178,7 @@ const SSODefinitions = () => {
           disableNavigation
           // disableToolBar
           // removeSelectAll
-          // createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
+          createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
         />
       )}
     </div>

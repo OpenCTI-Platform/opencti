@@ -6,43 +6,43 @@ import type { SingleSignMigrationInput, SingleSignOnAddInput, SingleSignOnMigrat
 import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
-  query singleSignOns($first: Int) {
-    singleSignOns(first: $first) {
-      edges {
-        node {
-          id
-          name
-          strategy
-          enabled
+    query singleSignOns($first: Int) {
+        singleSignOns(first: $first) {
+            edges {
+                node {
+                    id
+                    name
+                    strategy
+                    enabled
+                }
+            }
         }
-      }
     }
-  }
 `;
 export const SINGLE_SIGN_ON_CREATE = gql`
-  mutation singleSignOnAdd($input: SingleSignOnAddInput!) {
-    singleSignOnAdd(input: $input) {
-      id
-      name
-      strategy
-      enabled
+    mutation singleSignOnAdd($input: SingleSignOnAddInput!) {
+        singleSignOnAdd(input: $input) {
+            id
+            name
+            strategy
+            enabled
+        }
     }
-  }
 `;
 export const SINGLE_SIGN_ON_UPDATE = gql`
-  mutation singleSignOnFieldPatch($id: ID!, $input: [EditInput!]!) {
-    singleSignOnFieldPatch(id: $id, input: $input) {
-      id
-      name
-      strategy
-      enabled
+    mutation singleSignOnFieldPatch($id: ID!, $input: [EditInput!]!) {
+        singleSignOnFieldPatch(id: $id, input: $input) {
+            id
+            name
+            strategy
+            enabled
+        }
     }
-  }
 `;
 export const SINGLE_SIGN_ON_DELETE = gql`
-  mutation singleSignOnDelete($id: ID!) {
-    singleSignOnDelete(id: $id) 
-  }
+    mutation singleSignOnDelete($id: ID!) {
+        singleSignOnDelete(id: $id)
+    }
 `;
 
 describe('Single Sign On', () => {
@@ -104,7 +104,12 @@ describe('Single Sign On', () => {
       });
 
       expect(singleSignOnList).toBeDefined();
-      expect(singleSignOnList?.data?.singleSignOns.edges.length).toBe(2);
+
+      const ssoList = singleSignOnList?.data?.singleSignOns.edges;
+      const test1SSOEntity = ssoList.find((item: any) => item.node.id === createdSingleSignOn1Id);
+      expect(test1SSOEntity?.node?.name).toBe('test name 1');
+      const test2SSOEntity = ssoList.find((item: any) => item.node.id === createdSingleSignOn2Id);
+      expect(test2SSOEntity?.node?.name).toBe('test name 2');
     });
   });
   describe('Update', () => {
@@ -150,7 +155,9 @@ describe('Single Sign On', () => {
       });
 
       expect(singleSignOnList).toBeDefined();
-      expect(singleSignOnList?.data?.singleSignOns.edges.length).toBe(0);
+      const ssoList = singleSignOnList?.data?.singleSignOns.edges;
+      expect(ssoList.find((item: any) => item?.node?.id === createdSingleSignOn1Id)).toBeUndefined();
+      expect(ssoList.find((item: any) => item?.node?.id === createdSingleSignOn2Id)).toBeUndefined();
     });
   });
 
