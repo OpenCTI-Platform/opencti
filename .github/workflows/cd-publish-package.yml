@@ -24,7 +24,7 @@ jobs:
         docker run--name build-package \
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22 \
-          sh -c 'set -eux
+          sh -c "set -eux
            cd /home/workspace
            apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl g++ make python3 python3-dev
            npm install -g node-gyp
@@ -32,7 +32,7 @@ jobs:
            cd opencti-platform/opencti-graphql
            yarn install
            yarn build
-        '
+        "
 
     - name: Build OpenCTI debian package
       run: |
@@ -74,7 +74,7 @@ jobs:
         docker run--name build-package \
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -eux
+          sh -c "set -eux
            cd /home/workspace
            apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
            npm install -g node-gyp
@@ -82,7 +82,7 @@ jobs:
            cd opencti-platform/opencti-graphql
            yarn install
            yarn build
-        '
+        "
 
     - name: Build OpenCTI musl package
       run: |
