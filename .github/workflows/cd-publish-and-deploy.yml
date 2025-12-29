@@ -16,3 +16,47 @@ jobs:
         publish_to_registry: true
       secrets: inherit
 
+
+  deploy-staging:
+    name: Deploy images on staging
+    needs: wf-build-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install AWX cli
+        run: pip install awxkit
+
+      - name: Deploy on testing
+        if: ${{ github.ref_name == 'master' }}
+        run: |
+          awx --conf.host ${{ secrets.AWX_URL }} --conf.username ${{ secrets.AWX_USER }} --conf.password ${{ secrets.AWX_PASSWORD }} \
+            job_templates launch 'Rollout restart an instance resources' \
+            --wait -f human \
+            --inventory eu-west-staging \
+            --extra_vars '{"customer":"testing","solution": "opencti" }}' 
+
+      - name: Deploy on prerelease CE
+        if: ${{ github.ref_name == 'master' }}
+        run: |
+          awx --conf.host ${{ secrets.AWX_URL }} --conf.username ${{ secrets.AWX_USER }} --conf.password ${{ secrets.AWX_PASSWORD }} \
+            job_templates launch 'Rollout restart an instance resources' \
+            --wait -f human \
+            --inventory gcp-staging \
+            --extra_vars '{"customer":"prerelease-ce","solution": "opencti" }}' 
+
+      - name: Deploy on prerelease
+        if: ${{ github.ref_name == 'prerelease' }}
+        run: |
+          awx --conf.host ${{ secrets.AWX_URL }} --conf.username ${{ secrets.AWX_USER }} --conf.password ${{ secrets.AWX_PASSWORD }} \
+            job_templates launch 'Rollout restart an instance resources' \
+            --wait -f human \
+            --inventory aws-staging \
+            --extra_vars '{"customer":"prerelease-aws","solution": "opencti" }}'
+
+      - name: Deploy on cicd-test
+        if: ${{ github.ref_name == 'issue/13571-build-images' }}
+        run: |
+          awx --conf.host ${{ secrets.AWX_URL }} --conf.username ${{ secrets.AWX_USER }} --conf.password ${{ secrets.AWX_PASSWORD }} \
+            job_templates launch 'Rollout restart an instance resources' \
+            --wait -f human \
+            --inventory eu-west-staging \
+            --extra_vars '{"customer":"cicd-test","solution": "opencti" }}'

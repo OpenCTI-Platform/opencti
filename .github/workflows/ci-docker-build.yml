@@ -129,7 +129,7 @@ jobs:
         images: ${{ inputs.registry }}/worker
         tags: type=raw,value=${{ inputs.image_tag }}
 
-    - name: Build and push
+    - name: Build and ${{ inputs.publish_to_registry  && 'push' || 'export as tar' }}
       uses: docker/build-push-action@v6
       with:
         context: opencti-worker
