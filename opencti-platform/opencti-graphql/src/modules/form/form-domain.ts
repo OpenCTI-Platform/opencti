@@ -372,7 +372,7 @@ const transformSpecialFields = async (
   return transformed;
 };
 
-const completeEntity = (entityType: string, entity: StoreEntity) => {
+export const completeEntity = (entityType: string, entity: StoreEntity) => {
   const finalEntity = entity;
   finalEntity.standard_id = generateStandardId(entityType, entity) as StixId;
   finalEntity.internal_id = uuidv4();
