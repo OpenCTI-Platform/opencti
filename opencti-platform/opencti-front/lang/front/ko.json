@@ -1543,6 +1543,7 @@
   "entity_Sighting": "목격",
   "entity_Software": "소프트웨어",
   "entity_SSH-Key": "SSH 키",
+  "entity_SSODefinition": "SSO 정의",
   "entity_StatusTemplate": "상태 템플릿",
   "entity_Stix-Core-Object": "엔터티 및 관찰 가능 항목",
   "entity_Stix-Core-Objects": "엔터티 및 관찰 가능 항목",

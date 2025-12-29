@@ -1543,6 +1543,7 @@
   "entity_Sighting": "Прицел",
   "entity_Software": "Программное обеспечение",
   "entity_SSH-Key": "SSH-ключ",
+  "entity_SSODefinition": "Определение SSO",
   "entity_StatusTemplate": "Шаблон состояния",
   "entity_Stix-Core-Object": "Сущность и наблюдаемый",
   "entity_Stix-Core-Objects": "Сущности и наблюдаемые",
