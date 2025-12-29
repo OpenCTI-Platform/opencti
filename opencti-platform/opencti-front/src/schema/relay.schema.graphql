@@ -14943,11 +14943,7 @@ enum StrategyType {
   HeaderStrategy
   LdapStrategy
   OpenIDConnectStrategy
-  FacebookStrategy
   SamlStrategy
-  GoogleStrategy
-  GithubStrategy
-  Auth0Strategy
 }
 
 enum SingleSignOnOrdering {
@@ -15000,6 +14996,7 @@ input SingleSignOnAddInput {
 }
 
 type SingleSignOnMigrationResult {
+  id: ID!
   name: String!
   description: String
   enabled: Boolean!
