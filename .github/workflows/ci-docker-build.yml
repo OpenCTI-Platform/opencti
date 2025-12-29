@@ -30,7 +30,7 @@ on:
         description: "Registry used to publish the image"
         type: string
         required: false
-        default: "filigran/platform"
+        default: "docker.io/filigran"
     outputs:
       image-tag-version-cleaned:
         description: "Image tag after formatting"
@@ -72,7 +72,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ inputs.registry }}
+        images: ${{ inputs.registry }}/platform
         tags: type=raw,value=${{ inputs.image_tag }}
 
     - name: Build and ${{ inputs.publish_to_registry  && 'push' || 'export as tar' }}
@@ -126,7 +126,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ inputs.registry }}
+        images: ${{ inputs.registry }}/worker
         tags: type=raw,value=${{ inputs.image_tag }}
 
     - name: Build and push
