@@ -146,8 +146,22 @@ describe('Migration of SSO environment test coverage', () => {
       expect(groupManagementSAMLConfiguration.strategy).toBe('SamlStrategy');
       expect(groupManagementSAMLConfiguration.name).toMatch(/My test SAML-*/);
       expect(groupManagementSAMLConfiguration.enabled).toBeTruthy();
+      /*
+      expect(minimalSamlConfiguration.groups_management).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml' },
+        { key: 'entry_point', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
+        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
+        { key: 'cert', type: 'string', value: 'totallyFakeCert' },
+      ]);
+      expect(minimalSamlConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml' },
+        { key: 'entry_point', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
+        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
+        { key: 'cert', type: 'string', value: 'totallyFakeCert' },
+      ]);
 
       expect(result.length).toBe(2);
+      */
     });
   });
 

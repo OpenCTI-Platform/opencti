@@ -9713,7 +9713,7 @@ export type GroupsManagementInput = {
   groups_attributes: Array<InputMaybe<Scalars['String']['input']>>;
   groups_mapping: Array<InputMaybe<Scalars['String']['input']>>;
   groups_path: Array<InputMaybe<Scalars['String']['input']>>;
-  read_userinfo: Scalars['Boolean']['input'];
+  read_userinfo?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export enum GroupsOrdering {
@@ -27886,12 +27886,12 @@ export type SingleSignOn = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
-  groups_management?: Maybe<Array<GroupsManagement>>;
+  groups_management?: Maybe<GroupsManagement>;
   id: Scalars['ID']['output'];
   logout_remote?: Maybe<Scalars['Boolean']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  organizations_management?: Maybe<Array<OrganizationsManagement>>;
+  organizations_management?: Maybe<OrganizationsManagement>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   prevent_default_groups?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
@@ -27905,10 +27905,10 @@ export type SingleSignOnAddInput = {
   configuration?: InputMaybe<Array<ConfigurationTypeInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   enabled: Scalars['Boolean']['input'];
-  groups_management?: InputMaybe<Array<GroupsManagementInput>>;
+  groups_management?: InputMaybe<GroupsManagementInput>;
   logout_remote?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
-  organizations_management?: InputMaybe<Array<OrganizationsManagementInput>>;
+  organizations_management?: InputMaybe<OrganizationsManagementInput>;
   prevent_default_groups?: InputMaybe<Scalars['Boolean']['input']>;
   strategy: StrategyType;
 };
@@ -27932,11 +27932,11 @@ export type SingleSignOnMigrationResult = {
   configuration?: Maybe<Array<ConfigurationType>>;
   description?: Maybe<Scalars['String']['output']>;
   enabled: Scalars['Boolean']['output'];
-  groups_management?: Maybe<Array<GroupsManagement>>;
+  groups_management?: Maybe<GroupsManagement>;
   id: Scalars['ID']['output'];
   logout_remote?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
-  organizations_management?: Maybe<Array<OrganizationsManagement>>;
+  organizations_management?: Maybe<OrganizationsManagement>;
   prevent_default_groups?: Maybe<Scalars['Boolean']['output']>;
   strategy: StrategyType;
 };
@@ -46652,12 +46652,12 @@ export type SingleSignOnResolvers<ContextType = any, ParentType extends Resolver
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  groups_management?: Resolver<Maybe<Array<ResolversTypes['GroupsManagement']>>, ParentType, ContextType>;
+  groups_management?: Resolver<Maybe<ResolversTypes['GroupsManagement']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   logout_remote?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  organizations_management?: Resolver<Maybe<Array<ResolversTypes['OrganizationsManagement']>>, ParentType, ContextType>;
+  organizations_management?: Resolver<Maybe<ResolversTypes['OrganizationsManagement']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   prevent_default_groups?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46682,11 +46682,11 @@ export type SingleSignOnMigrationResultResolvers<ContextType = any, ParentType e
   configuration?: Resolver<Maybe<Array<ResolversTypes['ConfigurationType']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  groups_management?: Resolver<Maybe<Array<ResolversTypes['GroupsManagement']>>, ParentType, ContextType>;
+  groups_management?: Resolver<Maybe<ResolversTypes['GroupsManagement']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   logout_remote?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  organizations_management?: Resolver<Maybe<Array<ResolversTypes['OrganizationsManagement']>>, ParentType, ContextType>;
+  organizations_management?: Resolver<Maybe<ResolversTypes['OrganizationsManagement']>, ParentType, ContextType>;
   prevent_default_groups?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   strategy?: Resolver<ResolversTypes['StrategyType'], ParentType, ContextType>;
 }>;

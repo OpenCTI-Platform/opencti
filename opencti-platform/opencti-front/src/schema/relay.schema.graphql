@@ -15286,8 +15286,8 @@ type SingleSignOn implements InternalObject & BasicObject {
   auto_create_group: Boolean
   prevent_default_groups: Boolean
   logout_remote: Boolean
-  organizations_management: [OrganizationsManagement!]
-  groups_management: [GroupsManagement!]
+  organizations_management: OrganizationsManagement
+  groups_management: GroupsManagement
   configuration: [ConfigurationType!]
   advanced_configuration: [ConfigurationType!]
 }
@@ -15345,7 +15345,7 @@ input GroupsManagementInput {
   groups_attributes: [String]!
   groups_path: [String]!
   groups_mapping: [String]!
-  read_userinfo: Boolean!
+  read_userinfo: Boolean
 }
 
 input ConfigurationTypeInput {
@@ -15362,8 +15362,8 @@ input SingleSignOnAddInput {
   auto_create_group: Boolean
   prevent_default_groups: Boolean
   logout_remote: Boolean
-  organizations_management: [OrganizationsManagementInput!]
-  groups_management: [GroupsManagementInput!]
+  organizations_management: OrganizationsManagementInput
+  groups_management: GroupsManagementInput
   configuration: [ConfigurationTypeInput!]
   advanced_configuration: [ConfigurationTypeInput!]
 }
@@ -15377,8 +15377,8 @@ type SingleSignOnMigrationResult {
   auto_create_group: Boolean
   prevent_default_groups: Boolean
   logout_remote: Boolean
-  organizations_management: [OrganizationsManagement!]
-  groups_management: [GroupsManagement!]
+  organizations_management: OrganizationsManagement
+  groups_management: GroupsManagement
   configuration: [ConfigurationType!]
   advanced_configuration: [ConfigurationType!]
 }
