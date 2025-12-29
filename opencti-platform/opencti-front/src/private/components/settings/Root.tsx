@@ -17,6 +17,7 @@ import useGranted, {
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETCASETEMPLATES,
   SETTINGS_SETSTATUSTEMPLATES,
+  SETTINGS_SETAUTH,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 
@@ -38,6 +39,7 @@ const Rules = lazy(() => import('./rules/Rules'));
 const Sessions = lazy(() => import('./Sessions'));
 const Settings = lazy(() => import('./Settings'));
 const SettingsOrganizations = lazy(() => import('./SettingsOrganizations'));
+const SSODefinitions = lazy(() => import('./SSODefinitions'));
 const FileIndexing = lazy(() => import('./file_indexing/FileIndexing'));
 const StatusTemplates = lazy(() => import('./status_templates/StatusTemplates'));
 const RootSubType = lazy(() => import('./sub_types/Root'));
@@ -278,6 +280,17 @@ const Root = () => {
             element={(
               <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                 <EmailTemplate />
+              </Security>
+            )}
+          />
+          <Route
+            path="/accesses/single_sign_on"
+            element={(
+              <Security
+                needs={[SETTINGS_SETAUTH]}
+                placeholder={<Navigate to={urlWithCapabilities()} />}
+              >
+                <SSODefinitions />
               </Security>
             )}
           />

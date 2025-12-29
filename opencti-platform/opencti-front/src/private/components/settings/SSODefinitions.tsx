@@ -1,0 +1,173 @@
+import { useFormatter } from '../../../components/i18n';
+import type { Theme } from '../../../components/Theme';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import AccessesMenu from '@components/settings/AccessesMenu';
+import React from 'react';
+import { graphql } from 'react-relay';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import DataTable from '../../../components/dataGrid/DataTable';
+import MarkingIcon from '../../../utils/MarkingIcon';
+import { useTheme } from '@mui/styles';
+import { SSODefinitionsLinesPaginationQuery } from '@components/settings/__generated__/SSODefinitionsLinesPaginationQuery.graphql';
+import { SSODefinitionsLines_data$data } from '@components/settings/__generated__/SSODefinitionsLines_data.graphql';
+import ItemCopy from '../../../components/ItemCopy';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+
+const LOCAL_STORAGE_KEY = 'SSODefinitions';
+
+export const ssoDefinitionsLinesQuery = graphql`
+  query SSODefinitionsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: SingleSignOnOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...SSODefinitionsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+const ssoDefinitionsLineFragment = graphql`
+  fragment SSODefinitionsLine_node on SingleSignOn {
+    id
+    name
+    description
+    enabled
+    strategy
+  }
+`;
+const ssoDefinitionsLinesFragment = graphql`
+  fragment SSODefinitionsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: {
+        type: "SingleSignOnOrdering"
+        defaultValue: name
+    }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "SingleSignOnLinesRefetchQuery") {
+    singleSignOns(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_singleSignOns") {
+      edges {
+        node {
+          id
+          entity_type
+          ...SSODefinitionsLine_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
+const SSODefinitions = () => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('SSO Definitions | Security | Settings'));
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'name',
+    orderAsc: true,
+    numberOfElements: {
+      number: 0,
+      symbol: '',
+    },
+  };
+  const { viewStorage: { filters }, helpers, paginationOptions } = usePaginationLocalStorage<SSODefinitionsLinesPaginationQuery>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+  const contextFilters = useBuildEntityTypeBasedFilterContext('SSODefinition', filters);
+  const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
+
+  const dataColumns = {
+    id: {
+      label: 'ID',
+      percentWidth: 25,
+      isSortable: true,
+      render: (node: { id: string }) => <ItemCopy content={node.id} variant="inLine" />,
+    },
+    created: { percentWidth: 15 },
+  };
+
+  const queryRef = useQueryLoading(
+    ssoDefinitionsLinesQuery,
+    { ...queryPaginationOptions, count: 25 },
+  );
+
+  const preloadedPaginationProps = {
+    linesQuery: ssoDefinitionsLinesQuery,
+    linesFragment: ssoDefinitionsLinesFragment,
+    queryRef,
+    nodePath: ['singleSignOn'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<SSODefinitionsLinesPaginationQuery>;
+
+  return (
+    <div style={{ paddingRight: '200px' }}>
+      <Breadcrumbs elements={[
+        { label: t_i18n('Settings') },
+        { label: t_i18n('Security') },
+        { label: t_i18n('SSO definitions'), current: true }]}
+      />
+      <AccessesMenu />
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: SSODefinitionsLines_data$data) => data.singleSignOns?.edges?.map((e) => e?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          contextFilters={contextFilters}
+          lineFragment={ssoDefinitionsLineFragment}
+          preloadedPaginationProps={preloadedPaginationProps}
+          icon={(data) => {
+            const { x_opencti_color } = data;
+            return (
+              <MarkingIcon theme={theme} color={x_opencti_color} />
+            );
+          }}
+          // actions={(ssoDefinition) => (
+          //   <SSODefinitionPopover
+          //     ssoDefinition={ssoDefinition}
+          //     paginationOptions={queryPaginationOptions}
+          //   />
+          // )}
+          entityTypes={['SSODefinition']}
+          searchContextFinal={{ entityTypes: ['SSODefinition'] }}
+          disableNavigation
+          // disableToolBar
+          // removeSelectAll
+          // createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
+        />
+      )}
+    </div>
+  );
+};
+
+export default SSODefinitions;
