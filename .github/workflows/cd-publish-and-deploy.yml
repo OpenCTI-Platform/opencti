@@ -32,7 +32,7 @@ jobs:
             job_templates launch 'Rollout restart an instance resources' \
             --wait -f human \
             --inventory eu-west-staging \
-            --extra_vars '{"customer":"testing","solution": "opencti" }}' 
+            --extra_vars '{"customer":"testing","solution": "opencti" }' 
 
       - name: Deploy on prerelease CE
         if: ${{ github.ref_name == 'master' }}
@@ -41,7 +41,7 @@ jobs:
             job_templates launch 'Rollout restart an instance resources' \
             --wait -f human \
             --inventory gcp-staging \
-            --extra_vars '{"customer":"prerelease-ce","solution": "opencti" }}' 
+            --extra_vars '{"customer":"prerelease-ce","solution": "opencti" }' 
 
       - name: Deploy on prerelease
         if: ${{ github.ref_name == 'prerelease' }}
@@ -50,7 +50,7 @@ jobs:
             job_templates launch 'Rollout restart an instance resources' \
             --wait -f human \
             --inventory aws-staging \
-            --extra_vars '{"customer":"prerelease-aws","solution": "opencti" }}'
+            --extra_vars '{"customer":"prerelease-aws","solution": "opencti" }'
 
       - name: Deploy on cicd-test
         if: ${{ github.ref_name == 'issue/13571-build-images' }}
@@ -59,4 +59,4 @@ jobs:
             job_templates launch 'Rollout restart an instance resources' \
             --wait -f human \
             --inventory eu-west-staging \
-            --extra_vars '{"customer":"cicd-test","solution": "opencti" }}'
+            --extra_vars '{"customer":"cicd-test","solution": "opencti" }'
