@@ -73,7 +73,7 @@ const AccessesMenu: FunctionComponent = () => {
   ];
   const singleSignOnEntries: MenuEntry[] = [
     {
-      path: '/dashboard/settings/accesse/single_sign_on',
+      path: '/dashboard/settings/accesses/single_sign_on',
       label: 'SSO definition',
       icon: <LoginOutlined fontSize="medium" />,
       isEE: true,
