@@ -126,6 +126,7 @@ nav:
         - Architecture: deployment/integration-manager/architecture.md
         - Installation guide: deployment/integration-manager/installation.md
         - Configuration: deployment/integration-manager/configuration.md
+        - Security: deployment/integration-manager/security.md
         - Migration guide: deployment/integration-manager/migration.md
         - Troubleshooting guide: deployment/integration-manager/troubleshooting.md
       - Other resources: deployment/resources.md
