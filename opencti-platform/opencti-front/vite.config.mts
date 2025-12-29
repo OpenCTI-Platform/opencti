@@ -287,6 +287,12 @@ export default defineConfig({
 
   server: {
     port: 3000,
+    watch: {
+      // Ignore the generated relay files to prevent cascading rebuilds
+      ignored: [
+        '**/__generated__/**',
+      ],
+    },
     warmup: {
       clientFiles: ['./lang/front/*', './src/static/*', './src/app.tsx', './src/front.tsx', './src/util/hooks/*']
     },
