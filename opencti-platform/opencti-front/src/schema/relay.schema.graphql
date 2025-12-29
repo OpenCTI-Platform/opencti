@@ -9901,6 +9901,7 @@ type Mutation {
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiResetState(id: ID!): IngestionTaxii
   ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
+  ingestionTaxiiAddAutoUser(id: ID!, input: IngestionTaxiiAddAutoUserInput!): IngestionTaxii
   ingestionTaxiiCollectionAdd(input: IngestionTaxiiCollectionAddInput!): IngestionTaxiiCollection
   ingestionTaxiiCollectionDelete(id: ID!): ID
   ingestionTaxiiCollectionFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxiiCollection
@@ -12822,7 +12823,14 @@ input IngestionTaxiiAddInput {
   added_after_start: DateTime
   ingestion_running: Boolean
   confidence_to_score: Boolean
-  user_id: String
+  user_id: String!
+  automatic_user: Boolean
+  confidence_level: Int
+}
+
+input IngestionTaxiiAddAutoUserInput {
+  user_name: String!
+  confidence_level: Int!
 }
 
 type IngestionTaxiiCollection implements InternalObject & BasicObject {

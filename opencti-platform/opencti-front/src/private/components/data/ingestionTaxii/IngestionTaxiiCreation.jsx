@@ -12,7 +12,6 @@ import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import CreatorField from '../../common/form/CreatorField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
@@ -20,6 +19,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import IngestionCreationUserHandling from '@components/data/IngestionCreationUserHandling';
 
 const styles = (theme) => ({
   buttons: {
@@ -82,6 +82,8 @@ const IngestionTaxiiCreation = (props) => {
       authentication_value: authentifcationValueResolved,
       added_after_start: values.added_after_start,
       user_id: values.user_id?.value,
+      automatic_user: values.automatic_user ?? true,
+      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
       confidence_to_score: values.confidence_to_score,
     };
     commitMutation({
@@ -122,6 +124,7 @@ const IngestionTaxiiCreation = (props) => {
             authentication_type: 'none',
             authentication_value: '',
             user_id: '',
+            automatic_user: true,
             username: '',
             password: '',
             cert: '',
@@ -245,11 +248,9 @@ const IngestionTaxiiCreation = (props) => {
                   />
                 </>
               )}
-              <CreatorField
-                name="user_id"
-                label={t('User responsible for data creation (empty = System)')}
-                containerStyle={fieldSpacingContainerStyle}
-                showConfidence
+              <IngestionCreationUserHandling
+                default_confidence_level={50}
+                labelTag="F"
               />
               <Field
                 component={DateTimePickerField}

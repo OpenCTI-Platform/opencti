@@ -32,6 +32,7 @@ import { IngestionTaxiiEditionFragment_ingestionTaxii$key } from './__generated_
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { adaptFieldValue } from '../../../../utils/String';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import IngestionTaxiiEditionUserHandling from '@components/data/ingestionTaxii/IngestionTaxiiEditionUserHandling';
 
 export const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFragment_ingestionTaxii$data) => {
   return {
@@ -46,6 +47,7 @@ export const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFrag
       user_id: convertUser(ingestionTaxiiData, 'user'),
       added_after_start: ingestionTaxiiData.added_after_start,
       confidence_to_score: ingestionTaxiiData.confidence_to_score,
+      automatic_user: true,
     },
     ...(ingestionTaxiiData.authentication_type === BEARER_AUTH
       ? {
@@ -401,11 +403,21 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
           )}
           <CreatorField
             name="user_id"
-            label={t_i18n('User responsible for data creation (empty = System)')}
+            label={t_i18n('User responsible for data creation')}
             onChange={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
             showConfidence
           />
+          {ingestionTaxiiData.user?.name === 'SYSTEM'
+            && (
+              <IngestionTaxiiEditionUserHandling
+                key={values.name}
+                feedName={values.name}
+                onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
+                ingestionTaxiiDataId={ingestionTaxiiData.id}
+              />
+            )
+          }
           <Field
             component={DateTimePickerField}
             name="added_after_start"

@@ -1,4 +1,12 @@
-import { addIngestion, findTaxiiIngestionPaginated, findById, ingestionDelete, ingestionEditField, ingestionTaxiiResetState } from './ingestion-taxii-domain';
+import {
+  addIngestion,
+  findTaxiiIngestionPaginated,
+  findById,
+  ingestionDelete,
+  ingestionEditField,
+  ingestionTaxiiResetState,
+  ingestionTaxiiAddAutoUser
+} from './ingestion-taxii-domain';
 import type { Resolvers } from '../../generated/graphql';
 
 const ingestionTaxiiResolvers: Resolvers = {
@@ -21,6 +29,9 @@ const ingestionTaxiiResolvers: Resolvers = {
     },
     ingestionTaxiiFieldPatch: (_, { id, input }, context) => {
       return ingestionEditField(context, context.user, id, input);
+    },
+    ingestionTaxiiAddAutoUser: (_, { id, input }, context) => {
+      return ingestionTaxiiAddAutoUser(context, context.user, id, input);
     },
   },
 };

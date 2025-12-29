@@ -6,9 +6,10 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EditInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
+import { type EditInput, type IngestionTaxiiAddAutoUserInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
 import { addAuthenticationCredentials, removeAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
+import { createOnTheFlyUser } from '../user/user-domain';
 
 export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string, removeCredentials = false) => {
   const taxiiIngestion = await storeLoadById<BasicStoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
@@ -27,10 +28,21 @@ export const findAllTaxiiIngestion = async (context: AuthContext, user: AuthUser
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {
+  if (input.automatic_user) {
+    const onTheFlyCreatedUser = await createOnTheFlyUser(
+      context,
+      user,
+      { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level },
+    );
+    input = { ...input, user_id: onTheFlyCreatedUser.id };
+  }
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
-  const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_TAXII, { complete: true });
+
+  // Create taxii feed
+  const { automatic_user: _automatic_user, confidence_level: _confidence_level, ...taxiiFeedToCreate } = input;
+  const { element, isCreation } = await createEntity(context, user, taxiiFeedToCreate, ENTITY_TYPE_INGESTION_TAXII, { complete: true });
   if (isCreation) {
     await registerConnectorForIngestion(context, {
       id: element.id,
@@ -163,4 +175,13 @@ export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthU
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: ingestionUpdated },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestionUpdated, user);
+};
+
+export const ingestionTaxiiAddAutoUser = async (context: AuthContext, user: AuthUser, ingestionId: string, input: IngestionTaxiiAddAutoUserInput) => {
+  // Create new user
+  const onTheFlyCreatedUser = await createOnTheFlyUser(context, user,
+    { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
+
+  // Associate this user to the CSVFeed
+  return ingestionEditField(context, user, ingestionId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
 };
