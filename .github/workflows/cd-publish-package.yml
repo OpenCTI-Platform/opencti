@@ -34,7 +34,7 @@ jobs:
            yarn build
         "
 
-    - name: Build OpenCTI debian package
+    - name: Prepare OpenCTI debian package
       run: |
         set -eux
         sudo apt-get update -qq && sudo apt install curl
@@ -69,7 +69,7 @@ jobs:
       id: package_name
       run: echo "value=opencti-$(date +%Y%m%d)_musl" >> $GITHUB_OUTPUT
 
-    - name: Build OpenCTI on debian
+    - name: Build OpenCTI on alpine musl
       run: |
         docker run --name build-package \
           -v ${{ github.workspace }}:/home/workspace \
@@ -84,7 +84,7 @@ jobs:
            yarn build
         "
 
-    - name: Build OpenCTI musl package
+    - name: Prepare OpenCTI musl package
       run: |
         set -eux
         sudo apt-get update -qq && sudo apt install curl
@@ -99,7 +99,7 @@ jobs:
         tar -zcvf "${{ steps.package_name.outputs.value }}.tar.gz" opencti
 #        curl -usamuel.hassine@filigran.io:$JFROG_TOKEN -T opencti-$(date '+%Y%m%d').tar.gz "https://filigran.jfrog.io/artifactory/opencti/opencti-$(date '+%Y%m%d').tar.gz"
 
-    - name: Upload  OpenCTI debian package
+    - name: Upload OpenCTI musl package
       uses: actions/upload-artifact@v5
       with:
         name: opencti-musl
