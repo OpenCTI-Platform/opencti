@@ -13,5 +13,6 @@ jobs:
       with:
         image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' || github.ref_name == 'issue/13571-build-images' && 'test-13571'  }}
         client_python_local: true
+        publish_to_registry: true
       secrets: inherit
 
