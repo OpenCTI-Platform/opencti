@@ -172,7 +172,7 @@ describe('Single Sign On', () => {
       });
       expect(result?.data?.singleSignOnRunMigration).toBeDefined();
       const ssoConfig: SingleSignOnMigrationResult[] = result?.data?.singleSignOnRunMigration;
-      expect(ssoConfig[0]?.description).toMatch(/Automatically created from local */);
+      expect(ssoConfig[0]?.description).toMatch(/Automatically detected from local */);
     });
   });
 });

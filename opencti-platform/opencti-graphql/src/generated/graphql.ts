@@ -27933,6 +27933,7 @@ export type SingleSignOnMigrationResult = {
   description?: Maybe<Scalars['String']['output']>;
   enabled: Scalars['Boolean']['output'];
   groups_management?: Maybe<Array<GroupsManagement>>;
+  id: Scalars['ID']['output'];
   logout_remote?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
   organizations_management?: Maybe<Array<OrganizationsManagement>>;
@@ -30458,11 +30459,7 @@ export enum StixSightingRelationshipsOrdering {
 }
 
 export enum StrategyType {
-  Auth0Strategy = 'Auth0Strategy',
   ClientCertStrategy = 'ClientCertStrategy',
-  FacebookStrategy = 'FacebookStrategy',
-  GithubStrategy = 'GithubStrategy',
-  GoogleStrategy = 'GoogleStrategy',
   HeaderStrategy = 'HeaderStrategy',
   LdapStrategy = 'LdapStrategy',
   LocalStrategy = 'LocalStrategy',
@@ -46686,6 +46683,7 @@ export type SingleSignOnMigrationResultResolvers<ContextType = any, ParentType e
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   groups_management?: Resolver<Maybe<Array<ResolversTypes['GroupsManagement']>>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   logout_remote?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organizations_management?: Resolver<Maybe<Array<ResolversTypes['OrganizationsManagement']>>, ParentType, ContextType>;

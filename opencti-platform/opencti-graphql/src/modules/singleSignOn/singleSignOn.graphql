@@ -44,11 +44,7 @@ enum StrategyType {
   HeaderStrategy
   LdapStrategy
   OpenIDConnectStrategy
-  FacebookStrategy
   SamlStrategy
-  GoogleStrategy
-  GithubStrategy
-  Auth0Strategy
 }
 
 enum SingleSignOnOrdering {
@@ -113,6 +109,7 @@ input SingleSignOnAddInput {
 }
 
 type SingleSignOnMigrationResult {
+  id: ID!
   name: String!
   description: String
   enabled: Boolean!
@@ -134,5 +131,5 @@ type Mutation {
   singleSignOnAdd(input: SingleSignOnAddInput!): SingleSignOn @auth(for: [SETTINGS_SETAUTH])
   singleSignOnFieldPatch(id: ID!, input: [EditInput!]!): SingleSignOn @auth(for: [SETTINGS_SETAUTH])
   singleSignOnDelete(id: ID!): ID @auth(for: [SETTINGS_SETAUTH])
-  singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult] @auth(for: [SETTINGS_SETAUTH])
+  singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult] @auth(for: [BYPASS])
 }

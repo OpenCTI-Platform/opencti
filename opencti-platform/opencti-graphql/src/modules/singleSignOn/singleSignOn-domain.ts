@@ -118,5 +118,6 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
 export const runSingleSignOnRunMigration = async (context: AuthContext, user: AuthUser, input: SingleSignMigrationInput) => {
   logApp.info(`[SSO MIGRATION] dry run ? ${input.dry_run}`);
   const ssoConfigurationEnv = nconf.get('providers');
-  return parseSingleSignOnRunConfiguration(ssoConfigurationEnv);
+  logApp.info('[SSO MIGRATION] provider configuration:', { providers: ssoConfigurationEnv });
+  return parseSingleSignOnRunConfiguration(context, user, ssoConfigurationEnv, input.dry_run);
 };
