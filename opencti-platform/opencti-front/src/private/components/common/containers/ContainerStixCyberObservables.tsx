@@ -13,7 +13,6 @@ import ContainerAddStixCoreObjectsInLine from './ContainerAddStixCoreObjectsInLi
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { ContainerStixCyberObservables_container$data } from '@components/common/containers/__generated__/ContainerStixCyberObservables_container.graphql';
-import { ContainerStixCyberObservablesLinesQuery$variables } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import { ContainerStixCyberObservablesLinesSearchQuery$data } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { ContainerStixCyberObservablesLine_node$data } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLine_node.graphql';
@@ -63,6 +62,7 @@ export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   query ContainerStixCyberObservablesLinesSearchQuery(
     $id: String!
     $search: String
+    $types: [String]
     $filters: FilterGroup
     $count: Int
   ) {
@@ -72,6 +72,7 @@ export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
         search: $search
         first: $count
         filters: $filters
+        types: $types
       ) {
         edges {
           node {
@@ -207,7 +208,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<ContainerStixCyberObservablesLinesQuery$variables>(
+  } = usePaginationLocalStorage<ContainerStixCyberObservablesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       id: container.id,
