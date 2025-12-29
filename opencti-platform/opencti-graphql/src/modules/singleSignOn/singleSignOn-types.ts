@@ -31,8 +31,8 @@ export interface BasicStoreEntitySingleSignOn extends BasicStoreEntity {
   auto_create_group?: boolean;
   prevent_default_groups?: boolean;
   logout_remote?: boolean;
-  organizations_management?: OrganizationsManagement[];
-  groups_management?: GroupsManagement[];
+  organizations_management?: OrganizationsManagement;
+  groups_management?: GroupsManagement;
   configuration?: ConfigurationType[];
   advanced_configuration?: ConfigurationType[];
 }
@@ -46,8 +46,8 @@ export interface StoreEntitySingleSignOn extends StoreEntity {
   auto_create_group?: boolean;
   prevent_default_groups?: boolean;
   logout_remote?: boolean;
-  organizations_management?: OrganizationsManagement[];
-  groups_management?: GroupsManagement[];
+  organizations_management?: OrganizationsManagement;
+  groups_management?: GroupsManagement;
   configuration?: ConfigurationType[];
   advanced_configuration?: ConfigurationType[];
 }

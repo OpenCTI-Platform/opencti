@@ -14,8 +14,8 @@ type SingleSignOn implements InternalObject & BasicObject {
   auto_create_group: Boolean
   prevent_default_groups: Boolean
   logout_remote: Boolean
-  organizations_management: [OrganizationsManagement!]
-  groups_management: [GroupsManagement!]
+  organizations_management: OrganizationsManagement
+  groups_management: GroupsManagement
   configuration: [ConfigurationType!]
   advanced_configuration: [ConfigurationType!]
 }
@@ -79,13 +79,16 @@ type Query {
 input OrganizationsManagementInput {
   organizations_path: [String]!
   organizations_mapping: [String]!
+  # TODO missing organizations_default, organizations_splitter and organizations_header for HeaderStrategy
 }
 
 input GroupsManagementInput {
   groups_attributes: [String]!
   groups_path: [String]!
   groups_mapping: [String]!
-  read_userinfo: Boolean!
+  # read_userinfo is only used in OpenIDStrategy so far, should not be mandatory
+  read_userinfo: Boolean
+  # TODO missing groups_header, groups_splitter for HeaderStrategy
 }
 
 input ConfigurationTypeInput {
@@ -102,8 +105,8 @@ input SingleSignOnAddInput {
   auto_create_group: Boolean
   prevent_default_groups: Boolean
   logout_remote: Boolean
-  organizations_management: [OrganizationsManagementInput!]
-  groups_management: [GroupsManagementInput!]
+  organizations_management: OrganizationsManagementInput
+  groups_management: GroupsManagementInput
   configuration: [ConfigurationTypeInput!]
   advanced_configuration: [ConfigurationTypeInput!]
 }
@@ -117,8 +120,8 @@ type SingleSignOnMigrationResult {
   auto_create_group: Boolean
   prevent_default_groups: Boolean
   logout_remote: Boolean
-  organizations_management: [OrganizationsManagement!]
-  groups_management: [GroupsManagement!]
+  organizations_management: OrganizationsManagement
+  groups_management: GroupsManagement
   configuration: [ConfigurationType!]
   advanced_configuration: [ConfigurationType!]
 }
