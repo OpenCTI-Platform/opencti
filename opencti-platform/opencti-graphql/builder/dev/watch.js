@@ -1,16 +1,13 @@
 const { spawn } = require('child_process');
-const fs = require('fs');
 const path = require('path');
 const { formatOutput } = require('./logsFormat');
 
 const CONFIG = {
-  quickShutdown: process.argv.includes('--quick-shutdown'),
+  graphql: process.argv.includes('--graphql'),
   projectRoot: path.resolve(__dirname, '..', '..'),
   shutdownTimeout: 35000,
-  quickShutdownDelay: 1000,
-  safeShutdownQuietTime: 30000,
-  quickRestartDelay: 500,
-  safeRestartDelay: 2000
+  shutdownDelay: 100,
+  restartDelay: 500,
 };
 
 let initialBuildDone = false;
@@ -18,29 +15,14 @@ let nodemonProcess = null;
 let esbuildProcess = null;
 
 function displayStartupMessage() {
-  if (CONFIG.quickShutdown) {
-    console.log('🚀 Starting dev OpenCTI with hot reload (quick shutdown)...\n');
-  } else {
-    console.log('🚀 Starting dev OpenCTI with hot reload (safe shutdown)...\n');
-  }
-}
+  console.log('\n🚀 Starting dev OpenCTI...');
 
-function createQuickModeConfig() {
-  const nodemonConfigPath = path.join(CONFIG.projectRoot, 'nodemon-quick.json');
-  const baseConfig = JSON.parse(
-    fs.readFileSync(path.join(CONFIG.projectRoot, 'nodemon.json'), 'utf8')
-  );
-  
-  const quickConfig = {
-    ...baseConfig,
-    signal: 'SIGKILL', // Force kill, no graceful shutdown
-    delay: CONFIG.quickRestartDelay
-  };
-  
-  fs.writeFileSync(nodemonConfigPath, JSON.stringify(quickConfig, null, 2));
-  console.log('[WATCH] Using quick restart mode (SIGKILL)\n');
-  
-  return nodemonConfigPath;
+  if (CONFIG.graphql) {
+    console.log('• with GraphQL hot reload');
+  } else {
+    console.log('• without GraphQL hot reload');
+  }
+  console.log('');
 }
 
 function setupNodemonOutputHandlers(process) {
@@ -76,28 +58,55 @@ function setupNodemonOutputHandlers(process) {
   });
 }
 
+let schemaGenTimeout = null;
+let isSchemaGenerating = false;
+
 function runGraphQLBuild() {
-  console.log('[WATCH] Running GraphQL schema build...');
-  try {
-    spawn('yarn', ['build:schema'], {
-      cwd: CONFIG.projectRoot,
-      stdio: ['inherit', 'inherit', 'inherit'],
-      shell: false,
-      env: { ...process.env }
-    });
-  } catch (err) {
-    console.error('[WATCH] GraphQL build failed:', err);
+  // Skip if already generating
+  if (isSchemaGenerating) {
+    console.log('[WATCH] Schema generation already in progress, skipping...');
+    return;
   }
+  
+  // Debounce to avoid multiple rapid runs
+  if (schemaGenTimeout) {
+    clearTimeout(schemaGenTimeout);
+  }
+  
+  schemaGenTimeout = setTimeout(() => {
+    console.log('[WATCH] Running GraphQL schema build...');
+    isSchemaGenerating = true;
+    
+    try {
+      const schemaProcess = spawn('yarn', ['build:schema'], {
+        cwd: CONFIG.projectRoot,
+        stdio: ['inherit', 'inherit', 'inherit'],
+        shell: false,
+        env: { ...process.env }
+      });
+      
+      schemaProcess.on('exit', () => {
+        isSchemaGenerating = false;
+        console.log('[WATCH] GraphQL schema build completed');
+      });
+      
+      schemaProcess.on('error', (err) => {
+        isSchemaGenerating = false;
+        console.error('[WATCH] GraphQL build failed:', err);
+      });
+    } catch (err) {
+      isSchemaGenerating = false;
+      console.error('[WATCH] GraphQL build failed:', err);
+    }
+  }, 500); // Wait 500ms to batch changes
 }
 
 function startNodemon() {
   console.log('Starting nodemon...\n');
-  
-  const configPath = CONFIG.quickShutdown 
-    ? createQuickModeConfig()
-    : path.join(CONFIG.projectRoot, 'nodemon.json');
-  
-  const nodemonArgs = ['--config', configPath, 'build/back.js'];
+
+  const configPath = path.join(CONFIG.projectRoot, 'nodemon.json');
+
+  const nodemonArgs = ['--config', configPath];
   
   nodemonProcess = spawn('nodemon', nodemonArgs, {
     cwd: CONFIG.projectRoot,
@@ -121,7 +130,9 @@ function handleEsbuildOutput(data) {
     initialBuildDone = true;
     startNodemon();
   }
-  runGraphQLBuild();
+  if (CONFIG.graphql) {
+    runGraphQLBuild();
+  }
 }
 
 function startEsbuild() {
@@ -143,18 +154,6 @@ function startEsbuild() {
   });
 }
 
-async function waitForLogsToStop() {
-  console.log('[WATCH] Waiting for all shutdown logs to complete (safe mode)...');
-  
-  while (true) {
-    const timeSinceLastOutput = Date.now() - nodemonProcess.getLastOutputTime();
-    if (timeSinceLastOutput >= CONFIG.safeShutdownQuietTime) {
-      break;
-    }
-    await new Promise(r => setTimeout(r, 500));
-  }
-}
-
 function stopEsbuild() {
   if (esbuildProcess && !esbuildProcess.killed) {
     console.log('[WATCH] Stopping esbuild...');
@@ -167,27 +166,18 @@ async function waitForNodemonShutdown() {
   
   const exitPromise = new Promise((resolve) => {
     nodemonProcess.once('exit', async () => {
-      if (CONFIG.quickShutdown) {
-        console.log('[WATCH] Quick shutdown - background cleanup may still be running...');
-        await new Promise(r => setTimeout(r, CONFIG.quickShutdownDelay));
-      } else {
-        await waitForLogsToStop();
-      }
+      await new Promise(r => setTimeout(r, CONFIG.shutdownDelay));
       resolve();
     });
   });
   
+  // Always use SIGTERM - in dev mode, child lock manager exits immediately
   nodemonProcess.kill('SIGTERM');
   await Promise.race([shutdownPromise, exitPromise]);
 }
 
 function displayShutdownMessage() {
-  if (CONFIG.quickShutdown) {
-    console.log('[WATCH] OpenCTI process terminated');
-    console.log('[WATCH] Note: processes may still be cleaning up in the background');
-  } else {
-    console.log('[WATCH] OpenCTI stopped successfully');
-  }
+  console.log('[WATCH] OpenCTI stopped successfully.');
 }
 
 async function cleanup(signal) {
