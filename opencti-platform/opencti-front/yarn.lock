@@ -9812,7 +9812,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iconv-lite@npm:0.6.3, iconv-lite@npm:^0.6.2, iconv-lite@npm:^0.6.3":
+"iconv-lite@npm:0.6.3, iconv-lite@npm:^0.6.2":
   version: 0.6.3
   resolution: "iconv-lite@npm:0.6.3"
   dependencies:
@@ -9827,6 +9827,15 @@ __metadata:
   dependencies:
     safer-buffer: "npm:>= 2.1.2 < 3.0.0"
   checksum: 10c0/2382400469071c55b6746c531eed5fa4d033e5db6690b7331fb2a5f59a30d7a9782932e92253db26df33c1cf46fa200a3fbe524a2a7c62037c762283f188ec2f
+  languageName: node
+  linkType: hard
+
+"iconv-lite@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "iconv-lite@npm:0.7.1"
+  dependencies:
+    safer-buffer: "npm:>= 2.1.2 < 3.0.0"
+  checksum: 10c0/f5c9e2bddd7101a71b07a381ace44ebdc65ca76a10be0e9e64d372b511132acc4ee41b830962f438840d492cd6f9e08c237289f760d6a7fed754e61cffcb6757
   languageName: node
   linkType: hard
 
@@ -12533,7 +12542,7 @@ __metadata:
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.6.0"
     monocart-reporter: "npm:2.9.23"
-    pdfmake: "npm:0.2.20"
+    pdfmake: "npm:0.2.21"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
     ramda: "npm:0.32.0"
@@ -12828,15 +12837,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfmake@npm:0.2.20":
-  version: 0.2.20
-  resolution: "pdfmake@npm:0.2.20"
+"pdfmake@npm:0.2.21":
+  version: 0.2.21
+  resolution: "pdfmake@npm:0.2.21"
   dependencies:
     "@foliojs-fork/linebreak": "npm:^1.1.2"
     "@foliojs-fork/pdfkit": "npm:^0.15.3"
-    iconv-lite: "npm:^0.6.3"
-    xmldoc: "npm:^2.0.1"
-  checksum: 10c0/6464d408aa7c214561753f01701ffa387e8ba2784e6000977fc1b7e360958d2a256989451f72a73bf9d4d313a0b77d0d11378bf8451a65edfa95c56c82eac043
+    iconv-lite: "npm:^0.7.1"
+    xmldoc: "npm:^2.0.3"
+  checksum: 10c0/72385405832823f72adc82f7956c34d8ad6a8821ae0c48145346508c924a64979008fb88ef3d2686fc67ca18da93e0ac2823873f3e4d7f8f0364d9d487a5d5e2
   languageName: node
   linkType: hard
 
@@ -14266,7 +14275,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sax@npm:^1.2.4, sax@npm:^1.4.1":
+"sax@npm:^1.4.1, sax@npm:^1.4.3":
   version: 1.4.3
   resolution: "sax@npm:1.4.3"
   checksum: 10c0/45bba07561d93f184a8686e1a543418ced8c844b994fbe45cc49d5cd2fc8ac7ec949dae38565e35e388ad0cca2b75997a29b6857c927bf6553da3f80ed0e4e62
@@ -16494,12 +16503,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xmldoc@npm:^2.0.1":
-  version: 2.0.2
-  resolution: "xmldoc@npm:2.0.2"
+"xmldoc@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "xmldoc@npm:2.0.3"
   dependencies:
-    sax: "npm:^1.2.4"
-  checksum: 10c0/dbf42e50a136e99be811238dd6b5bf7a0ff2af539b8aa0253f4932c9cc26cf8a20122e287fc0f12553d8cd2dc726a4ecac90cd1922654b788ac7bb1dc3e8cfa8
+    sax: "npm:^1.4.3"
+  checksum: 10c0/8b01fc2b49f7dfa3fc0506d7ae4bab41476e15836114a1ab3794a5dc925498e2f4c248391479f57426e166a718082e6628c7112a89e6bf015ed780c9772f4406
   languageName: node
   linkType: hard
 
