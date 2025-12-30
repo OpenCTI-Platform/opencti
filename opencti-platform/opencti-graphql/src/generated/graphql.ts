@@ -9703,16 +9703,16 @@ export enum GroupingsOrdering {
 
 export type GroupsManagement = {
   __typename?: 'GroupsManagement';
-  groups_attributes: Array<Maybe<Scalars['String']['output']>>;
-  groups_mapping: Array<Maybe<Scalars['String']['output']>>;
-  groups_path: Array<Maybe<Scalars['String']['output']>>;
-  read_userinfo: Scalars['Boolean']['output'];
+  groups_attributes?: Maybe<Array<Scalars['String']['output']>>;
+  groups_mapping?: Maybe<Array<Scalars['String']['output']>>;
+  groups_path?: Maybe<Array<Scalars['String']['output']>>;
+  read_userinfo?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type GroupsManagementInput = {
-  groups_attributes: Array<InputMaybe<Scalars['String']['input']>>;
-  groups_mapping: Array<InputMaybe<Scalars['String']['input']>>;
-  groups_path: Array<InputMaybe<Scalars['String']['input']>>;
+  groups_attributes?: InputMaybe<Array<Scalars['String']['input']>>;
+  groups_mapping?: InputMaybe<Array<Scalars['String']['input']>>;
+  groups_path?: InputMaybe<Array<Scalars['String']['input']>>;
   read_userinfo?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
@@ -20454,8 +20454,8 @@ export type OrganizationOrIndividual = Individual | Organization;
 
 export type OrganizationsManagement = {
   __typename?: 'OrganizationsManagement';
-  organizations_mapping: Array<Maybe<Scalars['String']['output']>>;
-  organizations_path: Array<Maybe<Scalars['String']['output']>>;
+  organizations_mapping: Array<Scalars['String']['output']>;
+  organizations_path?: Maybe<Array<Scalars['String']['output']>>;
 };
 
 export type OrganizationsManagementInput = {
@@ -27888,6 +27888,7 @@ export type SingleSignOn = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   groups_management?: Maybe<GroupsManagement>;
   id: Scalars['ID']['output'];
+  label?: Maybe<Scalars['String']['output']>;
   logout_remote?: Maybe<Scalars['Boolean']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
@@ -27906,6 +27907,7 @@ export type SingleSignOnAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   enabled: Scalars['Boolean']['input'];
   groups_management?: InputMaybe<GroupsManagementInput>;
+  label?: InputMaybe<Scalars['String']['input']>;
   logout_remote?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   organizations_management?: InputMaybe<OrganizationsManagementInput>;
@@ -27934,6 +27936,7 @@ export type SingleSignOnMigrationResult = {
   enabled: Scalars['Boolean']['output'];
   groups_management?: Maybe<GroupsManagement>;
   id: Scalars['ID']['output'];
+  label?: Maybe<Scalars['String']['output']>;
   logout_remote?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
   organizations_management?: Maybe<OrganizationsManagement>;
@@ -41711,10 +41714,10 @@ export type GroupingEdgeResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type GroupsManagementResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupsManagement'] = ResolversParentTypes['GroupsManagement']> = ResolversObject<{
-  groups_attributes?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  groups_mapping?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  groups_path?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  read_userinfo?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  groups_attributes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  groups_mapping?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  groups_path?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  read_userinfo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 
 export type HashResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hash'] = ResolversParentTypes['Hash']> = ResolversObject<{
@@ -44778,8 +44781,8 @@ export type OrganizationOrIndividualResolvers<ContextType = any, ParentType exte
 }>;
 
 export type OrganizationsManagementResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationsManagement'] = ResolversParentTypes['OrganizationsManagement']> = ResolversObject<{
-  organizations_mapping?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  organizations_path?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  organizations_mapping?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  organizations_path?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
 }>;
 
 export type OtpElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['OtpElement'] = ResolversParentTypes['OtpElement']> = ResolversObject<{
@@ -46654,6 +46657,7 @@ export type SingleSignOnResolvers<ContextType = any, ParentType extends Resolver
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groups_management?: Resolver<Maybe<ResolversTypes['GroupsManagement']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logout_remote?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46684,6 +46688,7 @@ export type SingleSignOnMigrationResultResolvers<ContextType = any, ParentType e
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   groups_management?: Resolver<Maybe<ResolversTypes['GroupsManagement']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logout_remote?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organizations_management?: Resolver<Maybe<ResolversTypes['OrganizationsManagement']>, ParentType, ContextType>;

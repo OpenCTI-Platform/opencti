@@ -4,7 +4,7 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { deleteSingleSignOn, findSingleSignOnById } from '../../../src/modules/singleSignOn/singleSignOn-domain';
 
 describe('Migration of SSO environment test coverage', () => {
-  describe('Dry run of migrations', () => {
+  describe.only('Dry run of migrations', () => {
     it('should default configuration with only local works', async () => {
       const configuration = {
         local: {
@@ -17,6 +17,150 @@ describe('Migration of SSO environment test coverage', () => {
       expect(result[0].name).toMatch(/local-*/);
       expect(result[0].enabled).toBeTruthy();
       expect(result.length).toBe(1);
+    });
+
+    it('should SAML minimal configuration works', async () => {
+      const configuration = {
+        saml_minimal: {
+          identifier: 'saml_minimal',
+          strategy: 'SamlStrategy',
+          config: {
+            issuer: 'openctisaml',
+            entry_point: 'http://localhost:9999/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:4000/auth/saml/callback',
+            cert: 'totallyFakeCert',
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const minimalSamlConfiguration = result[0];
+
+      expect(minimalSamlConfiguration.strategy).toBe('SamlStrategy');
+      expect(minimalSamlConfiguration.name).toMatch(/saml_minimal-*/);
+      expect(minimalSamlConfiguration.label).toBe('saml_minimal');
+      expect(minimalSamlConfiguration.enabled).toBeTruthy();
+      expect(minimalSamlConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml' },
+        { key: 'entry_point', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
+        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
+        { key: 'cert', type: 'string', value: 'totallyFakeCert' },
+      ]);
+    });
+
+    it('should SAML with all types in configuration works', async () => {
+      const configuration = {
+        saml_all_types: {
+          identifier: 'saml_all_types',
+          strategy: 'SamlStrategy',
+          config: {
+            label: 'My test SAML with Types',
+            issuer: 'openctisaml_all_types',
+            entry_point: 'http://localhost:7777/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:2000/auth/saml/callback',
+            cert: 'totallyFakeCert3',
+            acceptedClockSkewMs: 5,
+            // TODO ARRAY xmlSignatureTransforms: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/2001/10/xml-exc-c14n#'],
+            want_assertions_signed: true,
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const allTypesSamlConfiguration = result[0];
+
+      expect(allTypesSamlConfiguration.strategy).toBe('SamlStrategy');
+      expect(allTypesSamlConfiguration.name).toMatch(/My test SAML with Types-*/);
+      expect(allTypesSamlConfiguration.label).toBe('My test SAML with Types');
+      expect(allTypesSamlConfiguration.enabled).toBeTruthy();
+      expect(allTypesSamlConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml_all_types' },
+        { key: 'entry_point', type: 'string', value: 'http://localhost:7777/realms/master/protocol/saml' },
+        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:2000/auth/saml/callback' },
+        { key: 'cert', type: 'string', value: 'totallyFakeCert3' },
+        { key: 'acceptedClockSkewMs', type: 'number', value: '5' },
+        // TODO { key: 'xmlSignatureTransforms', type: 'array', value: '[\'http://www.w3.org/2000/09/xmldsig#enveloped-signature\', \'http://www.w3.org/2001/10/xml-exc-c14n#\']' },
+        { key: 'want_assertions_signed', type: 'boolean', value: 'true' },
+      ]);
+    });
+
+    it('should SAML with groups mapping in configuration works', async () => {
+      const configuration = {
+        saml_groups: {
+          identifier: 'saml_groups',
+          strategy: 'SamlStrategy',
+          config: {
+            label: 'My test SAML with Groups',
+            issuer: 'openctisaml_groups',
+            entry_point: 'http://localhost:8888/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:3000/auth/saml/callback',
+            cert: 'totallyFakeCertGroups',
+            groups_management: {
+              groups_attributes: ['samlgroup1', 'samlgroup2'],
+              groups_path: ['groups'],
+              groups_mapping: ['group1:Administrators', 'group2:Connectors'],
+            },
+          },
+        },
+        saml_groups2: {
+          identifier: 'saml_groups_default',
+          strategy: 'SamlStrategy',
+          config: {
+            label: 'My test SAML with Groups Mapping empty',
+            issuer: 'openctisaml_groups',
+            entry_point: 'http://localhost:8888/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:3000/auth/saml/callback',
+            cert: 'totallyFakeCertGroups',
+            groups_management: {
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const groupManagementSAMLConfiguration = result[0];
+      expect(groupManagementSAMLConfiguration.strategy).toBe('SamlStrategy');
+      expect(groupManagementSAMLConfiguration.name).toMatch(/My test SAML with Groups-*/);
+      expect(groupManagementSAMLConfiguration.label).toBe('My test SAML with Groups');
+      expect(groupManagementSAMLConfiguration.enabled).toBeTruthy();
+      expect(groupManagementSAMLConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml_groups' },
+        { key: 'entry_point', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+        { key: 'cert', type: 'string', value: 'totallyFakeCertGroups' },
+      ]);
+
+      expect(groupManagementSAMLConfiguration.groups_management).toStrictEqual({
+        groups_attributes: ['samlgroup1', 'samlgroup2'],
+        groups_path: ['groups'],
+        groups_mapping: ['group1:Administrators', 'group2:Connectors'],
+      });
+
+      const groupManagementEmptyConfiguration = result[1];
+      expect(groupManagementEmptyConfiguration.strategy).toBe('SamlStrategy');
+      expect(groupManagementEmptyConfiguration.name).toMatch(/My test SAML with Groups Mapping empty-*/);
+      expect(groupManagementEmptyConfiguration.label).toBe('My test SAML with Groups Mapping empty');
+      expect(groupManagementEmptyConfiguration.enabled).toBeTruthy();
+      expect(groupManagementEmptyConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml_groups' },
+        { key: 'entry_point', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+        { key: 'cert', type: 'string', value: 'totallyFakeCertGroups' },
+      ]);
+
+      expect(groupManagementEmptyConfiguration.groups_management).toStrictEqual({
+        groups_attributes: ['groups'],
+        groups_mapping: [],
+      });
+    });
+
+    it.todo('should SAML with deprecated role mapping configuration works', async () => {
+    });
+
+    it.todo('should SAML with several SAML config works', async () => {
     });
 
     it('should OpenID configuration works', async () => {
@@ -90,78 +234,6 @@ describe('Migration of SSO environment test coverage', () => {
       expect(orgManagementOpenIdConfiguration.enabled).toBeTruthy();
 
       expect(result.length).toBe(3);
-    });
-
-    it('should SAML configuration works', async () => {
-      const configuration = {
-        saml_minimal: {
-          identifier: 'saml_minimal',
-          strategy: 'SamlStrategy',
-          config: {
-            issuer: 'openctisaml',
-            entry_point: 'http://localhost:9999/realms/master/protocol/saml',
-            saml_callback_url: 'http://localhost:4000/auth/saml/callback',
-            cert: 'totallyFakeCert',
-          },
-        },
-        saml_groups: {
-          identifier: 'saml_groups',
-          strategy: 'SamlStrategy',
-          config: {
-            label: 'My test SAML',
-            issuer: 'openctisaml',
-            entry_point: 'http://localhost:9999/realms/master/protocol/saml',
-            saml_callback_url: 'http://localhost:4000/auth/saml/callback',
-            cert: 'totallyFakeCert',
-            logout_remote: true,
-            want_assertions_signed: false,
-            want_authn_response_signed: false,
-            audience: false,
-            auto_create_group: true,
-            prevent_default_groups: false,
-            groups_management: {
-              groups_attributes: ['samlgroup'],
-              groups_path: ['groups'],
-              groups_mapping: ['group1:Administrators'],
-            },
-          },
-        },
-      };
-
-      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
-
-      const minimalSamlConfiguration = result[0];
-      const groupManagementSAMLConfiguration = result[1];
-
-      expect(minimalSamlConfiguration.strategy).toBe('SamlStrategy');
-      expect(minimalSamlConfiguration.name).toMatch(/saml_minimal-*/);
-      expect(minimalSamlConfiguration.enabled).toBeTruthy();
-      expect(minimalSamlConfiguration.configuration).toStrictEqual([
-        { key: 'issuer', type: 'string', value: 'openctisaml' },
-        { key: 'entry_point', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
-        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
-        { key: 'cert', type: 'string', value: 'totallyFakeCert' },
-      ]);
-
-      expect(groupManagementSAMLConfiguration.strategy).toBe('SamlStrategy');
-      expect(groupManagementSAMLConfiguration.name).toMatch(/My test SAML-*/);
-      expect(groupManagementSAMLConfiguration.enabled).toBeTruthy();
-      /*
-      expect(minimalSamlConfiguration.groups_management).toStrictEqual([
-        { key: 'issuer', type: 'string', value: 'openctisaml' },
-        { key: 'entry_point', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
-        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
-        { key: 'cert', type: 'string', value: 'totallyFakeCert' },
-      ]);
-      expect(minimalSamlConfiguration.configuration).toStrictEqual([
-        { key: 'issuer', type: 'string', value: 'openctisaml' },
-        { key: 'entry_point', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
-        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
-        { key: 'cert', type: 'string', value: 'totallyFakeCert' },
-      ]);
-
-      expect(result.length).toBe(2);
-      */
     });
   });
 
