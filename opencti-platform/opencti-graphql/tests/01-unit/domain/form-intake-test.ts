@@ -11,12 +11,6 @@ describe('Form Intake - Identity Class Conversion', () => {
       expect(entity.identity_class).toBe('individual');
     });
 
-    it('should set identity_class to "organization" for Organization entity type', () => {
-      const entity = { entity_type: 'Organization', name: 'ACME Corp' } as StoreEntity;
-      convertIdentityClass('Organization', entity);
-      expect(entity.identity_class).toBe('organization');
-    });
-
     it('should set identity_class to "class" for Sector entity type', () => {
       const entity = { entity_type: 'Sector', name: 'Finance' } as StoreEntity;
       convertIdentityClass('Sector', entity);
@@ -79,20 +73,6 @@ describe('Form Intake - Identity Class Conversion', () => {
         expect(mainEntity.identity_class).toBe('individual');
         expect(mainEntity.name).toBe('John Smith');
       });
-
-      it('should create Organization with identity_class when mainEntityType is Organization', () => {
-        const mainEntityType = 'Organization';
-        let mainEntity = {
-          entity_type: mainEntityType,
-          name: 'OpenCTI Inc',
-          x_opencti_organization_type: 'vendor',
-        } as StoreEntity;
-
-        mainEntity = completeEntity(mainEntityType, mainEntity);
-
-        expect(mainEntity.entity_type).toBe('Organization');
-        expect(mainEntity.identity_class).toBe('organization');
-      });
     });
 
     describe('Multiple main entity mode (parsed)', () => {
@@ -120,8 +100,8 @@ describe('Form Intake - Identity Class Conversion', () => {
     });
 
     describe('Multiple main entity mode (multiple fields)', () => {
-      it('should create multiple Organizations with identity_class from field groups', () => {
-        const mainEntityType = 'Organization';
+      it('should create multiple Individuals with identity_class from field groups', () => {
+        const mainEntityType = 'Individual';
         const fieldGroups = [
           { name: 'Company A', description: 'First company' },
           { name: 'Company B', description: 'Second company' },
@@ -139,7 +119,7 @@ describe('Form Intake - Identity Class Conversion', () => {
 
         expect(mainEntities).toHaveLength(2);
         mainEntities.forEach((entity) => {
-          expect(entity.identity_class).toBe('organization');
+          expect(entity.identity_class).toBe('individual');
         });
       });
     });
@@ -160,16 +140,16 @@ describe('Form Intake - Identity Class Conversion', () => {
         expect(additionalEntity.identity_class).toBe('individual');
       });
 
-      it('should create additional Organization with identity_class', () => {
-        const additionalEntityType = 'Organization';
+      it('should create additional Sector with identity_class', () => {
+        const additionalEntityType = 'Sector';
         let additionalEntity = {
           entity_type: additionalEntityType,
-          name: 'Partner Organization',
+          name: 'Partner Economic',
         } as StoreEntity;
 
         additionalEntity = completeEntity(additionalEntityType, additionalEntity);
 
-        expect(additionalEntity.identity_class).toBe('organization');
+        expect(additionalEntity.identity_class).toBe('class');
       });
     });
 
@@ -215,11 +195,11 @@ describe('Form Intake - Identity Class Conversion', () => {
     });
 
     describe('Multiple additional entities mode (multiple fields)', () => {
-      it('should create multiple additional Organizations from field groups', () => {
-        const additionalEntityType = 'Organization';
+      it('should create multiple additional Individuals from field groups', () => {
+        const additionalEntityType = 'Individual';
         const fieldGroups = [
-          { name: 'Vendor A', x_opencti_organization_type: 'vendor' },
-          { name: 'Partner B', x_opencti_organization_type: 'partner' },
+          { name: 'Vendor A' },
+          { name: 'Partner B' },
         ];
         const additionalEntities: StoreEntity[] = [];
 
@@ -233,14 +213,14 @@ describe('Form Intake - Identity Class Conversion', () => {
         }
 
         additionalEntities.forEach((entity) => {
-          expect(entity.identity_class).toBe('organization');
+          expect(entity.identity_class).toBe('individual');
         });
       });
     });
   });
 
   describe('Form Intake - Mixed entity types', () => {
-    it('should handle main entity as Individual with additional entity as Organization', () => {
+    it('should handle main entity as Individual with additional entity Sector', () => {
       // Main entity - Individual
       const mainEntityType = 'Individual';
       let mainEntity = {
@@ -249,16 +229,16 @@ describe('Form Intake - Identity Class Conversion', () => {
       } as StoreEntity;
       mainEntity = completeEntity(mainEntityType, mainEntity);
 
-      // Additional entity - Organization
-      const additionalEntityType = 'Organization';
+      // Additional entity - Sector
+      const additionalEntityType = 'Sector';
       let additionalEntity = {
         entity_type: additionalEntityType,
-        name: 'Threat Actor Group',
+        name: 'Finance',
       } as StoreEntity;
       additionalEntity = completeEntity(additionalEntityType, additionalEntity);
 
       expect(mainEntity.identity_class).toBe('individual');
-      expect(additionalEntity.identity_class).toBe('organization');
+      expect(additionalEntity.identity_class).toBe('class');
     });
 
     it('should handle non-Identity main entity with multiple Identity additional entities', () => {
@@ -277,11 +257,6 @@ describe('Form Intake - Identity Class Conversion', () => {
       individual = completeEntity('Individual', individual);
       additionalEntities.push(individual);
 
-      // Organization
-      let organization = { entity_type: 'Organization', name: 'Victim Company' } as StoreEntity;
-      organization = completeEntity('Organization', organization);
-      additionalEntities.push(organization);
-
       // Sector
       let sector = { entity_type: 'Sector', name: 'Finance' } as StoreEntity;
       sector = completeEntity('Sector', sector);
@@ -290,8 +265,7 @@ describe('Form Intake - Identity Class Conversion', () => {
       // Assertions
       expect(mainEntity.identity_class).toBeUndefined();
       expect(additionalEntities[0].identity_class).toBe('individual');
-      expect(additionalEntities[1].identity_class).toBe('organization');
-      expect(additionalEntities[2].identity_class).toBe('class');
+      expect(additionalEntities[1].identity_class).toBe('class');
     });
   });
 });
