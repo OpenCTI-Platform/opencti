@@ -40,7 +40,6 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
 
-  // Create taxii feed
   const { automatic_user: _automatic_user, confidence_level: _confidence_level, ...taxiiFeedToCreate } = input;
   const { element, isCreation } = await createEntity(context, user, taxiiFeedToCreate, ENTITY_TYPE_INGESTION_TAXII, { complete: true });
   if (isCreation) {
@@ -178,10 +177,8 @@ export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthU
 };
 
 export const ingestionTaxiiAddAutoUser = async (context: AuthContext, user: AuthUser, ingestionId: string, input: IngestionTaxiiAddAutoUserInput) => {
-  // Create new user
   const onTheFlyCreatedUser = await createOnTheFlyUser(context, user,
     { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
 
-  // Associate this user to the CSVFeed
   return ingestionEditField(context, user, ingestionId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
 };

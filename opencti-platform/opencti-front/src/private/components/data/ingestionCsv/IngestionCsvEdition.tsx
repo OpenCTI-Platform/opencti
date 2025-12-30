@@ -23,7 +23,6 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IngestionCsvInlineMapperForm from '@components/data/ingestionCsv/IngestionCsvInlineMapperForm';
 import { CsvMapperAddInput } from '@components/data/csvMapper/CsvMapperUtils';
-import IngestionCsvEditionUserHandling from '@components/data/ingestionCsv/IngestionCsvEditionUserHandling';
 import { useTheme } from '@mui/styles';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
@@ -55,6 +54,21 @@ import PasswordTextField from '../../../../components/PasswordTextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
+import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
+
+export const ingestionCsvEditionUserHandlingPatch = graphql`
+  mutation IngestionCsvEditionUserHandlingMutation($id: ID!, $input: IngestionCsvAddAutoUserInput!) {
+    ingestionCsvAddAutoUser(id: $id, input: $input) {
+        id
+        name
+        user {
+            id
+            entity_type
+            name
+        }
+    }
+  }
+`;
 
 export const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment_ingestionCsv$data, me: RootMe_data$data) => {
   return {
@@ -512,11 +526,12 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               />
               {ingestionCsvData.user?.name === 'SYSTEM'
                 && (
-                  <IngestionCsvEditionUserHandling
+                  <IngestionEditionUserHandling
                     key={values.name}
                     feedName={values.name}
                     onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
-                    ingestionCsvDataId={ingestionCsvData.id}
+                    dataId={ingestionCsvData.id}
+                    mutation={ingestionCsvEditionUserHandlingPatch}
                   />
                 )
               }

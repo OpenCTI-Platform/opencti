@@ -60,7 +60,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
     createdTaxiiIngesterId = ingesterQueryResult.data?.ingestionTaxiiAdd.id;
   });
 
-  it('should create a TAXII ingester with automatic user', async () => {
+  it('should create a TAXII feed with automatic user', async () => {
     const INGESTER_TO_CREATE = {
       input: {
         authentication_type: IngestionAuthType.Basic,
