@@ -44,6 +44,11 @@ const ssoDefinitionsLineFragment = graphql`
     description
     enabled
     strategy
+    configuration {
+      key
+      value
+      type
+    }
   }
 `;
 const ssoDefinitionsLinesFragment = graphql`
@@ -109,12 +114,12 @@ const SSODefinitions = () => {
     enabled: {
       label: 'Enabled',
       percentWidth: 25,
-      render: (node: { enabled: boolean }) => <div>{node.enabled}</div>,
+      render: (node: { enabled: boolean }) => <div>{JSON.stringify(node.enabled)}</div>,
     },
     name: {
       label: 'Name',
       percentWidth: 25,
-      render: (node: { name: boolean }) => <div>{node.name}</div>,
+      render: (node: { name: string }) => <div>{node.name}</div>,
     },
     id: {
       label: 'ID',

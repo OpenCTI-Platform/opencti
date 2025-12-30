@@ -1,21 +1,13 @@
-import React, { FunctionComponent } from 'react';
-import { Field, Form, Formik } from 'formik';
-import { TextField } from 'formik-mui';
-import { Button } from '@mui/material';
-import * as Yup from 'yup';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { insertNode } from '../../../../utils/store';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { PaginationOptions } from '../../../../components/list_lines';
-import type { Theme } from '../../../../components/Theme';
-import SwitchField from '../../../../components/fields/SwitchField';
-import SelectField from '../../../../components/fields/SelectField';
-import MenuItem from '@mui/material/MenuItem';
+import CreateSplitControlledDial from '../../../../components/CreateSplitControlledDial';
+import SAMLCreation, { SAMLCreationValues } from '@components/settings/sso_definitions/SAMLCreation';
 
 const ssoDefinitionMutation = graphql`
   mutation SSODefinitionCreationMutation(
@@ -27,48 +19,67 @@ const ssoDefinitionMutation = graphql`
   }
 `;
 
-const CreateSSODefinitionControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
-  <CreateEntityControlledDial
-    entityType="SSODefinition"
-    {...props}
-  />
-);
-
 interface SSODefinitionCreationProps {
   paginationOptions: PaginationOptions;
 }
 
-const SSODefinitionCreation: FunctionComponent<
-  SSODefinitionCreationProps
-> = ({
+const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
 
-  const ssoDefinitionValidation = Yup.object().shape({
-    strategy: Yup.string().required(t_i18n('This field is required')),
-    name: Yup.string().required(t_i18n('This field is required')),
-  });
+  const [selectedStrategy, setSelectedStrategy] = useState<string | null>(null);
 
-  const initialValues = {
+  const baseInitialValues = {
     name: '',
     strategy: '',
     enabled: true,
   };
+  const initialValues = {
+    ...baseInitialValues,
+    strategy: selectedStrategy,
+  };
 
-  const onSubmit = (
-    values: typeof initialValues,
+  const CreateSSODefinitionControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateSplitControlledDial
+      entityType="SSODefinition"
+      options={[
+        'Create SAML',
+        'Create OpenID',
+        'Create Header',
+      ]}
+      onOptionClick={(option) => {
+        if (option === 'Create SAML') {
+          setSelectedStrategy('SAML');
+        } else if (option === 'Create OpenID') {
+          setSelectedStrategy('OpenID');
+        } else if (option === 'Create Header') {
+          setSelectedStrategy('Header');
+        } else {
+          setSelectedStrategy(null);
+        }
+      }}
+      {...props}
+    />
+  );
+  const onSubmitSAML = (
+    values: SAMLCreationValues,
     { setSubmitting, resetForm }: {
       setSubmitting: (flag: boolean) => void;
       resetForm: () => void;
     },
   ) => {
     const finalValues = {
-      ...values,
+      name: values.name,
+      enabled: values.enabled,
+      strategy: 'SamlStrategy',
+      configuration: [
+        { key: 'ssoUrl', value: values.ssoUrl, type: 'string' },
+        { key: 'entityId', value: values.entityId, type: 'string' },
+        // autres champs SAML
+      ],
     };
+
     commitMutation({
       ...defaultCommitMutation,
       mutation: ssoDefinitionMutation,
@@ -85,80 +96,32 @@ const SSODefinitionCreation: FunctionComponent<
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
+        setSelectedStrategy(null);
       },
     });
   };
-
   return (
     <Drawer
-      title={t_i18n('Create a single sign on')}
+      title={t_i18n(`Create ${selectedStrategy} SSO`)}
       controlledDial={CreateSSODefinitionControlledDial}
     >
-      {({ onClose }) => (
-        <Formik
-          initialValues={initialValues}
-          validationSchema={ssoDefinitionValidation}
-          onSubmit={onSubmit}
-          onReset={onClose}
-        >
-          {({ submitForm, handleReset, isSubmitting }) => (
-            <Form>
-              <Field
-                component={SwitchField}
-                variant="standard"
-                name="enabled"
-                label="Enable authentication methode"
-                containerstyle={{ marginLeft: 2, marginTop: 20 }}
-              />
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="strategy"
-                label={t_i18n('Authentication Type')}
-                containerstyle={{ width: '100%', marginTop: 20 }}
-              >
-                <MenuItem key="openID" value="OpenIDConnectStrategy">{t_i18n('OpenID')}</MenuItem>
-                <MenuItem key="saml" value="SamlStrategy">{t_i18n('SAML')}</MenuItem>
-                <MenuItem key="header" value="HeaderStrategy">{t_i18n('Header')}</MenuItem>
-                <MenuItem key="client-cert" value="ClientCertStrategy">{t_i18n('Client Certificate')}</MenuItem>
-              </Field>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-              />
-              <div style={{
-                marginTop: 20,
-                textAlign: 'right',
+      {({ onClose }) => {
+        if (selectedStrategy === 'SAML') {
+          return (
+            <SAMLCreation
+              initialValues={initialValues}
+              onSubmit={onSubmitSAML}
+              onCancel={() => {
+                onClose();
               }}
-              >
-                <Button
-                  variant="contained"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  style={{ marginLeft: theme.spacing(2) }}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                  style={{ marginLeft: theme.spacing(2) }}
-                >
-                  {t_i18n('Create')}
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      )}
+            />
+          );
+        }
+        return (
+          <> </>
+        );
+      }}
     </Drawer>
   );
 };
-
 export default SSODefinitionCreation;
