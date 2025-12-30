@@ -4,9 +4,9 @@ const {default: graphqlLoaderPlugin} = require('@luckycatfactory/esbuild-graphql
 const nativeNodePlugin = require('../plugin/native.node.plugin');
 const {copy} = require('esbuild-plugin-copy');
 
-esbuild.build({
+const config = {
     logLevel: 'info',
-    define: {'process.env.NODE_ENV': '\"development\"'},
+    define: {'process.env.NODE_ENV': '"development"'},
     plugins: [
         importGlobPlugin(),
         graphqlLoaderPlugin(),
@@ -46,4 +46,50 @@ esbuild.build({
     external: [
       'apollo-server-errors', // required by graphql-constraint-directive in dead code when using Apollo 4+
     ],
-});
+};
+
+const shouldWatch = process.argv.includes('--watch');
+
+if (shouldWatch) {
+    let buildCount = 0;
+    
+    // Add a plugin to log rebuild events
+    const watchPlugin = {
+        name: 'watch-plugin',
+        setup(build) {
+            let startTime;
+            build.onStart(() => {
+                startTime = Date.now();
+                buildCount++;
+                if (buildCount > 1) {
+                    console.log('🔨 Rebuilding...');
+                }
+            });
+            build.onEnd((result) => {
+                const duration = Date.now() - startTime;
+                if (result.errors.length > 0) {
+                    console.error(`❌ Build failed with ${result.errors.length} error(s)`);
+                } else {
+                    if (buildCount === 1) {
+                        console.log('✅ Initial build complete');
+                    } else {
+                        console.log(`✅ Rebuild complete in ${duration}ms`);
+                    }
+                }
+            });
+        },
+    };
+
+    const watchConfig = {
+        ...config,
+        plugins: [...config.plugins, watchPlugin],
+    };
+
+    (async () => {
+        const context = await esbuild.context(watchConfig);
+        await context.watch();
+        console.log('👀 Watching for changes...');
+    })();
+} else {
+    esbuild.build(config);
+}

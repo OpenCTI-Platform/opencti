@@ -1,8 +1,12 @@
-import { createLogger, defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { exec } from 'node:child_process';
 import * as path from 'node:path';
+import { promisify } from 'node:util';
+import { createLogger, defineConfig } from 'vite';
 import relay from 'vite-plugin-relay';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+
+const execAsync = promisify(exec);
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
 const depsToOptimize = [
@@ -188,6 +192,8 @@ const backProxy = (ws = false) => ({
   ws,
 });
 
+const watchGraphQL = process.env.WATCH_GRAPHQL === 'true';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
@@ -231,12 +237,65 @@ export default defineConfig({
           .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`)
       }
     },
+    (watchGraphQL ? {
+      name: 'relay-schema-watcher',
+      apply: 'serve',
+      configureServer(server) {
+        const schemaPath = path.resolve(__dirname, './src/schema/relay.schema.graphql');
+        
+        // Watch the schema file
+        server.watcher.add(schemaPath);
+        
+        let relayTimeout: NodeJS.Timeout | null = null;
+        let isRelayRunning = false;
+        
+        server.watcher.on('change', async (file) => {
+          if (file === schemaPath) {
+            // Skip if relay is already running
+            if (isRelayRunning) {
+              console.log('⏳ Relay compiler already running, skipping...');
+              return;
+            }
+            
+            // Debounce to avoid multiple rapid runs
+            if (relayTimeout) clearTimeout(relayTimeout);
+            
+            relayTimeout = setTimeout(async () => {
+              console.log('\n🔄 GraphQL schema changed, running relay compiler...');
+              isRelayRunning = true;
+              try {
+                const { stdout, stderr } = await execAsync('yarn relay', { cwd: __dirname });
+                if (stdout) console.log(stdout);
+                if (stderr) console.error(stderr);
+                console.log('✅ Relay compiler finished successfully');
+                
+                // Only trigger reload after successful completion
+                console.log('🔄 Triggering full reload');
+                server.ws.send({ type: 'full-reload', path: '*' });
+                console.log('✅ Frontend is up to date with GraphQL schema changes\n');
+              } catch (error) {
+                console.error('❌ Relay compiler error:', error);
+                console.log('⚠️  Skipping reload due to error\n');
+              } finally {
+                isRelayRunning = false;
+              }
+            }, 300);
+          }
+        });
+      },
+    }: undefined),
     react(),
     relay
   ],
 
   server: {
     port: 3000,
+    watch: {
+      // Ignore the generated relay files to prevent cascading rebuilds
+      ignored: [
+        '**/__generated__/**',
+      ],
+    },
     warmup: {
       clientFiles: ['./lang/front/*', './src/static/*', './src/app.tsx', './src/front.tsx', './src/util/hooks/*']
     },

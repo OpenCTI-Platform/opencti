@@ -8,6 +8,7 @@
   "scripts": {
     "relay": "relay-compiler relay.config.json",
     "dev": "yarn relay && vite",
+    "dev:graphql": "yarn relay && WATCH_GRAPHQL=true vite",
     "dev:vite:debug": "yarn relay && vite --debug plugin-transform",
     "start": "yarn relay && node builder/dev/dev.js",
     "esbuild": "node builder/prod/prod.js",

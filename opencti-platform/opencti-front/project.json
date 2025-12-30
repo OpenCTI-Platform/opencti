@@ -70,6 +70,17 @@
         "description": "Run the OpenCTI front in development mode"
       }
     },
+    "dev:graphql": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn dev:graphql"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI front in development mode with GraphQL watch"
+      }
+    },
     "graphql": {
       "executor": "nx:run-commands",
       "options": {
