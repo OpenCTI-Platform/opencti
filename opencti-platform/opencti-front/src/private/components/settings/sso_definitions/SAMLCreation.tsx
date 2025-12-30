@@ -7,6 +7,8 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import SwitchField from '../../../../components/fields/SwitchField';
+import SelectField from '../../../../components/fields/SelectField';
+import MenuItem from '@mui/material/MenuItem';
 
 export interface SAMLCreationValues {
   name: string;
@@ -57,6 +59,14 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
           <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t_i18n('Authentication Name')}
+            fullWidth
+            style={{ marginTop: 20 }}
+          />
+          <Field
             component={SwitchField}
             variant="standard"
             name="enabled"
@@ -67,11 +77,55 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
           <Field
             component={TextField}
             variant="standard"
-            name="name"
-            label={t_i18n('Name')}
+            name="private"
+            label={t_i18n('Private key')}
             fullWidth
             style={{ marginTop: 20 }}
           />
+          <Field
+            component={SwitchField}
+            variant="standard"
+            name="assertion"
+            defaultValue={true}
+            label={t_i18n('Want assertion signed')}
+            containerstyle={{ marginLeft: 2, marginTop: 20 }}
+          />
+          <Field
+            component={SwitchField}
+            variant="standard"
+            name="responses"
+            defaultValue={true}
+            label={t_i18n('Requires SAML responses to be signed')}
+            containerstyle={{ marginLeft: 2, marginTop: 20 }}
+          />
+          <div>Identity Provider Information</div>
+          <Field
+            component={SwitchField}
+            variant="standard"
+            name="login"
+            defaultValue={true}
+            label={t_i18n('Allow login from identity provider directly')}
+            containerstyle={{ marginLeft: 2, marginTop: 20 }}
+          />
+          <Field
+            component={SwitchField}
+            variant="standard"
+            name="responses"
+            defaultValue={true}
+            label={t_i18n('Allow logout from Identity provider directly')}
+            containerstyle={{ marginLeft: 2, marginTop: 20 }}
+          />
+          <Field
+            component={SelectField}
+            variant="standard"
+            name="entityId"
+            label={t_i18n('How to provide Provider metadata')}
+            fullWidth
+            containerstyle={{ width: '100%' }}
+          >
+            <MenuItem value="Manual">Manual</MenuItem>
+            <MenuItem value="Upload">Upload</MenuItem>
+          </Field>
           <Field
             component={TextField}
             variant="standard"
@@ -88,7 +142,28 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
             fullWidth
             style={{ marginTop: 20 }}
           />
-
+          <Field
+            id="filled-multiline-flexible"
+            component={TextField}
+            variant="standard"
+            name="entityId"
+            label={t_i18n('Identity Provider Signing Certificate')}
+            fullWidth
+            multiline
+            rows={4}
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            id="filled-multiline-flexible"
+            component={TextField}
+            variant="standard"
+            name="entityId"
+            label={t_i18n('Identity Provider Encryption Certificate')}
+            fullWidth
+            multiline
+            rows={4}
+            style={{ marginTop: 20 }}
+          />
           <div
             style={{
               marginTop: 20,
