@@ -42,6 +42,79 @@ declare module '@mui/material/Alert' {
   }
 }
 
+declare module '@mui/material/styles' {
+  interface Palette {
+    border?: {
+      main?: string;
+      primary?: string;
+    };
+    gradient?: {
+      main: string;
+      light: string;
+      dark: string;
+    };
+    ai?: {
+      main: string;
+      contrastText: string;
+      light?: string;
+      dark?: string;
+    };
+  }
+
+  interface PaletteOptions {
+    border?: {
+      main?: string;
+      primary?: string;
+    };
+    gradient?: {
+      main?: string;
+      light?: string;
+      dark?: string;
+    };
+    ai?: {
+      main?: string;
+      contrastText?: string;
+      light?: string;
+      dark?: string;
+    };
+  }
+
+  interface Theme {
+    logo: string | undefined;
+    logo_collapsed: string | undefined;
+    borderRadius: number;
+    button: {
+      sizes: {
+        default: SizeConfig;
+        small: SizeConfig;
+      };
+    };
+  }
+
+  interface ThemeOptions {
+    logo?: string | null;
+    logo_collapsed?: string | null;
+    borderRadius?: number;
+    button?: {
+      sizes?: {
+        default?: SizeConfig;
+        small?: SizeConfig;
+      };
+    };
+  }
+}
+
+export interface SizeConfig {
+  height: string;
+  padding: string;
+  minWidth: string;
+  width: string;
+  fontSize: string;
+  fontWeight: number;
+  lineHeight: string;
+  iconSize: string;
+}
+
 interface ExtendedColor extends PaletteColorOptions {
   main: string;
   dark: string;
@@ -67,6 +140,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
     primary: string;
     secondary: string;
     pagination: string;
+    main?: string;
     lightBackground?: string;
     paper?: string;
   };
@@ -89,6 +163,12 @@ interface ExtendedThemeOptions extends ThemeOptions {
   logo_collapsed: string | null;
   palette: ExtendedPaletteOptions;
   borderRadius: number;
+  button: {
+    sizes: {
+      default: SizeConfig;
+      small: SizeConfig;
+    };
+  };
 }
 
 export interface Theme extends MuiTheme {
@@ -96,4 +176,10 @@ export interface Theme extends MuiTheme {
   logo_collapsed: string | undefined;
   borderRadius: number;
   palette: ExtendedPaletteOptions;
+  button: {
+    sizes: {
+      default: SizeConfig;
+      small: SizeConfig;
+    };
+  };
 }

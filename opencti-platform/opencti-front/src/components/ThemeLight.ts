@@ -137,6 +137,30 @@ const ThemeLight = (
       color: text_color,
     },
   },
+  button: {
+    sizes: {
+      default: {
+        height: '36px',
+        padding: '8px 16px',
+        minWidth: '36px',
+        width: '36px',
+        fontSize: '14px',
+        fontWeight: 600,
+        lineHeight: '21px',
+        iconSize: '16px',
+      },
+      small: {
+        height: '26px',
+        padding: '4px 12px',
+        minWidth: '26px',
+        width: '26px',
+        fontSize: '13px',
+        fontWeight: 600,
+        lineHeight: '21px',
+        iconSize: '14px',
+      },
+    },
+  },
   components: {
     MuiAccordion: {
       defaultProps: {
