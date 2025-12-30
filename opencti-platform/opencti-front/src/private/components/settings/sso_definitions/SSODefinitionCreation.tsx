@@ -120,8 +120,7 @@ const SSODefinitionCreation: FunctionComponent<
                 <MenuItem key="openID" value="OpenIDConnectStrategy">{t_i18n('OpenID')}</MenuItem>
                 <MenuItem key="saml" value="SamlStrategy">{t_i18n('SAML')}</MenuItem>
                 <MenuItem key="header" value="HeaderStrategy">{t_i18n('Header')}</MenuItem>
-                <MenuItem key="client-cert" value="ClientCertStrategy">{t_i18n('Client')}</MenuItem>
-                <MenuItem key="local" value="LocalStrategy">{t_i18n('Local')}</MenuItem>
+                <MenuItem key="client-cert" value="ClientCertStrategy">{t_i18n('Client Certificate')}</MenuItem>
               </Field>
               <Field
                 component={TextField}

@@ -1,16 +1,13 @@
 import { useFormatter } from '../../../components/i18n';
-import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import AccessesMenu from '@components/settings/AccessesMenu';
 import React from 'react';
 import { graphql } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
-import MarkingIcon from '../../../utils/MarkingIcon';
-import { useTheme } from '@mui/styles';
 import { SSODefinitionsLinesPaginationQuery } from '@components/settings/__generated__/SSODefinitionsLinesPaginationQuery.graphql';
 import { SSODefinitionsLines_data$data } from '@components/settings/__generated__/SSODefinitionsLines_data.graphql';
 import ItemCopy from '../../../components/ItemCopy';
@@ -62,7 +59,7 @@ const ssoDefinitionsLinesFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
-  @refetchable(queryName: "SingleSignOnLinesRefetchQuery") {
+  @refetchable(queryName: "SingleSignOnsLinesRefetchQuery") {
     singleSignOns(
       search: $search
       first: $count
@@ -88,23 +85,19 @@ const ssoDefinitionsLinesFragment = graphql`
 `;
 const SSODefinitions = () => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('SSO Definitions | Security | Settings'));
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
     orderAsc: true,
-    numberOfElements: {
-      number: 0,
-      symbol: '',
-    },
+    filters: emptyFilterGroup,
   };
   const { viewStorage: { filters }, helpers, paginationOptions } = usePaginationLocalStorage<SSODefinitionsLinesPaginationQuery>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const contextFilters = useBuildEntityTypeBasedFilterContext('SSODefinition', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('SingleSignOn', filters);
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters };
 
   const dataColumns = {
@@ -133,14 +126,14 @@ const SSODefinitions = () => {
 
   const queryRef = useQueryLoading(
     ssoDefinitionsLinesQuery,
-    { ...queryPaginationOptions, count: 25 },
+    queryPaginationOptions,
   );
 
   const preloadedPaginationProps = {
     linesQuery: ssoDefinitionsLinesQuery,
     linesFragment: ssoDefinitionsLinesFragment,
     queryRef,
-    nodePath: ['singleSignOn'],
+    nodePath: ['singleSignOns', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<SSODefinitionsLinesPaginationQuery>;
 
@@ -167,8 +160,8 @@ const SSODefinitions = () => {
           //     paginationOptions={queryPaginationOptions}
           //   />
           // )}
-          entityTypes={['SSODefinition']}
-          searchContextFinal={{ entityTypes: ['SSODefinition'] }}
+          entityTypes={['SingleSignOn']}
+          searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
           disableNavigation
           // disableToolBar
           // removeSelectAll
