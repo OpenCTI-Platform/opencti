@@ -15,10 +15,11 @@ import { getSettings, settingsEditField } from '../../../src/domain/settings';
 import { getEntityFromCache, resetCacheForEntity } from '../../../src/database/cache';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import { SYSTEM_USER } from '../../../src/utils/access';
-import { RELATION_OBJECT_ASSIGNEE } from '../../../src/schema/stixRefRelationship';
+import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../src/schema/stixRefRelationship';
 import type { AuthUser } from '../../../src/types/user';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -125,7 +126,6 @@ describe('Users visibility according to their direct organizations', () => {
   let orgaBInternalId: string;
   let orgaABInternalId: string;
   let reportInternalId: string;
-  const reportStandardId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
 
   beforeAll(async () => {
     // ------ Create the context with users and organizations -------
@@ -218,31 +218,43 @@ describe('Users visibility according to their direct organizations', () => {
     inferredParticipateToRelationships = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreRelation[];
     expect(inferredParticipateToRelationships.length).toBe(2);
 
-    // 04. Assign the 4 users to a report
-    const REPORT_UPDATE_QUERY = gql`
-      mutation ReportEdit($id: ID!, $input: [EditInput]!) {
-        reportEdit(id: $id) {
-          fieldPatch(input: $input) {
+    // 04. Create a report with the 4 users as assignee, and userA and userO as participant
+    const REPORT_CREATE_QUERY = gql`
+      mutation ReportAdd($input: ReportAddInput!) {
+        reportAdd(input: $input) {
+          id
+          name
+          objectAssignee {
             id
             name
-            objectAssignee {
-              id
-              name
-            }
+          }
+          objectParticipant {
+            id
+            name
           }
         }
       }
     `;
-    const value = [userAInternalId, userBInternalId, userABInternalId, userOInternalId];
-    const queryResult = await queryAsAdmin({
-      query: REPORT_UPDATE_QUERY,
-      variables: { id: reportStandardId, input: { key: 'objectAssignee', value } },
+    const report = await queryAsAdmin({
+      query: REPORT_CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Report to test users visibility',
+          published: new Date(),
+          objectAssignee: [userAInternalId, userBInternalId, userABInternalId, userOInternalId],
+          objectParticipant: [userAInternalId, userOInternalId],
+        },
+      },
     });
-    reportInternalId = queryResult.data?.reportEdit.fieldPatch.id;
-    expect(queryResult.data?.reportEdit.fieldPatch.objectAssignee.length).toEqual(4);
+
+    reportInternalId = report.data?.reportAdd.id;
+    expect(report.data?.reportAdd.objectAssignee.length).toEqual(4);
+    expect(report.data?.reportAdd.objectParticipant.length).toEqual(2);
   });
 
   afterAll(async () => {
+    // Delete the created report
+    await stixDomainObjectDelete(testContext, SYSTEM_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
     // Remove the inferred relationships
     const inferredRelationships = await getInferences(RELATION_PARTICIPATE_TO) as BasicStoreRelation[];
     await Promise.all(inferredRelationships.map((rel) => deleteInferredRuleElement(ParticipateToPartsRule.id, rel, [])));
@@ -417,12 +429,23 @@ describe('Users visibility according to their direct organizations', () => {
     });
 
     it('should fetch all the assignees if no organization sharing', async () => {
-      const report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
+      let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
       expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(4);
+
+      report = await storeLoadById(testContext, USER_A, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
+      expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(4);
+    });
+
+    it('should fetch all the participants if no organization sharing', async () => {
+      let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
+      expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2);
+
+      report = await storeLoadById(testContext, USER_A, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
+      expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2);
     });
   });
 
-  describe('should fetch members according to the user visibility if organization sharing is activated', async () => {
+  describe('should fetch users according to the user visibility if organization sharing is activated', async () => {
     let USER_A: AuthUser;
     let USER_AB: AuthUser;
     let USER_O: AuthUser;
@@ -438,11 +461,11 @@ describe('Users visibility according to their direct organizations', () => {
     });
 
     afterAll(async () => {
-      // desactivate organization sharing
+      // deactivate organization sharing
       await enableCEAndUnSetOrganization();
     });
 
-    it('should load members according to the user visibility if orga sharing is activated', async () => {
+    it('should load members according to the user visibility if organization sharing is activated', async () => {
       const filters = {
         mode: 'and',
         filters: [{
@@ -495,6 +518,25 @@ describe('Users visibility according to their direct organizations', () => {
 
       membersResult = await findAllMembers(testContext, USER_O, { filters }) as BasicStoreEntity[];
       expect(membersResult.length).toEqual(1);
+    });
+
+    it('should fetch assignees according to the user visibility if organization sharing is activated', async () => {
+      let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
+      expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(4); // all the assignees of the report
+
+      report = await storeLoadById(testContext, USER_A, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
+      expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(2); // userA and userO
+    });
+
+    it('should fetch participants according to the user visibility if organization sharing is activated', async () => {
+      let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
+      expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2); // all the participants of the report
+
+      report = await storeLoadById(testContext, USER_A, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
+      expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2); // userA and userO
+
+      report = await storeLoadById(testContext, USER_AB, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
+      expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(1); // userO
     });
 
     it('should load members load all the members if settings option view_all_users = true', async () => {
