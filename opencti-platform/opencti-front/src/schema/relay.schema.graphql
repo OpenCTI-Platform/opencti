@@ -14907,6 +14907,7 @@ type SingleSignOn implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   name: String!
+  label: String
   description: String
   enabled: Boolean!
   strategy: StrategyType!
@@ -14920,15 +14921,15 @@ type SingleSignOn implements InternalObject & BasicObject {
 }
 
 type OrganizationsManagement {
-  organizations_path: [String]!
-  organizations_mapping: [String]!
+  organizations_path: [String!]
+  organizations_mapping: [String!]!
 }
 
 type GroupsManagement {
-  groups_attributes: [String]!
-  groups_path: [String]!
-  groups_mapping: [String]!
-  read_userinfo: Boolean!
+  groups_attributes: [String!]
+  groups_path: [String!]
+  groups_mapping: [String!]
+  read_userinfo: Boolean
 }
 
 type ConfigurationType {
@@ -14969,9 +14970,9 @@ input OrganizationsManagementInput {
 }
 
 input GroupsManagementInput {
-  groups_attributes: [String]!
-  groups_path: [String]!
-  groups_mapping: [String]!
+  groups_attributes: [String!]
+  groups_path: [String!]
+  groups_mapping: [String!]
   read_userinfo: Boolean
 }
 
@@ -14993,11 +14994,13 @@ input SingleSignOnAddInput {
   groups_management: GroupsManagementInput
   configuration: [ConfigurationTypeInput!]
   advanced_configuration: [ConfigurationTypeInput!]
+  label: String
 }
 
 type SingleSignOnMigrationResult {
   id: ID!
   name: String!
+  label: String
   description: String
   enabled: Boolean!
   strategy: StrategyType!
