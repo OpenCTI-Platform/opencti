@@ -117,6 +117,34 @@ const READ_MEMBERS_QUERY = gql`
   }
 `;
 
+const READ_ASSIGNEES_QUERY = gql`
+  query assignees($entityTypes: [String!]) {
+    assignees(entityTypes: $entityTypes) {
+      edges {
+        node {
+          id
+          entity_type
+          name
+        }
+      }
+    }
+  }
+`;
+
+const READ_PARTICIPANTS_QUERY = gql`
+  query participants($entityTypes: [String!]) {
+    participants(entityTypes: $entityTypes) {
+      edges {
+        node {
+          id
+          entity_type
+          name
+        }
+      }
+    }
+  }
+`;
+
 describe('Users visibility according to their direct organizations', () => {
   let userAInternalId: string;
   let userBInternalId: string;
@@ -428,7 +456,7 @@ describe('Users visibility according to their direct organizations', () => {
       expect(membersResult.length).toEqual(4); // the users visible by userA: userA and userO
     });
 
-    it('should fetch all the assignees if no organization sharing', async () => {
+    it('should fetch all the assignees of a report if no organization sharing', async () => {
       let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
       expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(4);
 
@@ -436,12 +464,28 @@ describe('Users visibility according to their direct organizations', () => {
       expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(4);
     });
 
-    it('should fetch all the participants if no organization sharing', async () => {
+    it('should fetch all the participants of a report if no organization sharing', async () => {
       let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
       expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2);
 
       report = await storeLoadById(testContext, USER_A, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
       expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2);
+    });
+
+    it('should fetch all the users that are assignees of a report if no organization sharing', async () => {
+      let queryResult = await queryAsAdmin({ query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
+      expect(queryResult.data?.assignees.edges.length).toEqual(4);
+
+      queryResult = await editorQuery({ query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
+      expect(queryResult.data?.assignees.edges.length).toEqual(4);
+    });
+
+    it('should fetch all the users that are participants if no organization sharing', async () => {
+      let queryResult = await queryAsAdmin({ query: READ_PARTICIPANTS_QUERY, variables: {} });
+      expect(queryResult.data?.participants.edges.length).toEqual(2);
+
+      queryResult = await editorQuery({ query: READ_PARTICIPANTS_QUERY, variables: {} });
+      expect(queryResult.data?.participants.edges.length).toEqual(2);
     });
   });
 
@@ -520,7 +564,7 @@ describe('Users visibility according to their direct organizations', () => {
       expect(membersResult.length).toEqual(1);
     });
 
-    it('should fetch assignees according to the user visibility if organization sharing is activated', async () => {
+    it('should fetch the assignees of a given report according to the user visibility if organization sharing is activated', async () => {
       let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
       expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(4); // all the assignees of the report
 
@@ -528,7 +572,7 @@ describe('Users visibility according to their direct organizations', () => {
       expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(2); // userA and userO
     });
 
-    it('should fetch participants according to the user visibility if organization sharing is activated', async () => {
+    it('should fetch the participants of a given report according to the user visibility if organization sharing is activated', async () => {
       let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
       expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2); // all the participants of the report
 
@@ -539,33 +583,40 @@ describe('Users visibility according to their direct organizations', () => {
       expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(1); // userO
     });
 
-    it('should load members load all the members if settings option view_all_users = true', async () => {
-      // set option view_all_users to true
-      const platformSettings: any = await getSettings(testContext);
-      const inputTrue = [{ key: 'view_all_users', value: ['true'] }];
-      let settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, inputTrue);
-      expect(settingsResult.view_all_users).toBe(true);
-      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    describe('should fetch all the users if organization sharing is activated and settings option view_all_users = true', async () => {
+      beforeAll(async () => {
+        // set option view_all_users to true
+        const platformSettings = await getSettings(testContext);
+        const inputTrue = [{ key: 'view_all_users', value: ['true'] }];
+        const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, inputTrue);
+        expect(settingsResult.view_all_users).toBe(true);
+        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+      });
 
-      const filters = {
-        mode: 'and',
-        filters: [{
-          key: 'name',
-          values: ['userA', 'userB', 'userAB', 'userO'], // we only consider the users created in this file
-        }],
-        filterGroups: [],
-      };
-      const queryResult = await editorQuery({ query: READ_MEMBERS_QUERY, variables: { filters, entityTypes: [ENTITY_TYPE_USER] } });
-      expect(queryResult.data?.members.edges.length).toEqual(4);
+      afterAll(async () => {
+        // set option view_all_users to false
+        const inputFalse = [{ key: 'view_all_users', value: ['false'] }];
+        const platformSettings = await getSettings(testContext);
+        const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, inputFalse);
+        expect(settingsResult.view_all_users).toBe(false);
+        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+      });
 
-      const membersResult = await findMembersPaginated(testContext, USER_O, { filters, entityTypes: [ENTITY_TYPE_USER] }) as BasicConnection<BasicStoreEntity>;
-      expect(membersResult.edges.length).toEqual(4);
+      it('should load members load all the members if settings option view_all_users = true', async () => {
+        const filters = {
+          mode: 'and',
+          filters: [{
+            key: 'name',
+            values: ['userA', 'userB', 'userAB', 'userO'], // we only consider the users created in this file
+          }],
+          filterGroups: [],
+        };
+        const queryResult = await editorQuery({ query: READ_MEMBERS_QUERY, variables: { filters, entityTypes: [ENTITY_TYPE_USER] } });
+        expect(queryResult.data?.members.edges.length).toEqual(4);
 
-      // set option view_all_users to false
-      const inputFalse = [{ key: 'view_all_users', value: ['false'] }];
-      settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, inputFalse);
-      expect(settingsResult.view_all_users).toBe(false);
-      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+        const membersResult = await findMembersPaginated(testContext, USER_O, { filters, entityTypes: [ENTITY_TYPE_USER] }) as BasicConnection<BasicStoreEntity>;
+        expect(membersResult.edges.length).toEqual(4);
+      });
     });
   });
 });
