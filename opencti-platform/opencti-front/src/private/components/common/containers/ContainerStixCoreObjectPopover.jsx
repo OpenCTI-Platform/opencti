@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { deleteElementByValue } from '../../../../utils/utils';
 import Transition from '../../../../components/Transition';
 import { serializeObjectB64 } from '../../../../utils/object';
+import stopEvent from '../../../../utils/domEvent';
 
 const styles = (theme) => ({
   container: {
@@ -107,11 +108,12 @@ class ContainerStixCoreObjectPopover extends Component {
   }
 
   handleOpen(event) {
+    stopEvent(event);
     this.setState({ anchorEl: event.currentTarget });
-    event.stopPropagation();
   }
 
-  handleClose() {
+  handleClose(event) {
+    stopEvent(event);
     this.setState({ anchorEl: null });
   }
 

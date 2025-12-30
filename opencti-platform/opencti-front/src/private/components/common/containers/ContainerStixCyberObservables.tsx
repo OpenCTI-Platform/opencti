@@ -21,6 +21,7 @@ import {
   ContainerStixCyberObservablesLinesPaginationQuery$variables,
 } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesPaginationQuery.graphql';
 import { ContainerStixCyberObservablesLines_data$data } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLines_data.graphql';
+import ContainerStixCoreObjectPopover from '@components/common/containers/ContainerStixCoreObjectPopover';
 
 const containerStixCyberObservableLineFragment = graphql`
     fragment ContainerStixCyberObservablesLine_node on StixCyberObservable {
@@ -224,6 +225,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
     selectedElements,
     deSelectedElements,
     selectAll,
+    setSelectedElements,
   } = useEntityToggle<ContainerStixCyberObservablesLine_node$data>(LOCAL_STORAGE_KEY);
 
   const getValuesForCopy = (
@@ -305,7 +307,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
     },
     created_at: {
       label: 'Platform creation date',
-      percentWidth: 10,
+      percentWidth: 12,
       isSortable: true,
     },
     analyses: {
@@ -348,6 +350,21 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
                       enableReferences={enableReferences}
                     />
                   </Security>
+                )}
+                actions={(row) => (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ContainerStixCoreObjectPopover
+                      containerId={row.containerId}
+                      toId={row.id}
+                      toStandardId={row.standard_id}
+                      relationshipType="object"
+                      paginationKey="Pagination_objects"
+                      paginationOptions={paginationOptions}
+                      selectedElements={selectedElements}
+                      setSelectedElements={setSelectedElements}
+                      enableReferences={enableReferences}
+                    />
+                  </div>
                 )}
               />
             )}
