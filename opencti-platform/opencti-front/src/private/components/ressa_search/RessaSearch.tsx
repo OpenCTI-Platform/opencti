@@ -178,11 +178,7 @@ const RessaSearch = () => {
     },
   ];
 
-  const handleSearch = (event?: React.MouseEvent<HTMLButtonElement>) => {
-    if (event && searchButtonRef.current) {
-      setHistoryAnchorEl(searchButtonRef.current);
-      setPopoverWidth(searchButtonRef.current.offsetWidth);
-    }
+  const handleSearch = () => {
     if (searchValue.trim()) {
       setHasSearched(true);
       // Parse the search query to extract filters
@@ -442,7 +438,7 @@ const RessaSearch = () => {
               ref={searchButtonRef}
               variant="contained"
               color="primary"
-              onClick={(e) => handleSearch(e)}
+              onClick={handleSearch}
               sx={{
                 minWidth: 120,
                 height: 56,
@@ -664,42 +660,49 @@ const RessaSearch = () => {
                 marginTop: 4,
                 display: 'flex',
                 gap: 3,
-                minHeight: '400px',
+                maxHeight: 'calc(100vh - 300px)',
+                minHeight: 400,
               }}
             >
               {/* Filter Sidebar - Left Side for LTR */}
               {extractedFilters.length > 0 && (
-                <FilterSidebar
-                  filters={extractedFilters}
-                  onFilterChange={(filterKey, value, checked) => {
-                    // Update filter state
-                    setExtractedFilters((prev) =>
-                      prev.map((filter) => {
-                        if (filter.key === filterKey) {
-                          return {
-                            ...filter,
-                            values: filter.values.map((v) =>
-                              v.value === value ? { ...v, checked } : v
-                            ),
-                          };
-                        }
-                        return filter;
-                      })
-                    );
-                    // TODO: Trigger new search with updated filters
-                  }}
-                />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <FilterSidebar
+                    filters={extractedFilters}
+                    onFilterChange={(filterKey, value, checked) => {
+                      // Update filter state
+                      setExtractedFilters((prev) =>
+                        prev.map((filter) => {
+                          if (filter.key === filterKey) {
+                            return {
+                              ...filter,
+                              values: filter.values.map((v) =>
+                                v.value === value ? { ...v, checked } : v
+                              ),
+                            };
+                          }
+                          return filter;
+                        })
+                      );
+                      // TODO: Trigger new search with updated filters
+                    }}
+                  />
+                </Box>
               )}
 
               {/* Main Content Area */}
-              <Box sx={{ flex: 1 }}>
+              <Box sx={{ flex: 3, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 <Card
                   sx={{
-                    height: '100%',
+                    flex: 1,
                     display: 'flex',
                     flexDirection: 'column',
                     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
                     borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    minHeight: 0,
+                    overflow: 'hidden',
                   }}
                 >
                   <CardContent
@@ -708,6 +711,8 @@ const RessaSearch = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       padding: 0,
+                      minHeight: 0,
+                      overflow: 'hidden',
                     }}
                   >
                     {/* Results Count and Save Search Button */}
@@ -768,6 +773,8 @@ const RessaSearch = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         padding: 4,
+                        minHeight: 0,
+                        overflow: 'auto',
                       }}
                     >
                     {hasResults ? (
@@ -792,7 +799,7 @@ const RessaSearch = () => {
                           flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          minHeight: '400px',
+                          minHeight: 300,
                         }}
                       >
                         {/* Icon */}

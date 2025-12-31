@@ -81,7 +81,7 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
   return (
     <Paper
       sx={{
-        width: 320,
+        width: '100%',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -89,6 +89,8 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
         border: '1px solid',
         borderColor: 'divider',
         backgroundColor: 'background.paper',
+        minHeight: 0,
+        overflow: 'hidden',
       }}
     >
       <Box sx={{ padding: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
