@@ -8,6 +8,7 @@ type SingleSignOn implements InternalObject & BasicObject {
   updated_at: DateTime!
   # SingleSignOn
   name: String!
+  identifier: String
   label: String
   description: String
   enabled: Boolean!
@@ -27,7 +28,7 @@ type OrganizationsManagement {
 }
 
 type GroupsManagement {
-  groups_attributes: [String!]
+  group_attributes: [String!]
   groups_path: [String!]
   groups_mapping: [String!]
   read_userinfo: Boolean
@@ -84,7 +85,7 @@ input OrganizationsManagementInput {
 }
 
 input GroupsManagementInput {
-  groups_attributes: [String!]
+  group_attributes: [String!]
   groups_path: [String!]
   groups_mapping: [String!]
   # read_userinfo is only used in OpenIDStrategy so far, should not be mandatory
@@ -100,6 +101,7 @@ input ConfigurationTypeInput {
 
 input SingleSignOnAddInput {
   name: String!
+  identifier: String
   description: String
   enabled: Boolean!
   strategy: StrategyType!
@@ -116,6 +118,7 @@ input SingleSignOnAddInput {
 type SingleSignOnMigrationResult {
   id: ID!
   name: String!
+  identifier: String
   label: String
   description: String
   enabled: Boolean!

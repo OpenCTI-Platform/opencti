@@ -9703,14 +9703,14 @@ export enum GroupingsOrdering {
 
 export type GroupsManagement = {
   __typename?: 'GroupsManagement';
-  groups_attributes?: Maybe<Array<Scalars['String']['output']>>;
+  group_attributes?: Maybe<Array<Scalars['String']['output']>>;
   groups_mapping?: Maybe<Array<Scalars['String']['output']>>;
   groups_path?: Maybe<Array<Scalars['String']['output']>>;
   read_userinfo?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type GroupsManagementInput = {
-  groups_attributes?: InputMaybe<Array<Scalars['String']['input']>>;
+  group_attributes?: InputMaybe<Array<Scalars['String']['input']>>;
   groups_mapping?: InputMaybe<Array<Scalars['String']['input']>>;
   groups_path?: InputMaybe<Array<Scalars['String']['input']>>;
   read_userinfo?: InputMaybe<Scalars['Boolean']['input']>;
@@ -27888,6 +27888,7 @@ export type SingleSignOn = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   groups_management?: Maybe<GroupsManagement>;
   id: Scalars['ID']['output'];
+  identifier?: Maybe<Scalars['String']['output']>;
   label?: Maybe<Scalars['String']['output']>;
   logout_remote?: Maybe<Scalars['Boolean']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -27907,6 +27908,7 @@ export type SingleSignOnAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   enabled: Scalars['Boolean']['input'];
   groups_management?: InputMaybe<GroupsManagementInput>;
+  identifier?: InputMaybe<Scalars['String']['input']>;
   label?: InputMaybe<Scalars['String']['input']>;
   logout_remote?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
@@ -27936,6 +27938,7 @@ export type SingleSignOnMigrationResult = {
   enabled: Scalars['Boolean']['output'];
   groups_management?: Maybe<GroupsManagement>;
   id: Scalars['ID']['output'];
+  identifier?: Maybe<Scalars['String']['output']>;
   label?: Maybe<Scalars['String']['output']>;
   logout_remote?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
@@ -41714,7 +41717,7 @@ export type GroupingEdgeResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type GroupsManagementResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupsManagement'] = ResolversParentTypes['GroupsManagement']> = ResolversObject<{
-  groups_attributes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  group_attributes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   groups_mapping?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   groups_path?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   read_userinfo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -46657,6 +46660,7 @@ export type SingleSignOnResolvers<ContextType = any, ParentType extends Resolver
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groups_management?: Resolver<Maybe<ResolversTypes['GroupsManagement']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logout_remote?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -46688,6 +46692,7 @@ export type SingleSignOnMigrationResultResolvers<ContextType = any, ParentType e
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   groups_management?: Resolver<Maybe<ResolversTypes['GroupsManagement']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logout_remote?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

@@ -12,6 +12,7 @@ const convertSingleSignOnToStix = (instance: StoreEntitySingleSignOn): StixSingl
     enabled: instance.enabled,
     strategy: instance.strategy,
     label: instance.label,
+    identifier: instance.identifier,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
