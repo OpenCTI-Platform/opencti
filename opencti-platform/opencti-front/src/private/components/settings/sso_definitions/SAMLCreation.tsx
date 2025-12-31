@@ -252,19 +252,27 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
               variant="standard"
               name="key"
               label={t_i18n('Key (in passport)')}
+              containerstyle={{ width: '20%' }}
             />
             <Field
               component={TextField}
               variant="standard"
               name="value"
               label={t_i18n('Value (in IDP)')}
+              containerstyle={{ width: '20%' }}
             />
             <Field
-              component={TextField}
+              component={SelectField}
               variant="standard"
               name="type"
               label={t_i18n('Field type')}
-            />
+              containerstyle={{ width: '20%' }}
+            >
+              <MenuItem value="Boolean">Boolean</MenuItem>
+              <MenuItem value="Integer">Integer</MenuItem>
+              <MenuItem value="String">String</MenuItem>
+              <MenuItem value="Array">Array</MenuItem>
+            </Field>
             <IconButton
               color="primary"
               aria-label={t_i18n('Delete')}
