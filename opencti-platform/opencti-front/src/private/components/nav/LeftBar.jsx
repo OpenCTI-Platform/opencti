@@ -31,6 +31,7 @@ import {
   SurroundSoundOutlined,
   TaskAltOutlined,
   TrackChanges,
+  SearchOutlined,
   VisibilityOutlined,
   WebAssetOutlined,
   WifiTetheringOutlined,
@@ -537,6 +538,14 @@ const LeftBarComponent = ({ queryRef }) => {
               />
             )}
           </Security>
+          {!draftContext && (
+            <LeftBarItem
+              {...itemProps}
+              label={t_i18n('Ressa Search')}
+              icon={<SearchOutlined />}
+              link="/dashboard/ressa-search"
+            />
+          )}
         </MenuList>
 
         <Separator />

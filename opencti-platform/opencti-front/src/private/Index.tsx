@@ -44,6 +44,7 @@ const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 const RootPir = lazy(() => import('./components/pir/Root'));
+const RootRessaSearch = lazy(() => import('./components/ressa_search/Root'));
 const RootXTMHub = lazy(() => import('@components/xtm_hub/Root'));
 
 interface IndexProps {
@@ -138,6 +139,7 @@ const Index = ({ settings }: IndexProps) => {
                 <Route path="/data/*" element={boundaryWrapper(RootData)} />
                 {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
                 <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
+                <Route path="/ressa-search/*" element={boundaryWrapper(RootRessaSearch)} />
                 <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
                 <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
                 <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
