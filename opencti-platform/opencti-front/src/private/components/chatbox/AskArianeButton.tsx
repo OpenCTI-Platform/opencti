@@ -153,7 +153,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
               open={isChatbotOpen}
               left={window.screen.availWidth - 430}
               agentic-url={chatbotProxyUrl}
-              theme={JSON.stringify(chatBotTheme)}
+              theme={chatBotTheme}
             />,
             document.body,
           )
