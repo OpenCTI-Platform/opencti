@@ -22,11 +22,14 @@ import {
   Edit,
   Refresh,
   FilterList,
+  DescriptionOutlined,
+  Close,
 } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import SearchListPopover from './SearchListPopover';
 import FilterPopover from './FilterPopover';
+import FilterSidebar, { FilterGroup } from './FilterSidebar';
 
 interface SearchExample {
   title: string;
@@ -39,10 +42,73 @@ interface RecentSearch {
   timestamp: string;
 }
 
+// Function to parse search query and extract filters
+const parseSearchQuery = (query: string): FilterGroup[] => {
+  const filterGroups: Record<string, { values: Set<string>; checked: Set<string> }> = {};
+  
+  // Regular expression to match key: "value" patterns (handles keys with underscores)
+  const keyValuePattern = /(\w+(?:_\w+)*):\s*"([^"]+)"/g;
+  let match;
+  
+  while ((match = keyValuePattern.exec(query)) !== null) {
+    const key = match[1];
+    const value = match[2];
+    
+    if (!filterGroups[key]) {
+      filterGroups[key] = { values: new Set(), checked: new Set() };
+    }
+    filterGroups[key].values.add(value);
+    filterGroups[key].checked.add(value);
+  }
+  
+  // Mock additional values for each filter group to make it look realistic
+  const mockValues: Record<string, string[]> = {
+    actor: ['Qiam', 'Tapandegan', 'Gonjeshk', 'Alpha Strike Lab', 'SPIDER', 'Another Actor'],
+    cve: [
+      'CVE-2025-54372',
+      'CVE-2025-54372',
+      'CVE-2025-27865',
+      'CVE-2025-54372',
+      'CVE-2025-54372',
+      'CVE-2025-54372',
+      'CVE-2025-54372',
+    ],
+    country: ['Iran', 'United States', 'Russia', 'China', 'North Korea'],
+    entity_type: ['vulnerability', 'malware', 'indicator', 'threat-actor'],
+    last_seen: ['>=30d', '>=7d', '>=1d', 'today'],
+    exploit_available: ['true', 'false'],
+    exploit_in_the_wild: ['true', 'false'],
+  };
+  
+  // Convert to FilterGroup array and add mock values
+  return Object.entries(filterGroups).map(([key, data]) => {
+    const checkedValues = Array.from(data.checked);
+    const allValues = mockValues[key] || Array.from(data.values);
+    
+    // Ensure checked values are included
+    const uniqueValues = Array.from(new Set([...allValues, ...checkedValues]));
+    
+    return {
+      key,
+      label: key,
+      values: uniqueValues.map((value) => ({
+        key,
+        value,
+        checked: checkedValues.includes(value),
+      })),
+      expanded: true,
+    };
+  });
+};
+
 const RessaSearch = () => {
   const { t_i18n } = useFormatter();
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState(
+    'actor: "Alpha Strike Lab" cve: "CVE-2025-27865" or country: "Iran" and entity_type: "vulnerability" and last_seen: ">=30d" and exploit_available: "true" and exploit_in_the_wild: "true"'
+  );
   const [hasSearched, setHasSearched] = useState(false);
+  const [hasResults, setHasResults] = useState(false);
+  const [extractedFilters, setExtractedFilters] = useState<FilterGroup[]>([]);
   const [historyAnchorEl, setHistoryAnchorEl] = useState<HTMLElement | null>(null);
   const [saveAnchorEl, setSaveAnchorEl] = useState<HTMLElement | null>(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
@@ -119,7 +185,12 @@ const RessaSearch = () => {
     }
     if (searchValue.trim()) {
       setHasSearched(true);
-      // TODO: Implement search functionality
+      // Parse the search query to extract filters
+      const filters = parseSearchQuery(searchValue);
+      setExtractedFilters(filters);
+      // TODO: Implement actual search functionality
+      // For now, simulate no results
+      setHasResults(false);
       console.log('Searching for:', searchValue);
     }
   };
@@ -347,6 +418,21 @@ const RessaSearch = () => {
                     </Box>
                   </InputAdornment>
                 ),
+                endAdornment: searchValue && (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setSearchValue('');
+                        setHasSearched(false);
+                        setExtractedFilters([]);
+                      }}
+                      sx={{ padding: 0.5 }}
+                    >
+                      <Close fontSize="small" sx={{ color: 'text.secondary' }} />
+                    </IconButton>
+                  </InputAdornment>
+                ),
               }}
             />
             </Box>
@@ -571,20 +657,189 @@ const RessaSearch = () => {
             </Box>
           )}
 
-          {/* Search Results Placeholder */}
+          {/* Search Results or No Results State */}
           {hasSearched && (
             <Box
               sx={{
                 marginTop: 4,
-                padding: 2,
-                backgroundColor: 'action.hover',
-                borderRadius: 1,
-                textAlign: 'center',
+                display: 'flex',
+                gap: 3,
+                minHeight: '400px',
               }}
             >
-              <Typography variant="body2" color="text.secondary">
-                {t_i18n('Search results will appear here')}
-              </Typography>
+              {/* Filter Sidebar - Left Side for LTR */}
+              {extractedFilters.length > 0 && (
+                <FilterSidebar
+                  filters={extractedFilters}
+                  onFilterChange={(filterKey, value, checked) => {
+                    // Update filter state
+                    setExtractedFilters((prev) =>
+                      prev.map((filter) => {
+                        if (filter.key === filterKey) {
+                          return {
+                            ...filter,
+                            values: filter.values.map((v) =>
+                              v.value === value ? { ...v, checked } : v
+                            ),
+                          };
+                        }
+                        return filter;
+                      })
+                    );
+                    // TODO: Trigger new search with updated filters
+                  }}
+                />
+              )}
+
+              {/* Main Content Area */}
+              <Box sx={{ flex: 1 }}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+                    borderRadius: 1,
+                  }}
+                >
+                  <CardContent
+                    sx={{
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      padding: 0,
+                    }}
+                  >
+                    {/* Results Count and Save Search Button */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: 2,
+                      }}
+                    >
+                      {/* Results Count */}
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        }}
+                      >
+                        {t_i18n('Results found')}
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            backgroundColor: 'primary.main',
+                          }}
+                        />
+                        <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>
+                          0
+                        </Typography>
+                      </Typography>
+
+                      {/* Save Search Button */}
+                      <Button
+                        variant="outlined"
+                        startIcon={<Save />}
+                        onClick={handleSave}
+                        sx={{
+                          textTransform: 'none',
+                          paddingX: 2,
+                          paddingY: 1.5,
+                        }}
+                      >
+                        {t_i18n('Save Search')}
+                      </Button>
+                    </Box>
+
+                    {/* Divider */}
+                    <Divider />
+
+                    {/* Results Content */}
+                    <Box
+                      sx={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        padding: 4,
+                      }}
+                    >
+                    {hasResults ? (
+                      <Box
+                        sx={{
+                          flex: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          {t_i18n('Search results will appear here')}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box
+                        sx={{
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: '400px',
+                        }}
+                      >
+                        {/* Icon */}
+                        <Box
+                          sx={{
+                            width: 120,
+                            height: 120,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: 3,
+                            color: 'text.secondary',
+                            opacity: 0.5,
+                          }}
+                        >
+                          <DescriptionOutlined sx={{ fontSize: 120 }} />
+                        </Box>
+
+                        {/* Title */}
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            fontWeight: 600,
+                            marginBottom: 1.5,
+                            textAlign: 'center',
+                          }}
+                        >
+                          {t_i18n('No results were found')}
+                        </Typography>
+
+                        {/* Description */}
+                        <Typography
+                          variant="body1"
+                          color="text.secondary"
+                          sx={{
+                            textAlign: 'center',
+                            maxWidth: 500,
+                          }}
+                        >
+                          {t_i18n('No items matching your search were found. Review the filters.')}
+                        </Typography>
+                      </Box>
+                    )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Box>
             </Box>
           )}
         </Paper>
