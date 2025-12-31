@@ -17,13 +17,14 @@ import { connectorIdFromIngestId, queueDetails } from '../../../src/domain/conne
 describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
     // 1. Create ingestion in opencti
-    const input : IngestionTaxiiAddInput = {
+    const input: IngestionTaxiiAddInput = {
       authentication_type: IngestionAuthType.None,
       collection: 'testcollection',
       ingestion_running: true,
       name: 'taxii ingestion with no pagination',
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
     };
     const ingestionNotPagination = await addTaxiiIngestion(testContext, ADMIN_USER, input);
     expect(ingestionNotPagination.id).toBeDefined();
@@ -45,9 +46,9 @@ describe('Verify taxii ingestion', () => {
             revoked: false,
             spec_version: '2.1',
             type: 'report' } as unknown as StixReport],
-        more: undefined
+        more: undefined,
       },
-      addedLastHeader: undefined
+      addedLastHeader: undefined,
     };
 
     await processTaxiiResponse(testContext, ingestionNotPagination, taxiResponse);
@@ -61,14 +62,15 @@ describe('Verify taxii ingestion', () => {
 
   it('should taxii server response with data and next page and start date', async () => {
     // 1. Create ingestion in opencti
-    const input2 : IngestionTaxiiAddInput = {
+    const input2: IngestionTaxiiAddInput = {
       authentication_type: IngestionAuthType.None,
       collection: 'testcollection',
       ingestion_running: true,
       name: 'taxii ingestion with pagination and start date',
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
-      added_after_start: '2024-01-01T20:35:44.000Z'
+      added_after_start: '2024-01-01T20:35:44.000Z',
+      user_id: ADMIN_USER.id,
     };
     const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
     expect(ingestionPaginatedWithStartDate.id).toBeDefined();
@@ -91,9 +93,9 @@ describe('Verify taxii ingestion', () => {
             revoked: false,
             spec_version: '2.1',
             type: 'report' } as unknown as StixReport],
-        more: true
+        more: true,
       },
-      addedLastHeader: '2024-02-01T20:35:44.000Z'
+      addedLastHeader: '2024-02-01T20:35:44.000Z',
     };
 
     await processTaxiiResponse(testContext, ingestionPaginatedWithStartDate, taxiResponse1);
@@ -118,9 +120,9 @@ describe('Verify taxii ingestion', () => {
             revoked: false,
             spec_version: '2.1',
             type: 'report' } as unknown as StixReport],
-        more: false
+        more: false,
       },
-      addedLastHeader: '2024-03-01T20:35:44.000Z'
+      addedLastHeader: '2024-03-01T20:35:44.000Z',
     };
 
     await processTaxiiResponse(testContext, taxiiEntityAfterfirstRequest, taxiResponse);
@@ -134,13 +136,14 @@ describe('Verify taxii ingestion', () => {
 
   it('should taxii server response with no start date, and next page', async () => {
     // 1. Create ingestion in opencti
-    const input3 : IngestionTaxiiAddInput = {
+    const input3: IngestionTaxiiAddInput = {
       authentication_type: IngestionAuthType.None,
       collection: 'testcollection',
       ingestion_running: true,
       name: 'taxii ingestion with pagination no start date',
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
     };
     const ingestionPaginatedWithNoStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input3);
     expect(ingestionPaginatedWithNoStartDate.id).toBeDefined();
@@ -163,9 +166,9 @@ describe('Verify taxii ingestion', () => {
             revoked: false,
             spec_version: '2.1',
             type: 'report' } as unknown as StixReport],
-        more: true
+        more: true,
       },
-      addedLastHeader: '2024-02-01T20:35:44.000Z'
+      addedLastHeader: '2024-02-01T20:35:44.000Z',
     };
 
     await processTaxiiResponse(testContext, ingestionPaginatedWithNoStartDate, taxiResponse);
@@ -190,9 +193,9 @@ describe('Verify taxii ingestion', () => {
             revoked: false,
             spec_version: '2.1',
             type: 'report' } as unknown as StixReport],
-        more: false
+        more: false,
       },
-      addedLastHeader: '2024-03-01T20:44:44.000Z'
+      addedLastHeader: '2024-03-01T20:44:44.000Z',
     };
 
     await processTaxiiResponse(testContext, taxiiEntityAfterFirstCall, taxiResponse2);
@@ -206,14 +209,15 @@ describe('Verify taxii ingestion', () => {
 
   it('should store nothing when no data', async () => {
     // 1. Create ingestion in opencti
-    const input2 : IngestionTaxiiAddInput = {
+    const input2: IngestionTaxiiAddInput = {
       authentication_type: IngestionAuthType.None,
       collection: 'testcollection',
       ingestion_running: true,
       name: 'taxii ingestion with pagination and start date',
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
-      added_after_start: '2023-01-01T20:35:44.000Z'
+      added_after_start: '2023-01-01T20:35:44.000Z',
+      user_id: ADMIN_USER.id,
     };
     const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
     expect(ingestionPaginatedWithStartDate.id).toBeDefined();
@@ -223,9 +227,9 @@ describe('Verify taxii ingestion', () => {
       data: {
         next: undefined,
         objects: [],
-        more: false
+        more: false,
       },
-      addedLastHeader: '2021-11-11T11:11:11.111Z'
+      addedLastHeader: '2021-11-11T11:11:11.111Z',
     };
 
     await processTaxiiResponse(testContext, ingestionPaginatedWithStartDate, taxiResponse);
@@ -241,13 +245,14 @@ describe('Verify taxii ingestion', () => {
 describe('Verify taxii ingestion - patch part', () => {
   it('should Taxii server response next as number be transform', async () => {
     // 1. Create ingestion in opencti
-    const input : IngestionTaxiiAddInput = {
+    const input: IngestionTaxiiAddInput = {
       authentication_type: IngestionAuthType.None,
       collection: 'testcollection',
       ingestion_running: true,
       name: 'taxii ingestion for patch test',
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
     };
     const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
@@ -271,22 +276,22 @@ describe('Verify csv ingestion', () => {
 
   it('should prepare ingestion data', async () => {
     const mapper = csvMapperMockCities as CsvMapperParsed;
-    const csvMapperInput : CsvMapperAddInput = {
+    const csvMapperInput: CsvMapperAddInput = {
       has_header: mapper.has_header,
       name: 'testCsvIngestionMapper',
       representations: JSON.stringify(mapper.representations),
       separator: mapper.separator,
-      skipLineChar: mapper.skipLineChar
+      skipLineChar: mapper.skipLineChar,
     };
 
     const mapperCreated = await createCsvMapper(testContext, ADMIN_USER, csvMapperInput);
-    const ingestionCsvInput : IngestionCsvAddInput = {
+    const ingestionCsvInput: IngestionCsvAddInput = {
       authentication_type: IngestionAuthType.None,
       ingestion_running: true,
       name: 'csv ingestion',
       uri: 'http://test.invalid',
       csv_mapper_id: mapperCreated.id,
-      user_id: ADMIN_USER.id
+      user_id: ADMIN_USER.id,
     };
     ingestionCsv = await addIngestionCsv(testContext, ADMIN_USER, ingestionCsvInput);
     expect(ingestionCsv.id).toBeDefined();
@@ -300,7 +305,6 @@ describe('Verify csv ingestion', () => {
         return false;
       }
     }, 10000, 6); // Wait for the queue result to exist - max 1 minute
-    
     csvMapperParsed = parseCsvMapper(mapperCreated);
 
     csvLines = await readCsvFromFileStream('./tests/03-integration/04-manager/ingestionManager', 'csv-file-cities.csv');

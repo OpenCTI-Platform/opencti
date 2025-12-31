@@ -11,16 +11,17 @@ import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { IngestionCsvEditionUserHandlingQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionUserHandlingQuery.graphql';
 import Alert from '@mui/material/Alert';
-import { fetchQuery } from '../../../../relay/environment';
-import { useFormatter } from '../../../../components/i18n';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import Transition from '../../../../components/Transition';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { fetchQuery } from '../../../relay/environment';
+import { useFormatter } from '../../../components/i18n';
+import { fieldSpacingContainerStyle } from '../../../utils/field';
+import Transition from '../../../components/Transition';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { IngestionEditionUserHandlingQuery$data } from '@components/data/__generated__/IngestionEditionUserHandlingQuery.graphql';
+import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 
-export const ingestionCsvEditionUserHandlingQuery = graphql`
-  query IngestionCsvEditionUserHandlingQuery(
+export const ingestionEditionUserHandlingQuery = graphql`
+  query IngestionEditionUserHandlingQuery(
     $name: String!
   ) {
     userAlreadyExists(
@@ -29,72 +30,53 @@ export const ingestionCsvEditionUserHandlingQuery = graphql`
   }
 `;
 
-export const ingestionCsvEditionUserHandlingFragment = graphql`
-  fragment IngestionCsvEditionUserHandlingFragment_ingestionCsv on IngestionCsv {
-    id
-    name
-    user {
-      id
-      entity_type
-      name
-    }
-  }
-`;
-export const ingestionCsvEditionUserHandlingPatch = graphql`
-  mutation IngestionCsvEditionUserHandlingMutation($id: ID!, $input: IngestionCsvAddAutoUserInput!) {
-    ingestionCsvAddAutoUser(id: $id, input: $input) {
-      ...IngestionCsvEditionUserHandlingFragment_ingestionCsv
-    }
-  }
-`;
-
-export interface EditionCsvAddAutoUserInput {
+export interface IngestionEditionAddAutoUserInput {
   user_name: string;
   confidence_level: number;
 }
 
-interface IngestionCsvEditionUserHandlingProps {
+interface IngestionEditionUserHandlingProps {
   feedName: string;
-  ingestionCsvDataId: string;
+  dataId: string;
   onAutoUserCreated: () => void;
+  mutation: GraphQLTaggedNode;
 }
-const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUserHandlingProps> = ({ feedName, ingestionCsvDataId, onAutoUserCreated }) => {
+const IngestionEditionUserHandling: FunctionComponent<IngestionEditionUserHandlingProps> = ({ feedName, dataId, onAutoUserCreated, mutation }) => {
   const { t_i18n } = useFormatter();
 
   const [openDialog, setOpenDialog] = useState(false);
-  const [commitUpdate] = useApiMutation(ingestionCsvEditionUserHandlingPatch);
-  const ingestionCsvCreationValidation = () => Yup.object().shape({
+  const [commitUpdate] = useApiMutation(mutation);
+  const validationSchema = () => Yup.object().shape({
     user_name: Yup.string(),
-    confidence_level: Yup.string(),
+    confidence_level: Yup.number(),
   });
 
-  const initialValues: EditionCsvAddAutoUserInput = {
+  const initialValues: IngestionEditionAddAutoUserInput = {
     user_name: `[F] ${feedName}`,
     confidence_level: 50,
   };
 
-  const onSubmit: FormikConfig<EditionCsvAddAutoUserInput>['onSubmit'] = async (
+  const onSubmit: FormikConfig<IngestionEditionAddAutoUserInput>['onSubmit'] = async (
     values,
     { setSubmitting, setFieldError },
   ) => {
-    const existingUsers = await fetchQuery(ingestionCsvEditionUserHandlingQuery, {
+    const existingUsers = await fetchQuery(ingestionEditionUserHandlingQuery, {
       name: values.user_name,
     })
       .toPromise();
 
-    if ((existingUsers as IngestionCsvEditionUserHandlingQuery$data)?.userAlreadyExists) {
+    if ((existingUsers as IngestionEditionUserHandlingQuery$data)?.userAlreadyExists) {
       setSubmitting(false);
       setFieldError('user_name', t_i18n('This service account already exists. Change the feed\'s name to change the automatically created service account name'));
       return;
     }
 
-    // send data to backend
     commitUpdate({
       variables: {
-        id: ingestionCsvDataId,
+        id: dataId,
         input: {
           user_name: values.user_name,
-          confidence_level: values.confidence_level,
+          confidence_level: Number(values.confidence_level),
         },
       },
       onCompleted: () => {
@@ -120,9 +102,9 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
 
       </Alert>
 
-      <Formik<EditionCsvAddAutoUserInput>
+      <Formik<IngestionEditionAddAutoUserInput>
         initialValues={initialValues}
-        validationSchema={ingestionCsvCreationValidation}
+        validationSchema={validationSchema}
         onSubmit={onSubmit}
       >
         {({ submitForm, resetForm }) => (
@@ -187,4 +169,4 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
   );
 };
 
-export default IngestionCsvEditionUserHandling;
+export default IngestionEditionUserHandling;
