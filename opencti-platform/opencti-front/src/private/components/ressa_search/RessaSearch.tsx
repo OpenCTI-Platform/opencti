@@ -483,6 +483,7 @@ const RessaSearch = () => {
                     sx={{
                       cursor: 'pointer',
                       transition: 'all 0.2s',
+                      border: '1px solid rgba(0, 0, 0, 0.06)',
                       '&:hover': {
                         boxShadow: 3,
                         transform: 'translateY(-2px)',
