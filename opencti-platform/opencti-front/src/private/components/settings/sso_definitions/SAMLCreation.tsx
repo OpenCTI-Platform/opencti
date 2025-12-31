@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { Button } from '@mui/material';
+import { Button, IconButton } from '@mui/material';
 import { TextField } from 'formik-mui';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
@@ -9,6 +9,8 @@ import { useFormatter } from '../../../../components/i18n';
 import SwitchField from '../../../../components/fields/SwitchField';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
+import { Add, Delete } from '@mui/icons-material';
+import Typography from '@mui/material/Typography';
 
 export interface SAMLCreationValues {
   name: string;
@@ -64,7 +66,6 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
             name="name"
             label={t_i18n('Authentication Name')}
             fullWidth
-            style={{ marginTop: 20 }}
           />
           <Field
             component={SwitchField}
@@ -96,30 +97,32 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
             name="responses"
             defaultValue={true}
             label={t_i18n('Requires SAML responses to be signed')}
-            containerstyle={{ marginLeft: 2, marginTop: 20 }}
+            containerstyle={{ marginLeft: 2 }}
           />
-          <div>Identity Provider Information</div>
-          <Field
-            component={SwitchField}
-            variant="standard"
-            name="login"
-            defaultValue={true}
-            label={t_i18n('Allow login from identity provider directly')}
-            containerstyle={{ marginLeft: 2, marginTop: 20 }}
-          />
-          <Field
-            component={SwitchField}
-            variant="standard"
-            name="responses"
-            defaultValue={true}
-            label={t_i18n('Allow logout from Identity provider directly')}
-            containerstyle={{ marginLeft: 2, marginTop: 20 }}
-          />
+          <div style={{ marginTop: 40, marginBottom: 20 }}>
+            <Typography variant="h2">Identity Provider Information</Typography>
+            <Field
+              component={SwitchField}
+              variant="standard"
+              name="login"
+              defaultValue={true}
+              label={t_i18n('Allow login from identity provider directly')}
+              containerstyle={{ marginLeft: 2 }}
+            />
+            <Field
+              component={SwitchField}
+              variant="standard"
+              name="responses"
+              defaultValue={true}
+              label={t_i18n('Allow logout from Identity provider directly')}
+              containerstyle={{ marginLeft: 2 }}
+            />
+          </div>
           <Field
             component={SelectField}
             variant="standard"
             name="entityId"
-            label={t_i18n('How to provide Provider metadata')}
+            label={t_i18n('Method of Provider metadata')}
             fullWidth
             containerstyle={{ width: '100%' }}
           >
@@ -164,6 +167,113 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
             rows={4}
             style={{ marginTop: 20 }}
           />
+          <Field
+            component={SelectField}
+            variant="standard"
+            name="entityId"
+            label={t_i18n('SSO Binding type')}
+            fullWidth
+            containerstyle={{ width: '100%' }}
+          >
+            <MenuItem value="Redirect">Redirect</MenuItem>
+            <MenuItem value="Post">Post</MenuItem>
+          </Field>
+          <Field
+            component={SwitchField}
+            variant="standard"
+            name="login"
+            defaultValue={true}
+            label={t_i18n('Force Authentication even if user has valid SSO session')}
+            containerstyle={{ marginLeft: 2 }}
+          />
+          <Field
+            component={SwitchField}
+            variant="standard"
+            name="login"
+            defaultValue={true}
+            label={t_i18n('Enable debug mode to troubleshoot for this authentication')}
+            containerstyle={{ marginLeft: 2 }}
+          />
+          <div style={{ marginTop: 40, marginBottom: 20 }}>
+            <Typography variant="h2">OpenCTI Information</Typography>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="metadata url"
+              label={t_i18n('Metadata URL')}
+              fullWidth
+              style={{ marginTop: 20 }}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="entityID"
+              label={t_i18n('Entity ID')}
+              fullWidth
+              style={{ marginTop: 20 }}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="assertionConsummer"
+              label={t_i18n('Assertion consummer')}
+              fullWidth
+              style={{ marginTop: 20 }}
+            />
+            <Field
+              id="filled-multiline-flexible"
+              component={TextField}
+              variant="standard"
+              name="request"
+              label={t_i18n('Authenticate request signing certificate')}
+              fullWidth
+              multiline
+              rows={4}
+              style={{ marginTop: 20 }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h2">Add more fields</Typography>
+            <IconButton
+              color="secondary"
+              aria-label="Add"
+              // onClick={() =>
+              // onAddField(setFieldValue, values)
+              // }
+              size="large"
+              style={{ marginBottom: 12 }}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="key"
+              label={t_i18n('Key (in passport)')}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="value"
+              label={t_i18n('Value (in IDP)')}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="type"
+              label={t_i18n('Field type')}
+            />
+            <IconButton
+              color="primary"
+              aria-label={t_i18n('Delete')}
+              style={{ marginTop: 10 }}
+              // onClick={() => onRemove?.()}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+          </div>
           <div
             style={{
               marginTop: 20,
