@@ -123,8 +123,6 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
     navigate('/dashboard');
   };
 
-  const hasConnectedPlatforms = true; // isNotEmptyField(openAEVUrl) || xtmhubStatus === 'registered';
-
   return (
     <>
       <Box
@@ -141,12 +139,10 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           alignItems: 'center',
           gap: 1,
           justifyContent: navOpen ? 'space-between' : 'center',
-          '&:hover': hasConnectedPlatforms ? {
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          '&:hover': {
             cursor: 'pointer',
-          } : {},
+          }
         }}
-        // onClick={hasConnectedPlatforms ? handleClick : undefined}
       >
         <img
           src={currentLogo}
@@ -158,7 +154,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           }}
         />
 
-        {navOpen && hasConnectedPlatforms && (
+        {navOpen && (
           <IconButton onClick={handleClickPopover}>
             <ExpandMoreOutlined
               sx={{
@@ -170,7 +166,6 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
         )}
       </Box>
 
-      {hasConnectedPlatforms && (
         <Popover
           open={open}
           anchorEl={anchorEl}
@@ -224,7 +219,6 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
             )}
           </List>
         </Popover>
-      )}
     </>
   );
 };
