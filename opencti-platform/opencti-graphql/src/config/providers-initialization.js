@@ -91,7 +91,7 @@ const configurationMapping = {
   decryption_cert: 'decryptionCert',
   // OpenID Client - everything is already in snake case
 };
-const configRemapping = (config) => {
+export const configRemapping = (config) => {
   if (!config) return config;
   if (typeof config === 'object' && !Array.isArray(config)) {
     const n = {};

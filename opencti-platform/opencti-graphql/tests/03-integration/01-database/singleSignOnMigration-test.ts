@@ -43,9 +43,9 @@ describe('Migration of SSO environment test coverage', () => {
       expect(minimalSamlConfiguration.enabled).toBeTruthy();
       expect(minimalSamlConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'openctisaml' },
-        { key: 'entry_point', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
-        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
-        { key: 'cert', type: 'string', value: 'totallyFakeCert' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCert' },
       ]);
     });
 
@@ -77,12 +77,12 @@ describe('Migration of SSO environment test coverage', () => {
       expect(allTypesSamlConfiguration.enabled).toBeTruthy();
       expect(allTypesSamlConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'openctisaml_all_types' },
-        { key: 'entry_point', type: 'string', value: 'http://localhost:7777/realms/master/protocol/saml' },
-        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:2000/auth/saml/callback' },
-        { key: 'cert', type: 'string', value: 'totallyFakeCert3' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:7777/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:2000/auth/saml/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCert3' },
         { key: 'acceptedClockSkewMs', type: 'number', value: '5' },
         // TODO { key: 'xmlSignatureTransforms', type: 'array', value: '[\'http://www.w3.org/2000/09/xmldsig#enveloped-signature\', \'http://www.w3.org/2001/10/xml-exc-c14n#\']' },
-        { key: 'want_assertions_signed', type: 'boolean', value: 'true' },
+        { key: 'wantAssertionsSigned', type: 'boolean', value: 'true' },
       ]);
     });
 
@@ -128,9 +128,9 @@ describe('Migration of SSO environment test coverage', () => {
       expect(groupManagementSAMLConfiguration.enabled).toBeTruthy();
       expect(groupManagementSAMLConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'openctisaml_groups' },
-        { key: 'entry_point', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
-        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
-        { key: 'cert', type: 'string', value: 'totallyFakeCertGroups' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
       ]);
 
       expect(groupManagementSAMLConfiguration.groups_management).toStrictEqual({
@@ -146,9 +146,9 @@ describe('Migration of SSO environment test coverage', () => {
       expect(groupManagementEmptyConfiguration.enabled).toBeTruthy();
       expect(groupManagementEmptyConfiguration.configuration).toStrictEqual([
         { key: 'issuer', type: 'string', value: 'openctisaml_groups' },
-        { key: 'entry_point', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
-        { key: 'saml_callback_url', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
-        { key: 'cert', type: 'string', value: 'totallyFakeCertGroups' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
       ]);
 
       expect(groupManagementEmptyConfiguration.groups_management).toStrictEqual({

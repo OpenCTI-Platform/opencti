@@ -9,6 +9,11 @@ import { login } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { findAllSingleSignOn } from './singleSignOn-domain';
 import { AuthType, EnvStrategyType, PROVIDERS } from '../../config/providers-configuration';
+import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
+
+export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
+  const providerRef = ssoEntity.id || 'saml';
+};
 
 export const addLocalStrategy = async (providerName: string) => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -59,6 +64,7 @@ export const initAuthenticationProviders = async (context: AuthContext, user: Au
             await addLocalStrategy(currentSSOconfig.name);
             break;
           case StrategyType.SamlStrategy:
+            await addSAMLStrategy(currentSSOconfig);
             logApp.error(`[SSO INIT] ${currentSSOconfig.strategy} not implemented yet`);
             break;
           case StrategyType.OpenIdConnectStrategy:
