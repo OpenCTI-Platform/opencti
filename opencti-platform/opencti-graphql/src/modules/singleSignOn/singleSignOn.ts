@@ -4,9 +4,9 @@ import { ENTITY_TYPE_SINGLE_SIGN_ON, type StixSingleSignOn, type StoreEntitySing
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertSingleSignOnToStix from './singleSignOn-converter';
 import { isFeatureEnabled } from '../../config/conf';
-import { EnvStrategyType } from '../../config/providers-configuration';
+import { StrategyType } from '../../generated/graphql';
 
-const StrategyTypeList = Object.values(EnvStrategyType);
+const StrategyTypeList = Object.values(StrategyType);
 
 const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixSingleSignOn> = {
   type: {
@@ -41,8 +41,8 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
   converter_2_1: convertSingleSignOnToStix,
 };
 
-export const isSingleSignOnEnabled = isFeatureEnabled('SINGLE_SIGN_ON_ENABLED');
+export const isSingleSignOnInGuiEnabled = isFeatureEnabled('SINGLE_SIGN_ON_ENABLED');
 
-if (isSingleSignOnEnabled) {
+if (isSingleSignOnInGuiEnabled) {
   registerDefinition(SINGLE_SIGN_ON_DEFINITION);
 }

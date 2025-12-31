@@ -8,11 +8,11 @@ import {
 } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { now } from 'moment';
-import { EnvStrategyType } from '../../config/providers-configuration';
 import { nowTime } from '../../utils/format';
 import { addSingleSignOn } from './singleSignOn-domain';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { v4 as uuid } from 'uuid';
+import { EnvStrategyType } from '../../config/providers-configuration';
 
 // Key that should not be present after migration
 const DEPRECATED_KEYS = ['roles_management'];

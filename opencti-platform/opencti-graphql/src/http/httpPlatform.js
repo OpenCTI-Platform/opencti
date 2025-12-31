@@ -33,7 +33,7 @@ import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
-import { isStrategyActivated, EnvStrategyType } from '../config/providers-configuration';
+import { EnvStrategyType, isStrategyActivated } from '../config/providers-configuration';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate

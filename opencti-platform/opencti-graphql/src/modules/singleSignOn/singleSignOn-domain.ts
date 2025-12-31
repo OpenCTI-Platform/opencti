@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntitySingleSignOn, ENTITY_TYPE_SINGLE_SIGN_ON, type StoreEntitySingleSignOn } from './singleSignOn-types';
 import { type EditInput, type SingleSignMigrationInput, type SingleSignOnAddInput } from '../../generated/graphql';
 import { now } from '../../utils/format';
@@ -10,7 +10,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { isSingleSignOnEnabled } from './singleSignOn';
+import { isSingleSignOnInGuiEnabled } from './singleSignOn';
 import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 
@@ -56,17 +56,17 @@ import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 // };
 
 export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
-  if (!isSingleSignOnEnabled) throw UnsupportedError('Feature not yet available');
+  if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
   return storeLoadById<BasicStoreEntitySingleSignOn>(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON);
 };
 
 export const findSingleSignOnPaginated = (context: AuthContext, user: AuthUser, args: any) => {
-  if (!isSingleSignOnEnabled) throw UnsupportedError('Feature not yet available');
+  if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
   return pageEntitiesConnection<BasicStoreEntitySingleSignOn>(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON], args);
 };
 
 export const addSingleSignOn = (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
-  if (!isSingleSignOnEnabled) throw UnsupportedError('Feature not yet available');
+  if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
   // Call here the function to check that all mandatory field are in the input
   const defaultOps = { created_at: now(), updated_at: now() };
   const singleSignOnInput = { ...input, ...defaultOps };
@@ -74,7 +74,7 @@ export const addSingleSignOn = (context: AuthContext, user: AuthUser, input: Sin
 };
 
 export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
-  if (!isSingleSignOnEnabled) throw UnsupportedError('Feature not yet available');
+  if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
   const singleSignOn = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOn) {
@@ -95,7 +95,7 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
 };
 
 export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, id: string) => {
-  if (!isSingleSignOnEnabled) throw UnsupportedError('Feature not yet available');
+  if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
   const singleSignOn = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOn) {
@@ -120,4 +120,9 @@ export const runSingleSignOnRunMigration = async (context: AuthContext, user: Au
   const ssoConfigurationEnv = nconf.get('providers');
   logApp.info('[SSO MIGRATION] provider configuration:', { providers: ssoConfigurationEnv });
   return parseSingleSignOnRunConfiguration(context, user, ssoConfigurationEnv, input.dry_run);
+};
+
+export const findAllSingleSignOn = (context: AuthContext, user: AuthUser): Promise<BasicStoreEntitySingleSignOn[]> => {
+  if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
+  return fullEntitiesList(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON]);
 };
