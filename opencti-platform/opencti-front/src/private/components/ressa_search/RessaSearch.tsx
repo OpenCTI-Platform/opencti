@@ -46,6 +46,7 @@ const RessaSearch = () => {
   const [searchValue, setSearchValue] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   
@@ -331,49 +332,69 @@ const RessaSearch = () => {
                   {t_i18n('Recent searches')}
                 </Typography>
                 <List dense sx={{ padding: 0 }}>
-                  {recentSearches.map((search) => (
+                  {recentSearches.map((search) => {
+                    const isHovered = hoveredItemId === search.id;
+                    return (
                     <ListItem
                       key={search.id}
                       component="button"
                       onClick={() => handleSelectRecentSearch(search.query)}
+                      onMouseEnter={() => setHoveredItemId(search.id)}
+                      onMouseLeave={() => setHoveredItemId(null)}
                       sx={{
                         borderRadius: 1,
                         marginBottom: 0.5,
                         cursor: 'pointer',
-                        '&:hover': {
-                          backgroundColor: 'action.hover',
-                        },
+                        backgroundColor: isHovered ? '#E3F2FD' : 'rgba(0, 0, 0, 0.02)',
+                        border: isHovered ? '1px solid #2196F3' : '1px solid rgba(0, 0, 0, 0.05)',
+                        paddingTop: 1.2,
+                        paddingBottom: 1.2,
+                        minHeight: 36,
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleEditSearch(search.query, e)}
-                          sx={{ padding: 0.5 }}
-                        >
-                          <Edit fontSize="small" sx={{ color: 'text.secondary' }} />
-                        </IconButton>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {search.query}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                      <History fontSize="small" sx={{ color: 'text.secondary', marginRight: 1 }} />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {search.query}
+                        </Typography>
+                      </Box>
+                      <ListItemSecondaryAction>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ marginRight: 1 }}>
                             {search.timestamp}
                           </Typography>
+                          {isHovered && (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              gap: 0.5,
+                              alignItems: 'center',
+                            }}
+                          >
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectRecentSearch(search.query);
+                              }}
+                              sx={{ padding: 0.5 }}
+                            >
+                              <Search fontSize="small" sx={{ color: 'text.secondary' }} />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleEditSearch(search.query, e)}
+                              sx={{ padding: 0.5 }}
+                            >
+                              <Edit fontSize="small" sx={{ color: 'text.secondary' }} />
+                            </IconButton>
+                          </Box>
+                          )}
                         </Box>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectRecentSearch(search.query);
-                          }}
-                          sx={{ padding: 0.5 }}
-                        >
-                          <Search fontSize="small" sx={{ color: 'text.secondary' }} />
-                        </IconButton>
-                      </Box>
+                      </ListItemSecondaryAction>
                     </ListItem>
-                  ))}
+                    );
+                  })}
                 </List>
                 <Divider sx={{ marginY: 2 }} />
                 <Button
