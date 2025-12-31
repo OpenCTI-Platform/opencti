@@ -83,12 +83,9 @@ export function GradientBorderTextField({
           borderRadius: 2,
           backgroundColor: theme.palette.background.paper,
 
-          '& fieldset': {
-            border: '1px solid transparent',
-          },
-
           ...(isActive && {
             '&.Mui-focused:not(:hover) fieldset': {
+              // prevent showing the default border when ai mode on and mouse out
               border: `1px solid ${theme.palette.ai.dark}`,
             },
 
@@ -111,7 +108,7 @@ export function GradientBorderTextField({
             },
 
             '&:hover fieldset': {
-              border: `1px solid ${theme.palette.ai.dark}`, // Keep transparent on hover
+              border: `1px solid ${theme.palette.ai.dark}`,
             },
           }),
         },

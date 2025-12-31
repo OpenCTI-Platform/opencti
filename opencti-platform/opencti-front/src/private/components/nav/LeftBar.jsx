@@ -117,7 +117,6 @@ import useHelper from '../../../utils/hooks/useHelper';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useDimensions from '../../../utils/hooks/useDimensions';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { Box } from '@mui/material';
 import { LeftBarHeader } from './LeftBarHeader';
 
 export const SMALL_BAR_WIDTH = 55;

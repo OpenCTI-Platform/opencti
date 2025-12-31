@@ -141,7 +141,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           justifyContent: navOpen ? 'space-between' : 'center',
           '&:hover': {
             cursor: 'pointer',
-          }
+          },
         }}
       >
         <img
@@ -166,59 +166,59 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
         )}
       </Box>
 
-        <Popover
-          open={open}
-          anchorEl={anchorEl}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left',
-          }}
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        sx={{
+          transform: 'translateX(-40px)',
+        }}
+        onClose={handleMouseLeave}
+      >
+        <List
+          dense
           sx={{
-            transform: 'translateX(-40px)',
+            p: 1,
+            minWidth: 228,
+            backgroundColor: '#253348',
           }}
-          onClose={handleMouseLeave}
         >
-          <List
-            dense
-            sx={{
-              p: 1,
-              minWidth: 228,
-              backgroundColor: '#253348',
-            }}
-          >
-            <Tooltip title={isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
-              <span>
-                <PopoverListItem
-                  logoSrc={logoOpenBAS}
-                  href={openAEVUrl}
-                  external
-                  onClick={handleMouseLeave}
-                />
-              </span>
-            </Tooltip>
-
-            <Divider sx={{ backgroundColor: 'black', m: 1 }} />
-
-            {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
+          <Tooltip title={isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
+            <span>
               <PopoverListItem
-                logoSrc={logoXTMHub}
-                href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://hub.filigran.io'}
+                logoSrc={logoOpenBAS}
+                href={openAEVUrl}
                 external
                 onClick={handleMouseLeave}
               />
-            ) : (
-              <PopoverListItem
-                logoSrc={logoXTMHub}
-                to="/dashboard/settings/experience"
-                onClick={handleMouseLeave}
-              />
-            )}
-          </List>
-        </Popover>
+            </span>
+          </Tooltip>
+
+          <Divider sx={{ backgroundColor: 'black', m: 1 }} />
+
+          {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
+            <PopoverListItem
+              logoSrc={logoXTMHub}
+              href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://hub.filigran.io'}
+              external
+              onClick={handleMouseLeave}
+            />
+          ) : (
+            <PopoverListItem
+              logoSrc={logoXTMHub}
+              to="/dashboard/settings/experience"
+              onClick={handleMouseLeave}
+            />
+          )}
+        </List>
+      </Popover>
     </>
   );
 };
