@@ -22,7 +22,7 @@ import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EditInput, FilterMode, type PlaybookAddInput, type PlaybookAddLinkInput, type PlaybookAddNodeInput, type PositionInput } from '../../generated/graphql';
+import { type EditInput, type PlaybookAddInput, type PlaybookAddLinkInput, type PlaybookAddNodeInput, type PositionInput } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
@@ -32,7 +32,6 @@ import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/sti
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
-import { findFiltersFromKey } from '../../utils/filtering/filtering-utils';
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -72,12 +71,7 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
       if (instance && (instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM' || instance.component_id === 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER')) {
         const { filters } = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
         const jsonFilters = filters ? JSON.parse(filters) : null;
-        const newFilters = {
-          mode: FilterMode.And,
-          filters: findFiltersFromKey(jsonFilters?.filters ?? [], 'entity_type'),
-          filterGroups: [],
-        };
-        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, stixEntity, newFilters);
+        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, stixEntity, jsonFilters);
         if (isMatch) {
           filteredPlaybooks.push(playbook);
         }
