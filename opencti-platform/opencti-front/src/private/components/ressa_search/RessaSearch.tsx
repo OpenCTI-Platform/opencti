@@ -46,6 +46,7 @@ const RessaSearch = () => {
   const [searchValue, setSearchValue] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [popoverWidth, setPopoverWidth] = useState<number>(400);
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
@@ -106,6 +107,7 @@ const RessaSearch = () => {
   const handleSearchIconClick = (event: React.MouseEvent<HTMLElement>) => {
     if (inputRef.current) {
       setAnchorEl(inputRef.current);
+      setPopoverWidth(inputRef.current.offsetWidth);
     }
   };
 
@@ -315,7 +317,7 @@ const RessaSearch = () => {
             }}
             PaperProps={{
               sx: {
-                width: anchorEl ? anchorEl.offsetWidth : 400,
+                width: popoverWidth,
                 maxWidth: '90vw',
               },
             }}
