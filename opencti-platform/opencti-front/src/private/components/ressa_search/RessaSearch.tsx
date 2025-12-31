@@ -12,11 +12,6 @@ import {
   Card,
   CardContent,
   Divider,
-  Popover,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
 } from '@mui/material';
 import {
   Search,
@@ -29,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import SearchListPopover from './SearchListPopover';
 
 interface SearchExample {
   title: string;
@@ -45,14 +41,22 @@ const RessaSearch = () => {
   const { t_i18n } = useFormatter();
   const [searchValue, setSearchValue] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [historyAnchorEl, setHistoryAnchorEl] = useState<HTMLElement | null>(null);
+  const [saveAnchorEl, setSaveAnchorEl] = useState<HTMLElement | null>(null);
   const [popoverWidth, setPopoverWidth] = useState<number>(400);
-  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
+  const saveIconRef = useRef<HTMLButtonElement>(null);
   
   // Mock recent searches data
   const [recentSearches] = useState<RecentSearch[]>([
+    { id: '1', query: 'asn: "12" and country: "Iran"', timestamp: '1 minute ago' },
+    { id: '2', query: 'country: "Iran"', timestamp: 'a week ago' },
+    { id: '3', query: 'severity: "high"', timestamp: '2 weeks ago' },
+  ]);
+
+  // Mock saved searches data
+  const [savedSearches] = useState<RecentSearch[]>([
     { id: '1', query: 'asn: "12" and country: "Iran"', timestamp: '1 minute ago' },
     { id: '2', query: 'country: "Iran"', timestamp: 'a week ago' },
     { id: '3', query: 'severity: "high"', timestamp: '2 weeks ago' },
@@ -95,7 +99,8 @@ const RessaSearch = () => {
 
   const handleSearch = (event?: React.MouseEvent<HTMLButtonElement>) => {
     if (event && searchButtonRef.current) {
-      setAnchorEl(searchButtonRef.current);
+      setHistoryAnchorEl(searchButtonRef.current);
+      setPopoverWidth(searchButtonRef.current.offsetWidth);
     }
     if (searchValue.trim()) {
       setHasSearched(true);
@@ -106,25 +111,38 @@ const RessaSearch = () => {
 
   const handleSearchIconClick = (event: React.MouseEvent<HTMLElement>) => {
     if (inputRef.current) {
-      setAnchorEl(inputRef.current);
+      setHistoryAnchorEl(inputRef.current);
       setPopoverWidth(inputRef.current.offsetWidth);
     }
   };
 
-  const handleClosePopover = () => {
-    setAnchorEl(null);
+  const handleSaveIconClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (saveIconRef.current) {
+      setSaveAnchorEl(saveIconRef.current);
+      setPopoverWidth(saveIconRef.current.offsetWidth || inputRef.current?.offsetWidth || 400);
+    }
+  };
+
+  const handleCloseHistoryPopover = () => {
+    setHistoryAnchorEl(null);
+  };
+
+  const handleCloseSavePopover = () => {
+    setSaveAnchorEl(null);
   };
 
   const handleSelectRecentSearch = (query: string) => {
     setSearchValue(query);
-    setAnchorEl(null);
+    setHistoryAnchorEl(null);
+    setSaveAnchorEl(null);
     setHasSearched(true);
   };
 
   const handleEditSearch = (query: string, event: React.MouseEvent) => {
     event.stopPropagation();
     setSearchValue(query);
-    setAnchorEl(null);
+    setHistoryAnchorEl(null);
+    setSaveAnchorEl(null);
   };
 
   const handleSave = () => {
@@ -232,9 +250,9 @@ const RessaSearch = () => {
                       />
                       <Tooltip title={t_i18n('Save')}>
                         <IconButton
+                          ref={saveIconRef}
                           size="small"
-                          onClick={handleSave}
-                          disabled={!searchValue}
+                          onClick={handleSaveIconClick}
                           sx={{ padding: 0.5 }}
                         >
                           <Save fontSize="small" sx={{ color: 'text.secondary' }} />
@@ -300,131 +318,34 @@ const RessaSearch = () => {
           </Box>
 
           {/* Recent Searches Popover */}
-          <Popover
-            open={Boolean(anchorEl)}
-            anchorEl={anchorEl}
-            onClose={handleClosePopover}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            sx={{
-              marginTop: 1,
-            }}
-            PaperProps={{
-              sx: {
-                width: popoverWidth,
-                maxWidth: '90vw',
-              },
-            }}
-          >
-            <Paper sx={{ width: '100%' }}>
-              <Box sx={{ padding: 2 }}>
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    fontWeight: 600,
-                    marginBottom: 1.5,
-                  }}
-                >
-                  {t_i18n('Recent searches')}
-                </Typography>
-                <List dense sx={{ padding: 0 }}>
-                  {recentSearches.map((search) => {
-                    const isHovered = hoveredItemId === search.id;
-                    return (
-                    <ListItem
-                      key={search.id}
-                      component="button"
-                      onClick={() => handleSelectRecentSearch(search.query)}
-                      onMouseEnter={() => setHoveredItemId(search.id)}
-                      onMouseLeave={() => setHoveredItemId(null)}
-                      sx={{
-                        borderRadius: 1,
-                        marginBottom: 0.5,
-                        cursor: 'pointer',
-                        backgroundColor: isHovered ? '#E3F2FD' : 'rgba(0, 0, 0, 0.02)',
-                        border: isHovered ? '1px solid #2196F3' : '1px solid rgba(0, 0, 0, 0.05)',
-                        paddingTop: 1.2,
-                        paddingBottom: 1.2,
-                        minHeight: 36,
-                      }}
-                    >
-                      <History fontSize="small" sx={{ color: 'text.secondary', marginRight: 1 }} />
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {search.query}
-                        </Typography>
-                      </Box>
-                      <ListItemSecondaryAction>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ marginRight: 1 }}>
-                            {search.timestamp}
-                          </Typography>
-                          {isHovered && (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              gap: 0.5,
-                              alignItems: 'center',
-                            }}
-                          >
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSelectRecentSearch(search.query);
-                              }}
-                              sx={{ padding: 0.5 }}
-                            >
-                              <Search fontSize="small" sx={{ color: 'text.secondary' }} />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => handleEditSearch(search.query, e)}
-                              sx={{ padding: 0.5 }}
-                            >
-                              <Edit fontSize="small" sx={{ color: 'text.secondary' }} />
-                            </IconButton>
-                          </Box>
-                          )}
-                        </Box>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                    );
-                  })}
-                </List>
-                <Divider sx={{ marginY: 2 }} />
-                <Button
-                  startIcon={<Save />}
-                  variant="outlined"
-                  fullWidth
-                  onClick={handleSave}
-                  sx={{
-                    textTransform: 'none',
-                    marginBottom: 1,
-                  }}
-                >
-                  {t_i18n('Save Search')}
-                </Button>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    display: 'block',
-                    textAlign: 'center',
-                    fontSize: '0.75rem',
-                  }}
-                >
-                  {t_i18n('Use arrow keys to navigate and Enter to select')}
-                </Typography>
-              </Box>
-            </Paper>
-          </Popover>
+          <SearchListPopover
+            open={Boolean(historyAnchorEl)}
+            anchorEl={historyAnchorEl}
+            onClose={handleCloseHistoryPopover}
+            width={popoverWidth}
+            title={t_i18n('Recent searches')}
+            items={recentSearches}
+            icon={<History fontSize="small" sx={{ color: 'text.secondary' }} />}
+            onSelectItem={handleSelectRecentSearch}
+            onEditItem={handleEditSearch}
+            onSave={handleSave}
+            saveButtonText={t_i18n('Save Search')}
+          />
+
+          {/* Saved Searches Popover */}
+          <SearchListPopover
+            open={Boolean(saveAnchorEl)}
+            anchorEl={saveAnchorEl}
+            onClose={handleCloseSavePopover}
+            width={popoverWidth}
+            title={t_i18n('Saved searches')}
+            items={savedSearches}
+            icon={<Save fontSize="small" sx={{ color: 'text.secondary' }} />}
+            onSelectItem={handleSelectRecentSearch}
+            onEditItem={handleEditSearch}
+            onSave={handleSave}
+            saveButtonText={t_i18n('Save Search')}
+          />
 
           {/* No Search State */}
           {!hasSearched && (
