@@ -140,7 +140,7 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
   if (filteredPlaybooks.length > 0) {
     playbook = filteredPlaybooks.at(0);
   } else {
-    throw FunctionalError('Playbook does not exist', { id });
+    throw FunctionalError('Playbook does not exist for this entity', { id });
   }
   // Execute only if definition is available
   if (playbook && playbook.playbook_definition) {
