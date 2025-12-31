@@ -106,6 +106,7 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
         <TextField
           fullWidth
           size="small"
+          variant="outlined"
           placeholder={t_i18n('Search filters')}
           value={filterSearch}
           onChange={(e) => setFilterSearch(e.target.value)}

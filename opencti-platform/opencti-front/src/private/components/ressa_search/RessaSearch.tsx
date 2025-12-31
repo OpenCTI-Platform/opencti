@@ -20,6 +20,14 @@ import {
   TableRow,
   Checkbox,
   TablePagination,
+  Select,
+  MenuItem,
+  FormControl,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextareaAutosize,
 } from '@mui/material';
 import {
   Search,
@@ -35,6 +43,8 @@ import {
   Visibility,
   ChevronLeft,
   ChevronRight,
+  Download,
+  Settings,
 } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -138,6 +148,9 @@ const RessaSearch = () => {
   const [saveAnchorEl, setSaveAnchorEl] = useState<HTMLElement | null>(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
   const [popoverWidth, setPopoverWidth] = useState<number>(400);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [saveTitle, setSaveTitle] = useState('');
+  const [saveDescription, setSaveDescription] = useState('');
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const saveIconRef = useRef<HTMLButtonElement>(null);
@@ -323,11 +336,53 @@ const RessaSearch = () => {
     setSaveAnchorEl(null);
   };
 
+  // Parse query to chips for display
+  const parseQueryToChips = (query: string) => {
+    const chips: Array<{ type: 'filter' | 'operator'; key?: string; value?: string; label: string }> = [];
+    const parts = query.split(/\s+(and|or)\s+/i);
+    
+    parts.forEach((part, index) => {
+      if (part.toLowerCase() === 'and' || part.toLowerCase() === 'or') {
+        chips.push({
+          type: 'operator',
+          label: part.toLowerCase(),
+        });
+      } else {
+        const match = part.match(/(\w+(?:_\w+)*):\s*"([^"]+)"/);
+        if (match) {
+          chips.push({
+            type: 'filter',
+            key: match[1],
+            value: match[2],
+            label: `${match[1]}: "${match[2]}"`,
+          });
+        }
+      }
+    });
+    
+    return chips;
+  };
+
   const handleSave = () => {
-    if (searchValue) {
+    setSaveDialogOpen(true);
+    setSaveTitle('');
+    setSaveDescription('');
+  };
+
+  const handleSaveSearch = () => {
+    if (saveTitle.trim() && searchValue) {
       // TODO: Implement save functionality
-      console.log('Saving search:', searchValue);
+      console.log('Saving search:', { title: saveTitle, query: searchValue, description: saveDescription });
+      setSaveDialogOpen(false);
+      setSaveTitle('');
+      setSaveDescription('');
     }
+  };
+
+  const handleCloseSaveDialog = () => {
+    setSaveDialogOpen(false);
+    setSaveTitle('');
+    setSaveDescription('');
   };
 
   const handleHistory = () => {
@@ -876,9 +931,41 @@ const RessaSearch = () => {
                             borderColor: 'divider',
                           }}
                         >
-                          <Typography variant="body2" color="text.secondary">
-                            {t_i18n('Display')} {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalResults)} {t_i18n('of')} {totalResults}
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              {t_i18n('Display')} {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalResults)} {t_i18n('of')} {totalResults}
+                            </Typography>
+                            <Divider
+                              orientation="vertical"
+                              flexItem
+                              sx={{
+                                height: 24,
+                                marginX: 0.5,
+                                borderColor: 'divider',
+                                alignSelf: 'center',
+                              }}
+                            />
+                            <FormControl size="small" sx={{ minWidth: 80 }}>
+                              <Select
+                                value={rowsPerPage}
+                                onChange={(e) => {
+                                  setRowsPerPage(Number(e.target.value));
+                                  setPage(0);
+                                }}
+                                variant="outlined"
+                                sx={{
+                                  height: 32,
+                                  fontSize: '0.875rem',
+                                }}
+                              >
+                                <MenuItem value={5}>5</MenuItem>
+                                <MenuItem value={10}>10</MenuItem>
+                                <MenuItem value={20}>20</MenuItem>
+                                <MenuItem value={50}>50</MenuItem>
+                                <MenuItem value={100}>100</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <IconButton
                               size="small"
@@ -904,6 +991,44 @@ const RessaSearch = () => {
                               disabled={(page + 1) * rowsPerPage >= totalResults}
                             >
                               <ChevronRight />
+                            </IconButton>
+                            <Divider
+                              orientation="vertical"
+                              flexItem
+                              sx={{
+                                height: 24,
+                                marginX: 0.5,
+                                borderColor: 'divider',
+                                alignSelf: 'center',
+                              }}
+                            />
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                // TODO: Implement download functionality
+                                console.log('Download clicked');
+                              }}
+                              sx={{
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                borderRadius: 1,
+                              }}
+                            >
+                              <Download fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                // TODO: Implement settings functionality
+                                console.log('Settings clicked');
+                              }}
+                              sx={{
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                borderRadius: 1,
+                              }}
+                            >
+                              <Settings fontSize="small" />
                             </IconButton>
                           </Box>
                         </Box>
@@ -954,7 +1079,65 @@ const RessaSearch = () => {
                                         }}
                                       />
                                     </TableCell>
-                                    <TableCell>{result.title}</TableCell>
+                                    <TableCell>
+                                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        <Typography variant="body2">{result.title}</Typography>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                          {result.tags.map((tag, index) => (
+                                            <Chip
+                                              key={index}
+                                              label={tag}
+                                              size="small"
+                                              sx={{
+                                                height: 24,
+                                                fontSize: '0.75rem',
+                                                borderRadius: 1,
+                                                backgroundColor: (theme) => {
+                                                  const colors = [
+                                                    theme.palette.mode === 'dark'
+                                                      ? 'rgba(76, 175, 80, 0.15)'
+                                                      : 'rgba(76, 175, 80, 0.1)',
+                                                    theme.palette.mode === 'dark'
+                                                      ? 'rgba(255, 152, 0, 0.15)'
+                                                      : 'rgba(255, 152, 0, 0.1)',
+                                                    theme.palette.mode === 'dark'
+                                                      ? 'rgba(33, 150, 243, 0.15)'
+                                                      : 'rgba(33, 150, 243, 0.1)',
+                                                    theme.palette.mode === 'dark'
+                                                      ? 'rgba(244, 67, 54, 0.15)'
+                                                      : 'rgba(244, 67, 54, 0.1)',
+                                                    theme.palette.mode === 'dark'
+                                                      ? 'rgba(156, 39, 176, 0.15)'
+                                                      : 'rgba(156, 39, 176, 0.1)',
+                                                  ];
+                                                  return colors[index % colors.length];
+                                                },
+                                                border: (theme) => {
+                                                  const borderColors = [
+                                                    theme.palette.mode === 'dark'
+                                                      ? 'rgba(76, 175, 80, 0.6)'
+                                                      : 'rgba(76, 175, 80, 0.5)',
+                                                    theme.palette.mode === 'dark'
+                                                      ? 'rgba(255, 152, 0, 0.6)'
+                                                      : 'rgba(255, 152, 0, 0.5)',
+                                                    theme.palette.mode === 'dark'
+                                                      ? 'rgba(33, 150, 243, 0.6)'
+                                                      : 'rgba(33, 150, 243, 0.5)',
+                                                    theme.palette.mode === 'dark'
+                                                      ? 'rgba(244, 67, 54, 0.6)'
+                                                      : 'rgba(244, 67, 54, 0.5)',
+                                                    theme.palette.mode === 'dark'
+                                                      ? 'rgba(156, 39, 176, 0.6)'
+                                                      : 'rgba(156, 39, 176, 0.5)',
+                                                  ];
+                                                  return `1px solid ${borderColors[index % borderColors.length]}`;
+                                                },
+                                              }}
+                                            />
+                                          ))}
+                                        </Box>
+                                      </Box>
+                                    </TableCell>
                                     <TableCell>{result.attacker}</TableCell>
                                     <TableCell>{result.source}</TableCell>
                                     <TableCell>
@@ -1091,6 +1274,138 @@ const RessaSearch = () => {
           )}
         </Paper>
       </Box>
+
+      {/* Save Search Dialog */}
+      <Dialog
+        open={saveDialogOpen}
+        onClose={handleCloseSaveDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="h6">{t_i18n('Save Search')}</Typography>
+            <IconButton
+              size="small"
+              onClick={handleCloseSaveDialog}
+              sx={{ padding: 0.5 }}
+            >
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 2 }}>
+            {/* Title Field */}
+            <TextField
+              fullWidth
+              label={t_i18n('Title')}
+              required
+              value={saveTitle}
+              onChange={(e) => setSaveTitle(e.target.value)}
+              variant="outlined"
+              placeholder={t_i18n('Enter search title')}
+            />
+
+            {/* Query Field */}
+            <Box>
+              <Typography variant="body2" sx={{ marginBottom: 1, fontWeight: 500 }}>
+                {t_i18n('Query')} <Typography component="span" sx={{ color: 'error.main' }}>*</Typography>
+              </Typography>
+              <Box
+                sx={{
+                  padding: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  backgroundColor: 'background.default',
+                  minHeight: 60,
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 1,
+                  alignItems: 'center',
+                }}
+              >
+                {parseQueryToChips(searchValue).map((chip, index) => {
+                  if (chip.type === 'operator') {
+                    return (
+                      <Chip
+                        key={index}
+                        label={chip.label}
+                        size="small"
+                        sx={{
+                          backgroundColor: '#F3F8FF',
+                          color: '#5C7BF5',
+                          border: 'none',
+                          fontWeight: 500,
+                          borderRadius: 1,
+                        }}
+                      />
+                    );
+                  }
+                  return (
+                    <Chip
+                      key={index}
+                      label={chip.label}
+                      size="small"
+                      sx={{
+                        backgroundColor: '#E8E4F7',
+                        color: '#6B46C1',
+                        border: 'none',
+                        borderRadius: 1,
+                        '& .MuiChip-label': {
+                          fontWeight: 500,
+                        },
+                      }}
+                    />
+                  );
+                })}
+              </Box>
+            </Box>
+
+            {/* Description Field */}
+            <Box>
+              <Typography variant="body2" sx={{ marginBottom: 1, fontWeight: 500 }}>
+                {t_i18n('Description')}
+              </Typography>
+              <TextareaAutosize
+                minRows={4}
+                value={saveDescription}
+                onChange={(e) => setSaveDescription(e.target.value)}
+                placeholder={t_i18n('Enter description (optional)')}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid',
+                  borderColor: '#d0d0d0',
+                  borderRadius: '4px',
+                  fontSize: '0.875rem',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                }}
+              />
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ padding: 2 }}>
+          <Button onClick={handleCloseSaveDialog} variant="outlined">
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={handleSaveSearch}
+            variant="contained"
+            disabled={!saveTitle.trim()}
+            sx={{
+              backgroundColor: '#6B46C1',
+              '&:hover': {
+                backgroundColor: '#5B36A1',
+              },
+            }}
+          >
+            {t_i18n('Save')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
