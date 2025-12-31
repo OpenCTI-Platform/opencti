@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, FieldArray, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
 import { IconButton, Typography } from '@mui/material';
@@ -182,7 +182,6 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   color="secondary"
                   aria-label="Add"
                   onClick={() => onAddEntityRepresentation(setFieldValue, values)}
-                  size="large"
                 >
                   <Add fontSize="small" />
                 </IconButton>
@@ -220,7 +219,6 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   color="secondary"
                   aria-label="Add"
                   onClick={() => onAddRelationshipRepresentation(setFieldValue, values)}
-                  size="large"
                 >
                   <Add fontSize="small" />
                 </IconButton>
@@ -252,7 +250,6 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
 
               <div className={classes.buttons}>
                 <Button
-                  variant="contained"
                   color="primary"
                   onClick={() => setOpen(true)}
                   classes={{ root: classes.button }}
@@ -261,7 +258,6 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   {t_i18n('Test')}
                 </Button>
                 <Button
-                  variant="contained"
                   color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}

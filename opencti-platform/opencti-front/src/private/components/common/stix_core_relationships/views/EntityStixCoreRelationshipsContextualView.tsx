@@ -133,7 +133,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     [isObservables ? 'observable_value' : 'name']: {
       label: isObservables ? 'Value' : 'Name',
       width: '20%',
-      // eslint-disable-next-line no-nested-ternary
+
       isSortable: isStixCoreObjects(stixCoreObjectTypes)
         ? false
         : isObservables

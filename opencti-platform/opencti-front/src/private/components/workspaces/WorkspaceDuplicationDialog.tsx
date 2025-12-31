@@ -1,5 +1,5 @@
 import React, { FunctionComponent, UIEvent, useMemo, useState } from 'react';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -150,9 +150,8 @@ const WorkspaceDuplicationDialog: FunctionComponent<
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleCloseDuplicate()}>{t_i18n('Cancel')}</Button>
+        <Button variant="secondary" onClick={() => handleCloseDuplicate()}>{t_i18n('Cancel')}</Button>
         <Button
-          color="secondary"
           onClick={(e) => handleSubmitDuplicate(e, newName)}
           disabled={duplicating || !newName}
         >

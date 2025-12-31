@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik, FormikErrors } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
@@ -499,7 +499,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             </Box>
             <div className={classes.buttons}>
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleReset}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
@@ -507,7 +507,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
                 color={isCreateDisabled ? 'secondary' : 'primary'}
                 onClick={() => setOpen(true)}
                 classes={{ root: classes.button }}
@@ -517,7 +516,6 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
               </Button>
 
               <Button
-                variant="contained"
                 color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting || isCreateDisabled}

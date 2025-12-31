@@ -8,7 +8,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { WorkbenchFileCreatorStixCoreObjectQuery$data } from '@components/common/files/workbench/__generated__/WorkbenchFileCreatorStixCoreObjectQuery.graphql';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -233,12 +233,11 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleReset} disabled={isSubmitting}>
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
               <Button
                 type="submit"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
               >

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { IconButton } from '@mui/material';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
@@ -136,7 +136,6 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                     onClick={() => {
                       arrayHelpers.remove(index);
                     }}
-                    size="large"
                     style={{ position: 'absolute', right: -10, top: 5 }}
                   >
                     <DeleteOutlined />
@@ -146,8 +145,6 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
               <Button
                 size="small"
                 startIcon={<AddOutlined />}
-                variant="contained"
-                color="primary"
                 aria-label="Add"
                 id="addCoverageInfo"
                 onClick={() => {
@@ -305,7 +302,6 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                           },
                         });
                       }}
-                      size="large"
                       style={{ position: 'absolute', right: -10, top: 5 }}
                     >
                       <DeleteOutlined />
@@ -316,8 +312,6 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
               <Button
                 size="small"
                 startIcon={<AddOutlined />}
-                variant="contained"
-                color="primary"
                 aria-label="Add"
                 id="addCoverageInfo"
                 onClick={() => {

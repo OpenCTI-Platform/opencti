@@ -6,7 +6,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Slide from '@mui/material/Slide';
 import { Add, InfoOutlined } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
@@ -253,11 +253,10 @@ class StixCyberObservablesExportCreationComponent extends Component {
                         }}
                       />
                       <DialogActions>
-                        <Button onClick={handleReset} disabled={isSubmitting}>
+                        <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                           {t('Cancel')}
                         </Button>
                         <Button
-                          color="secondary"
                           onClick={submitForm}
                           disabled={isSubmitting}
                         >

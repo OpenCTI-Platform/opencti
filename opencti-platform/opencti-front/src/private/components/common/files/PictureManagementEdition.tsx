@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -115,8 +115,6 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
           />
           <div className={classes.buttons}>
             <Button
-              variant="contained"
-              color="primary"
               onClick={submitForm}
               disabled={isSubmitting || !isValid}
               classes={{ root: classes.button }}

@@ -3,7 +3,7 @@ import React, { FunctionComponent, useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Box from '@mui/material/Box';
 import CodeBlock from '@components/common/CodeBlock';
 import Alert from '@mui/material/Alert';
@@ -117,7 +117,6 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
           sx={{ display: 'inline-flex', textAlign: 'center', marginTop: '8px', alignItems: 'baseline' }}
         >
           <Button
-            variant="contained"
             color={result?.ingestionCsvTester?.nbEntities ? 'primary' : 'secondary'}
             onClick={() => onTest()}
           >

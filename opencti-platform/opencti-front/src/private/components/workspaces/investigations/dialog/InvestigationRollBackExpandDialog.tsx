@@ -3,7 +3,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { useParams } from 'react-router-dom';
 import { useInvestigationState } from '../utils/useInvestigationState';
 import { useFormatter } from '../../../../../components/i18n';
@@ -51,8 +51,8 @@ const InvestigationRollBackExpandDialog = ({
         <p>{t_i18n('All add or remove actions done on the graph after the last expansion will be lost.')}</p>
       </DialogContent>
       <DialogActions>
-        <Button onClick={closeDialog}>{t_i18n('Cancel')}</Button>
-        <Button onClick={handleSubmit} color="secondary">{t_i18n('Validate')}</Button>
+        <Button variant="secondary" onClick={closeDialog}>{t_i18n('Cancel')}</Button>
+        <Button onClick={handleSubmit}>{t_i18n('Validate')}</Button>
       </DialogActions>
     </Dialog>
   );

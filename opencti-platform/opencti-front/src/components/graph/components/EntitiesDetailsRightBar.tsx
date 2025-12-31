@@ -7,7 +7,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Link } from 'react-router-dom';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
@@ -155,7 +155,6 @@ const EntitiesDetailsRightsBar = () => {
                 component={Link}
                 target="_blank"
                 to={entityUrl}
-                size="medium"
               >
                 <OpenInNewOutlined fontSize="medium" />
               </IconButton>

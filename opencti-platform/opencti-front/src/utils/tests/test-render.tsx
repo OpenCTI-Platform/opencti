@@ -1,4 +1,4 @@
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';
 import React, { ReactNode } from 'react';
 import { render, renderHook } from '@testing-library/react';
@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { RelayMockEnvironment } from 'relay-test-utils/lib/RelayModernMockEnvironment';
 import { UserContext, UserContextType } from '../hooks/useAuth';
 import AppIntlProvider from '../../components/AppIntlProvider';
+import ThemeDark from '../../components/ThemeDark';
 
 // 'unknown' to facilitate mocking partial context without having TS errors
 interface CreateUserContextOptions {
@@ -77,7 +78,7 @@ export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersW
   return (
     <RelayEnvironmentProvider environment={relayEnv}>
       <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
-        <ThemeProvider theme={createTheme()}>
+        <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
           <UserContext.Provider value={defaultUserContext as UserContextType}>
             {children}
           </UserContext.Provider>

@@ -15,7 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import Button from '@common/button/Button';
 import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
 import PirPopover from './PirPopover';
 import PirEdition from './pir_form/PirEdition';
@@ -108,8 +109,6 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
 
             <Button
               onClick={() => setIsEditionOpen(true)}
-              color="primary"
-              variant="contained"
               aria-label={t_i18n('Update')}
               title={t_i18n('Update')}
             >

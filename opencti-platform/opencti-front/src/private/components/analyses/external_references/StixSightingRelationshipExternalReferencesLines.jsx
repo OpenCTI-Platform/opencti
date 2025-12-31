@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -19,7 +19,7 @@ import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Link } from 'react-router-dom';
 import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton } from '@mui/material';
@@ -234,7 +234,6 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                     externalReference.url,
                                   )}
                                   color="primary"
-                                  size="large"
                                 >
                                   <OpenInBrowserOutlined />
                                 </IconButton>
@@ -375,18 +374,17 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
             </div>
           )}
           {expandable && (
-            <Button
-              variant="contained"
+            <IconButton
               size="small"
               onClick={this.handleToggleExpand.bind(this)}
               classes={{ root: classes.buttonExpand }}
             >
               {expanded ? (
-                <ExpandLessOutlined fontSize="small" />
+                <ExpandLessOutlined />
               ) : (
-                <ExpandMoreOutlined fontSize="small" />
+                <ExpandMoreOutlined />
               )}
-            </Button>
+            </IconButton>
           )}
         </Paper>
         <Dialog
@@ -406,6 +404,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={this.handleCloseDialog.bind(this)}
               disabled={this.state.removing}
             >
@@ -413,7 +412,6 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
             </Button>
             <Button
               onClick={this.handleRemoval.bind(this)}
-              color="primary"
               disabled={this.state.removing}
             >
               {t('Confirm')}
@@ -433,12 +431,11 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseExternalLink.bind(this)}>
+            <Button variant="secondary" onClick={this.handleCloseExternalLink.bind(this)}>
               {t('Cancel')}
             </Button>
             <Button
               button={true}
-              color="secondary"
               onClick={this.handleBrowseExternalLink.bind(this)}
             >
               {t('Browse the link')}

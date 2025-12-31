@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import LinearProgress from '@mui/material/LinearProgress';
 import Paper from '@mui/material/Paper';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -453,7 +453,7 @@ const TasksList = ({ data, options }) => {
               </Grid>
               <Button
                 style={{ position: 'absolute', right: 10, top: 10 }}
-                variant={taskErrors.length > 0 ? 'contained' : 'outlined'}
+                variant={taskErrors.length > 0 ? 'primary' : 'secondary'}
                 color="error"
                 disabled={taskErrors.length === 0}
                 onClick={() => handleOpenErrors(taskErrors)}
@@ -465,7 +465,7 @@ const TasksList = ({ data, options }) => {
                 ? (
                     <Button
                       style={{ position: 'absolute', right: 10, bottom: 10 }}
-                      variant="outlined"
+                      variant="secondary"
                       onClick={() => handleDeleteTask(task.id)}
                       size="small"
                     >
@@ -477,7 +477,7 @@ const TasksList = ({ data, options }) => {
                     <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                       <Button
                         style={{ position: 'absolute', right: 10, bottom: 10 }}
-                        variant="outlined"
+                        variant="secondary"
                         onClick={() => handleDeleteTask(task.id)}
                         size="small"
                       >
@@ -524,7 +524,6 @@ const TasksList = ({ data, options }) => {
         <DialogActions>
           <Button
             onClick={handleCloseMessages}
-            color="primary"
           >
             {t_i18n('Close')}
           </Button>
@@ -561,7 +560,7 @@ const TasksList = ({ data, options }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseErrors} color="primary">
+          <Button onClick={handleCloseErrors}>
             {t_i18n('Close')}
           </Button>
         </DialogActions>

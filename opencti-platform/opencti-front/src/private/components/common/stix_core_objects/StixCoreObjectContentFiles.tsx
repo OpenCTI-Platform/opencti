@@ -5,7 +5,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Drawer from '@mui/material/Drawer';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { FileExportOutline, FileOutline, InformationOutline } from 'mdi-material-ui';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { AddOutlined, MoreVert } from '@mui/icons-material';
 import { graphql } from 'react-relay';
@@ -248,7 +248,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               <FileUploader
                 entityId={stixCoreObjectId}
                 onUploadSuccess={onFileChange}
-                size="small"
                 nameInCallback={true}
               />
               <IconButton

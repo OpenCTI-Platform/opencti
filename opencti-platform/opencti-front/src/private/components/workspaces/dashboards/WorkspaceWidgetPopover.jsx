@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -106,7 +106,7 @@ const WorkspaceWidgetPopover = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDisplayDuplicate(false)}>
+          <Button variant="secondary" onClick={() => setDisplayDuplicate(false)}>
             {t_i18n('Cancel')}
           </Button>
           <Button
@@ -114,7 +114,6 @@ const WorkspaceWidgetPopover = ({
               setDisplayDuplicate(false);
               onDuplicate(widget);
             }}
-            color="secondary"
           >
             {t_i18n('Duplicate')}
           </Button>

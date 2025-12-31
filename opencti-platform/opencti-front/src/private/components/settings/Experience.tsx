@@ -15,7 +15,7 @@ import Alert from '@mui/material/Alert';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import List from '@mui/material/List';
 import { useTheme } from '@mui/styles';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -194,8 +194,8 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     <>
                       <Button
                         size="small"
-                        variant="outlined"
-                        color="dangerZone"
+                        intent="destructive"
+                        variant="secondary"
                         onClick={() => setOpenEEChanges(true)}
                         disabled={disabled}
                         style={{
@@ -227,6 +227,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                         </DialogContent>
                         <DialogActions>
                           <Button
+                            variant="secondary"
                             onClick={() => {
                               setOpenEEChanges(false);
                             }}
@@ -234,7 +235,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                             {t_i18n('Cancel')}
                           </Button>
                           <Button
-                            color="secondary"
                             onClick={() => {
                               setOpenEEChanges(false);
                               handleSubmitField('enterprise_license', '');
@@ -344,7 +344,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
                       <Button
                         size="small"
-                        variant="outlined"
+                        variant="secondary"
                         onClick={() => setOpenValidateTermsOfUse(true)}
                         style={{ marginRight: 7, lineHeight: '12px', width: 250 }}
                       >
@@ -402,7 +402,15 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   <li>{t_i18n('Full text indexing')}</li>
                   <li>{t_i18n('And many more features...')}</li>
                 </List>
-                <Button color="ee" variant="outlined" component="a" href="https://filigran.io/offerings/opencti-enterprise-edition/" target="_blank" rel="noreferrer" style={{ marginTop: 10, marginBottom: 10 }}>
+                <Button
+                // color="ee"
+                  variant="secondary"
+                  component="a"
+                  href="https://filigran.io/offerings/opencti-enterprise-edition/"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ marginTop: 10, marginBottom: 10 }}
+                >
                   {t_i18n('Discover OpenCTI EE')}
                 </Button>
               </Box>

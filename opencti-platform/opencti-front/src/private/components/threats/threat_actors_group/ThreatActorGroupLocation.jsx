@@ -6,7 +6,7 @@ import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
@@ -84,7 +84,6 @@ class ThreatActorGroupLocationsComponent extends Component {
                       <IconButton
                         aria-label="Remove"
                         onClick={() => this.removeLocation(locationEdge)}
-                        size="large"
                       >
                         <LinkOff />
                       </IconButton>

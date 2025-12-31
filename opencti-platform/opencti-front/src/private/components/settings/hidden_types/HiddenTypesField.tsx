@@ -53,7 +53,7 @@ const itemsFromGroup = (values: string[]) => {
       } else if (values[j] === `not-${groupKeys[i]}`) {
         // Remove element when group unselected
         values.splice(j, 1);
-        // eslint-disable-next-line no-param-reassign
+
         values = values.filter(
           (el) => !(groups.get(groupKeys[i]) ?? []).includes(el),
         );

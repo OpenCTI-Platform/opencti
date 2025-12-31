@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import * as R from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { PlayCircleOutlined } from '@mui/icons-material';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
@@ -82,7 +82,6 @@ const StixCoreObjectEnrollPlaybook = ({
                           <IconButton
                             disabled={isSubmitting}
                             onClick={() => askEnroll(playbook.id)}
-                            size="large"
                           >
                             <PlayCircleOutlined />
                           </IconButton>

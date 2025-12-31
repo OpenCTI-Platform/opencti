@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { AccountCircleOutlined, AlarmOnOutlined, AppsOutlined, NotificationsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
@@ -331,29 +331,25 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
                     <UploadImport
                       variant="icon"
-                      size="medium"
                       fontSize="medium"
-                      color="inherit"
                     />
                   </Security>
                   <Tooltip title={t_i18n('Triggers')}>
                     <IconButton
-                      size="medium"
                       aria-haspopup="true"
                       component={Link}
                       to="/dashboard/profile/triggers"
-                      color={location.pathname === '/dashboard/profile/triggers' ? 'primary' : 'inherit'}
+                      selected={location.pathname === '/dashboard/profile/triggers'}
                     >
                       <AlarmOnOutlined fontSize="medium" />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title={t_i18n('Notifications')}>
                     <IconButton
-                      size="medium"
                       aria-haspopup="true"
                       component={Link}
                       to="/dashboard/profile/notifications"
-                      color={location.pathname === '/dashboard/profile/notifications' ? 'primary' : 'inherit'}
+                      selected={location.pathname === '/dashboard/profile/notifications'}
                     >
                       <Badge
                         color="secondary"
@@ -368,8 +364,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               </Security>
             )}
             <IconButton
-              color="inherit"
-              size="medium"
               aria-owns={xtmOpen.open ? 'menu-appbar' : undefined}
               aria-haspopup="true"
               id="xtm-menu-button"
@@ -433,17 +427,16 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               </Box>
             </Popover>
             <IconButton
-              size="medium"
               aria-owns={menuOpen.open ? 'menu-appbar' : undefined}
               aria-haspopup="true"
               aria-label={t_i18n('Profile')}
               id="profile-menu-button"
               onClick={handleOpenMenu}
-              color={
-                location.pathname === '/dashboard/profile/me'
-                  ? 'primary'
-                  : 'inherit'
-              }
+              // color={
+              //   location.pathname === '/dashboard/profile/me'
+              //     ? 'primary'
+              //     : 'inherit'
+              // }
             >
               <AccountCircleOutlined fontSize="medium" />
             </IconButton>

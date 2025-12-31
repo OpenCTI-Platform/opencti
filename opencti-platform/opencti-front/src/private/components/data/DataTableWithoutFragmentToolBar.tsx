@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { AddBoxOutlined, ClearOutlined } from '@mui/icons-material';
 import ImportFilesDialog from '../common/files/import_files/ImportFilesDialog';
 import { useFormatter } from '../../../components/i18n';

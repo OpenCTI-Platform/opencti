@@ -4,7 +4,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { availableEntityTypes, exclusionListCreationValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import Switch from '@mui/material/Switch';
@@ -195,7 +195,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
           )}
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               style={{ marginLeft: 16 }}
@@ -203,8 +203,6 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
               style={{ marginLeft: 16 }}

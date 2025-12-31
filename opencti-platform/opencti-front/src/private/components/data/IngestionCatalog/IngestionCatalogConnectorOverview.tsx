@@ -1,5 +1,5 @@
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { Launch } from 'mdi-material-ui';
 import React from 'react';
 import { useTheme } from '@mui/styles';
@@ -37,7 +37,7 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
             <Grid size={12}>
               <Typography variant="h3" gutterBottom={true}>{t_i18n('Integration documentation and code')}</Typography>
               <Button
-                size="large"
+                variant="tertiary"
                 startIcon={<LibraryBooksOutlined />}
                 href={connector.source_code}
                 target="blank"
@@ -50,7 +50,7 @@ const IngestionCatalogConnectorOverview = ({ connector }: { connector: Ingestion
             <Grid size={12}>
               <Typography variant="h3" gutterBottom={true}>{t_i18n('Visit the vendor\'s page to learn more and get in touch')}</Typography>
               <Button
-                size="large"
+                variant="tertiary"
                 startIcon={<Launch />}
                 href={connector.subscription_link}
                 target="blank"

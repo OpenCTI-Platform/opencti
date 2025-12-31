@@ -4,10 +4,10 @@ import DialogContent from '@mui/material/DialogContent';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { AddOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
@@ -232,19 +232,17 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
         />
         <IconButton
           onClick={() => setContainerCreation(true)}
-          edge="end"
+          // edge="end"
           style={{ position: 'absolute', top: 68, right: 48 }}
-          size="large"
         >
           <AddOutlined />
         </IconButton>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleClose()}>
+        <Button variant="secondary" onClick={() => handleClose()}>
           {t_i18n('Cancel')}
         </Button>
         <Button
-          color="secondary"
           onClick={() => {
             handleClose();
             setActionsInputs({

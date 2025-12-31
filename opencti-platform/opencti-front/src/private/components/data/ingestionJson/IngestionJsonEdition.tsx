@@ -10,7 +10,7 @@ import Alert from '@mui/material/Alert';
 import CreatorField from '@components/common/form/CreatorField';
 import CommitMessage from '@components/common/form/CommitMessage';
 import JsonMapperField, { JsonMapperFieldOption, jsonMapperQuery } from '@components/common/form/JsonMapperField';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import IngestionJsonMapperTestDialog from '@components/data/ingestionJson/IngestionJsonMapperTestDialog';
 import { IngestionJsonEditionFragment_ingestionJson$key } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionFragment_ingestionJson.graphql';
 import { JsonMapperFieldSearchQuery } from '@components/common/form/__generated__/JsonMapperFieldSearchQuery.graphql';
@@ -544,7 +544,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
           </Box>
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               style={{ marginLeft: theme.spacing(2) }}
@@ -552,7 +552,6 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
               color="secondary"
               onClick={() => setOpen(true)}
               style={{ marginLeft: theme.spacing(2) }}
@@ -561,7 +560,6 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               {t_i18n('Verify')}
             </Button>
             <Button
-              variant="contained"
               color="secondary"
               onClick={submitForm}
               disabled={isSubmitting || isCreateDisabled}

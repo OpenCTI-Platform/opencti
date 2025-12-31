@@ -9,10 +9,10 @@ import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import ReactMde from 'react-mde';
 import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 // As we can ask AI after and follow up, there is a dependency lifecycle here that can be accepted
 // TODO: Cleanup a bit in upcoming version
-// eslint-disable-next-line import/no-cycle
+
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import { useFormatter } from '../../components/i18n';

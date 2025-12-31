@@ -252,7 +252,6 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   aria-label="Add"
                   onClick={() => onAddEntityRepresentation(setFieldValue, values)
                   }
-                  size="large"
                 >
                   <Add fontSize="small" />
                 </IconButton>
@@ -298,7 +297,6 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   aria-label="Add"
                   onClick={() => onAddRelationshipRepresentation(setFieldValue, values)
                   }
-                  size="large"
                 >
                   <Add fontSize="small" />
                 </IconButton>

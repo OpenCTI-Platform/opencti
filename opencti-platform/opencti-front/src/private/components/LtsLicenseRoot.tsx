@@ -24,7 +24,7 @@ import Alert from '@mui/material/Alert';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import { LtsLicenseRootQuery, LtsLicenseRootQuery$data } from '@components/__generated__/LtsLicenseRootQuery.graphql';
 import { ConnectedThemeProvider } from '../../components/AppThemeProvider';

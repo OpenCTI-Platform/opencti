@@ -48,5 +48,4 @@ const detectedLocale = R.pipe(
   R.find((x) => R.includes(x, availableLanguages)), // Returns first language matched in languages
 );
 
-// eslint-disable-next-line max-len
 export default detectedLocale(window.navigator) || DEFAULT_LANG; // If no locale is detected, fallback to 'en'

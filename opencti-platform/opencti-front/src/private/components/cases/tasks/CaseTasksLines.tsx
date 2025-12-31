@@ -1,9 +1,9 @@
 import { AddOutlined, ContentPasteGoOutlined } from '@mui/icons-material';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -152,7 +152,6 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           aria-label="Add"
           onClick={handleOpen}
           classes={{ root: classes.createButton }}
-          size="large"
         >
           <AddOutlined fontSize="small" />
         </IconButton>
@@ -163,7 +162,6 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           aria-label="Apply"
           onClick={() => setOpenCaseTemplate(true)}
           classes={{ root: classes.applyButton }}
-          size="large"
         >
           <ContentPasteGoOutlined fontSize="small" />
         </IconButton>
@@ -212,6 +210,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                 />
                 <div className={classes.buttons}>
                   <Button
+                    variant="secondary"
                     onClick={() => {
                       handleReset();
                       setOpenCaseTemplate(false);
@@ -222,7 +221,6 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
-                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}

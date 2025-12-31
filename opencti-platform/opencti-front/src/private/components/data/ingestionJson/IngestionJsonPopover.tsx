@@ -1,14 +1,14 @@
 import { graphql, useQueryLoader } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
 import { PopoverProps } from '@mui/material/Popover';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
 import DialogActions from '@mui/material/DialogActions';
 import IngestionJsonEditionContainer, { ingestionJsonEditionContainerQuery } from '@components/data/ingestionJson/IngestionJsonEditionContainer';
 import { IngestionJsonCreationContainer } from '@components/data/ingestionJson/IngestionJsonCreation';
@@ -186,7 +186,6 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           onClick={handleOpen}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
-          size="large"
           color="primary"
         >
           <MoreVert />
@@ -251,13 +250,13 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={handleCloseDelete}
               disabled={deleting}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={submitDelete}
               disabled={deleting}
             >
@@ -279,13 +278,13 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={handleCloseResetState}
               disabled={resetting}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={submitResetState}
               disabled={resetting}
             >
@@ -307,6 +306,7 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={handleCloseStart}
               disabled={starting}
             >
@@ -314,7 +314,6 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
             </Button>
             <Button
               onClick={submitStart}
-              color="secondary"
               disabled={starting}
             >
               {t_i18n('Start')}
@@ -335,6 +334,7 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={handleCloseStop}
               disabled={stopping}
             >
@@ -342,7 +342,6 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
             </Button>
             <Button
               onClick={submitStop}
-              color="secondary"
               disabled={stopping}
             >
               {t_i18n('Stop')}

@@ -1,4 +1,4 @@
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
@@ -374,7 +374,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
           )}
           <div className={classes.buttons}>
             <Button
-              variant="contained"
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               classes={{ root: classes.button }}
@@ -382,8 +382,6 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               onClick={submitForm}
               disabled={isSubmitting}
               classes={{ root: classes.button }}
@@ -392,8 +390,6 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             </Button>
             {values.content.length > 0 && (
               <Button
-                variant="contained"
-                color="success"
                 onClick={() => {
                   setMapAfter(true);
                   submitForm();

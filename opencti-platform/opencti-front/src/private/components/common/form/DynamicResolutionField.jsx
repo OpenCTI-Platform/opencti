@@ -225,7 +225,7 @@ const DynamicResolutionField = ({
                             variant="inList"
                             status={isEmptyField(item.in_platform) || item.in_platform}
                             label={
-                              // eslint-disable-next-line no-nested-ternary
+
                               item.in_platform
                                 ? t_i18n('In platform')
                                 : item.in_platform === null

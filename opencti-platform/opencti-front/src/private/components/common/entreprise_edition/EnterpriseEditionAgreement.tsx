@@ -2,7 +2,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import FormGroup from '@mui/material/FormGroup';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -86,9 +86,8 @@ const EnterpriseEditionAgreement: FunctionComponent<
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>{t_i18n('Cancel')}</Button>
+        <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
         <Button
-          color="secondary"
           onClick={enableEnterpriseEdition}
           disabled={isEmptyField((enterpriseLicense))}
         >

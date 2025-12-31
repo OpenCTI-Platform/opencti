@@ -8,7 +8,7 @@ import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
 import { DescriptionOutlined, DeviceHubOutlined, SettingsOutlined } from '@mui/icons-material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Popover from '@mui/material/Popover';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';

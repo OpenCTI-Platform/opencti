@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import {
@@ -54,7 +54,6 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
         color="primary"
         aria-label="Add"
         onClick={handleOpen}
-        size="large"
 
       >
         <Add fontSize="small" />

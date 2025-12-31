@@ -5,7 +5,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import React from 'react';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import AssociatedEntityField, { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
@@ -72,15 +72,16 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, ent
                 )}
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => {
-                resetForm();
-                closePopup();
-              }}
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  resetForm();
+                  closePopup();
+                }}
               >
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                color="secondary"
                 onClick={submitForm}
               >
                 {t_i18n('Validate')}

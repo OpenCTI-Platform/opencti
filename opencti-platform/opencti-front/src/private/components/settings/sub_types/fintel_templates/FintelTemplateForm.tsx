@@ -2,7 +2,7 @@ import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import React from 'react';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -116,7 +116,6 @@ const FintelTemplateForm = ({
               }}
               >
                 <Button
-                  variant="contained"
                   disabled={isSubmitting}
                   onClick={() => {
                     handleReset();
@@ -126,8 +125,6 @@ const FintelTemplateForm = ({
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                 >

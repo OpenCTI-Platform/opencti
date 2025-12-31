@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import LinearProgress from '@mui/material/LinearProgress';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { Delete } from 'mdi-material-ui';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
@@ -158,7 +158,7 @@ const ConnectorWorkLine: FunctionComponent<
         </Grid>
         <Button
           style={{ position: 'absolute', right: 10, top: 10 }}
-          variant="outlined"
+          variant="secondary"
           color={(workErrors ?? []).length === 0 ? 'success' : 'warning'}
           onClick={() => handleOpenDrawerErrors(workErrors ?? [])}
           size="small"
@@ -168,7 +168,7 @@ const ConnectorWorkLine: FunctionComponent<
         {!readOnly && (
           <Security needs={[MODULES_MODMANAGE]}>
             <Button
-              variant="outlined"
+              variant="secondary"
               style={{ position: 'absolute', right: 10, bottom: 10 }}
               onClick={() => handleDeleteWork()}
               size="small"

@@ -1,7 +1,7 @@
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import CreatorField from '@components/common/form/CreatorField';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
@@ -291,7 +291,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
               <div style={{ marginTop: theme.spacing(2), gap: theme.spacing(1), display: 'flex', justifyContent: 'flex-end' }}>
                 <div style={{ display: 'flex', gap: theme.spacing(1) }}>
                   <Button
-                    variant="contained"
+                    variant="secondary"
                     color="primary"
                     onClick={() => {
                       resetForm();
@@ -300,8 +300,6 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
-                    color="secondary"
                     onClick={() => {
                       submitConnectorManagementCreation(values, {
                         setSubmitting,

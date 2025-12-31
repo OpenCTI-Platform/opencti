@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { useQueryLoader } from 'react-relay';
 import { LogsOrdering, OrderingMode, UserHistoryLinesQuery, UserHistoryLinesQuery$variables } from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { StorageOutlined } from '@mui/icons-material';
 import { VectorRadius } from 'mdi-material-ui';
 import { Link } from 'react-router-dom';
@@ -96,7 +96,6 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
           sx={createdByUserRedirectButton}
           component={Link}
           to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
-          size="large"
           color="primary"
         >
           <StorageOutlined fontSize="small" />
@@ -107,7 +106,6 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
           sx={createdByUserRedirectButton}
           component={Link}
           to={`/dashboard/data/relationships/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
-          size="large"
           color="primary"
         >
           <VectorRadius fontSize="small" />

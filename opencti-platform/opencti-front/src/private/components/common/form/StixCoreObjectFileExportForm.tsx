@@ -9,7 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
@@ -456,6 +456,7 @@ const StixCoreObjectFileExportForm = ({
               </DialogContent>
               <DialogActions>
                 <Button
+                  variant="secondary"
                   disabled={isSubmitting}
                   onClick={() => {
                     handleReset();
@@ -465,7 +466,6 @@ const StixCoreObjectFileExportForm = ({
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting || stepIndex === 0}
                 >

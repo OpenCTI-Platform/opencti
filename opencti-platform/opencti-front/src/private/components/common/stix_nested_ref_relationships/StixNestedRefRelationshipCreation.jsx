@@ -8,8 +8,8 @@ import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -382,7 +382,7 @@ class StixNestedRefRelationshipCreation extends Component {
       defaultMarkingDefinitions,
     } = this.props;
     const relationshipTypes = resolveEntityRef.from;
-    // eslint-disable-next-line no-nested-ternary
+
     const defaultRelationshipType = R.head(relationshipTypes);
     const defaultConfidence = confidence || 15;
     const defaultStartTime = !isNone(startTime) ? startTime : null;
@@ -417,7 +417,6 @@ class StixNestedRefRelationshipCreation extends Component {
                 aria-label="Close"
                 className={classes.closeButton}
                 onClick={this.handleClose.bind(this)}
-                size="large"
               >
                 <Close fontSize="small" color="primary" />
               </IconButton>
@@ -458,7 +457,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
+                      { }
                       {fromObjects[0].relationship_type ? (
                         t(`relationship_${fromObjects[0].relationship_type}`)
                       ) : fromObjects.length > 1 ? (
@@ -474,9 +473,8 @@ class StixNestedRefRelationshipCreation extends Component {
                   <br />
                   {canReverseRelation && (
                     <Button
-                      variant="outlined"
+                      variant="secondary"
                       onClick={this.handleReverseRelation.bind(this)}
-                      color="secondary"
                       size="small"
                     >
                       {t('Reverse')}
@@ -514,7 +512,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
+                      { }
                       {toObjects[0].relationship_type ? (
                         t(`relationship_${toObjects[0].relationship_type}`)
                       ) : toObjects.length > 1 ? (
@@ -573,7 +571,7 @@ class StixNestedRefRelationshipCreation extends Component {
               />
               <div className={classes.buttons}>
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={this.handleClose.bind(this)}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -581,8 +579,6 @@ class StixNestedRefRelationshipCreation extends Component {
                   {t('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -607,7 +603,6 @@ class StixNestedRefRelationshipCreation extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
-            size="large"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
@@ -818,7 +813,6 @@ class StixNestedRefRelationshipCreation extends Component {
     );
   }
 
-  // eslint-disable-next-line
   renderLoader() {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>

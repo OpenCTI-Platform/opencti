@@ -1,12 +1,12 @@
 import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import * as Yup from 'yup';
 import Slider from '@mui/material/Slider';
 import { ThumbsUpDownOutlined } from '@mui/icons-material';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import { Field, Form, Formik } from 'formik';
 import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
@@ -178,7 +178,6 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
             float: 'left',
             margin: '-15px 0 0 -2px',
           }}
-          size="large"
         >
           <ThumbsUpDownOutlined fontSize="small" />
         </IconButton>
@@ -258,11 +257,10 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
                     />
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={handleReset} disabled={isSubmitting}>
+                    <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                       {t_i18n('Cancel')}
                     </Button>
                     <Button
-                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                     >

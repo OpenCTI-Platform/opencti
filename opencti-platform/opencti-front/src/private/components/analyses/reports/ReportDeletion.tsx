@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { Alert, AlertTitle, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, FormControlLabel, FormGroup } from '@mui/material';
+import { Alert, AlertTitle, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, FormControlLabel, FormGroup } from '@mui/material';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useFormatter } from '../../../../components/i18n';
@@ -126,10 +127,10 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
         </QueryRenderer>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseDelete} disabled={deleting}>
+        <Button variant="secondary" onClick={handleCloseDelete} disabled={deleting}>
           {t_i18n('Cancel')}
         </Button>
-        <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+        <Button onClick={submitDelete} disabled={deleting}>
           {t_i18n('Confirm')}
         </Button>
       </DialogActions>

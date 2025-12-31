@@ -7,7 +7,7 @@ import { AISummaryHistorySubscription, AISummaryHistorySubscription$data } from 
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { AutoModeOutlined, ContentCopyOutlined } from '@mui/icons-material';
 import { AISummaryHistoryStixCoreObjectAskAiHistoryQuery$data } from '@components/common/ai/__generated__/AISummaryHistoryStixCoreObjectAskAiHistoryQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';

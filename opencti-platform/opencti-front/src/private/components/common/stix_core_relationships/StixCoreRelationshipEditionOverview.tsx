@@ -2,8 +2,8 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
+import IconButton from '@common/button/IconButton';
+import Button from '@common/button/Button';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
@@ -319,7 +319,6 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large"
           color="primary"
         >
           <Close fontSize="small" color="primary" />
@@ -485,7 +484,6 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
         </Formik>
         {typeof handleDelete === 'function' && (
           <Button
-            variant="contained"
             onClick={() => handleDelete()}
             classes={{ root: classes.button }}
           >
@@ -507,7 +505,7 @@ const StixCoreRelationshipEditionOverview: FunctionComponent<
   if (queryData.stixCoreRelationship === null) {
     return <ErrorNotFound />;
   }
-  // eslint-disable-next-line max-len
+
   const stixCoreRelationship = useFragment<StixCoreRelationshipEditionOverview_stixCoreRelationship$key>(
     StixCoreRelationshipEditionOverviewFragment,
     queryData.stixCoreRelationship,

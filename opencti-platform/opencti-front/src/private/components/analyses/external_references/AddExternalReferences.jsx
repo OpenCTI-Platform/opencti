@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Add } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import { Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../../common/drawer/Drawer';
 import SearchInput from '../../../../components/SearchInput';
@@ -44,16 +44,18 @@ const AddExternalReferences = ({
   return (
     <>
       <IconButton
-        color="primary"
+        variant="tertiary"
+        size="small"
         aria-label="Add"
         onClick={handleOpen}
         style={{
           float: 'left',
-          marginTop: -15,
+          marginLeft: 4,
+          marginTop: -6,
+          marginBottom: 10,
         }}
-        size="large"
       >
-        <Add fontSize="small" />
+        <Add />
       </IconButton>
       <Drawer
         title={t_i18n('Add external references')}
@@ -76,9 +78,7 @@ const AddExternalReferences = ({
             <Button
               sx={{ margin: '5px 0 0 5px' }}
               onClick={() => setDialogOpen(true)}
-              color="primary"
               size="small"
-              variant="contained"
             >
               {t_i18n('Create')} {t_i18n('entity_External-Reference')}
             </Button>

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { MapOutlined, TableChartOutlined } from '@mui/icons-material';
 import { graphql, createRefetchContainer } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
@@ -66,7 +66,6 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
             <IconButton
               color={currentView === 'map' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'map')}
-              size="large"
             >
               <MapOutlined />
             </IconButton>
@@ -75,7 +74,6 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
             <IconButton
               color={currentView === 'list' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'list')}
-              size="large"
             >
               <TableChartOutlined />
             </IconButton>

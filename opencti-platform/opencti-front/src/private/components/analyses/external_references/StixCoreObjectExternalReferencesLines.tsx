@@ -7,7 +7,6 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -21,7 +20,8 @@ import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { Link } from 'react-router-dom';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { FileLine_file$data } from '@components/common/files/__generated__/FileLine_file.graphql';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
@@ -310,7 +310,6 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                       externalReference.url ?? '',
                                     )
                                     }
-                                    size="large"
                                     color="primary"
                                   >
                                     <OpenInBrowserOutlined />
@@ -321,7 +320,6 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                     entityId={externalReference.id}
                                     onUploadSuccess={() => relay.refetchConnection(200)
                                     }
-                                    size={undefined}
                                   />
                                 </Security>
                                 <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
@@ -398,7 +396,6 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                     entityId={externalReference.id}
                                     onUploadSuccess={() => relay.refetchConnection(200)
                                     }
-                                    size={undefined}
                                   />
                                 </Security>
                               )}
@@ -471,18 +468,16 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
               </div>
             )}
         {expandable && (
-          <Button
-            variant="contained"
-            size="small"
+          <IconButton
             onClick={handleToggleExpand}
             classes={{ root: classes.buttonExpand }}
           >
             {expanded ? (
-              <ExpandLessOutlined fontSize="small" />
+              <ExpandLessOutlined />
             ) : (
-              <ExpandMoreOutlined fontSize="small" />
+              <ExpandMoreOutlined />
             )}
-          </Button>
+          </IconButton>
         )}
       </Paper>
       <DeleteDialog
@@ -507,8 +502,8 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
-          <Button color="secondary" onClick={handleBrowseExternalLink}>
+          <Button variant="secondary" onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
+          <Button onClick={handleBrowseExternalLink}>
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>
@@ -595,11 +590,10 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                 }
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleReset} disabled={isSubmitting}>
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting || !isValid || invalidCsvMapper || !selectedConnector}
                 >

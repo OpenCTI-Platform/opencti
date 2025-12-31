@@ -1,6 +1,6 @@
 import ApexCharts, { ApexOptions } from 'apexcharts';
 import React, { CSSProperties, useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { FileDownloadOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';

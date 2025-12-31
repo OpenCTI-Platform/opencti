@@ -4,7 +4,7 @@ import { ClassicEditor } from 'ckeditor5';
 import { useTheme } from '@mui/styles';
 import InputLabel from '@mui/material/InputLabel';
 import { CloseOutlined, FullscreenOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
 import Typography from '@mui/material/Typography';
 import Dialog from '@mui/material/Dialog';
@@ -145,7 +145,6 @@ const RichTextField = ({
             <IconButton
               aria-label="Close"
               onClick={() => setFullScreen(false)}
-              size="large"
               color="primary"
             >
               <CloseOutlined fontSize="small" color="primary" />

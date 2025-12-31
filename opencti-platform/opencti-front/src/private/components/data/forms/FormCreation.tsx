@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -264,7 +264,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
 
             <div className={classes.buttons}>
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={handleClose}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
@@ -272,8 +272,6 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting || !formBuilderData}
                 classes={{ root: classes.button }}

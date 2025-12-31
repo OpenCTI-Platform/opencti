@@ -22,7 +22,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { SearchIndexedFileLine_node$data } from '@components/search/__generated__/SearchIndexedFileLine_node.graphql';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { MoreVertOutlined, OpenInNewOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
 import Box from '@mui/material/Box';
@@ -85,7 +85,6 @@ const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineCom
             component={Link}
             target="_blank"
             to={entityLink}
-            size="medium"
           >
             <OpenInNewOutlined fontSize="medium" />
           </IconButton>

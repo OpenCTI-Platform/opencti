@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useRef, useState } from 'react';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -169,7 +169,7 @@ const TimeoutLock: React.FunctionComponent = () => {
     document.body.addEventListener('click', resetTimeout);
 
     // Cleanup of this component, similar to componentWillUnmount() in class component
-    // eslint-disable-next-line consistent-return
+
     return () => {
       clearTimeoutInterval();
       // Removing event listeners when the component unmounts is good practice
@@ -254,10 +254,10 @@ const TimeoutLock: React.FunctionComponent = () => {
           justifyContent: 'space-between',
         }}
       >
-        <Button color="secondary" onClick={() => handleLogout()}>
+        <Button variant="secondary" onClick={() => handleLogout()}>
           {t_i18n('Logout')}
         </Button>
-        <Button color="primary" onClick={() => unlockScreen()}>
+        <Button onClick={() => unlockScreen()}>
           {t_i18n('Continue')}
         </Button>
       </DialogActions>

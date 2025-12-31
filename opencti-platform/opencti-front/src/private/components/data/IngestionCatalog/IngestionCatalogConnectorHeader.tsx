@@ -1,6 +1,6 @@
 import Typography from '@mui/material/Typography';
 import { VerifiedOutlined } from '@mui/icons-material';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import React from 'react';
 import { useTheme } from '@mui/styles';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
@@ -92,7 +92,7 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
         <Security needs={[INGESTION_SETINGESTIONS]}>
           {
             isEnterpriseEdition ? (
-              <Button variant="contained" onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
+              <Button onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
             ) : (
               <EnterpriseEditionButton title="Deploy" />
             )

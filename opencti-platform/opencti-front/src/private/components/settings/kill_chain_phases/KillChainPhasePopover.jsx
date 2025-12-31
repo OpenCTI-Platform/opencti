@@ -5,8 +5,8 @@ import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -137,13 +137,13 @@ class KillChainPhasePopover extends Component {
           </DialogContent>
           <DialogActions>
             <Button
+              variant="secondary"
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
             >
               {t('Cancel')}
             </Button>
             <Button
-              color="secondary"
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >

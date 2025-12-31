@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { Field, Form, Formik, FormikConfig } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../../components/i18n';
@@ -342,7 +342,7 @@ const PlaybookFlowForm = ({
               )}
               <div style={{ marginTop: 20, textAlign: 'right' }}>
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   style={{ marginRight: theme.spacing(2) }}
@@ -350,8 +350,6 @@ const PlaybookFlowForm = ({
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={!actionsAreValid || isSubmitting}
                 >

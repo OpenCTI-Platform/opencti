@@ -5,7 +5,7 @@ import { graphql } from 'react-relay';
 import { DialogTitle } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import DialogActions from '@mui/material/DialogActions';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -298,6 +298,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
         </DialogContent>
         <DialogActions>
           <Button
+            variant="secondary"
             onClick={handleCloseOptions}
             disabled={isSubmitting}
           >
@@ -306,7 +307,6 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
           <Button
             onClick={handleAskAi}
             disabled={isSubmitting}
-            color="secondary"
           >
             {t_i18n('Generate')}
           </Button>
@@ -374,13 +374,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDestination} disabled={isSubmitting}>
+          <Button variant="secondary" onClick={handleCancelDestination} disabled={isSubmitting}>
             {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={submitAcceptedResult}
             disabled={isSubmitting}
-            color="secondary"
           >
             {t_i18n('Submit')}
           </Button>

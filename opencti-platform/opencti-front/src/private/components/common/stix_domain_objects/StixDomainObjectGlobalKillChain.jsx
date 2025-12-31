@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -53,7 +53,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     const { t, classes, data, entityLink, paginationOptions, stixDomainObjectId } = this.props;
     // Extract all kill chain phases
     const killChainPhases = R.pipe(
-      // eslint-disable-next-line no-nested-ternary
+
       R.map((n) => (n.node
         && n.node.killChainPhases
         && n.node.killChainPhases.length > 0
@@ -92,7 +92,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
       )),
       R.map((n) => R.assoc(
         'killChainPhase',
-        // eslint-disable-next-line no-nested-ternary
+
         n && n.killChainPhases && n.killChainPhases.length > 0
           ? n.killChainPhases[0]
           : n
@@ -125,7 +125,6 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                         stixRelationship.id,
                       )}
                       aria-haspopup="true"
-                      size="large"
                     >
                       {this.state.expandedLines[stixRelationship.id]
                         === false ? (
@@ -187,7 +186,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               </ListItemIcon>
                               <ListItemText
                                 primary={
-                                // eslint-disable-next-line no-nested-ternary
+
                                   !restricted ? (
                                     entityToDisplay.entity_type
                                     === 'Attack-Pattern' ? (

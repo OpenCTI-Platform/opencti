@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import MenuItem from '@mui/material/MenuItem';
 import { Widget } from 'src/utils/widget/widget';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
@@ -49,7 +49,7 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
           <Security needs={[EXPLORE_EXUPDATE]}>
             <>
               <Button
-                variant="outlined"
+                variant="secondary"
                 disableElevation
                 sx={{ marginLeft: 1 }}
                 onClick={handleImportWidgetButtonClick}
@@ -57,7 +57,7 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
                 {t_i18n('Import Widget')}
               </Button>
               <Button
-                variant="outlined"
+                variant="secondary"
                 disableElevation
                 sx={{ marginLeft: 1 }}
                 onClick={handleOpenWidgetConfig}

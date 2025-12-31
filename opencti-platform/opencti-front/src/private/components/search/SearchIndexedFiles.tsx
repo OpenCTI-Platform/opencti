@@ -24,7 +24,7 @@ import { Link, useParams } from 'react-router-dom';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -190,7 +190,7 @@ const SearchIndexedFilesComponent = () => {
                   size="small"
                   to="/dashboard/settings/file_indexing"
                   color="warning"
-                  variant="outlined"
+                  variant="secondary"
                   style={{ marginLeft: 20 }}
                 >
                   {t_i18n('Configure file indexing')}

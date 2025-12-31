@@ -12,7 +12,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import { Theme } from '@mui/material/styles/createTheme';
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import { Link } from 'react-router-dom';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -104,7 +104,6 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             </Typography>
             {isNotEmptyField(data.external_uri) && (
               <Button
-                color="primary"
                 startIcon={(
                   <img
                     style={{ width: 20 }}
@@ -112,7 +111,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
                     alt="OBAS"
                   />
                 )}
-                variant="outlined"
+                variant="secondary"
                 onClick={() => setDisplayExternalLink(true)}
                 title={data.external_uri} // tooltip on hover
               >

@@ -4,7 +4,7 @@ import Alert from '@mui/material/Alert';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { useTheme } from '@mui/styles';
 import { Formik, Form } from 'formik';
-import Button from '@mui/material/Button/Button';
+import Button from '@common/button/Button';
 import FiligranIcon from '@components/common/FiligranIcon';
 import { MESSAGING$ } from '../relay/environment';
 import { useFormatter } from './i18n';
@@ -104,9 +104,9 @@ const Message = () => {
             <Formik initialValues={{}} onSubmit={() => {}}>
               <Form>
                 <Button
-                  variant="outlined"
+                  variant="tertiary"
                   size="small"
-                  color="error"
+                  intent="destructive"
                   sx={{ marginLeft: 2 }}
                   onClick={handleDialogOpen}
                 >

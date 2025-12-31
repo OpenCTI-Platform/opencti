@@ -4,7 +4,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -75,8 +75,8 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
         <div className={classes.buttons}>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]}>
             <Button
-              variant="contained"
-              color="warning"
+              // variant="contained"
+              // color="warning"
               onClick={submitForm} // directly submit
               disabled={disabled}
               classes={{ root: classes.button }}
@@ -85,8 +85,6 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             </Button>
           </Security>
           <Button
-            variant="contained"
-            color="primary"
             onClick={handleOpenControl}
             disabled={disabled}
             classes={{ root: classes.button }}
@@ -126,7 +124,6 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
         <DialogActions>
           <Security needs={[KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]}>
             <Button
-              color="warning"
               onClick={submitForm} // directly submit
               disabled={disabled || validateReferences(values)}
               classes={{ root: classes.button }}
@@ -135,7 +132,6 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             </Button>
           </Security>
           <Button
-            color="primary"
             onClick={onSubmitFromDialog}
             disabled={disabled || !validateReferences(values)}
           >

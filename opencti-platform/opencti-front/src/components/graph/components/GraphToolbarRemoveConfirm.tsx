@@ -6,7 +6,7 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { useState } from 'react';
 import { Form, Formik } from 'formik';
@@ -140,7 +140,7 @@ const GraphToolbarRemoveConfirm = ({
     for (const el of allSelection) {
       const { id } = el;
       const isNode = isGraphNode(el);
-      // eslint-disable-next-line no-await-in-loop
+
       const data = (await fetchQuery(
         knowledgeGraphQueryCheckObjectQuery,
         { id, entityTypes: checkedContainerTypes },
@@ -151,18 +151,15 @@ const GraphToolbarRemoveConfirm = ({
         && data.stixObjectOrStixRelationship?.containers?.edges?.length === 1
       ) {
         if (isNode) {
-          // eslint-disable-next-line no-await-in-loop
           await promiseDeleteObject(id);
           nodesToRemove.push(id);
           setCurrentDeleted((old) => old + 1);
         } else {
-          // eslint-disable-next-line no-await-in-loop
           await promiseDeleteRel(id);
           linksToRemove.push(id);
           setCurrentDeleted((old) => old + 1);
         }
       } else {
-        // eslint-disable-next-line no-await-in-loop
         await promiseOnDeleteRelation(
           id,
           referencesValues?.message,
@@ -178,7 +175,6 @@ const GraphToolbarRemoveConfirm = ({
     // /!\ We are voluntary using await in loop to call API
     // sequentially to avoid lock issues when deleting.
     for (const { id } of associatedLinks) {
-      // eslint-disable-next-line no-await-in-loop
       await promiseOnDeleteRelation(
         id,
         referencesValues?.message,
@@ -284,10 +280,10 @@ const GraphToolbarRemoveConfirm = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={close} disabled={totalToDelete > 0}>
+          <Button variant="secondary" onClick={close} disabled={totalToDelete > 0}>
             {t_i18n('Cancel')}
           </Button>
-          <Button color="secondary" onClick={confirm} disabled={totalToDelete > 0}>
+          <Button onClick={confirm} disabled={totalToDelete > 0}>
             {t_i18n('Remove')}
           </Button>
         </DialogActions>

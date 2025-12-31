@@ -1,11 +1,11 @@
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import React from 'react';
 import DialogActions from '@mui/material/DialogActions';
 import { CGUStatus, experienceFieldPatch } from '@components/settings/Experience';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Close } from '@mui/icons-material';
 import Checkbox from '@mui/material/Checkbox';
 import { FormControlLabel } from '@mui/material';
@@ -60,7 +60,6 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
         <IconButton
           aria-label="Close"
           onClick={() => onClose()}
-          size="large"
           color="primary"
         >
           <Close fontSize="small" color="primary" />
@@ -81,7 +80,7 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
             href="https://filigran.io/app/uploads/2025/09/filigran-ai-terms-september-2025.pdf"
             target="_blank"
             rel="noreferrer"
-            variant="outlined"
+            variant="secondary"
             style={{ width: 'fit-content' }}
           >
             {t_i18n('Read the Filigran AI Terms')}
@@ -97,9 +96,8 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
         />
       </DialogContent>
       <DialogActions>
-        <Button color="primary" onClick={() => updateStatus(CGUStatus.disabled)}>{t_i18n('Decline')}</Button>
+        <Button variant="secondary" onClick={() => updateStatus(CGUStatus.disabled)}>{t_i18n('Decline')}</Button>
         <Button
-          color="secondary"
           onClick={() => updateStatus(CGUStatus.enabled)}
           disabled={!isChecked}
         >

@@ -6,7 +6,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { DeleteOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import { interval } from 'rxjs';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { createRefetchContainer, graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
@@ -162,7 +162,6 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                       <IconButton
                         aria-label="Kill"
                         onClick={() => handleOpenKillSession(userSession.id)}
-                        size="large"
                         color="primary"
                       >
                         <DeleteOutlined />

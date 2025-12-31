@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { List, Alert, Button, Typography } from '@mui/material';
+import { List, Alert, Typography } from '@mui/material';
+import Button from '@common/button/Button';
 import { Link, useParams } from 'react-router-dom';
 import FintelTemplateWidgetDefault from './FintelTemplateWidgetDefault';
 import FintelTemplateWidgetAttribute from './FintelTemplateWidgetAttribute';
@@ -54,7 +55,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
       {widgetSelfInstance && (
         <>
           <Button
-            variant="outlined"
+            variant="secondary"
             sx={{ marginLeft: 2, marginRight: 2 }}
             onClick={() => onUpdateWidget(widgetSelfInstance)}
           >
@@ -76,7 +77,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
       )}
 
       <Button
-        variant="outlined"
+        variant="secondary"
         sx={{ marginLeft: 2, marginRight: 2, marginTop: 2 }}
         onClick={onCreateWidget}
       >

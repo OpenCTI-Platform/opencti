@@ -2,7 +2,7 @@ import { Field, Form, Formik } from 'formik';
 import React, { Suspense, useEffect } from 'react';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import InputAdornment from '@mui/material/InputAdornment';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import Alert from '@mui/material/Alert';
@@ -215,7 +215,7 @@ const PublicDashboardCreationFormComponent = ({
             }}
           >
             <Button
-              variant="contained"
+              variant="secondary"
               disabled={isSubmitting}
               onClick={() => {
                 handleReset();
@@ -225,8 +225,6 @@ const PublicDashboardCreationFormComponent = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              variant="contained"
-              color="secondary"
               disabled={isSubmitting || !isValid || !dirty}
               onClick={submitForm}
             >

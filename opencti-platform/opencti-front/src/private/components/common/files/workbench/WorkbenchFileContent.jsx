@@ -1,13 +1,13 @@
 import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Fab from '@mui/material/Fab';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -1958,7 +1958,6 @@ const WorkbenchFileContentComponent = ({
                     />
                     <div className={classes.buttons}>
                       <Button
-                        variant="contained"
                         onClick={handleReset}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -1967,8 +1966,7 @@ const WorkbenchFileContentComponent = ({
                       </Button>
                       <Button
                         startIcon={<DoubleArrow />}
-                        variant="contained"
-                        color="secondary"
+                        // color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -2231,7 +2229,6 @@ const WorkbenchFileContentComponent = ({
             )}
             <div className={classes.buttons}>
               <Button
-                variant="contained"
                 onClick={handleReset}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
@@ -2239,7 +2236,6 @@ const WorkbenchFileContentComponent = ({
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
                 color="secondary"
                 onClick={() => submitForm(false)}
                 disabled={isSubmitting}
@@ -2411,7 +2407,6 @@ const WorkbenchFileContentComponent = ({
                     />
                     <div className={classes.buttons}>
                       <Button
-                        variant="contained"
                         onClick={handleReset}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -2419,8 +2414,7 @@ const WorkbenchFileContentComponent = ({
                         {t_i18n('Cancel')}
                       </Button>
                       <Button
-                        variant="contained"
-                        color="secondary"
+                        // color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -2693,7 +2687,6 @@ const WorkbenchFileContentComponent = ({
                     />
                     <div className={classes.buttons}>
                       <Button
-                        variant="contained"
                         onClick={handleReset}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -2701,8 +2694,7 @@ const WorkbenchFileContentComponent = ({
                         {t_i18n('Cancel')}
                       </Button>
                       <Button
-                        variant="contained"
-                        color="secondary"
+                        // color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -2899,7 +2891,7 @@ const WorkbenchFileContentComponent = ({
                     />
                     <div className={classes.buttons}>
                       <Button
-                        variant="contained"
+                        variant="secondary"
                         onClick={handleReset}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -2908,8 +2900,6 @@ const WorkbenchFileContentComponent = ({
                       </Button>
                       <Button
                         startIcon={<DoubleArrow />}
-                        variant="contained"
-                        color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -3098,15 +3088,13 @@ const WorkbenchFileContentComponent = ({
         </List>
         <div className={classes.buttons}>
           <Button
-            variant="contained"
+            variant="secondary"
             onClick={handleCloseContainer}
             classes={{ root: classes.button }}
           >
             {t_i18n('Cancel')}
           </Button>
           <Button
-            variant="contained"
-            color="secondary"
             onClick={onSubmitContainerContext}
             classes={{ root: classes.button }}
           >
@@ -4206,15 +4194,13 @@ const WorkbenchFileContentComponent = ({
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <div style={{ float: 'right', display: 'flex', gap: 10 }}>
           <Button
-            variant="outlined"
-            color="primary"
+            variant="secondary"
             onClick={handleOpenConvertToDraft}
             size="small"
           >
             {t_i18n('Convert to draft')}
           </Button>
           <Button
-            variant="contained"
             onClick={handleOpenValidate}
             size="small"
           >
@@ -4304,11 +4290,10 @@ const WorkbenchFileContentComponent = ({
                 </Field>
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleReset} disabled={isSubmitting}>
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting || connectors.filter((n) => n.active).length === 0}
                 >
@@ -4379,11 +4364,11 @@ const WorkbenchFileContentComponent = ({
                 </Field>
               </DialogContent>
               <DialogActions>
-                <Button onClick={handleReset} disabled={isSubmitting}>
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  color="secondary"
+                  // color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting || connectors.filter((n) => n.active).length === 0}
                 >

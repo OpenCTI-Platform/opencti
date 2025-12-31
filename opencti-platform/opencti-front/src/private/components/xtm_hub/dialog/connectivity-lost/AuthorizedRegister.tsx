@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface Props {
@@ -26,10 +27,10 @@ const XtmHubDialogConnectivityLostAuthorizedRegister: React.FC<Props> = ({ open,
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel} color="primary">
+        <Button variant="secondary" onClick={onCancel} color="primary">
           {t_i18n('Cancel')}
         </Button>
-        <Button onClick={onConfirm} color="secondary">
+        <Button onClick={onConfirm}>
           {t_i18n('Re-register')}
         </Button>
       </DialogActions>

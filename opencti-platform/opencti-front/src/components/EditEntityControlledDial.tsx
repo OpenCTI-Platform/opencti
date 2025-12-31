@@ -1,8 +1,7 @@
 import React from 'react';
-import { Button } from '@mui/material';
+import Button, { CustomButtonProps } from '@common/button/Button';
 import { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { CommonProps } from '@mui/material/OverridableComponent';
-import { ButtonOwnProps } from '@mui/material/Button/Button';
 import { useFormatter } from './i18n';
 import useDraftContext from '../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
@@ -10,11 +9,11 @@ import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 const EditEntityControlledDial = ({
   onOpen,
   color = 'primary',
-  size = 'medium',
-  variant = 'contained',
+  size = 'default',
+  variant = 'primary',
   style,
   disabled = false,
-}: ButtonOwnProps & CommonProps & DrawerControlledDialProps) => {
+}: CustomButtonProps & CommonProps & DrawerControlledDialProps) => {
   const { t_i18n } = useFormatter();
   const buttonLabel = t_i18n('Update');
   // Remove Update button in Draft context without the minimal right access "canEdit"

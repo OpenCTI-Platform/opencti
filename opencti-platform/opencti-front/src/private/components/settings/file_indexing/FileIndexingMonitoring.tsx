@@ -18,7 +18,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { ClearOutlined, FolderOutlined, PauseOutlined, PlayArrowOutlined, StorageOutlined, SyncDisabledOutlined, SyncOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { fileIndexingConfigurationFieldPatch, fileIndexingResetMutation } from '@components/settings/file_indexing/FileIndexing';
@@ -249,7 +249,6 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                       aria-label="Pause"
                       onClick={handlePause}
                       color="warning"
-                      variant="contained"
                       disabled={disabled}
                     >
                       {t_i18n('Pause')}
@@ -260,7 +259,6 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                       aria-label="Start"
                       onClick={handleStart}
                       color="success"
-                      variant="contained"
                       disabled={disabled}
                     >
                       {t_i18n('Start')}
@@ -276,7 +274,6 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                     aria-label="Reset"
                     onClick={handleReset}
                     color="error"
-                    variant="contained"
                     disabled={disabled || indexedFiles === 0}
                   >
                     {t_i18n('Reset')}

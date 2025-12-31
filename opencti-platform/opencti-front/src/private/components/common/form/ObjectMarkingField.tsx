@@ -2,7 +2,7 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -291,8 +291,8 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancellation}>{t_i18n('Cancel')}</Button>
-          <Button color="secondary" onClick={submitUpdate}>
+          <Button variant="secondary" onClick={handleCancellation}>{t_i18n('Cancel')}</Button>
+          <Button onClick={submitUpdate}>
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>

@@ -3,7 +3,7 @@ import { interval } from 'rxjs';
 import * as R from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { CheckCircle, Delete, Extension, Refresh, Warning } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import withStyles from '@mui/styles/withStyles';
@@ -150,7 +150,7 @@ const ExternalReferenceEnrichment = (props) => {
                 (n) => n.connector && n.connector.id === connector.id,
                 R.propOr([], 'jobs', externalReference),
               );
-          // eslint-disable-next-line max-len
+
           const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
           return (
             <div key={connector.id}>
@@ -233,7 +233,6 @@ const ExternalReferenceEnrichment = (props) => {
                           <div style={{ right: 0 }}>
                             <IconButton
                               onClick={() => deleteWork(work.id)}
-                              size="large"
                             >
                               <Delete />
                             </IconButton>

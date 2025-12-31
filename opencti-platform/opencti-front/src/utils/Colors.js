@@ -1,4 +1,3 @@
-/* eslint-disable no-bitwise */
 import invert from 'invert-color';
 
 export const stringToColour = (str, reversed = false) => {
@@ -28,7 +27,6 @@ export const stringToColour = (str, reversed = false) => {
   }
   return colour;
 };
-/* eslint-enable no-bitwise */
 
 export const itemColor = (type, dark = false, reversed = false) => {
   switch (type) {

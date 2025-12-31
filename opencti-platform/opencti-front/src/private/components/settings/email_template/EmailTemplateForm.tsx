@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import { useTheme } from '@mui/styles';
 import { Field, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -112,7 +112,7 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
           {!isEdition && (
             <div style={{ marginTop: theme.spacing(2), textAlign: 'right' }}>
               <Button
-                variant="contained"
+                variant="secondary"
                 onClick={() => {
                   handleReset();
                   onClose();
@@ -123,8 +123,6 @@ const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({
                 {t_i18n('Cancel')}
               </Button>
               <Button
-                variant="contained"
-                color="secondary"
                 onClick={submitForm}
                 disabled={isSubmitting}
                 style={{ marginLeft: theme.spacing(2) }}

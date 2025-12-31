@@ -1,7 +1,7 @@
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { BackupTableOutlined, CampaignOutlined } from '@mui/icons-material';
 import Paper from '@mui/material/Paper';
 import React, { FunctionComponent, useRef, useState } from 'react';
@@ -128,7 +128,6 @@ const Triggers: FunctionComponent<TriggersProps> = ({
           aria-label="Add"
           className={classes.createButton}
           onClick={() => setOpenLive(true)}
-          size="large"
           color="primary"
         >
           <CampaignOutlined fontSize="small" />
@@ -145,7 +144,6 @@ const Triggers: FunctionComponent<TriggersProps> = ({
           aria-label="Add"
           className={classes.createButton}
           onClick={() => setOpenDigest(true)}
-          size="large"
           color="primary"
         >
           <BackupTableOutlined fontSize="small" />

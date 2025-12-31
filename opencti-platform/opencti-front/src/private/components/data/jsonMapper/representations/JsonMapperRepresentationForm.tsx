@@ -12,8 +12,8 @@ import Typography from '@mui/material/Typography';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import classNames from 'classnames';
 import { representationLabel } from '@components/data/jsonMapper/representations/RepresentationUtils';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
+import IconButton from '@common/button/IconButton';
+import Button from '@common/button/Button';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import {
@@ -216,7 +216,6 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
             </div>
             <div style={{ textAlign: 'right', marginTop: '20px' }}>
               <Button
-                variant="contained"
                 color="error"
                 onClick={handleOpenDelete}
               >

@@ -4,7 +4,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import { Delete, InfoOutlined } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Tooltip } from '@mui/material';
 import React from 'react';
 import { isGenericOption } from '@components/common/form/AuthorizedMembersField';

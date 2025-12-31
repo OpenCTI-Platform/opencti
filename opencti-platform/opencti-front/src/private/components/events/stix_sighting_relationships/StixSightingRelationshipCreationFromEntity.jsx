@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import { assoc, pipe, pluck } from 'ramda';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add, Close } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -237,7 +237,6 @@ const StixSightingRelationshipCreationFromEntity = ({
     setTargetEntity(stixDomainObject);
   };
 
-  // eslint-disable-next-line class-methods-use-this
   const renderFakeList = () => {
     return (
       <List>
@@ -363,7 +362,6 @@ const StixSightingRelationshipCreationFromEntity = ({
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
-            size="large"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
@@ -421,7 +419,6 @@ const StixSightingRelationshipCreationFromEntity = ({
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
-            size="large"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
@@ -440,7 +437,6 @@ const StixSightingRelationshipCreationFromEntity = ({
     );
   };
 
-  // eslint-disable-next-line
   const renderLoader = () => {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -470,7 +466,6 @@ const StixSightingRelationshipCreationFromEntity = ({
             aria-label="Label"
             onClick={handleOpen}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-            size="large"
           >
             <Add fontSize="small" />
           </IconButton>

@@ -42,7 +42,6 @@ class WorkersStatusComponent extends Component {
     this.subscription.unsubscribe();
   }
 
-  // eslint-disable-next-line class-methods-use-this
   safeValue = (value, formatter, suffix = '') => {
     return value != null ? `${formatter(value)}${suffix}` : '-';
   };

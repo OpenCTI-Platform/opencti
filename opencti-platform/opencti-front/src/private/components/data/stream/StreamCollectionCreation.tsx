@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler, RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
@@ -215,7 +215,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
               />
               <div className={classes.buttons}>
                 <Button
-                  variant="contained"
+                  variant="secondary"
                   onClick={handleReset}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -223,8 +223,6 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  variant="contained"
-                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}

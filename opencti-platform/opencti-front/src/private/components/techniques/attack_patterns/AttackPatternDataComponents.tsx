@@ -5,7 +5,7 @@ import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { LinkOff, SourceOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
@@ -84,7 +84,6 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                     <IconButton
                       aria-label="Remove"
                       onClick={() => removeDataComponent(dataComponent.id)}
-                      size="large"
                     >
                       <LinkOff />
                     </IconButton>

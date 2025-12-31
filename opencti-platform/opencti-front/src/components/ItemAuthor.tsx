@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { resolveLink } from '../utils/Entity';
 
 interface ItemAuthorProps {
@@ -16,8 +16,7 @@ const ItemAuthor = ({ createdBy }: ItemAuthorProps) => {
     <>
       {createdBy ? (
         <Button
-          variant="outlined"
-          color="primary"
+          variant="secondary"
           size="small"
           component={Link}
           to={`${resolveLink(createdBy.entity_type)}/${

@@ -6,7 +6,7 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
 import { useTheme } from '@mui/styles';
@@ -121,10 +121,10 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
         </QueryRenderer>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCloseDelete} disabled={deleting}>
+        <Button variant="secondary" onClick={handleCloseDelete} disabled={deleting}>
           {t_i18n('Cancel')}
         </Button>
-        <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+        <Button onClick={submitDelete} disabled={deleting}>
           {t_i18n('Confirm')}
         </Button>
       </DialogActions>

@@ -8,7 +8,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
 import { Link } from 'react-router-dom';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { ExpandLessOutlined, ExpandMoreOutlined, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
@@ -92,7 +92,6 @@ class CourseOfActionAttackPatternComponent extends Component {
           {expandable && (
             <IconButton
               color="primary"
-              size="large"
               onClick={this.handleToggleExpand.bind(this)}
             >
               {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
@@ -117,7 +116,6 @@ class CourseOfActionAttackPatternComponent extends Component {
                         this,
                         attackPatternEdge,
                       )}
-                      size="large"
                     >
                       <LinkOff />
                     </IconButton>

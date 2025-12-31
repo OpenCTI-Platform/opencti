@@ -1,13 +1,13 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { ClearOutlined, FileOpenOutlined, LocalOfferOutlined, VisibilityOffOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Switch from '@mui/material/Switch';
 import * as R from 'ramda';
 import Dialog from '@mui/material/Dialog';
@@ -283,8 +283,8 @@ const ToolBar: FunctionComponent<{
           </FormGroup>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>{t_i18n('Cancel')}</Button>
-          <Button variant="text" color="secondary" onClick={handleAction}>
+          <Button variant="secondary" onClick={handleClose}>{t_i18n('Cancel')}</Button>
+          <Button onClick={handleAction}>
             {t_i18n('Update')}
           </Button>
         </DialogActions>

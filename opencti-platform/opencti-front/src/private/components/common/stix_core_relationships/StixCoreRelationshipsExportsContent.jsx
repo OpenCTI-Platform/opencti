@@ -6,7 +6,7 @@ import Slide from '@mui/material/Slide';
 import { graphql, createRefetchContainer } from 'react-relay';
 import List from '@mui/material/List';
 import { interval } from 'rxjs';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Close } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import StixCoreRelationshipsExportCreation from './StixCoreRelationshipsExportCreation';
@@ -82,7 +82,6 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleToggle.bind(this)}
-            size="large"
             color="primary"
           >
             <Close fontSize="small" color="primary" />

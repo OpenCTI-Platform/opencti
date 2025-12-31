@@ -5,7 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { MoreVert } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -156,7 +156,7 @@ export const DeleteOperationLineDummy: React.FC<DeleteOperationLineDummyProps> =
       sx={listItemSx}
       divider={true}
       secondaryAction={(
-        <IconButton disabled={true} aria-haspopup="true" size="large">
+        <IconButton disabled={true} aria-haspopup="true">
           <MoreVert />
         </IconButton>
       )}

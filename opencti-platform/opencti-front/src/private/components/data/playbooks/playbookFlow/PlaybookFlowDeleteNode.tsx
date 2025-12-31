@@ -17,7 +17,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import React from 'react';
 import Transition from '../../../../../components/Transition';
@@ -61,6 +61,7 @@ const PlaybookFlowDeleteNode = ({
       </DialogContent>
       <DialogActions>
         <Button
+          variant="secondary"
           onClick={() => {
             setSelectedNode(null);
             setAction(null);
@@ -68,7 +69,7 @@ const PlaybookFlowDeleteNode = ({
         >
           {t_i18n('Cancel')}
         </Button>
-        <Button color="secondary" onClick={deleteNode}>
+        <Button onClick={deleteNode}>
           {t_i18n('Confirm')}
         </Button>
       </DialogActions>

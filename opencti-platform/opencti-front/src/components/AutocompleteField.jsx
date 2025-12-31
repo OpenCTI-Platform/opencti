@@ -1,6 +1,6 @@
 import React from 'react';
 import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { fieldToAutocomplete } from 'formik-mui';
@@ -114,7 +114,6 @@ const AutocompleteField = (props) => {
           onClick={() => openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
-          size="large"
           title={t_i18n('Add')}
         >
           <Add />

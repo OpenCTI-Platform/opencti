@@ -6,7 +6,7 @@ import DraftProcessingStatus from '@components/drafts/DraftProcessingStatus';
 import { LockOutlined } from '@mui/icons-material';
 import { AlertTitle, IconButton, Tooltip } from '@mui/material';
 import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -222,8 +222,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
         </div>
         <div>
           <Button
-            color="primary"
-            variant="outlined"
+            variant="secondary"
             style={{ width: '100%' }}
             onClick={handleExitDraft}
           >
@@ -235,8 +234,6 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
           <Tooltip title={(!canDeleteKnowledge || !currentAccessRight.canEdit) ? t_i18n('You do not have the access rights to approve a draft') : ''}>
             <span>
               <Button
-                variant="contained"
-                color="primary"
                 style={{ width: '100%' }}
                 onClick={() => setDisplayApprove(true)}
                 disabled={objectsCount.totalCount < 1 || !canDeleteKnowledge || !currentAccessRight.canEdit}
@@ -268,10 +265,10 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setDisplayApprove(false)} disabled={approving}>
+              <Button variant="secondary" onClick={() => setDisplayApprove(false)} disabled={approving}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button color="secondary" onClick={handleValidateDraft} disabled={approving}>
+              <Button onClick={handleValidateDraft} disabled={approving}>
                 {t_i18n('Approve')}
               </Button>
             </DialogActions>

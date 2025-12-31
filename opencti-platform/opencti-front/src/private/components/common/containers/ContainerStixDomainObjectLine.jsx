@@ -11,7 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -189,8 +189,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                   'Course-Of-Action',
                   'Data-Component',
                   'Data-Source',
-                ].includes(node.entity_type)
-                  ? (
+                ].includes(node.entity_type) ? (
                       <Chip
                         classes={{ root: classes.chipNoLink }}
                         label={n(node.containersNumber.total)}
@@ -202,8 +201,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                         component={Link}
                         to={linkAnalyses}
                       />
-                    )
-                }
+                    )}
               </div>
               <div
                 className={classes.bodyItem}
@@ -376,7 +374,7 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
       classes={{ root: classes.item }}
       divider={true}
       secondaryAction={(
-        <IconButton disabled={true} aria-haspopup="true" size="large" classes={classes.itemIconDisabled}>
+        <IconButton disabled={true} aria-haspopup="true" classes={classes.itemIconDisabled}>
           <MoreVert />
         </IconButton>
       )}

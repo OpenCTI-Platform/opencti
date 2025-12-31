@@ -1,4 +1,5 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, LinearProgress, Typography } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, LinearProgress, Typography } from '@mui/material';
+import Button from '@common/button/Button';
 import React, { ReactNode } from 'react';
 import { useFormatter } from './i18n';
 

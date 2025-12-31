@@ -4,8 +4,8 @@ import { DeleteOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
+import IconButton from '@common/button/IconButton';
+import Button from '@common/button/Button';
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
@@ -185,7 +185,6 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
             )}
             <div style={{ textAlign: 'right', marginTop: '20px' }}>
               <Button
-                variant="contained"
                 color="error"
                 onClick={handleOpenDelete}
               >

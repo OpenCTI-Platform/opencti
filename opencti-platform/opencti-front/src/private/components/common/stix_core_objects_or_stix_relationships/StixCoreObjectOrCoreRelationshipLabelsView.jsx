@@ -4,13 +4,13 @@ import * as R from 'ramda';
 import { filter, map, pipe } from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { Add, CancelOutlined } from '@mui/icons-material';
 import { Label } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
@@ -165,7 +165,8 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
         action={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <IconButton
-              color="primary"
+              size="small"
+              variant="tertiary"
               aria-label={t_i18n('Add new labels')}
               title={t_i18n('Add new labels')}
               onClick={handleOpenAdd}
@@ -324,13 +325,12 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleReset} disabled={isSubmitting}>
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Close')}
               </Button>
               <Button
                 onClick={enableReferences ? handleOpenCommitCreate : submitForm}
                 disabled={isSubmitting}
-                color="secondary"
               >
                 {t_i18n('Add')}
               </Button>

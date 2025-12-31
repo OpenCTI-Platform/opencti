@@ -1,7 +1,6 @@
 import React, { FunctionComponent, Suspense, useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import IconButton from '@mui/material/IconButton';
 import { Add, ChevronRightOutlined } from '@mui/icons-material';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -22,7 +21,8 @@ import { PaginationOptions } from 'src/components/list_lines';
 import Drawer from '@components/common/drawer/Drawer';
 import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
 import Loader, { LoaderVariant } from 'src/components/Loader';
-import { Button } from '@mui/material';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -903,7 +903,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       {!isOnlySDOs && (
         <Button
           onClick={handleOpenCreateObservable}
-          variant="contained"
           style={{ marginRight: '10px' }}
         >
           {t_i18n('Create an observable')}
@@ -929,13 +928,11 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       { }
       {variant === 'inLine' && (
         <IconButton
-          color="primary"
           aria-label="Label"
           onClick={() => setOpen(true)}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large"
         >
-          <Add fontSize="small" />
+          <Add />
         </IconButton>
       )}
       <Drawer

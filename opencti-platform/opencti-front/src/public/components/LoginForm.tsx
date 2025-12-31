@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { useTheme } from '@mui/styles';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../components/i18n';
 import useApiMutation from '../../utils/hooks/useApiMutation';
@@ -95,8 +95,6 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, e
             />
             <Button
               type="submit"
-              variant="contained"
-              color="primary"
               disabled={isSubmitting || !isValid}
               style={{ marginTop: theme.spacing(3) }}
             >

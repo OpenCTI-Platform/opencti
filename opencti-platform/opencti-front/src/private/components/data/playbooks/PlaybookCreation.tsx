@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { InputHTMLAttributes, useRef } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
@@ -174,14 +174,12 @@ const PlaybookCreation = () => {
                 }}
                 >
                   <Button
-                    variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
                   >
                     {t_i18n('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}

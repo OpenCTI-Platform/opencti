@@ -4,7 +4,7 @@ import IconButton, { type IconButtonOwnProps } from '@mui/material/IconButton';
 import { TextFieldsOutlined } from '@mui/icons-material';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
 import { Field, Formik, FormikHelpers } from 'formik';
@@ -165,6 +165,7 @@ const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUp
               </DialogContent>
               <DialogActions>
                 <Button
+                  variant="secondary"
                   disabled={isSubmitting}
                   onClick={() => {
                     handleReset();
@@ -174,7 +175,6 @@ const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUp
                   {t_i18n('Cancel')}
                 </Button>
                 <Button
-                  color="secondary"
                   disabled={isSubmitting}
                   onClick={submitForm}
                 >

@@ -3,7 +3,7 @@ import { interval } from 'rxjs';
 import * as R from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { CheckCircleOutlined, DeleteOutlined, ExtensionOutlined, RefreshOutlined, WarningOutlined } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import withStyles from '@mui/styles/withStyles';
@@ -147,7 +147,7 @@ const StixCoreObjectEnrichment = ({
                 (n) => n.connector && n.connector.id === connector.id,
                 R.propOr([], 'jobs', stixCoreObject),
               );
-          // eslint-disable-next-line max-len
+
           const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
           return (
             <div key={connector.id}>
@@ -166,7 +166,6 @@ const StixCoreObjectEnrichment = ({
                             ? askJob(connector.id)
                             : askEnrich(connector.id))
                           }
-                          size="large"
                         >
                           <RefreshOutlined />
                         </IconButton>
@@ -230,7 +229,6 @@ const StixCoreObjectEnrichment = ({
                             <div style={{ right: 0 }}>
                               <IconButton
                                 onClick={() => deleteWork(work.id)}
-                                size="large"
                               >
                                 <DeleteOutlined />
                               </IconButton>
