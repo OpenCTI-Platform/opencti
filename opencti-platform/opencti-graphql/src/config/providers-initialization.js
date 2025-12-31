@@ -10,7 +10,7 @@ import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
 import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
-import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, loginFromProvider, userDelete } from '../domain/user';
+import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, userDelete } from '../domain/user';
 import conf, { getPlatformHttpProxyAgent, logApp } from './conf';
 import { AuthenticationFailure, ConfigurationError } from './errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
@@ -19,6 +19,7 @@ import { enrichWithRemoteCredentials } from './credentials';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { addUserLoginCount } from '../manager/telemetryManager';
 import { AuthType, INTERNAL_SECURITY_PROVIDER, PROVIDERS, EnvStrategyType } from './providers-configuration';
+import { genConfigMapper, providerLoginHandler } from '../modules/singleSignOn/singleSignOn-providers';
 
 // Admin user initialization
 export const initializeAdminUser = async (context) => {
@@ -102,26 +103,6 @@ export const configRemapping = (config) => {
     return n;
   }
   return config;
-};
-
-const providerLoginHandler = (userInfo, done, opts = {}) => {
-  loginFromProvider(userInfo, opts)
-    .then((user) => {
-      done(null, user);
-    })
-    .catch((err) => {
-      done(err);
-    });
-};
-const genConfigMapper = (elements) => {
-  return R.mergeAll(
-    elements.map((r) => {
-      const data = r.split(':');
-      if (data.length !== 2) return {};
-      const [remote, octi] = data;
-      return { [remote]: octi };
-    }),
-  );
 };
 
 const confProviders = conf.get('providers');

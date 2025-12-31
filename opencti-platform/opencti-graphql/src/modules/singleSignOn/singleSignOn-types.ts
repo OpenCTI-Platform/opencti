@@ -16,7 +16,7 @@ interface OrganizationsManagement {
 }
 
 interface GroupsManagement {
-  groups_attributes: string[];
+  group_attributes: string[];
   groups_path: string[];
   groups_mapping: string[];
   read_userinfo: boolean;
@@ -24,6 +24,7 @@ interface GroupsManagement {
 
 export interface BasicStoreEntitySingleSignOn extends BasicStoreEntity {
   name: string;
+  identifier: string;
   description: string;
   enabled: boolean;
   strategy: StrategyType;
@@ -39,6 +40,7 @@ export interface BasicStoreEntitySingleSignOn extends BasicStoreEntity {
 
 export interface StoreEntitySingleSignOn extends StoreEntity {
   name: string;
+  identifier: string;
   description: string;
   enabled: boolean;
   strategy: StrategyType;
@@ -54,6 +56,7 @@ export interface StoreEntitySingleSignOn extends StoreEntity {
 
 export interface StixSingleSignOn extends StixObject {
   name: string;
+  identifier: string;
   description: string;
   enabled: boolean;
   strategy: StrategyType;

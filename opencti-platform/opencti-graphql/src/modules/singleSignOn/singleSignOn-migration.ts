@@ -53,7 +53,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         const currentValue = mappedConfig[configKey];
         logApp.info('[SSO MIGRATION] groups management configured', currentValue);
 
-        const { groups_attributes, groups_mapping, groups_path, read_userinfo } = currentValue;
+        const { group_attributes, groups_mapping, groups_path, read_userinfo } = currentValue;
         groups_management = {};
 
         // SAML, OpenId and LDAP
@@ -64,10 +64,10 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         }
 
         // SAML only
-        if (groups_attributes) {
-          groups_management['groups_attributes'] = groups_attributes;
+        if (group_attributes) {
+          groups_management['group_attributes'] = group_attributes;
         } else if (strategy === StrategyType.SamlStrategy) {
-          groups_management['groups_attributes'] = ['groups'];
+          groups_management['group_attributes'] = ['groups'];
         }
 
         // OpenId only
@@ -146,9 +146,12 @@ const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
 
 const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
   const { configuration, groups_management } = computeConfiguration(envConfiguration, StrategyType.SamlStrategy);
+  const identifier = envConfiguration?.identifier || 'saml';
+
   const authEntity: SingleSignOnAddInput = {
     strategy: StrategyType.SamlStrategy,
     name: computeAuthenticationName(ssoKey, envConfiguration),
+    identifier,
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
     description: `${StrategyType.SamlStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),

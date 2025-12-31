@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { findAllSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { addLocalStrategy, initAuthenticationProviders } from '../../../src/modules/singleSignOn/singleSignOn-providers';
+import { addLocalStrategy, buildSAMLOptions, initAuthenticationProviders } from '../../../src/modules/singleSignOn/singleSignOn-providers';
 import { type ProviderConfiguration, PROVIDERS } from '../../../src/config/providers-configuration';
+import type { BasicStoreEntitySingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-types';
+import { StrategyType } from '../../../src/generated/graphql';
 
 describe('Single sign on Domain coverage tests', () => {
   describe('initialization coverage', () => {
@@ -69,6 +71,58 @@ describe('Single sign on Domain coverage tests', () => {
           provider: 'local',
         },
       ]);
+    });
+  });
+
+  describe.only('configuration computation coverage', () => {
+    it('should build correct options for SAML', async () => {
+      const samlEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        strategy: StrategyType.SamlStrategy,
+        configuration: [
+          {
+            key: 'issuer',
+            value: 'openctisaml',
+            type: 'string',
+          },
+          {
+            key: 'entryPoint',
+            value: 'http://localhost:9999/realms/master/protocol/saml',
+            type: 'string',
+          },
+          {
+            key: 'callbackUrl',
+            value: 'http://localhost:4000/auth/saml/callback',
+            type: 'string',
+          },
+          {
+            key: 'idpCert',
+            value: 'MIICmzCxxxxuJ1ZY=',
+            type: 'string',
+          },
+          {
+            key: 'wantAuthnResponseSigned',
+            value: 'false',
+            type: 'boolean',
+          },
+        ],
+        advanced_configuration: [
+          {
+            key: 'acceptedClockSkewMs',
+            value: '3',
+            type: 'number',
+          },
+        ],
+      };
+
+      const result = await buildSAMLOptions(samlEntity as BasicStoreEntitySingleSignOn);
+      expect(result).toStrictEqual({
+        issuer: 'openctisaml',
+        entryPoint: 'http://localhost:9999/realms/master/protocol/saml',
+        callbackUrl: 'http://localhost:4000/auth/saml/callback',
+        idpCert: 'MIICmzCxxxxuJ1ZY=',
+        wantAuthnResponseSigned: false,
+        acceptedClockSkewMs: 3,
+      });
     });
   });
 });
