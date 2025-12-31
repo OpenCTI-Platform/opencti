@@ -21,10 +21,12 @@ import {
   ArrowForward,
   Edit,
   Refresh,
+  FilterList,
 } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import SearchListPopover from './SearchListPopover';
+import FilterPopover from './FilterPopover';
 
 interface SearchExample {
   title: string;
@@ -43,10 +45,12 @@ const RessaSearch = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [historyAnchorEl, setHistoryAnchorEl] = useState<HTMLElement | null>(null);
   const [saveAnchorEl, setSaveAnchorEl] = useState<HTMLElement | null>(null);
+  const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
   const [popoverWidth, setPopoverWidth] = useState<number>(400);
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const saveIconRef = useRef<HTMLButtonElement>(null);
+  const filterIconRef = useRef<HTMLButtonElement>(null);
   
   // Mock recent searches data
   const [recentSearches] = useState<RecentSearch[]>([
@@ -60,6 +64,17 @@ const RessaSearch = () => {
     { id: '1', query: 'asn: "12" and country: "Iran"', timestamp: '1 minute ago' },
     { id: '2', query: 'country: "Iran"', timestamp: 'a week ago' },
     { id: '3', query: 'severity: "high"', timestamp: '2 weeks ago' },
+  ]);
+
+  // Mock filters data
+  const [filters] = useState([
+    { id: '1', name: 'actor', label: ':actor' },
+    { id: '2', name: 'country', label: ':country' },
+    { id: '3', name: 'cve', label: ':cve' },
+    { id: '4', name: 'last_seen', label: ':last_seen' },
+    { id: '5', name: 'org', label: ':org' },
+    { id: '6', name: 'asn', label: ':asn' },
+    { id: '7', name: 'country_code', label: ':country_code' },
   ]);
 
   const searchExamples: SearchExample[] = [
@@ -117,9 +132,9 @@ const RessaSearch = () => {
   };
 
   const handleSaveIconClick = (event: React.MouseEvent<HTMLElement>) => {
-    if (saveIconRef.current) {
-      setSaveAnchorEl(saveIconRef.current);
-      setPopoverWidth(saveIconRef.current.offsetWidth || inputRef.current?.offsetWidth || 400);
+    if (inputRef.current) {
+      setSaveAnchorEl(inputRef.current);
+      setPopoverWidth(inputRef.current.offsetWidth);
     }
   };
 
@@ -129,6 +144,23 @@ const RessaSearch = () => {
 
   const handleCloseSavePopover = () => {
     setSaveAnchorEl(null);
+  };
+
+  const handleFilterIconClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (inputRef.current) {
+      setFilterAnchorEl(inputRef.current);
+      setPopoverWidth(inputRef.current.offsetWidth);
+    }
+  };
+
+  const handleCloseFilterPopover = () => {
+    setFilterAnchorEl(null);
+  };
+
+  const handleSelectFilter = (filterName: string) => {
+    // TODO: Implement filter selection
+    console.log('Selected filter:', filterName);
+    setFilterAnchorEl(null);
   };
 
   const handleSelectRecentSearch = (query: string) => {
@@ -230,7 +262,7 @@ const RessaSearch = () => {
                       <Tooltip title={t_i18n('History')}>
                         <IconButton
                           size="small"
-                          onClick={handleHistory}
+                          onClick={handleSearchIconClick}
                           sx={{ padding: 0.5 }}
                         >
                           <History fontSize="small" sx={{ color: 'text.secondary' }} />
@@ -270,10 +302,31 @@ const RessaSearch = () => {
                           marginTop: '2px',
                         }}
                       />
+                      <Tooltip title={t_i18n('Filters')}>
+                        <IconButton
+                          ref={filterIconRef}
+                          size="small"
+                          onClick={handleFilterIconClick}
+                          sx={{ padding: 0.5 }}
+                        >
+                          <FilterList fontSize="small" sx={{ color: 'text.secondary' }} />
+                        </IconButton>
+                      </Tooltip>
+                      <Divider
+                        orientation="vertical"
+                        flexItem
+                        sx={{
+                          height: 20,
+                          marginLeft: 0.5,
+                          marginRight: 0.5,
+                          borderColor: 'divider',
+                          alignSelf: 'center',
+                          marginTop: '2px',
+                        }}
+                      />
                       <Tooltip title={t_i18n('Search')}>
                         <IconButton
                           size="small"
-                          onClick={handleSearchIconClick}
                           sx={{ padding: 0.5 }}
                         >
                           <Search fontSize="small" sx={{ color: 'text.secondary' }} />
@@ -345,6 +398,17 @@ const RessaSearch = () => {
             onEditItem={handleEditSearch}
             onSave={handleSave}
             saveButtonText={t_i18n('Save Search')}
+          />
+
+          {/* Filters Popover */}
+          <FilterPopover
+            open={Boolean(filterAnchorEl)}
+            anchorEl={filterAnchorEl}
+            onClose={handleCloseFilterPopover}
+            width={popoverWidth}
+            title={t_i18n('Filters')}
+            filters={filters}
+            onSelectFilter={handleSelectFilter}
           />
 
           {/* No Search State */}
