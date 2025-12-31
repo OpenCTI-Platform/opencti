@@ -13,6 +13,7 @@ import { addSingleSignOn } from './singleSignOn-domain';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { v4 as uuid } from 'uuid';
 import { EnvStrategyType } from '../../config/providers-configuration';
+import { configRemapping } from '../../config/providers-initialization';
 
 // Key that should not be present after migration
 const DEPRECATED_KEYS = ['roles_management'];
@@ -35,7 +36,10 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
   const skipped_configuration: string[] = [];
 
   if (envConfiguration.config) {
-    for (const configKey in envConfiguration.config) {
+    // TODO we will need to move this function inside current file
+    const mappedConfig = configRemapping(envConfiguration.config);
+
+    for (const configKey in mappedConfig) {
       logApp.info(`[SSO MIGRATION] current config key:${configKey}`);
 
       if (DEPRECATED_KEYS.some((deprecatedKey) => deprecatedKey === configKey)) {
@@ -46,7 +50,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         logApp.info(`[SSO MIGRATION] config key removed:${configKey}`);
       } else if (configKey === GROUP_MANAGEMENT_KEY) {
         // 2. Extract group management
-        const currentValue = envConfiguration.config[configKey];
+        const currentValue = mappedConfig[configKey];
         logApp.info('[SSO MIGRATION] groups management configured', currentValue);
 
         const { groups_attributes, groups_mapping, groups_path, read_userinfo } = currentValue;
@@ -83,26 +87,26 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         // TODO
       } else {
         // 5. Everything else is configuration
-        const currentValue = envConfiguration.config[configKey];
+        const currentValue = mappedConfig[configKey];
         if (typeof currentValue === 'number') {
           const currentConfig: ConfigurationTypeInput = {
             key: configKey,
             type: 'number',
-            value: `${envConfiguration.config[configKey]}`,
+            value: `${mappedConfig[configKey]}`,
           };
           configuration.push(currentConfig);
         } else if (typeof currentValue === 'boolean') {
           const currentConfig: ConfigurationTypeInput = {
             key: configKey,
             type: 'boolean',
-            value: `${envConfiguration.config[configKey]}`,
+            value: `${mappedConfig[configKey]}`,
           };
           configuration.push(currentConfig);
         } else {
           const currentConfig: ConfigurationTypeInput = {
             key: configKey,
             type: 'string',
-            value: `${envConfiguration.config[configKey]}`,
+            value: `${mappedConfig[configKey]}`,
           };
           configuration.push(currentConfig);
         }
