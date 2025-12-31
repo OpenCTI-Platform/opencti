@@ -14,6 +14,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import IngestionTaxiiImport from '@components/data/ingestionTaxii/IngestionTaxiiImport';
 
 const LOCAL_STORAGE_KEY = 'ingestionTaxii';
 
@@ -99,6 +100,9 @@ const IngestionTaxii = () => {
         keyword={viewStorage.searchTerm}
         createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
+            <IngestionTaxiiImport
+              paginationOptions={paginationOptions}
+            />
             <IngestionTaxiiCreation paginationOptions={paginationOptions} />
           </Security>
         )}

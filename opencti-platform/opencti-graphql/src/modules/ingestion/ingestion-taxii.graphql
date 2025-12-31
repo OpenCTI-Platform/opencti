@@ -34,6 +34,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
     ingestion_running: Boolean
     last_execution_date: DateTime
     confidence_to_score: Boolean
+    toConfigurationExport: String!
 }
 enum IngestionTaxiiOrdering {
     name
@@ -52,6 +53,16 @@ type IngestionTaxiiEdge {
     node: IngestionTaxii!
 }
 
+type TaxiiFeedAddInputFromImport {
+    name: String!
+    description: String!
+    uri: String!
+    version: String!
+    collection: String!
+    authentication_type: String!
+    authentication_value: String!
+}
+
 # Queries
 type Query {
     ingestionTaxii(id: String!): IngestionTaxii @auth(for: [INGESTION])
@@ -64,6 +75,9 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): IngestionTaxiiConnection @auth(for: [INGESTION])
+    taxiiFeedAddInputFromImport(
+        file: Upload!
+    ): TaxiiFeedAddInputFromImport! @auth(for: [INGESTION])
 }
 
 # Mutations

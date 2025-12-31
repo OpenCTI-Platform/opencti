@@ -9032,6 +9032,7 @@ type Query {
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
+  taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
   ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
@@ -12786,6 +12787,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   ingestion_running: Boolean
   last_execution_date: DateTime
   confidence_to_score: Boolean
+  toConfigurationExport: String!
 }
 
 enum IngestionTaxiiOrdering {
@@ -12805,6 +12807,16 @@ type IngestionTaxiiConnection {
 type IngestionTaxiiEdge {
   cursor: String!
   node: IngestionTaxii!
+}
+
+type TaxiiFeedAddInputFromImport {
+  name: String!
+  description: String!
+  uri: String!
+  version: String!
+  collection: String!
+  authentication_type: String!
+  authentication_value: String!
 }
 
 input IngestionTaxiiAddInput {
