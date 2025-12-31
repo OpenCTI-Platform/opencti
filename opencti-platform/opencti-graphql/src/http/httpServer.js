@@ -14,7 +14,6 @@ import passport from 'passport/lib';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
-import { isStrategyActivated, EnvStrategyType } from '../config/providers-configuration';
 import { applicationSession } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { userEditField } from '../domain/user';
@@ -24,6 +23,7 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { EnvStrategyType, isStrategyActivated } from '../config/providers-configuration';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');

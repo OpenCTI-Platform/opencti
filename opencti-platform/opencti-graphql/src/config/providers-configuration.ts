@@ -1,4 +1,6 @@
 // Providers definition
+import type { StrategyType } from '../generated/graphql';
+
 export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__';
 
 export enum AuthType {
@@ -20,10 +22,10 @@ export enum EnvStrategyType {
   STRATEGY_AUTH0 = 'Auth0Strategy',
 }
 
-interface ProviderConfiguration {
+export interface ProviderConfiguration {
   name: string;
   type: AuthType;
-  strategy: EnvStrategyType;
+  strategy: EnvStrategyType | StrategyType;
   provider: string;
   reqLoginHandler?: () => void;
   logout_uri?: string;

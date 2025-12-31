@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { EnvStrategyType } from '../../../src/config/providers-configuration';
-import type { SingleSignMigrationInput, SingleSignOnAddInput, SingleSignOnMigrationResult, StrategyType as StrategyTypeEnum } from '../../../src/generated/graphql';
+import { type SingleSignMigrationInput, type SingleSignOnAddInput, type SingleSignOnMigrationResult, StrategyType } from '../../../src/generated/graphql';
 import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 export const SINGLE_SIGN_ON_LIST_QUERY = gql`
@@ -53,7 +52,7 @@ describe('Single Sign On', () => {
   describe('Create', async () => {
     const createInput: SingleSignOnAddInput = {
       name: 'test name 1',
-      strategy: EnvStrategyType.STRATEGY_SAML as unknown as StrategyTypeEnum,
+      strategy: StrategyType.SamlStrategy,
       enabled: true,
     };
     it('should not create single sign on entity without SETAUTH capa', async () => {
@@ -76,7 +75,7 @@ describe('Single Sign On', () => {
     it('should create another single sign on entity', async () => {
       const createInput2: SingleSignOnAddInput = {
         name: 'test name 2',
-        strategy: EnvStrategyType.STRATEGY_OPENID as unknown as StrategyTypeEnum,
+        strategy: StrategyType.OpenIdConnectStrategy,
         enabled: false,
       };
       const singleSignOn2 = await queryAsAdminWithSuccess({
