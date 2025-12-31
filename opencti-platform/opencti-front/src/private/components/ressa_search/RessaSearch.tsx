@@ -12,6 +12,14 @@ import {
   Card,
   CardContent,
   Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Checkbox,
+  TablePagination,
 } from '@mui/material';
 import {
   Search,
@@ -24,6 +32,9 @@ import {
   FilterList,
   DescriptionOutlined,
   Close,
+  Visibility,
+  ChevronLeft,
+  ChevronRight,
 } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -40,6 +51,16 @@ interface RecentSearch {
   id: string;
   query: string;
   timestamp: string;
+}
+
+interface SearchResult {
+  id: string;
+  title: string;
+  attacker: string;
+  source: string;
+  tags: string[];
+  publicationDate: string;
+  registrationDate: string;
 }
 
 // Function to parse search query and extract filters
@@ -107,8 +128,12 @@ const RessaSearch = () => {
     'actor: "Alpha Strike Lab" cve: "CVE-2025-27865" or country: "Iran" and entity_type: "vulnerability" and last_seen: ">=30d" and exploit_available: "true" and exploit_in_the_wild: "true"'
   );
   const [hasSearched, setHasSearched] = useState(false);
-  const [hasResults, setHasResults] = useState(false);
+  // Change this to false to see "no results" state
+  const [hasResults, setHasResults] = useState(true);
   const [extractedFilters, setExtractedFilters] = useState<FilterGroup[]>([]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [historyAnchorEl, setHistoryAnchorEl] = useState<HTMLElement | null>(null);
   const [saveAnchorEl, setSaveAnchorEl] = useState<HTMLElement | null>(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
@@ -142,6 +167,57 @@ const RessaSearch = () => {
     { id: '6', name: 'asn', label: ':asn' },
     { id: '7', name: 'country_code', label: ':country_code' },
   ]);
+
+  // Mock search results data
+  const [searchResults] = useState<SearchResult[]>([
+    {
+      id: '1',
+      title: 'Digikala user database leak report - Digikala.com',
+      attacker: 'Qiyam',
+      source: 'Dark Web',
+      tags: ['Report', 'Leak', 'Digikala', 'Employees'],
+      publicationDate: 'Yesterday',
+      registrationDate: 'Yesterday',
+    },
+    {
+      id: '2',
+      title: 'ransom_2024.exe',
+      attacker: 'Tapndegan',
+      source: 'Russian Market',
+      tags: ['Ransomware', 'cve', 'node.js'],
+      publicationDate: '2 days ago',
+      registrationDate: '2 days ago',
+    },
+    {
+      id: '3',
+      title: 'CVE.2025.234581',
+      attacker: 'Alpha Strike Lab',
+      source: 'Human Analyst',
+      tags: ['Healthcare', 'Iran', 'APT'],
+      publicationDate: '20 Dec 2024',
+      registrationDate: '20 Dec 2024',
+    },
+    {
+      id: '4',
+      title: 'APT28',
+      attacker: 'SPIDER',
+      source: 'Automated Feeds',
+      tags: ['Financial', 'Customer', 'Saman Bank'],
+      publicationDate: '3 days ago',
+      registrationDate: '3 days ago',
+    },
+    {
+      id: '5',
+      title: 'Bank account leak - 15K records',
+      attacker: 'Gonjeshk',
+      source: 'Dark Web',
+      tags: ['Report', 'Leak', 'Financial'],
+      publicationDate: '1 week ago',
+      registrationDate: '1 week ago',
+    },
+  ]);
+
+  const totalResults = 54; // Mock total count
 
   const searchExamples: SearchExample[] = [
     {
@@ -185,8 +261,11 @@ const RessaSearch = () => {
       const filters = parseSearchQuery(searchValue);
       setExtractedFilters(filters);
       // TODO: Implement actual search functionality
-      // For now, simulate no results
-      setHasResults(false);
+      // Determine if results should be shown based on query
+      // Query with "Alpha Strike Lab" and "CVE-2025-27865" shows no results
+      // Other queries show results
+      const hasNoResultsQuery = searchValue.includes('Alpha Strike Lab') && searchValue.includes('CVE-2025-27865');
+      setHasResults(!hasNoResultsQuery);
       console.log('Searching for:', searchValue);
     }
   };
@@ -691,7 +770,7 @@ const RessaSearch = () => {
               )}
 
               {/* Main Content Area */}
-              <Box sx={{ flex: 3, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <Box sx={{ flex: 5, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 <Card
                   sx={{
                     flex: 1,
@@ -744,7 +823,7 @@ const RessaSearch = () => {
                           }}
                         />
                         <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>
-                          0
+                          {hasSearched ? totalResults : 0}
                         </Typography>
                       </Typography>
 
@@ -772,7 +851,7 @@ const RessaSearch = () => {
                         flex: 1,
                         display: 'flex',
                         flexDirection: 'column',
-                        padding: 4,
+                        padding: 2,
                         minHeight: 0,
                         overflow: 'auto',
                       }}
@@ -782,14 +861,175 @@ const RessaSearch = () => {
                         sx={{
                           flex: 1,
                           display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          textAlign: 'center',
+                          flexDirection: 'column',
+                          minHeight: 0,
                         }}
                       >
-                        <Typography variant="body2" color="text.secondary">
-                          {t_i18n('Search results will appear here')}
-                        </Typography>
+                        {/* Pagination Info */}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: 2,
+                            borderBottom: '1px solid',
+                            borderColor: 'divider',
+                          }}
+                        >
+                          <Typography variant="body2" color="text.secondary">
+                            {t_i18n('Display')} {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, totalResults)} {t_i18n('of')} {totalResults}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+                              disabled={page === 0}
+                            >
+                              <ChevronLeft />
+                            </IconButton>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                              <Button
+                                key={num}
+                                size="small"
+                                variant={page + 1 === num ? 'contained' : 'outlined'}
+                                onClick={() => setPage(num - 1)}
+                                sx={{ minWidth: 32, height: 32 }}
+                              >
+                                {num}
+                              </Button>
+                            ))}
+                            <IconButton
+                              size="small"
+                              onClick={() => setPage((prev) => prev + 1)}
+                              disabled={(page + 1) * rowsPerPage >= totalResults}
+                            >
+                              <ChevronRight />
+                            </IconButton>
+                          </Box>
+                        </Box>
+
+                        {/* Table */}
+                        <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
+                          <Table stickyHeader>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell padding="checkbox" sx={{ width: 48 }}>
+                                  <Checkbox
+                                    indeterminate={
+                                      selectedRows.length > 0 && selectedRows.length < searchResults.length
+                                    }
+                                    checked={selectedRows.length === searchResults.length && searchResults.length > 0}
+                                    onChange={(e) => {
+                                      if (e.target.checked) {
+                                        setSelectedRows(searchResults.map((r) => r.id));
+                                      } else {
+                                        setSelectedRows([]);
+                                      }
+                                    }}
+                                  />
+                                </TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Title')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Attacker')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Source')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Tags')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Publication Date')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t_i18n('Registration Date')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600, width: 100 }}>{t_i18n('View')}</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {searchResults
+                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map((result) => (
+                                  <TableRow key={result.id} hover>
+                                    <TableCell padding="checkbox">
+                                      <Checkbox
+                                        checked={selectedRows.includes(result.id)}
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            setSelectedRows([...selectedRows, result.id]);
+                                          } else {
+                                            setSelectedRows(selectedRows.filter((id) => id !== result.id));
+                                          }
+                                        }}
+                                      />
+                                    </TableCell>
+                                    <TableCell>{result.title}</TableCell>
+                                    <TableCell>{result.attacker}</TableCell>
+                                    <TableCell>{result.source}</TableCell>
+                                    <TableCell>
+                                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                        {result.tags.map((tag, index) => (
+                                          <Chip
+                                            key={index}
+                                            label={tag}
+                                            size="small"
+                                            sx={{
+                                              height: 24,
+                                              fontSize: '0.75rem',
+                                              borderRadius: 1,
+                                              backgroundColor: (theme) => {
+                                                const colors = [
+                                                  theme.palette.mode === 'dark'
+                                                    ? 'rgba(76, 175, 80, 0.15)'
+                                                    : 'rgba(76, 175, 80, 0.1)',
+                                                  theme.palette.mode === 'dark'
+                                                    ? 'rgba(255, 152, 0, 0.15)'
+                                                    : 'rgba(255, 152, 0, 0.1)',
+                                                  theme.palette.mode === 'dark'
+                                                    ? 'rgba(33, 150, 243, 0.15)'
+                                                    : 'rgba(33, 150, 243, 0.1)',
+                                                  theme.palette.mode === 'dark'
+                                                    ? 'rgba(244, 67, 54, 0.15)'
+                                                    : 'rgba(244, 67, 54, 0.1)',
+                                                  theme.palette.mode === 'dark'
+                                                    ? 'rgba(156, 39, 176, 0.15)'
+                                                    : 'rgba(156, 39, 176, 0.1)',
+                                                ];
+                                                return colors[index % colors.length];
+                                              },
+                                              border: (theme) => {
+                                                const borderColors = [
+                                                  theme.palette.mode === 'dark'
+                                                    ? 'rgba(76, 175, 80, 0.6)'
+                                                    : 'rgba(76, 175, 80, 0.5)',
+                                                  theme.palette.mode === 'dark'
+                                                    ? 'rgba(255, 152, 0, 0.6)'
+                                                    : 'rgba(255, 152, 0, 0.5)',
+                                                  theme.palette.mode === 'dark'
+                                                    ? 'rgba(33, 150, 243, 0.6)'
+                                                    : 'rgba(33, 150, 243, 0.5)',
+                                                  theme.palette.mode === 'dark'
+                                                    ? 'rgba(244, 67, 54, 0.6)'
+                                                    : 'rgba(244, 67, 54, 0.5)',
+                                                  theme.palette.mode === 'dark'
+                                                    ? 'rgba(156, 39, 176, 0.6)'
+                                                    : 'rgba(156, 39, 176, 0.5)',
+                                                ];
+                                                return `1px solid ${borderColors[index % borderColors.length]}`;
+                                              },
+                                            }}
+                                          />
+                                        ))}
+                                      </Box>
+                                    </TableCell>
+                                    <TableCell>{result.publicationDate}</TableCell>
+                                    <TableCell>{result.registrationDate}</TableCell>
+                                    <TableCell>
+                                      <Button
+                                        size="small"
+                                        variant="outlined"
+                                        startIcon={<Visibility fontSize="small" />}
+                                        sx={{ textTransform: 'none' }}
+                                      >
+                                        {t_i18n('View')}
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
                       </Box>
                     ) : (
                       <Box
