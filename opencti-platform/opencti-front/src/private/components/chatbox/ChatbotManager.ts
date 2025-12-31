@@ -1,0 +1,156 @@
+import type { Theme } from '../../../components/Theme';
+import { APP_BASE_PATH, fileUri } from '../../../relay/environment';
+import embleme from '../../../static/images/embleme_filigran_white.png';
+import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
+import { BubbleProps } from '@filigran/chatbot';
+
+type FiligranChatbotElement = HTMLElement & BubbleProps;
+
+/**
+ * ChatbotManager is necessary to be sure one instance only runs when we initialized it
+ * It creates the web component filigran-chatbot and appends it to the body
+ */
+class ChatbotManager {
+  private static instance: ChatbotManager;
+  private chatbotElement: FiligranChatbotElement | null = null;
+  private container: HTMLDivElement | null = null;
+  private isInitialized = false;
+  private theme: Theme | null = null;
+  private t_i18n: ((message: string) => string) | null = null;
+
+  static getInstance(): ChatbotManager {
+    if (!ChatbotManager.instance) {
+      ChatbotManager.instance = new ChatbotManager();
+    }
+    return ChatbotManager.instance;
+  }
+
+  configure(theme: Theme, t_i18n: (message: string) => string) {
+    this.theme = theme;
+    this.t_i18n = t_i18n;
+  }
+
+  private initialize() {
+    if (this.isInitialized && this.chatbotElement) {
+      return;
+    }
+
+    if (!this.theme || !this.t_i18n) {
+      console.error('Chatbot not configured. Call configure() first.');
+      return;
+    }
+
+    if (!this.container) {
+      this.container = document.createElement('div');
+      this.container.id = 'chatbot-container';
+      document.body.appendChild(this.container);
+    }
+
+    const chatbot = document.createElement('filigran-chatbot') as FiligranChatbotElement;
+    chatbot.setAttribute('left', String(window.screen.width - 430));
+    chatbot.setAttribute('agentic-url', `${APP_BASE_PATH}/chatbot`);
+
+    const chatBotTheme = {
+      button: {
+        backgroundColor: DARK_BLUE,
+      },
+      tooltip: {
+        showTooltip: false,
+      },
+      customCSS: `
+        * {
+          font-family: "IBM Plex Sans" !important;
+        }
+      `,
+      chatWindow: {
+        showTitle: true,
+        showAgentMessages: false,
+        title: this.t_i18n('[Preview] Ask Ariane'),
+        titleAvatarSrc: fileUri(embleme),
+        titleBackgroundColor: this.theme.palette.ai.dark,
+        welcomeMessage: this.t_i18n('Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?'),
+        errorMessage: this.t_i18n('Sorry, an error has occurred, please try again later.'),
+        backgroundColor: this.theme.palette.background.paper,
+        fontSize: 14,
+        starterPromptFontSize: 13,
+        clearChatOnReload: false,
+        sourceDocsTitle: this.t_i18n('Sources:'),
+        renderHTML: true,
+        boxShadow: `${this.theme.palette.background.shadow} 0px 5px 40px`,
+        botMessage: {
+          backgroundColor: this.theme.palette.background.accent,
+          textColor: this.theme.palette.text?.primary,
+        },
+        userMessage: {
+          backgroundColor: this.theme.palette.ai.dark,
+          textColor: this.theme.palette.common?.white,
+          showAvatar: false,
+        },
+        textInput: {
+          placeholder: this.t_i18n('Ask a question...'),
+          backgroundColor: this.theme.palette.background.paper,
+          textColor: this.theme.palette.text?.primary,
+          sendButtonColor: this.theme.palette.ai.main,
+          maxChars: 256,
+          maxCharsWarningMessage: this.t_i18n('You exceeded the characters limit. Please input less than 256 characters.'),
+          autoFocus: true,
+          sendMessageSound: false,
+          receiveMessageSound: false,
+        },
+        dateTimeToggle: {
+          date: true,
+          time: true,
+        },
+        footer: {
+          textColor: this.theme.palette.text?.disabled,
+          text: this.t_i18n('Powered by'),
+          company: 'Filigran XTM One',
+          companyLink: 'https://filigran.io',
+        },
+      },
+    };
+
+    chatbot.theme = chatBotTheme;
+    chatbot.open = false;
+
+    this.container.appendChild(chatbot);
+    this.chatbotElement = chatbot;
+    this.isInitialized = true;
+  }
+
+  open() {
+    if (!this.isInitialized) {
+      this.initialize();
+    }
+
+    if (!this.chatbotElement) return;
+    this.chatbotElement.open = true;
+  }
+
+  close() {
+    if (!this.chatbotElement) return;
+    this.chatbotElement.open = false;
+  }
+
+  setOnClose(callback: () => void) {
+    if (!this.chatbotElement) return;
+    this.chatbotElement.onClose = callback;
+  }
+
+  destroy() {
+    if (this.container) {
+      this.container.remove();
+      this.container = null;
+    }
+    this.chatbotElement = null;
+    this.isInitialized = false;
+    this.theme = null;
+    this.t_i18n = null;
+  }
+
+  isReady(): boolean {
+    return this.isInitialized;
+  }
+}
+
+export default ChatbotManager;
