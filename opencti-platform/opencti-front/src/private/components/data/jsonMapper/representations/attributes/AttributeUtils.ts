@@ -72,7 +72,7 @@ export const jsonMapperAttributeToFormData = (
     mode: attribute.mode,
     attr_path: attribute.attr_path,
     based_on: {
-      identifier: attribute.based_on?.identifier,
+      identifier: attribute.based_on?.identifier as { identifier: string; representation: string | null }[] ?? [],
       representations: attribute.based_on?.representations as string[],
     },
     default_values: schemaAttribute ? computeDefaultValues(
@@ -128,7 +128,10 @@ export const formDataToJsonMapperAttribute = (
   // }
   if (mapperAttribute.mode === 'base' && data.based_on) {
     mapperAttribute.based_on = {
-      identifier: data.based_on?.identifier,
+      identifier: data.based_on?.identifier?.map((i) => ({
+        identifier: i.identifier,
+        representation: i.representation,
+      })),
       representations: data.based_on?.representations,
     };
   }

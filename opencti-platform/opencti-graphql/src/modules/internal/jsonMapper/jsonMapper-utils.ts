@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import type { AuthContext, AuthUser } from '../../../types/user';
 import {
+  type AttributeBasedOnIdentifierComplex,
   type BasedRepresentationAttribute,
   type BasicStoreEntityJsonMapper,
   type JsonMapperParsed,
@@ -45,6 +46,19 @@ export const parseJsonMapper = (mapper: any): JsonMapperParsed => {
     }
   } else {
     representations = mapper?.representations ?? [];
+  }
+
+  // Handle single identifier format
+  if (representations) {
+    representations.forEach((rep) => {
+      rep.attributes.forEach((attr) => {
+        if (attr.mode == 'base' && !Array.isArray(attr.based_on.identifier)) {
+          attr.based_on.identifier = (attr.based_on.representations ?? []).map((r) => {
+            return { identifier: attr.based_on.identifier, representation: r } as AttributeBasedOnIdentifierComplex;
+          });
+        }
+      });
+    });
   }
 
   return {

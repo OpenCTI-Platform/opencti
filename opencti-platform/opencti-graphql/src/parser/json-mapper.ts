@@ -25,6 +25,7 @@ import '../modules';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { getHashesNames } from '../modules/internal/csvMapper/csvMapper-utils';
 import {
+  type AttributeBasedOnIdentifierComplex,
   type BasedRepresentationAttribute,
   type ComplexAttributePath,
   type JsonMapperParsed,
@@ -264,25 +265,48 @@ const handleBasedOnAttribute = async (
   // endregion
   // region bind the value and override default if needed
   if (attribute.based_on && attribute.based_on.representations) {
-    let entities: Record<string, InputType>[];
-    if (attribute.based_on.identifier) {
-      const mappedIdentifiers = extractTargetIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
-      entities = attribute.based_on.representations
-        .flatMap((id) => {
-          const representationsMap = otherEntities.get(id);
-          if (!representationsMap) return [];
-          return mappedIdentifiers.flatMap((ident) => {
-            const e = representationsMap.get(ident);
-            return e ? [e] : [];
-          });
-        });
-    } else {
-      entities = attribute.based_on.representations
-        .flatMap((id) => {
-          const representationsMap = otherEntities.get(id);
-          return representationsMap ? Array.from(representationsMap.values()) : [];
-        });
+    const entities = [];
+    const ident = attribute.based_on.identifier;
+    const isRetroCompatibilityIdentifier = typeof ident === 'string';
+    for (let index = 0; index < attribute.based_on.representations.length; index += 1) {
+      const representation = attribute.based_on.representations[index];
+      let mappedIdentifiers: string[] = [];
+      if (isRetroCompatibilityIdentifier) {
+        mappedIdentifiers = extractTargetIdentifierFromJson(base, record, ident, definition);
+      } else {
+        const identifiers = (attribute.based_on.identifier ?? []) as AttributeBasedOnIdentifierComplex[];
+        const targetIdentifier = identifiers.find((ident) => ident.representation === representation);
+        if (targetIdentifier?.identifier) {
+          mappedIdentifiers = extractTargetIdentifierFromJson(base, record, targetIdentifier.identifier, definition);
+        }
+      }
+      if (mappedIdentifiers.length > 0) {
+        entities.push(...(otherEntities.get(representation) ?? []).flat()
+          .filter((e) => e !== undefined
+            && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[]);
+      } else {
+        entities.push(...(otherEntities.get(representation) ?? []).flat()
+          .filter((e) => e !== undefined) as Record<string, InputType>[]);
+      }
     }
+
+    // let entities;
+    // if (attribute.based_on.identifier) {
+    //   let mappedIdentifiers;
+    //   if (Array.isArray(attribute.based_on.identifier)) {
+    //     mappedIdentifiers = attribute.based_on.identifier.flatMap((identifier) => extractTargetIdentifierFromJson(base, record, identifier, definition));
+    //   } else {
+    //     mappedIdentifiers = extractTargetIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
+    //   }
+    //   entities = attribute.based_on.representations
+    //     .map((id) => otherEntities.get(id)).flat()
+    //     .filter((e) => e !== undefined && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[];
+    // } else {
+    //   entities = attribute.based_on.representations
+    //     .map((id) => otherEntities.get(id)).flat()
+    //     .filter((e) => e !== undefined) as Record<string, InputType>[];
+    // }
+
     if (entities.length > 0) {
       const entity_type = input[entityType.name] as string;
       // Is relation from or to (stix-core || stix-sighting)
@@ -376,7 +400,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
   };
 
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
-  const baseArray = Array.isArray(baseJson) ? baseJson : [baseJson];
+  const baseArray = [baseJson];
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
     // region variables

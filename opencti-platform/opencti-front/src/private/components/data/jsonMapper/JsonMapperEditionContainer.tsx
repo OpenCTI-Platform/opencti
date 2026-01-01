@@ -45,7 +45,10 @@ export const jsonMapperEditionContainerFragment = graphql`
           name
         }
         based_on {
-          identifier
+          identifier {
+            identifier
+            representation
+          }
           representations
         }
       }
