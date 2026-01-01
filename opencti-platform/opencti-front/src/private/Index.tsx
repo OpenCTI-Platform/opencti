@@ -22,6 +22,7 @@ import useDraftContext from '../utils/hooks/useDraftContext';
 import { Stack, SxProps } from '@mui/material';
 import DraftToolbar from './components/drafts/DraftToolbar';
 import { ChatbotProvider } from './components/chatbox/ChatbotContext';
+import '../static/css/fluentTheme.scss';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
