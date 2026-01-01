@@ -47,6 +47,17 @@ export const parseJsonMapper = (mapper: any): JsonMapperParsed => {
     representations = mapper?.representations ?? [];
   }
 
+  // Handle single identifier format
+  if (representations) {
+    representations.forEach((rep) => {
+      rep.attributes.forEach((attr) => {
+        if (attr.mode == 'base' && !Array.isArray(attr.based_on.identifier)) {
+          attr.based_on.identifier = attr.based_on.identifier && isNotEmptyField(attr.based_on.identifier) ? [attr.based_on.identifier] : [];
+        }
+      });
+    });
+  }
+
   return {
     ...mapper,
     representations,

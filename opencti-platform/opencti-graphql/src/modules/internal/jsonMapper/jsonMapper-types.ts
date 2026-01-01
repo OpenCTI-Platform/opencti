@@ -36,7 +36,7 @@ export interface SimpleAttributePath {
   configuration?: AttributeColumnConfiguration;
 }
 interface AttributeBasedOn {
-  identifier?: string;
+  identifier?: string | string[];
   representations?: string[];
 }
 
@@ -112,7 +112,7 @@ export interface BasicStoreEntityJsonMapper extends BasicStoreEntity {
   user_chosen_markings?: string[];
 }
 
-export interface StoreEntityJsonMapper extends BasicStoreEntityJsonMapper, StoreEntity {}
+export interface StoreEntityJsonMapper extends BasicStoreEntityJsonMapper, StoreEntity { }
 
 export interface StixJsonMapper extends StixObject {
   name: string;

@@ -269,7 +269,12 @@ const handleBasedOnAttribute = async (
   if (attribute.based_on && attribute.based_on.representations) {
     let entities;
     if (attribute.based_on.identifier) {
-      const mappedIdentifiers = extractTargetIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
+      let mappedIdentifiers;
+      if (Array.isArray(attribute.based_on.identifier)) {
+        mappedIdentifiers = attribute.based_on.identifier.flatMap((identifier) => extractTargetIdentifierFromJson(base, record, identifier, definition));
+      } else {
+        mappedIdentifiers = extractTargetIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
+      }
       entities = attribute.based_on.representations
         .map((id) => otherEntities.get(id)).flat()
         .filter((e) => e !== undefined && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[];

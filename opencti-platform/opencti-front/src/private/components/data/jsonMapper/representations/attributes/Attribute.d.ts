@@ -26,7 +26,7 @@ export interface JsonMapperRepresentationAttributeFormData {
     formula: string;
   };
   based_on?: {
-    identifier?: string | null;
+    identifier?: string | string[] | null;
     representations?: string[] | undefined | null;
   } | null;
   default_values?: DefaultValues;

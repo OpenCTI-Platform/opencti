@@ -4,6 +4,7 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { cisa_data, cisa_mapper } from './json-mapper-cisa';
 import { trino_data, trino_mapper } from './json-mapper-trino';
 import { misp_data, misp_mapper } from './json-mapper-misp';
+import { ecrime_data, ecrime_mapper } from './json-mapper-ecrime';
 import { STIX_EXT_OCTI_SCO } from '../../../src/types/stix-2-1-extensions';
 
 const buildMaps = (stixBundle) => {
@@ -110,4 +111,56 @@ describe('JSON mapper testing', () => {
     expect(report.report_types).toStrictEqual(['misp-event']);
     expect(report.object_refs.length).toBe(121);
   });
+  it('should ecrime correctly parsed', async () => {
+    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, ecrime_data, ecrime_mapper);
+    const { mapById, mapByType, mapByFromAndTo } = buildMaps(stixBundle);
+    expect(stixBundle.objects.length).toBe(26);
+    expect(mapByType.get('identity').length).toBe(9);
+    expect(mapByType.get('location').length).toBe(2);
+    expect(mapByType.get('intrusion-set').length).toBe(1);
+    expect(mapByType.get('report').length).toBe(5);
+    expect(mapByType.get('relationship').length).toBe(9);
+
+    // Test organization binding
+    const organizations = mapByType.get('identity').filter((i) => i.identity_class === 'organization');
+    const organization = organizations.find((o) => o.name === 'MOBI Technologies, Inc.');
+    expect(organization).toBeDefined();
+    expect(organization.description).toBe('11-50 employees');
+
+    // Test intrusion-set binding
+    const intrusionSets = mapByType.get('intrusion-set');
+    const intrusionSet = intrusionSets.find((i) => i.name === 'Akira');
+    expect(intrusionSet).toBeDefined();
+
+    // Test relationship binding
+    const relationship = mapByFromAndTo.get(`${intrusionSet.id}-${organization.id}`);
+    expect(relationship).not.toBeNull();
+    expect(relationship.relationship_type).toBe('targets');
+
+    // Test report binding
+    const reports = mapByType.get('report');
+    const report = reports.find((r) => r.name === 'MOBI Technologies');
+    expect(report).toBeDefined();
+
+    // Verify object_refs contains United States (Country) and Consumer Electronics (Sector)
+    const locations = mapByType.get('location');
+    const country = locations.find((l) => l.name === 'United States');
+    expect(country).toBeDefined();
+
+    const sectors = mapByType.get('identity').filter((i) => i.identity_class === 'class'); // Sectors are identities but mapped as Sector in STIX? Wait, ecrime mapper maps to Sector identity
+    // Let's double check Sector mapping. In json-mapper-ecrime.ts: entity_type: ENTITY_TYPE_IDENTITY_SECTOR.
+    // In STIX 2.1 identity class is likely 'class' or something similar for Sector? 
+    // Actually OpenCTI treats Sector as Identity with class 'class' usually? No, let's check generated STIX.
+    // Checking json-mapper-ecrime.ts imports: ENTITY_TYPE_IDENTITY_SECTOR.
+    // Let's assume identity_class is 'class' or verify via the sectors collection.
+
+    // Actually, let's find the sector by name first from all identities.
+    const identities = mapByType.get('identity');
+    const sector = identities.find((i) => i.name === 'Consumer Electronics');
+    expect(sector).toBeDefined();
+
+    expect(report.object_refs).toContain(country.id);
+    expect(report.object_refs).toContain(sector.id);
+  });
 });
+

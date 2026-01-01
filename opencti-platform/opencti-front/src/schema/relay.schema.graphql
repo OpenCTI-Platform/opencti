@@ -13711,12 +13711,17 @@ type ComplexPath {
   configuration: AttributeColumnConfiguration
 }
 
+type JsonAttributeBasedOn {
+  identifier: [String]
+  representations: [String]
+}
+
 type JsonMapperRepresentationAttribute {
   key: String!
   mode: String!
   attr_path: AttributePath
   complex_path: ComplexPath
-  based_on: AttributeBasedOn
+  based_on: JsonAttributeBasedOn
   default_values: [DefaultValue!]
 }
 
