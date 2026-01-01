@@ -3477,6 +3477,7 @@
   "Select a form": "フォームを選択",
   "Select a mapper": "マッパーを選択する",
   "Select a relationship": "リレーションシップを選択",
+  "Select a representation first": "まず代表を選ぶ",
   "Select a sample file in CSV format, with a maximum size of 1MB to limit the processing time.": "処理時間を制限するために、最大サイズが1MBのCSV形式のサンプルファイルを選択してください。",
   "Select a sighting": "目撃情報を選択してください",
   "Select all nodes": "すべてのノードを選択",

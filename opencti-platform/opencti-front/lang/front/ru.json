@@ -3477,6 +3477,7 @@
   "Select a form": "Выберите форму",
   "Select a mapper": "Выберите маппер",
   "Select a relationship": "Выберите отношения",
+  "Select a representation first": "Сначала выберите представительство",
   "Select a sample file in CSV format, with a maximum size of 1MB to limit the processing time.": "Выберите файл-образец в формате CSV, максимальный размер которого не должен превышать 1 МБ, чтобы ограничить время обработки.",
   "Select a sighting": "Выберите объект наблюдения",
   "Select all nodes": "Выберите все узлы",

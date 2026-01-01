@@ -3,19 +3,16 @@ import classNames from 'classnames';
 import MuiTextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { representationLabel } from '@components/data/jsonMapper/representations/RepresentationUtils';
-import * as R from 'ramda';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field, FieldProps } from 'formik';
+import { FieldProps } from 'formik';
 import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
 import JsonMapperRepresentationDialogOption from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationDialogOption';
 import JsonMapperRepresentationAttributeOptions from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeOptions';
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
 import { SchemaAttribute } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
-import { TextField } from 'formik-mui';
 import { useTheme } from '@mui/styles';
-import { SelectChangeEvent } from '@mui/material/Select';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
@@ -76,8 +73,6 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
     entity_representations,
     'to',
   );
-
-  const multiple = schemaAttribute.multiple ?? false;
 
   const { schema } = useAuth();
   const { schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = schema;
@@ -156,36 +151,54 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
     }
   }, [errors]);
 
-  const onIdentifierValueChange = async (val: SelectChangeEvent) => {
+  const handleRepresentationChange = async (
+    event: React.SyntheticEvent,
+    value: JsonMapperRepresentationFormData[],
+  ) => {
+    const selectedIds = value.map((v) => v.id);
+    const textIdentifiers = (field.value?.based_on?.identifier ?? []).filter((i) => typeof i !== 'string');
+
+    // Add new identifiers for newly selected representations
+    const newIdentifiers = [...textIdentifiers];
+    selectedIds.forEach((id) => {
+      if (!newIdentifiers.find((i) => i.representation === id)) {
+        newIdentifiers.push({ identifier: '', representation: id });
+      }
+    });
+
+    // Remove identifiers for deselected representations
+    const finalIdentifiers = newIdentifiers.filter((i) => selectedIds.includes(i.representation ?? ''));
+
     const updateAttribute: JsonMapperRepresentationAttributeFormData = {
-      ...(value ?? {}),
+      ...(field.value ?? {}),
       key: schemaAttribute.name,
       mode: 'base',
       based_on: {
-        identifier: val.target.value,
-        representations: value?.based_on?.representations ?? [],
+        identifier: finalIdentifiers,
+        representations: selectedIds,
       },
     };
     await setFieldValue(name, updateAttribute);
   };
 
-  const onSelectValueChange = async (
-    val: JsonMapperRepresentationFormData[] | JsonMapperRepresentationFormData | null,
-  ) => {
-    let ids: string[] | undefined;
-    if (multiple) {
-      ids = val ? (val as JsonMapperRepresentationFormData[]).map((r) => r.id) : undefined;
+  const handleIdentifierChange = async (representationId: string, val: string) => {
+    const currentIdentifiers = [...(field.value?.based_on?.identifier ?? [])];
+    const index = currentIdentifiers.findIndex((i) => i.representation === representationId);
+
+    if (index >= 0) {
+      currentIdentifiers[index] = { ...currentIdentifiers[index], identifier: val };
     } else {
-      // internally, it's always an array
-      ids = val ? [(val as JsonMapperRepresentationFormData).id] : undefined;
+      // Should not happen if sync is correct, but safe fallback
+      currentIdentifiers.push({ identifier: val, representation: representationId });
     }
+
     const updateAttribute: JsonMapperRepresentationAttributeFormData = {
-      ...(value ?? {}),
+      ...(field.value ?? {}),
       key: schemaAttribute.name,
       mode: 'base',
       based_on: {
-        identifier: value?.based_on?.identifier ?? '',
-        representations: ids,
+        identifier: currentIdentifiers,
+        representations: field.value?.based_on?.representations ?? [],
       },
     };
     await setFieldValue(name, updateAttribute);
@@ -198,79 +211,77 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
         {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
       </div>
       <div>
-        {multiple && (
-          <MUIAutocomplete<JsonMapperRepresentationFormData, true>
-            selectOnFocus
-            openOnFocus
-            autoSelect={false}
-            autoHighlight
-            multiple
-            getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
-            options={options}
-            value={getBasedOnRepresentations(value, options) || null}
-            onChange={(_, val) => onSelectValueChange(val)}
-            renderInput={(params) => (
-              <MuiTextField
-                {...params}
-                label={t_i18n('Representation entity')}
-                variant="outlined"
-                size="small"
-              />
-            )}
-            className={classNames({
-              [classes.inputError]: errors,
-            })}
-          />
-        )}
-        {!multiple && (
-          <MUIAutocomplete<JsonMapperRepresentationFormData>
-            selectOnFocus
-            openOnFocus
-            autoSelect={false}
-            autoHighlight
-            getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
-            options={options}
-            value={R.head(getBasedOnRepresentations(value, options)) || null}
-            onChange={(_, val) => onSelectValueChange(val)}
-            renderInput={(params) => (
-              <MuiTextField
-                {...params}
-                label={t_i18n('Representation entity')}
-                variant="outlined"
-                size="small"
-              />
-            )}
-            className={classNames({
-              [classes.inputError]: errors,
-            })}
-          />
-        )}
-      </div>
-      <div>
-        {schemaAttribute.editDefault && (
-          <JsonMapperRepresentationDialogOption configuration={value}>
-            <JsonMapperRepresentationAttributeOptions
-              schemaAttribute={schemaAttribute}
-              baseAttributeName={name}
-              configurationAttributeName={name}
-              form={form}
+        <MUIAutocomplete<JsonMapperRepresentationFormData, true>
+          selectOnFocus
+          openOnFocus
+          autoSelect={false}
+          autoHighlight
+          multiple
+          getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
+          options={options}
+          value={getBasedOnRepresentations(field.value, options) ?? []}
+          onChange={handleRepresentationChange}
+          renderInput={(params) => (
+            <MuiTextField
+              {...params}
+              label={t_i18n('Representation entity')}
+              variant="outlined"
+              size="small"
             />
-          </JsonMapperRepresentationDialogOption>
-        )}
-      </div>
-      <div>Identifier</div>
-      <div>
-        <Field
-          component={TextField}
-          label={t_i18n('JSON Path')}
-          name={`${name}.identifier`}
-          variant="standard"
-          style={{ width: '100%' }}
-          value={value?.based_on?.identifier ?? ''}
-          onChange={(val: SelectChangeEvent) => onIdentifierValueChange(val)}
-          handleErrors={handleErrors}
+          )}
+          className={classNames({
+            [classes.inputError]: errors,
+          })}
         />
       </div>
+      {schemaAttribute.editDefault ? (
+        <JsonMapperRepresentationDialogOption configuration={value}>
+          <JsonMapperRepresentationAttributeOptions
+            schemaAttribute={schemaAttribute}
+            baseAttributeName={name}
+            configurationAttributeName={name}
+            form={form}
+          />
+        </JsonMapperRepresentationDialogOption>
+      ) : <div />}
+      <>
+        {(() => {
+          const selectedRepresentations = getBasedOnRepresentations(field.value, options);
+
+          if (selectedRepresentations.length === 0) {
+            return (
+              <>
+                <div />
+                <div>{t_i18n('Select a representation first')}</div>
+                <div />
+              </>
+            );
+          }
+
+          return selectedRepresentations.map((rep) => {
+            const identifiers = field.value?.based_on?.identifier ?? [];
+            const identifierObj = identifiers.find((i) => i.representation === rep.id);
+            const identifierValue = identifierObj?.identifier ?? '';
+            return (
+              <>
+                <div>
+                  Identifier ({representationLabel(entity_representations.indexOf(rep), rep, t_i18n)})
+                </div>
+                <div>
+                  <MuiTextField
+                    label={t_i18n('JSON Path')}
+                    variant="standard"
+                    style={{ width: '100%' }}
+                    value={identifierValue}
+                    onChange={(e) => handleIdentifierChange(rep.id, e.target.value)}
+                  />
+                </div>
+                <div />
+              </>
+            );
+          });
+        })()}
+      </>
     </div>
   );
 };
