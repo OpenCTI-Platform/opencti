@@ -171,7 +171,7 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
       key: schemaAttribute.name,
       mode: 'base',
       based_on: {
-        identifier: value?.based_on?.identifier ?? [],
+        identifier: value?.based_on?.identifier ?? [''],
         representations: ids,
       },
     };
