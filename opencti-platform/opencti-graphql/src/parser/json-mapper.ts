@@ -351,7 +351,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
   const chosenMarkings = mapper.user_chosen_markings ?? [];
   const results = new Map<string, Record<string, InputType>[]>();
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
-  const baseArray = Array.isArray(baseJson) ? baseJson : [baseJson];
+  const baseArray = [baseJson];
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
     // region variables

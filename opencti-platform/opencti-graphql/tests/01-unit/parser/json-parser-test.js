@@ -5,6 +5,8 @@ import { cisa_data, cisa_mapper } from './json-mapper-cisa';
 import { trino_data, trino_mapper } from './json-mapper-trino';
 import { misp_data, misp_mapper } from './json-mapper-misp';
 import { ecrime_data, ecrime_mapper } from './json-mapper-ecrime';
+import { domains_data, domains_mapper } from './json-mapper-domains';
+import { indicators_data, indicators_mapper } from './json-mapper-indicators';
 import { STIX_EXT_OCTI_SCO } from '../../../src/types/stix-2-1-extensions';
 
 const buildMaps = (stixBundle) => {
@@ -148,19 +150,39 @@ describe('JSON mapper testing', () => {
     expect(country).toBeDefined();
 
     const sectors = mapByType.get('identity').filter((i) => i.identity_class === 'class'); // Sectors are identities but mapped as Sector in STIX? Wait, ecrime mapper maps to Sector identity
-    // Let's double check Sector mapping. In json-mapper-ecrime.ts: entity_type: ENTITY_TYPE_IDENTITY_SECTOR.
-    // In STIX 2.1 identity class is likely 'class' or something similar for Sector? 
-    // Actually OpenCTI treats Sector as Identity with class 'class' usually? No, let's check generated STIX.
-    // Checking json-mapper-ecrime.ts imports: ENTITY_TYPE_IDENTITY_SECTOR.
-    // Let's assume identity_class is 'class' or verify via the sectors collection.
-
-    // Actually, let's find the sector by name first from all identities.
     const identities = mapByType.get('identity');
     const sector = identities.find((i) => i.name === 'Consumer Electronics');
     expect(sector).toBeDefined();
 
     expect(report.object_refs).toContain(country.id);
     expect(report.object_refs).toContain(sector.id);
+  });
+  it('should domains correctly parsed', async () => {
+    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, domains_data, domains_mapper);
+    const { mapByType } = buildMaps(stixBundle);
+    expect(stixBundle.objects.length).toBe(1);
+    expect(mapByType.get('domain-name').length).toBe(1);
+
+    // Test domain binding
+    const domain = mapByType.get('domain-name')[0];
+    expect(domain.value).toBe('evil.com');
+  });
+  it('should indicators correctly parsed', async () => {
+    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, indicators_data, indicators_mapper);
+    const { mapById, mapByType } = buildMaps(stixBundle);
+    expect(stixBundle.objects.length).toBe(4);
+    expect(mapByType.get('indicator').length).toBe(2);
+    expect(mapByType.get('external-reference').length).toBe(2);
+
+    // Test indicator binding
+    const indicators = mapByType.get('indicator');
+    const indicator1 = indicators.find((i) => i.name === "[domain-name:value = 'malicious.com']");
+    const indicator2 = indicators.find((i) => i.name === "[domain-name:value = 'malicious2.com']");
+    expect(indicator1.external_references.length).toBe(1);
+    const ref1_id = indicator1.external_references[0]; // external_references is array of IDs in mapByType? No, in mapByType objects are raw STIX objects?
+    expect(indicator1.external_references[0].url).toBe('https://abuse.ch/domain/malicious.com');
+    expect(indicator2.external_references.length).toBe(1);
+    expect(indicator2.external_references[0].url).toBe('https://abuse.ch/domain/malicious2.com');
   });
 });
 
