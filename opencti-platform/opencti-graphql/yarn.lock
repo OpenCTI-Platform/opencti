@@ -1803,9 +1803,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@escape.tech/graphql-armor@npm:3.1.7":
-  version: 3.1.7
-  resolution: "@escape.tech/graphql-armor@npm:3.1.7"
+"@escape.tech/graphql-armor@npm:3.2.0":
+  version: 3.2.0
+  resolution: "@escape.tech/graphql-armor@npm:3.2.0"
   dependencies:
     "@escape.tech/graphql-armor-block-field-suggestions": "npm:3.0.1"
     "@escape.tech/graphql-armor-cost-limit": "npm:2.4.3"
@@ -1815,7 +1815,7 @@ __metadata:
     "@escape.tech/graphql-armor-max-tokens": "npm:2.5.1"
     graphql: "npm:^16.10.0"
   peerDependencies:
-    "@apollo/server": ^4.0.0
+    "@apollo/server": ^4.0.0 || ^5.0.0
     "@envelop/core": ^5.0.0
     "@escape.tech/graphql-armor-types": 0.7.0
   peerDependenciesMeta:
@@ -1825,7 +1825,7 @@ __metadata:
       optional: true
     "@escape.tech/graphql-armor-types":
       optional: true
-  checksum: 10c0/0795987bbfc1d79e22c1701fd53ef8a6b3da3b0bb03b1881f738040173a0c0e676d7a907076ca2a5827b1f1bf8e541b34f6c18d2600dac38cf9c7c6ea97aa9ac
+  checksum: 10c0/d33208dcc4ab1e49d611cd93f707a5833abe6c385389f5499937aa40c15cfd7fe206baec4a6f982d4c3cf955daa1281a99e7d3bfc570110a06a71ac5411f3c80
   languageName: node
   linkType: hard
 
@@ -10920,7 +10920,7 @@ __metadata:
     "@aws-sdk/lib-storage": "npm:3.955.0"
     "@datadog/pprof": "npm:5.13.1"
     "@elastic/elasticsearch": "npm:8.19.1"
-    "@escape.tech/graphql-armor": "npm:3.1.7"
+    "@escape.tech/graphql-armor": "npm:3.2.0"
     "@eslint/js": "npm:9.39.2"
     "@graphql-codegen/cli": "npm:6.1.0"
     "@graphql-codegen/introspection": "npm:5.0.0"
