@@ -8,16 +8,14 @@ import { representationLabel } from '@components/data/jsonMapper/representations
 import * as R from 'ramda';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field, FieldProps } from 'formik';
+import { FieldProps } from 'formik';
 import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
 import JsonMapperRepresentationDialogOption from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationDialogOption';
 import JsonMapperRepresentationAttributeOptions from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeOptions';
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
 import { SchemaAttribute } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
-import { TextField } from 'formik-mui';
 import { useTheme } from '@mui/styles';
-import { SelectChangeEvent } from '@mui/material/Select';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
@@ -158,8 +156,6 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
     }
   }, [errors]);
 
-
-
   const onSelectValueChange = async (
     val: JsonMapperRepresentationFormData[] | JsonMapperRepresentationFormData | null,
   ) => {
@@ -175,7 +171,7 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
       key: schemaAttribute.name,
       mode: 'base',
       based_on: {
-        identifier: value?.based_on?.identifier ?? '',
+        identifier: value?.based_on?.identifier ?? [],
         representations: ids,
       },
     };
@@ -252,9 +248,8 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
       <div>Identifier</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {(() => {
-          const identifiers = Array.isArray(value?.based_on?.identifier)
-            ? value?.based_on?.identifier
-            : [value?.based_on?.identifier ?? ''];
+          const identifiers: string[] = Array.isArray(value?.based_on?.identifier)
+            ? value?.based_on?.identifier : [value?.based_on?.identifier ?? ''];
 
           const handleIdentifierChange = async (index: number, val: string) => {
             const newIdentifiers = [...identifiers];
