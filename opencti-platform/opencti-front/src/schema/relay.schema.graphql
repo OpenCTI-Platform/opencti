@@ -15339,8 +15339,8 @@ type SingleSignOnConnection {
 }
 
 input OrganizationsManagementInput {
-  organizations_path: [String]!
-  organizations_mapping: [String]!
+  organizations_path: [String!]
+  organizations_mapping: [String!]
 }
 
 input GroupsManagementInput {

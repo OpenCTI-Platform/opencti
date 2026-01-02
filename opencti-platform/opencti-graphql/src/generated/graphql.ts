@@ -20459,8 +20459,8 @@ export type OrganizationsManagement = {
 };
 
 export type OrganizationsManagementInput = {
-  organizations_mapping: Array<InputMaybe<Scalars['String']['input']>>;
-  organizations_path: Array<InputMaybe<Scalars['String']['input']>>;
+  organizations_mapping?: InputMaybe<Array<Scalars['String']['input']>>;
+  organizations_path?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export enum OrganizationsOrdering {

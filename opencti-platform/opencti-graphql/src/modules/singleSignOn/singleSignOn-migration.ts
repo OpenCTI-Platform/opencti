@@ -2,6 +2,7 @@ import {
   type ConfigurationTypeInput,
   type GroupsManagement,
   type GroupsManagementInput,
+  type OrganizationsManagementInput,
   type SingleSignOnAddInput,
   type SingleSignOnMigrationResult,
   StrategyType,
@@ -27,12 +28,14 @@ const ORG_MANAGEMENT_KEY = 'organizations_management';
 interface ConfigurationType {
   configuration: ConfigurationTypeInput[];
   groups_management?: GroupsManagementInput;
+  organizations_management?: OrganizationsManagementInput;
   skipped_configuration: string[];
 }
 
 const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => {
   const configuration: ConfigurationTypeInput[] = [];
   let groups_management: GroupsManagementInput | undefined;
+  let organizations_management: OrganizationsManagementInput | undefined;
   const skipped_configuration: string[] = [];
 
   if (envConfiguration.config) {
@@ -84,7 +87,23 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         }
       } else if (configKey === ORG_MANAGEMENT_KEY) {
       // 3. Extract organization management
-        // TODO
+        const currentValue = mappedConfig[configKey];
+        logApp.info('[SSO MIGRATION] organizations management configured', currentValue);
+
+        const { organizations_path, organizations_mapping } = currentValue;
+        organizations_management = {};
+        // SAML only
+        if (organizations_path) {
+          organizations_management['organizations_path'] = organizations_path;
+        } else if (strategy === StrategyType.SamlStrategy) {
+          organizations_management['organizations_path'] = ['organizations'];
+        }
+
+        if (organizations_mapping) {
+          organizations_management['organizations_mapping'] = organizations_path;
+        } else {
+          organizations_management['organizations_mapping'] = [];
+        }
       } else {
         // 5. Everything else is configuration
         const currentValue = mappedConfig[configKey];
