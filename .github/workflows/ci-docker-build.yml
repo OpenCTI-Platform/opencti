@@ -87,7 +87,7 @@ jobs:
         file: opencti-platform/Dockerfile_featurebranch
         target: ${{ inputs.dockerfile_target }}
         build-args: |
-          "BASE_TYPE= ${{ inputs.fips  && 'fips' || 'alpine' }}"
+          "BASE_TYPE=${{ inputs.fips  && 'fips' || 'alpine' }}"
         push: ${{ inputs.is_publish_to_registry == 'true' }}
         outputs: ${{ inputs.is_publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
@@ -142,7 +142,7 @@ jobs:
         context: opencti-worker
         file: opencti-worker/Dockerfile
         build-args: |
-          "BASE_TYPE= ${{ inputs.fips  && 'fips' || 'alpine' }}"
+          "BASE_TYPE=${{ inputs.fips  && 'fips' || 'alpine' }}"
         push: ${{ inputs.is_publish_to_registry == 'true' }}
         outputs: ${{ inputs.is_publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-worker.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
