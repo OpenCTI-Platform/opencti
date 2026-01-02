@@ -1,6 +1,13 @@
 name: Check Pull Request contribution conventions
-on: [pull_request,pull_request_target]
-  types: [opened, edited]
+on: 
+  pull_request:
+    types:
+      - opened
+      - edited
+  pull_request_target:
+    types:
+      - opened
+      - edited
 jobs:
   check-signed-commits:
     name: Check signed commits in Pull Request
