@@ -79,8 +79,8 @@ type Query {
 }
 
 input OrganizationsManagementInput {
-  organizations_path: [String]!
-  organizations_mapping: [String]!
+  organizations_path: [String!]
+  organizations_mapping: [String!]
   # TODO missing organizations_default, organizations_splitter and organizations_header for HeaderStrategy
 }
 
