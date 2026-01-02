@@ -1,0 +1,18 @@
+name: Check Pull Request title convention
+on:
+  pull_request:
+    types: [opened, edited]
+  pull_request_target:
+    types: [opened, edited]
+
+jobs:
+  check-pr-title-convention:
+    name: Check that title follow convention
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - uses: Slashgear/action-check-pr-title@161cede0311ec624ae3ee76a2c27522f7b6fa2d8
+      with:
+        regexp: "[[a-z]]+.+(#[0-9]+)"
+        helpMessage: "Format: '[component] Message (#issuenumber)', see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
