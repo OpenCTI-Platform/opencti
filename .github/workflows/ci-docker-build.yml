@@ -11,17 +11,22 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
-      client_python_local:
-        description: "Use client python from the same commit"
-        type: boolean
-        required: false
-        default: false
       dockerfile_target:
         description: "Target to build in the multi stage docker file - testing or app"
         type: string
         required: false
         default: app
-      publish_to_registry:
+      is_client_python_local:
+        description: "Use client python from the same commit"
+        type: boolean
+        required: false
+        default: false
+      is_fips:
+        description: "Registry used to publish the image"
+        type: string
+        required: false
+        default: false
+      is_publish_to_registry:
         description: "Publish image to registry. If false, will save the image as github artifact"
         type: string
         required: false
@@ -53,7 +58,7 @@ jobs:
         ref: ${{ inputs.checkout_ref }}
 
     - name: Use client-python in OpenCTI from same branch
-      if: ${{ inputs.client_python_local == true }}
+      if: ${{ inputs.is_client_python_local == true }}
       run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-platform/opencti-graphql/src/python/requirements.txt
 
     - name: Set up Docker Buildx
@@ -62,7 +67,7 @@ jobs:
         name: gha-builder-platform
 
     - name: Login to DockerHub
-      if: inputs.publish_to_registry == 'true'
+      if: inputs.is_publish_to_registry == 'true'
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -73,21 +78,23 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ inputs.registry }}/platform
-        tags: type=raw,value=${{ inputs.image_tag }}
+        tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.fips  && '-fips' }}
 
-    - name: Build and ${{ inputs.publish_to_registry  && 'push' || 'export as tar' }}
+    - name: Build and ${{ inputs.is_publish_to_registry  && 'push' || 'export as tar' }}
       uses: docker/build-push-action@v6
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile_featurebranch
         target: ${{ inputs.dockerfile_target }}
-        push: ${{ inputs.publish_to_registry == 'true' }}
-        outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar' }}
+        build-args: |
+          "BASE_TYPE= ${{ inputs.fips  && 'fips' || 'alpine' }}"
+        push: ${{ inputs.is_publish_to_registry == 'true' }}
+        outputs: ${{ inputs.is_publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Upload opencti docker image artifact
-      if: ${{ inputs.publish_to_registry == 'false' }}
+      if: ${{ inputs.is_publish_to_registry == 'false' }}
       uses: actions/upload-artifact@v6
       with:
         name: docker-image-opencti-platform
@@ -107,7 +114,7 @@ jobs:
         ref: ${{ inputs.checkout_ref }}
 
     - name: Use client-python in worker from same branch
-      if: ${{ inputs.client_python_local == true }}
+      if: ${{ inputs.is_client_python_local == true }}
       run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-worker/src/requirements.txt
 
     - name: Set up Docker Buildx
@@ -116,7 +123,7 @@ jobs:
         name: gha-builder-worker
 
     - name: Login to DockerHub
-      if: inputs.publish_to_registry == 'true'
+      if: inputs.is_publish_to_registry == 'true'
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -127,15 +134,17 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ inputs.registry }}/worker
-        tags: type=raw,value=${{ inputs.image_tag }}
+        tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.fips  && '-fips' }}
 
-    - name: Build and ${{ inputs.publish_to_registry  && 'push' || 'export as tar' }}
+    - name: Build and ${{ inputs.is_publish_to_registry  && 'push' || 'export as tar' }}
       uses: docker/build-push-action@v6
       with:
         context: opencti-worker
         file: opencti-worker/Dockerfile
-        push: ${{ inputs.publish_to_registry == 'true' }}
-        outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-worker.tar' }}
+        build-args: |
+          "BASE_TYPE= ${{ inputs.fips  && 'fips' || 'alpine' }}"
+        push: ${{ inputs.is_publish_to_registry == 'true' }}
+        outputs: ${{ inputs.is_publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-worker.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 

@@ -8,12 +8,22 @@ on:
 jobs:
 
   wf-build-image:
-      name: Build and push image
+      name: Build and push alpine image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' || github.ref_name == 'issue/13571-build-images' && 'test-13571'  }}
-        client_python_local: true
-        publish_to_registry: true
+        is_client_python_local: true
+        is_publish_to_registry: true
+      secrets: inherit
+
+  wf-build-fips-image:
+      name: Build and push FIPS image
+      uses: ./.github/workflows/ci-docker-build.yml
+      with:
+        image_tag: ${{ github.ref_name == 'master'  && 'rolling' || github.ref_name == 'release/current' && 'prerelease' || github.ref_name == 'issue/13571-build-images' && 'test-13571'  }}
+        is_client_python_local: true
+        is_publish_to_registry: true
+        is_fips: true
       secrets: inherit
 
   wf-publish-package:
