@@ -1,6 +1,8 @@
 name: Check Pull Request title
-on: 
+on:
   pull_request:
+    types: [opened, edited]
+  pull_request_target:
     types: [opened, edited]
 
 jobs:
