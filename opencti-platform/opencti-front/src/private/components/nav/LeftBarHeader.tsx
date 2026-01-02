@@ -2,7 +2,7 @@ import IconButton from '@common/button/IconButton';
 import { ExpandMoreOutlined, OpenInNew } from '@mui/icons-material';
 import { Box, Divider, List, ListItemButton, ListItemIcon, Popover, Tooltip } from '@mui/material';
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 import logoOpenBAS from '../../../static/images/logo_open_bas.svg';
 import logoXTMHub from '../../../static/images/logo_xtm_hub.svg';
@@ -98,7 +98,6 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
   hasXtmHubAccess,
 }) => {
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);

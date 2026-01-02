@@ -36,7 +36,6 @@ class ChatbotManager {
     }
 
     if (!this.theme || !this.t_i18n) {
-      console.error('Chatbot not configured. Call configure() first.');
       return;
     }
 
