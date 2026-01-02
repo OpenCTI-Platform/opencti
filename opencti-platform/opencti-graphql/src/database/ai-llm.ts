@@ -116,10 +116,14 @@ const initClients = () => {
 export const setAiEnabled = (enabled: boolean) => {
   AI_ENABLED = enabled;
   if (!AI_ENABLED) {
-    resetClients();
+    if (client || nlqChat) {
+      resetClients();
+    }
     return;
   }
-  initClients();
+  if (!client && !nlqChat) {
+    initClients();
+  }
 };
 
 if (AI_ENABLED && AI_TOKEN) {
