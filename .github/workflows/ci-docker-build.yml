@@ -78,16 +78,16 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ inputs.registry }}/platform
-        tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.fips  && '-fips' }}
+        tags: type=raw,value=${{ inputs.image_tag }${{ inputs.is_fips == 'true' && '-fips' }}
 
-    - name: Build and ${{ inputs.is_publish_to_registry  && 'push' || 'export as tar' }}
+    - name: Build and ${{ inputs.is_publish_to_registry == 'true'  && 'push' || ' export as tar' }}${{ inputs.is_fips == 'true' && ' FIPS' }}
       uses: docker/build-push-action@v6
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile_featurebranch
         target: ${{ inputs.dockerfile_target }}
         build-args: |
-          "BASE_TYPE=${{ inputs.fips  && 'fips' || 'alpine' }}"
+          "BASE_TYPE=${{ inputs.is_fips == 'true'  && 'fips' || 'alpine' }}"
         push: ${{ inputs.is_publish_to_registry == 'true' }}
         outputs: ${{ inputs.is_publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
@@ -134,15 +134,15 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ inputs.registry }}/worker
-        tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.fips  && '-fips' }}
-
-    - name: Build and ${{ inputs.is_publish_to_registry  && 'push' || 'export as tar' }}
+        tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.is_fips == 'true'  && '-fips' }}
+        
+    - name: Build and ${{ inputs.is_publish_to_registry == 'true'  && 'push' || ' export as tar' }}${{ inputs.is_fips == 'true' && ' FIPS' }}
       uses: docker/build-push-action@v6
       with:
         context: opencti-worker
         file: opencti-worker/Dockerfile
         build-args: |
-          "BASE_TYPE=${{ inputs.fips  && 'fips' || 'alpine' }}"
+          "BASE_TYPE=${{ inputs.is_fips == 'true'  && 'fips' || 'alpine' }}"
         push: ${{ inputs.is_publish_to_registry == 'true' }}
         outputs: ${{ inputs.is_publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-worker.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
