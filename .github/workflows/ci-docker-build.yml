@@ -136,15 +136,29 @@ jobs:
         images: ${{ inputs.registry }}/worker
         tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.is_fips == 'true'  && '-fips' || '' }}
 
-    - name: Build and ${{ inputs.is_publish_to_registry == 'true'  && 'push' || ' export as tar' }}${{ inputs.is_fips == 'true' && ' FIPS' || '' }}
+    - name: Build and push ${{ inputs.is_fips == 'true' && 'FIPS' || '' }}
       uses: docker/build-push-action@v6
+      if: inputs.is_publish_to_registry == 'true'
       with:
         context: opencti-worker
         file: opencti-worker/Dockerfile
         build-args: |
           "BASE_TYPE=${{ inputs.is_fips == 'true'  && 'fips' || 'alpine' }}"
-        push: ${{ inputs.is_publish_to_registry == 'true' }}
-        outputs: ${{ inputs.is_publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-worker.tar' }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+
+    - name: Build and export as tar ${{ inputs.is_fips == 'true' && ' FIPS' || '' }}
+      uses: docker/build-push-action@v6
+      if: inputs.is_publish_to_registry == 'false'
+      with:
+        context: opencti-worker
+        file: opencti-worker/Dockerfile
+        build-args: |
+          "BASE_TYPE=${{ inputs.is_fips == 'true'  && 'fips' || 'alpine' }}"
+        push: false
+        outputs: 'type=docker,dest=/tmp/opencti-worker.tar'
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
