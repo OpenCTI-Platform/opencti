@@ -78,7 +78,7 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: ${{ inputs.registry }}/platform
-        tags: type=raw,value=${{ inputs.image_tag }${{ inputs.is_fips == 'true' && '-fips' }}
+        tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.is_fips == 'true' && '-fips' }}
 
     - name: Build and ${{ inputs.is_publish_to_registry == 'true'  && 'push' || ' export as tar' }}${{ inputs.is_fips == 'true' && ' FIPS' }}
       uses: docker/build-push-action@v6
@@ -135,7 +135,7 @@ jobs:
       with:
         images: ${{ inputs.registry }}/worker
         tags: type=raw,value=${{ inputs.image_tag }}${{ inputs.is_fips == 'true'  && '-fips' }}
-        
+
     - name: Build and ${{ inputs.is_publish_to_registry == 'true'  && 'push' || ' export as tar' }}${{ inputs.is_fips == 'true' && ' FIPS' }}
       uses: docker/build-push-action@v6
       with:
