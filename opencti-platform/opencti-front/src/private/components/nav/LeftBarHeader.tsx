@@ -2,7 +2,6 @@ import IconButton from '@common/button/IconButton';
 import { ExpandMoreOutlined, OpenInNew } from '@mui/icons-material';
 import { Box, Divider, List, ListItemButton, ListItemIcon, Popover, Tooltip } from '@mui/material';
 import React, { useState } from 'react';
-
 import { Link, useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 import logoOpenBAS from '../../../static/images/logo_open_bas.svg';
@@ -119,14 +118,11 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
     }
   };
 
-  const handleLogoClick = () => {
-    navigate('/dashboard');
-  };
-
   return (
     <>
       <Box
-        onClick={handleLogoClick}
+        component={Link}
+        to="/dashboard"
         style={{
           marginTop: `calc(${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px)`,
         }}
