@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../relay/environment';
@@ -6,7 +6,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import IngestionTaxiiLines, { IngestionTaxiiLinesQuery } from './ingestionTaxii/IngestionTaxiiLines';
 import IngestionTaxiiCreation from './ingestionTaxii/IngestionTaxiiCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useAuth from '../../../utils/hooks/useAuth';
+import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
@@ -15,11 +15,13 @@ import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import IngestionTaxiiImport from '@components/data/ingestionTaxii/IngestionTaxiiImport';
+import { isNotEmptyField } from '../../../utils/utils';
+import GradientButton from '../../../components/GradientButton';
+import { PaginationOptions } from '../../../components/list_lines';
+import { IngestionTaxiiLinesPaginationQuery } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLinesPaginationQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'ingestionTaxii';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
@@ -30,18 +32,27 @@ const useStyles = makeStyles(() => ({
 const IngestionTaxii = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { settings, isXTMHubAccessible } = useContext(UserContext);
   const { setTitle } = useConnectedDocumentModifier();
+
   setTitle(t_i18n('TAXII Feeds | Ingestion | Data'));
+
   const { platformModuleHelpers } = useAuth();
+
+  const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
+    ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}`
+    : '';
+
   const {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+  } = usePaginationLocalStorage<PaginationOptions>(LOCAL_STORAGE_KEY, {
     sortBy: 'name',
     orderAsc: false,
     searchTerm: '',
   });
+
   const dataColumns = {
     name: {
       label: 'Name',
@@ -74,19 +85,29 @@ const IngestionTaxii = () => {
       isSortable: false,
     },
   };
+
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
       <div className={classes.container}>
         <Alert severity="info">
-          {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
+          {t_i18n(
+            platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER),
+          )}
         </Alert>
         <IngestionMenu />
       </div>
     );
   }
+
   return (
     <div className={classes.container} data-testid="taxii-feeds-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('TAXII feeds'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Data') },
+          { label: t_i18n('Ingestion') },
+          { label: t_i18n('TAXII feeds'), current: true },
+        ]}
+      />
       <IngestionMenu />
       <ListLines
         helpers={storageHelpers}
@@ -96,21 +117,34 @@ const IngestionTaxii = () => {
         handleSort={storageHelpers.handleSort}
         handleSearch={storageHelpers.handleSearch}
         displayImport={false}
-        secondaryAction={true}
+        secondaryAction
         keyword={viewStorage.searchTerm}
         createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <IngestionTaxiiImport
-              paginationOptions={paginationOptions}
-            />
-            <IngestionTaxiiCreation paginationOptions={paginationOptions} />
+            <>
+              <IngestionTaxiiImport paginationOptions={paginationOptions} />
+              {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
+                <GradientButton
+                  size="small"
+                  sx={{ marginLeft: 1 }}
+                  href={importFromHubUrl}
+                  target="_blank"
+                  title={t_i18n('Import from Hub')}
+                >
+                  {t_i18n('Import from Hub')}
+                </GradientButton>
+              )}
+              <IngestionTaxiiCreation paginationOptions={paginationOptions} />
+            </>
           </Security>
         )}
       >
         <QueryRenderer
           query={IngestionTaxiiLinesQuery}
           variables={{ count: 200, ...paginationOptions }}
-          render={({ props }) => (
+          render={({ props }: {
+            props: IngestionTaxiiLinesPaginationQuery['response'] | null;
+          }) => (
             <IngestionTaxiiLines
               data={props}
               paginationOptions={paginationOptions}

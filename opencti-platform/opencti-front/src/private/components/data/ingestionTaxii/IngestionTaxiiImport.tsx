@@ -37,22 +37,19 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
   const [ingestTaxiiData, setIngestTaxiiData] = useState<IngestionTaxiiImportQuery$data['taxiiFeedAddInputFromImport'] | undefined>(undefined);
   const { t_i18n } = useFormatter();
 
-  const handleFileImport = (file: File) => {
-    if (file) {
-      fetchQuery(taxiiFeedImportQuery, { file })
-        .toPromise()
-        .then((data) => {
-          const { taxiiFeedAddInputFromImport } = data as IngestionTaxiiImportQuery$data;
-          setIngestTaxiiData(taxiiFeedAddInputFromImport);
-          setOpen(true);
-          if (inputFileRef.current) {
-            inputFileRef.current.value = '';
-          }
-        })
-        .catch((e) => {
-          const { errors } = (e as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
-        });
+  const handleFileImport = async (file: File) => {
+    if (!file) return;
+    try {
+      const data = await fetchQuery(taxiiFeedImportQuery, { file }).toPromise();
+      const { taxiiFeedAddInputFromImport } = data as IngestionTaxiiImportQuery$data;
+      setIngestTaxiiData(taxiiFeedAddInputFromImport);
+      setOpen(true);
+      if (inputFileRef.current) {
+        inputFileRef.current.value = '';
+      }
+    } catch (e) {
+      const { errors } = (e as unknown as RelayError).res;
+      MESSAGING$.notifyError(errors.at(0)?.message);
     }
   };
 
@@ -61,7 +58,7 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
     handleFileImport(file);
   };
 
-  const onDownloadError = () => {
+  const handleDownloadError = () => {
     navigate('/dashboard/data/ingestion/taxii');
     MESSAGING$.notifyError('An error occurred while importing Taxii Feed configuration.');
   };
@@ -70,14 +67,14 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
     serviceInstanceId,
     fileId,
     onSuccess: handleFileImport,
-    onError: onDownloadError,
+    onError: handleDownloadError,
   });
 
-  const onConfirm = () => {
+  const handleConfirm = () => {
     navigate('/dashboard/settings/experience');
   };
 
-  const onCancel = () => {
+  const handleCancel = () => {
     navigate('/dashboard/workspaces/dashboards');
   };
 
@@ -85,8 +82,8 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
     <>
       <XtmHubDialogConnectivityLost
         status={dialogConnectivityLostStatus}
-        onConfirm={onConfirm}
-        onCancel={onCancel}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
       />
       <ToggleButton
         value="import"

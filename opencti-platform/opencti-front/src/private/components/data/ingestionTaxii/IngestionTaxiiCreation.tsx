@@ -113,9 +113,9 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
 
   const [commit] = useApiMutation(IngestionTaxiiCreationMutation);
 
-  const onSubmit = (values: IngestionTaxiiAddInput, { setSubmitting, resetForm }: FormikHelpers<IngestionTaxiiAddInput>) => {
-    const authentifcationValueResolved = getAuthenticationValue(values);
-    const resolvedUserId
+  const handleSubmit = (values: IngestionTaxiiAddInput, { setSubmitting, resetForm }: FormikHelpers<IngestionTaxiiAddInput>) => {
+    const authenticationValue = getAuthenticationValue(values);
+    const userId
       = typeof values.user_id === 'object'
         ? values.user_id?.value
         : values.user_id;
@@ -126,9 +126,9 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
       version: values.version,
       collection: values.collection,
       authentication_type: values.authentication_type,
-      authentication_value: authentifcationValueResolved,
+      authentication_value: authenticationValue,
       added_after_start: values.added_after_start,
-      user_id: resolvedUserId,
+      user_id: userId,
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
       confidence_to_score: values.confidence_to_score,
@@ -177,7 +177,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
         <Formik
           initialValues={initialValues}
           validationSchema={ingestionTaxiiCreationValidation(t_i18n)}
-          onSubmit={onSubmit}
+          onSubmit={handleSubmit}
           onReset={onClose}
         >
           {({ submitForm, handleReset, isSubmitting, values }) => (
