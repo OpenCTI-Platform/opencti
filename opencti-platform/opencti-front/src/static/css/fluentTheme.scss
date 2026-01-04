@@ -2,13 +2,24 @@ html[data-theme="fluent"] {
   --fluent-color-primary: #006da0;
   --fluent-color-border: #ccd1dd;
   --fluent-color-border-hover: #5d616b;
+  --fluent-color-label: #21242d;
+  --fluent-color-tab: #151515;
   body {
+    &[data-theme="dark"] {
+      --fluent-color-border: #292929;
+      --fluent-color-border-hover: #adadad;
+      --fluent-color-label: #fff;
+      --fluent-color-tab: #fff;
+    }
     a {
-      color: var(--fluent-color-primary);
+      // color: var(--fluent-color-primary);
     }
   }
+  .MuiFormControlLabel-root{
+    margin-left: 0 !important;
+  }
   .MuiTab-root {
-    color: #151515;
+    color: var(--fluent-color-tab);
     &.Mui-selected {
       color: var(--fluent-color-primary) !important;
     }
@@ -29,6 +40,7 @@ html[data-theme="fluent"] {
     box-shadow: none;
     &.MuiButton-containedPrimary {
       --variant-containedBg: var(--fluent-color-primary);
+      color: #fff;
     }
     &.MuiIconButton-colorPrimary {
       color: var(--fluent-color-primary);
@@ -67,9 +79,9 @@ html[data-theme="fluent"] {
         font-size: 14px;
         position: relative !important;
         transform: none !important;
-        color: #21242d;
+        color: var(--fluent-color-label);
         &.Mui-focused {
-          color: #21242d !important;
+          color: var(--fluent-color-label) !important;
         }
       }
       margin-bottom: 4px !important;
@@ -134,6 +146,7 @@ html[data-theme="fluent"] {
     }
   }
   .MuiFormLabel-root {
+    text-align: left;
     &.MuiInputLabel-shrink {
       font-weight: 600;
       font-size: 14px;
@@ -205,9 +218,9 @@ html[data-theme="fluent"] {
       background-color: transparent !important;
     }
     &.MuiChip-sizeMedium {
-      height: 24px !important;
-      font-size: 12px !important;
-      padding: 4px 8px !important;
+      // height: 24px !important;
+      // font-size: 12px !important;
+      // padding: 4px 8px !important;
     }
     .MuiChip-label {
       padding: 0 !important;
