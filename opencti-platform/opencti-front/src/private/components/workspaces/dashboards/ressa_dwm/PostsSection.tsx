@@ -10,11 +10,6 @@ import {
   InputAdornment,
   Button,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   IconButton,
   Menu,
   MenuItem,
@@ -24,7 +19,6 @@ import {
 import {
   Search as SearchIcon,
   Add as AddIcon,
-  BugReport as BugIcon,
   Star as StarIcon,
   ArrowDropDown as ArrowDropDownIcon,
   MenuOutlined as MenuIcon,
@@ -33,13 +27,9 @@ import {
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
-
-interface Post {
-  id: string;
-  title: string;
-  category: string;
-  createdAt: string;
-}
+import { usePostsData, type Post } from './usePostsData';
+import Loader from '../../../../../components/Loader';
+import PostsTableRenderer from './PostsTableRenderer';
 
 const PostsSection: React.FC = () => {
   const { t_i18n } = useFormatter();
@@ -50,23 +40,16 @@ const PostsSection: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const itemsPerPage = 10;
 
-  // Mock data - only for Exploid Posts tab (index 1)
-  const mockPosts: Post[] = Array.from({ length: 1506 }, (_, i) => ({
-    id: `post-${i + 1}`,
-    title: 'В библиотеке jQuery устранена серьезная уязвимость Хакеры из Black Vine делятся эксплоитами для уязвимостей с другими хакерами Компрометация Google Fi привела к атакам на подмену SIM-карт Обновление Ubuntu 10.04 с исправлением 46 уязвимостей',
-    category: 'Bug',
-    createdAt: '22 December 2024',
-  }));
+  // Fetch data from API
+  const { data: currentTabData, total, loading, error } = usePostsData({
+    tab: currentTab,
+    page,
+    perPage: itemsPerPage,
+    filters: [],
+    searchText,
+  });
 
-  // Get data based on current tab
-  const getCurrentTabData = (): Post[] => {
-    if (currentTab === 1) { // Exploid Posts
-      return mockPosts;
-    }
-    return []; // Empty for other tabs (including Russian Market Items)
-  };
-
-  const currentTabData = getCurrentTabData();
+  const hasData = !loading && currentTabData.length > 0;
 
   const tabs = [
     { label: 'Telegram Recents', value: 0 },
@@ -90,11 +73,10 @@ const PostsSection: React.FC = () => {
   };
 
   // Calculate pagination
-  const totalPages = Math.ceil(currentTabData.length / itemsPerPage);
+  const totalPages = Math.ceil(total / itemsPerPage);
   const startIndex = (page - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentPosts = currentTabData.slice(startIndex, endIndex);
-  const hasData = currentTabData.length > 0;
+  const endIndex = Math.min(startIndex + itemsPerPage, total);
+  const currentPosts = currentTabData; // Data is already paginated by the API
 
   const handleResetFilters = () => {
     setSearchText('');
@@ -255,141 +237,20 @@ const PostsSection: React.FC = () => {
 
         {/* Table Section */}
         <Box>
-          {hasData ? (
-            <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    color: theme.palette.text?.primary,
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                  }}
-                >
-                  Title
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    color: theme.palette.text?.primary,
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    width: 120,
-                  }}
-                >
-                  Category
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    color: theme.palette.text?.primary,
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    width: 150,
-                  }}
-                >
-                  Created At
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '0.875rem',
-                    color: theme.palette.text?.primary,
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                    width: 100,
-                  }}
-                ></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {currentPosts.map((post) => (
-                <TableRow
-                  key={post.id}
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: theme.palette.action?.hover,
-                    },
-                  }}
-                >
-                  <TableCell
-                    sx={{
-                      fontSize: '0.875rem',
-                      color: theme.palette.text?.primary,
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                      maxWidth: 600,
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                      }}
-                    >
-                      {post.title}
-                    </Typography>
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Chip
-                      icon={<BugIcon sx={{ fontSize: '0.875rem !important' }} />}
-                      label={post.category}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        fontSize: '0.75rem',
-                        height: 24,
-                        borderColor: theme.palette.divider,
-                        color: theme.palette.text?.primary,
-                        paddingX: 1,
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontSize: '0.875rem',
-                      color: theme.palette.text?.secondary,
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                    }}
-                  >
-                    {post.createdAt}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Button
-                      size="small"
-                      variant="text"
-                      sx={{
-                        textTransform: 'none',
-                        fontSize: '0.875rem',
-                        color: theme.palette.primary.main,
-                      }}
-                    >
-                      View
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          {loading ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: 8,
+                minHeight: 400,
+              }}
+            >
+              <Loader />
+            </Box>
+          ) : hasData ? (
+            <PostsTableRenderer tab={currentTab} data={currentPosts} theme={theme} />
           ) : (
             /* Empty State */
             <Box
@@ -479,7 +340,7 @@ const PostsSection: React.FC = () => {
                 fontSize: '0.875rem',
               }}
             >
-              Showing {startIndex + 1}-{Math.min(endIndex, currentTabData.length)} of {currentTabData.length} items
+              Showing {startIndex + 1}-{endIndex} of {total} items
             </Typography>
             <Stack spacing={2}>
               <Pagination
