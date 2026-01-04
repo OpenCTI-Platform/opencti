@@ -26,7 +26,7 @@ import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYST
 import type { SseEvent, StreamDataEvent } from '../../types/event';
 import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../../utils/format';
-import { findById } from '../../modules/playbook/playbook-domain';
+import { findById, findPlaybooksForEntity } from '../../modules/playbook/playbook-domain';
 import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../../modules/playbook/playbook-types';
@@ -132,15 +132,17 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
 };
 
 export const executePlaybookOnEntity = async (context: AuthContext, id: string, entityId: string) => {
-  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  // fetch playbooks allowed for this entity
+  const playbooks = await findPlaybooksForEntity(context, RETENTION_MANAGER_USER, entityId);
   let playbook = null;
+  // keep the playbook corresponding to the id
   const filteredPlaybooks = playbooks.filter((n) => n.id === id);
   if (filteredPlaybooks.length > 0) {
     playbook = filteredPlaybooks.at(0);
   } else {
-    throw FunctionalError('Playbook does not exist', { id });
+    throw FunctionalError('Playbook does not exist for this entity', { id });
   }
-  // Execute only of definition is available
+  // Execute only if definition is available
   if (playbook && playbook.playbook_definition) {
     const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
     const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
