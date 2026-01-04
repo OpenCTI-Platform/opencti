@@ -24,6 +24,7 @@ import DonutChart from './DonutChart';
 import ProgressList from './ProgressList';
 import TrendChart from './TrendChart';
 import ChatInterface from './ChatInterface';
+import PostsSection from './PostsSection';
 import { useRessaDWMData } from './useRessaDWMData';
 
 const RessaDWM = () => {
@@ -319,9 +320,12 @@ const RessaDWM = () => {
         </Grid>
 
         {/* Chat Section */}
-        <Box sx={{ marginTop: 3, marginBottom: 28 }}>
+        <Box sx={{ marginTop: 3, marginBottom: 3 }}>
           <ChatInterface />
         </Box>
+
+        {/* Posts Section */}
+        <PostsSection />
       </Box>
     </>
   );
