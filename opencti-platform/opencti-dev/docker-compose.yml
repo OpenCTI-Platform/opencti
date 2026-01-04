@@ -162,8 +162,9 @@ services:
       image: quay.io/keycloak/keycloak:26.4.5
       volumes:
         - keycloakdata:/opt/keycloak/data
+        - ./keycloak-configuration:/opt/keycloak/data/import
       container_name: opencti-dev-keycloak
-      command: start-dev
+      command: start-dev --import-realm --verbose
       environment:
         KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
         KC_BOOTSTRAP_ADMIN_PASSWORD: "admin"
