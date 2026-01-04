@@ -70,6 +70,19 @@ const TrendChart: React.FC<TrendChartProps> = ({ series }) => {
           show: false,
         },
       },
+      tooltip: {
+        ...baseOptions.tooltip,
+        x: {
+          show: true,
+          formatter: (value: string | number) => {
+            const index = typeof value === 'string' ? parseInt(value, 10) : value;
+            if (!isNaN(index) && index >= 0 && index < months.length) {
+              return months[index];
+            }
+            return '';
+          },
+        },
+      },
     };
   }, [theme, series, months]);
 

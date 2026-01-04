@@ -27,30 +27,30 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
       'right',
       false,
       colors,
-      true, // displayLegend: true - legend چارت را فعال می‌کنیم
-      false, // displayLabels: false - درصد‌ها را از روی نمودار برمی‌داریم
+      true, // displayLegend: true - enable chart legend
+      false, // displayLabels: false - remove percentages from chart
       true,
       true,
       70,
       false,
     ) as ApexOptions;
 
-    // محاسبه درصد برای هر آیتم
+    // Calculate percentage for each item
     const percentages = chartData.map((value) => ((value / total) * 100).toFixed(1));
 
     return {
       ...baseOptions,
-      labels: labels, // اضافه کردن labels برای نمایش در legend
+      labels: labels, // Add labels for display in legend
       chart: {
         ...baseOptions.chart,
         events: {
           ...baseOptions.chart?.events,
           mounted: (chartContext: any) => {
-            // اطمینان از نمایش همیشگی labels
+            // Ensure labels are always displayed
             if (chartContext && chartContext.w) {
               const apexChart = chartContext.w.globals;
               if (apexChart) {
-                // Force update برای نمایش labels
+                // Force update to display labels
                 setTimeout(() => {
                   chartContext.updateSeries(chartData, true);
                 }, 100);
@@ -81,7 +81,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, total }) => {
       },
       dataLabels: {
         ...baseOptions.dataLabels,
-        enabled: false, // درصد‌ها را از روی نمودار برمی‌داریم
+        enabled: false, // Remove percentages from chart
       },
       tooltip: {
         ...baseOptions.tooltip,

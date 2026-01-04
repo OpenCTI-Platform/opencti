@@ -1,23 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Card,
   Typography,
   List,
   Divider,
-  Button,
   IconButton,
-  TextField,
   CircularProgress,
 } from '@mui/material';
 import {
-  SendOutlined,
-  Menu,
-  Edit,
   GridView,
   ArrowDropDown,
-  VideoCall,
-  Add,
 } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../components/Theme';
@@ -35,7 +28,13 @@ const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadingChannels, setLoadingChannels] = useState<boolean>(true);
   const [loadingMessages, setLoadingMessages] = useState<boolean>(false);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [selectedChannelInfo, setSelectedChannelInfo] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [totalMessages, setTotalMessages] = useState<number>(0);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const channelDataMapRef = useRef<Map<string, any>>(new Map());
 
   // Format date to relative time
   const formatTime = useCallback((date: string | Date) => {
@@ -117,9 +116,57 @@ const ChatInterface: React.FC = () => {
               setSelectedChannelInfo(channelsData[0].channelData);
             }
           }
+        } else {
+          // Use mock data if API fails
+          throw new Error('API response not ok');
         }
       } catch (err) {
         console.error('Failed to fetch Telegram channels:', err);
+        
+        // Mock data for channels
+        const mockChannelData1 = { id: 1, title: 'IRLeaks', username: 'irleaks' };
+        const mockChannelData2 = { id: 2, title: 'bakhtak', username: 'bakhtak' };
+        const mockChannelData3 = { id: 3, title: 'We Red Evils Original', username: 'weredevils' };
+        
+        channelDataMapRef.current.set('1', mockChannelData1);
+        channelDataMapRef.current.set('2', mockChannelData2);
+        channelDataMapRef.current.set('3', mockChannelData3);
+        
+        const mockChannels: ChatItem[] = [
+          {
+            id: '1',
+            name: 'IRLeaks',
+            avatar: 'I',
+            lastMessage: 'New leak detected in banking system',
+            time: formatTime(new Date(Date.now() - 5 * 60000)),
+            isOnline: true,
+            isGroup: false,
+          },
+          {
+            id: '2',
+            name: 'bakhtak',
+            avatar: 'B',
+            lastMessage: 'New information available',
+            time: formatTime(new Date(Date.now() - 30 * 60000)),
+            isOnline: false,
+            isGroup: false,
+          },
+          {
+            id: '3',
+            name: 'We Red Evils Original',
+            avatar: 'W',
+            lastMessage: 'New update published',
+            time: formatTime(new Date(Date.now() - 2 * 3600000)),
+            isOnline: false,
+            isGroup: false,
+          },
+        ];
+        
+        setChannels(mockChannels);
+        if (mockChannels.length > 0 && !selectedChannel) {
+          setSelectedChannel(mockChannels[0].id);
+          setSelectedChannelInfo(mockChannelData1);
+        }
       } finally {
         setLoadingChannels(false);
       }
@@ -129,57 +176,65 @@ const ChatInterface: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch messages for selected channel
-  useEffect(() => {
+  // Fetch messages function with pagination support
+  const fetchMessages = useCallback(async (page: number, append: boolean = false) => {
     if (!selectedChannel) return;
 
-    const fetchMessages = async () => {
-      try {
+    try {
+      if (append) {
+        setLoadingMore(true);
+      } else {
         setLoadingMessages(true);
-        const apiUrl = (window as any).RESSA_DWM_API_URL 
-          || (window as any).PUBLIC_VITE_API_URL 
-          || 'http://172.16.40.15:3400';
-        const endpoint = `${apiUrl}/graphql`;
+      }
 
-        const query = `
-          query GetTelegramMessages($filters: [String], $page: Int, $perPage: Int) {
-            getTelegramMessages(page: $page, perPage: $perPage, filters: $filters) {
-              total
-              data {
+      const apiUrl = (window as any).RESSA_DWM_API_URL 
+        || (window as any).PUBLIC_VITE_API_URL 
+        || 'http://172.16.40.15:3400';
+      const endpoint = `${apiUrl}/graphql`;
+
+      const query = `
+        query GetTelegramMessages($filters: [String], $page: Int, $perPage: Int) {
+          getTelegramMessages(page: $page, perPage: $perPage, filters: $filters) {
+            total
+            data {
+              id
+              messageId
+              message
+              date
+              channel {
                 id
-                messageId
-                message
-                date
-                channel {
-                  id
-                  title
-                  username
-                }
+                title
+                username
               }
             }
           }
-        `;
+        }
+      `;
 
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          variables: {
+            page,
+            perPage: 50,
+            filters: [`channelId:${selectedChannel}:=`],
           },
-          body: JSON.stringify({
-            query,
-            variables: {
-              page: 1,
-              perPage: 50,
-              filters: [`channelId:${selectedChannel}:=`],
-            },
-          }),
-        });
+        }),
+      });
 
-        if (response.ok) {
-          const result = await response.json();
-          if (result.data?.getTelegramMessages?.data) {
+      if (response.ok) {
+        const result = await response.json();
+        if (result.data?.getTelegramMessages) {
+          const total = result.data.getTelegramMessages.total || 0;
+          setTotalMessages(total);
+
+          if (result.data.getTelegramMessages.data) {
             const messagesData = result.data.getTelegramMessages.data.map((msg: any, index: number) => ({
-              id: msg.id?.toString() || index.toString(),
+              id: msg.id?.toString() || `${page}-${index}`,
               sender: msg.channel?.title || msg.channel?.username || 'Unknown',
               avatar: (msg.channel?.title || msg.channel?.username || '?').charAt(0).toUpperCase(),
               message: msg.message || '',
@@ -188,25 +243,142 @@ const ChatInterface: React.FC = () => {
               isOwn: false,
             }));
 
-            // Sort by date (newest first)
-            messagesData.sort((a: ChatMessage, b: ChatMessage) => {
-              // This is a simplified sort - in real app you'd parse dates properly
-              return 0;
-            });
-
-            setMessages(messagesData);
+            if (append) {
+              setMessages((prev) => {
+                const newMessages = [...prev, ...messagesData];
+                setHasMore(newMessages.length < total);
+                return newMessages;
+              });
+            } else {
+              setMessages(messagesData);
+              setHasMore(messagesData.length < total);
+            }
           }
+        } else {
+          // Use mock data if API response is invalid
+          throw new Error('Invalid API response');
         }
-      } catch (err) {
-        console.error('Failed to fetch Telegram messages:', err);
-      } finally {
+      } else {
+        // Use mock data if API fails
+        throw new Error('API response not ok');
+      }
+    } catch (err) {
+      console.error('Failed to fetch Telegram messages:', err);
+      
+      // Mock data for messages (only on first page and when not appending)
+      if (!append && page === 1) {
+        const mockMessages: ChatMessage[] = [
+          {
+            id: '1',
+            sender: selectedChannelInfo?.title || selectedChannelInfo?.username || 'Channel',
+            avatar: (selectedChannelInfo?.title || selectedChannelInfo?.username || 'C').charAt(0).toUpperCase(),
+            message: 'New data leak detected in banking system',
+            time: formatTime(new Date(Date.now() - 10 * 60000)),
+            isOnline: false,
+            isOwn: false,
+            reactions: [
+              { type: 'thumb', count: 12 },
+              { type: 'heart', count: 5 },
+            ],
+          },
+          {
+            id: '2',
+            sender: selectedChannelInfo?.title || selectedChannelInfo?.username || 'Channel',
+            avatar: (selectedChannelInfo?.title || selectedChannelInfo?.username || 'C').charAt(0).toUpperCase(),
+            message: 'Security update released for critical vulnerability',
+            time: formatTime(new Date(Date.now() - 25 * 60000)),
+            isOnline: false,
+            isOwn: false,
+            reactions: [
+              { type: 'thumb', count: 8 },
+              { type: 'smile', count: 3 },
+            ],
+          },
+          {
+            id: '3',
+            sender: selectedChannelInfo?.title || selectedChannelInfo?.username || 'Channel',
+            avatar: (selectedChannelInfo?.title || selectedChannelInfo?.username || 'C').charAt(0).toUpperCase(),
+            message: 'System maintenance scheduled for tonight',
+            time: formatTime(new Date(Date.now() - 60 * 60000)),
+            isOnline: false,
+            isOwn: false,
+          },
+          {
+            id: '4',
+            sender: selectedChannelInfo?.title || selectedChannelInfo?.username || 'Channel',
+            avatar: (selectedChannelInfo?.title || selectedChannelInfo?.username || 'C').charAt(0).toUpperCase(),
+            message: 'Warning: Suspicious activity detected',
+            time: formatTime(new Date(Date.now() - 2 * 3600000)),
+            isOnline: false,
+            isOwn: false,
+            reactions: [
+              { type: 'heart', count: 15 },
+              { type: 'thumb', count: 7 },
+            ],
+          },
+          {
+            id: '5',
+            sender: selectedChannelInfo?.title || selectedChannelInfo?.username || 'Channel',
+            avatar: (selectedChannelInfo?.title || selectedChannelInfo?.username || 'C').charAt(0).toUpperCase(),
+            message: 'Monthly report is ready for review',
+            time: formatTime(new Date(Date.now() - 5 * 3600000)),
+            isOnline: false,
+            isOwn: false,
+            reactions: [
+              { type: 'thumb', count: 4 },
+            ],
+          },
+        ];
+        
+        setMessages(mockMessages);
+        setTotalMessages(mockMessages.length);
+        setHasMore(false);
+      }
+    } finally {
+      if (append) {
+        setLoadingMore(false);
+      } else {
         setLoadingMessages(false);
+      }
+    }
+  }, [selectedChannel, formatTime, selectedChannelInfo]);
+
+  // Fetch messages for selected channel (initial load)
+  useEffect(() => {
+    if (!selectedChannel) {
+      setMessages([]);
+      setCurrentPage(1);
+      setHasMore(true);
+      return;
+    }
+
+    setCurrentPage(1);
+    setHasMore(true);
+    setMessages([]);
+    fetchMessages(1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChannel]);
+
+  // Handle scroll to load more messages
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container || !hasMore || loadingMore || loadingMessages) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      // Load more when scrolled to within 100px of the bottom
+      if (scrollHeight - scrollTop - clientHeight < 100) {
+        const nextPage = currentPage + 1;
+        setCurrentPage(nextPage);
+        fetchMessages(nextPage, true);
       }
     };
 
-    fetchMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedChannel]);
+    container.addEventListener('scroll', handleScroll);
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, [hasMore, loadingMore, loadingMessages, currentPage, fetchMessages]);
 
   // Split channels into pinned and recent (for now, all are recent)
   const pinnedChats: ChatItem[] = [];
@@ -243,17 +415,6 @@ const ChatInterface: React.FC = () => {
               </Typography>
               <ArrowDropDown sx={{ color: theme.palette.text?.primary }} />
             </Box>
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
-              <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
-                <Menu fontSize="small" />
-              </IconButton>
-              <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
-                <Edit fontSize="small" />
-              </IconButton>
-              <IconButton size="small" sx={{ color: theme.palette.text?.primary }}>
-                <GridView fontSize="small" />
-              </IconButton>
-            </Box>
           </Box>
 
           {/* Chat List */}
@@ -281,7 +442,7 @@ const ChatInterface: React.FC = () => {
                       isSelected={selectedChannel === chat.id}
                       onClick={() => {
                         setSelectedChannel(chat.id);
-                        setSelectedChannelInfo((chat as any).channelData);
+                        setSelectedChannelInfo(channelDataMapRef.current.get(chat.id));
                       }}
                     />
                   ))}
@@ -360,70 +521,22 @@ const ChatInterface: React.FC = () => {
               <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem', color: theme.palette.text?.primary }}>
                 {selectedChannelInfo?.title || selectedChannelInfo?.username || t_i18n('Channel Name')}
               </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<VideoCall />}
-                sx={{
-                  textTransform: 'none',
-                  fontSize: '0.875rem',
-                  color: theme.palette.text?.secondary,
-                  borderColor: theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'),
-                  '&:hover': {
-                    borderColor: theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'),
-                    backgroundColor: theme.palette.action?.hover,
-                  },
-                }}
-              >
-                {t_i18n('Meet now')}
-              </Button>
-              <Box sx={{ display: 'flex', borderRadius: 1, overflow: 'hidden' }}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<Add />}
-                  sx={{
-                    textTransform: 'none',
-                    fontSize: '0.875rem',
-                    backgroundColor: theme.palette.primary?.main || '#1976d2',
-                    color: '#ffffff',
-                    borderRadius: 0,
-                    borderStartStartRadius: 4,
-                    borderEndStartRadius: 4,
-                    '&:hover': {
-                      backgroundColor: theme.palette.primary?.dark || '#1565c0',
-                    },
-                  }}
-                >
-                  {t_i18n('New meeting')}
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{
-                    minWidth: 'auto',
-                    padding: '6px 8px',
-                    backgroundColor: theme.palette.primary?.main || '#1976d2',
-                    color: '#ffffff',
-                    borderRadius: 0,
-                    borderStartEndRadius: 4,
-                    borderEndEndRadius: 4,
-                    borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
-                    '&:hover': {
-                      backgroundColor: theme.palette.primary?.dark || '#1565c0',
-                    },
-                  }}
-                >
-                  <ArrowDropDown />
-                </Button>
-              </Box>
+              {loadingMore && (
+                <CircularProgress size={16} sx={{ marginInlineStart: 1 }} />
+              )}
             </Box>
           </Box>
 
           {/* Messages */}
-          <Box sx={{ flex: 1, overflowY: 'auto', padding: 2 }}>
+          <Box 
+            ref={messagesContainerRef}
+            sx={{ flex: 1, overflowY: 'auto', padding: 2 }}
+          >
+            {loadingMore && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 2 }}>
+                <CircularProgress size={24} />
+              </Box>
+            )}
             {loadingMessages ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
                 <CircularProgress />
@@ -439,29 +552,6 @@ const ChatInterface: React.FC = () => {
                 </Typography>
               </Box>
             )}
-          </Box>
-
-          {/* Input Area */}
-          <Box
-            sx={{
-              padding: 2,
-              borderTop: `1px solid ${theme.palette.divider || (isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')}`,
-              backgroundColor: theme.palette.background?.paper || theme.palette.background?.default,
-            }}
-          >
-            <TextField
-              fullWidth
-              placeholder={t_i18n('Type a message...')}
-              variant="outlined"
-              size="small"
-              InputProps={{
-                endAdornment: (
-                  <IconButton size="small" color="primary">
-                    <SendOutlined />
-                  </IconButton>
-                ),
-              }}
-            />
           </Box>
         </Box>
       </Box>
