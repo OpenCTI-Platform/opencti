@@ -26,12 +26,20 @@ export const IS_LTS_PLATFORM = PLATFORM_VERSION.includes('lts');
 
 // https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
 // 62944 - Filigran
-export const LICENSE_OPTION_TYPE = '6.2.9.4.4.10';
-export const LICENSE_OPTION_PRODUCT = '6.2.9.4.4.20';
-export const LICENSE_OPTION_CREATOR = '6.2.9.4.4.30';
+export const LICENSE_OID_TYPE = '1.3.6.1.4.1.62944.10';
+export const LICENSE_OID_PRODUCT = '1.3.6.1.4.1.62944.20';
+export const LICENSE_OID_CREATOR = '1.3.6.1.4.1.62944.30';
+// Legacy OIDs
+export const LICENSE_LEGACY_TYPE = '6.2.9.4.4.10';
+export const LICENSE_LEGACY_PRODUCT = '6.2.9.4.4.20';
+export const LICENSE_LEGACY_CREATOR = '6.2.9.4.4.30';
 
-const getExtensionValue = (clientCrt, extension) => {
-  return clientCrt.extensions.find((ext) => ext.id === extension)?.value;
+const getExtensionValue = (clientCrt, standardOid, legacyOid) => {
+  const extStandard = clientCrt.extensions.find((ext) => ext.id === standardOid);
+  if (extStandard) {
+    return extStandard.value;
+  }
+  return clientCrt.extensions.find((ext) => ext.id === legacyOid)?.value;
 };
 
 export const getEnterpriseEditionActivePem = (rawPem) => {
@@ -47,10 +55,10 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
     try {
       const clientCrt = forge.pki.certificateFromPem(pem);
       const license_valid_cert = OPENCTI_CA.verify(clientCrt);
-      const license_type = getExtensionValue(clientCrt, LICENSE_OPTION_TYPE);
+      const license_type = getExtensionValue(clientCrt, LICENSE_OID_TYPE, LICENSE_LEGACY_TYPE);
       const valid_type = IS_LTS_PLATFORM ? license_type === LICENSE_OPTION_LTS : true;
-      const license_creator = getExtensionValue(clientCrt, LICENSE_OPTION_CREATOR);
-      const valid_product = getExtensionValue(clientCrt, LICENSE_OPTION_PRODUCT) === 'opencti';
+      const license_creator = getExtensionValue(clientCrt, LICENSE_OID_CREATOR, LICENSE_LEGACY_CREATOR);
+      const valid_product = getExtensionValue(clientCrt, LICENSE_OID_PRODUCT, LICENSE_LEGACY_PRODUCT) === 'opencti';
       const license_customer = clientCrt.subject.getField('O').value;
       const license_platform = clientCrt.subject.getField('OU').value;
       const license_platform_match = valid_product && valid_type && (license_platform === GLOBAL_LICENSE_OPTION || platformInstanceId === license_platform);
@@ -66,7 +74,7 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
         // If trial license, deactivation for expiration is direct
         if (license_type !== LICENSE_OPTION_TRIAL) {
           // If standard or lts license, a 3 months safe period is granted
-          const license_extra_expiration_date = utcDate(clientCrt.validity.notBefore).add(3, 'months');
+          const license_extra_expiration_date = utcDate(clientCrt.validity.notAfter).add(3, 'months');
           license_extra_expiration_days = license_extra_expiration_date.diff(utcDate(), 'days');
           license_extra_expiration = new Date() < license_extra_expiration_date.toDate();
           license_validated = license_extra_expiration;
