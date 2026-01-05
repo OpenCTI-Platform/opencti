@@ -970,7 +970,7 @@ export enum FilterMembersMode {
 }
 
 /**
- * Post-Filter a list of users by applying orga restriction on users visibility
+ * Post-Filter a list of users by applying organization restriction on users visibility
  */
 export const filterMembersUsersWithUsersOrgs = async (
   context: AuthContext,
@@ -1002,7 +1002,14 @@ export const filterMembersUsersWithUsersOrgs = async (
     if (member.id === user.id || INTERNAL_USERS[member.id] || member.user_service_account) {
       resultMembers.push(member);
     } else {
-      const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? []; // TODO fetch only not-inferred orga
+      // fetch organizations directly linked to the member
+      const memberDirectOrganizations = await pageEntitiesConnection(
+        context,
+        user,
+        [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+        { filters: buildRegardingOfDirectParticipateToFilters([member.id]) },
+      );
+      const memberOrgIds = memberDirectOrganizations.edges.map((n) => n.node.id) ?? [];
       const noOrg = memberOrgIds.length === 0;
       const sameOrg = memberOrgIds.some((id) => userDirectOrganizationsIds.includes(id));
       if (sameOrg || noOrg) {
