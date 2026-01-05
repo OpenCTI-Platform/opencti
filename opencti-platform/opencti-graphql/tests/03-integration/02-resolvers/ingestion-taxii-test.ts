@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import type { GraphQLFormattedError } from 'graphql/error';
-import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { IngestionAuthType, TaxiiVersion } from '../../../src/generated/graphql';
 import { ADMIN_USER, adminQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { now } from '../../../src/utils/format';
@@ -32,6 +32,41 @@ const READ_USER_QUERY = gql`
 describe('TAXII ingestion resolver standard behavior', () => {
   let createdTaxiiIngesterId: string = '';
 
+  it('should send data when getting a json file', async () => {
+    const upload = await createUploadFromTestDataFile('taxiiFeed/test-taxii-feed.json', 'test-taxii-feed.json', 'application/json');
+    const TEST_MUTATION = gql`
+      query TaxiiFeedAddInputFromImport($file: Upload!) {
+        taxiiFeedAddInputFromImport(file: $file){
+            name
+            description
+            uri
+            version
+            collection
+            authentication_type
+            authentication_value
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: TEST_MUTATION,
+      variables: {
+        file: upload,
+      },
+    });
+    expect(queryResult.data?.taxiiFeedAddInputFromImport).toBeDefined();
+    expect(queryResult.data?.taxiiFeedAddInputFromImport).toMatchObject({
+      name: 'taxiiFeedsAuto',
+      description: 'Nice description',
+      uri: 'https://pastebin.com/raw/7CC8nHB0',
+      version: 'v21',
+      collection: 'taxii_collection',
+      authentication_type: '',
+      authentication_value: '',
+    });
+  });
+
+
+
   it('should create a TAXII ingester with existing user', async () => {
     const INGESTER_TO_CREATE = {
       input: {
@@ -58,6 +93,29 @@ describe('TAXII ingestion resolver standard behavior', () => {
     });
     expect(ingesterQueryResult.data?.ingestionTaxiiAdd.id).toBeDefined();
     createdTaxiiIngesterId = ingesterQueryResult.data?.ingestionTaxiiAdd.id;
+  });
+
+  it('should generate correct export configuration', async () => {
+    const QUERY_TAXII_FEED = gql(`
+      query QueryTaxiiFeed($id: String!) {
+        ingestionTaxii(id: $id) {
+          name
+          toConfigurationExport
+        }
+      }
+    `);
+    const { data } = await queryAsAdmin({
+      query: QUERY_TAXII_FEED,
+      variables: { id: createdTaxiiIngesterId },
+    });
+    const taxiiFeedIngestion = JSON.parse(data?.ingestionTaxii.toConfigurationExport);
+    expect(taxiiFeedIngestion.configuration).toMatchObject({
+      name: 'Taxii ingester for integration test',
+      uri: 'http://taxiserver.invalid',
+      version: TaxiiVersion.V21,
+      collection: 'TaxiCollection',
+      authentication_type: IngestionAuthType.Basic,
+    });
   });
 
   it('should create a TAXII feed with automatic user', async () => {
@@ -120,7 +178,6 @@ describe('TAXII ingestion resolver standard behavior', () => {
     expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.authentication_type).toEqual(IngestionAuthType.Basic);
     expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.authentication_value).toEqual('username:undefined');
   });
-
 
   it('should add auto user and update Taxii feed ingester with it', async () => {
     const TAXII_FEED_AUTO_USER_UPDATE = {

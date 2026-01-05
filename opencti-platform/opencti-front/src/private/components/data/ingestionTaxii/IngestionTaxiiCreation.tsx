@@ -1,18 +1,14 @@
-import React from 'react';
-import * as PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import * as R from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
-import Drawer from '../../common/drawer/Drawer';
-import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { fieldSpacingContainerStyle, FieldOption } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -20,16 +16,10 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import IngestionCreationUserHandling from '@components/data/IngestionCreationUserHandling';
-
-const styles = (theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-});
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { PaginationOptions } from '../../../../components/list_lines';
+import { IngestionTaxiiImportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiImportQuery.graphql';
+import { FormikHelpers } from 'formik/dist/types';
 
 const IngestionTaxiiCreationMutation = graphql`
   mutation IngestionTaxiiCreationMutation($input: IngestionTaxiiAddInput!) {
@@ -39,39 +29,86 @@ const IngestionTaxiiCreationMutation = graphql`
   }
 `;
 
-const ingestionTaxiiCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  uri: Yup.string().required(t('This field is required')),
-  version: Yup.string().required(t('This field is required')),
-  collection: Yup.string().required(t('This field is required')),
-  authentication_type: Yup.string().required(t('This field is required')),
-  authentication_value: Yup.string().nullable(),
-  username: Yup.string().nullable(),
-  password: Yup.string().nullable(),
-  cert: Yup.string().nullable(),
-  key: Yup.string().nullable(),
-  ca: Yup.string().nullable(),
-  user_id: Yup.object().nullable(),
-  added_after_start: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
-  confidence_to_score: Yup.bool().nullable(),
-});
+const ingestionTaxiiCreationValidation = () => {
+  const { t_i18n } = useFormatter();
+  return Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+    uri: Yup.string().required(t_i18n('This field is required')),
+    version: Yup.string().required(t_i18n('This field is required')),
+    collection: Yup.string().required(t_i18n('This field is required')),
+    authentication_type: Yup.string().required(t_i18n('This field is required')),
+    authentication_value: Yup.string().nullable(),
+    username: Yup.string().nullable(),
+    password: Yup.string().nullable(),
+    cert: Yup.string().nullable(),
+    key: Yup.string().nullable(),
+    ca: Yup.string().nullable(),
+    user_id: Yup.object().nullable(),
+    added_after_start: Yup.date()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .nullable(),
+    confidence_to_score: Yup.bool().nullable(),
+  });
+};
 
-const CreateIngestionTaxiiControlledDial = (props) => (
+interface IngestionTaxiiAddInput {
+  name: string;
+  description?: string | null;
+  uri: string;
+  version: string;
+  collection: string;
+  authentication_type: string;
+  authentication_value?: string;
+  added_after_start?: Date | null;
+  user_id: string | FieldOption;
+  automatic_user?: boolean;
+  confidence_level?: string;
+  username?: string;
+  password?: string;
+  cert?: string;
+  key?: string;
+  ca?: string;
+  confidence_to_score?: boolean;
+}
+
+interface IngestionTaxiiCreationProps {
+  paginationOptions?: PaginationOptions;
+  handleClose?: () => void;
+  ingestionTaxiiData?: IngestionTaxiiImportQuery$data['taxiiFeedAddInputFromImport'];
+  triggerButton?: boolean;
+  open?: boolean;
+  drawerSettings?: {
+    title: string;
+    button: string;
+  };
+}
+
+const CreateIngestionTaxiiControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
     entityType="IngestionTaxii"
     {...props}
   />
 );
 
-const IngestionTaxiiCreation = (props) => {
-  const { t, classes } = props;
+const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = ({
+  paginationOptions,
+  handleClose,
+  ingestionTaxiiData,
+  triggerButton = true,
+  open = false,
+  drawerSettings,
+}) => {
+  const { t_i18n } = useFormatter();
 
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const authentifcationValueResolved = getAuthenticationValue(values);
+  const [commit] = useApiMutation(IngestionTaxiiCreationMutation);
 
+  const handleSubmit = (values: IngestionTaxiiAddInput, { setSubmitting, resetForm }: FormikHelpers<IngestionTaxiiAddInput>) => {
+    const authenticationValue = getAuthenticationValue(values);
+    const userId
+      = typeof values.user_id === 'object'
+        ? values.user_id?.value
+        : values.user_id;
     const input = {
       name: values.name,
       description: values.description,
@@ -79,15 +116,15 @@ const IngestionTaxiiCreation = (props) => {
       version: values.version,
       collection: values.collection,
       authentication_type: values.authentication_type,
-      authentication_value: authentifcationValueResolved,
+      authentication_value: authenticationValue,
       added_after_start: values.added_after_start,
-      user_id: values.user_id?.value,
+      user_id: userId,
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
       confidence_to_score: values.confidence_to_score,
     };
-    commitMutation({
-      mutation: IngestionTaxiiCreationMutation,
+
+    commit({
       variables: {
         input,
       },
@@ -95,11 +132,10 @@ const IngestionTaxiiCreation = (props) => {
         insertNode(
           store,
           'Pagination_ingestionTaxiis',
-          props.paginationOptions,
+          paginationOptions,
           'ingestionTaxiiAdd',
         );
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -107,33 +143,31 @@ const IngestionTaxiiCreation = (props) => {
     });
   };
 
+  const initialValues: IngestionTaxiiAddInput = {
+    name: ingestionTaxiiData?.name || '',
+    description: ingestionTaxiiData?.description || '',
+    uri: ingestionTaxiiData?.uri || '',
+    version: ingestionTaxiiData?.version || '',
+    collection: ingestionTaxiiData?.collection || '',
+    added_after_start: ingestionTaxiiData?.added_after_start ? new Date(ingestionTaxiiData?.added_after_start) : null,
+    authentication_type: ingestionTaxiiData?.authentication_type || 'none',
+    user_id: '',
+    automatic_user: true,
+    confidence_to_score: false,
+  };
+
   return (
     <Drawer
-      title={t('Create a TAXII ingester')}
-      controlledDial={CreateIngestionTaxiiControlledDial}
+      title={drawerSettings?.title ?? t_i18n('Create a TAXII ingester')}
+      open={open}
+      onClose={handleClose}
+      controlledDial={triggerButton ? CreateIngestionTaxiiControlledDial : undefined}
     >
       {({ onClose }) => (
         <Formik
-          initialValues={{
-            name: '',
-            description: '',
-            uri: '',
-            version: 'v21',
-            collection: '',
-            added_after_start: null,
-            authentication_type: 'none',
-            authentication_value: '',
-            user_id: '',
-            automatic_user: true,
-            username: '',
-            password: '',
-            cert: '',
-            key: '',
-            ca: '',
-            confidence_to_score: false,
-          }}
-          validationSchema={ingestionTaxiiCreationValidation(t)}
-          onSubmit={onSubmit}
+          initialValues={initialValues}
+          validationSchema={ingestionTaxiiCreationValidation()}
+          onSubmit={handleSubmit}
           onReset={onClose}
         >
           {({ submitForm, handleReset, isSubmitting, values }) => (
@@ -142,14 +176,14 @@ const IngestionTaxiiCreation = (props) => {
                 component={TextField}
                 variant="standard"
                 name="name"
-                label={t('Name')}
+                label={t_i18n('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
                 variant="standard"
                 name="description"
-                label={t('Description')}
+                label={t_i18n('Description')}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -157,7 +191,7 @@ const IngestionTaxiiCreation = (props) => {
                 component={TextField}
                 variant="standard"
                 name="uri"
-                label={t('TAXII server URL')}
+                label={t_i18n('TAXII server URL')}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -165,20 +199,20 @@ const IngestionTaxiiCreation = (props) => {
                 component={SelectField}
                 variant="standard"
                 name="version"
-                label={t('TAXII version')}
+                label={t_i18n('TAXII version')}
                 fullWidth={true}
                 containerstyle={{
                   width: '100%',
                   marginTop: 20,
                 }}
               >
-                <MenuItem value="v21">{t('TAXII 2.1')}</MenuItem>
+                <MenuItem value="v21">{t_i18n('TAXII 2.1')}</MenuItem>
               </Field>
               <Field
                 component={TextField}
                 variant="standard"
                 name="collection"
-                label={t('TAXII Collection')}
+                label={t_i18n('TAXII Collection')}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -186,20 +220,20 @@ const IngestionTaxiiCreation = (props) => {
                 component={SelectField}
                 variant="standard"
                 name="authentication_type"
-                label={t('Authentication type')}
+                label={t_i18n('Authentication type')}
                 fullWidth={true}
                 containerstyle={{
                   width: '100%',
                   marginTop: 20,
                 }}
               >
-                <MenuItem value="none">{t('None')}</MenuItem>
+                <MenuItem value="none">{t_i18n('None')}</MenuItem>
                 <MenuItem value="basic">
-                  {t('Basic user / password')}
+                  {t_i18n('Basic user / password')}
                 </MenuItem>
-                <MenuItem value="bearer">{t('Bearer token')}</MenuItem>
+                <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
                 <MenuItem value="certificate">
-                  {t('Client certificate')}
+                  {t_i18n('Client certificate')}
                 </MenuItem>
               </Field>
               {values.authentication_type === BASIC_AUTH && (
@@ -208,20 +242,20 @@ const IngestionTaxiiCreation = (props) => {
                     component={TextField}
                     variant="standard"
                     name="username"
-                    label={t('Username')}
+                    label={t_i18n('Username')}
                     fullWidth={true}
                     style={fieldSpacingContainerStyle}
                   />
                   <PasswordTextField
                     name="password"
-                    label={t('Password')}
+                    label={t_i18n('Password')}
                   />
                 </>
               )}
               {values.authentication_type === BEARER_AUTH && (
                 <PasswordTextField
                   name="authentication_value"
-                  label={t('Token')}
+                  label={t_i18n('Token')}
                 />
               )}
               {values.authentication_type === CERT_AUTH && (
@@ -230,19 +264,19 @@ const IngestionTaxiiCreation = (props) => {
                     component={TextField}
                     variant="standard"
                     name="cert"
-                    label={t('Certificate (base64)')}
+                    label={t_i18n('Certificate (base64)')}
                     fullWidth={true}
                     style={fieldSpacingContainerStyle}
                   />
                   <PasswordTextField
                     name="key"
-                    label={t('Key (base64)')}
+                    label={t_i18n('Key (base64)')}
                   />
                   <Field
                     component={TextField}
                     variant="standard"
                     name="ca"
-                    label={t('CA certificate (base64)')}
+                    label={t_i18n('CA certificate (base64)')}
                     fullWidth={true}
                     style={fieldSpacingContainerStyle}
                   />
@@ -256,7 +290,7 @@ const IngestionTaxiiCreation = (props) => {
                 component={DateTimePickerField}
                 name="added_after_start"
                 textFieldProps={{
-                  label: t(
+                  label: t_i18n(
                     'Import from date (empty = all TAXII collection possible items)',
                   ),
                   variant: 'standard',
@@ -268,26 +302,29 @@ const IngestionTaxiiCreation = (props) => {
                 component={SwitchField}
                 type="checkbox"
                 name="confidence_to_score"
-                label={t('Copy confidence level to OpenCTI scores for indicators')}
+                label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}
                 containerstyle={fieldSpacingContainerStyle}
               />
-              <div className={classes.buttons}>
+              <div style={{ marginTop: 20,
+                textAlign: 'right' }}
+              >
                 <Button
                   variant="contained"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  style={{ marginLeft: 10 }}
                 >
-                  {t('Cancel')}
+                  {t_i18n('Cancel')}
                 </Button>
                 <Button
                   variant="contained"
                   color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  style={{ marginLeft: 10 }}
+
                 >
-                  {t('Create')}
+                  {drawerSettings?.button ?? t_i18n('Create')}
                 </Button>
               </div>
             </Form>
@@ -298,14 +335,4 @@ const IngestionTaxiiCreation = (props) => {
   );
 };
 
-IngestionTaxiiCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-};
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IngestionTaxiiCreation);
+export default IngestionTaxiiCreation;

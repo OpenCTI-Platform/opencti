@@ -6,6 +6,8 @@ import {
   ingestionEditField,
   ingestionTaxiiResetState,
   ingestionTaxiiAddAutoUser,
+  taxiiFeedAddInputFromImport,
+  taxiiFeedExport,
 } from './ingestion-taxii-domain';
 import type { Resolvers } from '../../generated/graphql';
 
@@ -13,9 +15,11 @@ const ingestionTaxiiResolvers: Resolvers = {
   Query: {
     ingestionTaxii: (_, { id }, context) => findById(context, context.user, id, true),
     ingestionTaxiis: (_, args, context) => findTaxiiIngestionPaginated(context, context.user, args),
+    taxiiFeedAddInputFromImport: (_, { file }) => taxiiFeedAddInputFromImport(file),
   },
   IngestionTaxii: {
     user: (ingestionTaxii, _, context) => context.batch.creatorBatchLoader.load(ingestionTaxii.user_id),
+    toConfigurationExport: (ingestionTaxii) => taxiiFeedExport(ingestionTaxii),
   },
   Mutation: {
     ingestionTaxiiAdd: (_, { input }, context) => {
