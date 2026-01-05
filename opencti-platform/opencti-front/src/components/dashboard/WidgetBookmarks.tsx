@@ -1,15 +1,12 @@
 import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
-import { Link } from 'react-router-dom';
 import CardHeader from '@mui/material/CardHeader';
 import Avatar from '@mui/material/Avatar';
-import React from 'react';
 import { useTheme } from '@mui/styles';
 import ItemIcon from '../ItemIcon';
 import { resolveLink } from '../../utils/Entity';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
+import Card from '../common/card/Card';
 
 interface WidgetBookmarksProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,39 +35,26 @@ const WidgetBookmarks = ({ bookmarks }: WidgetBookmarksProps) => {
           return (
             <Grid item xs={4} key={bookmark.id}>
               <Card
+                noPadding
                 variant="outlined"
-                style={{
-                  width: '100%',
-                  height: 70,
-                  borderRadius: 6,
-                }}
+                to={`${link}/${bookmark.id}`}
               >
-                <CardActionArea
-                  component={Link}
-                  to={`${link}/${bookmark.id}`}
+                <CardHeader
                   sx={{
-                    width: '100%',
-                    height: '100%',
+                    paddingBottom: 0,
+                    marginBottom: 0,
                   }}
-                >
-                  <CardHeader
-                    sx={{
-                      height: 55,
-                      paddingBottom: 0,
-                      marginBottom: 0,
-                    }}
-                    avatar={(
-                      <Avatar sx={{ backgroundColor: theme.palette.primary.main }}>
-                        <ItemIcon
-                          type={bookmark.entity_type}
-                          color={theme.palette.background.default}
-                        />
-                      </Avatar>
-                    )}
-                    title={bookmark.name}
-                    subheader={`${t_i18n('Updated on')} ${fsd(bookmark.modified)}`}
-                  />
-                </CardActionArea>
+                  avatar={(
+                    <Avatar sx={{ backgroundColor: theme.palette.primary.main }}>
+                      <ItemIcon
+                        type={bookmark.entity_type}
+                        color={theme.palette.background.default}
+                      />
+                    </Avatar>
+                  )}
+                  title={bookmark.name}
+                  subheader={`${t_i18n('Updated on')} ${fsd(bookmark.modified)}`}
+                />
               </Card>
             </Grid>
           );

@@ -7,7 +7,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { FormikConfig } from 'formik/dist/types';
-import { Box, Card, CardActionArea, CardContent, Typography, Stepper, Step, StepLabel } from '@mui/material';
+import { Box, CardContent, Typography, Stepper, Step, StepLabel } from '@mui/material';
 import { AutoModeOutlined, EditOutlined } from '@mui/icons-material';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { SecurityCoveragesLinesPaginationQuery$variables } from '@components/analyses/__generated__/SecurityCoveragesLinesPaginationQuery.graphql';
@@ -36,6 +36,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -511,80 +512,60 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
             >
               <Card
                 variant="outlined"
-                style={{
+                onClick={() => handleSelectMode('manual')}
+                sx={{
                   width: CARD_WIDTH,
                   height: CARD_HEIGHT,
                   textAlign: 'center',
                 }}
               >
-                <CardActionArea
-                  onClick={() => handleSelectMode('manual')}
-                  sx={{
-                    height: '100%',
-                    '&:hover': {
-                      backgroundColor: 'action.hover',
-                    },
-                  }}
-                  aria-label={t_i18n('Manual Input')}
-                >
-                  <CardContent>
-                    <EditOutlined sx={{ fontSize: 40 }} color="primary" />
-                    <Typography
-                      gutterBottom
-                      variant="h2"
-                      style={{ marginTop: 20 }}
-                    >
-                      {t_i18n('Manual Input')}
-                    </Typography>
-                    <br />
-                    <Typography variant="body1">
-                      {t_i18n('Manually enter security coverage metrics and scores for this entity')}
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
+                <CardContent>
+                  <EditOutlined sx={{ fontSize: 40 }} color="primary" />
+                  <Typography
+                    gutterBottom
+                    variant="h2"
+                    style={{ marginTop: 20 }}
+                  >
+                    {t_i18n('Manual Input')}
+                  </Typography>
+                  <br />
+                  <Typography variant="body1">
+                    {t_i18n('Manually enter security coverage metrics and scores for this entity')}
+                  </Typography>
+                </CardContent>
               </Card>
 
               <Card
                 variant="outlined"
-                style={{
+                onClick={() => hasEnrichmentConnectors && handleSelectMode('automated')}
+                disabled={!hasEnrichmentConnectors}
+                sx={{
                   width: CARD_WIDTH,
                   height: CARD_HEIGHT,
                   textAlign: 'center',
                   opacity: hasEnrichmentConnectors ? 1 : 0.5,
                 }}
               >
-                <CardActionArea
-                  onClick={() => hasEnrichmentConnectors && handleSelectMode('automated')}
-                  disabled={!hasEnrichmentConnectors}
-                  sx={{
-                    height: '100%',
-                    '&:hover': hasEnrichmentConnectors ? {
-                      backgroundColor: 'action.hover',
-                    } : {},
-                  }}
-                  aria-label={t_i18n('Automated using enrichment')}
-                >
-                  <CardContent>
-                    <AutoModeOutlined sx={{ fontSize: 40 }} color={hasEnrichmentConnectors ? 'primary' : 'disabled'} />
-                    <Typography
-                      gutterBottom
-                      variant="h2"
-                      style={{ marginTop: 20 }}
-                      color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
-                    >
-                      {t_i18n('Automated using enrichment')}
-                    </Typography>
-                    <br />
-                    <Typography
-                      variant="body1"
-                      color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
-                    >
-                      {hasEnrichmentConnectors
-                        ? t_i18n('OpenAEV (or other AEV platforms) can be used to automate security coverage assessment')
-                        : t_i18n('No enrichment connector available for Security Coverage')}
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
+                <CardContent>
+                  <AutoModeOutlined sx={{ fontSize: 40 }} color={hasEnrichmentConnectors ? 'primary' : 'disabled'} />
+                  <Typography
+                    gutterBottom
+                    variant="h2"
+                    style={{ marginTop: 20 }}
+                    color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
+                  >
+                    {t_i18n('Automated using enrichment')}
+                  </Typography>
+                  <br />
+                  <Typography
+                    variant="body1"
+                    color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
+                  >
+                    {hasEnrichmentConnectors
+                      ? t_i18n('OpenAEV (or other AEV platforms) can be used to automate security coverage assessment')
+                      : t_i18n('No enrichment connector available for Security Coverage')}
+                  </Typography>
+                </CardContent>
               </Card>
             </Box>
             <div className={classes.buttons} style={{ marginTop: 20 }}>

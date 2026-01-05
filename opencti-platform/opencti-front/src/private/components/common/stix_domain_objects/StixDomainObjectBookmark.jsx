@@ -1,10 +1,8 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import CardActionArea from '@mui/material/CardActionArea';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import { StarBorderOutlined } from '@mui/icons-material';
@@ -88,27 +86,21 @@ class StixDomainObjectBookmarkComponent extends Component {
     const { t, fsd, classes, node } = this.props;
     const link = resolveLink(node.entity_type);
     return (
-      <Card>
-        <CardActionArea
-          classes={{ root: classes.area }}
-          component={Link}
-          to={`${link}/${node.id}`}
-        >
-          <CardHeader
-            classes={{ root: classes.header }}
-            title={renderCardTitle(node)}
-            subheader={`${t('Updated on')} ${fsd(node.modified)}`}
-            action={(
-              <IconButton
-                size="small"
-                onClick={deleteBookMark.bind(this, node.id, node.entity_type)}
-                color="secondary"
-              >
-                <StarBorderOutlined />
-              </IconButton>
-            )}
-          />
-        </CardActionArea>
+      <Card to={`${link}/${node.id}`}>
+        <CardHeader
+          classes={{ root: classes.header }}
+          title={renderCardTitle(node)}
+          subheader={`${t('Updated on')} ${fsd(node.modified)}`}
+          action={(
+            <IconButton
+              size="small"
+              onClick={deleteBookMark.bind(this, node.id, node.entity_type)}
+              color="secondary"
+            >
+              <StarBorderOutlined />
+            </IconButton>
+          )}
+        />
       </Card>
     );
   }
@@ -300,66 +292,64 @@ class StixDomainObjectBookmarkDummyComponent extends Component {
     const { classes } = this.props;
     return (
       <Card>
-        <CardActionArea classes={{ root: classes.area }}>
-          <CardHeader
-            classes={{ root: classes.header }}
-            avatar={(
-              <Skeleton
-                animation="wave"
-                variant="circular"
-                width={30}
-                height={30}
-              />
-            )}
-            title={(
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                style={{ marginBottom: 10 }}
-              />
-            )}
-            subheader={(
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                style={{ marginBottom: 10 }}
-              />
-            )}
-            action={(
-              <Skeleton
-                animation="wave"
-                variant="circular"
-                width={30}
-                height={30}
-              />
-            )}
-            slotProps={{
-              title: { color: 'inherit' },
-            }}
+        <CardHeader
+          classes={{ root: classes.header }}
+          avatar={(
+            <Skeleton
+              animation="wave"
+              variant="circular"
+              width={30}
+              height={30}
+            />
+          )}
+          title={(
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="90%"
+              style={{ marginBottom: 10 }}
+            />
+          )}
+          subheader={(
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="90%"
+              style={{ marginBottom: 10 }}
+            />
+          )}
+          action={(
+            <Skeleton
+              animation="wave"
+              variant="circular"
+              width={30}
+              height={30}
+            />
+          )}
+          slotProps={{
+            title: { color: 'inherit' },
+          }}
+        />
+        <CardContent classes={{ root: classes.contentDummy }}>
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="90%"
+            style={{ marginBottom: 10 }}
           />
-          <CardContent classes={{ root: classes.contentDummy }}>
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              style={{ marginBottom: 10 }}
-            />
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="95%"
-              style={{ marginBottom: 10 }}
-            />
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              style={{ marginBottom: 10 }}
-            />
-          </CardContent>
-        </CardActionArea>
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="95%"
+            style={{ marginBottom: 10 }}
+          />
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="90%"
+            style={{ marginBottom: 10 }}
+          />
+        </CardContent>
       </Card>
     );
   }
