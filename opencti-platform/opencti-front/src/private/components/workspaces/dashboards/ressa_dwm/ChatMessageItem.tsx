@@ -324,16 +324,42 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
               {isJson ? (
                 <>
-                  <Box sx={{ width: '100%', overflow: 'auto', maxHeight: '400px' }}>
+                  <Box sx={{ 
+                    width: '100%', 
+                    maxWidth: '100%',
+                    overflow: 'visible', 
+                    maxHeight: '400px',
+                    overflowY: 'auto',
+                    '& pre': {
+                      whiteSpace: 'pre-wrap !important',
+                      wordBreak: 'break-word !important',
+                      overflowWrap: 'break-word !important',
+                      wordWrap: 'break-word !important',
+                      maxWidth: '100%',
+                      overflow: 'visible',
+                    },
+                    '& code': {
+                      whiteSpace: 'pre-wrap !important',
+                      wordBreak: 'break-word !important',
+                      overflowWrap: 'break-word !important',
+                      maxWidth: '100%',
+                    }
+                  }}>
                     <SyntaxHighlighter
                       language="json"
                       style={isDark ? a11yDark : coy}
+                      wrapLines={true}
+                      wrapLongLines={true}
                       customStyle={{
                         margin: 0,
                         padding: '8px',
                         borderRadius: '4px 4px 0 0',
                         fontSize: '0.75rem',
                         backgroundColor: 'transparent',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap',
+                        overflowWrap: 'break-word',
+                        overflow: 'visible',
                       }}
                     >
                       {formattedText}
@@ -364,21 +390,47 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message }) => {
                 : (theme.palette.background?.paper || theme.palette.background?.default),
               borderRadius: 2,
               marginBottom: message.reactions ? 1 : 0,
-              overflow: 'hidden',
+              overflow: isJson ? 'visible' : 'hidden',
             }}
           >
             {isJson ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Box sx={{ width: '100%', overflow: 'auto', maxHeight: '400px' }}>
+                <Box sx={{ 
+                  width: '100%', 
+                  maxWidth: '100%',
+                  overflow: 'visible', 
+                  maxHeight: '400px',
+                  overflowY: 'auto',
+                  '& pre': {
+                    whiteSpace: 'pre-wrap !important',
+                    wordBreak: 'break-word !important',
+                    overflowWrap: 'break-word !important',
+                    wordWrap: 'break-word !important',
+                    maxWidth: '100%',
+                    overflow: 'visible',
+                  },
+                  '& code': {
+                    whiteSpace: 'pre-wrap !important',
+                    wordBreak: 'break-word !important',
+                    overflowWrap: 'break-word !important',
+                    maxWidth: '100%',
+                  }
+                }}>
                   <SyntaxHighlighter
                     language="json"
                     style={isDark ? a11yDark : coy}
+                    wrapLines={true}
+                    wrapLongLines={true}
                     customStyle={{
                       margin: 0,
                       padding: '12px',
                       borderRadius: '8px 8px 0 0',
                       fontSize: '0.75rem',
                       backgroundColor: 'transparent',
+                      wordBreak: 'break-word',
+                      whiteSpace: 'pre-wrap',
+                      overflowWrap: 'break-word',
+                      overflow: 'visible',
                     }}
                   >
                     {formattedText}
