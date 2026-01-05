@@ -58,6 +58,7 @@ const ImportFilesToggleMode = () => {
     >
       {modes.map(({ mode, title, description, icon }) => (
         <Card
+          aria-label={title}
           variant="outlined"
           onClick={() => onSelectMode(mode)}
           key={mode}

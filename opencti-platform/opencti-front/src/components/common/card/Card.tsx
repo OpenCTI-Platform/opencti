@@ -16,6 +16,7 @@ interface CardProps extends PropsWithChildren {
   to?: string;
   variant?: 'elevation' | 'outlined';
   disabled?: boolean;
+  'aria-label'?: string;
 }
 
 const Card = ({
@@ -28,8 +29,8 @@ const Card = ({
   fullHeight = true,
   onClick,
   to,
-  variant,
   disabled,
+  ...otherProps
 }: CardProps) => {
   const theme = useTheme<Theme>();
 
@@ -50,15 +51,21 @@ const Card = ({
   };
 
   let content = children;
-  if (onClick) {
+  if (onClick || to) {
+    let linkProps = {};
+    if (to) {
+      linkProps = {
+        to,
+        component: Link,
+      };
+    }
     content = (
-      <CardActionArea disabled={disabled} onClick={onClick} sx={actionAreaSx}>
-        {children}
-      </CardActionArea>
-    );
-  } else if (to) {
-    content = (
-      <CardActionArea disabled={disabled} component={Link} to={to} sx={actionAreaSx}>
+      <CardActionArea
+        disabled={disabled}
+        onClick={onClick}
+        sx={actionAreaSx}
+        {...linkProps}
+      >
         {children}
       </CardActionArea>
     );
@@ -71,7 +78,11 @@ const Card = ({
           {title}
         </CardTitle>
       )}
-      <CardMui elevation={0} sx={containerSx} variant={variant}>
+      <CardMui
+        elevation={0}
+        sx={containerSx}
+        {...otherProps}
+      >
         {content}
       </CardMui>
     </Stack>

@@ -511,6 +511,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               }}
             >
               <Card
+                aria-label={t_i18n('Manual Input')}
                 variant="outlined"
                 onClick={() => handleSelectMode('manual')}
                 sx={{
@@ -537,6 +538,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 
               <Card
                 variant="outlined"
+                aria-label={t_i18n('Automated using enrichment')}
                 onClick={() => hasEnrichmentConnectors && handleSelectMode('automated')}
                 disabled={!hasEnrichmentConnectors}
                 sx={{

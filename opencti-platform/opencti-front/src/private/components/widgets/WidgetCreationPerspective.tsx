@@ -84,6 +84,7 @@ const WidgetCreationPerspective = () => {
         <Grid item xs={xs}>
           <Card
             noPadding
+            aria-label={t_i18n('Entities')}
             onClick={() => handleSelectPerspective('entities')}
             variant="outlined"
             sx={{
@@ -111,6 +112,7 @@ const WidgetCreationPerspective = () => {
         <Grid item xs={xs}>
           <Card
             noPadding
+            aria-label={t_i18n('Knowledge graph')}
             onClick={() => handleSelectPerspective('relationships')}
             variant="outlined"
             sx={{
@@ -140,6 +142,7 @@ const WidgetCreationPerspective = () => {
         <Grid item xs={xs}>
           <Card
             noPadding
+            aria-label={t_i18n('Activity & history')}
             onClick={() => handleSelectPerspective('audits')}
             variant="outlined"
             sx={{

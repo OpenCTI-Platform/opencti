@@ -287,6 +287,7 @@ const StixCoreObjectFileExportForm = ({
                     {connectorScopes.map((scope) => (
                       <Grid key={scope} item xs={4}>
                         <Card
+                          aria-label={t_i18n(scope)}
                           onClick={() => selectFormat(setFieldValue, scope)}
                           variant="outlined"
                           sx={{ textAlign: 'center' }}
@@ -306,6 +307,7 @@ const StixCoreObjectFileExportForm = ({
                     {isContainer && fullyActive && (
                       <Grid item xs={4}>
                         <Card
+                          aria-label={t_i18n('Ask AI')}
                           variant="outlined"
                           onClick={() => (isEnterpriseEdition && fullyActive ? selectFormat(setFieldValue, 'ai') : null)}
                           sx={{
