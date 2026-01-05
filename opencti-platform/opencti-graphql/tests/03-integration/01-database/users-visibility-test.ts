@@ -188,7 +188,6 @@ const shouldFetchAllTheUsers = async (
   fetchUserAB: () => AuthUser,
   fetchUserO: () => AuthUser,
   fetchUserAClient: () => AxiosInstance,
-  fetchUserOClient: () => AxiosInstance,
   fetchReportInternalId: () => string,
   contextExplanation: string,
 ) => {
@@ -196,7 +195,6 @@ const shouldFetchAllTheUsers = async (
   let USER_AB: AuthUser;
   let USER_O: AuthUser;
   let USER_A_CLIENT: AxiosInstance;
-  let USER_O_CLIENT: AxiosInstance;
   let reportInternalId: string;
 
   beforeAll(() => {
@@ -204,7 +202,6 @@ const shouldFetchAllTheUsers = async (
     USER_AB = fetchUserAB();
     USER_O = fetchUserO();
     USER_A_CLIENT = fetchUserAClient();
-    USER_O_CLIENT = fetchUserOClient();
     reportInternalId = fetchReportInternalId();
   });
 
@@ -275,7 +272,6 @@ describe('Users visibility according to their direct organizations', () => {
 
   let USER_A_CLIENT: AxiosInstance;
   let USER_AB_CLIENT: AxiosInstance;
-  let USER_O_CLIENT: AxiosInstance;
 
   let reportInternalId: string;
 
@@ -343,7 +339,6 @@ describe('Users visibility according to their direct organizations', () => {
         user_email: 'userO@mail.com',
       },
     };
-    USER_O_CLIENT = createHttpClient(USER_TO_CREATE_O.input.user_email, USER_TO_CREATE_O.input.password);
 
     const users = await Promise.all([USER_TO_CREATE_A, USER_TO_CREATE_B, USER_TO_CREATE_AB, USER_TO_CREATE_O].map((userToCreate) => queryAsAdmin({
       query: CREATE_USER_QUERY,
@@ -550,7 +545,6 @@ describe('Users visibility according to their direct organizations', () => {
       () => USER_AB,
       () => USER_O,
       () => USER_A_CLIENT,
-      () => USER_O_CLIENT,
       () => reportInternalId,
       'no organization sharing',
     );
@@ -660,7 +654,6 @@ describe('Users visibility according to their direct organizations', () => {
         () => USER_AB,
         () => USER_O,
         () => USER_A_CLIENT,
-        () => USER_O_CLIENT,
         () => reportInternalId,
         'settings option view_all_users = true',
       );
