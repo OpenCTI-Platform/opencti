@@ -35,6 +35,10 @@ const buildPath = "./builder/prod/build";
     alias: {
       "@mui/icons-material-original": "./node_modules/@mui/icons-material",
       "mdi-material-ui-original": "./node_modules/mdi-material-ui",
+      "src/icon-bridge/mui-icons-mapping":
+        "./src/icon-bridge/mui-icons-mapping.jsx",
+      "src/icon-bridge/mdi-icons-mapping":
+        "./src/icon-bridge/mdi-icons-mapping.jsx",
     },
   });
   // Copy public files to build
