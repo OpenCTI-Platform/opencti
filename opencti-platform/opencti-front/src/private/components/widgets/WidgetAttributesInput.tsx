@@ -121,6 +121,17 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
   ['Note', [
     { attribute: 'attribute_abstract', label: 'Attribute abstract' },
   ]],
+  ['Vulnerability', [
+    { attribute: 'x_opencti_cvss_v2_vector_string', label: 'CVSS v2 vector string' },
+    { attribute: 'x_opencti_cvss_v2_base_score', label: 'CVSS v2 base score' },
+    { attribute: 'x_opencti_cvss_vector_string', label: 'CVSS vector string' },
+    { attribute: 'x_opencti_cvss_base_score', label: 'CVSS base score' },
+    { attribute: 'x_opencti_cvss_v4_vector_string', label: 'CVSS v4 vector string' },
+    { attribute: 'x_opencti_cvss_v4_base_score', label: 'CVSS v4 base score' },
+    { attribute: 'x_opencti_cisa_kev', label: 'CISA KEV' },
+    { attribute: 'x_opencti_epss_score', label: 'EPSS score' },
+    { attribute: 'x_opencti_epss_percentile', label: 'EPSS percentile' },
+  ]],
 ]);
 
 interface WidgetAttributesInputValue {
