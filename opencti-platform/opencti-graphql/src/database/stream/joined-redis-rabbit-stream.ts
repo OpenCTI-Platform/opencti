@@ -1,13 +1,5 @@
 import type { ActivityStreamEvent, BaseEvent, DataEvent, SseEvent, StreamNotifEvent } from '../../types/event';
-import {
-  type FetchEventRangeOption,
-  LIVE_STREAM_NAME,
-  NOTIFICATION_STREAM_NAME,
-  type RawStreamClient,
-  type StreamInfo,
-  type StreamProcessor,
-  type StreamProcessorOption,
-} from './stream-utils';
+import { type FetchEventRangeOption, LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamProcessor, type StreamProcessorOption } from './stream-utils';
 import { rawRedisStreamClient } from '../redis-stream';
 import { rawRabbitMQStreamClient } from '../rabbitmq-stream';
 import { utcDate } from '../../utils/format';
@@ -20,15 +12,14 @@ const rabbitStreamClient: RawStreamClient = rawRabbitMQStreamClient;
 // All new incoming messages are routed to rabbitMQ, but redis client can still be used to retrieve older stream messages
 // Once the oldest rabbitMQ stream is older than 1 month, we consider the redis stream outside of the TTL range and we switch to fully using the rabbitMQ client
 let redisStreamFullyDeprecated = false;
-const isRedisStreamFullyDeprecated = async (streamName = LIVE_STREAM_NAME, rabbitStreamInfo?: StreamInfo) => {
+const isRedisStreamFullyDeprecated = async (streamName = LIVE_STREAM_NAME) => {
   if (redisStreamFullyDeprecated) {
     return redisStreamFullyDeprecated;
   }
-  const completeRabbitStreamInfo = rabbitStreamInfo ?? await rabbitStreamClient.rawFetchStreamInfo(streamName);
   const redisStreamInfo = await redisStreamClient.rawFetchStreamInfo(streamName);
-  const rabbitLastDate = utcDate(completeRabbitStreamInfo.firstEventDate);
+  const redisFirstDate = utcDate(redisStreamInfo.firstEventDate);
   const oneMonthAgo = utcDate().subtract(1, 'month');
-  redisStreamFullyDeprecated = redisStreamInfo.streamSize === 0 || rabbitLastDate.isBefore(oneMonthAgo);
+  redisStreamFullyDeprecated = redisStreamInfo.streamSize === 0 || redisFirstDate.isBefore(oneMonthAgo);
   return redisStreamFullyDeprecated;
 };
 
@@ -46,7 +37,7 @@ const rawPushToStream = async <T extends BaseEvent> (event: T) => {
 
 const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   const rabbitStreamInfo = await rabbitStreamClient.rawFetchStreamInfo(streamName);
-  if (await isRedisStreamFullyDeprecated(streamName, rabbitStreamInfo)) {
+  if (await isRedisStreamFullyDeprecated(streamName)) {
     return rabbitStreamInfo;
   }
   // If redis stream is still not deprecated, we want to join it with rabbit stream info
@@ -94,7 +85,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
       if (start === 'live') {
         isRabbitStreamProcessorActive = true;
         await rabbitStreamProcessor.start(start);
-        // Second case: start is not live, but we consider rabbitMQ as the only available stream since it is older than 1 month
+        // Second case: start is not live, but we consider rabbitMQ as the only available stream since redis stream is older than 1 month
       } else if (await isRedisStreamFullyDeprecated(streamName)) {
         isRabbitStreamProcessorActive = true;
         await rabbitStreamProcessor.start(start);
