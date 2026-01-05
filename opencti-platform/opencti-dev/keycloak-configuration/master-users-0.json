@@ -1,0 +1,147 @@
+{
+  "realm" : "master",
+  "users" : [ {
+    "id" : "3be9316d-18f3-41f1-922b-3a6487b9e2c9",
+    "username" : "admin@external.com",
+    "email" : "admin@external.com",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1767554373137,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "8e297757-4d97-43cc-b4d2-6133c59d63ab",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1767554383003,
+      "secretData" : "{\"value\":\"CjPke5aSvZZ9Z+NCOnodP6AiPhCv+xCgWQyqG2lF2ZE=\",\"salt\":\"bX5FYr91Kv+ZYSB2k28SHw==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ "UPDATE_PASSWORD" ],
+    "realmRoles" : [ "default-roles-master" ],
+    "notBefore" : 0,
+    "groups" : [ "/Administrator" ]
+  }, {
+    "id" : "9b4b2bf0-1bc3-4dad-9b06-4723426bdcb2",
+    "username" : "admin@filigran.io",
+    "email" : "admin@filigran.io",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1767554290159,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "5de4c4e6-35ea-4364-8541-1870bf56d05d",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1767554302071,
+      "secretData" : "{\"value\":\"ylqptqYbdPmLn1YQztQbIwMzUmIaLl771QzRe4NGTi8=\",\"salt\":\"oH2M58Jiioa6WG3rnDaO2w==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-master" ],
+    "notBefore" : 0,
+    "groups" : [ "/Administrator", "/Filigran org" ]
+  }, {
+    "id" : "a88774e3-b4fa-4ef3-8285-e430e08f32b4",
+    "username" : "connector@external.com",
+    "email" : "connector@external.com",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1767554485976,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "e370af3a-0e82-4bf3-afec-bab133e5fb70",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1767554497277,
+      "secretData" : "{\"value\":\"gOnr545Hgk/ngwkrXeu/RKHseXArWMyFJ4QfNRI6WSY=\",\"salt\":\"c+FwNYtkqaHTMu4AnOa/yw==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-master" ],
+    "notBefore" : 0,
+    "groups" : [ "/Connector", "/Externa org" ]
+  }, {
+    "id" : "91143379-ecb7-418d-b597-8b07330ed9bf",
+    "username" : "connector@filigran.io",
+    "email" : "connector@filigran.io",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1767519159060,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "46eab7e9-ac5c-4a21-8a17-a18079913723",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1767519167037,
+      "secretData" : "{\"value\":\"syVK4o7itx8hUSnZrOQTW8XmBtJo+cOjqj3iyCalUak=\",\"salt\":\"F9fb7UhdkJrvPv6lhBXXmQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-master" ],
+    "notBefore" : 0,
+    "groups" : [ "/Connector", "/Filigran org" ]
+  }, {
+    "id" : "de1a0ff4-7a72-44e5-a852-91a327f4940b",
+    "username" : "default@external.com",
+    "email" : "default@external.com",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1767554454152,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "1121c9c1-d28d-4391-9f1e-1a849169ce66",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1767554463181,
+      "secretData" : "{\"value\":\"i7i6jXb8raMlLaNp1Piqozbu9GIva3nXHZ2GidrdwAU=\",\"salt\":\"gVprwNSpN/jCdARsG2frDw==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ "UPDATE_PASSWORD" ],
+    "realmRoles" : [ "default-roles-master" ],
+    "notBefore" : 0,
+    "groups" : [ "/Default", "/Externa org" ]
+  }, {
+    "id" : "2e5b5cf0-042b-4a5a-99a1-cd70d6de7fa3",
+    "username" : "default@filigran.io",
+    "email" : "default@filigran.io",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1767554337650,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "79425aa2-b60b-4e97-8f50-f084f5c031fa",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1767554351121,
+      "secretData" : "{\"value\":\"mNERHi0rMf0Ujr0jMPjAEgEXmEAArN67mXhSXNspGY0=\",\"salt\":\"g93tSxCoCRa/c2PBlVhriQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-master" ],
+    "notBefore" : 0,
+    "groups" : [ "/Default", "/Filigran org" ]
+  }, {
+    "id" : "eda57d91-a464-4ca6-828e-c2a7c93fff6d",
+    "username" : "service-account-openctioid",
+    "emailVerified" : false,
+    "enabled" : true,
+    "createdTimestamp" : 1761217100565,
+    "totp" : false,
+    "serviceAccountClientId" : "openctioid",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-master" ],
+    "clientRoles" : {
+      "openctioid" : [ "uma_protection" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}

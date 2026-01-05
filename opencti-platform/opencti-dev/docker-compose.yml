@@ -165,6 +165,8 @@ services:
         - ./keycloak-configuration:/opt/keycloak/data/import
       container_name: opencti-dev-keycloak
       command: start-dev --import-realm --verbose
+      # use below command to export a configuration. Remember to remove admin user.
+      #command: export --dir /opt/keycloak/data/import/export --users same_file
       environment:
         KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
         KC_BOOTSTRAP_ADMIN_PASSWORD: "admin"
