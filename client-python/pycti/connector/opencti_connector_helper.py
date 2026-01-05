@@ -2396,14 +2396,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         actual_callback = batch_callback
         if max_per_minute is not None:
-            if not isinstance(max_per_minute, int) or max_per_minute <= 0:
-                raise ValueError("max_per_minute must be a positive integer")
-            rate_limiter = RateLimiter(helper=self, max_per_minute=max_per_minute)
+            rate_limiter = self.create_rate_limiter(max_per_minute)
             actual_callback = rate_limiter.wrap(batch_callback)
-            self.connector_logger.info(
-                "Batch callback with rate limiting created",
-                {"max_per_minute": max_per_minute},
-            )
 
         return BatchCallbackWrapper(
             helper=self,
