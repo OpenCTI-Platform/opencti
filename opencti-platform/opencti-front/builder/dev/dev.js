@@ -6,6 +6,7 @@ const esbuild = require("esbuild");
 const chokidar = require("chokidar");
 const compression = require("compression");
 const { RelayPlugin } = require("../plugin/esbuild-relay");
+const { sassPlugin } = require("esbuild-sass-plugin");
 
 const basePath = "";
 const clients = [];
@@ -31,7 +32,7 @@ const middleware = (target, ws = false) => createProxyMiddleware({
   // Start with an initial build
   const builder = await esbuild.context({
       logLevel: "info",
-      plugins: [RelayPlugin],
+      plugins: [RelayPlugin, sassPlugin()],
       entryPoints: ["src/front.tsx"],
       publicPath: "/",
       bundle: true,
@@ -65,7 +66,7 @@ const middleware = (target, ws = false) => createProxyMiddleware({
 
   // Listen change for hot recompile
   if (!process.env.E2E_TEST) {
-    chokidar.watch("src", {
+    chokidar.watch("src/**/*.{js,jsx,ts,tsx,scss}", {
       awaitWriteFinish: true,
       ignoreInitial: true,
     })
