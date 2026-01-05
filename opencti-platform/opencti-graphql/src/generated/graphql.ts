@@ -31024,6 +31024,7 @@ export enum TaxiiCollectionOrdering {
 
 export type TaxiiFeedAddInputFromImport = {
   __typename?: 'TaxiiFeedAddInputFromImport';
+  added_after_start?: Maybe<Scalars['String']['output']>;
   authentication_type: Scalars['String']['output'];
   authentication_value: Scalars['String']['output'];
   collection: Scalars['String']['output'];
@@ -47102,6 +47103,7 @@ export type TaxiiCollectionEditMutationsResolvers<ContextType = any, ParentType 
 }>;
 
 export type TaxiiFeedAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiFeedAddInputFromImport'] = ResolversParentTypes['TaxiiFeedAddInputFromImport']> = ResolversObject<{
+  added_after_start?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   authentication_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   authentication_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   collection?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

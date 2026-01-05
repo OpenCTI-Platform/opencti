@@ -210,6 +210,7 @@ export const taxiiFeedExport = async (ingestionTaxii: BasicStoreEntityIngestionT
     version,
     collection,
     authentication_type,
+    added_after_start,
   } = ingestionTaxii;
   return JSON.stringify({
     openCTI_version: PLATFORM_VERSION,
@@ -221,6 +222,7 @@ export const taxiiFeedExport = async (ingestionTaxii: BasicStoreEntityIngestionT
       version,
       collection,
       authentication_type,
+      added_after_start,
     },
   });
 };

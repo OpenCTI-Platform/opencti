@@ -22,6 +22,7 @@ export const taxiiFeedImportQuery = graphql`
         version
         collection
         authentication_type
+        added_after_start
     }
   }
 `;
@@ -60,7 +61,7 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
 
   const handleDownloadError = () => {
     navigate('/dashboard/data/ingestion/taxii');
-    MESSAGING$.notifyError('An error occurred while importing Taxii Feed configuration.');
+    MESSAGING$.notifyError(t_i18n('An error occurred while importing Taxii Feed configuration.'));
   };
 
   const { dialogConnectivityLostStatus } = useXtmHubDownloadDocument({

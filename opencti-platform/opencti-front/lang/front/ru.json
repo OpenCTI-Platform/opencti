@@ -243,6 +243,7 @@
   "An enumeration of Windows service statuses": "Перечисление статусов служб Windows",
   "An enumeration of Windows service types": "Перечисление типов служб Windows",
   "An error occurred while creating the connector": "При создании коннектора произошла ошибка",
+  "An error occurred while importing Taxii Feed configuration.": "При импорте конфигурации Taxii Feed произошла ошибка.",
   "An error occurred while retrieving data for this widget:": "При получении данных для этого виджета произошла ошибка:",
   "An error occurred while updating the connector": "При обновлении коннектора произошла ошибка",
   "An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.": "Триггер экземпляра на сущности X уведомляет о следующих событиях: обновление/удаление X, создание/удаление отношения от/к X, создание/удаление сущности, которая имеет X в своих рефсах (например, содержит X, разделяется с X, создается X...), добавление/удаление X в рефсах сущности.",

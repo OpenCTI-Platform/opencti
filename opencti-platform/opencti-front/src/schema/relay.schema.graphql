@@ -12817,6 +12817,7 @@ type TaxiiFeedAddInputFromImport {
   collection: String!
   authentication_type: String!
   authentication_value: String!
+  added_after_start: String
 }
 
 input IngestionTaxiiAddInput {

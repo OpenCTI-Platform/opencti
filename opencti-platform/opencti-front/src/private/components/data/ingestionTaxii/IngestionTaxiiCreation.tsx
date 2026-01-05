@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
-import makeStyles from '@mui/styles/makeStyles';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -17,21 +16,10 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import IngestionCreationUserHandling from '@components/data/IngestionCreationUserHandling';
-import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { IngestionTaxiiImportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiImportQuery.graphql';
 import { FormikHelpers } from 'formik/dist/types';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const IngestionTaxiiCreationMutation = graphql`
   mutation IngestionTaxiiCreationMutation($input: IngestionTaxiiAddInput!) {
@@ -41,25 +29,28 @@ const IngestionTaxiiCreationMutation = graphql`
   }
 `;
 
-const ingestionTaxiiCreationValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  uri: Yup.string().required(t('This field is required')),
-  version: Yup.string().required(t('This field is required')),
-  collection: Yup.string().required(t('This field is required')),
-  authentication_type: Yup.string().required(t('This field is required')),
-  authentication_value: Yup.string().nullable(),
-  username: Yup.string().nullable(),
-  password: Yup.string().nullable(),
-  cert: Yup.string().nullable(),
-  key: Yup.string().nullable(),
-  ca: Yup.string().nullable(),
-  user_id: Yup.object().nullable(),
-  added_after_start: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
-  confidence_to_score: Yup.bool().nullable(),
-});
+const ingestionTaxiiCreationValidation = () => {
+  const { t_i18n } = useFormatter();
+  return Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+    uri: Yup.string().required(t_i18n('This field is required')),
+    version: Yup.string().required(t_i18n('This field is required')),
+    collection: Yup.string().required(t_i18n('This field is required')),
+    authentication_type: Yup.string().required(t_i18n('This field is required')),
+    authentication_value: Yup.string().nullable(),
+    username: Yup.string().nullable(),
+    password: Yup.string().nullable(),
+    cert: Yup.string().nullable(),
+    key: Yup.string().nullable(),
+    ca: Yup.string().nullable(),
+    user_id: Yup.object().nullable(),
+    added_after_start: Yup.date()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .nullable(),
+    confidence_to_score: Yup.bool().nullable(),
+  });
+};
 
 interface IngestionTaxiiAddInput {
   name: string;
@@ -109,7 +100,6 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
   drawerSettings,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const [commit] = useApiMutation(IngestionTaxiiCreationMutation);
 
@@ -159,7 +149,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
     uri: ingestionTaxiiData?.uri || '',
     version: ingestionTaxiiData?.version || '',
     collection: ingestionTaxiiData?.collection || '',
-    added_after_start: null,
+    added_after_start: ingestionTaxiiData?.added_after_start ? new Date(ingestionTaxiiData?.added_after_start) : null,
     authentication_type: ingestionTaxiiData?.authentication_type || 'none',
     user_id: '',
     automatic_user: true,
@@ -176,7 +166,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
       {({ onClose }) => (
         <Formik
           initialValues={initialValues}
-          validationSchema={ingestionTaxiiCreationValidation(t_i18n)}
+          validationSchema={ingestionTaxiiCreationValidation()}
           onSubmit={handleSubmit}
           onReset={onClose}
         >
@@ -315,12 +305,14 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}
                 containerstyle={fieldSpacingContainerStyle}
               />
-              <div className={classes.buttons}>
+              <div style={{ marginTop: 20,
+                textAlign: 'right' }}
+              >
                 <Button
                   variant="contained"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  style={{ marginLeft: 10 }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
@@ -329,7 +321,8 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                   color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  style={{ marginLeft: 10 }}
+
                 >
                   {drawerSettings?.button ?? t_i18n('Create')}
                 </Button>

@@ -243,6 +243,7 @@
   "An enumeration of Windows service statuses": "Una enumeración de estados de servicio de Windows",
   "An enumeration of Windows service types": "Una enumeración de tipos de servicio Windows",
   "An error occurred while creating the connector": "Se ha producido un error al crear el conector",
+  "An error occurred while importing Taxii Feed configuration.": "Se ha producido un error al importar la configuración de Taxii Feed.",
   "An error occurred while retrieving data for this widget:": "Se ha producido un error al recuperar los datos de este widget:",
   "An error occurred while updating the connector": "Se ha producido un error al actualizar el conector",
   "An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.": "Un desencadenador de instancia en una entidad X notifica los siguientes eventos: actualización/eliminación de X, creación/eliminación de una relación de/hacia X, creación/eliminación de una entidad que tiene X en sus referencias (por ejemplo, contiene X, se comparte con X, es creada por X...), agrega/elimina X en la referencia de una entidad.",

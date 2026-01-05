@@ -243,6 +243,7 @@
   "An enumeration of Windows service statuses": "Windows 服务状态枚举",
   "An enumeration of Windows service types": "Windows 服务类型枚举",
   "An error occurred while creating the connector": "创建连接器时发生错误",
+  "An error occurred while importing Taxii Feed configuration.": "导入 Taxii Feed 配置时发生错误。",
   "An error occurred while retrieving data for this widget:": "在检索此 widget 的数据时发生错误：",
   "An error occurred while updating the connector": "更新连接器时发生错误",
   "An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.": "实体 X 的实例触发器会通知以下事件：更新/删除 X、创建/删除与 X 的关系、创建/删除在其引用中包含 X 的实体（例如包含 X、与 X 共享、由 X 创建......）、在实体的引用中添加/删除 X。",

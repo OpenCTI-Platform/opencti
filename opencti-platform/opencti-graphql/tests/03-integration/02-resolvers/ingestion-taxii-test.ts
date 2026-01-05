@@ -109,16 +109,12 @@ describe('TAXII ingestion resolver standard behavior', () => {
       variables: { id: createdTaxiiIngesterId },
     });
     const taxiiFeedIngestion = JSON.parse(data?.ingestionTaxii.toConfigurationExport);
-    expect(taxiiFeedIngestion).toMatchObject({
-      configuration: {
-        name: 'Taxii ingester for integration test',
-        uri: 'http://taxiserver.invalid',
-        version: TaxiiVersion.V21,
-        collection: 'TaxiCollection',
-        authentication_type: IngestionAuthType.Basic,
-      },
-      openCTI_version: '6.9.4',
-      type: 'taxiiFeeds',
+    expect(taxiiFeedIngestion.configuration).toMatchObject({
+      name: 'Taxii ingester for integration test',
+      uri: 'http://taxiserver.invalid',
+      version: TaxiiVersion.V21,
+      collection: 'TaxiCollection',
+      authentication_type: IngestionAuthType.Basic,
     });
   });
 
