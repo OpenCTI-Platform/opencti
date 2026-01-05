@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import type { DisseminationListAddInput, EditInput } from '../../../src/generated/graphql';
 import { addDisseminationList, deleteDisseminationList, fieldPatchDisseminationList } from '../../../src/modules/disseminationList/disseminationList-domain';
 import { buildStandardUser, testContext } from '../../utils/testQuery';
@@ -18,7 +18,7 @@ const TEST_DISSEMINATION_LIST_UPDATE_INPUT: EditInput[] = [
 ];
 
 describe('Create dissemination list', async () => {
-  beforeEach(() => {
+  beforeAll(() => {
     // Activate EE for this test
     vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
     vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
