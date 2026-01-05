@@ -347,7 +347,6 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             name="killChainPhases"
             required={(mandatoryAttributes.includes('killChainPhases'))}
             style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
             helpertext={(
               <SubscriptionFocus
                 context={context}
