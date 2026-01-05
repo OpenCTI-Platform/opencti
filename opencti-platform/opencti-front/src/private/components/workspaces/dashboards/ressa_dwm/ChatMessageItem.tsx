@@ -23,13 +23,120 @@ interface ChatMessageItemProps {
   message: ChatMessage;
 }
 
+// Function to normalize unicode double quotes to standard double quote
+const normalizeUnicodeQuotes = (text: string): string => {
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
+  
+  // First, decode any unicode escape sequences (like \u201C)
+  let decodedText = text.replace(/\\u([0-9A-F]{4})/gi, (match, hex) => {
+    const codePoint = parseInt(hex, 16);
+    // Check if it's a unicode quotation mark character
+    if ((codePoint >= 0x201C && codePoint <= 0x201F) || 
+        (codePoint >= 0x2033 && codePoint <= 0x2037) ||
+        codePoint === 0x275D || codePoint === 0x275E ||
+        (codePoint >= 0x301D && codePoint <= 0x301F)) {
+      return '"';
+    }
+    return match;
+  });
+  
+  // Replace various unicode double quote characters with standard "
+  // Using unicode ranges for comprehensive coverage
+  return decodedText
+    .replace(/[\u201C\u201D\u201E\u201F]/g, '"')  // General quotation marks (U+201C-201F)
+    .replace(/[\u2033\u2036\u2037]/g, '"')       // Prime quotation marks (U+2033, U+2036-2037)
+    .replace(/[\u275D\u275E]/g, '"')             // Heavy quotation marks (U+275D-275E)
+    .replace(/[\u301D\u301E\u301F]/g, '"');      // Additional quotation marks (U+301D-301F)
+};
+
+// Function to remove unwanted whitespace characters from text
+const removeWhitespaceChars = (text: string): string => {
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
+  
+  // Remove newline (\n), carriage return (\r), tab (\t), and other control characters
+  return text
+    .replace(/\n/g, '')      // Remove newline
+    .replace(/\r/g, '')      // Remove carriage return
+    .replace(/\t/g, '')      // Remove tab
+    .replace(/\f/g, '')      // Remove form feed
+    .replace(/\v/g, '')      // Remove vertical tab
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, ''); // Remove other control characters
+};
+
+// Function to replace nested quotes inside strings with single quotes
+const replaceNestedQuotes = (text: string): string => {
+  if (!text || typeof text !== 'string') {
+    return text;
+  }
+  
+  let result = '';
+  let inString = false;
+  let escapeNext = false;
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    
+    if (escapeNext) {
+      result += char;
+      escapeNext = false;
+      continue;
+    }
+    
+    if (char === '\\') {
+      result += char;
+      escapeNext = true;
+      continue;
+    }
+    
+    if (char === '"') {
+      if (!inString) {
+        // Opening quote - start the string
+        inString = true;
+        result += char;
+      } else {
+        // Closing quote - check if it should close the string
+        const nextChars = text.substring(i + 1).trim();
+        if (nextChars.startsWith(',') || nextChars.startsWith(':') || nextChars.startsWith('}') || nextChars.startsWith(']')) {
+          // This closes the string
+          inString = false;
+          result += char;
+        } else {
+          // This is a nested quote inside the string - replace with '
+          result += "'";
+        }
+      }
+    } else {
+      result += char;
+    }
+  }
+  
+  return result;
+};
+
 // Function to check and format JSON
 const formatJsonIfNeeded = (text: string): { isJson: boolean; formattedText: string; remainingText?: string } => {
   if (!text || typeof text !== 'string') {
     return { isJson: false, formattedText: text };
   }
 
-  const trimmedText = text.trim();
+  // Debug: log original text to check for unicode quotes
+  // const hasUnicodeQuotes = /[\u201C-\u201F\u2033\u2036\u2037\u275D\u275E\u301D-\u301F]/.test(text);
+  // if (hasUnicodeQuotes) {
+  //   console.log('Found unicode quotes in text:', text);
+  // }
+  
+  const normalizedText = normalizeUnicodeQuotes(text);
+  const cleanedText = removeWhitespaceChars(normalizedText);
+  const replacedQuotes = replaceNestedQuotes(cleanedText);
+  // Debug: check if normalization changed anything
+  // if (normalizedText !== text) {
+  //   console.log('Text normalized:', { original: text, normalized: normalizedText });
+  // }
+  const trimmedText = replacedQuotes.trim();
   
   // First, try to parse the entire text (first with standard JSON, then with JSON5)
   try {
@@ -66,7 +173,17 @@ const formatJsonIfNeeded = (text: string): { isJson: boolean; formattedText: str
         }
         
         if (char === '"' && !escapeNext) {
-          inString = !inString;
+          if (!inString) {
+            // Opening quote - start the string
+            inString = true;
+          } else {
+            // Closing quote - only close if followed by , or : or } or ]
+            const nextChars = trimmedText.substring(i + 1).trim();
+            if (nextChars.startsWith(',') || nextChars.startsWith(':') || nextChars.startsWith('}') || nextChars.startsWith(']')) {
+              inString = false;
+            }
+            // If not followed by , or : or } or ], keep the string open
+          }
           continue;
         }
         
@@ -115,8 +232,9 @@ const formatJsonIfNeeded = (text: string): { isJson: boolean; formattedText: str
               formattedText: formatted,
               remainingText: remainingPart || undefined
             };
-          } catch {
+          } catch(e) {
             // If parsing still failed, JSON is not valid
+            // console.log(e.message)
           }
         }
       }
