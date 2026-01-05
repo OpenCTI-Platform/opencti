@@ -18,6 +18,8 @@ import { isNotEmptyField } from '../../database/utils';
 import { now, utcDate } from '../../utils/format';
 import { OPENCTI_CA } from '../../enterprise-edition/opencti_ca';
 import conf, { PLATFORM_VERSION } from '../../config/conf';
+import type { BasicStoreSettings } from '../../types/settings';
+import type { PlatformEe } from '../../generated/graphql';
 
 const GLOBAL_LICENSE_OPTION = 'global';
 export const LICENSE_OPTION_TRIAL = 'trial';
@@ -34,7 +36,7 @@ export const LICENSE_LEGACY_TYPE = '6.2.9.4.4.10';
 export const LICENSE_LEGACY_PRODUCT = '6.2.9.4.4.20';
 export const LICENSE_LEGACY_CREATOR = '6.2.9.4.4.30';
 
-const getExtensionValue = (clientCrt, standardOid, legacyOid) => {
+const getExtensionValue = (clientCrt: forge.pki.Certificate, standardOid: string, legacyOid: string) => {
   const extStandard = clientCrt.extensions.find((ext) => ext.id === standardOid);
   if (extStandard) {
     return extStandard.value;
@@ -42,16 +44,9 @@ const getExtensionValue = (clientCrt, standardOid, legacyOid) => {
   return clientCrt.extensions.find((ext) => ext.id === legacyOid)?.value;
 };
 
-export const getEnterpriseEditionActivePem = (rawPem) => {
-  const pemFromConfig = conf.get('app:enterprise_edition_license');
-  return isNotEmptyField(pemFromConfig) ? pemFromConfig : rawPem;
-};
-
-export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
-  const pemFromConfig = conf.get('app:enterprise_edition_license');
-  const pem = getEnterpriseEditionActivePem(rawPem);
-  const license_enterprise = isNotEmptyField(pem);
-  if (isNotEmptyField(pem)) {
+const decodeLicense = (platformInstanceId: string, licenseByConfiguration: boolean, pem: string | undefined): PlatformEe => {
+  const license_enterprise = pem !== undefined && isNotEmptyField(pem);
+  if (license_enterprise) {
     try {
       const clientCrt = forge.pki.certificateFromPem(pem);
       const license_valid_cert = OPENCTI_CA.verify(clientCrt);
@@ -82,7 +77,7 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
       }
       return {
         license_enterprise, // If EE activated
-        license_by_configuration: isNotEmptyField(pemFromConfig),
+        license_by_configuration: licenseByConfiguration,
         license_validated, // If EE license is ok (identifier, dates, ...)
         license_valid_cert,
         license_customer,
@@ -105,7 +100,7 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
   return {
     license_enterprise,
     license_validated: false,
-    license_by_configuration: isNotEmptyField(pemFromConfig),
+    license_by_configuration: licenseByConfiguration,
     license_valid_cert: false,
     license_extra_expiration: false,
     license_extra_expiration_days: 0,
@@ -122,6 +117,25 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
   };
 };
 
-export const getEnterpriseEditionInfo = (settings) => {
+export const getEnterpriseEditionActivePem = (rawPem: string | undefined) => {
+  const pemFromConfig: string | undefined = conf.get('app:enterprise_edition_license');
+  return isNotEmptyField(pemFromConfig) ? pemFromConfig : rawPem;
+};
+
+let cachedLicence: PlatformEe | undefined = undefined;
+let cachedPem: string | undefined = undefined;
+
+export const getEnterpriseEditionInfoFromPem = (platformInstanceId: string, rawPem: string | undefined) => {
+  const pem = getEnterpriseEditionActivePem(rawPem);
+  if (cachedLicence === undefined || cachedPem !== pem) {
+    const pemFromConfig = conf.get('app:enterprise_edition_license');
+    const licenseByConfiguration = isNotEmptyField(pemFromConfig);
+    cachedLicence = decodeLicense(platformInstanceId, licenseByConfiguration, pem);
+    cachedPem = pem;
+  }
+  return cachedLicence;
+};
+
+export const getEnterpriseEditionInfo = (settings: BasicStoreSettings) => {
   return getEnterpriseEditionInfoFromPem(settings.internal_id, settings.enterprise_license);
 };
