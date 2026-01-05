@@ -34,20 +34,6 @@ Fork and clone the git repositories
 
 - [https://github.com/OpenCTI-Platform/opencti/](https://github.com/OpenCTI-Platform/opencti/) - frontend / backend
 - [https://github.com/OpenCTI-Platform/connectors](https://github.com/OpenCTI-Platform/connectors) - connectors
-- [https://github.com/OpenCTI-Platform/docker](https://github.com/OpenCTI-Platform/docker) - docker stack
-
-## Dependencies containers
-
-In development dependencies are deployed trough containers.
-A development compose file is available in `~/opencti/opencti-platform/opencti-dev`
-
-```bash
-cd ~/docker
-#Start the stack in background
-docker-compose -f ./docker-compose-dev.yml up -d
-```
-
-You now have all the dependencies of OpenCTI running and waiting for product to run.
 
 ## Backend / API
 
@@ -86,9 +72,28 @@ At minimum adapt the admin part for the password and token.
     }
 ```
 
-### Install / start
+### Install / start OpenCTI for development
 
-Before starting the backend you need to install the nodejs modules
+For development setup, you need to run both the backend and frontend.
+
+#### Start infrastructure with docker composer
+
+```bash
+cd ~/opencti/opencti-platform/opencti-dev
+docker compose up -d
+```
+
+You should have:
+- elasticsearch
+- kibana
+- redis
+- redis insight
+- rabbitmq
+- minio
+
+#### Start backend
+
+Before starting the backend you need to install the nodejs modules and be sure to have started docker compose stack.
 
 ```bash
 cd ~/opencti/opencti-platform/opencti-graphql
@@ -114,66 +119,25 @@ The platform will start logging some interesting information
 {"category":"APP","level":"info","message":"[OPENCTI] API ready on port 4000","timestamp":"2023-07-02T16:37:12.382Z","version":"5.8.7"}
 ```
 
-If you want to start on another profile you can use the -e parameter.
-For example here to use the profile.json configuration file.
+OpenCTI api should be now up and running on [http://127.0.0.1:4000](http://127.0.0.1:4000). Note that without frontend started only api call are avlaible. Please follow next section for a complete development setup.
 
-```bash
-yarn start -e profile
-```
-### Code check
+#### Start frontend
 
-Before pushing your code you need to validate the syntax and ensure the testing will be validated.
-
-#### For validation
-
-`yarn lint`
-
-`yarn check-ts`
-
-#### For testing
-
-For starting the test you will need to create a test.json configuration file.
-You can use the same dependencies by only adapting all prefix for all dependencies.
-
-Tests are using dedicated indices in the Elastic database (prefixed with `test-*` or the prefix that you have set up in test.json).
-
-The following command will run the complete test suite using vitest, which might take more than 30 minutes.
-It starts by cleaning up the test database and seeding a minimal dataset.
-The file `vitest.config.test.ts` can be edited to run only a specific file pattern.
-
-`yarn test:dev`
-
-We also provide utility scripts to ease the development of new tests, especially integration tests that rely on the sample data 
-loaded after executing `00-inject/loader-test.ts`.
-
-To solely initialize the test database with this sample dataset run:
-
-`yarn test:dev:init`
-
-And then, execute the following command to run the pattern specified in the file `vitest.config.test.ts`, or add a file name
-to the command line to run only this test file.
-
-`yarn test:dev:resume`
-
-This last command will NOT cleanup & initialize the test database and thus will be quicker to execute. 
-
-## Frontend
-
-### Install / start
-
-Before starting the backend you need to install the nodejs modules
+Before starting the frontend you need to install.
 
 ```bash
 cd ~/opencti/opencti-platform/opencti-front
 yarn install
 ```
 
-Then you can simply start the frontend with the yarn start command
+Then you can start the frontend
 
 ```bash
 cd ~/opencti/opencti-platform/opencti-front
 yarn start
 ```
+
+OpenCTI should be now up and running on [http://127.0.0.1:3000](http://127.0.0.1:3000)
 
 The frontend will start with some interesting information
 
@@ -191,21 +155,72 @@ The frontend will start with some interesting information
 [HPM] Proxy created: /static/flags/**  -> http://localhost:4000
 ```
 
-The web UI should be accessible on [http://127.0.0.1:3000](http://127.0.0.1:3000)
-
 ### Code check
 
 Before pushing your code you need to validate the syntax and ensure the testing will be validated.
 
 #### For validation
 
-`yarn lint`
+```bash
+cd ~/opencti/opencti-platform/opencti-front
+yarn lint
+yarn check-ts
 
-`yarn check-ts`
+cd ~/opencti/opencti-platform/opencti-graphql
+yarn lint
+yarn check-ts
+```
 
-#### For testing
+### For testing
 
-`yarn test`
+#### Backend tests 
+
+For starting the test you will need to create a test.json configuration file.
+You can use the same dependencies by only adapting all prefix for all dependencies.
+
+Tests are using dedicated indices in the Elastic database (prefixed with `test-*` or the prefix that you have set up in test.json).
+
+The following command will run the complete test suite using vitest, which might take more than 30 minutes.
+It starts by cleaning up the test database and seeding a minimal dataset.
+The file `vitest.config.test.ts` can be edited to run only a specific file pattern.
+
+`yarn test:dev`
+
+We also provide utility scripts to ease the development of new tests, especially integration tests that rely on the sample data 
+loaded after executing `tests/02-dataInjection`.
+
+To solely initialize the test database with this sample dataset run:
+
+`yarn test:dev:init`
+
+And then, execute the following command to run only this test file.
+
+`yarn test:dev:resume <testName>`
+
+This last command will NOT cleanup & initialize the test database and thus will be quicker to execute. 
+
+Some yarn command are made for CI but can be used locally too:
+
+```bash
+cd ~/opencti/opencti-platform/opencti-graphql
+
+# Run unit tests, no need for elastic or redis
+yarn test:ci-unit
+
+# Run data injection +  integration domain & resolvers test, but not sync part
+yarn test:ci-integration
+
+# Run data injection + integration domain & resolvers test, including sync part
+yarn test:ci-integration-sync
+
+# Run data injection + rule tests
+test:ci-rules-and-others
+```
+Those command works also for a single file, for example to run only one unit test:
+
+```bash
+yarn test:ci-unit <testFile>
+```
 
 ## Worker
 
