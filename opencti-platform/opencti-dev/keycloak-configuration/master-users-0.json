@@ -11,13 +11,12 @@
     "credentials" : [ {
       "id" : "8e297757-4d97-43cc-b4d2-6133c59d63ab",
       "type" : "password",
-      "userLabel" : "My password",
-      "createdDate" : 1767554383003,
-      "secretData" : "{\"value\":\"CjPke5aSvZZ9Z+NCOnodP6AiPhCv+xCgWQyqG2lF2ZE=\",\"salt\":\"bX5FYr91Kv+ZYSB2k28SHw==\",\"additionalParameters\":{}}",
+      "createdDate" : 1767598129421,
+      "secretData" : "{\"value\":\"88PeB64jNwArxy0NuneXrlvHQo4fZ6DZvCk3uwxFJOg=\",\"salt\":\"gF09TJwGHhd8t573OKoObg==\",\"additionalParameters\":{}}",
       "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
     } ],
     "disableableCredentialTypes" : [ ],
-    "requiredActions" : [ "UPDATE_PASSWORD" ],
+    "requiredActions" : [ ],
     "realmRoles" : [ "default-roles-master" ],
     "notBefore" : 0,
     "groups" : [ "/Administrator" ]
