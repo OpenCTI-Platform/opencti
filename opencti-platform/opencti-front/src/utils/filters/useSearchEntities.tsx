@@ -325,6 +325,11 @@ const useSearchEntities = ({
     value: 'object',
     type: 'stix-internal-relationship',
   };
+  const labelRelationshipType = {
+    label: t_i18n('relationship_object-label'),
+    value: 'objectLabel',
+    type: 'stix-meta-relationship',
+  };
 
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
@@ -918,6 +923,7 @@ const useSearchEntities = ({
               ...scrTypes,
               abstractTypeFilterValue('stix-sighting-relationship'),
               objectRelationshipType,
+              labelRelationshipType,
             ];
           } else { // display relationship types according to searchContext.entityTypes
             const { entityTypes } = searchContext;
@@ -934,6 +940,12 @@ const useSearchEntities = ({
               relationshipsTypes = [
                 ...relationshipsTypes,
                 objectRelationshipType,
+              ];
+            }
+            if (entityTypes.includes('object-label')) {
+              relationshipsTypes = [
+                ...relationshipsTypes,
+                labelRelationshipType,
               ];
             }
           }
