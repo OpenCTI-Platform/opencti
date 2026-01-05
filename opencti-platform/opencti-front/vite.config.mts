@@ -197,7 +197,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@components': path.resolve(__dirname, './src/private/components'),
-      '@common': path.resolve(__dirname, './src/components/common'),
       'src': path.resolve(__dirname, './src'),
       '@common': path.resolve(__dirname, './src/components/common')
     },
