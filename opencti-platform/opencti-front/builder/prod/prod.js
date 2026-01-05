@@ -1,6 +1,7 @@
 const esbuild = require("esbuild");
 const { cp, rename, rm, readdir, writeFile } = require("node:fs/promises");
 const { RelayPlugin } = require("../plugin/esbuild-relay");
+const { IconResolverPlugin } = require("../plugin/esbuild-icon-resolver");
 const { sassPlugin } = require("esbuild-sass-plugin");
 
 // Define args options
@@ -11,7 +12,7 @@ const buildPath = "./builder/prod/build";
 (async () => {
   await esbuild.build({
     logLevel: "info",
-    plugins: [RelayPlugin, sassPlugin()],
+    plugins: [IconResolverPlugin, RelayPlugin, sassPlugin()],
     entryPoints: ["src/front.tsx"],
     publicPath: "/",
     bundle: true,
@@ -50,7 +51,7 @@ const buildPath = "./builder/prod/build";
 
   const indexHtml = `
     <!doctype html>
-    <html lang="en">
+    <html lang="en" data-theme="fluent">
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
             <meta http-equiv="X-UA-Compatible" content="IE=edge">
