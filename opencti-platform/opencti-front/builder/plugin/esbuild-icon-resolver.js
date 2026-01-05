@@ -60,9 +60,16 @@ module.exports.IconResolverPlugin = {
 
         // Only return modified contents if changes were made
         if (result !== contents) {
+          // Determine the correct loader based on file extension
+          const ext = args.path.split(".").pop();
+          let loader = "js";
+          if (ext === "jsx") loader = "jsx";
+          else if (ext === "ts") loader = "ts";
+          else if (ext === "tsx") loader = "tsx";
+
           return {
             contents: result,
-            loader: "default",
+            loader,
           };
         }
 
