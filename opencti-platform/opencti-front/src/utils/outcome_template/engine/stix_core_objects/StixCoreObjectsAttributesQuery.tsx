@@ -166,6 +166,35 @@ const stixCoreObjectsAttributesQuery = graphql`
                 description
                 threat_actor_types
             }
+            ... on ThreatActorIndividual {
+                secondary_motivations
+                personal_motivations
+                primary_motivation
+                roles
+                sophistication
+                resource_level
+                goals
+                bornIn {
+                    name
+                }
+                ethnicity {
+                    name
+                }
+                date_of_birth
+                gender
+                marital_status
+                job_title
+                eye_color
+                hair_color
+                height {
+                    date_seen
+                    measure
+                }
+                weight {
+                    date_seen
+                    measure
+                }
+            }
             ... on Tool {
                 name
                 description
