@@ -1,6 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, editorQuery, getOrganizationIdByName, PLATFORM_ORGANIZATION, queryAsAdmin, securityQuery, testContext } from '../../utils/testQuery';
+import {
+  ADMIN_USER,
+  createHttpClient,
+  editorQuery,
+  getOrganizationIdByName,
+  PLATFORM_ORGANIZATION,
+  queryAsAdmin,
+  securityQuery,
+  testContext,
+  userQuery,
+} from '../../utils/testQuery';
 import { getInferences } from '../../utils/rule-utils';
 import ParticipateToPartsRule from '../../../src/rules/participate-to-parts/ParticipateToPartsRule';
 import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
@@ -20,6 +30,9 @@ import type { AuthUser } from '../../../src/types/user';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
+import { addReport } from '../../../src/domain/report';
+import type { AxiosInstance } from 'axios';
+import { INPUT_ASSIGNEE, INPUT_PARTICIPANT } from '../../../src/schema/general';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -145,6 +158,31 @@ const READ_PARTICIPANTS_QUERY = gql`
   }
 `;
 
+const READ_REPORT_QUERY = gql`
+  query report($id: String) {
+    report(id: $id) {
+      id
+      name
+      objectAssignee {
+        id
+        name
+      }
+      objectParticipant {
+        id
+        name
+      }
+    }
+  }
+`;
+
+const visibleAssigneesFromQueryResult = (queryResult: any) => {
+  return queryResult.data?.report?.[INPUT_ASSIGNEE]?.filter((n: { id: string; name: string }) => n.name !== 'Restricted');
+};
+
+const visibleParticipantsFromQueryResult = (queryResult: any) => {
+  return queryResult.data?.report?.[INPUT_PARTICIPANT]?.filter((n: { id: string; name: string }) => n.name !== 'Restricted');
+};
+
 // grouping of 'it' to test all the users are fetched in different contexts
 // the parameters are function to ensure the variables are initialized
 const shouldFetchAllTheUsers = async (
@@ -237,6 +275,9 @@ describe('Users visibility according to their direct organizations', () => {
   let USER_AB: AuthUser;
   let USER_O: AuthUser;
 
+  let USER_A_CLIENT: AxiosInstance;
+  let USER_AB_CLIENT: AxiosInstance;
+
   let reportInternalId: string;
 
   beforeAll(async () => {
@@ -265,6 +306,7 @@ describe('Users visibility according to their direct organizations', () => {
     orgaABInternalId = organizations.find((o) => o.data?.organizationAdd.name === 'orgaAB')?.data?.organizationAdd.id;
 
     // 02. Create the users and link them with their organization
+    // Users are part of a group with knowledge capabilities
     const organizationAId = await getOrganizationIdByName('orgaA');
     const organizationBId = await getOrganizationIdByName('orgaB');
     const organizationABId = await getOrganizationIdByName('orgaAB');
@@ -277,6 +319,7 @@ describe('Users visibility according to their direct organizations', () => {
         objectOrganization: [organizationAId],
       },
     };
+    USER_A_CLIENT = createHttpClient(USER_TO_CREATE_A.input.user_email, USER_TO_CREATE_A.input.password);
     const USER_TO_CREATE_B = {
       input: {
         name: 'userB',
@@ -293,6 +336,7 @@ describe('Users visibility according to their direct organizations', () => {
         objectOrganization: [organizationABId],
       },
     };
+    USER_AB_CLIENT = createHttpClient(USER_TO_CREATE_AB.input.user_email, USER_TO_CREATE_AB.input.password);
     const USER_TO_CREATE_O = {
       input: {
         name: 'userO',
@@ -336,37 +380,19 @@ describe('Users visibility according to their direct organizations', () => {
     expect(inferredParticipateToRelationships.length).toBe(2);
 
     // 04. Create a report with the 4 users as assignees, and userA and userO as participants
-    const REPORT_CREATE_QUERY = gql`
-      mutation ReportAdd($input: ReportAddInput!) {
-        reportAdd(input: $input) {
-          id
-          name
-          objectAssignee {
-            id
-            name
-          }
-          objectParticipant {
-            id
-            name
-          }
-        }
-      }
-    `;
-    const report = await queryAsAdmin({
-      query: REPORT_CREATE_QUERY,
-      variables: {
-        input: {
-          name: 'Report to test users visibility',
-          published: new Date(),
-          objectAssignee: [userAInternalId, userBInternalId, userABInternalId, userOInternalId],
-          objectParticipant: [userAInternalId, userOInternalId],
-        },
-      },
-    });
+    const REPORT_TO_CREATE = {
+      name: 'Report to test users visibility',
+      published: new Date(),
+      objectAssignee: [userAInternalId, userBInternalId, userABInternalId, userOInternalId],
+      objectParticipant: [userAInternalId, userOInternalId],
+    };
 
-    reportInternalId = report.data?.reportAdd.id;
-    expect(report.data?.reportAdd.objectAssignee.length).toEqual(4);
-    expect(report.data?.reportAdd.objectParticipant.length).toEqual(2);
+    // USER_O (which is in no organization) creates the report, so it will be viewable by everyone even with organization segregation activated
+    const report = await addReport(testContext, USER_A, REPORT_TO_CREATE);
+
+    reportInternalId = report.id;
+    expect(report.objectAssignee.length).toEqual(4);
+    expect(report.objectParticipant.length).toEqual(2);
   });
 
   afterAll(async () => {
@@ -588,23 +614,19 @@ describe('Users visibility according to their direct organizations', () => {
       expect(membersResult.length).toEqual(1);
     });
 
-    it('should fetch the assignees of a given report according to the user visibility if organization sharing is activated', async () => {
-      let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
-      expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(4); // all the assignees of the report
+    it('should fetch the assignees and participants of a given report according to the user visibility if organization sharing is activated', async () => {
+      let reportQueryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+      expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(4); // all the assignees of the report
+      expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(2); // all the participants of the report
 
-      report = await storeLoadById(testContext, USER_A, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
-      expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(2); // userA and userO
-    });
+      reportQueryResult = await userQuery(USER_A_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+      expect(reportQueryResult.data?.report?.[INPUT_ASSIGNEE]?.length).toEqual(4); // all the users before filtering the restricted ones
+      expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(2); // userA and userO
+      expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(2); // userA and userO
 
-    it('should fetch the participants of a given report according to the user visibility if organization sharing is activated', async () => {
-      let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
-      expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2); // all the participants of the report
-
-      report = await storeLoadById(testContext, USER_A, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
-      expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2); // userA and userO
-
-      report = await storeLoadById(testContext, USER_AB, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
-      expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(1); // userO
+      reportQueryResult = await userQuery(USER_AB_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+      expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(2); // userO and userAB
+      expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(1); // userO
     });
 
     describe('should fetch all the users if organization sharing is activated and settings option view_all_users = true', async () => {
