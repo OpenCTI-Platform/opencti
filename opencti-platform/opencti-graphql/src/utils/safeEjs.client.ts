@@ -80,8 +80,8 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
           }
         });
 
-        worker.on('error', (error) => {
-          once(() => reject(new Error(`Worker error: ${error.message}`)));
+        worker.on('error', (error: Error) => {
+          once(() => reject(new Error(`Worker error: ${error.message}`, { cause: error })));
         });
 
         worker.on('exit', (code) => {
