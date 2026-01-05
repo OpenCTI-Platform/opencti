@@ -1,7 +1,6 @@
 import { CSSProperties, HTMLAttributes, ReactNode, SyntheticEvent, useState } from 'react';
 import { union } from 'ramda';
 import { Field } from 'formik';
-import { makeStyles } from '@mui/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
@@ -10,18 +9,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { FieldOption } from '../../../../utils/field';
 import { KillChainPhasesSearchQuery$data } from '../../settings/__generated__/KillChainPhasesSearchQuery.graphql';
 import { getNodes } from '../../../../utils/connection';
-
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
 
 interface KillChainPhaseFieldOption extends FieldOption {
   kill_chain_name: string;
@@ -45,7 +32,6 @@ const KillChainPhasesField = ({
   disabled,
   required = false,
 }: KillChainPhasesFieldProps) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [killChainPhases, setKillChainPhases] = useState<KillChainPhaseFieldOption[]>([]);
 
@@ -94,10 +80,23 @@ const KillChainPhasesField = ({
         option: KillChainPhaseFieldOption,
       ) => (
         <li {...props} key={option.value}>
-          <div className={classes.icon} style={{ color: option.color }}>
+          <div
+            style={{
+              paddingTop: 4,
+              display: 'inline-block',
+              color: option.color,
+            }}
+          >
             <ItemIcon type="Kill-Chain-Phase" />
           </div>
-          <div className={classes.text}>{option.label}</div>
+          <div
+            style={{
+              display: 'inline-block',
+              flexGrow: 1,
+              marginLeft: 10,
+            }}
+          >{option.label}
+          </div>
         </li>
       )}
     />
