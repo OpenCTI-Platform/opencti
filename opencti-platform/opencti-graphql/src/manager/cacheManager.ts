@@ -148,8 +148,8 @@ const platformResolvedFilters = (context: AuthContext) => {
     // Resolve filters ids that are not already in the cache
     const currentFiltersValues = values; // current cache map
     const idsToSolve: string[] = []; // will contain the ids to resolve that are not already in the cache
-    // If a label was updated, we always need to update it in the cache
-    if (instance.entity_type === ENTITY_TYPE_LABEL) {
+    // If a label or marking was updated, we always need to update it in the cache
+    if (instance.entity_type === ENTITY_TYPE_LABEL || instance.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
       idsToSolve.push(instance.internal_id);
     } else {
       const filteringIds = extractResolvedFiltersFromInstance(instance);
