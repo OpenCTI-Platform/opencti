@@ -25,9 +25,7 @@ import { getSettings, settingsEditField } from '../../../src/domain/settings';
 import { getEntityFromCache, resetCacheForEntity } from '../../../src/database/cache';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import { SYSTEM_USER } from '../../../src/utils/access';
-import { RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../src/schema/stixRefRelationship';
 import type { AuthUser } from '../../../src/types/user';
-import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { addReport } from '../../../src/domain/report';
@@ -189,18 +187,24 @@ const shouldFetchAllTheUsers = async (
   fetchUserA: () => AuthUser,
   fetchUserAB: () => AuthUser,
   fetchUserO: () => AuthUser,
+  fetchUserAClient: () => AxiosInstance,
+  fetchUserOClient: () => AxiosInstance,
   fetchReportInternalId: () => string,
   contextExplanation: string,
 ) => {
   let USER_A: AuthUser;
   let USER_AB: AuthUser;
   let USER_O: AuthUser;
+  let USER_A_CLIENT: AxiosInstance;
+  let USER_O_CLIENT: AxiosInstance;
   let reportInternalId: string;
 
   beforeAll(() => {
     USER_A = fetchUserA();
     USER_AB = fetchUserAB();
     USER_O = fetchUserO();
+    USER_A_CLIENT = fetchUserAClient();
+    USER_O_CLIENT = fetchUserOClient();
     reportInternalId = fetchReportInternalId();
   });
 
@@ -220,36 +224,30 @@ const shouldFetchAllTheUsers = async (
     expect(queryResult.data?.members.edges.length).toEqual(4);
 
     let paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters }) as BasicConnection<BasicStoreEntity>;
-    expect(paginatedMembersResult.edges.filter((n: any) => n.node.entity_type === ENTITY_TYPE_USER).length).toEqual(4); // the users visible by userA: userA and userO
+    expect(paginatedMembersResult.edges.filter((n: any) => n.node.entity_type === ENTITY_TYPE_USER).length).toEqual(4);
 
     paginatedMembersResult = await findMembersPaginated(testContext, USER_O, { filters, entityTypes: [ENTITY_TYPE_USER] }) as BasicConnection<BasicStoreEntity>;
     expect(paginatedMembersResult.edges.length).toEqual(4);
 
     const membersResult = await findAllMembers(testContext, USER_AB, { filters }) as BasicStoreEntity[];
-    expect(membersResult.length).toEqual(4); // the users visible by userA: userA and userO
+    expect(membersResult.length).toEqual(4);
   });
 
-  it(`should fetch all the assignees of a report if ${contextExplanation}`, async () => {
-    let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
-    expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(4);
+  it(`should fetch all the assignees and participants of a report if ${contextExplanation}`, async () => {
+    let reportQueryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+    expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(4); // all the assignees of the report
+    expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(2); // all the participants of the report
 
-    report = await storeLoadById(testContext, USER_A, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
-    expect(report[RELATION_OBJECT_ASSIGNEE]?.length).toEqual(4);
-  });
-
-  it(`should fetch all the participants of a report if ${contextExplanation}`, async () => {
-    let report = await storeLoadById(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
-    expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2);
-
-    report = await storeLoadById(testContext, USER_A, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
-    expect(report[RELATION_OBJECT_PARTICIPANT]?.length).toEqual(2);
+    reportQueryResult = await userQuery(USER_A_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+    expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(4);
+    expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(2);
   });
 
   it(`should fetch all the users that are assignees of a report if ${contextExplanation}`, async () => {
     let queryResult = await queryAsAdmin({ query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
     expect(queryResult.data?.assignees.edges.length).toEqual(4);
 
-    queryResult = await editorQuery({ query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
+    queryResult = await userQuery(USER_A_CLIENT, { query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
     expect(queryResult.data?.assignees.edges.length).toEqual(4);
   });
 
@@ -277,6 +275,7 @@ describe('Users visibility according to their direct organizations', () => {
 
   let USER_A_CLIENT: AxiosInstance;
   let USER_AB_CLIENT: AxiosInstance;
+  let USER_O_CLIENT: AxiosInstance;
 
   let reportInternalId: string;
 
@@ -344,6 +343,7 @@ describe('Users visibility according to their direct organizations', () => {
         user_email: 'userO@mail.com',
       },
     };
+    USER_O_CLIENT = createHttpClient(USER_TO_CREATE_O.input.user_email, USER_TO_CREATE_O.input.password);
 
     const users = await Promise.all([USER_TO_CREATE_A, USER_TO_CREATE_B, USER_TO_CREATE_AB, USER_TO_CREATE_O].map((userToCreate) => queryAsAdmin({
       query: CREATE_USER_QUERY,
@@ -545,7 +545,15 @@ describe('Users visibility according to their direct organizations', () => {
       expect(settings.platform_organization).toEqual(undefined);
     });
 
-    await shouldFetchAllTheUsers(() => USER_A, () => USER_AB, () => USER_O, () => reportInternalId, 'no organization sharing');
+    await shouldFetchAllTheUsers(
+      () => USER_A,
+      () => USER_AB,
+      () => USER_O,
+      () => USER_A_CLIENT,
+      () => USER_O_CLIENT,
+      () => reportInternalId,
+      'no organization sharing',
+    );
   });
 
   describe('should fetch users according to the user visibility if organization sharing is activated', async () => {
@@ -625,8 +633,7 @@ describe('Users visibility according to their direct organizations', () => {
       expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(2); // userA and userO
 
       reportQueryResult = await userQuery(USER_AB_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
-      expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(2); // userO and userAB
-      expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(1); // userO
+      expect(reportQueryResult.data?.report).toEqual(null); // the report is not visible for userAB
     });
 
     describe('should fetch all the users if organization sharing is activated and settings option view_all_users = true', async () => {
@@ -648,7 +655,15 @@ describe('Users visibility according to their direct organizations', () => {
         resetCacheForEntity(ENTITY_TYPE_SETTINGS);
       });
 
-      await shouldFetchAllTheUsers(() => USER_A, () => USER_AB, () => USER_O, () => reportInternalId, 'settings option view_all_users = true');
+      await shouldFetchAllTheUsers(
+        () => USER_A,
+        () => USER_AB,
+        () => USER_O,
+        () => USER_A_CLIENT,
+        () => USER_O_CLIENT,
+        () => reportInternalId,
+        'settings option view_all_users = true',
+      );
     });
   });
 });
