@@ -89,6 +89,7 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'due_date', label: 'Due date' },
   ]],
   ['Threat-Actor-Group', [
+    { attribute: 'threat_actor_types', label: 'Threat actor types' },
     { attribute: 'first_seen', label: 'First seen' },
     { attribute: 'last_seen', label: 'Last seen' },
   ]],

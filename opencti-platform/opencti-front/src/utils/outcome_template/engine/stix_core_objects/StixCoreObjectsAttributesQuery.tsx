@@ -164,6 +164,7 @@ const stixCoreObjectsAttributesQuery = graphql`
                 first_seen
                 last_seen
                 description
+                threat_actor_types
             }
             ... on Tool {
                 name
