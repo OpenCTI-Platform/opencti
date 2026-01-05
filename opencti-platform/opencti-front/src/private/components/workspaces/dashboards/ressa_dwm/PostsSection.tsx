@@ -34,7 +34,7 @@ import PostsTableRenderer from './PostsTableRenderer';
 const PostsSection: React.FC = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [currentTab, setCurrentTab] = useState<number>(1);
+  const [currentTab, setCurrentTab] = useState<number>(0);
   const [searchText, setSearchText] = useState<string>('');
   const [searchTypeAnchor, setSearchTypeAnchor] = useState<null | HTMLElement>(null);
   const [page, setPage] = useState<number>(1);

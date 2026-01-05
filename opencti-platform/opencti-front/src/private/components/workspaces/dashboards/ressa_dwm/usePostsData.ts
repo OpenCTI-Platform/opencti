@@ -64,13 +64,6 @@ export const usePostsData = ({
           return;
         }
 
-        // Build filters array
-        let allFilters = [...filters];
-        if (searchText) {
-          // Add search filter based on tab type
-          allFilters.push(`title:${searchText}:contains`);
-        }
-
         // Determine which query to use based on tab
         let query = '';
         let variables: any = {
@@ -88,6 +81,7 @@ export const usePostsData = ({
                     id
                     messageId
                     message
+                    stix_ids
                     date
                     channel {
                       id
@@ -98,26 +92,33 @@ export const usePostsData = ({
                 }
               }
             `;
-            variables.filters = allFilters;
+            variables.filters = [];
             break;
 
           case 1: // Exploit Posts
             query = `
               query GetExploitPosts($filters: Object, $page: Int, $perPage: Int) {
                 getExploitPosts(page: $page, perPage: $perPage, filters: $filters) {
+                  page
+                  perPage
                   total
                   data {
                     id
+                    stix_ids
                     title
+                    content
+                    author
+                    url
+                    postId
                     categoryId
+                    translations
                     createdAt
                     createdDate
                   }
                 }
               }
             `;
-            // For Exploit Posts, filters should be an object, not array
-            variables.filters = allFilters.length > 0 ? Object.fromEntries(allFilters.map(f => f.split(':'))) : {};
+            variables.filters = [];
             break;
 
           case 2: // Russian Market Items
@@ -127,15 +128,24 @@ export const usePostsData = ({
                   total
                   data {
                     id
+                    stix_ids
                     stealer
+                    country
+                    city
+                    isp
+                    links
                     vendor
+                    vendor_rate
                     price
                     date
+                    size
                     created_at
+                    updated_at
                   }
                 }
               }
             `;
+            variables.filters = [];
             break;
 
           case 3: // IntelX Leaks
@@ -161,7 +171,7 @@ export const usePostsData = ({
                 }
               }
             `;
-            variables.filters = allFilters;
+            variables.filters = [];
             variables.leak = true;
             break;
 
@@ -199,7 +209,7 @@ export const usePostsData = ({
                 }
               }
             `;
-            variables.filters = allFilters;
+            variables.filters = [];
             variables.leak = false;
             break;
 
