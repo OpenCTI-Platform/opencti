@@ -14,7 +14,10 @@ import {
   IS_INFERRED_FILTER,
   isComplexConversionFilterKey,
   LAST_PIR_SCORE_DATE_FILTER,
+  LAST_PIR_SCORE_DATE_SUBFILTER,
+  PIR_IDS_SUBFILTER,
   PIR_SCORE_FILTER,
+  PIR_SCORE_SUBFILTER,
   RELATION_DYNAMIC_FROM_FILTER,
   RELATION_DYNAMIC_SUBFILTER,
   RELATION_DYNAMIC_TO_FILTER,
@@ -524,14 +527,14 @@ const adaptFilterToIsInferredFilterKey = (filter: Filter) => {
 };
 
 const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, filterKey: string, filter: Filter) => {
-  const pirIds: string[] = filter.values.find((v) => v.key === 'pir_ids')?.values ?? [];
+  const pirIds: string[] = filter.values.find((v) => v.key === PIR_IDS_SUBFILTER)?.values ?? [];
   if (pirIds.length === 0) {
     throw FunctionalError('This filter should be related to at least 1 Pir', { filter });
   }
   // check the user has access to the PIR
   await Promise.all(pirIds.map((pirId) => getPirWithAccessCheck(context, user, pirId)));
   // push the nested pir filter associated to the given PIR IDs
-  const subKey = filterKey === PIR_SCORE_FILTER ? 'score' : 'date';
+  const subKey = filterKey === PIR_SCORE_FILTER ? PIR_SCORE_SUBFILTER : LAST_PIR_SCORE_DATE_SUBFILTER;
   const subFilter = filter.values.find((v) => v.key === subKey);
   const newFilter = {
     key: ['pir_information'],

@@ -103,6 +103,9 @@ export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship
 // for PIR
 export const PIR_SCORE_FILTER = 'pir_score';
 export const LAST_PIR_SCORE_DATE_FILTER = 'last_pir_score_date';
+export const PIR_SCORE_SUBFILTER = 'score';
+export const LAST_PIR_SCORE_DATE_SUBFILTER = 'date';
+export const PIR_IDS_SUBFILTER = 'pir_ids';
 
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';

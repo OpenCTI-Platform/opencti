@@ -46,6 +46,8 @@ import {
   WORKFLOW_FILTER,
   PATTERN_TYPE_FILTER,
   PIR_SCORE_FILTER,
+  PIR_SCORE_SUBFILTER,
+  PIR_IDS_SUBFILTER,
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -460,8 +462,8 @@ export const testCvssSeverity = (stix: any, filter: Filter) => {
 
 export const testPirScore = (stix: any, filter: Filter) => {
   // Retrieve data from the filter.
-  const pirIds = filter.values.find((v) => v.key === 'pir_ids')?.values ?? [];
-  const pirScoreFilter = filter.values.find((v) => v.key === 'score');
+  const pirIds = filter.values.find((v) => v.key === PIR_IDS_SUBFILTER)?.values ?? [];
+  const pirScoreFilter = filter.values.find((v) => v.key === PIR_SCORE_SUBFILTER);
   // Determine which PIR of the stix entity is of interest.
   // If no PIR IDs set in the filter, then we want to check on all PIR of the stix entity.
   const pirInformation: PirInformation[] | undefined = pirIds.length === 0
