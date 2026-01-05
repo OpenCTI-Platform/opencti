@@ -1,11 +1,12 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
-const { cp, readFile } = require("node:fs/promises")
+const { cp, readFile } = require("node:fs/promises");
 const path = require("node:path");
 const esbuild = require("esbuild");
 const chokidar = require("chokidar");
 const compression = require("compression");
 const { RelayPlugin } = require("../plugin/esbuild-relay");
+const { IconResolverPlugin } = require("../plugin/esbuild-icon-resolver");
 const { sassPlugin } = require("esbuild-sass-plugin");
 
 const basePath = "";
@@ -21,41 +22,49 @@ const debounce = (func, timeout = 500) => {
     }, timeout);
   };
 };
-const middleware = (target, ws = false) => createProxyMiddleware({
-  target: process.env.BACK_END_URL ?? "http://localhost:4000",
-  pathFilter: basePath + target,
-  changeOrigin: true,
-  ws,
-});
+const middleware = (target, ws = false) =>
+  createProxyMiddleware({
+    target: process.env.BACK_END_URL ?? "http://localhost:4000",
+    pathFilter: basePath + target,
+    changeOrigin: true,
+    ws,
+  });
 
 (async () => {
   // Start with an initial build
   const builder = await esbuild.context({
-      logLevel: "info",
-      plugins: [RelayPlugin, sassPlugin()],
-      entryPoints: ["src/front.tsx"],
-      publicPath: "/",
-      bundle: true,
-      banner: {
-        js: ` (() => new EventSource("http://localhost:${frontPort}/dev").onmessage = () => location.reload())();`,
-      },
-      loader: {
-        ".js": "jsx",
-        ".svg": "file",
-        ".png": "file",
-        ".woff": "dataurl",
-        ".woff2": "dataurl",
-        ".ttf": "dataurl",
-        ".eot": "dataurl",
-      },
-      assetNames: "[dir]/[name]-[hash]",
-      target: ["chrome58"],
-      minify: true,
-      mainFields: ["browser", "module", "main"],
-      keepNames: true,
-      sourcemap: true,
-      outdir: "builder/dev/build",
-    })
+    logLevel: "info",
+    plugins: [IconResolverPlugin, RelayPlugin, sassPlugin()],
+    entryPoints: ["src/front.tsx"],
+    publicPath: "/",
+    bundle: true,
+    banner: {
+      js: ` (() => new EventSource("http://localhost:${frontPort}/dev").onmessage = () => location.reload())();`,
+    },
+    loader: {
+      ".js": "jsx",
+      ".svg": "file",
+      ".png": "file",
+      ".woff": "dataurl",
+      ".woff2": "dataurl",
+      ".ttf": "dataurl",
+      ".eot": "dataurl",
+    },
+    assetNames: "[dir]/[name]-[hash]",
+    target: ["chrome58"],
+    minify: true,
+    keepNames: true,
+    sourcemap: true,
+    outdir: "builder/dev/build",
+    alias: {
+      "@mui/icons-material-original": "./node_modules/@mui/icons-material",
+      "mdi-material-ui-original": "./node_modules/mdi-material-ui",
+      "src/icon-bridge/mui-icons-mapping":
+        "./src/icon-bridge/mui-icons-mapping.jsx",
+      "src/icon-bridge/mdi-icons-mapping":
+        "./src/icon-bridge/mdi-icons-mapping.jsx",
+    },
+  });
   await builder.rebuild();
 
   // Copy public files to build
@@ -66,12 +75,19 @@ const middleware = (target, ws = false) => createProxyMiddleware({
 
   // Listen change for hot recompile
   if (!process.env.E2E_TEST) {
-    chokidar.watch("src/**/*.{js,jsx,ts,tsx,scss}", {
-      awaitWriteFinish: true,
-      ignoreInitial: true,
-    })
-      .on('error', (error) => console.log(`[HOT RELOAD] Watcher error: ${error}`))
-      .on('ready', () => console.log('[HOT RELOAD] Initial scan complete. Ready for changes'))
+    chokidar
+      .watch("src/**/*.{js,jsx,ts,tsx,scss}", {
+        awaitWriteFinish: true,
+        ignoreInitial: true,
+      })
+      .on("error", (error) =>
+        console.log(`[HOT RELOAD] Watcher error: ${error}`)
+      )
+      .on("ready", () =>
+        console.log(
+          "[HOT RELOAD] Initial scan complete. Ready for changes"
+        )
+      )
       .on(
         "all",
         debounce(() => {
@@ -118,14 +134,17 @@ const middleware = (target, ws = false) => createProxyMiddleware({
   app.use(middleware("/graphql", true));
   app.use(middleware("/auth/**"));
   app.use(middleware("/static/flags/**"));
-  app.use(basePath + `/static`, express.static(path.join(__dirname, "./build/static")));
+  app.use(
+    basePath + `/static`,
+    express.static(path.join(__dirname, "./build/static"))
+  );
   app.use(`/css`, express.static(path.join(__dirname, "./build")));
   app.use(`/js`, express.static(path.join(__dirname, "./build")));
   app.get("*any", async (req, res) => {
     const data = await readFile(`${__dirname}/index.html`, "utf8");
     const withOptionValued = data
       .replace(/%BASE_PATH%/g, basePath)
-      .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
+      .replace(/%APP_SCRIPT_SNIPPET%/g, "")
       .replace(/%APP_TITLE%/g, "OpenCTI Dev")
       .replace(/%APP_DESCRIPTION%/g, "OpenCTI Development platform")
       .replace(/%APP_FAVICON%/g, `${basePath}/static/ext/favicon.png`)

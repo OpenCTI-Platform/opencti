@@ -30,7 +30,7 @@ const buildPath = "./builder/prod/build";
     target: ["chrome58"],
     minify: true,
     keepNames: true,
-    sourcemap: keep,
+    sourcemap: true,
     outdir: "builder/prod/build",
     alias: {
       "@mui/icons-material-original": "./node_modules/@mui/icons-material",
@@ -49,10 +49,12 @@ const buildPath = "./builder/prod/build";
 
   // Generate index.html
   const cssImport = (await readdir(`${buildPath}/static/css`))
+    .filter((f) => f.endsWith(".css"))
     .map((f) => `<link href="%BASE_PATH%/static/css/${f}" rel="stylesheet">`)
     .join("\n");
 
   const jsImport = (await readdir(`${buildPath}/static/js`))
+    .filter((f) => f.endsWith(".js"))
     .map(
       (f) => `<script defer="defer" src="%BASE_PATH%/static/js/${f}"></script>`
     )

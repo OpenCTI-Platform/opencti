@@ -1,46 +1,63 @@
-import { createLogger, defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import * as path from 'node:path';
-import relay from 'vite-plugin-relay';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { createLogger, defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import * as path from "node:path";
+import relay from "vite-plugin-relay";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 function myIconResolver() {
   return {
-    name: 'icon-swapper-plugin',
+    name: "icon-swapper-plugin",
     transform(code, id) {
-      if (!code.includes('@mui/icons-material') && !code.includes("mdi-material-ui")) {
+      if (
+        !code.includes("@mui/icons-material") &&
+        !code.includes("mdi-material-ui")
+      ) {
         return null;
       }
 
       let result = code;
-      
+
       // Handle named imports: import { Icon } from '@mui/icons-material'
-      const muiNamedRegex = /import\s*\{([^}]+)\}\s*from\s*['"]@mui\/icons-material['"]/g;
+      const muiNamedRegex =
+        /import\s*\{([^}]+)\}\s*from\s*['"]@mui\/icons-material['"]/g;
       result = result.replace(muiNamedRegex, (fullMatch, importsString) => {
-        const icons = importsString.split(',').map(s => s.trim());
-        return `import { ${icons.join(', ')} } from 'src/icon-bridge/mui-icons-mapping'`;
+        const icons = importsString.split(",").map((s) => s.trim());
+        return `import { ${icons.join(
+          ", "
+        )} } from 'src/icon-bridge/mui-icons-mapping'`;
       });
-      
+
       // Handle default imports: import IconName from '@mui/icons-material/IconName'
-      const muiDefaultRegex = /import\s+(\w+)\s+from\s*['"]@mui\/icons-material\/(\w+)['"]/g;
-      result = result.replace(muiDefaultRegex, (fullMatch, localName, iconName) => {
-        return `import { ${iconName} as ${localName} } from 'src/icon-bridge/mui-icons-mapping'`;
-      });
-      
+      const muiDefaultRegex =
+        /import\s+(\w+)\s+from\s*['"]@mui\/icons-material\/(\w+)['"]/g;
+      result = result.replace(
+        muiDefaultRegex,
+        (fullMatch, localName, iconName) => {
+          return `import { ${iconName} as ${localName} } from 'src/icon-bridge/mui-icons-mapping'`;
+        }
+      );
+
       // Handle named imports: import { Icon } from 'mdi-material-ui'
-      const mdiNamedRegex = /import\s*\{([^}]+)\}\s*from\s*['"]mdi-material-ui['"]/g;
+      const mdiNamedRegex =
+        /import\s*\{([^}]+)\}\s*from\s*['"]mdi-material-ui['"]/g;
       result = result.replace(mdiNamedRegex, (fullMatch, importsString) => {
-        const icons = importsString.split(',').map(s => s.trim());
-        return `import { ${icons.join(', ')} } from 'src/icon-bridge/mdi-icons-mapping'`;
+        const icons = importsString.split(",").map((s) => s.trim());
+        return `import { ${icons.join(
+          ", "
+        )} } from 'src/icon-bridge/mdi-icons-mapping'`;
       });
-      
+
       // Handle default imports: import IconName from 'mdi-material-ui/IconName'
-      const mdiDefaultRegex = /import\s+(\w+)\s+from\s*['"]mdi-material-ui\/(\w+)['"]/g;
-      result = result.replace(mdiDefaultRegex, (fullMatch, localName, iconName) => {
-        return `import { ${iconName} as ${localName} } from 'src/icon-bridge/mdi-icons-mapping'`;
-      });
-      
+      const mdiDefaultRegex =
+        /import\s+(\w+)\s+from\s*['"]mdi-material-ui\/(\w+)['"]/g;
+      result = result.replace(
+        mdiDefaultRegex,
+        (fullMatch, localName, iconName) => {
+          return `import { ${iconName} as ${localName} } from 'src/icon-bridge/mdi-icons-mapping'`;
+        }
+      );
+
       return result !== code ? result : null;
-    }
+    },
   };
 }
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
@@ -219,15 +236,15 @@ const depsToOptimize = [
   "monaco-editor/esm/vs/editor/editor.worker.js",
   "monaco-editor/esm/vs/language/json/json.worker.js",
   "monaco-graphql/esm/graphql.worker.js",
- ];
+];
 
 const logger = createLogger();
 const loggerError = logger.error;
 
 logger.error = (msg, options) => {
   // Ignore jsx syntax error as it taken into account in a custom plugin
-  if (msg.includes('The JSX syntax extension is not currently enabled')) return
-  loggerError(msg, options)
+  if (msg.includes("The JSX syntax extension is not currently enabled")) return;
+  loggerError(msg, options);
 };
 
 const basePath = "";
@@ -241,14 +258,14 @@ const backProxy = (ws = false) => ({
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
-    target: ['chrome58'],
+    target: ["chrome58"],
   },
 
   resolve: {
     alias: {
-      '@components': path.resolve(__dirname, './src/private/components'),
-      'src': path.resolve(__dirname, './src'),
-      '@common': path.resolve(__dirname, './src/components/common'),
+      "@components": path.resolve(__dirname, "./src/private/components"),
+      src: path.resolve(__dirname, "./src"),
+      "@common": path.resolve(__dirname, "./src/components/common"),
       "@mui/icons-material-original": path.resolve(
         __dirname,
         "node_modules/@mui/icons-material"
@@ -257,13 +274,21 @@ export default defineConfig({
         __dirname,
         "node_modules/mdi-material-ui"
       ),
+      "src/icon-bridge/mui-icons-mapping": path.resolve(
+        __dirname,
+        "./src/icon-bridge/mui-icons-mapping.jsx"
+      ),
+      "src/icon-bridge/mdi-icons-mapping": path.resolve(
+        __dirname,
+        "./src/icon-bridge/mdi-icons-mapping.jsx"
+      ),
     },
-    extensions: ['.tsx', '.jsx', '.ts', '.js', '.json'],
+    extensions: [".tsx", ".jsx", ".ts", ".js", ".json"],
   },
 
   optimizeDeps: {
     include: depsToOptimize,
-    exclude: ['@filigran/chatbot', '@filigran/chatbot-legacy']
+    exclude: ['@filigran/chatbot', '@filigran/chatbot-legacy', 'filigran-chatbot'],
   },
 
   customLogger: logger,
@@ -275,46 +300,53 @@ export default defineConfig({
           src: 'src/static/ext/*',
           dest: 'static/ext',
           rename: {
-            stripBase: true
-          }
-        }
+            stripBase: true,
+          },
+        },
       ]
     }),
     myIconResolver(),
     {
-      name: 'html-transform',
+      name: "html-transform",
       enforce: "pre",
-      apply: 'serve',
+      apply: "serve",
       transformIndexHtml(html) {
-        return html.replace(/%BASE_PATH%/g, basePath)
-          .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
+        return html
+          .replace(/%BASE_PATH%/g, basePath)
+          .replace(/%APP_SCRIPT_SNIPPET%/g, "")
           .replace(/%APP_TITLE%/g, "OpenCTI Dev")
           .replace(/%APP_DESCRIPTION%/g, "OpenCTI Development platform")
           .replace(/%APP_FAVICON%/g, `${basePath}/static/ext/favicon.png`)
-          .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`)
-      }
+          .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
+      },
     },
     react(),
-    relay
+    relay,
   ],
 
   server: {
     port: 3000,
     warmup: {
-      clientFiles: ['./lang/front/*', './src/static/*', './src/app.tsx', './src/front.tsx', './src/util/hooks/*']
+      clientFiles: [
+        "./lang/front/*",
+        "./src/static/*",
+        "./src/app.tsx",
+        "./src/front.tsx",
+        "./src/util/hooks/*",
+      ],
     },
     proxy: {
-      '/logout': backProxy(),
-      '/stream': backProxy(),
-      '/storage': backProxy(),
-      '/schema': backProxy(),
-      '^/.*/embedded/.*': backProxy(),
-      '/taxii2': backProxy(),
-      '/feeds': backProxy(),
-      '/graphql': backProxy(true),
-      '/auth': backProxy(),
-      '/static/flags': backProxy(),
-      '/chatbot': backProxy(),
+      "/logout": backProxy(),
+      "/stream": backProxy(),
+      "/storage": backProxy(),
+      "/schema": backProxy(),
+      "^/.*/embedded/.*": backProxy(),
+      "/taxii2": backProxy(),
+      "/feeds": backProxy(),
+      "/graphql": backProxy(true),
+      "/auth": backProxy(),
+      "/static/flags": backProxy(),
+      "/chatbot": backProxy(),
     },
   },
 });
