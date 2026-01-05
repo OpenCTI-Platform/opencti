@@ -12,13 +12,6 @@ export interface FieldOption {
   standard_id?: string;
 }
 
-// TODO move this interface inside file KillChainPhasesField
-// when it has been transformed it TypeScript.
-export interface KillChainPhaseFieldOption extends FieldOption {
-  kill_chain_name: string;
-  phase_name: string;
-}
-
 type FormikFieldConfig<P> = Omit<FieldConfig<P>, 'component' | 'as' | 'render' | 'children'>;
 type NoMetaProps<P> = Omit<P, 'field' | 'form' | 'meta'>;
 type FieldProps<ComponentProps> = FormikFieldConfig<ComponentProps> & NoMetaProps<ComponentProps> & {
