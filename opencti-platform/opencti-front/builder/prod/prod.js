@@ -32,6 +32,11 @@ const buildPath = "./builder/prod/build";
     keepNames: true,
     sourcemap: keep,
     outdir: "builder/prod/build",
+    alias: {
+      "@mui/icons-material-original": "./node_modules/@mui/icons-material",
+      "mdi-material-ui-original": "./node_modules/mdi-material-ui",
+    },
+  });
   // Copy public files to build
   await cp("./src/static/ext", `${buildPath}/static/ext`, {
     recursive: true,
