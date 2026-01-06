@@ -25,7 +25,7 @@ import {
   ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -145,15 +145,20 @@ const platformResolvedFilters = (context: AuthContext) => {
     return new Map();
   };
   const refreshFilter = async (values: Map<string, StixObject>, instance: BasicStoreCommon) => {
-    const filteringIds = extractResolvedFiltersFromInstance(instance);
     // Resolve filters ids that are not already in the cache
     const currentFiltersValues = values; // current cache map
     const idsToSolve: string[] = []; // will contain the ids to resolve that are not already in the cache
-    filteringIds.forEach((id) => {
-      if (!currentFiltersValues.has(id)) {
-        idsToSolve.push(id);
-      }
-    });
+    // If a label or marking was updated, we always need to update it in the cache
+    if (instance.entity_type === ENTITY_TYPE_LABEL || instance.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
+      idsToSolve.push(instance.internal_id);
+    } else {
+      const filteringIds = extractResolvedFiltersFromInstance(instance);
+      filteringIds.forEach((id) => {
+        if (!currentFiltersValues.has(id)) {
+          idsToSolve.push(id);
+        }
+      });
+    }
     const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, R.uniq(idsToSolve)); // fetch the stix instance of the ids
     // Add resolved stix entities to the cache map
     loadedDependencies.forEach((l: StixObject) => currentFiltersValues.set(l.extensions[STIX_EXT_OCTI].id, l));

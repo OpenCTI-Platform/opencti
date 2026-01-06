@@ -14,15 +14,18 @@ import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } fr
 import { wait } from './utils';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
-  // Resolved Filters in cache must be reset depending on connector/stream/triggers/playbooks/Pir modifications
+  // Resolved Filters in cache must be reset depending on connector/stream/triggers/playbooks/Pir/label modifications
   [ENTITY_TYPE_STREAM_COLLECTION]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_TRIGGER]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_PLAYBOOK]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_CONNECTOR]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_PIR]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: [ENTITY_TYPE_RESOLVED_FILTERS],
+  [ENTITY_TYPE_LABEL]: [ENTITY_TYPE_RESOLVED_FILTERS],
+  [ENTITY_TYPE_MARKING_DEFINITION]: [ENTITY_TYPE_RESOLVED_FILTERS],
 };
 
 const cache: any = {};
@@ -151,7 +154,6 @@ export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | 
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
     const map = await getEntitiesFromCache(context, user, type) as Map<string, T>;
     const result: T[] = [];
-    // eslint-disable-next-line no-restricted-syntax
     for (const value of map.values()) {
       result.push(value);
     }
