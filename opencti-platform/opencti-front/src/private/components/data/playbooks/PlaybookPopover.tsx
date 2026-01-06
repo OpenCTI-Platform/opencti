@@ -179,7 +179,7 @@ const PlaybookPopover = ({
         aria-haspopup="true"
         value="popover"
         color="primary"
-        // size={paginationOptions ? 'medium' : 'small'}
+        size="small"
       >
         {paginationOptions
           ? <MoreVert />
