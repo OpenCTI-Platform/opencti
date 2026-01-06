@@ -280,7 +280,6 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
           <KillChainPhasesField
             name="killChainPhases"
             required={(mandatoryAttributes.includes('killChainPhases'))}
-            setFieldValue={setFieldValue}
             style={{ marginTop: theme.spacing(2) }}
             helpertext={<SubscriptionFocus context={context} fieldName="killChainPhases" />}
             onChange={editor.changeKillChainPhases}

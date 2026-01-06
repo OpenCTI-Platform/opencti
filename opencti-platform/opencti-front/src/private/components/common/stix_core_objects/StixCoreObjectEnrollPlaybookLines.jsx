@@ -34,6 +34,8 @@ const styles = (theme) => ({
   noResult: {
     color: theme.palette.text.primary,
     fontSize: 15,
+    textAlign: 'center',
+    marginTop: 20,
   },
   itemIcon: {
     color: theme.palette.primary.main,

@@ -1,4 +1,4 @@
-import React, { Dispatch, FunctionComponent, Suspense, useState } from 'react';
+import React, { Dispatch, FunctionComponent, Suspense, UIEvent, useState } from 'react';
 import { graphql, useQueryLoader } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -20,6 +20,10 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Transition from '../../../../components/Transition';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import { fetchQuery } from '../../../../relay/environment';
+import fileDownload from 'js-file-download';
+import stopEvent from '../../../../utils/domEvent';
+import { IngestionTaxiiPopoverExportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiPopoverExportQuery.graphql';
 
 const ingestionTaxiiPopoverDeletionMutation = graphql`
   mutation IngestionTaxiiPopoverDeletionMutation($id: ID!) {
@@ -35,6 +39,14 @@ const ingestionTaxiiPopoverResetStateMutation = graphql`
     }
 `;
 
+const ingestionTaxiiPopoverExportQuery = graphql`
+  query IngestionTaxiiPopoverExportQuery($id: String!) {
+    ingestionTaxii(id: $id) {
+      name
+      toConfigurationExport
+    }
+  }
+`;
 interface IngestionTaxiiPopoverProps {
   ingestionTaxiiId: string;
   running?: boolean | null;
@@ -170,6 +182,25 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
     });
   };
 
+  const exportTaxiiFeed = async () => {
+    const { ingestionTaxii } = await fetchQuery(
+      ingestionTaxiiPopoverExportQuery,
+      { id: ingestionTaxiiId },
+    ).toPromise() as IngestionTaxiiPopoverExportQuery$data;
+
+    if (ingestionTaxii) {
+      const blob = new Blob([ingestionTaxii.toConfigurationExport], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_csvFeed_${ingestionTaxii.name}.json`;
+      fileDownload(blob, fileName);
+    }
+  };
+  const handleExport = async (e: UIEvent) => {
+    stopEvent(e);
+    setAnchorEl(undefined);
+    await exportTaxiiFeed();
+  };
+
   return (
     <div style={{ margin: 0 }}>
       <IconButton
@@ -203,6 +234,9 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         </MenuItem>
         <MenuItem onClick={handleOpenResetState}>
           {t_i18n('Reset state')}
+        </MenuItem>
+        <MenuItem onClick={handleExport}>
+          {t_i18n('Export')}
         </MenuItem>
       </Menu>
       {displayUpdate && queryRef && (

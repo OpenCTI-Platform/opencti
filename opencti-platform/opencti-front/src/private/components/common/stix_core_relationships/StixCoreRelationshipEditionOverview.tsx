@@ -419,7 +419,6 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               <KillChainPhasesField
                 name="killChainPhases"
                 style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
                 helpertext={(
                   <SubscriptionFocus
                     context={editContext}

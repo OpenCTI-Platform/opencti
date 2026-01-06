@@ -140,8 +140,8 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
   const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const { me } = useAuth();
 
-  const onCreatorSelection = async (option: FieldOption) => {
-    setCreatorId(option.value);
+  const onCreatorSelection = async (option: FieldOption | null) => {
+    setCreatorId(option?.value ?? '');
   };
   const updateObjectMarkingField = async (
     setFieldValue: (field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>,

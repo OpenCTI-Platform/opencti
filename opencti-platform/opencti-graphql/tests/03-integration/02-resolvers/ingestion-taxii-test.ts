@@ -1,15 +1,73 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import type { GraphQLFormattedError } from 'graphql/error';
-import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { IngestionAuthType, TaxiiVersion } from '../../../src/generated/graphql';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, adminQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { now } from '../../../src/utils/format';
 import { findById as findIngestionById, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
+import { findById as findUserById } from '../../../src/domain/user';
+
+const DELETE_USER_QUERY = gql`
+    mutation userDelete($id: ID!) {
+        userEdit(id: $id) {
+            delete
+        }
+    }
+`;
+
+const READ_USER_QUERY = gql`
+    query user($id: String!) {
+        user(id: $id) {
+            id
+            name
+            description
+            user_confidence_level {
+                max_confidence
+            }
+        }
+    }
+`;
 
 describe('TAXII ingestion resolver standard behavior', () => {
-  let createdTaxiiIngesterId: string;
-  it('should create a TAXII ingester', async () => {
+  let createdTaxiiIngesterId: string = '';
+
+  it('should send data when getting a json file', async () => {
+    const upload = await createUploadFromTestDataFile('taxiiFeed/test-taxii-feed.json', 'test-taxii-feed.json', 'application/json');
+    const TEST_MUTATION = gql`
+      query TaxiiFeedAddInputFromImport($file: Upload!) {
+        taxiiFeedAddInputFromImport(file: $file){
+            name
+            description
+            uri
+            version
+            collection
+            authentication_type
+            authentication_value
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: TEST_MUTATION,
+      variables: {
+        file: upload,
+      },
+    });
+    expect(queryResult.data?.taxiiFeedAddInputFromImport).toBeDefined();
+    expect(queryResult.data?.taxiiFeedAddInputFromImport).toMatchObject({
+      name: 'taxiiFeedsAuto',
+      description: 'Nice description',
+      uri: 'https://pastebin.com/raw/7CC8nHB0',
+      version: 'v21',
+      collection: 'taxii_collection',
+      authentication_type: '',
+      authentication_value: '',
+    });
+  });
+
+
+
+  it('should create a TAXII ingester with existing user', async () => {
     const INGESTER_TO_CREATE = {
       input: {
         authentication_type: IngestionAuthType.Basic,
@@ -17,8 +75,9 @@ describe('TAXII ingestion resolver standard behavior', () => {
         name: 'Taxii ingester for integration test',
         version: TaxiiVersion.V21,
         collection: 'TaxiCollection',
-        uri: 'http://taxiserver.invalid'
-      }
+        uri: 'http://taxiserver.invalid',
+        user_id: ADMIN_USER.id,
+      },
     };
     const ingesterQueryResult = await queryAsAdminWithSuccess({
       query: gql`
@@ -30,10 +89,76 @@ describe('TAXII ingestion resolver standard behavior', () => {
           }
         },
     `,
-      variables: INGESTER_TO_CREATE
+      variables: INGESTER_TO_CREATE,
     });
     expect(ingesterQueryResult.data?.ingestionTaxiiAdd.id).toBeDefined();
     createdTaxiiIngesterId = ingesterQueryResult.data?.ingestionTaxiiAdd.id;
+  });
+
+  it('should generate correct export configuration', async () => {
+    const QUERY_TAXII_FEED = gql(`
+      query QueryTaxiiFeed($id: String!) {
+        ingestionTaxii(id: $id) {
+          name
+          toConfigurationExport
+        }
+      }
+    `);
+    const { data } = await queryAsAdmin({
+      query: QUERY_TAXII_FEED,
+      variables: { id: createdTaxiiIngesterId },
+    });
+    const taxiiFeedIngestion = JSON.parse(data?.ingestionTaxii.toConfigurationExport);
+    expect(taxiiFeedIngestion.configuration).toMatchObject({
+      name: 'Taxii ingester for integration test',
+      uri: 'http://taxiserver.invalid',
+      version: TaxiiVersion.V21,
+      collection: 'TaxiCollection',
+      authentication_type: IngestionAuthType.Basic,
+    });
+  });
+
+  it('should create a TAXII feed with automatic user', async () => {
+    const INGESTER_TO_CREATE = {
+      input: {
+        authentication_type: IngestionAuthType.Basic,
+        authentication_value: 'username:P@ssw0rd!',
+        name: 'Taxii ingester for integration test',
+        version: TaxiiVersion.V21,
+        collection: 'TaxiCollection',
+        uri: 'http://taxiserver.invalid',
+        automatic_user: true,
+        user_id: '[F] Taxii ingester for integration test',
+      },
+    };
+    const ingesterQueryResult = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation createTaxiiIngester($input: IngestionTaxiiAddInput!) {
+          ingestionTaxiiAdd(input: $input) {
+              id
+              entity_type
+              ingestion_running
+              user_id
+          }
+        },
+    `,
+      variables: INGESTER_TO_CREATE,
+    });
+    expect(ingesterQueryResult.data?.ingestionTaxiiAdd.id).toBeDefined();
+    const createdTaxiiIngester = ingesterQueryResult.data?.ingestionTaxiiAdd;
+
+    const userIdCreated = createdTaxiiIngester.user_id;
+    const createdUser = await findUserById(testContext, ADMIN_USER, userIdCreated);
+    expect(createdUser.name).toBe('[F] Taxii ingester for integration test');
+    // Delete just created user
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: createdUser.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
   });
 
   it('should edit a TAXII ingester', async () => {
@@ -47,11 +172,45 @@ describe('TAXII ingestion resolver standard behavior', () => {
           }
         }
       `,
-      variables: { id: createdTaxiiIngesterId, input: [{ key: 'authentication_value', value: ['username:P@ssw0rd!'] }] }
+      variables: { id: createdTaxiiIngesterId, input: [{ key: 'authentication_value', value: ['username:P@ssw0rd!'] }] },
     });
     expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.id).toBeDefined();
     expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.authentication_type).toEqual(IngestionAuthType.Basic);
     expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.authentication_value).toEqual('username:undefined');
+  });
+
+  it('should add auto user and update Taxii feed ingester with it', async () => {
+    const TAXII_FEED_AUTO_USER_UPDATE = {
+      id: createdTaxiiIngesterId,
+      input: {
+        user_name: 'AutoUser',
+        confidence_level: 86,
+      },
+    };
+    const updateTaxiiFeedWithAutoUserResult = await queryAsAdminWithSuccess({
+      query: gql`
+          mutation updateTaxiiFeedWithAutoUser($id: ID!, $input: IngestionTaxiiAddAutoUserInput!) {
+              ingestionTaxiiAddAutoUser(id: $id, input: $input){
+                  id
+                  user {
+                      id
+                      name
+                  }
+              }
+          }
+      `,
+      variables: TAXII_FEED_AUTO_USER_UPDATE,
+    });
+    expect(updateTaxiiFeedWithAutoUserResult?.data?.ingestionTaxiiAddAutoUser?.user?.name).toBe('AutoUser');
+    // Delete just created user
+    await adminQuery({
+      query: DELETE_USER_QUERY,
+      variables: { id: updateTaxiiFeedWithAutoUserResult?.data?.ingestionTaxiiAddAutoUser?.user?.id },
+    });
+    // Verify no longer found
+    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: updateTaxiiFeedWithAutoUserResult?.data?.ingestionTaxiiAddAutoUser?.user?.id } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).toBeNull();
   });
 
   it('should reset cursor when a user change the start date', async () => {
@@ -70,7 +229,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
           }
         }
       `,
-      variables: { id: createdTaxiiIngesterId, input: [{ key: 'added_after_start', value: [now()] }] }
+      variables: { id: createdTaxiiIngesterId, input: [{ key: 'added_after_start', value: [now()] }] },
     });
     expect(ingesterChangeDateResult.data?.ingestionTaxiiFieldPatch.id).toBeDefined();
 
@@ -90,11 +249,11 @@ describe('TAXII ingestion resolver standard behavior', () => {
           }
         }
       `,
-      variables: { id: createdTaxiiIngesterId, input: { key: 'authentication_value', value: ['user:name:P@ssw0rd!'] } }
+      variables: { id: createdTaxiiIngesterId, input: { key: 'authentication_value', value: ['user:name:P@ssw0rd!'] } },
     });
     expect(ingesterQueryResult.errors).toBeDefined();
     if (ingesterQueryResult.errors) { // above expect is not taken by eslint
-      const error:GraphQLFormattedError = ingesterQueryResult.errors[0];
+      const error: GraphQLFormattedError = ingesterQueryResult.errors[0];
       expect(error.message).toContain('Username and password cannot have : character.');
     }
   });
@@ -117,7 +276,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
               }
           }
       `,
-      variables: { id: createdTaxiiIngesterId }
+      variables: { id: createdTaxiiIngesterId },
     });
     expect(ingesterQueryResult.data?.ingestionTaxiiResetState.id).toBeDefined();
     expect(ingesterQueryResult.data?.ingestionTaxiiResetState.current_state_cursor).toBeNull();
@@ -130,7 +289,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
             ingestionTaxiiDelete(id: $id)
         }
       `,
-      variables: { id: createdTaxiiIngesterId }
+      variables: { id: createdTaxiiIngesterId },
     });
     expect(ingesterQueryResult.data?.ingestionTaxiiDelete).toEqual(createdTaxiiIngesterId);
   });

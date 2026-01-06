@@ -14,7 +14,7 @@ import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/sti
 import { isEventCreateRelationship, isEventInPirRelationship, isEventUpdateOnEntity, isValidEventType } from './playbookManagerUtils';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { playbookExecutor } from './playbookExecutor';
-import { PIR_SCORE_FILTER } from '../../utils/filtering/filtering-constants';
+import { PIR_IDS_SUBFILTER, PIR_SCORE_FILTER, PIR_SCORE_SUBFILTER } from '../../utils/filtering/filtering-constants';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 /**
@@ -138,8 +138,8 @@ export const formatFiltersForPirPlaybookComponent = (sourceFilters: string, inPi
       return {
         key: [PIR_SCORE_FILTER],
         values: [
-          { ...filter, key: 'score' },
-          { key: 'pir_ids', values: (inPirFilters ?? []).map((pir) => pir.value) },
+          { ...filter, key: PIR_SCORE_SUBFILTER },
+          { key: PIR_IDS_SUBFILTER, values: (inPirFilters ?? []).map((pir) => pir.value) },
         ],
       };
     }
@@ -174,7 +174,7 @@ export const listenPirEvents = async (
         AUTOMATION_MANAGER_USER,
         data.source_ref,
         ABSTRACT_STIX_CORE_OBJECT,
-      ) as unknown as StixObject; ;
+      ) as unknown as StixObject;
     } else if (isUpdateEvent) {
       // Event update on flagged entity.
       stixEntity = data;
@@ -185,7 +185,7 @@ export const listenPirEvents = async (
         AUTOMATION_MANAGER_USER,
         stixIdLinked,
         ABSTRACT_STIX_CORE_OBJECT,
-      ) as unknown as StixObject; ;
+      ) as unknown as StixObject;
     }
 
     // Having an entity means we have a matched PIR.

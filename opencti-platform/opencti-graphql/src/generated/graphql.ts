@@ -12262,6 +12262,7 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
@@ -12269,17 +12270,24 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   version: TaxiiVersion;
 };
 
+export type IngestionTaxiiAddAutoUserInput = {
+  confidence_level: Scalars['Int']['input'];
+  user_name: Scalars['String']['input'];
+};
+
 export type IngestionTaxiiAddInput = {
   added_after_start?: InputMaybe<Scalars['DateTime']['input']>;
   authentication_type: IngestionAuthType;
   authentication_value?: InputMaybe<Scalars['String']['input']>;
+  automatic_user?: InputMaybe<Scalars['Boolean']['input']>;
   collection: Scalars['String']['input'];
+  confidence_level?: InputMaybe<Scalars['Int']['input']>;
   confidence_to_score?: InputMaybe<Scalars['Boolean']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   ingestion_running?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   uri: Scalars['String']['input'];
-  user_id?: InputMaybe<Scalars['String']['input']>;
+  user_id: Scalars['String']['input'];
   version: TaxiiVersion;
 };
 
@@ -15162,6 +15170,7 @@ export type Mutation = {
   ingestionRssDelete?: Maybe<Scalars['ID']['output']>;
   ingestionRssFieldPatch?: Maybe<IngestionRss>;
   ingestionTaxiiAdd?: Maybe<IngestionTaxii>;
+  ingestionTaxiiAddAutoUser?: Maybe<IngestionTaxii>;
   ingestionTaxiiCollectionAdd?: Maybe<IngestionTaxiiCollection>;
   ingestionTaxiiCollectionDelete?: Maybe<Scalars['ID']['output']>;
   ingestionTaxiiCollectionFieldPatch?: Maybe<IngestionTaxiiCollection>;
@@ -16449,6 +16458,12 @@ export type MutationIngestionRssFieldPatchArgs = {
 
 export type MutationIngestionTaxiiAddArgs = {
   input: IngestionTaxiiAddInput;
+};
+
+
+export type MutationIngestionTaxiiAddAutoUserArgs = {
+  id: Scalars['ID']['input'];
+  input: IngestionTaxiiAddAutoUserInput;
 };
 
 
@@ -22155,6 +22170,7 @@ export type Query = {
   tasks?: Maybe<TaskConnection>;
   taxiiCollection?: Maybe<TaxiiCollection>;
   taxiiCollections?: Maybe<TaxiiCollectionConnection>;
+  taxiiFeedAddInputFromImport: TaxiiFeedAddInputFromImport;
   theme?: Maybe<Theme>;
   themes?: Maybe<ThemeConnection>;
   threatActor?: Maybe<ThreatActor>;
@@ -24947,6 +24963,11 @@ export type QueryTaxiiCollectionsArgs = {
   orderBy?: InputMaybe<TaxiiCollectionOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryTaxiiFeedAddInputFromImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -31001,6 +31022,18 @@ export enum TaxiiCollectionOrdering {
   Name = 'name'
 }
 
+export type TaxiiFeedAddInputFromImport = {
+  __typename?: 'TaxiiFeedAddInputFromImport';
+  added_after_start?: Maybe<Scalars['String']['output']>;
+  authentication_type: Scalars['String']['output'];
+  authentication_value: Scalars['String']['output'];
+  collection: Scalars['String']['output'];
+  description: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  uri: Scalars['String']['output'];
+  version: Scalars['String']['output'];
+};
+
 export enum TaxiiVersion {
   V1 = 'v1',
   V2 = 'v2',
@@ -36351,6 +36384,7 @@ export type ResolversTypes = ResolversObject<{
   IngestionRssEdge: ResolverTypeWrapper<Omit<IngestionRssEdge, 'node'> & { node: ResolversTypes['IngestionRss'] }>;
   IngestionRssOrdering: IngestionRssOrdering;
   IngestionTaxii: ResolverTypeWrapper<BasicStoreEntityIngestionTaxii>;
+  IngestionTaxiiAddAutoUserInput: IngestionTaxiiAddAutoUserInput;
   IngestionTaxiiAddInput: IngestionTaxiiAddInput;
   IngestionTaxiiCollection: ResolverTypeWrapper<BasicStoreEntityIngestionTaxiiCollection>;
   IngestionTaxiiCollectionAddInput: IngestionTaxiiCollectionAddInput;
@@ -36829,6 +36863,7 @@ export type ResolversTypes = ResolversObject<{
   TaxiiCollectionEdge: ResolverTypeWrapper<TaxiiCollectionEdge>;
   TaxiiCollectionEditMutations: ResolverTypeWrapper<TaxiiCollectionEditMutations>;
   TaxiiCollectionOrdering: TaxiiCollectionOrdering;
+  TaxiiFeedAddInputFromImport: ResolverTypeWrapper<TaxiiFeedAddInputFromImport>;
   TaxiiVersion: TaxiiVersion;
   Text: ResolverTypeWrapper<Omit<Text, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   TextAddInput: TextAddInput;
@@ -37316,6 +37351,7 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionRssConnection: Omit<IngestionRssConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionRssEdge']> };
   IngestionRssEdge: Omit<IngestionRssEdge, 'node'> & { node: ResolversParentTypes['IngestionRss'] };
   IngestionTaxii: BasicStoreEntityIngestionTaxii;
+  IngestionTaxiiAddAutoUserInput: IngestionTaxiiAddAutoUserInput;
   IngestionTaxiiAddInput: IngestionTaxiiAddInput;
   IngestionTaxiiCollection: BasicStoreEntityIngestionTaxiiCollection;
   IngestionTaxiiCollectionAddInput: IngestionTaxiiCollectionAddInput;
@@ -37730,6 +37766,7 @@ export type ResolversParentTypes = ResolversObject<{
   TaxiiCollectionConnection: TaxiiCollectionConnection;
   TaxiiCollectionEdge: TaxiiCollectionEdge;
   TaxiiCollectionEditMutations: TaxiiCollectionEditMutations;
+  TaxiiFeedAddInputFromImport: TaxiiFeedAddInputFromImport;
   Text: Omit<Text, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   TextAddInput: TextAddInput;
   Theme: BasicStoreEntityTheme;
@@ -41893,6 +41930,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -43155,6 +43193,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionRssDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionRssDeleteArgs, 'id'>>;
   ingestionRssFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssFieldPatchArgs, 'id' | 'input'>>;
   ingestionTaxiiAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiAddArgs, 'input'>>;
+  ingestionTaxiiAddAutoUser?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiAddAutoUserArgs, 'id' | 'input'>>;
   ingestionTaxiiCollectionAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollection']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiCollectionAddArgs, 'input'>>;
   ingestionTaxiiCollectionDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiCollectionDeleteArgs, 'id'>>;
   ingestionTaxiiCollectionFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollection']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiCollectionFieldPatchArgs, 'id' | 'input'>>;
@@ -45059,6 +45098,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   tasks?: Resolver<Maybe<ResolversTypes['TaskConnection']>, ParentType, ContextType, Partial<QueryTasksArgs>>;
   taxiiCollection?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<QueryTaxiiCollectionArgs, 'id'>>;
   taxiiCollections?: Resolver<Maybe<ResolversTypes['TaxiiCollectionConnection']>, ParentType, ContextType, Partial<QueryTaxiiCollectionsArgs>>;
+  taxiiFeedAddInputFromImport?: Resolver<ResolversTypes['TaxiiFeedAddInputFromImport'], ParentType, ContextType, RequireFields<QueryTaxiiFeedAddInputFromImportArgs, 'file'>>;
   theme?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType, RequireFields<QueryThemeArgs, 'id'>>;
   themes?: Resolver<Maybe<ResolversTypes['ThemeConnection']>, ParentType, ContextType, Partial<QueryThemesArgs>>;
   threatActor?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, Partial<QueryThreatActorArgs>>;
@@ -47062,6 +47102,17 @@ export type TaxiiCollectionEditMutationsResolvers<ContextType = any, ParentType 
   fieldPatch?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<TaxiiCollectionEditMutationsFieldPatchArgs, 'input'>>;
 }>;
 
+export type TaxiiFeedAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiFeedAddInputFromImport'] = ResolversParentTypes['TaxiiFeedAddInputFromImport']> = ResolversObject<{
+  added_after_start?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  authentication_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  authentication_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  collection?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type TextResolvers<ContextType = any, ParentType extends ResolversParentTypes['Text'] = ResolversParentTypes['Text']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<TextCasesArgs>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<TextConnectorsArgs>>;
@@ -48954,6 +49005,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   TaxiiCollectionConnection?: TaxiiCollectionConnectionResolvers<ContextType>;
   TaxiiCollectionEdge?: TaxiiCollectionEdgeResolvers<ContextType>;
   TaxiiCollectionEditMutations?: TaxiiCollectionEditMutationsResolvers<ContextType>;
+  TaxiiFeedAddInputFromImport?: TaxiiFeedAddInputFromImportResolvers<ContextType>;
   Text?: TextResolvers<ContextType>;
   Theme?: ThemeResolvers<ContextType>;
   ThemeConnection?: ThemeConnectionResolvers<ContextType>;

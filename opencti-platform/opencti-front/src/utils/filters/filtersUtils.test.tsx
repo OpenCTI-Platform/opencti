@@ -3,6 +3,7 @@ import {
   buildFiltersAndOptionsForWidgets,
   emptyFilterGroup,
   findFiltersFromKeys,
+  formatFiltersInPirContext,
   getEntityTypeTwoFirstLevelsFilterValues,
   isRegardingOfFilterWarning,
   removeIdAndIncorrectKeysFromFilterGroupObject,
@@ -701,5 +702,54 @@ describe('buildFiltersAndOptionsForWidgets', () => {
     };
     const { filters } = buildFiltersAndOptionsForWidgets(inputFilters, { isKnowledgeRelationshipWidget: true });
     expect(filters).toStrictEqual(expectedFilters);
+  });
+});
+
+describe('formatFiltersInPirContext', () => {
+  it('should format filters in a PIR context', () => {
+    const initialFilters = {
+      mode: 'and',
+      filters: [
+        { key: 'entity_type', values: ['Malware'] },
+        { key: 'pir_score', values: ['50'], operator: 'gt' },
+      ],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [
+            { key: 'objectLabel', values: ['label-1'] },
+            { key: 'last_pir_score_date', values: ['now-7d', 'now'], operator: 'within' },
+          ],
+          filterGroups: [],
+        },
+      ],
+    };
+    const expectedFormattedFilters = {
+      mode: 'and',
+      filters: [
+        { key: 'entity_type', values: ['Malware'] },
+        { key: 'pir_score',
+          values: [
+            { key: 'score', values: ['50'], operator: 'gt' },
+            { key: 'pir_ids', values: ['pir-id-1'] },
+          ] },
+      ],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [
+            { key: 'objectLabel', values: ['label-1'] },
+            { key: 'last_pir_score_date',
+              values: [
+                { key: 'date', values: ['now-7d', 'now'], operator: 'within' },
+                { key: 'pir_ids', values: ['pir-id-1'] },
+              ] },
+          ],
+          filterGroups: [],
+        },
+      ],
+    };
+    const result = formatFiltersInPirContext(initialFilters, 'pir-id-1');
+    expect(result).toEqual(expectedFormattedFilters);
   });
 });

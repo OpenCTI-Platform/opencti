@@ -116,6 +116,7 @@ nav:
       - Installation: deployment/installation.md
       - Configuration: deployment/configuration.md
       - Authentication: deployment/authentication.md
+      - Telemetry: deployment/telemetry.md
       - Upgrade: deployment/upgrade.md
     - Ecosystem:
       - Connectors: deployment/connectors.md

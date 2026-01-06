@@ -32,3 +32,20 @@ Additional configuration options:
 - Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
 
 ![TAXII feed configuration](../assets/taxii-feed-configuration.png)
+
+## Export a Taxii feed
+You can export your existing taxii feed from the platform, making it easy to share your configuration with others.
+
+To export your taxii feed, click on "Export", in the burger menu.
+![Taxii feed export](../assets/taxii-feeds-export.png)
+
+## Import a Taxii feed
+
+If you have a JSON Taxii feed file you can import it by clicking on the icon next to "Import from hub"
+![Taxii feed import button](../assets/taxii-feeds-import-icon.png)
+
+When you click, you can select the desired file. After that, a drawer will open with the form pre-filled with the relevant information.
+If necessary, configure the authentication type. By default, a user is already provided.
+
+You can select Taxii Feeds from the XTM Hub by clicking the ```Import from Hub``` button
+

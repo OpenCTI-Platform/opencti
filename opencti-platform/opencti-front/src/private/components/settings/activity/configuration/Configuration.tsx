@@ -110,9 +110,10 @@ const ConfigurationComponent: FunctionComponent<
   );
   const currentListeners = (settings.activity_listeners ?? []).map((a) => a.id);
   const onChangeData = (resetForm: () => void) => {
-    return (name: string, data: FieldOption) => {
-      if (!currentListeners.includes(data.value)) {
-        const value = R.uniq([...currentListeners, data.value]);
+    return (name: string, data: FieldOption | null) => {
+      const val = data?.value ?? '';
+      if (!currentListeners.includes(val)) {
+        const value = R.uniq([...currentListeners, val]);
         commit({
           variables: {
             id: settings?.id,

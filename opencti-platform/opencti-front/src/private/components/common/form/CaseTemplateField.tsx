@@ -1,14 +1,13 @@
 import makeStyles from '@mui/styles/makeStyles';
-import { Field } from 'formik';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CaseTemplateFieldQuery } from './__generated__/CaseTemplateFieldQuery.graphql';
-import { FieldOption } from '../../../../utils/field';
+import Field, { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -63,11 +62,14 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
   const { t_i18n } = useFormatter();
 
   const data = usePreloadedQuery(caseTemplateFieldQuery, queryRef);
-  const caseTemplates = data.caseTemplates?.edges?.map(({ node }) => ({ value: node.id, label: node.name }));
+  const caseTemplates = (data.caseTemplates?.edges ?? []).map(({ node }) => ({
+    value: node.id,
+    label: node.name,
+  }));
 
   return (
     <div style={{ width: '100%' }}>
-      <Field
+      <Field<AutocompleteFieldProps>
         component={AutocompleteField}
         name="caseTemplates"
         multiple
@@ -76,7 +78,7 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
           label: t_i18n(label ?? 'Default case templates'),
           helperText: helpertext,
         }}
-        onChange={(name: string, value: FieldOption[]) => {
+        onChange={(name, value) => {
           onChange?.(name, value);
           onSubmit?.(name, value);
         }}
@@ -84,10 +86,7 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
         disabled={isDisabled}
         noOptionsText={t_i18n('No available options')}
         options={caseTemplates}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: { color: string; label: string },
-        ) => (
+        renderOption={(props, option) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="Case-Template" />

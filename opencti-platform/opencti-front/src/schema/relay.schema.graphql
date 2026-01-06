@@ -9032,6 +9032,7 @@ type Query {
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
+  taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
   ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
@@ -9901,6 +9902,7 @@ type Mutation {
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiResetState(id: ID!): IngestionTaxii
   ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
+  ingestionTaxiiAddAutoUser(id: ID!, input: IngestionTaxiiAddAutoUserInput!): IngestionTaxii
   ingestionTaxiiCollectionAdd(input: IngestionTaxiiCollectionAddInput!): IngestionTaxiiCollection
   ingestionTaxiiCollectionDelete(id: ID!): ID
   ingestionTaxiiCollectionFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxiiCollection
@@ -12785,6 +12787,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   ingestion_running: Boolean
   last_execution_date: DateTime
   confidence_to_score: Boolean
+  toConfigurationExport: String!
 }
 
 enum IngestionTaxiiOrdering {
@@ -12806,6 +12809,17 @@ type IngestionTaxiiEdge {
   node: IngestionTaxii!
 }
 
+type TaxiiFeedAddInputFromImport {
+  name: String!
+  description: String!
+  uri: String!
+  version: String!
+  collection: String!
+  authentication_type: String!
+  authentication_value: String!
+  added_after_start: String
+}
+
 input IngestionTaxiiAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
@@ -12822,7 +12836,14 @@ input IngestionTaxiiAddInput {
   added_after_start: DateTime
   ingestion_running: Boolean
   confidence_to_score: Boolean
-  user_id: String
+  user_id: String!
+  automatic_user: Boolean
+  confidence_level: Int
+}
+
+input IngestionTaxiiAddAutoUserInput {
+  user_name: String!
+  confidence_level: Int!
 }
 
 type IngestionTaxiiCollection implements InternalObject & BasicObject {

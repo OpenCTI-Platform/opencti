@@ -100,6 +100,8 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:telemetry:metrics:exporter_otlp       | APP__TELEMETRY__METRICS__EXPORTER_OTLP       |               | Port to expose the OTLP endpoint        |
 | app:telemetry:metrics:exporter_prometheus | APP__TELEMETRY__METRICS__EXPORTER_PROMETHEUS | 14269         | Port to expose the Prometheus endpoint  |
 
+For a detailed list of exposed metrics, please refer to the [Telemetry](../deployment/telemetry.md) page.
+
 
 #### Maps & references
 

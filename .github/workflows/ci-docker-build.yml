@@ -83,7 +83,7 @@ jobs:
 
     - name: Upload opencti docker image artifact
       if: ${{ inputs.publish_to_registry == 'false' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: docker-image-opencti-platform
         path: /tmp/opencti-platform.tar
@@ -135,7 +135,7 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: docker-image-opencti-worker
         path: /tmp/opencti-worker.tar

@@ -18,6 +18,8 @@ import { isNotEmptyField } from '../../database/utils';
 import { now, utcDate } from '../../utils/format';
 import { OPENCTI_CA } from '../../enterprise-edition/opencti_ca';
 import conf, { PLATFORM_VERSION } from '../../config/conf';
+import type { BasicStoreSettings } from '../../types/settings';
+import type { PlatformEe } from '../../generated/graphql';
 
 const GLOBAL_LICENSE_OPTION = 'global';
 export const LICENSE_OPTION_TRIAL = 'trial';
@@ -26,31 +28,32 @@ export const IS_LTS_PLATFORM = PLATFORM_VERSION.includes('lts');
 
 // https://www.iana.org/assignments/enterprise-numbers/enterprise-numbers
 // 62944 - Filigran
-export const LICENSE_OPTION_TYPE = '6.2.9.4.4.10';
-export const LICENSE_OPTION_PRODUCT = '6.2.9.4.4.20';
-export const LICENSE_OPTION_CREATOR = '6.2.9.4.4.30';
+export const LICENSE_OID_TYPE = '1.3.6.1.4.1.62944.10';
+export const LICENSE_OID_PRODUCT = '1.3.6.1.4.1.62944.20';
+export const LICENSE_OID_CREATOR = '1.3.6.1.4.1.62944.30';
+// Legacy OIDs
+export const LICENSE_LEGACY_TYPE = '6.2.9.4.4.10';
+export const LICENSE_LEGACY_PRODUCT = '6.2.9.4.4.20';
+export const LICENSE_LEGACY_CREATOR = '6.2.9.4.4.30';
 
-const getExtensionValue = (clientCrt, extension) => {
-  return clientCrt.extensions.find((ext) => ext.id === extension)?.value;
+const getExtensionValue = (clientCrt: forge.pki.Certificate, standardOid: string, legacyOid: string) => {
+  const extStandard = clientCrt.extensions.find((ext) => ext.id === standardOid);
+  if (extStandard) {
+    return extStandard.value;
+  }
+  return clientCrt.extensions.find((ext) => ext.id === legacyOid)?.value;
 };
 
-export const getEnterpriseEditionActivePem = (rawPem) => {
-  const pemFromConfig = conf.get('app:enterprise_edition_license');
-  return isNotEmptyField(pemFromConfig) ? pemFromConfig : rawPem;
-};
-
-export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
-  const pemFromConfig = conf.get('app:enterprise_edition_license');
-  const pem = getEnterpriseEditionActivePem(rawPem);
-  const license_enterprise = isNotEmptyField(pem);
-  if (isNotEmptyField(pem)) {
+const decodeLicense = (platformInstanceId: string, licenseByConfiguration: boolean, pem: string | undefined): PlatformEe => {
+  const license_enterprise = pem !== undefined && isNotEmptyField(pem);
+  if (license_enterprise) {
     try {
       const clientCrt = forge.pki.certificateFromPem(pem);
       const license_valid_cert = OPENCTI_CA.verify(clientCrt);
-      const license_type = getExtensionValue(clientCrt, LICENSE_OPTION_TYPE);
+      const license_type = getExtensionValue(clientCrt, LICENSE_OID_TYPE, LICENSE_LEGACY_TYPE);
       const valid_type = IS_LTS_PLATFORM ? license_type === LICENSE_OPTION_LTS : true;
-      const license_creator = getExtensionValue(clientCrt, LICENSE_OPTION_CREATOR);
-      const valid_product = getExtensionValue(clientCrt, LICENSE_OPTION_PRODUCT) === 'opencti';
+      const license_creator = getExtensionValue(clientCrt, LICENSE_OID_CREATOR, LICENSE_LEGACY_CREATOR);
+      const valid_product = getExtensionValue(clientCrt, LICENSE_OID_PRODUCT, LICENSE_LEGACY_PRODUCT) === 'opencti';
       const license_customer = clientCrt.subject.getField('O').value;
       const license_platform = clientCrt.subject.getField('OU').value;
       const license_platform_match = valid_product && valid_type && (license_platform === GLOBAL_LICENSE_OPTION || platformInstanceId === license_platform);
@@ -66,7 +69,7 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
         // If trial license, deactivation for expiration is direct
         if (license_type !== LICENSE_OPTION_TRIAL) {
           // If standard or lts license, a 3 months safe period is granted
-          const license_extra_expiration_date = utcDate(clientCrt.validity.notBefore).add(3, 'months');
+          const license_extra_expiration_date = utcDate(clientCrt.validity.notAfter).add(3, 'months');
           license_extra_expiration_days = license_extra_expiration_date.diff(utcDate(), 'days');
           license_extra_expiration = new Date() < license_extra_expiration_date.toDate();
           license_validated = license_extra_expiration;
@@ -74,7 +77,7 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
       }
       return {
         license_enterprise, // If EE activated
-        license_by_configuration: isNotEmptyField(pemFromConfig),
+        license_by_configuration: licenseByConfiguration,
         license_validated, // If EE license is ok (identifier, dates, ...)
         license_valid_cert,
         license_customer,
@@ -97,7 +100,7 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
   return {
     license_enterprise,
     license_validated: false,
-    license_by_configuration: isNotEmptyField(pemFromConfig),
+    license_by_configuration: licenseByConfiguration,
     license_valid_cert: false,
     license_extra_expiration: false,
     license_extra_expiration_days: 0,
@@ -114,6 +117,25 @@ export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
   };
 };
 
-export const getEnterpriseEditionInfo = (settings) => {
+export const getEnterpriseEditionActivePem = (rawPem: string | undefined) => {
+  const pemFromConfig: string | undefined = conf.get('app:enterprise_edition_license');
+  return isNotEmptyField(pemFromConfig) ? pemFromConfig : rawPem;
+};
+
+let cachedLicence: PlatformEe | undefined = undefined;
+let cachedPem: string | undefined = undefined;
+
+export const getEnterpriseEditionInfoFromPem = (platformInstanceId: string, rawPem: string | undefined) => {
+  const pem = getEnterpriseEditionActivePem(rawPem);
+  if (cachedLicence === undefined || cachedPem !== pem) {
+    const pemFromConfig = conf.get('app:enterprise_edition_license');
+    const licenseByConfiguration = isNotEmptyField(pemFromConfig);
+    cachedLicence = decodeLicense(platformInstanceId, licenseByConfiguration, pem);
+    cachedPem = pem;
+  }
+  return cachedLicence;
+};
+
+export const getEnterpriseEditionInfo = (settings: BasicStoreSettings) => {
   return getEnterpriseEditionInfoFromPem(settings.internal_id, settings.enterprise_license);
 };

@@ -34,7 +34,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   let availableEntityTypes;
   let searchContext;
   if (perspective === 'relationships') {
-    searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains'] };
+    searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains', 'object-label'] };
   } else if (perspective === 'audits') {
     availableEntityTypes = ['History', 'Activity'];
     searchContext = { entityTypes: ['History'] };
