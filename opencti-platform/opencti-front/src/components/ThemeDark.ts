@@ -469,6 +469,13 @@ const ThemeDark = (
         },
       },
     },
+    MuiFab: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+        },
+      },
+    },
     MuiAutocomplete: {
       styleOverrides: {
         root: {

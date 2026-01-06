@@ -473,6 +473,13 @@ const ThemeLight = (
         },
       },
     },
+    MuiFab: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+        },
+      },
+    },
     MuiAutocomplete: {
       styleOverrides: {
         root: {
