@@ -9,7 +9,7 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   isStixDomainObject,
-  isStixDomainObjectLocation,
+  isStixDomainObjectLocation
 } from '../../../src/schema/stixDomainObject';
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';

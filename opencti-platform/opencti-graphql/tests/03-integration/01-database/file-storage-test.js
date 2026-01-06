@@ -12,7 +12,7 @@ import { MARKING_TLP_AMBER_STRICT } from '../../../src/schema/identifier';
 const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
 const exportFileId = (malware) => `export/Malware/${malware.id}/${exportFileName.toLowerCase()}`;
 const importFileId = `import/global/${exportFileName.toLowerCase()}`;
-const FILE_SIZE = 10828;
+const FILE_SIZE = 10700;
 
 describe('File storage file listing', () => {
   it('should file upload succeed', async () => {

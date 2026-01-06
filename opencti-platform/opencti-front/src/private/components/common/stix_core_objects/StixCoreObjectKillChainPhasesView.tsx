@@ -4,11 +4,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import React, { FunctionComponent } from 'react';
-import { makeStyles, useTheme } from '@mui/styles';
+import { makeStyles } from '@mui/styles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import type { Theme } from '../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -36,7 +35,6 @@ interface StixCoreObjectKillChainPhasesViewProps {
 const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillChainPhasesViewProps> = ({ killChainPhases, firstLine }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const theme = useTheme<Theme>();
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} style={firstLine ? undefined : { marginTop: 20 }}>
@@ -55,7 +53,7 @@ const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillCha
                 <ListItemIcon>
                   <ItemIcon type={killChainPhase.entity_type} />
                 </ListItemIcon>
-                <ListItemText primary={killChainPhase.phase_name} secondary={<span style={{ color: theme.palette.text?.secondary }}>{killChainPhase.kill_chain_name}</span>} />
+                <ListItemText primary={killChainPhase.phase_name} />
               </ListItem>
             );
           })}
