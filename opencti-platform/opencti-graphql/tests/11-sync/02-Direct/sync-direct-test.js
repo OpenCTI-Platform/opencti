@@ -9,7 +9,7 @@ import {
   FIFTEEN_MINUTES,
   SYNC_DIRECT_START_REMOTE_URI,
   SYNC_TEST_REMOTE_URI,
-  testContext
+  testContext,
 } from '../../utils/testQuery';
 import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, SYNC_CREATION_QUERY, SYNC_START_QUERY, UPLOADED_FILE_SIZE } from '../sync-utils';
 import { SYSTEM_USER } from '../../../src/utils/access';
@@ -59,6 +59,6 @@ describe('Database sync direct', () => {
       expect(uploadedFile.name).toEqual(DATA_FILE_TEST);
       expect(uploadedFile.size).toEqual(UPLOADED_FILE_SIZE);
     },
-    FIFTEEN_MINUTES
+    FIFTEEN_MINUTES,
   );
 });

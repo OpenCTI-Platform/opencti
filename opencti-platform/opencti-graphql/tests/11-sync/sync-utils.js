@@ -67,7 +67,7 @@ export const VOCABULARY_NUMBERS = 357;
 export const INDICATOR_NUMBERS = 28;
 export const MALWARE_NUMBERS = 27;
 export const LABEL_NUMBERS = 17;
-export const UPLOADED_FILE_SIZE = 42204;
+export const UPLOADED_FILE_SIZE = 42232;
 
 const filterOutDeleteOperationRefs = {
   mode: 'and',
