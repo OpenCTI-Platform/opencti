@@ -54,7 +54,15 @@ const ThemeLight = (
       main: '#000000',
     },
     chip: { main: '#000000' },
-    ai: { main: '#9c27b0', light: '#ba68c8', dark: '#7b1fa2', contrastText: '#000000', text: { primary: '#673ab7' } },
+    ai: {
+      main: '#5E1AD5',
+      light: '#D6C2FA',
+      dark: '#3C108C',
+      contrastText: '#000000',
+      text: {
+        primary: '#673ab7',
+      },
+    },
     ee: {
       main: EE_COLOR,
       background: hexToRGB(EE_COLOR, 0.2),
