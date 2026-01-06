@@ -89,7 +89,7 @@ const Channel: React.FC<ChannelProps> = ({
               case 'details':
                 return (
                   <Grid key={key} item xs={width}>
-                    <ChannelDetails channel={channel} />
+                    <ChannelDetails channelData={channel} />
                   </Grid>
                 );
               case 'basicInformation':
