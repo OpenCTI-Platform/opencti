@@ -222,9 +222,11 @@ const initFileIndexManager = () => {
       }, STREAM_SCHEDULE_TIME);
     },
     status: (settings?: BasicStoreSettings) => {
+      const isEnterpriseEdition = settings ? isEnterpriseEditionFromSettings(settings) : false;
+
       return {
         id: 'FILE_INDEX_MANAGER',
-        enable: ENABLED_FILE_INDEX_MANAGER && settings && isEnterpriseEditionFromSettings(settings),
+        enable: ENABLED_FILE_INDEX_MANAGER && isEnterpriseEdition,
         running,
         warning: !isAttachmentProcessorEnabled(),
       };
