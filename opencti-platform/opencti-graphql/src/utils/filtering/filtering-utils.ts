@@ -14,7 +14,6 @@ import {
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   LABEL_FILTER,
-  LAST_PIR_SCORE_DATE_FILTER_PREFIX,
   ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
@@ -23,7 +22,6 @@ import {
   OPINIONS_METRICS_MEAN_FILTER,
   OPINIONS_METRICS_MIN_FILTER,
   OPINIONS_METRICS_TOTAL_FILTER,
-  PIR_SCORE_FILTER_PREFIX,
   RELATION_DYNAMIC_FROM_FILTER,
   RELATION_DYNAMIC_TO_FILTER,
   SIGHTED_BY_FILTER,
@@ -463,8 +461,6 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
     .map((k) => k.split('.')[0]) // keep only the first part of the key to handle composed keys
     .filter((k) => !(getAvailableKeys().has(k)
       || k.startsWith(RULE_PREFIX)
-      || k.startsWith(PIR_SCORE_FILTER_PREFIX)
-      || k.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)
       || getMetricsAttributesNames().includes(k)
     ));
 
