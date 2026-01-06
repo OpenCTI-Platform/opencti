@@ -1066,7 +1066,28 @@ export const buildRegardingOfDirectParticipateToFilters = (ids: string[], filter
   };
 };
 
-export const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity>(
+export const findMembersPaginatedWithOrgaRestriction = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: ListArgs = {},
+): Promise<BasicConnection<BasicStoreEntity>> => {
+  return fetchMembersWithOrgaRestriction(context, user, args, true) as Promise<BasicConnection<BasicStoreEntity>>;
+};
+
+export const findAllMembersWithOrgaRestriction = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: ListArgs = {},
+): Promise<BasicStoreEntity[]> => {
+  return fetchMembersWithOrgaRestriction(context, user, args) as Promise<BasicStoreEntity[]>;
+};
+
+/**
+ * Fetch members (users, groups and organizations) by applying users visibility restrictions according to their organizations if needed
+ * Don't use this function directly !!
+ * Use a typed version of this function: findMembersPaginatedWithOrgaRestriction or findAllMembersWithOrgaRestriction
+ */
+const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity>(
   context: AuthContext,
   user: AuthUser,
   args: ListArgs = {},

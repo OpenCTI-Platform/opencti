@@ -54,9 +54,10 @@ import {
   BYPASS,
   CAPABILITIES_IN_DRAFT_NAMES,
   executionContext,
-  fetchMembersWithOrgaRestriction,
   FilterMembersMode,
   filterMembersUsersWithUsersOrgs,
+  findAllMembersWithOrgaRestriction,
+  findMembersPaginatedWithOrgaRestriction,
   INTERNAL_USERS,
   INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
@@ -244,11 +245,11 @@ export const findParticipants = (context, user, args) => {
 };
 
 export const findMembersPaginated = async (context, user, args) => {
-  return fetchMembersWithOrgaRestriction(context, user, args, true);
+  return findMembersPaginatedWithOrgaRestriction(context, user, args);
 };
 
 export const findAllMembers = async (context, user, args) => {
-  return fetchMembersWithOrgaRestriction(context, user, args);
+  return findAllMembersWithOrgaRestriction(context, user, args);
 };
 
 export const findUserWithCapabilities = async (context, user, capabilities) => {
