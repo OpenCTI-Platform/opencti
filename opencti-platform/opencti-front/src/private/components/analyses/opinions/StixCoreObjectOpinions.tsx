@@ -13,6 +13,7 @@ import { StixCoreObjectOpinionsListQuery, StixCoreObjectOpinionsListQuery$variab
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { StixCoreObjectOpinionsOpenVocabQuery } from './__generated__/StixCoreObjectOpinionsOpenVocabQuery.graphql';
+import { Stack } from '@mui/material';
 
 interface StixCoreObjectOpinionsProps {
   stixCoreObjectId: string;
@@ -105,18 +106,19 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
   const height = 180;
   return (
     <>
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        style={{ display: 'flex', marginTop: 20 }}
-      >
-        {t_i18n('Distribution of opinions')}
+      <Stack direction="row" alignItems="center" gap={0.5} sx={{ marginTop: '20px' }}>
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+        >
+          {t_i18n('Distribution of opinions')}
+        </Typography>
         <StixCoreObjectOpinionsRadarDialog
           stixCoreObjectId={stixCoreObjectId}
           opinionOptions={opinionOptions}
           fetchDistributionQuery={fetchDistributionQuery}
         />
-      </Typography>
+      </Stack>
       {listQueryRef && (
         <React.Suspense fallback={<span />}>
           <StixCoreObjectOpinionsList
