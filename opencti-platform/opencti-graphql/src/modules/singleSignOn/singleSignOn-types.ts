@@ -29,13 +29,9 @@ export interface BasicStoreEntitySingleSignOn extends BasicStoreEntity {
   enabled: boolean;
   strategy: StrategyType;
   label?: string;
-  auto_create_group?: boolean;
-  prevent_default_groups?: boolean;
-  logout_remote?: boolean;
   organizations_management?: OrganizationsManagement;
   groups_management?: GroupsManagement;
   configuration?: ConfigurationType[];
-  advanced_configuration?: ConfigurationType[];
 }
 
 export interface StoreEntitySingleSignOn extends StoreEntity {
@@ -45,13 +41,9 @@ export interface StoreEntitySingleSignOn extends StoreEntity {
   enabled: boolean;
   strategy: StrategyType;
   label?: string;
-  auto_create_group?: boolean;
-  prevent_default_groups?: boolean;
-  logout_remote?: boolean;
   organizations_management?: OrganizationsManagement;
   groups_management?: GroupsManagement;
   configuration?: ConfigurationType[];
-  advanced_configuration?: ConfigurationType[];
 }
 
 export interface StixSingleSignOn extends StixObject {

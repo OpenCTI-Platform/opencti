@@ -13,9 +13,6 @@ type SingleSignOn implements InternalObject & BasicObject {
   description: String
   enabled: Boolean!
   strategy: StrategyType!
-  auto_create_group: Boolean
-  prevent_default_groups: Boolean
-  logout_remote: Boolean
   organizations_management: OrganizationsManagement
   groups_management: GroupsManagement
   configuration: [ConfigurationType!]
@@ -81,7 +78,8 @@ type Query {
 input OrganizationsManagementInput {
   organizations_path: [String!]
   organizations_mapping: [String!]
-  # TODO missing organizations_default, organizations_splitter and organizations_header for HeaderStrategy
+  organizations_default: [String!]
+  # TODO missing organizations_splitter and organizations_header for HeaderStrategy
 }
 
 input GroupsManagementInput {
@@ -105,9 +103,6 @@ input SingleSignOnAddInput {
   description: String
   enabled: Boolean!
   strategy: StrategyType!
-  auto_create_group: Boolean
-  prevent_default_groups: Boolean
-  logout_remote: Boolean
   organizations_management: OrganizationsManagementInput
   groups_management: GroupsManagementInput
   configuration: [ConfigurationTypeInput!]
@@ -123,13 +118,9 @@ type SingleSignOnMigrationResult {
   description: String
   enabled: Boolean!
   strategy: StrategyType!
-  auto_create_group: Boolean
-  prevent_default_groups: Boolean
-  logout_remote: Boolean
   organizations_management: OrganizationsManagement
   groups_management: GroupsManagement
   configuration: [ConfigurationType!]
-  advanced_configuration: [ConfigurationType!]
 }
 
 input SingleSignMigrationInput {
