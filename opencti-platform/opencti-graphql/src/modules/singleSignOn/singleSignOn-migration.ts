@@ -133,7 +133,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
     }
   }
   const result: ConfigurationType = {
-    configuration, groups_management, skipped_configuration,
+    configuration, groups_management, organizations_management, skipped_configuration,
   };
   return result;
 };

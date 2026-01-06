@@ -126,3 +126,7 @@ export const findAllSingleSignOn = (context: AuthContext, user: AuthUser): Promi
   if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
   return fullEntitiesList(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON]);
 };
+
+export const getAdvancedConfiguration = (context: AuthContext, user: AuthUser, singleSignOn: BasicStoreEntitySingleSignOn) => {
+  return [];
+};

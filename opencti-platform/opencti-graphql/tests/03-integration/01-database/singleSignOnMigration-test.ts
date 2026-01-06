@@ -158,9 +158,15 @@ describe('Migration of SSO environment test coverage', () => {
     });
 
     it.todo('should SAML with deprecated role mapping configuration works', async () => {
+      // TODO
     });
 
     it.todo('should SAML with several SAML config works', async () => {
+      // TODO
+    });
+
+    it.todo('should SAML with default values works', async () => {
+      // TODO
     });
 
     it('should OpenID configuration works', async () => {

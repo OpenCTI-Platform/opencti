@@ -52,18 +52,6 @@ export const buildAllConfiguration = async (ssoEntity: BasicStoreEntitySingleSig
         ssoConfiguration[currentConfig.key] = currentConfig.value;
       }
     }
-    if (ssoEntity.advanced_configuration) {
-      for (let i = 0; i < ssoEntity.advanced_configuration.length; i++) {
-        const currentConfig = ssoEntity.advanced_configuration[i];
-        if (currentConfig.type === 'number') {
-          ssoConfiguration[currentConfig.key] = +currentConfig.value;
-        } else if (currentConfig.type === 'boolean') {
-          ssoConfiguration[currentConfig.key] = currentConfig.value === 'true';
-        } else {
-          ssoConfiguration[currentConfig.key] = currentConfig.value;
-        }
-      }
-    }
     logApp.info('[SSO SAML] full computed configuration:', { ...ssoConfiguration, idpCert: '***secret***' });
     return ssoConfiguration;
   } else {
@@ -104,18 +92,6 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
         ssoOtherOptions[currentConfig.key] = currentConfig.value === 'true';
       } else {
         ssoOtherOptions[currentConfig.key] = currentConfig.value;
-      }
-    }
-    if (ssoEntity.advanced_configuration) {
-      for (let i = 0; i < ssoEntity.advanced_configuration.length; i++) {
-        const currentConfig = ssoEntity.advanced_configuration[i];
-        if (currentConfig.type === 'number') {
-          ssoOtherOptions[currentConfig.key] = +currentConfig.value;
-        } else if (currentConfig.type === 'boolean') {
-          ssoOtherOptions[currentConfig.key] = currentConfig.value === 'true';
-        } else {
-          ssoOtherOptions[currentConfig.key] = currentConfig.value;
-        }
       }
     }
 
