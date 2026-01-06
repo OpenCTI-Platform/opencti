@@ -264,9 +264,6 @@ describe('Service account with platform organization coverage', async () => {
   });
 
   afterAll(async () => {
-    // Deactivate EE at the end of this test - back to CE
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     await unSetOrganization();
   });
 

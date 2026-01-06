@@ -23,9 +23,6 @@ describe('playbook sharing component', () => {
   });
 
   afterAll(async () => {
-    // Deactivate EE at the end of this test - back to CE
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     await unSetOrganization();
   });
 
@@ -138,9 +135,6 @@ describe('playbook container wrapper component', () => {
   });
 
   afterAll(async () => {
-    // Deactivate EE at the end of this test - back to CE
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     await unSetOrganization();
   });
   it('should wrap Incident in Incident Response container', async () => {

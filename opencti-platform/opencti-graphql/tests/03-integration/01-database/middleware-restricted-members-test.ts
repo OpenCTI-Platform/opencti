@@ -63,9 +63,6 @@ describe('Middleware test coverage on restricted_members configuration', () => {
   });
 
   afterAll(async () => {
-    // Deactivate EE at the end of this test - back to CE
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     for (let i = 0; i < idToDelete.length; i += 1) {
       await internalDeleteElementById(testContext, SYSTEM_USER, idToDelete[i], ENTITY_TYPE_CONTAINER_CASE_RFI); // +5 RFI deleted
     }

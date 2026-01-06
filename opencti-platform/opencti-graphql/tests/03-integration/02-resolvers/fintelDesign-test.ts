@@ -1,4 +1,4 @@
-import { expect, it, describe, beforeEach, vi } from 'vitest';
+import { expect, it, describe, vi, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
@@ -84,7 +84,7 @@ describe('Fintel Design resolver standard behavior', () => {
     textColor: '#333333',
   };
 
-  beforeEach(() => {
+  beforeAll(() => {
     // Activate EE for this test
     vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
     vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);

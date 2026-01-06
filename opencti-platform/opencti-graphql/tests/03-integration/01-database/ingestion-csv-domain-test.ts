@@ -50,9 +50,6 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 
   afterAll(async () => {
     await unSetOrganization();
-    // Deactivate EE at the end of this test - back to CE
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockRejectedValue('Enterprise edition is not enabled');
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     for (let i = 0; i < ingestionCreatedIds.length; i += 1) {
       await deleteIngestionCsv(currentTestContext, ingestionUser, ingestionCreatedIds[i]);
     }
