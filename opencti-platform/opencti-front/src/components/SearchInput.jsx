@@ -82,7 +82,7 @@ export function GradientBorderTextField({
           position: 'relative',
           borderRadius: 1,
           borderWidth: '1px',
-          backgroundColor: theme.palette.background.paper,
+          backgroundColor: theme.palette.background.secondary,
 
           '& fieldset': {
             // default mode without border color
