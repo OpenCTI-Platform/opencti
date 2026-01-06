@@ -34,7 +34,7 @@ export const addAttackPattern = async (context: AuthContext, user: AuthUser, att
   if (isEmptyField(attackPattern.x_mitre_id)) {
     // Extract x_mitre_id from name if not already provided
     // Match patterns like T0015.001, T0015, FT048
-    const mitreIdMatch = attackPattern.name?.match(/\b([TF]T?\d{4}(?:\.\d{3})?)\b/);
+    const mitreIdMatch = attackPattern.name?.match(/\b([TF]T?\d+(?:\.\d+)?)\b/);
     if (mitreIdMatch) {
       xMitreId = mitreIdMatch[1];
     }
