@@ -568,6 +568,13 @@ class AttackPattern:
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
 
+            # Add x_mitre_id in aliases
+            aliases = self.opencti.stix2.pick_aliases(stix_object)
+            if aliases is None:
+                aliases = []
+            if x_mitre_id is not None and x_mitre_id not in aliases:
+                aliases.append(x_mitre_id)
+
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
@@ -599,7 +606,7 @@ class AttackPattern:
                     if "description" in stix_object
                     else None
                 ),
-                aliases=self.opencti.stix2.pick_aliases(stix_object),
+                aliases=aliases,
                 x_mitre_platforms=(
                     stix_object["x_mitre_platforms"]
                     if "x_mitre_platforms" in stix_object
