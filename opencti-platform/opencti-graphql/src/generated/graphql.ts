@@ -27392,6 +27392,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_providers: Array<Provider>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']['output']>;
   platform_session_idle_timeout?: Maybe<Scalars['Int']['output']>;
+  platform_session_max_concurrent?: Maybe<Scalars['Int']['output']>;
   platform_session_timeout?: Maybe<Scalars['Int']['output']>;
   platform_theme?: Maybe<Theme>;
   platform_title?: Maybe<Scalars['String']['output']>;
@@ -45927,6 +45928,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_session_idle_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  platform_session_max_concurrent?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_session_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_theme?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType>;
   platform_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

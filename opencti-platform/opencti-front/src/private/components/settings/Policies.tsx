@@ -69,6 +69,7 @@ const PoliciesFragment = graphql`
     }
     otp_mandatory
     view_all_users
+    platform_session_max_concurrent
   }
 `;
 
@@ -106,6 +107,7 @@ const policiesValidation = () => Yup.object().shape({
   platform_consent_confirm_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
+  platform_session_max_concurrent: Yup.number().nullable(),
 });
 
 interface PoliciesComponentProps {
@@ -177,6 +179,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     platform_banner_level: settings.platform_banner_level,
     platform_banner_text: settings.platform_banner_text,
     otp_mandatory: settings.otp_mandatory,
+    platform_session_max_concurrent: settings.platform_session_max_concurrent,
     default_group_for_ingestion_users: null,
     view_all_users: settings.view_all_users ?? false,
   };
@@ -572,7 +575,28 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       className="paper-for-grid"
                       variant="outlined"
                     >
-                      <List style={{ marginTop: -20 }}>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="otp_mandatory"
+                        label={t_i18n('Enforce two-factor authentication')}
+                        onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                        tooltip={t_i18n(
+                          'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
+                        )}
+                      />
+                      <Field
+                        component={TextField}
+                        type="number"
+                        variant="standard"
+                        inputProps={{ min: 0 }}
+                        name="platform_session_max_concurrent"
+                        label={t_i18n('Max concurrent sessions (0 equals no maximum)')}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
+                        onSubmit={(name: string, value: string) => handleSubmitField(name, value !== '' ? value : '0')}
+                      />
+                      <List style={{ marginTop: 20 }}>
                         {authProviders.map((provider) => (
                           <ListItem key={provider.strategy} divider={true}>
                             <ListItemIcon>
@@ -590,17 +614,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                           </ListItem>
                         ))}
                       </List>
-                      <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name="otp_mandatory"
-                        label={t_i18n('Enforce two-factor authentication')}
-                        containerstyle={{ marginTop: 20 }}
-                        onChange={(name: string, value: string) => handleSubmitField(name, value)}
-                        tooltip={t_i18n(
-                          'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
-                        )}
-                      />
                     </Paper>
                   </Grid>
                   <Grid item xs={6}>

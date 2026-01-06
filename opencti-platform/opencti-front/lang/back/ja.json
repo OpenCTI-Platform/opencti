@@ -564,6 +564,7 @@
   "Marking type": "マーキングタイプ",
   "Markings": "マーキング",
   "Match Pir with source of relationship": "海賊と関係元を一致させる",
+  "Max concurrent sessions (0 equals no maximum)": "最大同時セッション数（0は最大なし）",
   "Max Confidence": "最大信頼度",
   "Max policy length": "最大ポリシー長",
   "Max shareable markings": "共有可能な最大マーキング",

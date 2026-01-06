@@ -239,6 +239,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'xtm_hub_registration_status', label: 'XTM Hub registration status', type: 'string', format: 'enum', values: ['registered', 'unregistered', 'lost_connectivity'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'filigran_chatbot_ai_cgu_status', label: 'XTM1 CGU acceptance status', type: 'string', format: 'enum', values: ['pending', 'disabled', 'enabled'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_ai_enabled', label: 'AI insight activation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'platform_session_max_concurrent', label: 'Max concurrent sessions (0 equals no maximum)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [
     { name: 'lastRun', label: 'Last run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -272,7 +273,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     },
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'default_hidden_types', label: 'Default hidden types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
-    { name: 'max_shareable_markings',
+    {
+      name: 'max_shareable_markings',
       label: 'Max shareable markings',
       type: 'object',
       format: 'standard',
@@ -286,7 +288,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
         { name: 'value', label: 'Marking', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       ],
     },
-    { name: 'group_confidence_level',
+    {
+      name: 'group_confidence_level',
       label: 'Group Confidence Level',
       type: 'object',
       format: 'standard',
@@ -298,7 +301,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       sortBy: { path: 'group_confidence_level.max_confidence', type: 'numeric' },
       mappings: [
         { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
-        { name: 'overrides',
+        {
+          name: 'overrides',
           label: 'Overrides',
           type: 'object',
           format: 'nested',
@@ -310,7 +314,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
           mappings: [
             { name: 'entity_type', label: 'Entity Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
             { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
-          ] },
+          ],
+        },
       ],
     },
     { name: 'auto_integration_assignation', label: 'Default Group used for integration user creation', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
@@ -357,7 +362,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'submenu_show_icons', label: 'Show submenu icons', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'submenu_auto_collapse', label: 'Auto collapse submenus', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'monochrome_labels', label: 'Monochrome labels and entity types', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'user_confidence_level',
+    {
+      name: 'user_confidence_level',
       label: 'User Confidence Level',
       type: 'object',
       format: 'standard',
@@ -368,7 +374,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       isFilterable: false,
       mappings: [
         { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
-        { name: 'overrides',
+        {
+          name: 'overrides',
           label: 'Overrides',
           type: 'object',
           format: 'nested',
@@ -380,7 +387,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
           mappings: [
             { name: 'entity_type', label: 'Entity Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
             { name: 'max_confidence', label: 'Max Confidence', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: true },
-          ] },
+          ],
+        },
       ],
     },
     { name: 'user_service_account', label: 'User service account', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

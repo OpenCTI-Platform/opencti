@@ -147,9 +147,10 @@ export interface UserModificationAction extends BasicUserAction {
 export interface UserLoginAction extends BasicUserAction {
   event_type: 'authentication';
   event_scope: 'login';
+  session_kill?: number;
   context_data: {
     provider: string;
-    username: string;
+    username?: string;
   };
 }
 export interface UserLogoutAction extends BasicUserAction {
@@ -186,7 +187,6 @@ export const registerUserActionListener = (listener: ActionListener): ActionHand
 
 export const publishUserAction = async (userAction: UserAction) => {
   const actionPromises = [];
-  // eslint-disable-next-line no-restricted-syntax
   for (const [, listener] of listeners.entries()) {
     actionPromises.push(listener.next(userAction));
   }

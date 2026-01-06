@@ -1420,7 +1420,6 @@ type PublicSettings implements IntlSettings & ThemeSettings {
     platform_providers: [PublicProvider!]!
     platform_enterprise_edition_license_validated: Boolean!
     playground_enabled: Boolean!
-
     metrics_definition: [MetricDefinition!]
 }
 
@@ -1494,6 +1493,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
   platform_messages: [SettingsMessage!]
+  platform_session_max_concurrent: Int
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!

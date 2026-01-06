@@ -2461,6 +2461,7 @@
   "Matches all indicator main observable types if none is listed.": "如果没有列出主要观测指标类型，则匹配所有指标类型。",
   "Matrix in line view": "矩阵内联视图",
   "Matrix view": "矩阵视图",
+  "Max concurrent sessions (0 equals no maximum)": "最大并发会话数（0 表示无最大值）",
   "Max Confidence": "最大置信度",
   "Max Confidence is overridden for some entity types:": "对于某些实体类型，最大置信度会被覆盖：",
   "Max Confidence Level": "最大置信度",

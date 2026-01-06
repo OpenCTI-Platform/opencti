@@ -2461,6 +2461,7 @@
   "Matches all indicator main observable types if none is listed.": "Сопоставляет все основные наблюдаемые типы индикаторов, если ни один из них не указан.",
   "Matrix in line view": "Матрица в линейном представлении",
   "Matrix view": "Матричный вид",
+  "Max concurrent sessions (0 equals no maximum)": "Максимальное количество одновременных сеансов (0 означает отсутствие максимума)",
   "Max Confidence": "Максимальная уверенность",
   "Max Confidence is overridden for some entity types:": "Максимальное значение Confidence переопределено для некоторых типов сущностей:",
   "Max Confidence Level": "Максимальный уровень доверия",
