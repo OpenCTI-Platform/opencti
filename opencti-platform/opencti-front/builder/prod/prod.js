@@ -12,7 +12,7 @@ const buildPath = "./builder/prod/build";
 (async () => {
   await esbuild.build({
     logLevel: "info",
-    plugins: [IconResolverPlugin, RelayPlugin, sassPlugin()],
+    plugins: [RelayPlugin, sassPlugin()],
     entryPoints: ["src/front.tsx"],
     publicPath: "/",
     bundle: true,
