@@ -2461,6 +2461,7 @@
   "Matches all indicator main observable types if none is listed.": "Correspond à tous les types d'observables principaux des indicateurs si aucun n'est listé.",
   "Matrix in line view": "Vue en ligne de la matrice",
   "Matrix view": "Vue matricielle",
+  "Max concurrent sessions (0 equals no maximum)": "Nombre maximal de sessions simultanées (0 signifie qu'il n'y a pas de maximum)",
   "Max Confidence": "Confiance max",
   "Max Confidence is overridden for some entity types:": "La confiance max est surchargée pour certains types d'entités :",
   "Max Confidence Level": "Niveau de confiance maximal",

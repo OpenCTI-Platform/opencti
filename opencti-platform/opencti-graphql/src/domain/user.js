@@ -30,7 +30,7 @@ import {
   storeLoadById,
 } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { killUserSessions } from '../database/session';
+import { findUserSessions, killSessions, killUserSessions } from '../database/session';
 import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -1732,6 +1732,27 @@ const validateUser = (user, settings) => {
   }
 };
 
+export const enforceSessionLimit = async (user, settings) => {
+  if (settings.platform_session_max_concurrent && settings.platform_session_max_concurrent > 0) {
+    const sessions = await findUserSessions(user.id);
+    if (sessions.length >= settings.platform_session_max_concurrent) {
+      const sortedSessions = sessions.sort((a, b) => {
+        if (a.created < b.created) {
+          return -1;
+        }
+        if (a.created > b.created) {
+          return 1;
+        }
+        return 0;
+      });
+      const sessionsToKill = sortedSessions.slice(0, sessions.length - settings.platform_session_max_concurrent + 1);
+      await killSessions(sessionsToKill.map((s) => s.id));
+      return sessionsToKill.length;
+    }
+  }
+  return 0;
+};
+
 export const sessionAuthenticateUser = async (context, req, user, provider) => {
   let platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   let logged = platformUsers.get(user.internal_id);
@@ -1745,17 +1766,20 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   validateUser(logged, settings);
+  const withOrigin = userWithOrigin(req, logged);
+  const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
   // Build and save the session
   req.session.user = { id: user.id, session_creation: now(), otp_validated: false };
   req.session.session_provider = provider;
   req.session.save();
   // Publish the login event
-  const userOrigin = userWithOrigin(req, logged);
+  const userOrigin = withOrigin;
   await publishUserAction({
     user: userOrigin,
     event_type: 'authentication',
     event_access: 'administration',
     event_scope: 'login',
+    session_kill: numberOfKilledSessions,
     context_data: { provider },
   });
   return userOrigin;

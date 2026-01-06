@@ -2461,6 +2461,7 @@
   "Matches all indicator main observable types if none is listed.": "もし何もリストされていなければ、全ての指標となる主要な観測可能な型にマッチします。",
   "Matrix in line view": "マトリックス・インライン・ビュー",
   "Matrix view": "マトリックス表示",
+  "Max concurrent sessions (0 equals no maximum)": "最大同時セッション数（0は最大なし）",
   "Max Confidence": "マックス・コンフィデンス",
   "Max Confidence is overridden for some entity types:": "エンティティの種類によっては、最大信頼度がオーバーライドされます：",
   "Max Confidence Level": "最大信頼度",

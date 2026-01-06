@@ -564,6 +564,7 @@
   "Marking type": "标记类型",
   "Markings": "标记",
   "Match Pir with source of relationship": "将 Pir 与关系源匹配",
+  "Max concurrent sessions (0 equals no maximum)": "最大并发会话数（0 表示无最大值）",
   "Max Confidence": "最大置信度",
   "Max policy length": "最多长度要求",
   "Max shareable markings": "最大可共享标记",
