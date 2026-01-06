@@ -1,5 +1,5 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, Tooltip, useTheme } from '@mui/material';
+import { alpha, Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip, useTheme } from '@mui/material';
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -61,9 +61,16 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   const isMenuOpen = selectedMenu.includes(id);
 
   const isSelected = (itemLink: string, itemExact?: boolean) => {
-    return itemExact
-      ? location.pathname === itemLink
-      : location.pathname.includes(itemLink);
+    if (itemExact) {
+      return location.pathname === itemLink;
+    }
+
+    // Special case where data and draft shares same url on start
+    if (itemLink === '/dashboard/data' && location.pathname.includes('/import/draft/')) {
+      return false;
+    }
+
+    return location.pathname === itemLink || location.pathname.startsWith(itemLink + '/');
   };
 
   const isParentSelected = isSelected(link, exact);
@@ -87,38 +94,45 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     showIcon = true,
     fontSize: 'default' | 'small' = 'default',
     forceShowText = false, // For popover items
-  ) => (
-    <>
-      {showIcon && itemIcon && (
-        <ListItemIcon
-          sx={{
-            minWidth: '0px!important',
-            mr: 1,
-            opacity: selected ? 1 : 0.5,
-            color: selected ? theme.palette.primary.main : 'inherit',
-          }}
-        >
-          {itemIcon}
-        </ListItemIcon>
-      )}
+  ) => {
+    const isSubItem = fontSize === 'small';
+    const iconColor = isSubItem && selected ? theme.palette.primary.main : 'inherit';
+    const iconOpacity = isSubItem && selected ? 1 : 0.5;
+    const textColor = isSubItem && selected ? theme.palette.primary.main : 'inherit';
 
-      {(navOpen || forceShowText) && (
-        <ListItemText
-          primary={itemLabel}
-          sx={{
-            pt: 0.1,
-            opacity: fontSize === 'default' || selected ? 1 : 0.6,
-          }}
-          slotProps={{
-            primary: {
-              fontSize: fontSize === 'default' ? '14px' : '12px',
-              color: selected ? theme.palette.primary.main : 'inherit',
-            },
-          }}
-        />
-      )}
-    </>
-  );
+    return (
+      <>
+        {showIcon && itemIcon && (
+          <ListItemIcon
+            sx={{
+              minWidth: '0px!important',
+              mr: 1,
+              opacity: iconOpacity,
+              color: iconColor,
+            }}
+          >
+            {itemIcon}
+          </ListItemIcon>
+        )}
+
+        {(navOpen || forceShowText) && (
+          <ListItemText
+            primary={itemLabel}
+            sx={{
+              pt: 0.1,
+              opacity: fontSize === 'default' || selected ? 1 : 0.6,
+            }}
+            slotProps={{
+              primary: {
+                fontSize: fontSize === 'default' ? '14px' : '12px',
+                color: textColor,
+              },
+            }}
+          />
+        )}
+      </>
+    );
+  };
 
   // Render submenu item
   const renderSubMenuItem = (item: SubMenuItem, inCollapse: boolean) => {
@@ -130,7 +144,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         to={item.link}
         dense
         onClick={inCollapse ? undefined : onMenuClose}
-        sx={{ px: 2, py: 1 }}
+        sx={{ px: 2.5, py: 1 }}
       >
         {renderMenuItem(item.icon, item.label, itemSelected, submenuShowIcons, 'small', !inCollapse)}
       </MenuItem>
@@ -145,6 +159,22 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
     );
   };
 
+  const getMenuStyles = (selected: boolean): SxProps => {
+    return {
+      px: 2,
+      pr: 1,
+      py: 1,
+      minHeight: '40px',
+      borderLeft: selected ? `3px solid ${theme.palette.primary.main}` : '3px solid transparent',
+      backgroundColor: selected ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+      '&:hover': {
+        backgroundColor: selected
+          ? theme.palette.action.selected
+          : theme.palette.action.hover,
+      },
+    };
+  };
+
   // No Subitems
   if (!hasSubItems) {
     return (
@@ -154,7 +184,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           to={link}
           dense
           onClick={onClick}
-          sx={{ px: 2, py: 1 }}
+          sx={getMenuStyles(isParentSelected)}
         >
           {renderMenuItem(icon, label, isParentSelected)}
         </MenuItem>
@@ -170,9 +200,9 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           ref={anchorRef}
           dense
           onClick={handleParentClick}
-          sx={{ pl: 2, pr: 1, py: 1 }}
+          sx={getMenuStyles(isParentSelected)}
         >
-          {renderMenuItem(icon, label, false)}
+          {renderMenuItem(icon, label, isParentSelected)}
           {isMenuOpen ? <ArrowDropUp /> : <ArrowDropDown />}
         </MenuItem>
 
@@ -195,9 +225,9 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         onClick={handleParentClick}
         onMouseEnter={() => onMenuOpen(id)}
         onMouseLeave={() => onMenuClose()}
-        sx={{ pl: 2, pr: 1, py: 1 }}
+        sx={getMenuStyles(isParentSelected)}
       >
-        {renderMenuItem(icon, label, false)}
+        {renderMenuItem(icon, label, isParentSelected)}
       </MenuItem>
 
       {

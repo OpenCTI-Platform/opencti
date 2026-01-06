@@ -503,7 +503,7 @@ const LeftBarComponent = ({ queryRef }) => {
               {...itemProps}
               label={t_i18n('Draft overview')}
               icon={<ArchitectureOutlined />}
-              link={`/dashboard/data/import/draft/${draftContext.id}/`}
+              link={`/dashboard/data/import/draft/${draftContext.id}`}
             />
           )}
 
