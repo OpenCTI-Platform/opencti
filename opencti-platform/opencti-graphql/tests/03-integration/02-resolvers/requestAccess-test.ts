@@ -9,14 +9,14 @@ import {
   TEST_ORGANIZATION,
   testContext,
   USER_DISINFORMATION_ANALYST,
-  USER_EDITOR
+  USER_EDITOR,
 } from '../../utils/testQuery';
 import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
-import { enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { unSetOrganization, setOrganization, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { ActionStatus, type RequestAccessAction } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
-import { findTemplatePaginated, } from '../../../src/domain/status';
+import { findTemplatePaginated } from '../../../src/domain/status';
 import { FilterMode, OrderingMode, type RequestAccessConfigureInput, RequestAccessType, type StatusAddInput, StatusOrdering, StatusScope } from '../../../src/generated/graphql';
 import { logApp } from '../../../src/config/conf';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
@@ -224,6 +224,8 @@ const ADD_REQUEST_ACCESS_STATUS_MUTATION = gql`
     }
 `;
 
+// TODO : find a way to mock EE
+
 describe('Add Request Access to an entity and create an RFI.', async () => {
   let caseRfiIdForApproval: string;
   let caseRfiIdForReject: string;
@@ -235,7 +237,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   let greenGroupId: string;
 
   it('should enable platform organization', async () => {
-    await enableEEAndSetOrganization(TEST_ORGANIZATION);
+    await setOrganization(TEST_ORGANIZATION);
 
     // Verify initial data required for tests.
     expect(USER_EDITOR.organizations?.some((organization) => organization.name === TEST_ORGANIZATION.name));
@@ -270,27 +272,27 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     const inputPending: StatusAddInput = {
       order: 3,
       scope: StatusScope.RequestAccess,
-      template_id: pendingTemplate?.node.id ?? ''
+      template_id: pendingTemplate?.node.id ?? '',
     };
     logApp.info('[TEST] inputPending:', { inputPending });
     await queryAsAdminWithSuccess({
       query: ADD_REQUEST_ACCESS_STATUS_MUTATION,
       variables: {
         input: inputPending,
-        id: ENTITY_TYPE_CONTAINER_CASE_RFI
+        id: ENTITY_TYPE_CONTAINER_CASE_RFI,
       },
     });
 
     const inputClosed: StatusAddInput = {
       order: 3,
       scope: StatusScope.RequestAccess,
-      template_id: closedTemplate?.node.id ?? ''
+      template_id: closedTemplate?.node.id ?? '',
     };
     await queryAsAdminWithSuccess({
       query: ADD_REQUEST_ACCESS_STATUS_MUTATION,
       variables: {
         input: inputClosed,
-        id: ENTITY_TYPE_CONTAINER_CASE_RFI
+        id: ENTITY_TYPE_CONTAINER_CASE_RFI,
       },
     });
 
@@ -312,7 +314,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
         mode: FilterMode.And,
         filters: [{ key: ['type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }, { key: ['scope'], values: [StatusScope.RequestAccess] }],
         filterGroups: [],
-      }
+      },
     };
     const allRequestAccessStatuses = await fullEntitiesList<BasicWorkflowStatus>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS], argsFilter);
     logApp.info('[TEST] allRequestAccessStatuses:', { allRequestAccessStatuses });
@@ -343,13 +345,13 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     const input: RequestAccessConfigureInput = {
       approved_status_id: pendingTemplate?.node.id,
       declined_status_id: closedTemplate?.node.id,
-      approval_admin: [greenGroupId]
+      approval_admin: [greenGroupId],
     };
 
     await queryAsAdminWithSuccess({
       query: CONFIGURE_REQUEST_ACCESS_MUTATION,
       variables: {
-        input
+        input,
       },
     });
 
@@ -368,12 +370,12 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     const inputBackToNormal: RequestAccessConfigureInput = {
       approved_status_id: approvedTemplate?.node.id,
       declined_status_id: declinedTemplate?.node.id,
-      approval_admin: [amberGroupId]
+      approval_admin: [amberGroupId],
     };
     await queryAsAdminWithSuccess({
       query: CONFIGURE_REQUEST_ACCESS_MUTATION,
       variables: {
-        input: inputBackToNormal
+        input: inputBackToNormal,
       },
     });
 
@@ -403,13 +405,13 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     const input: RequestAccessConfigureInput = {
       approved_status_id: approvedTemplate?.node.id,
       declined_status_id: declinedTemplate?.node.id,
-      approval_admin: [amberGroupId]
+      approval_admin: [amberGroupId],
     };
 
     await queryAsAdminWithSuccess({
       query: CONFIGURE_REQUEST_ACCESS_MUTATION,
       variables: {
-        input
+        input,
       },
     });
 
@@ -479,12 +481,12 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
       {
         member_id: OPENCTI_ADMIN_UUID,
         access_right: MEMBER_ACCESS_RIGHT_ADMIN,
-        groups_restriction: []
+        groups_restriction: [],
       }, {
         member_id: testOrgId,
         access_right: MEMBER_ACCESS_RIGHT_EDIT,
-        groups_restriction: [{ id: amberGroupId, name: AMBER_GROUP.name }]
-      }
+        groups_restriction: [{ id: amberGroupId, name: AMBER_GROUP.name }],
+      },
     ]);
 
     // We need data from database because JSON field x_opencti_request_access is internal (not on API)
@@ -500,12 +502,12 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   it('should accept the created Case RFI first time be ok', async () => {
     // FIXME use a user and not admin !
     /*
-    const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
-      query: APPROVE_RFI_QUERY,
-      variables: { id: caseRfiIdForApproval },
-    });
-    expect(approvalResult?.data?.caseRfiApprove.x_opencti_workflow_id).toBe(approvedStatusId);
-  */
+      const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+        query: APPROVE_RFI_QUERY,
+        variables: { id: caseRfiIdForApproval },
+      });
+      expect(approvalResult?.data?.caseRfiApprove.x_opencti_workflow_id).toBe(approvedStatusId);
+    */
 
     const approvalResult = await queryAsAdminWithSuccess({
       query: APPROVE_RFI_QUERY,
@@ -520,7 +522,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
 
     const getRfiQueryResult = await queryAsAdminWithSuccess({
       query: READ_RFI_QUERY,
-      variables: { id: caseRfiIdForApproval }
+      variables: { id: caseRfiIdForApproval },
     });
 
     expect(getRfiQueryResult?.data?.caseRfi).not.toBeNull();
@@ -531,11 +533,11 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   it('should accept the created Case RFI second time be ok too', async () => {
     // FIXME use a user and not admin !
     /*
-    const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
-      query: APPROVE_RFI_QUERY,
-      variables: { id: caseRfiIdForApproval },
-    });
-    */
+      const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+        query: APPROVE_RFI_QUERY,
+        variables: { id: caseRfiIdForApproval },
+      });
+      */
     const approvalResult = await queryAsAdminWithSuccess({
       query: APPROVE_RFI_QUERY,
       variables: { id: caseRfiIdForApproval },
@@ -569,7 +571,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
 
     const getRfiQueryResult = await queryAsAdminWithSuccess({
       query: READ_RFI_QUERY,
-      variables: { id: caseRfiIdForReject }
+      variables: { id: caseRfiIdForReject },
     });
     expect(getRfiQueryResult?.data?.caseRfi).not.toBeNull();
     expect(getRfiQueryResult?.data?.caseRfi.status.template.name).toEqual('DECLINED'); // 'DECLINED' coming from data-initialization
@@ -590,11 +592,11 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
 
   it('should be ok to accept the Case RFI when already rejected', async () => {
     /* FIXME
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
-      query: APPROVE_RFI_QUERY,
-      variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
-    });
-    */
+      const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+        query: APPROVE_RFI_QUERY,
+        variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
+      });
+      */
     const queryResult = await queryAsAdminWithSuccess({
       query: APPROVE_RFI_QUERY,
       variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
@@ -609,6 +611,6 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForReject, ENTITY_TYPE_CONTAINER_CASE_RFI);
 
     // revert platform orga
-    await enableCEAndUnSetOrganization();
+    await unSetOrganization();
   });
 });

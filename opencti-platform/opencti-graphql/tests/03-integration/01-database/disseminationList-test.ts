@@ -1,23 +1,30 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import type { DisseminationListAddInput, EditInput } from '../../../src/generated/graphql';
 import { addDisseminationList, deleteDisseminationList, fieldPatchDisseminationList } from '../../../src/modules/disseminationList/disseminationList-domain';
 import { buildStandardUser, testContext } from '../../utils/testQuery';
 import type { StoreEntityDisseminationList } from '../../../src/modules/disseminationList/disseminationList-types';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const TEST_DISSEMINATION_USER_SET = buildStandardUser([], [], [{ name: 'SETTINGS_SETDISSEMINATE' }]);
 const TEST_DISSEMINATION_LIST_CREATE_INPUT: DisseminationListAddInput = {
   name: 'Dissemination list',
   description: 'Description',
-  emails: ['example1@email.com', 'sample.account@email.com', 'firstname.lastname@email.com', 'user123@email.com', 'contact@domain.com', 'info@example.net', 'test.email@email.org', 'random.user@email.co', 'support@email.io', 'myaddress@email.biz']
+  emails: ['example1@email.com', 'sample.account@email.com', 'firstname.lastname@email.com', 'user123@email.com', 'contact@domain.com', 'info@example.net', 'test.email@email.org', 'random.user@email.co', 'support@email.io', 'myaddress@email.biz'],
 };
 const TEST_DISSEMINATION_LIST_UPDATE_INPUT: EditInput[] = [
   { key: 'name', value: ['New Dissemination list'] },
   { key: 'description', value: ['New description'] },
-  { key: 'emails', value: ['example1@email.com', 'sample.account@email.com'] }
+  { key: 'emails', value: ['example1@email.com', 'sample.account@email.com'] },
 ];
 
-describe('Create dissemination list', () => {
+describe('Create dissemination list', async () => {
+  beforeAll(() => {
+    // Activate EE for this test
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+  });
   let data: StoreEntityDisseminationList;
+
   it('should create a dissemination list for settings user', async () => {
     data = await addDisseminationList(testContext, TEST_DISSEMINATION_USER_SET, TEST_DISSEMINATION_LIST_CREATE_INPUT);
     expect(data.name, 'List created').toBe('Dissemination list');
