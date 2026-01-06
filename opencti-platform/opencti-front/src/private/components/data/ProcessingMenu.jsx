@@ -10,6 +10,7 @@ import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useGranted, { CSVMAPPERS, KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE } from '../../../utils/hooks/useGranted';
+import { useTheme } from '@mui/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -25,6 +26,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const ProcessingMenu = () => {
+  const theme = useTheme();
   const location = useLocation();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -33,10 +35,16 @@ const ProcessingMenu = () => {
   const isAutomationManager = useGranted([AUTOMATION_AUTMANAGE]);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isMapperUpdater = useGranted([CSVMAPPERS]);
+
   return (
     <Drawer
       variant="permanent"
       anchor="right"
+      sx={{
+        '& .MuiDrawer-paper': {
+          zIndex: theme.zIndex.appBar - 1,
+        },
+      }}
       classes={{ paper: classes.drawer }}
     >
       <div className={classes.toolbar} />

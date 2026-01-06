@@ -8,6 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import { useTheme } from '@mui/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -23,6 +24,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const SharingMenu = () => {
+  const theme = useTheme();
   const location = useLocation();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -30,10 +32,17 @@ const SharingMenu = () => {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+
   return (
     <Drawer
       variant="permanent"
       anchor="right"
+      sx={{
+        width: 350,
+        '& .MuiDrawer-paper': {
+          zIndex: theme.zIndex.appBar - 1,
+        },
+      }}
       classes={{ paper: classes.drawer }}
     >
       <div className={classes.toolbar} />

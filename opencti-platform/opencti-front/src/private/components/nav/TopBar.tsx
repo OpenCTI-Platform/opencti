@@ -1,58 +1,49 @@
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Badge } from '@mui/material';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@common/button/IconButton';
-import { AccountCircleOutlined, AlarmOnOutlined, AppsOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import DraftContextBanner from '@components/drafts/DraftContextBanner';
+import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
+import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
+import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { alpha, Badge, Stack } from '@mui/material';
+import AppBar from '@mui/material/AppBar';
 import Menu from '@mui/material/Menu';
-import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
+import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
-import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { usePage } from 'use-analytics';
-import Popover from '@mui/material/Popover';
-import Box from '@mui/material/Box';
-import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
-import DraftContextBanner from '@components/drafts/DraftContextBanner';
-import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { useFormatter } from '../../../components/i18n';
-import SearchInput from '../../../components/SearchInput';
-import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
-import Security from '../../../utils/Security';
-import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
-import type { Theme } from '../../../components/Theme';
-import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SETMANAGEXTMHUB } from '../../../utils/hooks/useGranted';
-import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
-import useAuth from '../../../utils/hooks/useAuth';
-import useDraftContext from '../../../utils/hooks/useDraftContext';
-import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from '../../../utils/SearchUtils';
-import octiDark from '../../../static/images/xtm/octi_dark.png';
-import octiLight from '../../../static/images/xtm/octi_light.png';
-import obasDark from '../../../static/images/xtm/obas_dark.png';
-import obasLight from '../../../static/images/xtm/obas_light.png';
-import xtmhubDark from '../../../static/images/xtm/xtm_hub_dark.png';
-import xtmhubLight from '../../../static/images/xtm/xtm_hub_light.png';
-import { isNotEmptyField } from '../../../utils/utils';
 import ItemBoolean from '../../../components/ItemBoolean';
-import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
+import SearchInput from '../../../components/SearchInput';
+import type { Theme } from '../../../components/Theme';
+import UploadImport from '../../../components/UploadImport';
+import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
-import UploadImport from '../../../components/UploadImport';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useAuth from '../../../utils/hooks/useAuth';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from '../../../utils/SearchUtils';
+import Security from '../../../utils/Security';
+import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
+import AskArianeButton from '../chatbox/AskArianeButton';
+import { CGUStatus } from '../settings/Experience';
+import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
+import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
+    zIndex: theme.zIndex.drawer - 1,
     background: 0,
     backgroundColor: theme.palette.background.nav,
     paddingTop: theme.spacing(0.2),
@@ -61,21 +52,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderTop: 0,
     color: theme.palette.text?.primary,
   },
-  logoContainer: {
-    marginTop: theme.spacing(0.2),
-    paddingLeft: theme.spacing(1),
-    minWidth: SMALL_BAR_WIDTH,
-  },
-  logo: {
-    cursor: 'pointer',
-    height: 35,
-    marginRight: 3,
-  },
-  logoCollapsed: {
-    cursor: 'pointer',
-    height: 35,
-    marginRight: 4,
-  },
   barRight: {
     marginRight: theme.spacing(2),
     height: '100%',
@@ -83,38 +59,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     alignItems: 'center',
     justifyContent: 'end',
     marginLeft: 'auto',
-  },
-  barRightContainer: {
-    float: 'left',
-  },
-  subtitle: {
-    color: theme.palette.text?.secondary,
-    fontSize: '15px',
-    marginBottom: 20,
-  },
-  xtmItem: {
-    display: 'block',
-    color: theme.palette.text?.primary,
-    textAlign: 'center',
-    padding: '15px 0 10px 0',
-    borderRadius: 4,
-    '&:hover': {
-      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-    },
-  },
-  xtmItemCurrent: {
-    display: 'block',
-    color: theme.palette.text?.primary,
-    textAlign: 'center',
-    cursor: 'normal',
-    padding: '15px 0 10px 0',
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-    borderRadius: 4,
-  },
-  product: {
-    margin: '5px auto 0 auto',
-    textAlign: 'center',
-    fontSize: 15,
   },
 }));
 
@@ -133,12 +77,6 @@ interface TopBarProps {
 const topBarQuery = graphql`
   query TopBarQuery {
     myUnreadNotificationsCount
-    settings {
-      platform_theme {
-        theme_logo
-        theme_logo_collapsed
-      }
-    }
   }
 `;
 
@@ -162,11 +100,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
-    settings: { platform_openaev_url: openAEVUrl, platform_enterprise_edition: ee, platform_xtmhub_url: xtmhubUrl, xtm_hub_registration_status: xtmhubStatus },
+    settings: {
+      platform_enterprise_edition: ee,
+      filigran_chatbot_ai_cgu_status,
+    },
   } = useAuth();
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
-  const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
@@ -198,9 +138,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     localStorage.getItem('navOpen') === 'true',
   );
 
-  const platformTheme = data.settings?.platform_theme;
-  const logo = navOpen ? platformTheme?.theme_logo || theme.logo : platformTheme?.theme_logo_collapsed || theme.logo_collapsed;
-
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -212,10 +149,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   useEffect(() => {
     page();
   }, [location.pathname]);
-  const [xtmOpen, setXtmOpen] = useState<{
-    open: boolean;
-    anchorEl: HTMLButtonElement | null;
-  }>({ open: false, anchorEl: null });
   const [menuOpen, setMenuOpen] = useState<{
     open: boolean;
     anchorEl: HTMLButtonElement | null;
@@ -231,15 +164,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
   };
-  const handleOpenXtm = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
-    event.preventDefault();
-    setXtmOpen({ open: true, anchorEl: event.currentTarget });
-  };
-  const handleCloseXtm = () => {
-    setXtmOpen({ open: false, anchorEl: null });
-  };
+
   const handleSearch = (searchKeyword: string, askAI = false) => {
     if (askAI && isEnterpriseEdition) {
       setIsNLQLoading(true);
@@ -276,16 +201,26 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setOpenDrawer(false);
     handleCloseMenu();
   };
+
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
   // draft
   const draftModeColor = getDraftModeColor(theme);
+
+  const appBarGradient = theme.palette.background.default && theme.palette.background.paper
+    ? `${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.9)}`
+    : 'rgba(7, 13, 25, 0.90) 0%, rgba(12, 21, 36, 0.90)}';
+
   return (
     <AppBar
       position="fixed"
-      className={classes.appBar}
-      variant="outlined"
       elevation={0}
+      sx={{
+        marginLeft: navOpen ? `${OPEN_BAR_WIDTH}px` : `${SMALL_BAR_WIDTH}px`,
+        width: navOpen ? `calc(100% - ${OPEN_BAR_WIDTH}px)` : `calc(100% - ${SMALL_BAR_WIDTH}px)`,
+        backdropFilter: 'blur(4px)',
+        background: `linear-gradient(90deg, ${appBarGradient} 100%)`,
+      }}
     >
       {/* Header and Footer Banners containing classification level of system */}
       <Toolbar
@@ -296,15 +231,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           borderBottom: draftContext ? `1px solid ${draftModeColor}` : 'initial',
         }}
       >
-        <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
-          <Link to="/dashboard">
-            <img
-              src={logo}
-              alt="logo"
-              className={navOpen ? classes.logo : classes.logoCollapsed}
-            />
-          </Link>
-        </div>
         {hasKnowledgeAccess && (
           <div
             style={{ display: 'flex', marginLeft: theme.spacing(3) }}
@@ -323,10 +249,16 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           {!!draftContext && (
             <DraftContextBanner />
           )}
-          <div className={classes.barRightContainer}>
+          <Stack direction="row" gap={1} alignItems="center">
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <>
+                  {
+                    filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
+                      <AskArianeButton />
+                    )
+                  }
+
                   { ee.license_type === 'nfr' && <ItemBoolean variant="large" label="EE DEV LICENSE" status={false} /> }
                   <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
                     <UploadImport
@@ -364,79 +296,12 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               </Security>
             )}
             <IconButton
-              aria-owns={xtmOpen.open ? 'menu-appbar' : undefined}
-              aria-haspopup="true"
-              id="xtm-menu-button"
-              onClick={handleOpenXtm}
-            >
-              <AppsOutlined fontSize="medium" />
-            </IconButton>
-            <Popover
-              anchorEl={xtmOpen.anchorEl}
-              open={xtmOpen.open}
-              onClose={handleCloseXtm}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'center',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'center',
-              }}
-              disableScrollLock={true}
-            >
-              <Box sx={{ width: '300px', padding: '15px', textAlign: 'center' }}>
-                <div className={classes.subtitle}>{t_i18n('Filigran eXtended Threat Management')}</div>
-                <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
-                    <Tooltip title={t_i18n('Current platform')}>
-                      <a className={classes.xtmItemCurrent}>
-                        <Badge variant="dot" color="success">
-                          <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? octiDark : octiLight)} alt="OCTI" />
-                        </Badge>
-                        <div className={classes.product}>OpenCTI</div>
-                      </a>
-                    </Tooltip>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Tooltip title={isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
-                      <a className={classes.xtmItem} href={isNotEmptyField(openAEVUrl) ? openAEVUrl : 'https://filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
-                        <Badge variant="dot" color={isNotEmptyField(openAEVUrl) ? 'success' : 'warning'}>
-                          <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
-                        </Badge>
-                        <div className={classes.product}>OpenAEV</div>
-                      </a>
-                    </Tooltip>
-                  </Grid>
-                  <Grid item xs={12}>
-                    {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
-                      <a className={classes.xtmItem} href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://hub.filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
-                        <Badge variant="dot" color={xtmhubStatus === 'registered' ? 'success' : 'warning'}>
-                          <img style={{ width: 200, paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
-                        </Badge>
-                      </a>
-                    ) : (
-                      <Link className={classes.xtmItem} to="/dashboard/settings/experience" onClick={handleCloseXtm}>
-                        <Badge variant="dot" color="warning">
-                          <img style={{ width: 200, paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
-                        </Badge>
-                      </Link>
-                    )}
-                  </Grid>
-                </Grid>
-              </Box>
-            </Popover>
-            <IconButton
               aria-owns={menuOpen.open ? 'menu-appbar' : undefined}
               aria-haspopup="true"
               aria-label={t_i18n('Profile')}
               id="profile-menu-button"
               onClick={handleOpenMenu}
-              // color={
-              //   location.pathname === '/dashboard/profile/me'
-              //     ? 'primary'
-              //     : 'inherit'
-              // }
+              selected={location.pathname === '/dashboard/profile/me'}
             >
               <AccountCircleOutlined fontSize="medium" />
             </IconButton>
@@ -462,7 +327,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 {t_i18n('Logout')}
               </MenuItem>
             </Menu>
-          </div>
+          </Stack>
         </div>
       </Toolbar>
       <FeedbackCreation

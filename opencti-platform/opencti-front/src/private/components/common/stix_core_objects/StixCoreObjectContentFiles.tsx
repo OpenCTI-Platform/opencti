@@ -31,6 +31,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { useTheme } from '@mui/material';
 
 interface ContentBlocProps {
   title: ReactNode;
@@ -115,6 +116,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   filesFromTemplate,
   hasOutcomesTemplate,
 }) => {
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -167,9 +169,9 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       anchor="right"
       elevation={1}
       sx={{
-        zIndex: 1100,
         width: 350,
         '& .MuiDrawer-paper': {
+          zIndex: theme.zIndex.appBar - 1,
           width: 350,
           padding: '10px 0 20px 0',
           paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 16 for margin, 64 for top bar,
