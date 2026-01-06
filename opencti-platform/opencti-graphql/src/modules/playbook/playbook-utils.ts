@@ -91,7 +91,7 @@ export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links
     childrenNodes = definition.nodes.filter((n) => linksToDelete.map((o) => o.to.id).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
     if (childrenNodes.length > 0) {
       nodesToDelete.push(...childrenNodes);
-      // eslint-disable-next-line @typescript-eslint/no-loop-func
+
       childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
     } else {
       childrenLinks = [];

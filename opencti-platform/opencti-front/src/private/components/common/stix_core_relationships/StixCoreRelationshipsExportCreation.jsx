@@ -136,7 +136,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
       R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
     );
     const exportConnsPerFormat = scopesConn(connectorsExport);
-    // eslint-disable-next-line max-len
+
     const isExportActive = (format) => exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
     const isExportPossible = exportScopes.filter((x) => isExportActive(x)).length > 0;
     return (

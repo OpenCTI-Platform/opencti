@@ -238,7 +238,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
         {
           key: 'name',
           values: ['City2'],
-        }
+        },
       ],
       filterGroups: [],
     });
@@ -257,7 +257,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
         {
           key: 'name',
           values: ['City2'],
-        }
+        },
       ],
       filterGroups: [],
     });
@@ -329,7 +329,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
               key: 'confidence',
               values: ['25'],
               operator: 'gt',
-            }
+            },
           ],
           filterGroups: [],
         }],
@@ -361,7 +361,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
           values: ['City', 'Report'],
           operator: 'eq',
           mode: 'or',
-        }
+        },
       ],
       filterGroups: [],
     });

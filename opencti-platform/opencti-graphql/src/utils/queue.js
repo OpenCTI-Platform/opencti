@@ -40,7 +40,7 @@ function Queue() {
     const item = queue[offset];
 
     // increment the offset and remove the free space if necessary
-    // eslint-disable-next-line no-plusplus
+
     if (++offset * 2 >= queue.length) {
       queue = queue.slice(offset);
       offset = 0;

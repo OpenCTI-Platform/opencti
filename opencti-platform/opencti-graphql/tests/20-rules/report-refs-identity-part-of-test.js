@@ -58,7 +58,7 @@ describe('Report refs identity rule', () => {
       const identityABParOf = await createRelation(testContext, SYSTEM_USER, {
         fromId: identityA.internal_id,
         toId: identityB.internal_id,
-        relationship_type: RELATION_PART_OF
+        relationship_type: RELATION_PART_OF,
       });
       createdElements.push(identityABParOf);
       // Create Report TEST_RULE
@@ -92,7 +92,7 @@ describe('Report refs identity rule', () => {
       const identityCDParOf = await createRelation(testContext, SYSTEM_USER, {
         fromId: identityC.internal_id,
         toId: identityD.internal_id,
-        relationship_type: RELATION_PART_OF
+        relationship_type: RELATION_PART_OF,
       });
       createdElements.push(identityCDParOf);
       // Update report with IDENTITY C
@@ -101,7 +101,7 @@ describe('Report refs identity rule', () => {
         description: 'Report TEST_RULE',
         published: '2022-10-06T22:00:00.000Z',
         objects: [identityC.internal_id],
-        update: true
+        update: true,
       });
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterAddRelations = await getInferences(RELATION_OBJECT);
@@ -122,7 +122,7 @@ describe('Report refs identity rule', () => {
       const identityEFParOf = await createRelation(testContext, SYSTEM_USER, {
         fromId: identityE.internal_id,
         toId: identityF.internal_id,
-        relationship_type: RELATION_PART_OF
+        relationship_type: RELATION_PART_OF,
       });
       createdElements.push(identityEFParOf);
       const afterCreateEFRelations = await getInferences(RELATION_OBJECT);
@@ -130,7 +130,7 @@ describe('Report refs identity rule', () => {
       const identityDEParOf = await createRelation(testContext, SYSTEM_USER, {
         fromId: identityD.internal_id,
         toId: identityE.internal_id,
-        relationship_type: RELATION_PART_OF
+        relationship_type: RELATION_PART_OF,
       });
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterCreateDERelations = await getInferences(RELATION_OBJECT);
@@ -152,7 +152,7 @@ describe('Report refs identity rule', () => {
         report.internal_id,
         identityA.internal_id,
         RELATION_OBJECT,
-        ABSTRACT_STIX_REF_RELATIONSHIP
+        ABSTRACT_STIX_REF_RELATIONSHIP,
       );
       await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
       const afterDeleteARelations = await getInferences(RELATION_OBJECT);
@@ -174,6 +174,6 @@ describe('Report refs identity rule', () => {
       // Delete all creation
       await elDeleteElements(testContext, SYSTEM_USER, createdElements);
     },
-    FIVE_MINUTES
+    FIVE_MINUTES,
   );
 });

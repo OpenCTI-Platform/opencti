@@ -32,7 +32,7 @@ const toolbarOptions = {
       columnDelimiter: ',',
       headerCategory: 'category',
       headerValue: 'value',
-      // eslint-disable-next-line @typescript-eslint/no-shadow
+
       dateFormatter(timestamp) {
         return new Date(timestamp).toDateString();
       },
@@ -433,9 +433,9 @@ export const horizontalBarsChartOptions = (
           )
         ) {
           // for clickable parts of the graphs
-          // eslint-disable-next-line no-param-reassign
+
           event.target.style.cursor = 'pointer';
-          // eslint-disable-next-line no-param-reassign
+
           event.target.classList.add('noDrag');
         }
       },

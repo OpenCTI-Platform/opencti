@@ -16,8 +16,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'E',
           operator: CsvMapperOperator.Eq,
-          value: 'IPv4-Addr '
-        }
+          value: 'IPv4-Addr ',
+        },
       },
       attributes: [
         {
@@ -31,8 +31,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'W',
           },
-        }
-      ]
+        },
+      ],
     }, {
       id: 'representationUrl',
       type: CsvMapperRepresentationType.Entity,
@@ -41,8 +41,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'E',
           operator: CsvMapperOperator.Eq,
-          value: 'Url '
-        }
+          value: 'Url ',
+        },
       },
       attributes: [
         {
@@ -56,8 +56,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'W',
           },
-        }
-      ]
+        },
+      ],
     }, {
       id: 'representationEmail',
       type: CsvMapperRepresentationType.Entity,
@@ -66,8 +66,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'E',
           operator: CsvMapperOperator.Eq,
-          value: 'Mèl'
-        }
+          value: 'Mèl',
+        },
       },
       attributes: [
         {
@@ -81,8 +81,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'W',
           },
-        }
-      ]
+        },
+      ],
     }, {
       id: 'representationIpv6',
       type: CsvMapperRepresentationType.Entity,
@@ -91,8 +91,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'E',
           operator: CsvMapperOperator.Eq,
-          value: 'IP/6'
-        }
+          value: 'IP/6',
+        },
       },
       attributes: [
         {
@@ -106,8 +106,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'W',
           },
-        }
-      ]
+        },
+      ],
     }, {
       id: 'representationDomain',
       type: CsvMapperRepresentationType.Entity,
@@ -116,8 +116,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'E',
           operator: CsvMapperOperator.Eq,
-          value: 'Domain Name'
-        }
+          value: 'Domain Name',
+        },
       },
       attributes: [
         {
@@ -131,8 +131,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'W',
           },
-        }
-      ]
+        },
+      ],
     },
     {
       id: 'representationIndividual',
@@ -146,8 +146,8 @@ export const csvMapperDynamicChar: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'A',
           },
-        }
-      ]
-    }
-  ]
+        },
+      ],
+    },
+  ],
 };

@@ -81,7 +81,7 @@ describe('SecurityPlatform resolver tests', () => {
       input: {
         name: 'Security platform test',
         description: 'Security platform test description',
-      }
+      },
     };
     const securityPlatform = await queryAsAdmin({
       query: CREATE_QUERY,

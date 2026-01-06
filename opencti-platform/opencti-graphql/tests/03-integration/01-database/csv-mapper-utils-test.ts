@@ -8,7 +8,7 @@ describe('CSV Mapper - without dynamic entity', () => {
   it('validate a valid mapper', async () => {
     await validateCsvMapper(testContext, ADMIN_USER, {
       ...csvMapperMockSimpleDifferentEntities as CsvMapperParsed,
-      name: 'Valid Mapper'
+      name: 'Valid Mapper',
     });
     assert(true);
   });
@@ -29,7 +29,7 @@ describe('CSV Mapper - without dynamic entity', () => {
           attributes: [], // missing attribute
         },
         mapper.representations[1],
-      ]
+      ],
     })).rejects.toThrowError('Missing values for required attribute');
   });
 });
@@ -38,7 +38,7 @@ describe('CSV Mapper - with dynamic entity', () => {
   it('validate a valid mapper', async () => {
     await validateCsvMapper(testContext, ADMIN_USER, {
       ...csvMapperMockSimpleDifferentEntities as CsvMapperParsed,
-      name: 'Valid Mapper'
+      name: 'Valid Mapper',
     });
     assert(true);
   });
@@ -59,7 +59,7 @@ describe('CSV Mapper - with dynamic entity', () => {
           attributes: [], // missing attribute
         },
         mapper.representations[1],
-      ]
+      ],
     })).rejects.toThrowError('Missing values for required attribute');
   });
 });

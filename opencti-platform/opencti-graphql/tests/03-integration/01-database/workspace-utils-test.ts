@@ -41,7 +41,7 @@ describe('Workspace utils', () => {
             { key: 'objectMarking', values: ['markingId1'] },
           ],
           filterGroups: [],
-        }
+        },
       ],
     };
     const input = [
@@ -56,7 +56,7 @@ describe('Workspace utils', () => {
           filters,
           dynamicFrom: emptyFilterGroup,
         }],
-      }
+      },
     ];
 
     // construct the expected widget input result (filters with internal ids)
@@ -78,7 +78,7 @@ describe('Workspace utils', () => {
             { key: 'objectMarking', values: ['markingId1'] },
           ],
           filterGroups: [],
-        }
+        },
       ],
     };
     const convertedInput = [
@@ -93,7 +93,7 @@ describe('Workspace utils', () => {
           filters: convertedFilters,
           dynamicFrom: emptyFilterGroup,
         }],
-      }
+      },
     ];
     // check the result
     await convertWidgetsIds(testContext, ADMIN_USER, input, 'internal');

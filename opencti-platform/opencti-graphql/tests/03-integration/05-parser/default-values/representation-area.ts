@@ -41,10 +41,10 @@ export const repArea: CsvMapperRepresentation = {
     {
       key: 'createdBy',
       based_on: {
-        representations: ['representation-individual']
-      }
-    }
-  ]
+        representations: ['representation-individual'],
+      },
+    },
+  ],
 };
 
 export const repAreaWithDefault: (creator: string) => CsvMapperRepresentation = (creator) => ({
@@ -92,8 +92,8 @@ export const repAreaWithDefault: (creator: string) => CsvMapperRepresentation = 
       key: 'createdBy',
       default_values: [creator],
       based_on: {
-        representations: ['representation-individual']
-      }
-    }
-  ]
+        representations: ['representation-individual'],
+      },
+    },
+  ],
 });

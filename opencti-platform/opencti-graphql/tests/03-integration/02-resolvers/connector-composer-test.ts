@@ -155,12 +155,12 @@ const GET_CONNECTOR_QUERY_CURRENT_STATUS = gql`
 // Variables
 const ipinfoProperties = {
   CONNECTOR_LISTEN_PROTOCOL_API_PORT: 0,
-  CONNECTOR_LISTEN_PROTOCOL_API_SSL: false
+  CONNECTOR_LISTEN_PROTOCOL_API_SSL: false,
 };
 
 const ipinfoListProperties = [
   { key: 'CONNECTOR_LISTEN_PROTOCOL_API_PORT', value: '0' },
-  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_SSL', value: 'false' }
+  { key: 'CONNECTOR_LISTEN_PROTOCOL_API_SSL', value: 'false' },
 ];
 
 describe('Connector Composer and Managed Connectors', () => {
@@ -202,7 +202,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       const result = await queryAsAdminWithSuccess({
         query: REGISTER_CONNECTORS_MANAGER_MUTATION,
-        variables: { input }
+        variables: { input },
       });
 
       expect(result.data).toBeDefined();
@@ -220,7 +220,7 @@ describe('Connector Composer and Managed Connectors', () => {
       const testCases = [
         { input: 'ServiceNow Connector', expected: 'service-now-connector' },
         { input: '-Test@Connector#2024!', expected: 'test-connector-2024' },
-        { input: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters', expected: 'very-long-name-with-special-chars-that-exceeds-the-maximum-leng' }
+        { input: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters', expected: 'very-long-name-with-special-chars-that-exceeds-the-maximum-leng' },
       ];
 
       await testCases.reduce(async (previousPromise, testCase) => {
@@ -236,14 +236,14 @@ describe('Connector Composer and Managed Connectors', () => {
           manager_contract_image: testConnector.container_image,
           manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
             IPINFO_TOKEN: `sanitization-test-token-${testCase.expected}`,
-            ...ipinfoProperties
-          })
+            ...ipinfoProperties,
+          }),
         };
 
         try {
           const result = await queryAsAdminWithSuccess({
             query: ADD_MANAGED_CONNECTOR_MUTATION,
-            variables: { input }
+            variables: { input },
           });
 
           expect(result.data).toBeDefined();
@@ -257,13 +257,13 @@ describe('Connector Composer and Managed Connectors', () => {
             // Clean up immediately after each test
             await queryAsAdminWithSuccess({
               query: DELETE_CONNECTOR_MUTATION,
-              variables: { id: connectorId }
+              variables: { id: connectorId },
             });
             createdConnectorIds.delete(connectorId);
           }
-        } catch (error: any) { 
+        } catch (error: any) {
           console.warn(error);
-         }
+        }
       }, Promise.resolve());
     });
 
@@ -276,7 +276,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       const result = await queryAsAdminWithSuccess({
         query: REGISTER_CONNECTORS_MANAGER_MUTATION,
-        variables: { input }
+        variables: { input },
       });
 
       expect(result.data).toBeDefined();
@@ -287,7 +287,7 @@ describe('Connector Composer and Managed Connectors', () => {
     it('should update connector composer status', async () => {
       const previousResult = await queryAsAdminWithSuccess({
         query: CONNECTOR_MANAGER_QUERY,
-        variables: { managerId: TEST_COMPOSER_ID }
+        variables: { managerId: TEST_COMPOSER_ID },
       });
       expect(previousResult.data).toBeDefined();
       const previousSync = previousResult.data?.connectorManager.last_sync_execution;
@@ -297,7 +297,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       const result = await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_MANAGER_STATUS_MUTATION,
-        variables: { input: { id: TEST_COMPOSER_ID } }
+        variables: { input: { id: TEST_COMPOSER_ID } },
       });
 
       expect(result.data).toBeDefined();
@@ -308,7 +308,7 @@ describe('Connector Composer and Managed Connectors', () => {
     it('should get connector composer by id', async () => {
       const result = await queryAsAdminWithSuccess({
         query: CONNECTOR_MANAGER_QUERY,
-        variables: { managerId: TEST_COMPOSER_ID }
+        variables: { managerId: TEST_COMPOSER_ID },
       });
 
       expect(result.data).toBeDefined();
@@ -321,7 +321,7 @@ describe('Connector Composer and Managed Connectors', () => {
     it('should list all connector composers', async () => {
       const result = await queryAsAdminWithSuccess({
         query: CONNECTOR_MANAGERS_QUERY,
-        variables: {}
+        variables: {},
       });
 
       expect(result.data).toBeDefined();
@@ -348,13 +348,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'deployment-test-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const createResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: createInput }
+        variables: { input: createInput },
       });
 
       expect(createResult.data).toBeDefined();
@@ -364,12 +364,12 @@ describe('Connector Composer and Managed Connectors', () => {
       // Request deployment through platform
       const deployInput = {
         id: deploymentConnectorId,
-        status: 'starting'
+        status: 'starting',
       };
 
       const deployResult = await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: deployInput }
+        variables: { input: deployInput },
       });
 
       expect(deployResult.data).toBeDefined();
@@ -382,7 +382,7 @@ describe('Connector Composer and Managed Connectors', () => {
         await awaitUntilCondition(async () => {
           const connectorResult = await queryAsAdminWithSuccess({
             query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-            variables: { id: deploymentConnectorId }
+            variables: { id: deploymentConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'started'; // Wait connector to be started
         }, 300, 5);
@@ -390,7 +390,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       const connectorResult = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-        variables: { id: deploymentConnectorId }
+        variables: { id: deploymentConnectorId },
       });
 
       expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
@@ -400,36 +400,36 @@ describe('Connector Composer and Managed Connectors', () => {
       // First ensure connector is stopped
       const stopInput = {
         id: deploymentConnectorId,
-        status: 'stopping'
+        status: 'stopping',
       };
 
       await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: stopInput }
+        variables: { input: stopInput },
       });
 
       // Request start through platform
       const startRequestInput = {
         id: deploymentConnectorId,
-        status: 'starting'
+        status: 'starting',
       };
-      
+
       // Wait for XTM Composer to be starting
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
         await awaitUntilCondition(async () => {
-            const startResult = await queryAsAdminWithSuccess({
-              query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-              variables: { input: startRequestInput }
-            });
-            return startResult.data?.updateConnectorRequestedStatus.manager_requested_status === 'starting';
-          }, 400, 5);      
-        }
+          const startResult = await queryAsAdminWithSuccess({
+            query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
+            variables: { input: startRequestInput },
+          });
+          return startResult.data?.updateConnectorRequestedStatus.manager_requested_status === 'starting';
+        }, 400, 5);
+      }
 
       const startResult = await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: startRequestInput }
+        variables: { input: startRequestInput },
       });
 
       expect(startResult.data).toBeDefined();
@@ -442,15 +442,15 @@ describe('Connector Composer and Managed Connectors', () => {
         await awaitUntilCondition(async () => {
           const connectorResult = await queryAsAdminWithSuccess({
             query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-            variables: { id: deploymentConnectorId }
+            variables: { id: deploymentConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'started';
-        }, 300, 5);        
+        }, 300, 5);
       }
 
       const connectorResult = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-        variables: { id: deploymentConnectorId }
+        variables: { id: deploymentConnectorId },
       });
 
       expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
@@ -460,12 +460,12 @@ describe('Connector Composer and Managed Connectors', () => {
       // Request stop through platform
       const stopRequestInput = {
         id: deploymentConnectorId,
-        status: 'stopping'
+        status: 'stopping',
       };
 
       const stopResult = await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: stopRequestInput }
+        variables: { input: stopRequestInput },
       });
 
       expect(stopResult.data).toBeDefined();
@@ -478,15 +478,15 @@ describe('Connector Composer and Managed Connectors', () => {
         await awaitUntilCondition(async () => {
           const connectorResult = await queryAsAdminWithSuccess({
             query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-            variables: { id: deploymentConnectorId }
+            variables: { id: deploymentConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'stopped';
-        }, 300, 5);   
+        }, 300, 5);
       }
 
       const connectorResult = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-        variables: { id: deploymentConnectorId }
+        variables: { id: deploymentConnectorId },
       });
 
       expect(connectorResult.data?.connector.manager_current_status).toEqual('stopped');
@@ -496,12 +496,12 @@ describe('Connector Composer and Managed Connectors', () => {
       // Request stop through platform
       const stopRequestInput = {
         id: deploymentConnectorId,
-        status: 'stopping'
+        status: 'stopping',
       };
 
       await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: stopRequestInput }
+        variables: { input: stopRequestInput },
       });
 
       // Wait for XTM Composer to process stop
@@ -511,7 +511,7 @@ describe('Connector Composer and Managed Connectors', () => {
         await awaitUntilCondition(async () => {
           const connectorResult = await queryAsAdminWithSuccess({
             query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-            variables: { id: deploymentConnectorId }
+            variables: { id: deploymentConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'stopped';
         }, 300, 5);
@@ -519,7 +519,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       let connectorResult = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-        variables: { id: deploymentConnectorId }
+        variables: { id: deploymentConnectorId },
       });
 
       expect(connectorResult.data?.connector.manager_current_status).toEqual('stopped');
@@ -527,12 +527,12 @@ describe('Connector Composer and Managed Connectors', () => {
       // Request start through platform
       const startRequestInput = {
         id: deploymentConnectorId,
-        status: 'starting'
+        status: 'starting',
       };
 
       await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: startRequestInput }
+        variables: { input: startRequestInput },
       });
 
       // Wait for XTM Composer to restart
@@ -542,16 +542,16 @@ describe('Connector Composer and Managed Connectors', () => {
         await awaitUntilCondition(async () => {
           const connectorResult = await queryAsAdminWithSuccess({
             query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-            variables: { id: deploymentConnectorId }
+            variables: { id: deploymentConnectorId },
           });
           return connectorResult.data?.connector.manager_current_status === 'started';
-        }, 300, 5); 
+        }, 300, 5);
       }
 
       // Verify status
       connectorResult = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-        variables: { id: deploymentConnectorId }
+        variables: { id: deploymentConnectorId },
       });
 
       expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
@@ -568,11 +568,11 @@ describe('Connector Composer and Managed Connectors', () => {
       try {
         await queryAsAdminWithSuccess({
           query: REGISTER_CONNECTORS_MANAGER_MUTATION,
-          variables: { input: managerInput }
+          variables: { input: managerInput },
         });
       } catch (error) {
-          console.warn(error);      
-        }
+        console.warn(error);
+      }
 
       // Get test connector from catalog
       const testConnector = catalogHelper.getTestSafeConnector();
@@ -587,13 +587,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'log-level-test-token',
           CONNECTOR_LOG_LEVEL: 'info', // Initial log level
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const createResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: createInput }
+        variables: { input: createInput },
       });
 
       expect(createResult.data).toBeDefined();
@@ -603,10 +603,10 @@ describe('Connector Composer and Managed Connectors', () => {
       // Start the connector
       await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: { id: logLevelConnectorId, status: 'starting' } }
+        variables: { input: { id: logLevelConnectorId, status: 'starting' } },
       });
 
-            // Get current configuration to preserve other settings
+      // Get current configuration to preserve other settings
       const GET_CONNECTOR_QUERY = gql`
         query GetConnector($id: String!) {
           connector(id: $id) {
@@ -625,17 +625,17 @@ describe('Connector Composer and Managed Connectors', () => {
         await xtmComposer.runOrchestrationCycle();
       } else {
         await awaitUntilCondition(async () => {
-            const connectorResult = await queryAsAdminWithSuccess({
-              query: GET_CONNECTOR_QUERY,
-              variables: { id: logLevelConnectorId }
-            });
-            return connectorResult.data?.connector.manager_current_status === 'started';
-          }, 300, 5);
+          const connectorResult = await queryAsAdminWithSuccess({
+            query: GET_CONNECTOR_QUERY,
+            variables: { id: logLevelConnectorId },
+          });
+          return connectorResult.data?.connector.manager_current_status === 'started';
+        }, 300, 5);
       }
 
       const connectorResult = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY,
-        variables: { id: logLevelConnectorId }
+        variables: { id: logLevelConnectorId },
       });
 
       expect(connectorResult.data?.connector.manager_current_status).toEqual('started');
@@ -648,13 +648,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
           { key: 'CONNECTOR_LOG_LEVEL', value: 'debug' }, // Changed from 'info' to 'debug'
-          ...ipinfoListProperties
-        ]
+          ...ipinfoListProperties,
+        ],
       };
 
       const updateResult = await queryAsAdminWithSuccess({
         query: EDIT_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: updateInput }
+        variables: { input: updateInput },
       });
 
       expect(updateResult.data).toBeDefined();
@@ -665,12 +665,11 @@ describe('Connector Composer and Managed Connectors', () => {
         await xtmComposer.runOrchestrationCycle();
       } else {
         await awaitUntilCondition(async () => {
-          
           const logsResult = await queryAsAdminWithSuccess({
-              query: CONNECTOR_LOGS_QUERY,
-              variables: { id: logLevelConnectorId }
-            });
-          
+            query: CONNECTOR_LOGS_QUERY,
+            variables: { id: logLevelConnectorId },
+          });
+
           const logs = logsResult.data?.connector.manager_connector_logs || [];
           const logStrings = logs.join('\n');
           return logStrings.includes('[XTM-Composer] Connector redeployed successfully'); // Wait for configuration change detection
@@ -680,7 +679,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Query the connector logs to verify the redeploy happened
       const logsResult = await queryAsAdminWithSuccess({
         query: CONNECTOR_LOGS_QUERY,
-        variables: { id: logLevelConnectorId }
+        variables: { id: logLevelConnectorId },
       });
 
       expect(logsResult.data).toBeDefined();
@@ -694,7 +693,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Verify the connector is still running after the redeploy
       const statusResult = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY,
-        variables: { id: logLevelConnectorId }
+        variables: { id: logLevelConnectorId },
       });
       expect(statusResult.data?.connector.manager_current_status).toEqual('started');
 
@@ -711,13 +710,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
           { key: 'CONNECTOR_LOG_LEVEL', value: 'error' }, // Changed from 'debug' to 'error'
-          ...ipinfoListProperties
-        ]
+          ...ipinfoListProperties,
+        ],
       };
 
       await queryAsAdminWithSuccess({
         query: EDIT_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: updateInput2 }
+        variables: { input: updateInput2 },
       });
 
       // Wait for XTM Composer to detect the configuration change again
@@ -725,12 +724,11 @@ describe('Connector Composer and Managed Connectors', () => {
         await xtmComposer.runOrchestrationCycle();
       } else {
         await awaitUntilCondition(async () => {
-          
           const logsResult = await queryAsAdminWithSuccess({
-              query: CONNECTOR_LOGS_QUERY,
-              variables: { id: logLevelConnectorId }
-            });
-          
+            query: CONNECTOR_LOGS_QUERY,
+            variables: { id: logLevelConnectorId },
+          });
+
           const logs = logsResult.data?.connector.manager_connector_logs || [];
           const logStrings = logs.join('\n');
           const redeployCount = (logStrings.match(/Connector redeployed successfully/g) || []).length;
@@ -741,7 +739,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Query logs again
       const logsResult2 = await queryAsAdminWithSuccess({
         query: CONNECTOR_LOGS_QUERY,
-        variables: { id: logLevelConnectorId }
+        variables: { id: logLevelConnectorId },
       });
 
       const logs2 = logsResult2.data?.connector.manager_connector_logs || [];
@@ -759,8 +757,8 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_configuration: [
           { key: 'IPINFO_TOKEN', value: 'log-level-test-token' },
           { key: 'CONNECTOR_LOG_LEVEL', value: 'error' }, // Same log level as before
-          ...ipinfoListProperties
-        ]
+          ...ipinfoListProperties,
+        ],
       };
 
       // Clear logs before the name-only update
@@ -768,20 +766,19 @@ describe('Connector Composer and Managed Connectors', () => {
 
       await queryAsAdminWithSuccess({
         query: EDIT_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: updateInput3 }
+        variables: { input: updateInput3 },
       });
 
       // Wait for XTM Composer to check configuration
       if (FORCE_POLLING) {
         await xtmComposer.runOrchestrationCycle();
       } else {
-       await awaitUntilCondition(async () => {
-          
+        await awaitUntilCondition(async () => {
           const logsResult = await queryAsAdminWithSuccess({
-              query: CONNECTOR_LOGS_QUERY,
-              variables: { id: logLevelConnectorId }
-            });
-          
+            query: CONNECTOR_LOGS_QUERY,
+            variables: { id: logLevelConnectorId },
+          });
+
           const logs = logsResult.data?.connector.manager_connector_logs || [];
           const logStrings = logs.join('\n');
           const deployCount = (logStrings.match(/Connector deployed successfully/g) || []).length;
@@ -792,7 +789,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Query logs one more time
       const logsResult3 = await queryAsAdminWithSuccess({
         query: CONNECTOR_LOGS_QUERY,
-        variables: { id: logLevelConnectorId }
+        variables: { id: logLevelConnectorId },
       });
 
       const logs3 = logsResult3.data?.connector.manager_connector_logs || [];
@@ -809,12 +806,12 @@ describe('Connector Composer and Managed Connectors', () => {
       // First ensure connector is stopped
       const stopRequestInput = {
         id: deploymentConnectorId,
-        status: 'stopping'
+        status: 'stopping',
       };
 
       await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: stopRequestInput }
+        variables: { input: stopRequestInput },
       });
 
       // Wait for XTM Composer to stop the connector
@@ -822,7 +819,7 @@ describe('Connector Composer and Managed Connectors', () => {
       await awaitUntilCondition(async () => {
         deleteResult = await queryAsAdminWithSuccess({
           query: DELETE_CONNECTOR_MUTATION,
-          variables: { id: deploymentConnectorId }
+          variables: { id: deploymentConnectorId },
         });
         return deleteResult.data?.deleteConnector === deploymentConnectorId;
       }, 300, 5);
@@ -844,7 +841,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       const verifyResult = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY,
-        variables: { id: deploymentConnectorId }
+        variables: { id: deploymentConnectorId },
       });
 
       expect(verifyResult.data?.connector).toBeNull();
@@ -867,13 +864,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'xtm-test-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const createResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: createInput }
+        variables: { input: createInput },
       });
 
       testConnectorId = createResult.data?.managedConnectorAdd.id;
@@ -888,7 +885,7 @@ describe('Connector Composer and Managed Connectors', () => {
         image: 'opencti/connector-ipinfo',
         contractHash: 'test-hash',
         requestedStatus: 'started',
-        contractConfiguration: []
+        contractConfiguration: [],
       };
 
       // Deploy the connector to create a container (required for logs method)
@@ -905,7 +902,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Query the connector to retrieve the stored logs
       const logsResult = await queryAsAdminWithSuccess({
         query: CONNECTOR_LOGS_QUERY,
-        variables: { id: testConnectorId }
+        variables: { id: testConnectorId },
       });
 
       // Verify the logs were stored and can be retrieved
@@ -930,7 +927,7 @@ describe('Connector Composer and Managed Connectors', () => {
           expect(result).toBeDefined();
           expect(result.id).toEqual(testConnectorId);
           expect(result.manager_current_status).toEqual(status);
-        })
+        }),
       );
     });
 
@@ -967,13 +964,13 @@ describe('Connector Composer and Managed Connectors', () => {
           manager_contract_image: testConnector.container_image,
           manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
             IPINFO_TOKEN: `concurrent-token-${i}`,
-            ...ipinfoProperties
-          })
+            ...ipinfoProperties,
+          }),
         };
 
         return queryAsAdminWithSuccess({
           query: ADD_MANAGED_CONNECTOR_MUTATION,
-          variables: { input: createInput }
+          variables: { input: createInput },
         });
       });
 
@@ -988,8 +985,8 @@ describe('Connector Composer and Managed Connectors', () => {
       await Promise.all(
         connectorIds.map((id) => queryAsAdminWithSuccess({
           query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-          variables: { input: { id, status: 'starting' } }
-        }))
+          variables: { input: { id, status: 'starting' } },
+        })),
       );
 
       // Wait for XTM Composer to process all connectors
@@ -1002,17 +999,17 @@ describe('Connector Composer and Managed Connectors', () => {
           await awaitUntilCondition(async () => {
             const connectorResult = await queryAsAdminWithSuccess({
               query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-              variables: { id }
+              variables: { id },
             });
             return connectorResult.data?.connector.manager_current_status === 'started'; // Wait for each connector to start
           }, 400, 5);
 
           const finalResult = await queryAsAdminWithSuccess({
             query: GET_CONNECTOR_QUERY_CURRENT_STATUS,
-            variables: { id }
+            variables: { id },
           });
           expect(finalResult.data?.connector.manager_current_status).toEqual('started');
-        })
+        }),
       );
     });
   });
@@ -1033,13 +1030,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'health-test-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const createResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: createInput }
+        variables: { input: createInput },
       });
 
       healthTestConnectorId = createResult.data?.managedConnectorAdd.id;
@@ -1050,12 +1047,12 @@ describe('Connector Composer and Managed Connectors', () => {
       // Request deployment through platform
       const deployInput = {
         id: healthTestConnectorId,
-        status: 'starting'
+        status: 'starting',
       };
 
       await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: deployInput }
+        variables: { input: deployInput },
       });
 
       // XTM Composer deploys the connector and updates health metrics
@@ -1111,13 +1108,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'reboot-loop-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const createResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: createInput }
+        variables: { input: createInput },
       });
 
       const rebootLoopConnectorId = createResult.data?.managedConnectorAdd.id;
@@ -1152,13 +1149,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'no-health-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const createResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: createInput }
+        variables: { input: createInput },
       });
 
       const noHealthConnectorId = createResult.data?.managedConnectorAdd.id;
@@ -1188,13 +1185,13 @@ describe('Connector Composer and Managed Connectors', () => {
         user_id: TEST_USER_CONNECTOR_ID,
         catalog_id: catalogId,
         manager_contract_image: 'invalid-image',
-        manager_contract_configuration: []
+        manager_contract_configuration: [],
       };
 
       try {
         await queryAsAdminWithSuccess({
           query: ADD_MANAGED_CONNECTOR_MUTATION,
-          variables: { input }
+          variables: { input },
         });
         expect.fail('Should have thrown an error');
       } catch (error) {
@@ -1214,13 +1211,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'test-token-123',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const result = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input }
+        variables: { input },
       });
 
       expect(result.data).toBeDefined();
@@ -1244,13 +1241,13 @@ describe('Connector Composer and Managed Connectors', () => {
           { key: 'IPINFO_TOKEN', value: 'updated-token-456' },
           { key: 'CONNECTOR_AUTO', value: 'false' },
           { key: 'CONNECTOR_LOG_LEVEL', value: 'debug' },
-          ...ipinfoListProperties
-        ]
+          ...ipinfoListProperties,
+        ],
       };
 
       const result = await queryAsAdminWithSuccess({
         query: EDIT_MANAGED_CONNECTOR_MUTATION,
-        variables: { input }
+        variables: { input },
       });
 
       expect(result.data).toBeDefined();
@@ -1274,13 +1271,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'first-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const firstResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: firstInput }
+        variables: { input: firstInput },
       });
 
       const firstConnectorId = firstResult.data?.managedConnectorAdd.id;
@@ -1294,16 +1291,16 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'duplicate-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       await adminQueryWithError(
         {
           query: ADD_MANAGED_CONNECTOR_MUTATION,
-          variables: { input: duplicateInput }
+          variables: { input: duplicateInput },
         },
-        'CONNECTOR_NAME_ALREADY_EXISTS'
+        'CONNECTOR_NAME_ALREADY_EXISTS',
       );
 
       // Test with different raw name but same sanitized name
@@ -1314,16 +1311,16 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'duplicate-sanitized-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       await adminQueryWithError(
         {
           query: ADD_MANAGED_CONNECTOR_MUTATION,
-          variables: { input: duplicateSanitizedInput }
+          variables: { input: duplicateSanitizedInput },
         },
-        'CONNECTOR_NAME_ALREADY_EXISTS'
+        'CONNECTOR_NAME_ALREADY_EXISTS',
       );
     });
   });
@@ -1338,7 +1335,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
         query: REGISTER_CONNECTORS_MANAGER_MUTATION,
-        variables: { input }
+        variables: { input },
       });
     });
 
@@ -1348,12 +1345,12 @@ describe('Connector Composer and Managed Connectors', () => {
         user_id: TEST_USER_CONNECTOR_ID,
         catalog_id: 'test-catalog',
         manager_contract_image: 'test-image',
-        manager_contract_configuration: []
+        manager_contract_configuration: [],
       };
 
       await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input }
+        variables: { input },
       });
     });
 
@@ -1370,13 +1367,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'permission-test-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const createResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: createInput }
+        variables: { input: createInput },
       });
 
       const testConnectorId = createResult.data?.managedConnectorAdd.id;
@@ -1385,12 +1382,12 @@ describe('Connector Composer and Managed Connectors', () => {
       // Test that connector user can update logs
       const input = {
         id: testConnectorId,
-        logs: ['User log line from connector']
+        logs: ['User log line from connector'],
       };
 
       const result = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
         query: UPDATE_CONNECTOR_LOGS_MUTATION,
-        variables: { input }
+        variables: { input },
       });
 
       expect(result.data.updateConnectorLogs).toBeDefined();
@@ -1398,7 +1395,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Cleanup
       await queryAsAdminWithSuccess({
         query: DELETE_CONNECTOR_MUTATION,
-        variables: { id: testConnectorId }
+        variables: { id: testConnectorId },
       });
     });
 
@@ -1415,13 +1412,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'permission-test-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const createResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input }
+        variables: { input },
       });
 
       expect(createResult.data).toBeDefined();
@@ -1431,13 +1428,13 @@ describe('Connector Composer and Managed Connectors', () => {
       // Try to delete as non-admin user
       await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
         query: DELETE_CONNECTOR_MUTATION,
-        variables: { id: testConnectorId }
+        variables: { id: testConnectorId },
       });
 
       // Cleanup - delete as admin
       await queryAsAdminWithSuccess({
         query: DELETE_CONNECTOR_MUTATION,
-        variables: { id: testConnectorId }
+        variables: { id: testConnectorId },
       });
     });
   });
@@ -1456,13 +1453,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'lifecycle-test-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const createResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: createInput }
+        variables: { input: createInput },
       });
 
       expect(createResult.data).toBeDefined();
@@ -1471,7 +1468,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Deploy (start)
       await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: { id: lifecycleConnectorId, status: 'starting' } }
+        variables: { input: { id: lifecycleConnectorId, status: 'starting' } },
       });
 
       // XTM Composer deploys
@@ -1480,13 +1477,13 @@ describe('Connector Composer and Managed Connectors', () => {
       // Update logs during operation
       await xtmComposer.updateConnectorLogs(lifecycleConnectorId, [
         'Lifecycle test: processing IP data',
-        'Lifecycle test: enriched 50 observables'
+        'Lifecycle test: enriched 50 observables',
       ]);
 
       // Stop
       await queryAsAdminWithSuccess({
         query: UPDATE_CONNECTOR_REQUESTED_STATUS_MUTATION,
-        variables: { input: { id: lifecycleConnectorId, status: 'stopping' } }
+        variables: { input: { id: lifecycleConnectorId, status: 'stopping' } },
       });
 
       // XTM Composer stops
@@ -1495,7 +1492,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Delete
       const deleteResult = await queryAsAdminWithSuccess({
         query: DELETE_CONNECTOR_MUTATION,
-        variables: { id: lifecycleConnectorId }
+        variables: { id: lifecycleConnectorId },
       });
 
       expect(deleteResult.data).toBeDefined();
@@ -1517,13 +1514,13 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
           IPINFO_TOKEN: 'error-test-token',
-          ...ipinfoProperties
-        })
+          ...ipinfoProperties,
+        }),
       };
 
       const createResult = await queryAsAdminWithSuccess({
         query: ADD_MANAGED_CONNECTOR_MUTATION,
-        variables: { input: createInput }
+        variables: { input: createInput },
       });
 
       const errorConnectorId = createResult.data?.managedConnectorAdd.id;
@@ -1539,7 +1536,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Cleanup
       await queryAsAdminWithSuccess({
         query: DELETE_CONNECTOR_MUTATION,
-        variables: { id: errorConnectorId }
+        variables: { id: errorConnectorId },
       });
     });
 
@@ -1555,14 +1552,14 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: [
           // Missing required fields - only providing one optional field
-          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] }
-        ]
+          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] },
+        ],
       };
 
       try {
         await queryAsAdminWithSuccess({
           query: ADD_MANAGED_CONNECTOR_MUTATION,
-          variables: { input }
+          variables: { input },
         });
         expect.fail('Should have thrown an error for missing required field');
       } catch (error) {
@@ -1585,7 +1582,7 @@ describe('Connector Composer and Managed Connectors', () => {
         try {
           await queryAsAdminWithSuccess({
             query: DELETE_CONNECTOR_MUTATION,
-            variables: { id: connectorId }
+            variables: { id: connectorId },
           });
         } catch (error: any) {
           // Ignore if already deleted
@@ -1595,7 +1592,7 @@ describe('Connector Composer and Managed Connectors', () => {
             console.warn(`Cleanup: Failed to delete connector ${connectorId}`, error);
           }
         }
-      })
+      }),
     );
   });
 });

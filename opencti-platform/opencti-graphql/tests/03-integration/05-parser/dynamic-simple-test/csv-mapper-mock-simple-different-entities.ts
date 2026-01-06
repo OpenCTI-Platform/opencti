@@ -16,8 +16,8 @@ export const csvMapperMockSimpleDifferentEntities: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'B',
           operator: CsvMapperOperator.Eq,
-          value: 'threat-actor'
-        }
+          value: 'threat-actor',
+        },
       },
       attributes: [
         {
@@ -26,7 +26,7 @@ export const csvMapperMockSimpleDifferentEntities: Partial<CsvMapperParsed> = {
             column_name: 'A',
           },
         },
-      ]
+      ],
     },
     {
       id: 'representation02',
@@ -36,8 +36,8 @@ export const csvMapperMockSimpleDifferentEntities: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'B',
           operator: CsvMapperOperator.NotEq,
-          value: 'threat-actor'
-        }
+          value: 'threat-actor',
+        },
       },
       attributes: [
         {
@@ -46,7 +46,7 @@ export const csvMapperMockSimpleDifferentEntities: Partial<CsvMapperParsed> = {
             column_name: 'A',
           },
         },
-      ]
-    }
-  ]
+      ],
+    },
+  ],
 };

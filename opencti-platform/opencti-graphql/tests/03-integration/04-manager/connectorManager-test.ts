@@ -20,13 +20,13 @@ describe('Old work of connector cleanup test', () => {
     const connectorData: RegisterConnectorInput = {
       id: uuid(),
       name: 'test-connector-manager-fake-connector',
-      type: ConnectorType.ExternalImport
+      type: ConnectorType.ExternalImport,
     };
     testConnector = await registerConnector(testContext, ADMIN_USER, connectorData);
     expect(testConnector.id).toBeDefined();
   };
 
-  const createWorkForTest = async (name:string, dateForWork: Date, status: string) => {
+  const createWorkForTest = async (name: string, dateForWork: Date, status: string) => {
     // cheat and create a work in the past in elastic
     const dateForWorkStr = dateForWork.toISOString();
     const workId = `work_${testConnector.id}_${dateForWorkStr}`;

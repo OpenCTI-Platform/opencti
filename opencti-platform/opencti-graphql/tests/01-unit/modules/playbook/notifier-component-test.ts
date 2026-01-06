@@ -32,8 +32,8 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
     name: 'Notifier Node',
     configuration: {
       notifiers: ['notifier-1'],
-      authorized_members: [{ value: 'group-1' }]
-    }
+      authorized_members: [{ value: 'group-1' }],
+    },
   } as unknown as NodeInstance<NotifierConfiguration>;
 
   beforeEach(() => {
@@ -79,7 +79,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         playbookId: 'playbook-id',
         playbookNode,
         bundle: mockBundle,
-        event: mockEventPirDelete
+        event: mockEventPirDelete,
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
       expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
@@ -111,7 +111,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         playbookId: 'playbook-id',
         playbookNode,
         bundle: mockBundle,
-        event: mockEventUpdate
+        event: mockEventUpdate,
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
       expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
@@ -144,7 +144,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         playbookId: 'playbook-id',
         playbookNode,
         bundle: mockBundle,
-        event: mockEventCreate
+        event: mockEventCreate,
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
       expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
@@ -176,7 +176,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         playbookId: 'playbook-id',
         playbookNode,
         bundle: mockBundle,
-        event: mockEventDelete
+        event: mockEventDelete,
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
       expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);
@@ -204,7 +204,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         playbookId: 'playbook-id',
         playbookNode,
         bundle: mockBundle,
-        event: undefined
+        event: undefined,
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
       expect(streamHandler.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);

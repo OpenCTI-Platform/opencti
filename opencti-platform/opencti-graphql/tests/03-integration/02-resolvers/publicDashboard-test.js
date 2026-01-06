@@ -594,8 +594,8 @@ describe('PublicDashboard resolver', () => {
               input: {
                 relationship_type: 'targets',
                 fromId: vadorId,
-                toId: franceId
-              }
+                toId: franceId,
+              },
             },
           });
           await editorQuery({
@@ -604,8 +604,8 @@ describe('PublicDashboard resolver', () => {
               input: {
                 relationship_type: 'targets',
                 fromId: magnetoId,
-                toId: franceId
-              }
+                toId: franceId,
+              },
             },
           });
           await editorQuery({
@@ -614,8 +614,8 @@ describe('PublicDashboard resolver', () => {
               input: {
                 relationship_type: 'targets',
                 fromId: magnetoId,
-                toId: belgiqueId
-              }
+                toId: belgiqueId,
+              },
             },
           });
           await editorQuery({
@@ -624,8 +624,8 @@ describe('PublicDashboard resolver', () => {
               input: {
                 relationship_type: 'targets',
                 fromId: octopusId,
-                toId: belgiqueId
-              }
+                toId: belgiqueId,
+              },
             },
           });
           // endregion
@@ -665,7 +665,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_NUMBER_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: 'ebb25410-7048-4de7-9288-704e962215f6'
+              widgetId: 'ebb25410-7048-4de7-9288-704e962215f6',
             },
           });
           expect(data.publicStixCoreObjectsNumber).toBeNull();
@@ -707,7 +707,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_NUMBER_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: 'ebb25410-7048-4de7-9288-704e962215f6'
+              widgetId: 'ebb25410-7048-4de7-9288-704e962215f6',
             },
           });
           const { publicStixCoreObjectsNumber } = data;
@@ -720,7 +720,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCR_NUMBER_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
+              widgetId: 'ecb25410-7048-4de7-9288-704e962215f6',
             },
           });
           const { publicStixRelationshipsNumber } = data;
@@ -753,7 +753,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_LIST_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '0a471055-7426-4840-9501-33770b845f92'
+              widgetId: '0a471055-7426-4840-9501-33770b845f92',
             },
           });
           const { publicStixCoreObjectsMultiTimeSeries } = data;
@@ -790,7 +790,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCR_LIST_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '9e6afa7e-0db7-424c-8951-16b867245583'
+              widgetId: '9e6afa7e-0db7-424c-8951-16b867245583',
             },
           });
           const { publicStixRelationshipsMultiTimeSeries } = data;
@@ -825,7 +825,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_DONUT_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '9865bec0-d8b1-4592-b14e-0e81e1645f59'
+              widgetId: '9865bec0-d8b1-4592-b14e-0e81e1645f59',
             },
           });
           const { publicStixCoreObjectsDistribution } = data;
@@ -836,7 +836,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_DONUT_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '1865bec0-d8b1-4592-b14e-0e81e1645f59'
+              widgetId: '1865bec0-d8b1-4592-b14e-0e81e1645f59',
             },
           });
           const malwaresDistribution = dataMalwares.publicStixCoreObjectsDistribution;
@@ -881,7 +881,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCR_DONUT_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '2b3c637b-bf25-46ca-8b28-b891d349cc31'
+              widgetId: '2b3c637b-bf25-46ca-8b28-b891d349cc31',
             },
           });
           const { publicStixRelationshipsDistribution } = data;
@@ -925,7 +925,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_LIST_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: 'bec879df-4da2-46c0-994a-e795c1b3a649'
+              widgetId: 'bec879df-4da2-46c0-994a-e795c1b3a649',
             },
           });
           const { publicStixCoreObjects } = data;
@@ -968,7 +968,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCR_LIST_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '6dbb6564-3e4a-4a28-85b1-e2ac479e38e7'
+              widgetId: '6dbb6564-3e4a-4a28-85b1-e2ac479e38e7',
             },
           });
           const { publicStixRelationships } = data;
@@ -1099,8 +1099,8 @@ describe('PublicDashboard resolver', () => {
             input: {
               name: 'spain',
               description: 'widget tests',
-              objectMarking: [tlpGreen.id]
-            }
+              objectMarking: [tlpGreen.id],
+            },
           },
         });
         spainId = spain.data.administrativeAreaAdd.id;
@@ -1118,8 +1118,8 @@ describe('PublicDashboard resolver', () => {
               name: 'raditz',
               malware_types: ['ddos'],
               description: 'widget tests',
-              objectMarking: [tlpGreen.id]
-            }
+              objectMarking: [tlpGreen.id],
+            },
           },
         });
         raditzId = raditz.data.malwareAdd.id;
@@ -1130,8 +1130,8 @@ describe('PublicDashboard resolver', () => {
               name: 'vegeta',
               malware_types: ['backdoor'],
               description: 'widget tests',
-              objectMarking: [tlpGreen.id]
-            }
+              objectMarking: [tlpGreen.id],
+            },
           },
         });
         vegetaId = vegeta.data.malwareAdd.id;
@@ -1149,8 +1149,8 @@ describe('PublicDashboard resolver', () => {
               relationship_type: 'targets',
               fromId: raditzId,
               toId: spainId,
-              objectMarking: [tlpGreen.id]
-            }
+              objectMarking: [tlpGreen.id],
+            },
           },
         });
         await editorQuery({
@@ -1160,8 +1160,8 @@ describe('PublicDashboard resolver', () => {
               relationship_type: 'targets',
               fromId: vegetaId,
               toId: spainId,
-              objectMarking: [tlpGreen.id]
-            }
+              objectMarking: [tlpGreen.id],
+            },
           },
         });
         // endregion
@@ -1172,7 +1172,7 @@ describe('PublicDashboard resolver', () => {
           query: API_SCR_NUMBER_QUERY,
           variables: {
             uriKey: 'public-dashboard-marking-green',
-            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
+            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6',
           },
         });
         const result = aaa.data.publicStixRelationshipsNumber;
@@ -1186,7 +1186,7 @@ describe('PublicDashboard resolver', () => {
           query: API_SCR_NUMBER_QUERY,
           variables: {
             uriKey: 'public-dashboard-marking-clear',
-            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
+            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6',
           },
         });
         const result = aaa.data.publicStixRelationshipsNumber;

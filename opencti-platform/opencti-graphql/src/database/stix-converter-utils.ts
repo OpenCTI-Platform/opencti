@@ -33,7 +33,7 @@ export const convertToStixDate = (date: Date | string | undefined): S.StixDate |
 };
 export const cleanObject = <T>(data: T): T => {
   const obj: T = { ...data };
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const key in data) {
     // cleanup empty keys except object_refs
     if (key !== objects.stixName && isEmptyField(obj[key])) {

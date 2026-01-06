@@ -18,7 +18,7 @@ describe('convertTypeToStix2Type tests', () => {
       'Data-Component',
       'Data-Source',
       'stix-sighting-relationship',
-      'stix-core-relationship'
+      'stix-core-relationship',
     ];
     const expectedTypes = [
       'identity',
@@ -33,7 +33,7 @@ describe('convertTypeToStix2Type tests', () => {
       'x-mitre-data-component',
       'x-mitre-data-source',
       'sighting',
-      'relationship'
+      'relationship',
     ];
     const result = types.map((type) => convertTypeToStix2Type(type));
     expect(result).toEqual(expectedTypes);

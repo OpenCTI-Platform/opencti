@@ -52,10 +52,9 @@ const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: Basi
       if (typeInnerFilter) { // Type is not mandatory
         regardingOfValues.push(typeInnerFilter);
       }
-      // eslint-disable-next-line no-param-reassign
+
       f.values = regardingOfValues;
     } else {
-      // eslint-disable-next-line no-param-reassign
       f.values = filterValuesRemap(f, resolvedMap, from);
     }
   });

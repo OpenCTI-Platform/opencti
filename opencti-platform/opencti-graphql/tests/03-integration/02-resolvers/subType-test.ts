@@ -172,7 +172,7 @@ describe('SubType resolver for RFI use case', () => {
           order: 2,
           template_id: inProgressStatusId,
           scope: StatusScope.Global,
-        }
+        },
       },
     });
 
@@ -184,7 +184,7 @@ describe('SubType resolver for RFI use case', () => {
           order: 0,
           template_id: newStatusId,
           scope: StatusScope.Global,
-        }
+        },
       },
     });
     const rfiEntitySettingsWithWorkflow = await queryAsAdminWithSuccess({

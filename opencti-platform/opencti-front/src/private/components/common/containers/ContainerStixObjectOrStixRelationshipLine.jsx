@@ -55,9 +55,9 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
   const classes = useStyles();
   const { fd } = useFormatter();
   const restrictedWithFrom = node.from === null;
-  // eslint-disable-next-line no-nested-ternary
+
   const link = node.relationship_type
-  // eslint-disable-next-line no-nested-ternary
+
     ? node.relationship_type === 'stix-sighting-relationship'
       ? `${resolveLink(node.relationship_type)}/${node.id}`
       : !restrictedWithFrom

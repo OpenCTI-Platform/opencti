@@ -25,10 +25,10 @@ export const csvMapperMockSimpleEntity: Partial<CsvMapperParsed> = {
             column_name: 'AG',
             configuration: {
               separator: ',',
-            }
+            },
           },
         },
-      ]
-    }
-  ]
+      ],
+    },
+  ],
 };

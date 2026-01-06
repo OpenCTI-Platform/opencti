@@ -190,7 +190,6 @@ const extractTargetIdentifierFromJson = (base: JSON, record: JSON, identifier: s
   return orderedIdentifiersCombinations(arrayOfMappedIdentifiers).map((comb) => comb.join('-'));
 };
 
-/* eslint-disable no-param-reassign */
 const handleDirectAttribute = async (
   base: JSON,
   metaData: Record<string, any>,

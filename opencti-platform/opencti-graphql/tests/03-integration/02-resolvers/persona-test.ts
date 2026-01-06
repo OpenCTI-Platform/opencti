@@ -1,6 +1,6 @@
-import gql from "graphql-tag";
-import { describe, expect, it } from "vitest";
-import { queryAsAdmin } from "../../utils/testQuery";
+import gql from 'graphql-tag';
+import { describe, expect, it } from 'vitest';
+import { queryAsAdmin } from '../../utils/testQuery';
 
 const READ_QUERY = gql`
   query persona ($id: String!) {
@@ -55,10 +55,10 @@ describe('Persona StixCyberObservable resolver standard behavior', () => {
   });
   it('should load a persona by internal id', async () => {
     const queryResult = await queryAsAdmin({
-      query: READ_QUERY, 
+      query: READ_QUERY,
       variables: {
         id: personaInternalId,
-      }
+      },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data).not.toBeNull();
@@ -70,10 +70,10 @@ describe('Persona StixCyberObservable resolver standard behavior', () => {
   });
   it('should load a persona by stix id', async () => {
     const queryResult = await queryAsAdmin({
-      query: READ_QUERY, 
+      query: READ_QUERY,
       variables: {
         id: personaStixId,
-      }
+      },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data).not.toBeNull();
@@ -109,8 +109,8 @@ describe('Persona StixCyberObservable resolver standard behavior', () => {
         }, {
           key: 'persona_type',
           value: updatedType,
-        }]
-      }
+        }],
+      },
     });
     expect(queryResult.data?.stixCyberObservableEdit.fieldPatch.persona_name).equal(updatedName);
     expect(queryResult.data?.stixCyberObservableEdit.fieldPatch.persona_type).equal(updatedType);

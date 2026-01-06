@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { FunctionComponent, useState } from 'react';
 import { Button } from '@mui/material';
 import { useTheme } from '@mui/styles';

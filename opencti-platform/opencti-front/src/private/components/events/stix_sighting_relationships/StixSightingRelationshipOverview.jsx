@@ -212,7 +212,7 @@ class StixSightingRelationshipContainer extends Component {
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
     const fromRestricted = from === null;
-    // eslint-disable-next-line no-nested-ternary
+
     const linkFrom = from
       ? from.relationship_type
         ? `${resolveLink(from.from.entity_type)}/${
@@ -221,7 +221,7 @@ class StixSightingRelationshipContainer extends Component {
         : resolveLink(from.entity_type)
       : '';
     const toRestricted = to === null;
-    // eslint-disable-next-line no-nested-ternary
+
     const linkTo = to
       ? to.relationship_type
         ? `${resolveLink(to.from.entity_type)}/${
@@ -275,7 +275,7 @@ class StixSightingRelationshipContainer extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
+                      { }
                       {!fromRestricted
                         ? from.relationship_type
                           ? t('Relationship')
@@ -338,7 +338,7 @@ class StixSightingRelationshipContainer extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
+                      { }
                       {!toRestricted
                         ? to.relationship_type
                           ? t('Relationship')

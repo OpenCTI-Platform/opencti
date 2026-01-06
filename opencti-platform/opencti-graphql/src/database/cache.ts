@@ -151,7 +151,7 @@ export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | 
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
     const map = await getEntitiesFromCache(context, user, type) as Map<string, T>;
     const result: T[] = [];
-    // eslint-disable-next-line no-restricted-syntax
+
     for (const value of map.values()) {
       result.push(value);
     }

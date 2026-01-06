@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import buildRelationToRelationRule from '../relationToRelationBuilder';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import def from './LocatedAtLocatedDefinition';

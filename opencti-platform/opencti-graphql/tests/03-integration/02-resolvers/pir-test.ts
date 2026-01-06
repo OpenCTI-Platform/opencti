@@ -155,8 +155,8 @@ describe('PIR resolver standard behavior', () => {
           mode: FilterMode.And,
           filterGroups: [],
           filters: [
-            { key: ['confidence'], values: ['80'], operator: FilterOperator.Gt }
-          ]
+            { key: ['confidence'], values: ['80'], operator: FilterOperator.Gt },
+          ],
         },
         pir_criteria: [
           {
@@ -165,8 +165,8 @@ describe('PIR resolver standard behavior', () => {
               mode: FilterMode.And,
               filterGroups: [],
               filters: [
-                { key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] }
-              ]
+                { key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] },
+              ],
             },
           },
           {
@@ -175,11 +175,11 @@ describe('PIR resolver standard behavior', () => {
               mode: FilterMode.And,
               filterGroups: [],
               filters: [
-                { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] }
-              ]
+                { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] },
+              ],
             },
           },
-        ]
+        ],
       },
     };
     const PIR_TO_CREATE_2 = {
@@ -191,8 +191,8 @@ describe('PIR resolver standard behavior', () => {
           mode: FilterMode.And,
           filterGroups: [],
           filters: [
-            { key: ['confidence'], values: ['60'], operator: FilterOperator.Gt }
-          ]
+            { key: ['confidence'], values: ['60'], operator: FilterOperator.Gt },
+          ],
         },
         pir_criteria: [
           {
@@ -201,8 +201,8 @@ describe('PIR resolver standard behavior', () => {
               mode: FilterMode.And,
               filterGroups: [],
               filters: [
-                { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] } // this id is also present in pir1 criteria
-              ]
+                { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] }, // this id is also present in pir1 criteria
+              ],
             },
           },
           {
@@ -211,11 +211,11 @@ describe('PIR resolver standard behavior', () => {
               mode: FilterMode.And,
               filterGroups: [],
               filters: [
-                { key: ['toId'], values: ['527e5e30-02c5-4ba9-a698-45954d1f3763'] }
-              ]
+                { key: ['toId'], values: ['527e5e30-02c5-4ba9-a698-45954d1f3763'] },
+              ],
             },
           },
-        ]
+        ],
       },
     };
     const pir1 = await queryAsAdmin({
@@ -324,7 +324,7 @@ describe('PIR resolver standard behavior', () => {
       filters: {
         mode: FilterMode.And,
         filters: [
-          { key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] }
+          { key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] },
         ],
         filterGroups: [],
       },
@@ -474,8 +474,8 @@ describe('PIR resolver standard behavior', () => {
         mode: FilterMode.And,
         filterGroups: [],
         filters: [
-          { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] }
-        ]
+          { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] },
+        ],
       },
       weight: 1,
     };

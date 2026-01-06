@@ -92,7 +92,7 @@ const getMissingRelations = async (context) => {
   const data = await computeMissingRelationsForType(context, ABSTRACT_BASIC_RELATIONSHIP);
   return R.flatten(data);
 };
-// eslint-disable-next-line import/prefer-default-export
+
 export const cleanInconsistentRelations = async (context) => {
   // Fix missing deleted data
   // In case of relation to relation, some deletion was not executed.

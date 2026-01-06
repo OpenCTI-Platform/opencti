@@ -4,7 +4,7 @@ import {
   isEventInPirRelationship,
   isEventUpdateOnEntity,
   isValidEventType,
-  StreamDataEventTypeEnum
+  StreamDataEventTypeEnum,
 } from '../../../../src/manager/playbookManager/playbookManagerUtils';
 import * as stixRelationship from '../../../../src/schema/stixRelationship';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
@@ -29,8 +29,8 @@ describe('playbookManagerUtils', () => {
       const streamEventMock = {
         scope: 'internal',
         data: {
-          relationship_type: RELATION_IN_PIR
-        }
+          relationship_type: RELATION_IN_PIR,
+        },
       } as unknown as StreamDataEvent;
       const result = isEventInPirRelationship(streamEventMock);
       expect(result).toBeTruthy();
@@ -41,8 +41,8 @@ describe('playbookManagerUtils', () => {
       const streamEventMock = {
         scope: 'external',
         data: {
-          relationship_type: RELATION_IN_PIR
-        }
+          relationship_type: RELATION_IN_PIR,
+        },
       } as unknown as StreamDataEvent;
       const result = await isEventInPirRelationship(streamEventMock);
       expect(result).toBeFalsy();
@@ -53,8 +53,8 @@ describe('playbookManagerUtils', () => {
       const streamEventMock = {
         scope: 'internal',
         data: {
-          relationship_type: 'random-relationship-type'
-        }
+          relationship_type: 'random-relationship-type',
+        },
       } as unknown as StreamDataEvent;
       const result = await isEventInPirRelationship(streamEventMock);
       expect(result).toBeFalsy();
@@ -65,8 +65,8 @@ describe('playbookManagerUtils', () => {
       const streamEventMock = {
         scope: 'internal',
         data: {
-          relationship_type: RELATION_IN_PIR
-        }
+          relationship_type: RELATION_IN_PIR,
+        },
       } as unknown as StreamDataEvent;
       const result = await isEventInPirRelationship(streamEventMock);
       expect(result).toBeFalsy();
@@ -78,7 +78,7 @@ describe('playbookManagerUtils', () => {
       vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(false);
       const streamEventMock = {
         type: 'update',
-        data: {}
+        data: {},
       } as unknown as StreamDataEvent;
       const result = isEventUpdateOnEntity(streamEventMock);
       expect(result).toBeTruthy();
@@ -88,7 +88,7 @@ describe('playbookManagerUtils', () => {
       vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(false);
       const streamEventMock = {
         type: 'create',
-        data: {}
+        data: {},
       } as unknown as StreamDataEvent;
       const result = isEventUpdateOnEntity(streamEventMock);
       expect(result).toBeFalsy();
@@ -98,7 +98,7 @@ describe('playbookManagerUtils', () => {
       vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
       const streamEventMock = {
         type: 'update',
-        data: {}
+        data: {},
       } as unknown as StreamDataEvent;
       const result = isEventUpdateOnEntity(streamEventMock);
       expect(result).toBeFalsy();

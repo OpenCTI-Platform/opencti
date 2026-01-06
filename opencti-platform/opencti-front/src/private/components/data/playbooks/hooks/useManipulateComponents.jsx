@@ -87,7 +87,7 @@ const deleteEdgesAndAllChildren = (definitionNodes, definitionEdges, edges) => {
     );
     if (childrenNodes.length > 0) {
       nodesToDelete.push(...childrenNodes);
-      // eslint-disable-next-line @typescript-eslint/no-loop-func
+
       childrenEdges = definitionEdges.filter((n) => childrenNodes.map((o) => o.id).includes(n.source));
     } else {
       childrenEdges = [];
@@ -445,7 +445,7 @@ const useManipulateComponents = (playbook) => {
         < component.ports.length
         - selectedNode.data.component.ports.length
         + (selectedNode.data.component.ports.length > 0 ? 1 : 0);
-        // eslint-disable-next-line no-plusplus
+
         i++
       ) {
         const port = component.ports[i];
@@ -486,7 +486,7 @@ const useManipulateComponents = (playbook) => {
       for (
         let i = selectedNode.data.component.ports.length - 1;
         i >= component.ports.length;
-        // eslint-disable-next-line no-plusplus
+
         i--
       ) {
         // Find all links to the port

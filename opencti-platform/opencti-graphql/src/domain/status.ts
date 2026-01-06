@@ -204,14 +204,14 @@ export const statusTemplateDelete = async (context: AuthContext, user: AuthUser,
 };
 export const statusTemplateEditContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditContext) => {
   await setEditContext(user, statusTemplateId, input);
-  // eslint-disable-next-line max-len
+
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => {
     return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user);
   });
 };
 export const statusTemplateCleanContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
   await delEditContext(user, statusTemplateId);
-  // eslint-disable-next-line max-len
+
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => {
     return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user);
   });

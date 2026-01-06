@@ -39,6 +39,6 @@ describe('workspace', () => {
     const fileContent = await streamToString(readStream as Readable);
     const parsedData = JSON.parse(fileContent.toString());
 
-    expect(() => checkConfigurationImport('dashboard', parsedData),).not.toThrowError();
+    expect(() => checkConfigurationImport('dashboard', parsedData)).not.toThrowError();
   });
 });

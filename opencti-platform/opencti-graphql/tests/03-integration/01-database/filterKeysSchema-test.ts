@@ -10,7 +10,7 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
   INPUT_CREATED_BY,
   INPUT_KILLCHAIN,
-  INPUT_LABELS
+  INPUT_LABELS,
 } from '../../../src/schema/general';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE, ENTITY_TYPE_VULNERABILITY } from '../../../src/schema/stixDomainObject';
@@ -19,7 +19,7 @@ import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
-  STIX_CYBER_OBSERVABLES
+  STIX_CYBER_OBSERVABLES,
 } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../../src/modules/case/case-types';
 import {
@@ -30,7 +30,7 @@ import {
   INSTANCE_REGARDING_OF,
   RELATION_FROM_FILTER,
   RELATION_TO_TYPES_FILTER,
-  TYPE_FILTER
+  TYPE_FILTER,
 } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import stixCoreObjectFilterKeys from '../../data/filter-keys-schema/stix-core-object';
@@ -45,7 +45,7 @@ describe('Filter keys schema generation testing', async () => {
   const filterKeysSchema = new Map(filterKeysSchemaArray
     .map((n) => [
       n.entity_type,
-      new Map(n.filters_schema.map((m) => [m.filterKey, m.filterDefinition]))
+      new Map(n.filters_schema.map((m) => [m.filterKey, m.filterDefinition])),
     ]));
   it('should generate a filter keys schema for Stix core object filterable attributes only', () => {
     const stixCoreObjectFilterDefinitionMap = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT) ?? new Map<string, FilterDefinition>();

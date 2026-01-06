@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { RELATION_SUBTECHNIQUE_OF, RELATION_USES } from '../../schema/stixCoreRelationship';
 import def from './ParentTechniqueUseDefinition';
 import buildRelationToRelationRule from '../relationToRelationBuilder';

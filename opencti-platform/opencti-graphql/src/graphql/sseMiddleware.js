@@ -447,7 +447,7 @@ const createSseMiddleware = () => {
     const entityTypeFilters = findFiltersFromKey(filters.filters, 'entity_type', 'eq');
     const entityTypeFilter = entityTypeFilters.length > 0 ? entityTypeFilters[0] : undefined;
     const entityTypeFilterValues = entityTypeFilter?.values ?? [];
-    // eslint-disable-next-line no-restricted-syntax
+
     for (const id of entityTypeFilterValues) {
       // consider the operator
       if (entityTypeFilter.operator === 'not_eq') {

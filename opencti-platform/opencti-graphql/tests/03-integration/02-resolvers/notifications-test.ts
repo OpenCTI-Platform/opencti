@@ -41,12 +41,12 @@ describe('Notifications resolver restriction behavior', () => {
             {
               operation: 'update',
               message: '[report] report same org intersec - `admin` replaces `description updated` in `Description`',
-              instance_id: 'report--b07ba95d-8a26-59c9-91a0-54a0829eae09'
-            }
-          ]
-        }
+              instance_id: 'report--b07ba95d-8a26-59c9-91a0-54a0829eae09',
+            },
+          ],
+        },
       ],
-      user_id: ADMIN_USER.id
+      user_id: ADMIN_USER.id,
     };
 
     const adminNotification = await addNotification(testContext, ADMIN_USER, adminNotificationInput);
@@ -65,12 +65,12 @@ describe('Notifications resolver restriction behavior', () => {
             {
               operation: 'update',
               message: '[report] report same org intersec - `admin` replaces `description updated` in `Description`',
-              instance_id: 'report--b07ba95d-8a26-59c9-91a0-54a0829eae09'
-            }
-          ]
-        }
+              instance_id: 'report--b07ba95d-8a26-59c9-91a0-54a0829eae09',
+            },
+          ],
+        },
       ],
-      user_id: user.id
+      user_id: user.id,
     };
     const userNotification = await addNotification(testContext, user, userNotificationInput);
     userNotificationId = userNotification.id;
@@ -80,8 +80,8 @@ describe('Notifications resolver restriction behavior', () => {
     const result = await adminQueryWithSuccess({
       query: READ_NOTIFICATION_QUERY,
       variables: {
-        id: adminNotificationId
-      }
+        id: adminNotificationId,
+      },
     });
     expect(result.data.notification.id).toEqual(adminNotificationId);
   });
@@ -89,8 +89,8 @@ describe('Notifications resolver restriction behavior', () => {
     const result = await adminQueryWithSuccess({
       query: READ_NOTIFICATION_QUERY,
       variables: {
-        id: userNotificationId
-      }
+        id: userNotificationId,
+      },
     });
     expect(result.data.notification.id).toEqual(userNotificationId);
   });
@@ -98,8 +98,8 @@ describe('Notifications resolver restriction behavior', () => {
     const result = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: READ_NOTIFICATION_QUERY,
       variables: {
-        id: userNotificationId
-      }
+        id: userNotificationId,
+      },
     });
     expect(result.data.notification.id).toEqual(userNotificationId);
   });
@@ -107,8 +107,8 @@ describe('Notifications resolver restriction behavior', () => {
     const result = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: READ_NOTIFICATION_QUERY,
       variables: {
-        id: adminNotificationId
-      }
+        id: adminNotificationId,
+      },
     });
     expect(result.data.notification).toBeNull();
   });
@@ -134,14 +134,14 @@ describe('Notifications resolver restriction behavior', () => {
     await adminQueryWithSuccess({
       query: DELETE_NOTIFICATION_QUERY,
       variables: {
-        id: userNotificationId
-      }
+        id: userNotificationId,
+      },
     });
     const result = await adminQueryWithSuccess({
       query: READ_NOTIFICATION_QUERY,
       variables: {
-        id: userNotificationId
-      }
+        id: userNotificationId,
+      },
     });
     expect(result.data.notification).toBeNull();
   });
@@ -149,14 +149,14 @@ describe('Notifications resolver restriction behavior', () => {
     await adminQueryWithSuccess({
       query: DELETE_NOTIFICATION_QUERY,
       variables: {
-        id: adminNotificationId
-      }
+        id: adminNotificationId,
+      },
     });
     const result = await adminQueryWithSuccess({
       query: READ_NOTIFICATION_QUERY,
       variables: {
-        id: userNotificationId
-      }
+        id: userNotificationId,
+      },
     });
     expect(result.data.notification).toBeNull();
   });

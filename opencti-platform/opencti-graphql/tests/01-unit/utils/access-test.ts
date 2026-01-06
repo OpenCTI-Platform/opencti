@@ -15,7 +15,7 @@ import {
   MEMBER_ACCESS_RIGHT_ADMIN,
   MEMBER_ACCESS_RIGHT_EDIT,
   MEMBER_ACCESS_RIGHT_VIEW,
-  SYSTEM_USER
+  SYSTEM_USER,
 } from '../../../src/utils/access';
 import type { BasicStoreCommon, StoreMarkingDefinition } from '../../../src/types/store';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
@@ -26,7 +26,7 @@ import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-2-1-common';
 import type { Group } from '../../../src/types/group';
-import type {Change, UpdateEvent} from '../../../src/types/event';
+import type { Change, UpdateEvent } from '../../../src/types/event';
 
 const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
 
@@ -75,12 +75,12 @@ describe('Check markings test coverage', () => {
 describe('Check organization access for element.', () => {
   it('should element when no platform organization setup be allowed', async () => {
     const element: Partial<BasicStoreCommon> = {
-      internal_id: uuid()
+      internal_id: uuid(),
     };
 
     const user: Partial<AuthUser> = {
       organizations: [],
-      internal_id: uuid()
+      internal_id: uuid(),
     };
 
     const settings: Partial<BasicStoreSettings> = {
@@ -92,10 +92,10 @@ describe('Check organization access for element.', () => {
 
   it('should element not shared be allowed to user in platform organization', async () => {
     const element: Partial<BasicStoreCommon> = {
-      internal_id: uuid()
+      internal_id: uuid(),
     };
 
-    const org : Partial<BasicStoreEntityOrganization> = {
+    const org: Partial<BasicStoreEntityOrganization> = {
       internal_id: PLATFORM_ORGANIZATION.id,
     };
     const allOrgs: BasicStoreEntityOrganization[] = [];
@@ -103,7 +103,7 @@ describe('Check organization access for element.', () => {
 
     const user: Partial<AuthUser> = {
       organizations: allOrgs,
-      internal_id: uuid()
+      internal_id: uuid(),
     };
 
     const settings: Partial<BasicStoreSettings> = {
@@ -115,10 +115,10 @@ describe('Check organization access for element.', () => {
 
   it('should element not shared not be allowed to user in another organization', async () => {
     const element: Partial<BasicStoreCommon> = {
-      internal_id: uuid()
+      internal_id: uuid(),
     };
 
-    const org : Partial<BasicStoreEntityOrganization> = {
+    const org: Partial<BasicStoreEntityOrganization> = {
       internal_id: TEST_ORGANIZATION.id,
     };
     const allOrgs: BasicStoreEntityOrganization[] = [];
@@ -126,7 +126,7 @@ describe('Check organization access for element.', () => {
 
     const user: Partial<AuthUser> = {
       organizations: allOrgs,
-      internal_id: uuid()
+      internal_id: uuid(),
     };
 
     const settings: Partial<BasicStoreSettings> = {
@@ -138,11 +138,11 @@ describe('Check organization access for element.', () => {
 
   it('should element shared to user organization be allowed', async () => {
     const element: Partial<BasicStoreCommon> = {
-      internal_id: uuid()
+      internal_id: uuid(),
     };
     element[RELATION_GRANTED_TO] = [TEST_ORGANIZATION.id];
 
-    const org : Partial<BasicStoreEntityOrganization> = {
+    const org: Partial<BasicStoreEntityOrganization> = {
       internal_id: TEST_ORGANIZATION.id,
       id: TEST_ORGANIZATION.id,
     };
@@ -151,7 +151,7 @@ describe('Check organization access for element.', () => {
 
     const user: Partial<AuthUser> = {
       organizations: allOrgs,
-      internal_id: uuid()
+      internal_id: uuid(),
     };
 
     const settings: Partial<BasicStoreSettings> = {
@@ -179,7 +179,7 @@ describe('User access entity testing', async () => {
     allowed_marking: [],
     roles: [ADMINISTRATOR_ROLE],
     groups: [],
-    capabilities: [{ name: KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, }],
+    capabilities: [{ name: KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS }],
     organizations: [],
   };
 
@@ -195,11 +195,11 @@ describe('User access entity testing', async () => {
         authorized_members: [
           {
             id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
-            access_right: 'admin'
+            access_right: 'admin',
           },
           {
             id: '55ec0c6a-13ce-5e39-b486-354fe4a7084f',
-            access_right: 'view'
+            access_right: 'view',
           },
         ],
       } as StixOpenctiExtension,
@@ -214,11 +214,11 @@ describe('User access entity testing', async () => {
     restricted_members: [
       {
         id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
-        access_right: 'admin'
+        access_right: 'admin',
       },
       {
         id: '55ec0c6a-13ce-5e39-b486-354fe4a7084f',
-        access_right: 'view'
+        access_right: 'view',
       },
     ],
   } as BasicStoreCommon;
@@ -266,7 +266,7 @@ describe('User stream update event testing', async () => {
         reverse_patch: [{ op: 'remove', path: '/objects_refs/4' }],
         related_restrictions: { markings: ['f2aedb16-b107-49d3-adc5-edc945514360'] },
         changes: [],
-      }
+      },
     };
     const hasAccess_userAllowed = await isUserCanAccessStreamUpdateEvent(user_is_allowed as AuthUser, updateEvent as UpdateEvent);
     expect(hasAccess_userAllowed).toEqual(true);
@@ -291,7 +291,7 @@ describe('User stream update event testing', async () => {
         reverse_patch: [{ op: 'remove', path: '/objects_refs/4' }],
         related_restrictions: { markings: [] },
         changes: [],
-      }
+      },
     };
     const hasAccess = await isUserCanAccessStreamUpdateEvent(user as AuthUser, updateEvent as UpdateEvent);
     expect(hasAccess).toEqual(true);
@@ -347,7 +347,7 @@ describe('getUserAccessRight testing', () => {
     const restricted_members = [{
       id: '66ac180d-aa8d-4566-ba51-8b385b6ec38e',
       access_right: 'edit',
-      groups_restriction_ids: []
+      groups_restriction_ids: [],
     }];
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(bypassUser as AuthUser, element);
@@ -357,7 +357,7 @@ describe('getUserAccessRight testing', () => {
     const restricted_members = [{
       id: '66ac180d-aa8d-4566-ba51-8b385b6ec38e',
       access_right: 'edit',
-      groups_restriction_ids: []
+      groups_restriction_ids: [],
     }];
     const element = { restricted_members, authorized_authorities: [userId] };
     const expected = getUserAccessRight(user as AuthUser, element);
@@ -367,7 +367,7 @@ describe('getUserAccessRight testing', () => {
     const restricted_members = [{
       id: userId,
       access_right: 'admin',
-      groups_restriction_ids: []
+      groups_restriction_ids: [],
     }];
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(user as AuthUser, element);
@@ -377,7 +377,7 @@ describe('getUserAccessRight testing', () => {
     const restricted_members = [{
       id: userId,
       access_right: 'edit',
-      groups_restriction_ids: []
+      groups_restriction_ids: [],
     }];
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(user as AuthUser, element);
@@ -387,7 +387,7 @@ describe('getUserAccessRight testing', () => {
     const restricted_members = [{
       id: userId,
       access_right: 'view',
-      groups_restriction_ids: []
+      groups_restriction_ids: [],
     }];
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(user as AuthUser, element);
@@ -397,7 +397,7 @@ describe('getUserAccessRight testing', () => {
     const restricted_members = [{
       id: orgaId,
       access_right: 'view',
-      groups_restriction_ids: [groupId]
+      groups_restriction_ids: [groupId],
     }];
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(user as AuthUser, element);
@@ -407,7 +407,7 @@ describe('getUserAccessRight testing', () => {
     const restricted_members = [{
       id: orgaId,
       access_right: 'view',
-      groups_restriction_ids: [groupId, group2Id]
+      groups_restriction_ids: [groupId, group2Id],
     }];
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(user as AuthUser, element);
@@ -417,7 +417,7 @@ describe('getUserAccessRight testing', () => {
     const restricted_members = [{
       id: orgaId,
       access_right: 'view',
-      groups_restriction_ids: ['1e522ce6-f324-4cc9-a2ab-a1a934a1c209']
+      groups_restriction_ids: ['1e522ce6-f324-4cc9-a2ab-a1a934a1c209'],
     }];
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(user as AuthUser, element);
@@ -427,7 +427,7 @@ describe('getUserAccessRight testing', () => {
     const restricted_members = [{
       id: orgaId,
       access_right: 'view',
-      groups_restriction_ids: [groupId, '1e522ce6-f324-4cc9-a2ab-a1a934a1c209']
+      groups_restriction_ids: [groupId, '1e522ce6-f324-4cc9-a2ab-a1a934a1c209'],
     }];
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(user as AuthUser, element);
@@ -437,7 +437,7 @@ describe('getUserAccessRight testing', () => {
     const restricted_members = [{
       id: '66ac180d-aa8d-4566-ba51-8b385b6ec38e',
       access_right: 'view',
-      groups_restriction_ids: []
+      groups_restriction_ids: [],
     }];
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(user as AuthUser, element);
@@ -477,14 +477,14 @@ describe('isUserInPlatformOrganization testing', () => {
 
   it('should return true for user service account', () => {
     const settings: Partial<BasicStoreSettings> = {
-      platform_organization: 'Filigran'
+      platform_organization: 'Filigran',
     };
     const expected = isUserInPlatformOrganization(serviceAccountUser as AuthUser, settings as BasicStoreSettings);
     expect(expected).toEqual(true);
   });
   it('should return true for BYPASS User', () => {
     const settings: Partial<BasicStoreSettings> = {
-      platform_organization: 'Filigran'
+      platform_organization: 'Filigran',
     };
     const expected = isUserInPlatformOrganization(bypassUser as AuthUser, settings as BasicStoreSettings);
     expect(expected).toEqual(true);
@@ -504,7 +504,7 @@ describe('isUserInPlatformOrganization testing', () => {
   });
   it('should return false if User is not part of platform Organization', () => {
     const settings: Partial<BasicStoreSettings> = {
-      platform_organization: '9b522ce7-j325-6hc8-a2ab-t8a934a1c765'
+      platform_organization: '9b522ce7-j325-6hc8-a2ab-t8a934a1c765',
     };
     const expected = isUserInPlatformOrganization(user as AuthUser, settings as BasicStoreSettings);
     expect(expected).toEqual(false);

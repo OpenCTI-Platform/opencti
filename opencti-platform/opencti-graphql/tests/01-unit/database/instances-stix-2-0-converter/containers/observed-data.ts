@@ -5,7 +5,7 @@ export const OBSERVED_DATA_INSTANCE = {
   _id: '9653626d-54c7-433b-beca-ee1dee226125',
   id: '9653626d-54c7-433b-beca-ee1dee226125',
   sort: [
-    1750951410704
+    1750951410704,
   ],
   first_observed: '2025-06-18T22:00:00.000Z',
   last_observed: '2025-06-27T22:00:00.000Z',
@@ -15,7 +15,7 @@ export const OBSERVED_DATA_INSTANCE = {
   internal_id: '9653626d-54c7-433b-beca-ee1dee226125',
   standard_id: 'observed-data--a9ed3299-df09-5bc6-bd5f-0831d75114ae',
   creator_id: [
-    '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+    '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   ],
   x_opencti_stix_ids: [],
   created_at: '2025-06-26T15:23:30.704Z',
@@ -30,7 +30,7 @@ export const OBSERVED_DATA_INSTANCE = {
     'Stix-Object',
     'Stix-Core-Object',
     'Stix-Domain-Object',
-    'Container'
+    'Container',
   ],
   x_opencti_files: [
     {
@@ -39,7 +39,7 @@ export const OBSERVED_DATA_INSTANCE = {
       version: '2025-06-26T15:23:30.705Z',
       mime_type: 'application/json',
       file_markings: [
-        '2cc876e4-ae90-497b-a4ae-16c762f0d03f'
+        '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       ],
       objectMarking: [
         {
@@ -47,33 +47,33 @@ export const OBSERVED_DATA_INSTANCE = {
           _id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
           id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
           sort: [
-            1749546753947
+            1749546753947,
           ],
           entity_type: 'Marking-Definition',
           internal_id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
           standard_id: 'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
-          base_type: 'ENTITY'
-        }
-      ]
-    }
+          base_type: 'ENTITY',
+        },
+      ],
+    },
   ],
   i_attributes: [
     {
       updated_at: '2025-06-26T15:23:58.536Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'objects'
+      name: 'objects',
     },
     {
       updated_at: '2025-06-26T15:29:37.101Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 94,
-      name: 'confidence'
-    }
+      name: 'confidence',
+    },
   ],
   object: [
     '66b4b5de-f98d-4a76-92d6-929a9000d114',
-    'c808561d-ed59-4d54-914a-5d090eceafd6'
+    'c808561d-ed59-4d54-914a-5d090eceafd6',
   ],
   objects: [
     {
@@ -81,10 +81,10 @@ export const OBSERVED_DATA_INSTANCE = {
       _id: '66b4b5de-f98d-4a76-92d6-929a9000d114',
       id: '66b4b5de-f98d-4a76-92d6-929a9000d114',
       sort: [
-        1749547859691
+        1749547859691,
       ],
       x_opencti_stix_ids: [
-        'campaign--721976f9-56d7-4749-8c69-b3ac7c315f05'
+        'campaign--721976f9-56d7-4749-8c69-b3ac7c315f05',
       ],
       name: 'menuPass',
       description: 'The threat actor behind menuPass prefers to target U.S. and foreign defense contractors.',
@@ -102,7 +102,7 @@ export const OBSERVED_DATA_INSTANCE = {
       internal_id: '66b4b5de-f98d-4a76-92d6-929a9000d114',
       standard_id: 'campaign--737733a0-2cb5-5981-9814-53c0e3fbd9e9',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       created_at: '2025-06-10T09:30:59.691Z',
       updated_at: '2025-06-10T09:30:59.691Z',
@@ -112,17 +112,17 @@ export const OBSERVED_DATA_INSTANCE = {
         'Basic-Object',
         'Stix-Object',
         'Stix-Core-Object',
-        'Stix-Domain-Object'
+        'Stix-Domain-Object',
       ],
       draft_ids: [
-        '2c0ff00c-f892-4f22-b863-58de30313461'
+        '2c0ff00c-f892-4f22-b863-58de30313461',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '6741affa-a82f-4af4-90c6-64cff97fccee',
         id: '6741affa-a82f-4af4-90c6-64cff97fccee',
         sort: [
-          'relationship-meta--27c19729-e0de-4619-ad7a-51cd25a5e0dd'
+          'relationship-meta--27c19729-e0de-4619-ad7a-51cd25a5e0dd',
         ],
         base_type: 'RELATION',
         internal_id: '6741affa-a82f-4af4-90c6-64cff97fccee',
@@ -140,15 +140,15 @@ export const OBSERVED_DATA_INSTANCE = {
         toName: 'menuPass',
         toType: 'Campaign',
         target_ref: 'campaign--temporary',
-        relationship_type: 'object'
-      }
+        relationship_type: 'object',
+      },
     },
     {
       _index: 'opencti_stix_cyber_observables-000001',
       _id: 'c808561d-ed59-4d54-914a-5d090eceafd6',
       id: 'c808561d-ed59-4d54-914a-5d090eceafd6',
       sort: [
-        1749548017333
+        1749548017333,
       ],
       x_opencti_score: 50,
       x_opencti_description: 'Basic credential',
@@ -158,10 +158,10 @@ export const OBSERVED_DATA_INSTANCE = {
       internal_id: 'c808561d-ed59-4d54-914a-5d090eceafd6',
       standard_id: 'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       x_opencti_stix_ids: [
-        'credential--8e0a834a-c233-5c50-8186-adde10a69f02'
+        'credential--8e0a834a-c233-5c50-8186-adde10a69f02',
       ],
       created_at: '2025-06-10T09:33:37.333Z',
       updated_at: '2025-06-10T09:33:37.345Z',
@@ -170,18 +170,18 @@ export const OBSERVED_DATA_INSTANCE = {
         'Basic-Object',
         'Stix-Object',
         'Stix-Core-Object',
-        'Stix-Cyber-Observable'
+        'Stix-Cyber-Observable',
       ],
       modified: '2025-06-10T09:33:37.345Z',
       draft_ids: [
-        '2c0ff00c-f892-4f22-b863-58de30313461'
+        '2c0ff00c-f892-4f22-b863-58de30313461',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '66dd1766-4df7-4b99-ba37-6363a262d55f',
         id: '66dd1766-4df7-4b99-ba37-6363a262d55f',
         sort: [
-          'relationship-meta--cba92725-4c14-4f08-929b-03ef38cf0b10'
+          'relationship-meta--cba92725-4c14-4f08-929b-03ef38cf0b10',
         ],
         base_type: 'RELATION',
         internal_id: '66dd1766-4df7-4b99-ba37-6363a262d55f',
@@ -199,12 +199,12 @@ export const OBSERVED_DATA_INSTANCE = {
         toName: 'azerty',
         toType: 'Credential',
         target_ref: 'credential--temporary',
-        relationship_type: 'object'
-      }
-    }
+        relationship_type: 'object',
+      },
+    },
   ],
   'external-reference': [
-    '746847b8-f5d0-4c82-a7a2-70649ac9b135'
+    '746847b8-f5d0-4c82-a7a2-70649ac9b135',
   ],
   externalReferences: [
     {
@@ -212,7 +212,7 @@ export const OBSERVED_DATA_INSTANCE = {
       _id: '746847b8-f5d0-4c82-a7a2-70649ac9b135',
       id: '746847b8-f5d0-4c82-a7a2-70649ac9b135',
       sort: [
-        1749547864832
+        1749547864832,
       ],
       x_opencti_stix_ids: [],
       source_name: 'capec',
@@ -226,7 +226,7 @@ export const OBSERVED_DATA_INSTANCE = {
       internal_id: '746847b8-f5d0-4c82-a7a2-70649ac9b135',
       standard_id: 'external-reference--4a67461d-68b8-5a27-996f-a8e30578cb56',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       created_at: '2025-06-10T09:31:04.832Z',
       updated_at: '2025-06-10T09:31:04.832Z',
@@ -234,14 +234,14 @@ export const OBSERVED_DATA_INSTANCE = {
       parent_types: [
         'Basic-Object',
         'Stix-Object',
-        'Stix-Meta-Object'
+        'Stix-Meta-Object',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '760e6082-4650-45f7-be01-5862262ad721',
         id: '760e6082-4650-45f7-be01-5862262ad721',
         sort: [
-          'relationship-meta--3ce0615e-ef97-4680-947e-a2555cbeb8b8'
+          'relationship-meta--3ce0615e-ef97-4680-947e-a2555cbeb8b8',
         ],
         base_type: 'RELATION',
         internal_id: '760e6082-4650-45f7-be01-5862262ad721',
@@ -259,9 +259,9 @@ export const OBSERVED_DATA_INSTANCE = {
         toName: 'capec (CAPEC-163)',
         toType: 'External-Reference',
         target_ref: 'external-reference--temporary',
-        relationship_type: 'external-reference'
-      }
-    }
+        relationship_type: 'external-reference',
+      },
+    },
   ],
   'created-by': '51bca270-ec82-4b04-bd0a-d78274c70d92',
   createdBy: {
@@ -269,10 +269,10 @@ export const OBSERVED_DATA_INSTANCE = {
     _id: '51bca270-ec82-4b04-bd0a-d78274c70d92',
     id: '51bca270-ec82-4b04-bd0a-d78274c70d92',
     sort: [
-      1749547918224
+      1749547918224,
     ],
     x_opencti_stix_ids: [
-      'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f'
+      'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f',
     ],
     name: 'John Doe',
     description: null,
@@ -293,7 +293,7 @@ export const OBSERVED_DATA_INSTANCE = {
     internal_id: '51bca270-ec82-4b04-bd0a-d78274c70d92',
     standard_id: 'identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6',
     creator_id: [
-      '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+      '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
     ],
     created_at: '2025-06-10T09:31:58.224Z',
     updated_at: '2025-06-10T09:31:58.237Z',
@@ -304,14 +304,14 @@ export const OBSERVED_DATA_INSTANCE = {
       'Stix-Object',
       'Stix-Core-Object',
       'Stix-Domain-Object',
-      'Identity'
+      'Identity',
     ],
     i_relation: {
       _index: 'opencti_stix_meta_relationships-000001',
       _id: '510e8ef6-a40c-477f-8531-3775ac147467',
       id: '510e8ef6-a40c-477f-8531-3775ac147467',
       sort: [
-        'relationship-meta--ba0d9f3f-f4cb-41ac-ac9b-bc7a5e3a57e7'
+        'relationship-meta--ba0d9f3f-f4cb-41ac-ac9b-bc7a5e3a57e7',
       ],
       base_type: 'RELATION',
       internal_id: '510e8ef6-a40c-477f-8531-3775ac147467',
@@ -329,11 +329,11 @@ export const OBSERVED_DATA_INSTANCE = {
       toName: 'John Doe',
       toType: 'Individual',
       target_ref: 'identity--temporary',
-      relationship_type: 'created-by'
-    }
+      relationship_type: 'created-by',
+    },
   },
   'object-marking': [
-    '2cc876e4-ae90-497b-a4ae-16c762f0d03f'
+    '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
   ],
   objectMarking: [
     {
@@ -341,7 +341,7 @@ export const OBSERVED_DATA_INSTANCE = {
       _id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       sort: [
-        1749546753947
+        1749546753947,
       ],
       definition_type: 'PAP',
       definition: 'PAP:CLEAR',
@@ -352,7 +352,7 @@ export const OBSERVED_DATA_INSTANCE = {
       internal_id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       standard_id: 'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
       creator_id: [
-        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505'
+        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
       ],
       x_opencti_stix_ids: [],
       created_at: '2025-06-10T09:12:33.947Z',
@@ -363,14 +363,14 @@ export const OBSERVED_DATA_INSTANCE = {
       parent_types: [
         'Basic-Object',
         'Stix-Object',
-        'Stix-Meta-Object'
+        'Stix-Meta-Object',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: 'f5b12f5c-a75b-48b7-ab29-0eac4b77bc37',
         id: 'f5b12f5c-a75b-48b7-ab29-0eac4b77bc37',
         sort: [
-          'relationship-meta--f1677424-59fd-4761-84b8-3b647d0edc09'
+          'relationship-meta--f1677424-59fd-4761-84b8-3b647d0edc09',
         ],
         base_type: 'RELATION',
         internal_id: 'f5b12f5c-a75b-48b7-ab29-0eac4b77bc37',
@@ -388,12 +388,12 @@ export const OBSERVED_DATA_INSTANCE = {
         toName: 'PAP:CLEAR',
         toType: 'Marking-Definition',
         target_ref: 'marking-definition--temporary',
-        relationship_type: 'object-marking'
-      }
-    }
+        relationship_type: 'object-marking',
+      },
+    },
   ],
   'object-label': [
-    '1fd9eb0d-90ae-4cb7-8a0c-7d53fb9bbb3b'
+    '1fd9eb0d-90ae-4cb7-8a0c-7d53fb9bbb3b',
   ],
   objectLabel: [
     {
@@ -401,7 +401,7 @@ export const OBSERVED_DATA_INSTANCE = {
       _id: '1fd9eb0d-90ae-4cb7-8a0c-7d53fb9bbb3b',
       id: '1fd9eb0d-90ae-4cb7-8a0c-7d53fb9bbb3b',
       sort: [
-        1749547945672
+        1749547945672,
       ],
       x_opencti_stix_ids: [],
       value: 'campaign',
@@ -411,7 +411,7 @@ export const OBSERVED_DATA_INSTANCE = {
       internal_id: '1fd9eb0d-90ae-4cb7-8a0c-7d53fb9bbb3b',
       standard_id: 'label--0d0ca8b0-45b3-5390-a0eb-67246411729f',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       created_at: '2025-06-10T09:32:25.672Z',
       updated_at: '2025-06-10T09:32:25.672Z',
@@ -421,14 +421,14 @@ export const OBSERVED_DATA_INSTANCE = {
       parent_types: [
         'Basic-Object',
         'Stix-Object',
-        'Stix-Meta-Object'
+        'Stix-Meta-Object',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: 'adfb1904-6b41-4209-ae85-e5fff8e30559',
         id: 'adfb1904-6b41-4209-ae85-e5fff8e30559',
         sort: [
-          'relationship-meta--f7187359-946c-47c7-8396-5149fb1a2392'
+          'relationship-meta--f7187359-946c-47c7-8396-5149fb1a2392',
         ],
         base_type: 'RELATION',
         internal_id: 'adfb1904-6b41-4209-ae85-e5fff8e30559',
@@ -446,10 +446,10 @@ export const OBSERVED_DATA_INSTANCE = {
         toName: 'campaign',
         toType: 'Label',
         target_ref: 'label--temporary',
-        relationship_type: 'object-label'
-      }
-    }
-  ]
+        relationship_type: 'object-label',
+      },
+    },
+  ],
 } as unknown as StoreEntity;
 
 export const EXPECTED_OBSERVED_DATA = {
@@ -463,25 +463,25 @@ export const EXPECTED_OBSERVED_DATA = {
   last_observed: '2025-06-27T22:00:00.000Z',
   number_observed: 1,
   labels: [
-    'campaign'
+    'campaign',
   ],
   external_references: [
     {
       source_name: 'capec',
       description: 'spear phishing',
-      external_id: 'CAPEC-163'
-    }
+      external_id: 'CAPEC-163',
+    },
   ],
   x_opencti_id: '9653626d-54c7-433b-beca-ee1dee226125',
   x_opencti_type: 'Observed-Data',
   type: 'observed-data',
   created_by_ref: 'identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6',
   object_marking_refs: [
-    'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34'
+    'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
   ],
   object_refs: [
     'campaign--737733a0-2cb5-5981-9814-53c0e3fbd9e9',
-    'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a'
+    'credential--4a194ac7-4aef-57d5-9a64-1312da4e604a',
   ],
   x_opencti_files: [
     {

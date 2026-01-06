@@ -70,7 +70,7 @@ describe('Connector reset state functionality', () => {
     expect(connector).not.toBeNull();
     expect(connector.data.registerConnector).not.toBeNull();
     expect(connector.data.registerConnector.id).toEqual(TEST_RESET_CN_ID);
-    
+
     await waitInSec(1);
   });
 
@@ -90,7 +90,6 @@ describe('Connector reset state functionality', () => {
   });
 
   it('should return consistent queue details across multiple API calls', async () => {
-    
     const firstFetch = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
       query: READ_CONNECTOR_QUERY,
       variables: { id: TEST_RESET_CN_ID },
@@ -105,7 +104,7 @@ describe('Connector reset state functionality', () => {
 
     expect(firstFetch.data.connector.connector_queue_details).toBeDefined();
     expect(secondFetch.data.connector.connector_queue_details).toBeDefined();
-    
+
     expect(firstFetch.data.connector.connector_queue_details.messages_number)
       .toEqual(secondFetch.data.connector.connector_queue_details.messages_number);
     expect(firstFetch.data.connector.connector_queue_details.messages_size)
@@ -121,7 +120,7 @@ describe('Connector reset state functionality', () => {
     expect(resetResult.data.resetStateConnector).toBeDefined();
     expect(resetResult.data.resetStateConnector.id).toEqual(TEST_RESET_CN_ID);
     expect(resetResult.data.resetStateConnector.connector_state).toBeNull();
-    
+
     expect(resetResult.data.resetStateConnector.connector_queue_details).toBeDefined();
 
     await waitInSec(2);
@@ -136,7 +135,6 @@ describe('Connector reset state functionality', () => {
   });
 
   it('should handle rapid successive API calls without errors', async () => {
- 
     const rapidCalls = await Promise.all([
       queryAsUserWithSuccess(USER_CONNECTOR.client, {
         query: READ_CONNECTOR_QUERY,

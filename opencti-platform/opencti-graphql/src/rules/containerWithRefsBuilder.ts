@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
 import { createInferredRelation, deleteInferredRuleElement, generateUpdateMessage, stixLoadById } from '../database/middleware';
@@ -41,7 +40,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     ];
   };
   type ArrayRefs = Array<{ partOfFromId: string; partOfId: string; partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
-  // eslint-disable-next-line max-len
+
   const createObjectRefsInferences = async (context: AuthContext, data: StixReport, addedTargets: ArrayRefs, deletedTargets: Array<BasicStoreRelation>): Promise<void> => {
     if (addedTargets.length === 0 && deletedTargets.length === 0) {
       return;
@@ -191,7 +190,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const listReportArgs = { fromTypes: [containerType], toId: isSource ? partOfFromId : partOfTargetId, callback: listFromCallback };
     await fullRelationsList(context, RULE_MANAGER_USER, RELATION_OBJECT, listReportArgs);
   };
-  // eslint-disable-next-line consistent-return
+
   const applyInsert = async (data: StixObject): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);

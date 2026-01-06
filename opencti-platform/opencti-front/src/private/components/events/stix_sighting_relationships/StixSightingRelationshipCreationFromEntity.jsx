@@ -237,7 +237,6 @@ const StixSightingRelationshipCreationFromEntity = ({
     setTargetEntity(stixDomainObject);
   };
 
-  // eslint-disable-next-line class-methods-use-this
   const renderFakeList = () => {
     return (
       <List>
@@ -440,7 +439,6 @@ const StixSightingRelationshipCreationFromEntity = ({
     );
   };
 
-  // eslint-disable-next-line
   const renderLoader = () => {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>

@@ -91,7 +91,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
         name: 'Administrative-Area',
         stix_id: administrativeAreaStixId,
         description: 'Administrative-Area description',
-        objectMarking: [MARKING_TLP_RED]
+        objectMarking: [MARKING_TLP_RED],
       },
     };
     const queryResult = await editorQuery({
@@ -123,7 +123,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
         name: 'Administrative-Area',
         stix_id: administrativeAreaStixId,
         description: 'Administrative-Area description',
-        objectLabel: ['report', 'note', 'malware']
+        objectLabel: ['report', 'note', 'malware'],
       },
     };
     const queryResult = await editorQuery({
@@ -156,12 +156,12 @@ describe('AdministrativeArea resolver standard behavior', () => {
       input: {
         name: 'Administrative-Area',
         stix_id: administrativeAreaStixId,
-        objectLabel: ['opinion']
+        objectLabel: ['opinion'],
       },
     };
     const queryResult = await editorQuery({
       query: CREATE_QUERY,
-      variables: ADMINISTRATIVEAREA_TO_CREATE
+      variables: ADMINISTRATIVEAREA_TO_CREATE,
     }, { synchronizedUpsert: 'true' });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.administrativeAreaAdd).not.toBeNull();
@@ -214,8 +214,8 @@ describe('AdministrativeArea resolver standard behavior', () => {
         id: administrativeAreaInternalId,
         input: [
           { key: 'name', value: ['Administrative-Area - test'] },
-          { key: 'description', value: ['Administrative-Area - test'] }
-        ]
+          { key: 'description', value: ['Administrative-Area - test'] },
+        ],
       },
     });
     expect(queryResult.data.administrativeAreaFieldPatch.name).toEqual('Administrative-Area - test');
@@ -233,7 +233,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     `;
     const ADMINISTRATIVEAREA_TO_CREATE = {
       input: {
-        name: 'Administrative-Area by previous'
+        name: 'Administrative-Area by previous',
       },
     };
     const previousStandard = 'location--345ba2b4-3c57-5b5e-bc6d-b79aaa36d941';
@@ -255,7 +255,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
       input: {
         name: 'Administrative-Area description previous standard',
         stix_id: administrativeAreaStixId,
-        description: 'Administrative-Area description'
+        description: 'Administrative-Area description',
       },
     };
     const queryResult = await editorQuery({ query: CREATE_QUERY, variables: ADMINISTRATIVEAREA_TO_CREATE }, { eventId });

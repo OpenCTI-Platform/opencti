@@ -150,7 +150,7 @@ const StixCoreObjectFilesAndHistory = ({
     flatten(map((c) => c.connector_scope, connectorsExport)),
   );
   const exportConnsPerFormat = scopesConn(connectorsExport);
-  // eslint-disable-next-line max-len
+
   const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
   const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
   const handleOpenImport = (file) => setFileToImport(file);

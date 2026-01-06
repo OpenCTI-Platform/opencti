@@ -51,7 +51,7 @@ describe('Log/Audit resolver rights management checks', () => {
       query: AUDIT_QUERY,
       variables: {
         types: ['Activity'],
-        first: 10
+        first: 10,
       },
     });
   });
@@ -61,7 +61,7 @@ describe('Log/Audit resolver rights management checks', () => {
       query: AUDIT_QUERY,
       variables: {
         types: ['Activity'],
-        first: 10
+        first: 10,
       },
     });
   });
@@ -71,7 +71,7 @@ describe('Log/Audit resolver rights management checks', () => {
       query: AUDIT_QUERY,
       variables: {
         types: ['Activity'],
-        first: 10
+        first: 10,
       },
     });
   });

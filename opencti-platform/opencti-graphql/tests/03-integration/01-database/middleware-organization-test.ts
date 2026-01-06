@@ -48,7 +48,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
       const threatActorIndividualName = `Testing org segregation ${now()}`;
       const inputOne: ThreatActorIndividualAddInput = {
         name: threatActorIndividualName,
-        description: 'Created by user in org platform'
+        description: 'Created by user in org platform',
       };
       const threatActor = await addThreatActorIndividual(inPlatformContext, userInPlatformOrg, inputOne);
 
@@ -56,7 +56,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
       try {
         const inputNext: ThreatActorIndividualAddInput = {
           name: threatActorIndividualName,
-          description: 'Created by external user'
+          description: 'Created by external user',
         };
         await addThreatActorIndividual(testContext, userInExternalOrg, inputNext);
         expect(true, 'An exception should been raised before this line').toBeFalsy();
@@ -72,7 +72,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
       const inputOne: ThreatActorIndividualAddInput = {
         name: threatActorIndividualName,
         description: 'Created by user with TLP:RED',
-        objectMarking: [MARKING_TLP_RED]
+        objectMarking: [MARKING_TLP_RED],
       };
       const threatActor = await addThreatActorIndividual(testContext, ADMIN_USER, inputOne);
       const inputNext: ThreatActorIndividualAddInput = {

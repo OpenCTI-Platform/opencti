@@ -135,7 +135,7 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organization.standard_id).toEqual('identity--732421a0-8471-52de-8d9f-18c8b260813c');
     expect(queryResult.data.organization.sectors.edges.length).toEqual(1);
     expect(queryResult.data.organization.sectors.edges[0].node.standard_id).toEqual(
-      'identity--6e24d2a6-6ce1-5fbb-b3c6-e37f1dc381ff'
+      'identity--6e24d2a6-6ce1-5fbb-b3c6-e37f1dc381ff',
     );
   });
   it('should organization sub-organizations be accurate', async () => {
@@ -148,7 +148,7 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organization).not.toBeNull();
     expect(queryResult.data.organization.subOrganizations.edges.length).toEqual(1);
     expect(queryResult.data.organization.subOrganizations.edges[0].node.standard_id).toEqual(
-      'identity--8c641a55-16b5-503d-9cc3-bf68ef0c40cc'
+      'identity--8c641a55-16b5-503d-9cc3-bf68ef0c40cc',
     );
   });
   it('should list organizations', async () => {

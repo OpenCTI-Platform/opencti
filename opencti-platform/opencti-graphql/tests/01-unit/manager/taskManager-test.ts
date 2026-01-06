@@ -11,7 +11,7 @@ const containers = [{
   id: '3b753144-0565-448b-b65a-abb333a01979',
   internal_id:
     '3b753144-0565-448b-b65a-abb333a01979',
-  standard_id: 'grouping--33a015b6-acb1-563b-8fb7-426bfd9e9a15'
+  standard_id: 'grouping--33a015b6-acb1-563b-8fb7-426bfd9e9a15',
 }];
 const element = {
   _id: '41107f85-f2dc-4422-b615-c12e8ea67aec',
@@ -23,17 +23,17 @@ const element = {
   internal_id: '41107f85-f2dc-4422-b615-c12e8ea67aec',
   last_seen: '5138-11-16T09:46:40.000Z',
   sort: [1749547966450],
-  standard_id: 'threat-actor--b84197db-ff53-5167-a6c7-c7cd0fff0277'
+  standard_id: 'threat-actor--b84197db-ff53-5167-a6c7-c7cd0fff0277',
 };
 const expectedIncludedWithNeighborsFieldPatch = [{
   key: 'objects',
   operation: 'add',
-  value: [element.id, `${element.id}toId`, `${element.id}rel`]
+  value: [element.id, `${element.id}toId`, `${element.id}rel`],
 }];
 const expectedWithoutNeighborsFieldPatch = [{
   key: 'objects',
   operation: 'add',
-  value: [element.id]
+  value: [element.id],
 }];
 
 describe('TaskMananger objectsFromElements tests', () => {

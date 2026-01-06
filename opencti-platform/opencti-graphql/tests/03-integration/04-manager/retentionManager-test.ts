@@ -96,7 +96,7 @@ describe('Retention Manager tests ', () => {
       index: [READ_INDEX_INTERNAL_OBJECTS],
       refresh: true,
       wait_for_completion: true,
-      body: fileUpdateQuery
+      body: fileUpdateQuery,
     }).catch((err: Error) => {
       throw DatabaseError('Error updating elastic', { cause: err });
     });
@@ -127,7 +127,7 @@ describe('Retention Manager tests ', () => {
       index: [READ_INDEX_INTERNAL_OBJECTS],
       refresh: true,
       wait_for_completion: true,
-      body: progressFileUpdateQuery
+      body: progressFileUpdateQuery,
     }).catch((err: Error) => {
       throw DatabaseError('Error updating elastic', { cause: err });
     });
@@ -154,7 +154,7 @@ describe('Retention Manager tests ', () => {
       index: [READ_INDEX_INTERNAL_OBJECTS],
       refresh: true,
       wait_for_completion: true,
-      body: workbench1UpdateQuery
+      body: workbench1UpdateQuery,
     }).catch((err: Error) => {
       throw DatabaseError('Error updating elastic', { cause: err });
     });
@@ -200,7 +200,7 @@ describe('Retention Manager tests ', () => {
       index: [READ_INDEX_STIX_DOMAIN_OBJECTS],
       refresh: true,
       wait_for_completion: true,
-      body: report1UpdateQuery
+      body: report1UpdateQuery,
     }).catch((err: Error) => {
       throw DatabaseError('Error updating elastic', { cause: err });
     });
@@ -242,7 +242,7 @@ describe('Retention Manager tests ', () => {
         retention_unit: 'days',
         scope: 'knowledge',
         filters: emptyStringFilters,
-      }
+      },
     };
     const fileRule_toCreate = {
       input: {
@@ -251,7 +251,7 @@ describe('Retention Manager tests ', () => {
         retention_unit: 'days',
         scope: 'file',
         filters: emptyStringFilters,
-      }
+      },
     };
     const knowledgeRuleQuery = await queryAsAdmin({
       query: CREATE_RETENTION_QUERY,

@@ -73,10 +73,10 @@ describe('Middleware test coverage on restricted_members configuration', () => {
         {
           id: platformOrganizationEntity.id,
           access_right: 'admin',
-          groups_restriction_ids: [greenGroup.id]
-        }
+          groups_restriction_ids: [greenGroup.id],
+        },
       ],
-      revoked: false
+      revoked: false,
     };
     const requestForInformation = await addCaseRfi(testContext, SYSTEM_USER, rfiInput);
     idToDelete.push(requestForInformation.id);
@@ -96,7 +96,7 @@ describe('Middleware test coverage on restricted_members configuration', () => {
     const rfiInput: CaseRfiAddInput = {
       name: 'CaseRFI no restricted members',
       created: now(),
-      revoked: false
+      revoked: false,
     };
     const requestForInformation = await addCaseRfi(testContext, SYSTEM_USER, rfiInput);
     idToDelete.push(requestForInformation.id);
@@ -118,14 +118,14 @@ describe('Middleware test coverage on restricted_members configuration', () => {
         {
           id: platformOrganizationEntity.id,
           access_right: 'admin',
-          groups_restriction_ids: [greenGroup.id]
+          groups_restriction_ids: [greenGroup.id],
         },
         {
           id: userTestOrgAmberGroup.id,
           access_right: 'admin',
-        }
+        },
       ],
-      revoked: false
+      revoked: false,
     };
     const requestForInformation = await addCaseRfi(testContext, SYSTEM_USER, rfiInput);
     idToDelete.push(requestForInformation.id);
@@ -142,14 +142,14 @@ describe('Middleware test coverage on restricted_members configuration', () => {
         {
           id: platformOrganizationEntity.id,
           access_right: 'admin',
-          groups_restriction_ids: [greenGroup.id]
+          groups_restriction_ids: [greenGroup.id],
         },
         {
           id: amberGroup.id,
           access_right: 'admin',
-        }
+        },
       ],
-      revoked: false
+      revoked: false,
     };
     const requestForInformation = await addCaseRfi(testContext, SYSTEM_USER, rfiInput);
     idToDelete.push(requestForInformation.id);
@@ -166,14 +166,14 @@ describe('Middleware test coverage on restricted_members configuration', () => {
         {
           id: platformOrganizationEntity.id,
           access_right: 'admin',
-          groups_restriction_ids: [greenGroup.id]
+          groups_restriction_ids: [greenGroup.id],
         },
         {
           id: testOrganizationEntity.id,
           access_right: 'admin',
-        }
+        },
       ],
-      revoked: false
+      revoked: false,
     };
     const requestForInformation = await addCaseRfi(testContext, SYSTEM_USER, rfiInput);
     idToDelete.push(requestForInformation.id);

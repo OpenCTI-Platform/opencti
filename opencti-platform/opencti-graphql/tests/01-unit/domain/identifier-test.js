@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { describe, expect, it } from 'vitest';
 import { generateAliasesId, generateStandardId, normalizeName } from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
@@ -27,7 +26,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY
+  ENTITY_TYPE_VULNERABILITY,
 } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../../src/modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
@@ -175,7 +174,7 @@ describe('identifier', () => {
         'indicator--51640662-9c78-4402-932f-1d4531624723',
         _2020_09_04T11_58_50,
       ],
-      5
+      5,
     );
     expect(ids.length).toEqual(9);
     expect(ids.includes(_2020_09_03T22_41_18)).toBeTruthy();
@@ -210,7 +209,7 @@ describe('identifier', () => {
         _2020_09_04T08_00_43,
         _2020_09_04T11_58_50,
       ],
-      2
+      2,
     );
     expect(ids.length).toEqual(5);
     expect(ids.includes('threat-actor--077b66a5-e64f-53df-bb22-03787ea16815')).toBeTruthy();
@@ -230,7 +229,7 @@ describe('identifier', () => {
         'indicator--51640662-9c78-4402-932f-1d4531624723',
         _2020_09_04T11_58_50,
       ],
-      5
+      5,
     );
     expect(ids.length).toEqual(8);
     expect(ids.includes('threat-actor--077b66a5-e64f-53df-bb22-03787ea16815')).toBeTruthy();
@@ -268,7 +267,7 @@ describe('identifier', () => {
         _2020_09_04T08_00_43,
         _2020_09_04T11_58_50,
       ],
-      5
+      5,
     );
     expect(ids.length).toEqual(8);
     expect(ids.includes(_2020_09_04T14_18_43)).toBeTruthy();
@@ -280,7 +279,7 @@ describe('identifier', () => {
   it('should relation to input name', () => {
     let name = schemaRelationsRefDefinition.convertDatabaseNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, 'object-marking');
     expect(name).toEqual('objectMarking');
-    // eslint-disable-next-line dot-notation
+
     name = schemaRelationsRefDefinition.convertDatabaseNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, 'object');
     expect(name).toEqual('objects');
   });

@@ -21,7 +21,6 @@ it('should report ids stable', () => {
   ]);
   expect(isContributing).toBeTruthy();
   for (let i = 0; i < 100; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
     const reportStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, data);
     expect(reportStandardId).toEqual('report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
   }
@@ -49,7 +48,7 @@ it('should relation ids be prefixed uuid V4', () => {
   standardId = generateStandardId(STIX_SIGHTING_RELATIONSHIP, {
     relationship_type: STIX_SIGHTING_RELATIONSHIP,
     from: { standard_id: 'from_id' },
-    to: { standard_id: 'to_id' }
+    to: { standard_id: 'to_id' },
   });
   expect(standardId).toEqual('sighting--161901df-21bb-527a-b96b-354119279fe2');
   standardId = generateStandardId(RELATION_BASED_ON, {
@@ -57,14 +56,14 @@ it('should relation ids be prefixed uuid V4', () => {
     start_time: '2022-11-25T19:00:05.000Z',
     stop_time: '2022-11-26T19:00:05.000Z',
     from: { standard_id: 'from_id' },
-    to: { standard_id: 'to_id' }
+    to: { standard_id: 'to_id' },
   });
   expect(standardId).toEqual('relationship--a7778a7d-a743-5193-9912-89f88f9ed0b4');
   standardId = generateStandardId(RELATION_BASED_ON, {
     relationship_type: RELATION_BASED_ON,
     start_time: '2022-11-25T19:00:05.000Z',
     from: { standard_id: 'from_id' },
-    to: { standard_id: 'to_id' }
+    to: { standard_id: 'to_id' },
   });
   expect(standardId).toEqual('relationship--c5e1e2ce-14d6-535b-911d-267e92119e01');
   standardId = generateStandardId(RELATION_USES, {
@@ -72,18 +71,20 @@ it('should relation ids be prefixed uuid V4', () => {
     start_time: '2020-02-29T22:30:00.000Z',
     stop_time: '2020-02-29T22:30:00.000Z',
     from: { standard_id: 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714' },
-    to: { standard_id: 'attack-pattern--fd8179dd-1632-5ec8-8b93-d2ae121e05a4' }
+    to: { standard_id: 'attack-pattern--fd8179dd-1632-5ec8-8b93-d2ae121e05a4' },
   });
   expect(standardId).toEqual('relationship--67f5f01f-6b15-5154-ae31-019a75fedcff');
   standardId = generateStandardId(ENTITY_TYPE_ATTACK_PATTERN, {
     entity_type: ENTITY_TYPE_ATTACK_PATTERN,
-    name: 'Evil Pattern!'
+    name: 'Evil Pattern!',
   });
   expect(standardId).toEqual('attack-pattern--23a5b210-f675-5936-ae14-21327e9798e2');
 });
 
 it('should throw an error on unrecognized object type', () => {
   const data = { foo: 'bar' };
-  const fn = () => { generateStandardId('FooBar', data); };
+  const fn = () => {
+    generateStandardId('FooBar', data);
+  };
   expect(fn).toThrow(UnsupportedError('FooBar is not supported by the platform'));
 });

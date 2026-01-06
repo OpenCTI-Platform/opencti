@@ -108,7 +108,7 @@ describe('Users visibility according to their direct organizations', () => {
     // userC part of orgaAB
     // userO part of no organization
     // with ParticipateToPartsRule inference rule activated: userA and userB participate-to orgaAB via inferred relationships
-    
+
     // 01. Create the organizations
     const ORGANIZATIONS_TO_CREATE = [
       { input: { name: 'orgaA' } },
@@ -227,13 +227,13 @@ describe('Users visibility according to their direct organizations', () => {
       if (relationshipType) {
         values.push({
           key: RELATION_TYPE_SUBFILTER,
-          values: [relationshipType]
+          values: [relationshipType],
         });
       }
       if (isInferredSubFilterValue) {
         values.push({
           key: RELATION_INFERRED_SUBFILTER,
-          values: [isInferredSubFilterValue]
+          values: [isInferredSubFilterValue],
         });
       };
       if (organizationIds) {
@@ -253,7 +253,7 @@ describe('Users visibility according to their direct organizations', () => {
             key: 'regardingOf',
             operator: regardingOfOperator,
             values,
-          }
+          },
         ],
         filterGroups: [],
       };

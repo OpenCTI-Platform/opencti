@@ -25,7 +25,7 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
             configuration: {
               pattern_date: 'DD-MM-YYYY',
               timezone: 'Europe/Paris',
-            }
+            },
           },
         },
         {
@@ -56,9 +56,9 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
           key: 'externalReferences',
           based_on: {
             representations: ['representationExternalRef01', 'representationExternalRef02'],
-          }
+          },
         },
-      ]
+      ],
     },
     {
       id: 'representationCountry01',
@@ -73,7 +73,7 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
             column_name: 'D',
           },
         },
-      ]
+      ],
     },
     {
       id: 'representationCountry02',
@@ -88,7 +88,7 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
             column_name: 'E',
           },
         },
-      ]
+      ],
     },
     {
       id: 'representationSector01',
@@ -103,7 +103,7 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
             column_name: 'H',
           },
         },
-      ]
+      ],
     },
     {
       id: 'representationSector02',
@@ -118,7 +118,7 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
             column_name: 'I',
           },
         },
-      ]
+      ],
     },
     {
       id: 'representationThreat01',
@@ -145,7 +145,7 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
             column_name: 'S',
           },
         },
-      ]
+      ],
     },
     {
       id: 'representationOrganization01',
@@ -160,7 +160,7 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
             column_name: 'M',
           },
         },
-      ]
+      ],
     },
     // META
     {
@@ -182,7 +182,7 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
             column_name: 'Q',
           },
         },
-      ]
+      ],
     },
     {
       id: 'representationExternalRef02',
@@ -203,7 +203,7 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
             column_name: 'R',
           },
         },
-      ]
+      ],
     },
     // RELATIONSHIPS
     {
@@ -217,15 +217,15 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
           key: 'from',
           based_on: {
             representations: ['representationOrganization01'],
-          }
+          },
         },
         {
           key: 'to',
           based_on: {
             representations: ['representationCountry01'],
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     {
       id: 'representationOrganization01-LOCATED_AT-representationCountry02',
@@ -238,15 +238,15 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
           key: 'from',
           based_on: {
             representations: ['representationOrganization01'],
-          }
+          },
         },
         {
           key: 'to',
           based_on: {
             representations: ['representationCountry02'],
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     {
       id: 'representationOrganization01-PART_OF-representationSector01',
@@ -259,15 +259,15 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
           key: 'from',
           based_on: {
             representations: ['representationOrganization01'],
-          }
+          },
         },
         {
           key: 'to',
           based_on: {
             representations: ['representationSector01'],
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     {
       id: 'representationOrganization01-PART_OF-representationSector02',
@@ -280,15 +280,15 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
           key: 'from',
           based_on: {
             representations: ['representationOrganization01'],
-          }
+          },
         },
         {
           key: 'to',
           based_on: {
             representations: ['representationSector02'],
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     {
       id: 'representationThreat01-TARGET-representationOrganization01',
@@ -301,15 +301,15 @@ export const csvMapperMockRealUseCase: Partial<CsvMapperParsed> = {
           key: 'from',
           based_on: {
             representations: ['representationThreat01'],
-          }
+          },
         },
         {
           key: 'to',
           based_on: {
             representations: ['representationOrganization01'],
-          }
-        }
-      ]
-    }
-  ]
+          },
+        },
+      ],
+    },
+  ],
 };

@@ -16,7 +16,7 @@ describe('Telemetry manager test coverage', () => {
       [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
       [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
       [SEMRESATTRS_SERVICE_INSTANCE_ID]: 'api-test-telemetry-id',
-      'service.instance.creation': new Date().toUTCString()
+      'service.instance.creation': new Date().toUTCString(),
     });
     const resource = Resource.default().merge(filigranResource);
 

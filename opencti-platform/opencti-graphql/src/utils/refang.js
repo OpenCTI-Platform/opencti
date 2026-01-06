@@ -20,14 +20,14 @@ export function refang(input) {
 
   // Refang common obfuscations (all patterns from both functions)
   output = output
-    // Replace [.] and (.) and [dot] or (dot) with .
-    // eslint-disable-next-line no-useless-escape
+  // Replace [.] and (.) and [dot] or (dot) with .
+
     .replace(/\[(\.|dot)\]|\((\.|dot)\)/gi, '.')
     // Replace [at] or (at) with @
-    // eslint-disable-next-line no-useless-escape
+
     .replace(/\[at\]|\(at\)/gi, '@')
     // Replace [dash] or (dash) with -
-    // eslint-disable-next-line no-useless-escape
+
     .replace(/\[dash\]|\(dash\)/gi, '-')
     // Replace hxxp/hxp/hxxps/hxps (with optional brackets/colons) -> http/https
     // eslint-disable-next-line no-useless-escape
@@ -39,18 +39,18 @@ export function refang(input) {
     // eslint-disable-next-line no-useless-escape
     .replace(/(\s*)\(([-.+a-zA-Z0-9]{1,12})\)[\[\]:]*\/\//gi, (m, pre, proto) => `${pre}${proto}://`)
     // Replace [://] or similar with ://
-    // eslint-disable-next-line no-useless-escape
+
     .replace(/\[:\/]{3,}/g, '://')
     // Remove any stray brackets around single characters
-    // eslint-disable-next-line no-useless-escape
+
     .replace(/\[([a-zA-Z0-9])\]/g, '$1')
     // [:/] should map to /
-    // eslint-disable-next-line no-useless-escape
+
     .replace(/\[:\/\]/g, '/')
     // // Remove literal ellipsis character
     // .replace(/\u2026/g, '')
     // Remove common placeholder endings (e.g., trailing [.] or ...)
-    // eslint-disable-next-line no-useless-escape
+
     .replace(/(\[\.\]|\.{2,}|…)+$/g, '');
 
   // Extract valid URL if present and sanitize

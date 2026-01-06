@@ -113,7 +113,7 @@ describe('Region resolver standard behavior', () => {
     expect(queryResult.data.region.standard_id).toEqual('location--2e9ef300-a1ab-5c9f-9297-dde66b71cae2');
     expect(queryResult.data.region.subRegions.edges.length).toEqual(1);
     expect(queryResult.data.region.subRegions.edges[0].node.standard_id).toEqual(
-      'location--a25f43bf-3e2d-55fe-ba09-c63a210f169d'
+      'location--a25f43bf-3e2d-55fe-ba09-c63a210f169d',
     );
   });
   it('should region parent regions be accurate', async () => {
@@ -127,7 +127,7 @@ describe('Region resolver standard behavior', () => {
     expect(queryResult.data.region.standard_id).toEqual('location--a25f43bf-3e2d-55fe-ba09-c63a210f169d');
     expect(queryResult.data.region.parentRegions.edges.length).toEqual(1);
     expect(queryResult.data.region.parentRegions.edges[0].node.standard_id).toEqual(
-      'location--2e9ef300-a1ab-5c9f-9297-dde66b71cae2'
+      'location--2e9ef300-a1ab-5c9f-9297-dde66b71cae2',
     );
   });
   it('should list regions', async () => {

@@ -5,26 +5,26 @@ export const repFile: CsvMapperRepresentation = {
   id: 'representation-file',
   type: CsvMapperRepresentationType.Entity,
   target: {
-    entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE
+    entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   },
   attributes: [
     {
       key: 'MD5',
       column: {
-        column_name: 'B'
-      }
+        column_name: 'B',
+      },
     },
     {
       key: 'SHA-1',
       column: {
-        column_name: 'C'
-      }
+        column_name: 'C',
+      },
     },
     {
       key: 'SHA-256',
       column: {
-        column_name: 'A'
-      }
-    }
-  ]
+        column_name: 'A',
+      },
+    },
+  ],
 };

@@ -47,7 +47,7 @@ const backupFiles = async () => {
     (last, messages) => {
       const eventsMessage = messages.filter((m) => m.includes('processed event'));
       return eventsMessage.length === SYNC_LIVE_EVENTS_SIZE;
-    }
+    },
   );
 };
 const restoreFile = async () => {
@@ -77,7 +77,7 @@ const restoreFile = async () => {
     path.resolve('../../opencti-connectors/external-import/restore-files/src'),
     'restore-files.py',
     [restoreConf],
-    (message) => message.includes('restore run completed')
+    (message) => message.includes('restore run completed'),
   );
 };
 
@@ -104,6 +104,6 @@ describe('Database sync backup/restore', () => {
       expect(uploadedFile.name).toEqual(DATA_FILE_TEST);
       expect(uploadedFile.size).toEqual(UPLOADED_FILE_SIZE);
     },
-    FIFTEEN_MINUTES
+    FIFTEEN_MINUTES,
   );
 });

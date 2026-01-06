@@ -73,13 +73,13 @@ describe('Saved Filter Resolver', () => {
         const input = {
           name: 'my new filter',
           filters: JSON.stringify(newFilter),
-          scope: 'Incident'
+          scope: 'Incident',
         };
 
         const result = await queryAsAdminWithSuccess({
           query: CREATE_SAVED_FILTER_MUTATION,
           variables: {
-            input: { ...input }
+            input: { ...input },
           },
         });
 
@@ -119,7 +119,7 @@ describe('Saved Filter Resolver', () => {
     describe('If I edit the filter of a saved Filter', async () => {
       const editedFilters = {
         ...newFilter,
-        filters: [{ key: 'entity_type', operator: 'eq', mode: 'or', values: ['Task'] }]
+        filters: [{ key: 'entity_type', operator: 'eq', mode: 'or', values: ['Task'] }],
       };
       const input = {
         key: 'filters',
@@ -153,7 +153,7 @@ describe('Saved Filter Resolver', () => {
           await queryAsAdminWithSuccess({
             query: DELETE_SAVED_FILTER_MUTATION,
             variables: {
-              id: createdFilterId
+              id: createdFilterId,
             },
           });
         });

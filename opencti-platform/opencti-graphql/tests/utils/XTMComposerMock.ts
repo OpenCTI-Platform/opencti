@@ -88,16 +88,16 @@ export class XTMComposerMock {
 
     switch (level) {
       case 'info':
-        console.log(formattedMessage); // eslint-disable-line no-console
+        console.log(formattedMessage);
         break;
       case 'warn':
-        console.warn(formattedMessage); // eslint-disable-line no-console
+        console.warn(formattedMessage);
         break;
       case 'debug':
-        console.debug(formattedMessage); // eslint-disable-line no-console
+        console.debug(formattedMessage);
         break;
       default:
-        console.log(formattedMessage); // eslint-disable-line no-console
+        console.log(formattedMessage);
     }
   }
 
@@ -180,7 +180,7 @@ export class XTMComposerMock {
 
     const result = await queryAsAdminWithSuccess({
       query: mutation,
-      variables: { input: { id: connectorId, logs: allLogs } }
+      variables: { input: { id: connectorId, logs: allLogs } },
     });
 
     return result.data?.updateConnectorLogs;
@@ -202,9 +202,9 @@ export class XTMComposerMock {
       variables: {
         input: {
           id: connectorId,
-          ...healthMetrics
-        }
-      }
+          ...healthMetrics,
+        },
+      },
     });
 
     return result.data?.updateConnectorHealth;
@@ -222,7 +222,7 @@ export class XTMComposerMock {
 
     const result = await queryAsAdminWithSuccess({
       query: mutation,
-      variables: { input: { id: connectorId, status } }
+      variables: { input: { id: connectorId, status } },
     });
 
     return result.data?.updateConnectorCurrentStatus;
@@ -249,7 +249,7 @@ export class XTMComposerMock {
 
     const result = await queryAsAdminWithSuccess({
       query,
-      variables: {}
+      variables: {},
     });
 
     return result.data?.connectorsForManagers;
@@ -270,7 +270,7 @@ export class XTMComposerMock {
       '[XTM-Composer] Deploying connector...',
       `[XTM-Composer] Pulling image: ${connector.manager_contract_image}`,
       '[XTM-Composer] Creating container...',
-      '[XTM-Composer] Starting container...'
+      '[XTM-Composer] Starting container...',
     ]);
 
     // 3. Update status to started
@@ -283,12 +283,12 @@ export class XTMComposerMock {
     await XTMComposerMock.updateConnectorHealth(connectorId, {
       restart_count: 0,
       started_at: new Date().toISOString(),
-      is_in_reboot_loop: false
+      is_in_reboot_loop: false,
     });
 
     // 6. Final log
     await XTMComposerMock.updateConnectorLogs(connectorId, [
-      '[XTM-Composer] Connector deployed successfully'
+      '[XTM-Composer] Connector deployed successfully',
     ]);
 
     // Store the log level for tracking
@@ -296,12 +296,11 @@ export class XTMComposerMock {
     this.connectorLogLevels.set(connectorId, logLevel);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async stopConnector(connectorId: string) {
     // 1. Update logs
     await XTMComposerMock.updateConnectorLogs(connectorId, [
       '[XTM-Composer] Stopping connector...',
-      '[XTM-Composer] Sending termination signal...'
+      '[XTM-Composer] Sending termination signal...',
     ]);
 
     // 2. Update status
@@ -309,7 +308,7 @@ export class XTMComposerMock {
 
     // 3. Final log
     await XTMComposerMock.updateConnectorLogs(connectorId, [
-      '[XTM-Composer] Connector stopped successfully'
+      '[XTM-Composer] Connector stopped successfully',
     ]);
   }
 
@@ -320,7 +319,7 @@ export class XTMComposerMock {
     await wait(100);
 
     await XTMComposerMock.updateConnectorLogs(connectorId, [
-      '[XTM-Composer] Restarting connector...'
+      '[XTM-Composer] Restarting connector...',
     ]);
 
     await XTMComposerMock.updateConnectorCurrentStatus(connectorId, 'started');
@@ -335,42 +334,40 @@ export class XTMComposerMock {
       await XTMComposerMock.updateConnectorHealth(connectorId, {
         restart_count: restartCount,
         started_at: new Date().toISOString(),
-        is_in_reboot_loop: restartCount >= 3 // Consider it a reboot loop after 3 restarts
+        is_in_reboot_loop: restartCount >= 3, // Consider it a reboot loop after 3 restarts
       });
     }
 
     await XTMComposerMock.updateConnectorLogs(connectorId, [
-      '[XTM-Composer] Connector restarted successfully'
+      '[XTM-Composer] Connector restarted successfully',
     ]);
   }
 
   // Method to simulate a reboot loop scenario
-  // eslint-disable-next-line class-methods-use-this
+
   async simulateRebootLoop(connectorId: string, restartCount: number = 5) {
     await XTMComposerMock.updateConnectorHealth(connectorId, {
       restart_count: restartCount,
       started_at: new Date().toISOString(),
-      is_in_reboot_loop: true
+      is_in_reboot_loop: true,
     });
 
     await XTMComposerMock.updateConnectorLogs(connectorId, [
       '[XTM-Composer] WARNING: Connector is in a reboot loop',
-      `[XTM-Composer] Restart count: ${restartCount}`
+      `[XTM-Composer] Restart count: ${restartCount}`,
     ]);
   }
 
   // Wrapper methods for backward compatibility
-  // eslint-disable-next-line class-methods-use-this
+
   async updateConnectorLogs(connectorId: string, logs: string[]): Promise<string> {
     return XTMComposerMock.updateConnectorLogs(connectorId, logs);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async updateConnectorCurrentStatus(connectorId: string, status: string): Promise<any> {
     return XTMComposerMock.updateConnectorCurrentStatus(connectorId, status);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async getConnectorsForManagers(): Promise<any[]> {
     return XTMComposerMock.getConnectorsForManagers();
   }
@@ -568,13 +565,13 @@ export class XTMComposerMock {
             '[XTM-Composer] Deploying connector...',
             `[XTM-Composer] Pulling image: ${connector.image}`,
             '[XTM-Composer] Creating container...',
-            '[XTM-Composer] Starting container...'
+            '[XTM-Composer] Starting container...',
           ]);
 
           await XTMComposerMock.updateConnectorCurrentStatus(connector.id, 'started');
 
           await XTMComposerMock.updateConnectorLogs(connector.id, [
-            '[XTM-Composer] Connector deployed successfully'
+            '[XTM-Composer] Connector deployed successfully',
           ]);
         }
       } else {
@@ -588,12 +585,12 @@ export class XTMComposerMock {
           this.log('info', 'Configuration changed, refreshing connector', {
             id: connector.id,
             currentHash,
-            newHash
+            newHash,
           });
 
           // Update logs for configuration change
           await XTMComposerMock.updateConnectorLogs(connector.id, [
-            '[XTM-Composer] Configuration changed, redeploying connector...'
+            '[XTM-Composer] Configuration changed, redeploying connector...',
           ]);
 
           // Delete old container
@@ -604,7 +601,7 @@ export class XTMComposerMock {
 
           // Continue with logs
           await XTMComposerMock.updateConnectorLogs(connector.id, [
-            '[XTM-Composer] Connector redeployed successfully'
+            '[XTM-Composer] Connector redeployed successfully',
           ]);
 
           // Ensure status is set correctly after redeploy
@@ -625,13 +622,13 @@ export class XTMComposerMock {
 
             // Update status via GraphQL
             await XTMComposerMock.updateConnectorLogs(connector.id, [
-              '[XTM-Composer] Starting connector...'
+              '[XTM-Composer] Starting connector...',
             ]);
 
             await XTMComposerMock.updateConnectorCurrentStatus(connector.id, 'started');
 
             await XTMComposerMock.updateConnectorLogs(connector.id, [
-              '[XTM-Composer] Connector started successfully'
+              '[XTM-Composer] Connector started successfully',
             ]);
           } else {
             this.log('info', 'Nothing to execute', { id: connector.id });
@@ -674,7 +671,7 @@ export class XTMComposerMock {
         contractHash: c.manager_contract_hash || 'default-hash',
         currentStatus: c.manager_current_status,
         requestedStatus: c.manager_requested_status,
-        contractConfiguration: c.manager_contract_configuration || []
+        contractConfiguration: c.manager_contract_configuration || [],
       }));
 
       // Run orchestration with pulled connectors

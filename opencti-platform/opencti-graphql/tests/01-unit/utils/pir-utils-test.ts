@@ -6,7 +6,7 @@ const createFilter = (id: string) => {
   return JSON.stringify({
     mode: FilterMode.And,
     filterGroups: [],
-    filters: [{ key: ['toId'], values: [id] }]
+    filters: [{ key: ['toId'], values: [id] }],
   });
 };
 
@@ -24,12 +24,12 @@ describe('Pir utilities: arePirExplanationsEqual()', () => {
     expect(arePirExplanationsEqual(
       {
         dependencies: [{ element_id: relationshipId1 }],
-        criterion: { weight: 1, filters: filters1 }
+        criterion: { weight: 1, filters: filters1 },
       },
       {
         dependencies: [{ element_id: relationshipId1 }],
-        criterion: { weight: 2, filters: filters1 }
-      }
+        criterion: { weight: 2, filters: filters1 },
+      },
     )).toEqual(false);
   });
 
@@ -37,12 +37,12 @@ describe('Pir utilities: arePirExplanationsEqual()', () => {
     expect(arePirExplanationsEqual(
       {
         dependencies: [{ element_id: relationshipId1 }],
-        criterion: { weight: 1, filters: filters1 }
+        criterion: { weight: 1, filters: filters1 },
       },
       {
         dependencies: [{ element_id: relationshipId1 }],
-        criterion: { weight: 1, filters: filters2 }
-      }
+        criterion: { weight: 1, filters: filters2 },
+      },
     )).toEqual(false);
   });
 
@@ -50,32 +50,32 @@ describe('Pir utilities: arePirExplanationsEqual()', () => {
     expect(arePirExplanationsEqual(
       {
         dependencies: [{ element_id: relationshipId1 }],
-        criterion: { weight: 1, filters: filters1 }
+        criterion: { weight: 1, filters: filters1 },
       },
       {
         dependencies: [{ element_id: relationshipId2 }],
-        criterion: { weight: 1, filters: filters1 }
-      }
+        criterion: { weight: 1, filters: filters1 },
+      },
     )).toEqual(false);
     expect(arePirExplanationsEqual(
       {
         dependencies: [{ element_id: relationshipId1 }],
-        criterion: { weight: 1, filters: filters1 }
+        criterion: { weight: 1, filters: filters1 },
       },
       {
         dependencies: [{ element_id: relationshipId1, author_id: 'author1_id' }],
-        criterion: { weight: 1, filters: filters1 }
-      }
+        criterion: { weight: 1, filters: filters1 },
+      },
     )).toEqual(false);
     expect(arePirExplanationsEqual(
       {
         dependencies: [{ element_id: relationshipId1, author_id: 'author1_id' }],
-        criterion: { weight: 1, filters: filters1 }
+        criterion: { weight: 1, filters: filters1 },
       },
       {
         dependencies: [{ element_id: relationshipId1, author_id: 'author2_id' }],
-        criterion: { weight: 1, filters: filters1 }
-      }
+        criterion: { weight: 1, filters: filters1 },
+      },
     )).toEqual(false);
   });
 
@@ -84,17 +84,17 @@ describe('Pir utilities: arePirExplanationsEqual()', () => {
       {
         dependencies: [
           { element_id: relationshipId1, author_id: 'author1_id' },
-          { element_id: relationshipId2 }
+          { element_id: relationshipId2 },
         ],
-        criterion: { weight: 1, filters: filters1 }
+        criterion: { weight: 1, filters: filters1 },
       },
       {
         dependencies: [
           { element_id: relationshipId1, author_id: 'author1_id' },
-          { element_id: relationshipId2 }
+          { element_id: relationshipId2 },
         ],
-        criterion: { weight: 1, filters: filters1 }
-      }
+        criterion: { weight: 1, filters: filters1 },
+      },
     )).toEqual(true);
   });
 });
@@ -104,17 +104,17 @@ describe('Pir utilities: diffPirExplanations()', () => {
     {
       dependencies: [
         { element_id: relationshipId1 },
-        { element_id: relationshipId1 }
+        { element_id: relationshipId1 },
       ],
-      criterion: { weight: 1, filters: filters1 }
+      criterion: { weight: 1, filters: filters1 },
     },
     {
       dependencies: [
         { element_id: relationshipId2 },
-        { element_id: relationshipId2 }
+        { element_id: relationshipId2 },
       ],
-      criterion: { weight: 1, filters: filters2 }
-    }
+      criterion: { weight: 1, filters: filters2 },
+    },
   ];
 
   it('should return an empty array if given an empty array', () => {
@@ -130,32 +130,32 @@ describe('Pir utilities: diffPirExplanations()', () => {
       {
         dependencies: [
           { element_id: relationshipId1 },
-          { element_id: relationshipId1 }
+          { element_id: relationshipId1 },
         ],
-        criterion: { weight: 1, filters: filters1 }
+        criterion: { weight: 1, filters: filters1 },
       },
       {
         dependencies: [
           { element_id: relationshipId2 },
-          { element_id: relationshipId2 }
+          { element_id: relationshipId2 },
         ],
-        criterion: { weight: 1, filters: filters2 }
-      }
+        criterion: { weight: 1, filters: filters2 },
+      },
     ], [])).toEqual([
       {
         dependencies: [
           { element_id: relationshipId1 },
-          { element_id: relationshipId1 }
+          { element_id: relationshipId1 },
         ],
-        criterion: { weight: 1, filters: filters1 }
+        criterion: { weight: 1, filters: filters1 },
       },
       {
         dependencies: [
           { element_id: relationshipId2 },
-          { element_id: relationshipId2 }
+          { element_id: relationshipId2 },
         ],
-        criterion: { weight: 1, filters: filters2 }
-      }
+        criterion: { weight: 1, filters: filters2 },
+      },
     ]);
   });
 
@@ -164,32 +164,32 @@ describe('Pir utilities: diffPirExplanations()', () => {
       {
         dependencies: [
           { element_id: relationshipId3 },
-          { element_id: relationshipId3 }
+          { element_id: relationshipId3 },
         ],
-        criterion: { weight: 1, filters: filters3 }
+        criterion: { weight: 1, filters: filters3 },
       },
       {
         dependencies: [
           { element_id: relationshipId4 },
-          { element_id: relationshipId4 }
+          { element_id: relationshipId4 },
         ],
-        criterion: { weight: 1, filters: filters4 }
-      }
+        criterion: { weight: 1, filters: filters4 },
+      },
     ], baseExplanations)).toEqual([
       {
         dependencies: [
           { element_id: relationshipId3 },
-          { element_id: relationshipId3 }
+          { element_id: relationshipId3 },
         ],
-        criterion: { weight: 1, filters: filters3 }
+        criterion: { weight: 1, filters: filters3 },
       },
       {
         dependencies: [
           { element_id: relationshipId4 },
-          { element_id: relationshipId4 }
+          { element_id: relationshipId4 },
         ],
-        criterion: { weight: 1, filters: filters4 }
-      }
+        criterion: { weight: 1, filters: filters4 },
+      },
     ]);
   });
 
@@ -198,25 +198,25 @@ describe('Pir utilities: diffPirExplanations()', () => {
       {
         dependencies: [
           { element_id: relationshipId2 },
-          { element_id: relationshipId2 }
+          { element_id: relationshipId2 },
         ],
-        criterion: { weight: 1, filters: filters2 }
+        criterion: { weight: 1, filters: filters2 },
       },
       {
         dependencies: [
           { element_id: relationshipId4 },
-          { element_id: relationshipId4 }
+          { element_id: relationshipId4 },
         ],
-        criterion: { weight: 1, filters: filters4 }
-      }
+        criterion: { weight: 1, filters: filters4 },
+      },
     ], baseExplanations)).toEqual([
       {
         dependencies: [
           { element_id: relationshipId4 },
-          { element_id: relationshipId4 }
+          { element_id: relationshipId4 },
         ],
-        criterion: { weight: 1, filters: filters4 }
-      }
+        criterion: { weight: 1, filters: filters4 },
+      },
     ]);
   });
 });
@@ -227,7 +227,7 @@ describe('Pir utilities: updatePirExplanationsArray()', () => {
       dependencies: [
         { element_id: relationshipId1 },
       ],
-      criterion: { weight: 1, filters: filters1 }
+      criterion: { weight: 1, filters: filters1 },
     },
   ];
 
@@ -237,7 +237,7 @@ describe('Pir utilities: updatePirExplanationsArray()', () => {
         dependencies: [
           { element_id: relationshipId2 },
         ],
-        criterion: { weight: 1, filters: filters2 }
+        criterion: { weight: 1, filters: filters2 },
       },
     ];
     const result = updatePirExplanationsArray(pirExplanations, newExplanations);
@@ -251,7 +251,7 @@ describe('Pir utilities: updatePirExplanationsArray()', () => {
         dependencies: [
           { element_id: relationshipId1, author_id: 'author1_id' },
         ],
-        criterion: { weight: 1, filters: filters2 }
+        criterion: { weight: 1, filters: filters2 },
       },
     ];
     const result = updatePirExplanationsArray(pirExplanations, newExplanations);
@@ -265,13 +265,13 @@ describe('Pir utilities: updatePirExplanationsArray()', () => {
         dependencies: [
           { element_id: relationshipId1, author_id: 'author1_id' },
         ],
-        criterion: { weight: 1, filters: filters2 }
+        criterion: { weight: 1, filters: filters2 },
       },
       {
         dependencies: [
           { element_id: relationshipId2, author_id: 'author2_id' },
         ],
-        criterion: { weight: 1, filters: filters2 }
+        criterion: { weight: 1, filters: filters2 },
       },
     ];
     const result = updatePirExplanationsArray(pirExplanations, newExplanations);

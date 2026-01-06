@@ -27,8 +27,8 @@ const createTestContract = (properties: any, required: string[] = []): CatalogCo
     type: 'object',
     properties,
     required,
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 });
 
 describe('validateContractConfigurations', () => {
@@ -37,15 +37,15 @@ describe('validateContractConfigurations', () => {
       {
         name: { type: 'string' },
         port: { type: 'integer' },
-        enabled: { type: 'boolean' }
+        enabled: { type: 'boolean' },
       },
-      ['name', 'port', 'enabled']
+      ['name', 'port', 'enabled'],
     );
 
     const configurations: ConnectorContractConfiguration[] = [
       { key: 'name', value: 'test-service' },
       { key: 'port', value: '8080' },
-      { key: 'enabled', value: 'true' }
+      { key: 'enabled', value: 'true' },
     ];
 
     // Should not throw
@@ -58,13 +58,13 @@ describe('validateContractConfigurations', () => {
     const contract = createTestContract(
       {
         name: { type: 'string' },
-        port: { type: 'integer' }
+        port: { type: 'integer' },
       },
-      ['name', 'port']
+      ['name', 'port'],
     );
 
     const configurations: ConnectorContractConfiguration[] = [
-      { key: 'name', value: 'test-service' }
+      { key: 'name', value: 'test-service' },
       // port is missing
     ];
 
@@ -84,13 +84,13 @@ describe('validateContractConfigurations', () => {
     const contract = createTestContract(
       {
         name: { type: 'string' },
-        description: { type: 'string' }
+        description: { type: 'string' },
       },
-      ['name'] // only name is required
+      ['name'], // only name is required
     );
 
     const configurations: ConnectorContractConfiguration[] = [
-      { key: 'name', value: 'test-service' }
+      { key: 'name', value: 'test-service' },
       // description is optional and not provided
     ];
 
@@ -103,14 +103,14 @@ describe('validateContractConfigurations', () => {
     const contract = createTestContract(
       {
         port: { type: 'integer' },
-        enabled: { type: 'boolean' }
+        enabled: { type: 'boolean' },
       },
-      ['port', 'enabled']
+      ['port', 'enabled'],
     );
 
     const configurations: ConnectorContractConfiguration[] = [
       { key: 'port', value: '8080' }, // string that can be coerced to integer
-      { key: 'enabled', value: 'true' } // string that can be coerced to boolean
+      { key: 'enabled', value: 'true' }, // string that can be coerced to boolean
     ];
 
     expect(() => {
@@ -121,13 +121,13 @@ describe('validateContractConfigurations', () => {
   it('should throw error for invalid type that cannot be coerced', () => {
     const contract = createTestContract(
       {
-        port: { type: 'integer' }
+        port: { type: 'integer' },
       },
-      ['port']
+      ['port'],
     );
 
     const configurations: ConnectorContractConfiguration[] = [
-      { key: 'port', value: 'not_a_number' }
+      { key: 'port', value: 'not_a_number' },
     ];
 
     try {
@@ -144,13 +144,13 @@ describe('validateContractConfigurations', () => {
   it('should handle array type in configuration', () => {
     const contract = createTestContract(
       {
-        tags: { type: 'array', items: { type: 'string' } }
+        tags: { type: 'array', items: { type: 'string' } },
       },
-      ['tags']
+      ['tags'],
     );
 
     const configurations: ConnectorContractConfiguration[] = [
-      { key: 'tags', value: 'tag1,tag2,tag3' }
+      { key: 'tags', value: 'tag1,tag2,tag3' },
     ];
 
     // Arrays passed as comma-separated strings should now work
@@ -163,13 +163,13 @@ describe('validateContractConfigurations', () => {
   it('should handle empty array from comma-separated string', () => {
     const contract = createTestContract(
       {
-        tags: { type: 'array', items: { type: 'string' } }
+        tags: { type: 'array', items: { type: 'string' } },
       },
-      [] // tags is optional
+      [], // tags is optional
     );
 
     const configurations: ConnectorContractConfiguration[] = [
-      { key: 'tags', value: '' } // empty string should become empty array
+      { key: 'tags', value: '' }, // empty string should become empty array
     ];
 
     expect(() => {
@@ -180,13 +180,13 @@ describe('validateContractConfigurations', () => {
   it('should handle array with spaces in comma-separated values', () => {
     const contract = createTestContract(
       {
-        scopes: { type: 'array', items: { type: 'string' } }
+        scopes: { type: 'array', items: { type: 'string' } },
       },
-      ['scopes']
+      ['scopes'],
     );
 
     const configurations: ConnectorContractConfiguration[] = [
-      { key: 'scopes', value: 'greynoisefeed, toto ,  test  ' } // with spaces
+      { key: 'scopes', value: 'greynoisefeed, toto ,  test  ' }, // with spaces
     ];
 
     // Should trim spaces and validate correctly
@@ -200,15 +200,15 @@ describe('validateContractConfigurations', () => {
       {
         name: { type: 'string' },
         optional1: { type: 'string' },
-        optional2: { type: 'string' }
+        optional2: { type: 'string' },
       },
-      ['name']
+      ['name'],
     );
 
     const configurations: ConnectorContractConfiguration[] = [
       { key: 'name', value: 'test' },
       { key: 'optional1', value: undefined as any },
-      { key: 'optional2', value: null as any }
+      { key: 'optional2', value: null as any },
     ];
 
     expect(() => {
@@ -222,16 +222,16 @@ describe('validateContractConfigurations', () => {
         name: { type: 'string' },
         port: { type: 'integer' },
         enabled: { type: 'boolean' },
-        timeout: { type: 'integer' }
+        timeout: { type: 'integer' },
       },
-      ['name', 'port', 'enabled']
+      ['name', 'port', 'enabled'],
     );
 
     const configurations: ConnectorContractConfiguration[] = [
       { key: 'name', value: 'complex-service' },
       { key: 'port', value: '3000' },
       { key: 'enabled', value: 'false' },
-      { key: 'timeout', value: '30' }
+      { key: 'timeout', value: '30' },
     ];
 
     expect(() => {
@@ -242,9 +242,9 @@ describe('validateContractConfigurations', () => {
   it('should handle empty configuration array for schema with no required fields', () => {
     const contract = createTestContract(
       {
-        optional: { type: 'string' }
+        optional: { type: 'string' },
       },
-      [] // no required fields
+      [], // no required fields
     );
 
     const configurations: ConnectorContractConfiguration[] = [];
@@ -259,9 +259,9 @@ describe('validateContractConfigurations', () => {
       const contract = createTestContract(
         {
           username: { type: 'string' },
-          password: { type: 'string', format: 'password' }
+          password: { type: 'string', format: 'password' },
         },
-        ['username', 'password']
+        ['username', 'password'],
       );
 
       const configurations: ConnectorContractConfiguration[] = [
@@ -269,8 +269,8 @@ describe('validateContractConfigurations', () => {
         {
           key: 'password',
           value: 'AQEAAf8AAABAwOL5+encrypted_base64_value', // Encrypted value
-          encrypted: true
-        }
+          encrypted: true,
+        },
       ];
 
       // Should validate encrypted passwords successfully
@@ -282,16 +282,16 @@ describe('validateContractConfigurations', () => {
     it('should validate unencrypted password fields', () => {
       const contract = createTestContract(
         {
-          api_key: { type: 'string', format: 'password' }
+          api_key: { type: 'string', format: 'password' },
         },
-        ['api_key']
+        ['api_key'],
       );
 
       const configurations: ConnectorContractConfiguration[] = [
         {
           key: 'api_key',
-          value: 'plain_text_api_key' // Unencrypted password (not tagged as encrypted)
-        }
+          value: 'plain_text_api_key', // Unencrypted password (not tagged as encrypted)
+        },
       ];
 
       // Should still validate unencrypted passwords
@@ -305,27 +305,27 @@ describe('validateContractConfigurations', () => {
         {
           primary_password: { type: 'string', format: 'password' },
           secondary_password: { type: 'string', format: 'password' },
-          api_token: { type: 'string', format: 'password' }
+          api_token: { type: 'string', format: 'password' },
         },
-        ['primary_password', 'secondary_password']
+        ['primary_password', 'secondary_password'],
       );
 
       const configurations: ConnectorContractConfiguration[] = [
         {
           key: 'primary_password',
           value: 'encrypted_primary',
-          encrypted: true
+          encrypted: true,
         },
         {
           key: 'secondary_password',
           value: 'encrypted_secondary',
-          encrypted: true
+          encrypted: true,
         },
         {
           key: 'api_token',
           value: 'optional_encrypted_token',
-          encrypted: true
-        }
+          encrypted: true,
+        },
       ];
 
       expect(() => {
@@ -339,9 +339,9 @@ describe('validateContractConfigurations', () => {
           host: { type: 'string' },
           port: { type: 'integer' },
           password: { type: 'string', format: 'password' },
-          ssl_enabled: { type: 'boolean' }
+          ssl_enabled: { type: 'boolean' },
         },
-        ['host', 'port', 'password']
+        ['host', 'port', 'password'],
       );
 
       const configurations: ConnectorContractConfiguration[] = [
@@ -350,9 +350,9 @@ describe('validateContractConfigurations', () => {
         {
           key: 'password',
           value: 'encrypted_password_value',
-          encrypted: true
+          encrypted: true,
         },
-        { key: 'ssl_enabled', value: 'true' }
+        { key: 'ssl_enabled', value: 'true' },
       ];
 
       expect(() => {
@@ -364,18 +364,18 @@ describe('validateContractConfigurations', () => {
       const contract = createTestContract(
         {
           username: { type: 'string' },
-          count: { type: 'integer' }
+          count: { type: 'integer' },
         },
-        ['username', 'count']
+        ['username', 'count'],
       );
 
       const configurations: ConnectorContractConfiguration[] = [
         {
           key: 'username',
           value: 'john_doe',
-          encrypted: true // Incorrectly marked as encrypted
+          encrypted: true, // Incorrectly marked as encrypted
         },
-        { key: 'count', value: '42' }
+        { key: 'count', value: '42' },
       ];
 
       // Should validate even with incorrect encrypted flag
@@ -387,9 +387,9 @@ describe('validateContractConfigurations', () => {
     it('should validate empty password field', () => {
       const contract = createTestContract(
         {
-          optional_password: { type: 'string', format: 'password' }
+          optional_password: { type: 'string', format: 'password' },
         },
-        [] // Password is optional
+        [], // Password is optional
       );
 
       const configurations: ConnectorContractConfiguration[] = [
@@ -404,9 +404,9 @@ describe('validateContractConfigurations', () => {
     it('should fail validation for missing required password', () => {
       const contract = createTestContract(
         {
-          auth_token: { type: 'string', format: 'password' }
+          auth_token: { type: 'string', format: 'password' },
         },
-        ['auth_token'] // Password is required
+        ['auth_token'], // Password is required
       );
 
       const configurations: ConnectorContractConfiguration[] = [

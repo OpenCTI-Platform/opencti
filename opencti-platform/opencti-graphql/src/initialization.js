@@ -90,7 +90,6 @@ const isCompatiblePlatform = async (context) => {
   }
 };
 
-// eslint-disable-next-line
 const platformInit = async (withMarkings = true) => {
   let lock;
   try {

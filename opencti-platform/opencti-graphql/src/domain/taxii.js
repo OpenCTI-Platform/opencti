@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { elPaginate } from '../database/engine';

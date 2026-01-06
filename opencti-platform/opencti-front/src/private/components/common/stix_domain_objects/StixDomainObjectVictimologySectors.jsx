@@ -465,7 +465,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                 )
                               }
                               secondary={
-                              // eslint-disable-next-line no-nested-ternary
+
                                 stixCoreRelationship.description
                                 && stixCoreRelationship.description.length > 0 ? (
                                       <MarkdownDisplay
@@ -603,7 +603,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                                 )
                                           }
                                           secondary={
-                                          // eslint-disable-next-line no-nested-ternary
+
                                             stixCoreRelationship.description
                                             && stixCoreRelationship.description
                                               .length > 0 ? (

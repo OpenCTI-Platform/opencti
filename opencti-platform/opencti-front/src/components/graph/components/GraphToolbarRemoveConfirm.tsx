@@ -140,7 +140,7 @@ const GraphToolbarRemoveConfirm = ({
     for (const el of allSelection) {
       const { id } = el;
       const isNode = isGraphNode(el);
-      // eslint-disable-next-line no-await-in-loop
+
       const data = (await fetchQuery(
         knowledgeGraphQueryCheckObjectQuery,
         { id, entityTypes: checkedContainerTypes },
@@ -151,18 +151,15 @@ const GraphToolbarRemoveConfirm = ({
         && data.stixObjectOrStixRelationship?.containers?.edges?.length === 1
       ) {
         if (isNode) {
-          // eslint-disable-next-line no-await-in-loop
           await promiseDeleteObject(id);
           nodesToRemove.push(id);
           setCurrentDeleted((old) => old + 1);
         } else {
-          // eslint-disable-next-line no-await-in-loop
           await promiseDeleteRel(id);
           linksToRemove.push(id);
           setCurrentDeleted((old) => old + 1);
         }
       } else {
-        // eslint-disable-next-line no-await-in-loop
         await promiseOnDeleteRelation(
           id,
           referencesValues?.message,
@@ -178,7 +175,6 @@ const GraphToolbarRemoveConfirm = ({
     // /!\ We are voluntary using await in loop to call API
     // sequentially to avoid lock issues when deleting.
     for (const { id } of associatedLinks) {
-      // eslint-disable-next-line no-await-in-loop
       await promiseOnDeleteRelation(
         id,
         referencesValues?.message,

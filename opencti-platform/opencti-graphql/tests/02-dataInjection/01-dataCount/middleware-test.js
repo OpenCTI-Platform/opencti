@@ -179,7 +179,7 @@ describe('Entities listing', () => {
     expect(R.includes('Basic-Object', malware.parent_types)).toBeTruthy();
     expect(malware.created).toEqual('2019-09-30T16:38:26.000Z');
     expect(malware.name).toEqual('Paradise Ransomware');
-     
+
     expect(malware._index).not.toBeNull();
   });
   it('should list multiple entities', async () => {
@@ -301,7 +301,7 @@ describe('Relations listing', () => {
     expect(stixRelations.edges.length).toEqual(2);
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
-       
+
       const toThing = await elLoadById(testContext, ADMIN_USER, stixRelation.toId);
       expect(toThing.entity_type).toEqual('Attack-Pattern');
       expect(stixRelation.fromId).toEqual(malware.internal_id);
@@ -315,7 +315,7 @@ describe('Relations listing', () => {
     // Every relations must have natural ordering for from and to
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
-       
+
       const { fromRole, toRole, relationship_type: relationshipType } = stixRelation;
       expect(fromRole).toEqual(`${relationshipType}_from`);
       expect(toRole).toEqual(`${relationshipType}_to`);
@@ -591,7 +591,7 @@ describe('Relations time series', () => {
           operator: 'eq',
         }],
         filterGroups: [],
-      }
+      },
     };
     const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
     expect(series.length).toEqual(13); // 13 months groups in the interval
@@ -633,7 +633,7 @@ describe('Entities distribution', () => {
     expect(distribution.length).toEqual(2);
     expect(distribution).toMatchObject([
       { label: '100', value: 2 },
-      { label: '75', value: 1 }
+      { label: '75', value: 1 },
     ]);
   });
   it.skip('should entity distribution filters', async () => {
@@ -977,7 +977,7 @@ describe('Upsert and merge entities', () => {
       loadMalware.internal_id,
       clear.internal_id,
       RELATION_OBJECT_MARKING,
-      ABSTRACT_STIX_REF_RELATIONSHIP
+      ABSTRACT_STIX_REF_RELATIONSHIP,
     );
     const checkers = await elFindByIds(testContext, ADMIN_USER, loadMalware.id);
     const test = await internalLoadById(testContext, ADMIN_USER, testMarking);
@@ -1147,7 +1147,7 @@ describe('Upsert and merge entities', () => {
       name: 'REPORT_TEST_02',
       published: '2022-10-06T22:00:00.000Z',
       createdBy: organization2.id,
-      objects: [report1.id]
+      objects: [report1.id],
     });
     // Merge with fully resolved entities
     const merged = await mergeEntities(testContext, ADMIN_USER, organization1.internal_id, [organization2.internal_id]);
@@ -1179,7 +1179,7 @@ describe('Upsert and merge entities', () => {
   it('should multiple createdBy correction merged to empty target', async () => {
     const organization1 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION01' });
     const organization2 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION02' });
-    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET_ORGANIZATION', published: '2022-10-06T22:00:00.000Z', });
+    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET_ORGANIZATION', published: '2022-10-06T22:00:00.000Z' });
     const reportSource1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_ORGANIZATION_01', published: '2022-10-06T22:00:00.000Z', createdBy: organization1.id });
     const reportSource2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_ORGANIZATION_02', published: '2022-10-06T22:00:00.000Z', createdBy: organization2.id });
     const merged = await mergeEntities(testContext, ADMIN_USER, reportTarget.internal_id, [reportSource1.internal_id, reportSource2.internal_id]);
@@ -1196,7 +1196,7 @@ describe('Upsert and merge entities', () => {
   it('should multiple createdBy identity merged to empty target', async () => {
     const individual1 = await createIndividual({ name: 'REPORT_CREATED_BY_INDIVIDUAL_01' });
     const organization2 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION_02' });
-    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET_INDIVIDUAL', published: '2022-10-06T22:00:00.000Z', });
+    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET_INDIVIDUAL', published: '2022-10-06T22:00:00.000Z' });
     const reportSource1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_INDIVIDUAL_01', published: '2022-10-06T22:00:00.000Z', createdBy: individual1.id });
     const reportSource2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_INDIVIDUAL_02', published: '2022-10-06T22:00:00.000Z', createdBy: organization2.id });
     const merged = await mergeEntities(testContext, ADMIN_USER, reportTarget.internal_id, [reportSource1.internal_id, reportSource2.internal_id]);
@@ -1229,7 +1229,7 @@ describe('Upsert and merge entities', () => {
     // Merged 3 Stix File into one
     const md5 = await createFile({
       hashes: { MD5 },
-      objectMarking: [clearMarking] /* TLP:1 */
+      objectMarking: [clearMarking], /* TLP:1 */
     });
     const sha1 = await createFile({
       hashes: { 'SHA-1': SHA1 },
@@ -1279,13 +1279,13 @@ describe('Elements impacts deletions', () => {
     const malware = await addMalware(testContext, ADMIN_USER, { name: 'MY MAL', description: 'MY MAL' });
     const indicator = await addIndicator(testContext, ADMIN_USER, { name: 'MY INDIC', pattern: '[domain-name:value = \'www.test.ru\']', pattern_type: 'stix' });
     // Create basic relations
-     
+
     const intrusionSet_uses_Malware = await createRelation(testContext, ADMIN_USER, {
       fromId: intrusionSet.internal_id,
       toId: malware.internal_id,
       relationship_type: 'uses',
     });
-     
+
     const indicator_indicated_uses = await createRelation(testContext, ADMIN_USER, {
       fromId: indicator.internal_id,
       toId: intrusionSet_uses_Malware.internal_id,
@@ -1351,7 +1351,7 @@ describe('Elements upsert behaviors', () => {
       is_family: true,
       revoked: true,
       objectMarking: [clearMarking],
-      description: 'TO DESC'
+      description: 'TO DESC',
     });
     expect(malware.confidence).toEqual(10);
     expect(malware.description).toEqual('TO DESC');

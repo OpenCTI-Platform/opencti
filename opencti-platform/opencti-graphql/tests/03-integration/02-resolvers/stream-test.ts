@@ -17,7 +17,7 @@ describe('Stream resolver coverage', () => {
       description: 'Public stream for resolver tests - description',
       filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['Domain-Name'], mode: 'or' }], filterGroups: [] }),
       name: 'Public stream for resolver tests',
-      stream_public: true
+      stream_public: true,
     };
 
     const publicStreamResponse = await queryAsAdminWithSuccess({
@@ -36,7 +36,7 @@ describe('Stream resolver coverage', () => {
             }
         },
     `,
-      variables: { input: publicStreamInput }
+      variables: { input: publicStreamInput },
     });
 
     logApp.info('publicStreamResponse:', publicStreamResponse);
@@ -57,7 +57,7 @@ describe('Stream resolver coverage', () => {
       filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['City'], mode: 'or' }], filterGroups: [] }),
       name: 'Restricted to AMBER stream for resolver tests',
       stream_public: false,
-      authorized_members: [{ id: amberGroup.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }]
+      authorized_members: [{ id: amberGroup.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }],
     };
 
     const amberRestrictedStreamResponse = await queryAsAdminWithSuccess({
@@ -76,7 +76,7 @@ describe('Stream resolver coverage', () => {
                     }
                 },
             `,
-      variables: { input: amberRestrictedStreamInput }
+      variables: { input: amberRestrictedStreamInput },
     });
 
     logApp.info('amberRestrictedStreamResponse:', amberRestrictedStreamResponse);
@@ -114,7 +114,7 @@ describe('Stream resolver coverage', () => {
                     }
                 },
             `,
-      variables: { input: restrictedStreamInput }
+      variables: { input: restrictedStreamInput },
     });
 
     logApp.info('amberRestrictedStreamResponse:', restrictedStreamResponse);
@@ -146,7 +146,7 @@ describe('Stream resolver coverage', () => {
                     }
                 },
             `,
-      variables: {}
+      variables: {},
     });
 
     logApp.info('allStreamsResponse:', allStreamsResponse);
@@ -181,7 +181,7 @@ describe('Stream resolver coverage', () => {
                   }
               },
           `,
-      variables: {}
+      variables: {},
     });
 
     logApp.info('allStreamsResponse:', allStreamsResponse);
@@ -216,7 +216,7 @@ describe('Stream resolver coverage', () => {
                     }
                 },
             `,
-      variables: {}
+      variables: {},
     });
 
     logApp.info('allStreamsResponse:', allStreamsResponse);
@@ -242,7 +242,7 @@ describe('Stream resolver coverage', () => {
                   }
               },
           `,
-      variables: { id: publicStreamId }
+      variables: { id: publicStreamId },
     });
     logApp.info('deletePublicStreamResponse:', deletePublicStreamResponse);
     expect(deletePublicStreamResponse?.data?.streamCollectionEdit?.delete).toBeDefined();
@@ -257,7 +257,7 @@ describe('Stream resolver coverage', () => {
                     }
                 },
             `,
-      variables: { id: amberRestrictedStreamId }
+      variables: { id: amberRestrictedStreamId },
     });
     logApp.info('deleteGroupRestrictedStreamResponse:', deleteGroupRestrictedStreamResponse);
     expect(deleteGroupRestrictedStreamResponse?.data?.streamCollectionEdit?.delete).toBeDefined();
@@ -272,7 +272,7 @@ describe('Stream resolver coverage', () => {
                     }
                 },
             `,
-      variables: { id: restrictedStreamId }
+      variables: { id: restrictedStreamId },
     });
     logApp.info('deleteRestrictedStreamResponse:', deleteRestrictedStreamResponse);
     expect(deleteRestrictedStreamResponse?.data?.streamCollectionEdit?.delete).toBeDefined();

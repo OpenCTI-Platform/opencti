@@ -11,11 +11,10 @@ export const STIX_PATTERN_TYPE = 'stix';
 
 const unflatten = (data) => {
   const result = {};
-  // eslint-disable-next-line no-restricted-syntax,guard-for-in
+
   for (const i in data) {
     const keys = i.split('.');
     keys.reduce((r, e, j) => {
-      // eslint-disable-next-line no-nested-ternary,no-param-reassign,no-return-assign
       return r[e] || (r[e] = Number.isNaN(Number(keys[j + 1])) ? (keys.length - 1 === j ? data[i] : {}) : []);
     }, result);
   }

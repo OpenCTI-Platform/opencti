@@ -20,10 +20,10 @@ const TEST_PIR_CRITERION_1 = {
         key: ['toId'],
         values: [TEST_PIR_TARGET_1],
         operator: FilterOperator.Eq,
-        mode: FilterMode.Or
-      }
-    ]
-  }
+        mode: FilterMode.Or,
+      },
+    ],
+  },
 };
 const TEST_PIR_CRITERION_2 = {
   weight: 1,
@@ -35,10 +35,10 @@ const TEST_PIR_CRITERION_2 = {
         key: ['toId'],
         values: [TEST_PIR_TARGET_2],
         operator: FilterOperator.Eq,
-        mode: FilterMode.Or
-      }
-    ]
-  }
+        mode: FilterMode.Or,
+      },
+    ],
+  },
 };
 
 const TEST_PIR = {
@@ -59,7 +59,7 @@ const TEST_PIR = {
       key: ['confidence'],
       values: [80],
       operator: FilterOperator.Gt,
-      mode: FilterMode.Or
+      mode: FilterMode.Or,
     }],
   },
 } as ParsedPir;
@@ -78,9 +78,9 @@ const buildEvent = ({
       extensions: {
         [STIX_EXT_OCTI]: {
           source_type: 'Malware',
-        }
-      }
-    }
+        },
+      },
+    },
   } as SseEvent<any>;
 };
 

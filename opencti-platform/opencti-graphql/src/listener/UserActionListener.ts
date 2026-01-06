@@ -186,7 +186,7 @@ export const registerUserActionListener = (listener: ActionListener): ActionHand
 
 export const publishUserAction = async (userAction: UserAction) => {
   const actionPromises = [];
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const [, listener] of listeners.entries()) {
     actionPromises.push(listener.next(userAction));
   }

@@ -12,8 +12,8 @@ const getMockDocument = (docId: string) => {
     id: docId,
     metaData: {
       entity_id: 'mocked-unit-test-file',
-      mimetype: ''
-    }
+      mimetype: '',
+    },
   };
   return doc as BasicStoreEntityDocument;
 };
@@ -46,7 +46,7 @@ describe.concurrent('Testing exception management in FileIndexManager', () => {
   vi.mock('../../../src/modules/managerConfiguration/managerConfiguration-domain', () => {
     return {
       getManagerConfigurationFromCache: vi.fn().mockImplementation(() => {
-        const managerMock : Partial<BasicStoreEntityManagerConfiguration> = {
+        const managerMock: Partial<BasicStoreEntityManagerConfiguration> = {
           manager_running: true,
         };
         return managerMock;

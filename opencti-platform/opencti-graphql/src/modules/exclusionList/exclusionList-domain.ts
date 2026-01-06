@@ -52,7 +52,7 @@ const checkFileSize = async (createReadStream: () => Readable) => {
   let byteLength = 0;
   let linesNumber = 1;
   let fileTooHeavy = false;
-  // eslint-disable-next-line no-restricted-syntax
+
   for await (const uploadChunk of uploadStream) {
     byteLength += (uploadChunk as Buffer).byteLength;
     const chunkAsString = (uploadChunk as Buffer).toString('utf-8');

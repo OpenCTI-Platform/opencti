@@ -464,7 +464,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
         opinion: 'agree',
         explanation: 'Explanation of the opinion',
         objects: [
-        ]
+        ],
       },
     };
 

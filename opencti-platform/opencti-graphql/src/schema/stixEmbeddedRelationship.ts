@@ -7,7 +7,6 @@ import { bodyMultipart, externalReferences, isStixRefRelationship, killChainPhas
 export const isSingleRelationsRef = (entityType: string, databaseName: string): boolean => isStixRefRelationship(databaseName)
   && !schemaRelationsRefDefinition.isMultipleDatabaseName(entityType, databaseName);
 
-// eslint-disable-next-line
 export const instanceMetaRefsExtractor = (relationshipType: string, isInferred: boolean, data: BasicStoreObject) => {
   const refField = isStixRefRelationship(relationshipType) && isInferred ? ID_INFERRED : ID_INTERNAL;
   const field = buildRefRelationKey(relationshipType, refField);
@@ -19,7 +18,7 @@ const RELATIONS_STIX_ATTRIBUTES = ['source_ref', 'target_ref', 'sighting_of_ref'
 const RELATIONS_EMBEDDED_STIX_ATTRIBUTES = [
   externalReferences.stixName, killChainPhases.stixName, objectLabel.stixName, bodyMultipart.stixName,
 ];
-// eslint-disable-next-line
+
 export const stixRefsExtractor = (data: any) => {
   if (!data.extensions?.[STIX_EXT_OCTI]?.type) {
     return [];

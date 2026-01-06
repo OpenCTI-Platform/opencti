@@ -169,7 +169,7 @@ const TimeoutLock: React.FunctionComponent = () => {
     document.body.addEventListener('click', resetTimeout);
 
     // Cleanup of this component, similar to componentWillUnmount() in class component
-    // eslint-disable-next-line consistent-return
+
     return () => {
       clearTimeoutInterval();
       // Removing event listeners when the component unmounts is good practice

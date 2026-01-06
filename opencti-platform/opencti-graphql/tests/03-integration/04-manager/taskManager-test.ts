@@ -36,9 +36,9 @@ describe('TaskManager executeRemoveAuthMembers tests', () => {
         input: [
           {
             id: userEditorId,
-            access_right: 'admin'
-          }
-        ]
+            access_right: 'admin',
+          },
+        ],
       });
     }
 
@@ -47,8 +47,8 @@ describe('TaskManager executeRemoveAuthMembers tests', () => {
     expect(reportWithAuthorizedMembers.restricted_members).toEqual([
       {
         id: userEditorId,
-        access_right: 'admin'
-      }
+        access_right: 'admin',
+      },
     ]);
 
     // Admin user removes authorized members: + 1 update

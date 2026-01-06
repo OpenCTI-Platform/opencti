@@ -29,23 +29,23 @@ const createMitreContract = (): CatalogContract => ({
       MITRE_URL: {
         type: 'string',
         description: 'MITRE ATT&CK URL',
-        default: 'https://attack.mitre.org'
+        default: 'https://attack.mitre.org',
       },
       CONNECTOR_QUEUE_THRESHOLD: {
         default: null,
         description: 'Connector queue max size in Mbytes. Default to 500.',
         exclusiveMinimum: 0,
-        type: 'integer'
+        type: 'integer',
       } as any, // Use any to bypass TypeScript constraint for testing
       INTERVAL: {
         type: 'integer',
         description: 'Interval in hours',
-        default: 24
-      }
+        default: 24,
+      },
     },
     required: ['MITRE_URL'], // CONNECTOR_QUEUE_THRESHOLD is NOT required
-    additionalProperties: false
-  }
+    additionalProperties: false,
+  },
 });
 
 describe('CONNECTOR_QUEUE_THRESHOLD bug fix', () => {
@@ -71,16 +71,16 @@ mwIDAQAB
             API_KEY: {
               type: 'string',
               format: 'password',
-              description: 'API key for authentication'
-            } as any // Use any to bypass TypeScript constraint for testing
+              description: 'API key for authentication',
+            } as any, // Use any to bypass TypeScript constraint for testing
           },
-          required: ['MITRE_URL', 'API_KEY']
-        }
+          required: ['MITRE_URL', 'API_KEY'],
+        },
       };
 
       const configurations: ContractConfigInput[] = [
         { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
-        { key: 'API_KEY', value: 'my-secret-api-key' }
+        { key: 'API_KEY', value: 'my-secret-api-key' },
       ];
 
       const result = computeConnectorTargetContract(configurations, contractWithPassword, publicKey);
@@ -107,16 +107,16 @@ mwIDAQAB
             PROXY_PASSWORD: {
               type: 'string',
               format: 'password',
-              description: 'Optional proxy password'
-            } as any // Use any to bypass TypeScript constraint for testing
-          }
+              description: 'Optional proxy password',
+            } as any, // Use any to bypass TypeScript constraint for testing
+          },
           // PROXY_PASSWORD is not in required array
-        }
+        },
       };
 
       // Configuration without the optional password
       const configurations: ContractConfigInput[] = [
-        { key: 'MITRE_URL', value: 'https://attack.mitre.org' }
+        { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
         // PROXY_PASSWORD not provided
       ];
 
@@ -135,33 +135,33 @@ mwIDAQAB
           properties: {
             USERNAME: {
               type: 'string',
-              description: 'Username'
+              description: 'Username',
             } as any, // Use any to bypass TypeScript constraint for testing
             PASSWORD: {
               type: 'string',
               format: 'password',
-              description: 'User password'
+              description: 'User password',
             } as any, // Use any to bypass TypeScript constraint for testing
             API_KEY: {
               type: 'string',
               format: 'password',
-              description: 'API key'
+              description: 'API key',
             } as any, // Use any to bypass TypeScript constraint for testing
             PROXY_PASSWORD: {
               type: 'string',
               format: 'password',
-              description: 'Proxy password'
-            } as any // Use any to bypass TypeScript constraint for testing
+              description: 'Proxy password',
+            } as any, // Use any to bypass TypeScript constraint for testing
           },
-          required: ['USERNAME', 'PASSWORD', 'API_KEY']
-        }
+          required: ['USERNAME', 'PASSWORD', 'API_KEY'],
+        },
       };
 
       const configurations: ContractConfigInput[] = [
         { key: 'USERNAME', value: 'admin' },
         { key: 'PASSWORD', value: 'user-password' },
         { key: 'API_KEY', value: 'api-key-value' },
-        { key: 'PROXY_PASSWORD', value: 'proxy-pass' }
+        { key: 'PROXY_PASSWORD', value: 'proxy-pass' },
       ];
 
       const result = computeConnectorTargetContract(configurations, contractWithMultiplePasswords, publicKey);
@@ -195,11 +195,11 @@ mwIDAQAB
             SECRET: {
               type: 'string',
               format: 'password',
-              description: 'Secret key'
-            } as any // Use any to bypass TypeScript constraint for testing
+              description: 'Secret key',
+            } as any, // Use any to bypass TypeScript constraint for testing
           },
-          required: ['MITRE_URL', 'SECRET']
-        }
+          required: ['MITRE_URL', 'SECRET'],
+        },
       };
 
       // Configuration with encrypted password
@@ -208,8 +208,8 @@ mwIDAQAB
         {
           key: 'SECRET',
           value: 'AQEAAf8AAABAwOL5+encrypted_value', // Already encrypted
-          encrypted: true
-        }
+          encrypted: true,
+        },
       ];
 
       // Should validate without throwing
@@ -228,16 +228,16 @@ mwIDAQAB
             PASSWORD: {
               type: 'string',
               format: 'password',
-              description: 'Optional password'
-            } as any // Use any to bypass TypeScript constraint for testing
-          }
+              description: 'Optional password',
+            } as any, // Use any to bypass TypeScript constraint for testing
+          },
           // PASSWORD is NOT in required array, making it optional
-        }
+        },
       };
 
       const configurations: ContractConfigInput[] = [
         { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
-        { key: 'PASSWORD', value: '' } // Empty password
+        { key: 'PASSWORD', value: '' }, // Empty password
       ];
 
       // Empty password should be handled (returns null)
@@ -254,7 +254,7 @@ mwIDAQAB
 
     // Only providing required field
     const configurations: ContractConfigInput[] = [
-      { key: 'MITRE_URL', value: 'https://attack.mitre.org' }
+      { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
       // CONNECTOR_QUEUE_THRESHOLD is not provided
     ];
 
@@ -274,7 +274,7 @@ mwIDAQAB
 
     // Configuration without the optional CONNECTOR_QUEUE_THRESHOLD
     const configurations: ConnectorContractConfiguration[] = [
-      { key: 'MITRE_URL', value: 'https://attack.mitre.org' }
+      { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
     ];
 
     // Should not throw validation error
@@ -288,7 +288,7 @@ mwIDAQAB
 
     const configurations: ContractConfigInput[] = [
       { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
-      { key: 'CONNECTOR_QUEUE_THRESHOLD', value: '1000' }
+      { key: 'CONNECTOR_QUEUE_THRESHOLD', value: '1000' },
     ];
 
     const result = computeConnectorTargetContract(configurations, contract, publicKey);
@@ -296,7 +296,7 @@ mwIDAQAB
     expect(result).toHaveLength(3); // MITRE_URL, CONNECTOR_QUEUE_THRESHOLD, and INTERVAL (default)
     expect(result.find((c) => c.key === 'CONNECTOR_QUEUE_THRESHOLD')).toEqual({
       key: 'CONNECTOR_QUEUE_THRESHOLD',
-      value: '1000'
+      value: '1000',
     });
   });
 
@@ -305,7 +305,7 @@ mwIDAQAB
 
     const configurations: ContractConfigInput[] = [
       { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
-      { key: 'CONNECTOR_QUEUE_THRESHOLD', value: 'not_a_number' }
+      { key: 'CONNECTOR_QUEUE_THRESHOLD', value: 'not_a_number' },
     ];
 
     expect(() => {
@@ -318,7 +318,7 @@ mwIDAQAB
 
     // Test with INTERVAL which has a default value of 24
     const configurations: ContractConfigInput[] = [
-      { key: 'MITRE_URL', value: 'https://attack.mitre.org' }
+      { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
       // INTERVAL not provided, should use default
     ];
 
@@ -328,7 +328,7 @@ mwIDAQAB
     const intervalConfig = result.find((c) => c.key === 'INTERVAL');
     expect(intervalConfig).toEqual({
       key: 'INTERVAL',
-      value: '24' // default value converted to string
+      value: '24', // default value converted to string
     });
   });
 
@@ -336,7 +336,7 @@ mwIDAQAB
     const contract = createMitreContract();
 
     const configurations: ContractConfigInput[] = [
-      { key: 'MITRE_URL', value: 'https://attack.mitre.org' }
+      { key: 'MITRE_URL', value: 'https://attack.mitre.org' },
     ];
 
     const result = computeConnectorTargetContract(configurations, contract, publicKey);
@@ -355,25 +355,25 @@ mwIDAQAB
           REQUIRED_FIELD: {
             type: 'string',
             description: 'Required field',
-            default: 'default_value'
+            default: 'default_value',
           },
           OPTIONAL_WITH_DEFAULT: {
             type: 'integer',
             description: 'Optional with default',
-            default: 100
+            default: 100,
           },
           OPTIONAL_NO_DEFAULT: {
             type: 'integer',
-            description: 'Optional without default'
+            description: 'Optional without default',
             // No default provided intentionally
-          } as any // Use any to bypass TypeScript constraint for testing
+          } as any, // Use any to bypass TypeScript constraint for testing
         },
-        required: ['REQUIRED_FIELD']
-      }
+        required: ['REQUIRED_FIELD'],
+      },
     };
 
     const configurations: ContractConfigInput[] = [
-      { key: 'REQUIRED_FIELD', value: 'test' }
+      { key: 'REQUIRED_FIELD', value: 'test' },
       // All optional fields omitted
     ];
 
@@ -385,7 +385,7 @@ mwIDAQAB
     // Should include optional field with non-null default
     expect(result.find((c) => c.key === 'OPTIONAL_WITH_DEFAULT')).toEqual({
       key: 'OPTIONAL_WITH_DEFAULT',
-      value: '100'
+      value: '100',
     });
 
     // Should NOT include optional fields without default

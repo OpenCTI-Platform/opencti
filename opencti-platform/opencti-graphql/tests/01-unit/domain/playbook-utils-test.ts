@@ -40,7 +40,7 @@ export const platformUsersWithGroupsAndOrganizations = [
         refreshed_at: '2025-10-24T07:45:31.781Z',
         name: 'GROUP 1',
 
-        default_assignation: true
+        default_assignation: true,
       },
       {
         _index: 'test_internal_objects-000001',
@@ -62,8 +62,8 @@ export const platformUsersWithGroupsAndOrganizations = [
         refreshed_at: '2025-10-24T07:45:30.715Z',
         name: 'GROUP 2',
 
-        default_assignation: false
-      }
+        default_assignation: false,
+      },
     ],
     organizations: [],
   },
@@ -86,7 +86,7 @@ export const platformUsersWithGroupsAndOrganizations = [
           'Stix-Object',
           'Stix-Core-Object',
           'Stix-Domain-Object',
-          'Identity'
+          'Identity',
         ],
         created: '2025-10-24T07:45:27.301Z',
         confidence: 100,
@@ -104,13 +104,13 @@ export const platformUsersWithGroupsAndOrganizations = [
         lang: 'en',
         'rel_participate-to.internal_id.keyword': [
           'id-8',
-          'id-2'
+          'id-2',
         ],
         'participate-to': [
           'id-8',
-          'id-2'
-        ]
-      }
+          'id-2',
+        ],
+      },
     ],
   },
   {
@@ -147,7 +147,7 @@ export const platformUsersWithGroupsAndOrganizations = [
     name: 'user-bundle-organization@opencti.io',
     groups: [],
     organizations: [],
-  }
+  },
 ] as unknown as AuthUser[];
 
 describe('playbook-utils', () => {
@@ -165,8 +165,8 @@ describe('playbook-utils', () => {
           id: 'malware--id-14',
           spec_version: '2.1',
           type: 'malware',
-        } as unknown as StixDomainObject
-      ]
+        } as unknown as StixDomainObject,
+      ],
     };
 
     it('should throw an error if the data is not found in bundle', () => {
@@ -177,7 +177,7 @@ describe('playbook-utils', () => {
     it('should return data for the given ID', () => {
       const data = extractBundleBaseElement(
         'malware--id-14',
-        testBundle
+        testBundle,
       );
       expect(data).toEqual({
         id: 'malware--id-14',
@@ -202,10 +202,10 @@ describe('playbook-utils', () => {
               created_by_ref_id: 'id-9',
               creator_ids: [
                 'id-10',
-                'id-15'
+                'id-15',
               ],
               assignee_ids: [
-                'id-11'
+                'id-11',
               ],
               participant_ids: [
                 'id-12',
@@ -213,10 +213,10 @@ describe('playbook-utils', () => {
               ],
               type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
               id: 'id-bundle-organizations',
-            }
-          }
-        } as unknown as StixDomainObject
-      ]
+            },
+          },
+        } as unknown as StixDomainObject,
+      ],
     };
     const baseData = testBundle.objects[0];
 

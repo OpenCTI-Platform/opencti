@@ -19,7 +19,6 @@ export const loadEntityMetricsConfiguration = () => {
   metricsConfiguration = [];
   const metricsConfigurationEnv = nconf.get('app:schema_metrics');
   if (metricsConfigurationEnv) {
-    // eslint-disable-next-line guard-for-in,no-restricted-syntax
     for (const metricKey in metricsConfigurationEnv) {
       const metricKeyNoCase = metricKey.toLowerCase();
       const metricListForCurrentEntity: MetricDescription[] = metricsConfigurationEnv[metricKey] as unknown as MetricDescription[];

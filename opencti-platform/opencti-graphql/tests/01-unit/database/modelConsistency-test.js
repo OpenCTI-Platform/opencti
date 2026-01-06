@@ -39,7 +39,7 @@ import {
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  RELATION_OPERATING_SYSTEM
+  RELATION_OPERATING_SYSTEM,
 } from '../../../src/schema/stixRefRelationship';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -58,7 +58,7 @@ import {
   ENTITY_SOFTWARE,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
 } from '../../../src/schema/stixCyberObservable';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -71,7 +71,7 @@ import {
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY
+  ENTITY_TYPE_VULNERABILITY,
 } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import {
@@ -84,7 +84,7 @@ import {
   RELATION_INDICATES,
   RELATION_PART_OF,
   RELATION_RELATED_TO,
-  RELATION_USES
+  RELATION_USES,
 } from '../../../src/schema/stixCoreRelationship';
 import {
   ABSTRACT_INTERNAL_OBJECT,
@@ -96,7 +96,7 @@ import {
   ABSTRACT_STIX_REF_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER,
-  ENTITY_TYPE_IDENTITY
+  ENTITY_TYPE_IDENTITY,
 } from '../../../src/schema/general';
 
 import '../../../src/modules/index';
@@ -109,7 +109,7 @@ import { stixRefsExtractor } from '../../../src/schema/stixEmbeddedRelationship'
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { confidence, created, entityType, xOpenctiStixIds } from '../../../src/schema/attribute-definition';
 import { getParentTypes } from '../../../src/schema/schemaUtils';
-import {ENTITY_TYPE_RULE, ENTITY_TYPE_WORK} from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_RULE, ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
 import { RELATION_MIGRATES } from '../../../src/schema/internalRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
@@ -172,10 +172,10 @@ describe('Testing relation consistency', () => {
         ADMIN_USER,
         relType,
         { entity_type: fromType },
-        Array.isArray(toType) ? toType.map((t) => ({ entity_type: t })) : { entity_type: toType }
+        Array.isArray(toType) ? toType.map((t) => ({ entity_type: t })) : { entity_type: toType },
       );
       expect(relationConsistency).toBe(expected);
-    }
+    },
   );
 });
 
@@ -444,8 +444,8 @@ describe('Testing stix ref extractor', () => {
           updated_at: '2023-03-09T15:03:17.360Z',
           stix_ids: ['vulnerability--d62a0bb6-a362-4abd-aeab-dc27d3561b48'],
           is_inferred: false,
-          creator_ids: ['d49869a5-55f3-450b-ade2-996d036522a6']
-        }
+          creator_ids: ['d49869a5-55f3-450b-ade2-996d036522a6'],
+        },
       },
       created: '2023-03-09T15:02:50.241Z',
       modified: '2023-03-09T15:02:50.241Z',
@@ -456,10 +456,10 @@ describe('Testing stix ref extractor', () => {
       created_by_ref: 'identity--1f02efe5-c752-589e-85d4-a8da3898f690',
       external_references: [{ source_name: 'cve', external_id: 'CVE-2023-1292' }, {
         source_name: 'MISC',
-        url: 'https://vuldb.com/?id.222646'
+        url: 'https://vuldb.com/?id.222646',
       }, { source_name: 'MISC', url: 'https://vuldb.com/?ctiid.222646' }, {
         source_name: 'MISC',
-        url: 'https://github.com/Mart1nD0t/vul-test/blob/main/sts-3.md'
+        url: 'https://github.com/Mart1nD0t/vul-test/blob/main/sts-3.md',
       }],
       name: 'CVE-2023-1292',
     };

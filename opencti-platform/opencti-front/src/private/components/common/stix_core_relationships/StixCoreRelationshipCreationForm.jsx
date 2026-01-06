@@ -153,7 +153,6 @@ const StixCoreRelationshipCreationForm = ({
   const isMultipleFrom = fromEntities.length > 1;
   const isMultipleTo = toEntities.length > 1;
 
-  // eslint-disable-next-line no-nested-ternary
   const defaultRelationshipType = R.head(relationshipTypes)
     ? R.head(relationshipTypes)
     : relationshipTypes.includes('related-to')

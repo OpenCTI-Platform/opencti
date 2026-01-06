@@ -608,7 +608,6 @@ class StixSightingRelationshipCreation extends Component {
     );
   }
 
-  // eslint-disable-next-line
   renderLoader() {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>

@@ -19,7 +19,7 @@ import {
   TESTING_USERS,
   USER_CONNECTOR,
   USER_DISINFORMATION_ANALYST,
-  USER_EDITOR
+  USER_EDITOR,
 } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
@@ -31,7 +31,7 @@ import {
   queryAsAdminWithSuccess,
   queryAsUserIsExpectedError,
   queryAsUserIsExpectedForbidden,
-  queryAsUserWithSuccess
+  queryAsUserWithSuccess,
 } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
@@ -307,7 +307,7 @@ describe('User resolver standard behavior', () => {
         user_confidence_level: {
           max_confidence: 50,
           overrides: [{ entity_type: 'Report', max_confidence: 80 }],
-        }
+        },
       },
     };
     const user2 = await adminQuery({
@@ -432,7 +432,7 @@ describe('User resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
-        input: { key: 'user_confidence_level', value: { max_confidence: 33, overrides: [] } }
+        input: { key: 'user_confidence_level', value: { max_confidence: 33, overrides: [] } },
       },
     });
     expect(queryResult.data.userEdit.fieldPatch.user_confidence_level.max_confidence).toEqual(33);
@@ -480,7 +480,7 @@ describe('User resolver standard behavior', () => {
         group_confidence_level: {
           max_confidence: 60,
           overrides: [],
-        }
+        },
       },
     };
     const group = await adminQuery({
@@ -543,7 +543,7 @@ describe('User resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
-        input: { key: 'user_confidence_level', value: [null] }
+        input: { key: 'user_confidence_level', value: [null] },
       },
     });
     const { userEdit } = queryResult.data;
@@ -796,7 +796,7 @@ describe('User has no capability query behavior', () => {
       query: GROUP_UPDATE_QUERY,
       variables: {
         id: 'group--a7991a4f-6192-59a4-87d3-d006d2c41cc8',
-        input: { key: 'default_assignation', value: [false] }
+        input: { key: 'default_assignation', value: [false] },
       },
     });
     // Create the user
@@ -829,7 +829,7 @@ describe('User has no capability query behavior', () => {
       query: GROUP_UPDATE_QUERY,
       variables: {
         id: 'group--a7991a4f-6192-59a4-87d3-d006d2c41cc8',
-        input: { key: 'default_assignation', value: [true] }
+        input: { key: 'default_assignation', value: [true] },
       },
     });
   });
@@ -1087,7 +1087,7 @@ describe('meUser specific resolvers', async () => {
       password: USER_EDITOR.password,
       input: [
         { key: 'language', value: 'fr-fr' },
-      ]
+      ],
     };
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: ME_EDIT,
@@ -1100,7 +1100,7 @@ describe('meUser specific resolvers', async () => {
       password: USER_EDITOR.password,
       input: [
         { key: 'api_token', value: 'd434ce02-e58e-4cac-8b4c-42bf16748e84' },
-      ]
+      ],
     };
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: ME_EDIT,
@@ -1113,7 +1113,7 @@ describe('meUser specific resolvers', async () => {
       input: [
         { key: 'language', value: 'en-us' },
         { key: 'theme', value: 'dark' },
-      ]
+      ],
     };
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: ME_EDIT,
@@ -1127,7 +1127,7 @@ describe('meUser specific resolvers', async () => {
       input: [
         { key: 'language', value: 'fr-fr' },
         { key: 'api_token', value: 'd434ce02-e58e-4cac-8b4c-42bf16748e84' },
-      ]
+      ],
     };
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: ME_EDIT,
@@ -1139,7 +1139,7 @@ describe('meUser specific resolvers', async () => {
       password: 'incorrect_current_password',
       input: [
         { key: 'password', value: 'new_password' },
-      ]
+      ],
     };
     await queryAsUserIsExpectedError(USER_EDITOR.client, {
       query: ME_EDIT,
@@ -1241,7 +1241,7 @@ describe('Service account User coverage', async () => {
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
-        input: { key: 'user_service_account', value: [false] }
+        input: { key: 'user_service_account', value: [false] },
       },
     });
     const { userEdit } = queryResult.data;
@@ -1255,7 +1255,7 @@ describe('Service account User coverage', async () => {
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
-        input: [{ key: 'user_service_account', value: [true] }, { key: 'password', value: ['toto'] }]
+        input: [{ key: 'user_service_account', value: [true] }, { key: 'password', value: ['toto'] }],
       },
     });
     const { userEdit } = queryResult.data;
@@ -1269,7 +1269,7 @@ describe('Service account User coverage', async () => {
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
-        input: [{ key: 'password', value: ['toto'] }]
+        input: [{ key: 'password', value: ['toto'] }],
       },
     }, 'Cannot update password for Service account');
   });

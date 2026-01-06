@@ -392,7 +392,7 @@ const StixCoreRelationshipCreation = ({
           objectMarking: values.objectMarking.map((k) => k.value),
           externalReferences: values.externalReferences.map((k) => k.value),
         };
-        // eslint-disable-next-line no-await-in-loop
+
         latestResponse = await handleCommitAddRelation(finalValues);
         handleResult(latestResponse as ObjectToParse);
         current += 1;

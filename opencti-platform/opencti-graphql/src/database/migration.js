@@ -7,7 +7,7 @@ import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
 import { createEntity, createRelation, loadEntity, patchAttribute } from './middleware';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-// eslint-disable-next-line import/extensions,import/no-unresolved
+// eslint-disable-next-line import/extensions
 import migrations, { filenames as migrationsFilenames } from '../migrations/*.js';
 import { fullEntitiesThroughRelationsToList } from './middleware-loader';
 

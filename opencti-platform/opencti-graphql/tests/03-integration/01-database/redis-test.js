@@ -12,7 +12,7 @@ import {
   redisGetTelemetry,
   redisSetForgotPasswordOtp,
   redisSetTelemetryAdd,
-  setEditContext
+  setEditContext,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 

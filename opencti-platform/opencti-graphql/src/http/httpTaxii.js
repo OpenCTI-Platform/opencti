@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 // noinspection ExceptionCaughtLocallyJS
 
 import * as R from 'ramda';

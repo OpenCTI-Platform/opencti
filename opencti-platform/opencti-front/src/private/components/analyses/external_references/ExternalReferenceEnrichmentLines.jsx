@@ -150,7 +150,7 @@ const ExternalReferenceEnrichment = (props) => {
                 (n) => n.connector && n.connector.id === connector.id,
                 R.propOr([], 'jobs', externalReference),
               );
-          // eslint-disable-next-line max-len
+
           const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
           return (
             <div key={connector.id}>

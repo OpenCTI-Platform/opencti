@@ -11,7 +11,7 @@ describe('getDefaultValueAsString', () => {
   it('should convert handle comma-separated string', () => {
     const propSchema = {
       type: 'array',
-      default: 'item1,item2,item3'
+      default: 'item1,item2,item3',
     };
     const result = getDefaultValueAsString(propSchema);
     expect(result).toBe('item1,item2,item3');
@@ -20,7 +20,7 @@ describe('getDefaultValueAsString', () => {
   it('should handle non-array default for array type', () => {
     const propSchema = {
       type: 'array',
-      default: 'single_value'
+      default: 'single_value',
     };
     const result = getDefaultValueAsString(propSchema);
     expect(result).toBe('single_value');
@@ -29,14 +29,14 @@ describe('getDefaultValueAsString', () => {
   it('should convert boolean default to string', () => {
     const propSchemaTrue = {
       type: 'boolean',
-      default: true
+      default: true,
     };
     const resultTrue = getDefaultValueAsString(propSchemaTrue);
     expect(resultTrue).toBe('true');
 
     const propSchemaFalse = {
       type: 'boolean',
-      default: false
+      default: false,
     };
     const resultFalse = getDefaultValueAsString(propSchemaFalse);
     expect(resultFalse).toBe('false');
@@ -45,14 +45,14 @@ describe('getDefaultValueAsString', () => {
   it('should convert integer default to string', () => {
     const propSchema = {
       type: 'integer',
-      default: 42
+      default: 42,
     };
     const result = getDefaultValueAsString(propSchema);
     expect(result).toBe('42');
 
     const propSchemaZero = {
       type: 'integer',
-      default: 0
+      default: 0,
     };
     const resultZero = getDefaultValueAsString(propSchemaZero);
     expect(resultZero).toBe('0');
@@ -61,7 +61,7 @@ describe('getDefaultValueAsString', () => {
   it('should handle string default value', () => {
     const propSchema = {
       type: 'string',
-      default: 'default_value'
+      default: 'default_value',
     };
     const result = getDefaultValueAsString(propSchema);
     expect(result).toBe('default_value');
@@ -70,7 +70,7 @@ describe('getDefaultValueAsString', () => {
   it('should convert non-string default to string for unknown types', () => {
     const propSchema = {
       type: 'object',
-      default: { key: 'value' }
+      default: { key: 'value' },
     };
     const result = getDefaultValueAsString(propSchema);
     expect(result).toBe('[object Object]');

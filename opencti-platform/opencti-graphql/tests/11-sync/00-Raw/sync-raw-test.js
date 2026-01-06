@@ -88,6 +88,6 @@ describe('Database sync raw', () => {
       // Post check
       await checkPostSyncContent(SYNC_RAW_START_REMOTE_URI, objectMap, relMap, initStixReport);
     },
-    FIFTEEN_MINUTES
+    FIFTEEN_MINUTES,
   );
 });

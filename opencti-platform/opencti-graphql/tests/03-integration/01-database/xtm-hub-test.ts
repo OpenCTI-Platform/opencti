@@ -49,7 +49,7 @@ describe('XTM hub', () => {
 
     it('should check if backend is reachable', async () => {
       const settings = {
-        id: 'id'
+        id: 'id',
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
 
@@ -61,8 +61,8 @@ describe('XTM hub', () => {
         'id',
         ENTITY_TYPE_SETTINGS,
         [
-          { key: 'xtm_hub_backend_is_reachable', value: [true] }
-        ]
+          { key: 'xtm_hub_backend_is_reachable', value: [true] },
+        ],
       );
     });
 
@@ -70,7 +70,7 @@ describe('XTM hub', () => {
       const settings: Partial<BasicStoreSettings> = {
         id: 'id',
         xtm_hub_token,
-        xtm_hub_registration_status: XtmHubRegistrationStatus.Registered
+        xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
       };
 
       getEntityFromCacheSpy.mockResolvedValue(settings);
@@ -90,8 +90,8 @@ describe('XTM hub', () => {
           { key: 'xtm_hub_registration_user_id', value: [] },
           { key: 'xtm_hub_registration_user_name', value: [] },
           { key: 'xtm_hub_registration_date', value: [] },
-          { key: 'xtm_hub_last_connectivity_check', value: [] }
-        ]
+          { key: 'xtm_hub_last_connectivity_check', value: [] },
+        ],
       );
     });
 
@@ -99,7 +99,7 @@ describe('XTM hub', () => {
       const settings: Partial<BasicStoreSettings> = {
         id: 'id',
         xtm_hub_token,
-        xtm_hub_registration_status: XtmHubRegistrationStatus.Registered
+        xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
       xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
@@ -112,7 +112,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.LostConnectivity] }]
+        [{ key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.LostConnectivity] }],
       );
     });
 
@@ -121,7 +121,7 @@ describe('XTM hub', () => {
         id: 'id',
         xtm_hub_token,
         xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
-        xtm_hub_should_send_connectivity_email: false
+        xtm_hub_should_send_connectivity_email: false,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
       xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
@@ -137,8 +137,8 @@ describe('XTM hub', () => {
         [
           { key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.Registered] },
           { key: 'xtm_hub_should_send_connectivity_email', value: [true] },
-          { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }
-        ]
+          { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
+        ],
       );
     });
 
@@ -147,7 +147,7 @@ describe('XTM hub', () => {
       const settings: Partial<BasicStoreSettings> = {
         id: 'id',
         xtm_hub_token,
-        xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity
+        xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
       xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
@@ -159,7 +159,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_backend_is_reachable', value: [false] }]
+        [{ key: 'xtm_hub_backend_is_reachable', value: [false] }],
       );
     });
 
@@ -167,7 +167,7 @@ describe('XTM hub', () => {
       const settings: Partial<BasicStoreSettings> = {
         id: 'id',
         xtm_hub_token,
-        xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity
+        xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
       xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
@@ -180,7 +180,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_backend_is_reachable', value: [true] }]
+        [{ key: 'xtm_hub_backend_is_reachable', value: [true] }],
       );
     });
 
@@ -189,7 +189,7 @@ describe('XTM hub', () => {
         id: 'id',
         xtm_hub_token,
         xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
-        xtm_hub_should_send_connectivity_email: true
+        xtm_hub_should_send_connectivity_email: true,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
       xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
@@ -202,7 +202,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }]
+        [{ key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }],
       );
     });
 
@@ -213,7 +213,7 @@ describe('XTM hub', () => {
           xtm_hub_token,
           xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
           xtm_hub_last_connectivity_check: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
-          xtm_hub_should_send_connectivity_email: true
+          xtm_hub_should_send_connectivity_email: true,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
         xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
@@ -226,7 +226,7 @@ describe('XTM hub', () => {
           HUB_REGISTRATION_MANAGER_USER,
           'id',
           ENTITY_TYPE_SETTINGS,
-          [{ key: 'xtm_hub_should_send_connectivity_email', value: [false] }]
+          [{ key: 'xtm_hub_should_send_connectivity_email', value: [false] }],
         );
       });
 
@@ -236,7 +236,7 @@ describe('XTM hub', () => {
           xtm_hub_token,
           xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
           xtm_hub_last_connectivity_check: new Date(new Date().getTime() - 1000 * 60 * 60 * 23),
-          xtm_hub_should_send_connectivity_email: true
+          xtm_hub_should_send_connectivity_email: true,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
         xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
@@ -252,7 +252,7 @@ describe('XTM hub', () => {
           xtm_hub_token,
           xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
           xtm_hub_last_connectivity_check: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
-          xtm_hub_should_send_connectivity_email: false
+          xtm_hub_should_send_connectivity_email: false,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
         xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
@@ -266,7 +266,7 @@ describe('XTM hub', () => {
         const settings: Partial<BasicStoreSettings> = {
           id: 'id',
           xtm_hub_token,
-          xtm_hub_registration_status: XtmHubRegistrationStatus.Registered
+          xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
         xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
@@ -315,17 +315,17 @@ describe('XTM hub', () => {
 
     it('should successfully auto-register a platform', async () => {
       const input: AutoRegisterInput = {
-        platform_token: 'test-token'
+        platform_token: 'test-token',
       };
 
       autoRegisterSpy.mockResolvedValue({
-        success: true
+        success: true,
       });
 
       settingsEditFieldSpy.mockResolvedValue({});
       confGetSpy.mockReturnValue('platform_id');
       getEntityFromCacheSpy.mockResolvedValue({
-        id: 'settings_id'
+        id: 'settings_id',
       });
       getEnterpriseEditionInfoFromPemSpy.mockReturnValue({
         license_enterprise: '',
@@ -343,7 +343,7 @@ describe('XTM hub', () => {
         license_type: 'trial',
         license_platform_match: '',
         license_creator: '',
-        license_global: ''
+        license_global: '',
       });
 
       await autoRegisterOpenCTI(testContext, HUB_REGISTRATION_MANAGER_USER, input);
@@ -353,17 +353,17 @@ describe('XTM hub', () => {
         'settings_id',
         [
           { key: 'xtm_hub_token', value: ['test-token'] },
-          { key: 'xtm_hub_registration_status', value: ['registered'] }
-        ]
+          { key: 'xtm_hub_registration_status', value: ['registered'] },
+        ],
       );
     });
 
     it('should handle registration failure', async () => {
       const input: AutoRegisterInput = {
-        platform_token: 'test-token'
+        platform_token: 'test-token',
       };
       autoRegisterSpy.mockResolvedValue({
-        success: false
+        success: false,
       });
 
       settingsEditFieldSpy.mockResolvedValue({});

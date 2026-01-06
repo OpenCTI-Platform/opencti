@@ -3,7 +3,7 @@ import { repAreaMarking, repMarking } from './representation-marking';
 
 export const csvMapperAreaMarking: (
   markingPolicy?: string,
-  userChosenMarkings?: string[]
+  userChosenMarkings?: string[],
 ) => Partial<CsvMapperParsed> = (markingPolicy, userChosenMarkings) => ({
   id: 'mapper-area-malware-default',
   has_header: true,
@@ -11,6 +11,6 @@ export const csvMapperAreaMarking: (
   user_chosen_markings: userChosenMarkings,
   representations: [
     repAreaMarking(markingPolicy),
-    repMarking
-  ]
+    repMarking,
+  ],
 });

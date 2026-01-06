@@ -41,15 +41,15 @@ describe('CSV ingestion resolver standard behavior', () => {
       name: 'Single column CSV mapper',
       separator: ',',
       representations: '[{"id":"75c3c21c-0a92-497f-962d-4e6e1a488481","type":"entity","target":{"entity_type":"IPv4-Addr"},"attributes":[{"key":"value","column":{"column_name":"A"},"based_on":null}]}]',
-      skipLineChar: ''
-    }
+      skipLineChar: '',
+    },
   };
   const singleColumnCsvMapperForCsvFeedInline = JSON.stringify({
     has_header: false,
     name: 'Single column CSV mapper',
     separator: ',',
     representations: [{ id: '75c3c21c-0a92-497f-962d-4e6e1a488481', type: 'entity', target: { entity_type: 'IPv4-Addr' }, attributes: [{ key: 'value', column: { column_name: 'A' }, based_on: null }] }],
-    skipLineChar: ''
+    skipLineChar: '',
   });
 
   beforeAll(async () => {
@@ -63,7 +63,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         }
       },
       `,
-      variables: SINGLE_COLUMN_CSV_MAPPER
+      variables: SINGLE_COLUMN_CSV_MAPPER,
     });
 
     singleColumnCsvMapperId = createSingleColumnCsvMapperQueryResult?.data?.csvMapperAdd?.id;
@@ -76,8 +76,8 @@ describe('CSV ingestion resolver standard behavior', () => {
         name: 'Single column',
         uri: 'https://lists.blocklist.de/lists/all.txt',
         csv_mapper_id: singleColumnCsvMapperId,
-        user_id: ADMIN_USER.id
-      }
+        user_id: ADMIN_USER.id,
+      },
     };
     const createSingleColumnCsvFeedsWithInlineMapperIngesterQueryResult = await queryAsAdmin({
       query: gql`
@@ -89,7 +89,7 @@ describe('CSV ingestion resolver standard behavior', () => {
           }
       },
       `,
-      variables: CSV_FEED_INGESTER_TO_CREATE
+      variables: CSV_FEED_INGESTER_TO_CREATE,
     });
     singleColumnCsvFeedIngesterId = createSingleColumnCsvFeedsWithInlineMapperIngesterQueryResult?.data?.ingestionCsvAdd?.id;
     expect(singleColumnCsvFeedIngesterId).toBeDefined();
@@ -104,20 +104,20 @@ describe('CSV ingestion resolver standard behavior', () => {
           defaultIngestionGroupCount
         }
       `,
-      variables: {}
+      variables: {},
     });
     expect(defaultIngestionGroupCountResult.data.defaultIngestionGroupCount).toBe(1);
   });
 
   it('should create a CSV feeds ingester with inline CSV Mapper and auto user', async () => {
-    const input : IngestionCsvAddInput = {
+    const input: IngestionCsvAddInput = {
       authentication_type: IngestionAuthType.None,
       name: 'Single column inline and auto user',
       uri: 'https://lists.blocklist.de/lists/all.txt',
       csv_mapper: singleColumnCsvMapperForCsvFeedInline,
       csv_mapper_type: IngestionCsvMapperType.Inline,
       automatic_user: true,
-      user_id: '[F] Single column inline and auto user'
+      user_id: '[F] Single column inline and auto user',
     };
 
     const createSingleColumnCsvFeedsIngesterQueryResult = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
@@ -132,7 +132,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         }
       },
       `,
-      variables: { input }
+      variables: { input },
     });
     const csvFeedIngester = createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd;
     expect(csvFeedIngester.id).toBeDefined();
@@ -162,8 +162,8 @@ describe('CSV ingestion resolver standard behavior', () => {
         name: 'Single column',
         uri: 'https://lists.blocklist.de/lists/all.txt',
         csv_mapper_id: singleColumnCsvMapperId,
-        user_id: ADMIN_USER.id
-      }
+        user_id: ADMIN_USER.id,
+      },
     };
     const createSingleColumnCsvFeedsIngesterQueryResult = await queryAsAdmin({
       query: gql`
@@ -175,7 +175,7 @@ describe('CSV ingestion resolver standard behavior', () => {
               }
           },
       `,
-      variables: CSV_FEED_INGESTER_TO_CREATE
+      variables: CSV_FEED_INGESTER_TO_CREATE,
     });
     singleColumnCsvFeedIngesterId = createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd?.id;
     expect(singleColumnCsvFeedIngesterId).toBeDefined();
@@ -189,7 +189,7 @@ describe('CSV ingestion resolver standard behavior', () => {
       input: {
         key: 'ingestion_running',
         value: [true],
-      }
+      },
     };
     const startSingleColumnCsvFeedsIngesterQueryResult = await queryAsAdmin({
       query: gql`
@@ -199,7 +199,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         }
       }
       `,
-      variables: CSV_FEED_INGESTER_TO_START
+      variables: CSV_FEED_INGESTER_TO_START,
     });
     expect(startSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvFieldPatch?.ingestion_running).toBeTruthy();
   });
@@ -210,7 +210,7 @@ describe('CSV ingestion resolver standard behavior', () => {
       input: {
         key: 'ingestion_running',
         value: [false],
-      }
+      },
     };
     const stopSingleColumnCsvFeedsIngesterQueryResult = await queryAsAdmin({
       query: gql`
@@ -220,7 +220,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         }
       }
       `,
-      variables: CSV_FEED_INGESTER_TO_STOP
+      variables: CSV_FEED_INGESTER_TO_STOP,
     });
     expect(stopSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvFieldPatch?.ingestion_running).toBeFalsy();
   });
@@ -231,7 +231,7 @@ describe('CSV ingestion resolver standard behavior', () => {
       input: {
         key: 'name',
         value: ['Single column CSV feed ingester'],
-      }
+      },
     };
     const stopSingleColumnCsvFeedsIngesterQueryResult = await queryAsAdmin({
       query: gql`
@@ -241,7 +241,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         }
       }
       `,
-      variables: CSV_FEED_INGESTER_TO_UPDATE
+      variables: CSV_FEED_INGESTER_TO_UPDATE,
     });
     expect(stopSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvFieldPatch?.name).toBe('Single column CSV feed ingester');
   });
@@ -251,8 +251,8 @@ describe('CSV ingestion resolver standard behavior', () => {
       id: singleColumnCsvFeedIngesterId,
       input: {
         user_name: 'AutoUser',
-        confidence_level: 86
-      }
+        confidence_level: 86,
+      },
     };
     const updateCsvFeedWithAutoUserResult = await queryAsAdminWithSuccess({
       query: gql`
@@ -266,7 +266,7 @@ describe('CSV ingestion resolver standard behavior', () => {
               }
           }
       `,
-      variables: CSV_FEED_AUTO_USER_UPDATE
+      variables: CSV_FEED_AUTO_USER_UPDATE,
     });
     expect(updateCsvFeedWithAutoUserResult?.data?.ingestionCsvAddAutoUser?.user?.name).toBe('AutoUser');
     // Delete just created user
@@ -298,7 +298,7 @@ describe('CSV ingestion resolver standard behavior', () => {
               }
           }
       `,
-      variables: CSV_FEED_INGESTER_RESET
+      variables: CSV_FEED_INGESTER_RESET,
     });
     expect(resetStateQueryResult?.data?.ingestionCsvFieldPatch?.current_state_hash).toBeUndefined();
   });
@@ -329,7 +329,7 @@ describe('CSV ingestion resolver standard behavior', () => {
     `);
     const { data } = await queryAsAdmin({
       query: QUERY_CSV_FEED,
-      variables: { id: singleColumnCsvFeedIngesterId }
+      variables: { id: singleColumnCsvFeedIngesterId },
     });
     expect(data?.ingestionCsv.id).toBe(singleColumnCsvFeedIngesterId);
     expect(data?.ingestionCsv.name).toBe('Single column CSV feed ingester');
@@ -354,7 +354,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         ingestionCsvDelete(id: $id)
       }
       `,
-      variables: CSV_FEED_INGESTER_TO_DELETE
+      variables: CSV_FEED_INGESTER_TO_DELETE,
     });
     expect(deleteSingleColumnCsvFeedsIngesterQueryResultSingleColumnCsvFeedsIngesterQueryResult.data?.ingestionCsvDelete).toBe(singleColumnCsvFeedIngesterId);
   });
@@ -366,8 +366,8 @@ describe('CSV ingestion resolver standard behavior', () => {
         name: 'Single column',
         uri: 'https://lists.blocklist.de/lists/all.txt',
         csv_mapper_id: singleColumnCsvMapperId,
-        user_id: USER_PARTICIPATE.id
-      }
+        user_id: USER_PARTICIPATE.id,
+      },
     };
     await queryAsUserIsExpectedForbidden(
       USER_PARTICIPATE.client,
@@ -380,9 +380,9 @@ describe('CSV ingestion resolver standard behavior', () => {
           }
         },
       `,
-      variables: CSV_FEED_INGESTER_TO_CREATE
+      variables: CSV_FEED_INGESTER_TO_CREATE,
       },
-      'CSVMAPPERS should be required to create csv mapper.'
+      'CSVMAPPERS should be required to create csv mapper.',
     );
   });
 
@@ -412,9 +412,9 @@ describe('CSV ingestion resolver standard behavior', () => {
               }
           }
         }
-      `
+      `,
       },
-      'CSVMAPPERS should be required to list csv mapper.'
+      'CSVMAPPERS should be required to list csv mapper.',
     );
   });
 
@@ -455,94 +455,94 @@ describe('CSV ingestion resolver standard behavior', () => {
           type: 'entity',
           target: {
             entity_type: 'IPv4-Addr',
-            column_based: null
+            column_based: null,
           },
           attributes: [
             {
               key: 'value',
               column: {
                 column_name: 'A',
-                configuration: null
+                configuration: null,
               },
-              based_on: null
+              based_on: null,
             },
             {
               key: 'x_opencti_description',
               column: {
                 column_name: 'B',
-                configuration: null
+                configuration: null,
               },
-              based_on: null
-            }
-          ]
+              based_on: null,
+            },
+          ],
         },
         {
           id: '90ab48b0-88ab-4165-b8e8-9232e6cfa566',
           type: 'entity',
           target: {
             entity_type: 'Autonomous-System',
-            column_based: null
+            column_based: null,
           },
           attributes: [
             {
               key: 'number',
               column: {
                 column_name: 'C',
-                configuration: null
+                configuration: null,
               },
-              based_on: null
-            }
-          ]
+              based_on: null,
+            },
+          ],
         },
         {
           id: '4c7165ef-12bd-48f0-aaf2-645d2186da0d',
           type: 'entity',
           target: {
             entity_type: 'Kill-Chain-Phase',
-            column_based: null
+            column_based: null,
           },
           attributes: [
             {
               key: 'kill_chain_name',
               column: {
                 column_name: 'E',
-                configuration: null
+                configuration: null,
               },
-              based_on: null
+              based_on: null,
             },
             {
               key: 'phase_name',
               column: {
                 column_name: 'E',
-                configuration: null
+                configuration: null,
               },
-              based_on: null
+              based_on: null,
             },
             {
               key: 'x_opencti_order',
               column: {
                 column_name: 'I',
-                configuration: null
+                configuration: null,
               },
-              based_on: null
-            }
-          ]
+              based_on: null,
+            },
+          ],
         },
         {
           id: '6cac2022-04bf-4b5a-b03f-0d2aa878609e',
           type: 'entity',
           target: {
             entity_type: 'Report',
-            column_based: null
+            column_based: null,
           },
           attributes: [
             {
               key: 'name',
               column: {
                 column_name: 'D',
-                configuration: null
+                configuration: null,
               },
-              based_on: null
+              based_on: null,
             },
             {
               key: 'published',
@@ -550,25 +550,25 @@ describe('CSV ingestion resolver standard behavior', () => {
                 column_name: 'E',
                 configuration: {
                   pattern_date: 'DD.MM.YYYY',
-                  separator: null
-                }
+                  separator: null,
+                },
               },
               default_values: [
                 {
                   id: '2025-06-15T22:00:00.000Z',
-                  name: '2025-06-15T22:00:00.000Z'
-                }
+                  name: '2025-06-15T22:00:00.000Z',
+                },
               ],
-              based_on: null
-            }
-          ]
+              based_on: null,
+            },
+          ],
         },
         {
           id: 'e05fe3ac-1f15-49c2-bdb7-9062a6beb5aa',
           type: 'relationship',
           target: {
             entity_type: 'belongs-to',
-            column_based: null
+            column_based: null,
           },
           attributes: [
             {
@@ -576,18 +576,18 @@ describe('CSV ingestion resolver standard behavior', () => {
               column: null,
               based_on: {
                 representations: [
-                  'cd610730-daa2-4d97-ba12-e277b74569d3'
-                ]
-              }
+                  'cd610730-daa2-4d97-ba12-e277b74569d3',
+                ],
+              },
             },
             {
               key: 'to',
               column: null,
               based_on: {
                 representations: [
-                  '90ab48b0-88ab-4165-b8e8-9232e6cfa566'
-                ]
-              }
+                  '90ab48b0-88ab-4165-b8e8-9232e6cfa566',
+                ],
+              },
             },
             {
               key: 'killChainPhases',
@@ -595,19 +595,19 @@ describe('CSV ingestion resolver standard behavior', () => {
                 column_name: null,
                 configuration: {
                   pattern_date: null,
-                  separator: ','
-                }
+                  separator: ',',
+                },
               },
               based_on: {
                 representations: [
-                  '4c7165ef-12bd-48f0-aaf2-645d2186da0d'
-                ]
-              }
-            }
-          ]
-        }
+                  '4c7165ef-12bd-48f0-aaf2-645d2186da0d',
+                ],
+              },
+            },
+          ],
+        },
       ],
-      id: '1f919f34-b610-40d6-b681-053cdb2fb026'
+      id: '1f919f34-b610-40d6-b681-053cdb2fb026',
     } as unknown as CsvMapperResolved;
     const extractId = data.representations.map((r) => r.id);
     const test = regenerateCsvMapperUUID(data);
@@ -630,8 +630,8 @@ describe('CSV ingestion resolver standard behavior', () => {
         uri: 'https://lists.blocklist.de/lists/all.txt',
         csv_mapper_id: singleColumnCsvMapperId,
         user_id: ADMIN_USER.id,
-        csv_mapper_type: 'id'
-      }
+        csv_mapper_type: 'id',
+      },
     };
     const createCsvFeedWithId = await queryAsAdmin({
       query: gql`
@@ -646,7 +646,7 @@ describe('CSV ingestion resolver standard behavior', () => {
           }
         },
       `,
-      variables: CSV_FEED_INGESTER_TO_CREATE
+      variables: CSV_FEED_INGESTER_TO_CREATE,
     });
     const csvFeedId = createCsvFeedWithId?.data?.ingestionCsvAdd?.id;
     const csvMapperId = createCsvFeedWithId?.data?.ingestionCsvAdd?.csvMapper.id;
@@ -663,20 +663,20 @@ describe('CSV ingestion resolver standard behavior', () => {
         },
       `,
       variables: {
-        id: csvFeedId
-      }
+        id: csvFeedId,
+      },
     });
     expect(getCsvFeedForDuplication?.data?.ingestionCsv.duplicateCsvMapper.id).toEqual(csvMapperId);
   });
 
   it('should duplicate with different CSVMapperId as we inline CSVMapper', async () => {
-    const input : IngestionCsvAddInput = {
+    const input: IngestionCsvAddInput = {
       authentication_type: IngestionAuthType.None,
       name: 'Single column inline and auto user',
       uri: 'https://lists.blocklist.de/lists/all.txt',
       csv_mapper: singleColumnCsvMapperForCsvFeedInline,
       csv_mapper_type: IngestionCsvMapperType.Inline,
-      user_id: ADMIN_USER.id
+      user_id: ADMIN_USER.id,
     };
     const createCsvFeed = await queryAsAdmin({
       query: gql`
@@ -691,7 +691,7 @@ describe('CSV ingestion resolver standard behavior', () => {
           }
         },
       `,
-      variables: { input }
+      variables: { input },
     });
     const csvFeedId = createCsvFeed?.data?.ingestionCsvAdd?.id;
     const csvMapperId = createCsvFeed?.data?.ingestionCsvAdd?.csvMapper.id;
@@ -708,8 +708,8 @@ describe('CSV ingestion resolver standard behavior', () => {
         },
       `,
       variables: {
-        id: csvFeedId
-      }
+        id: csvFeedId,
+      },
     });
     expect(csvMapperId).not.toEqual(getCsvFeedForDuplication?.data?.ingestionCsv.duplicateCsvMapper.id);
   });

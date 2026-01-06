@@ -239,7 +239,7 @@ describe('Trigger knowledge resolver standard behavior', () => {
         mode: 'and',
         filters: [{ key: `${authorizedMembers.name}.id`, values: [ADMIN_USER.id] }],
         filterGroups: [],
-      }
+      },
     };
     const queryResult = await securityQuery({ query: LIST_TRIGGERS_KNOWLEDGE_QUERY, variables });
     expect(queryResult.data.triggersKnowledge.edges.length).toEqual(3);

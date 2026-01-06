@@ -67,7 +67,7 @@ describe('CaseTemplate resolver standard behavior', () => {
       input: {
         name: 'TestCaseTemplate',
         description: 'Test case template description',
-        tasks: []
+        tasks: [],
       },
     };
     const caseTemplate = await queryAsAdmin({
@@ -92,7 +92,7 @@ describe('CaseTemplate resolver standard behavior', () => {
     const TASK_TEMPLATE_TO_CREATE = {
       input: {
         name: 'TestTaskTemplate',
-        description: 'Test task template description'
+        description: 'Test task template description',
       },
     };
     const taskTemplate = await queryAsAdmin({
@@ -197,7 +197,7 @@ describe('CaseTemplate resolver standard behavior', () => {
           }
         }
       `,
-      variables: { id: taskTemplateInternalId }
+      variables: { id: taskTemplateInternalId },
     });
     expect(queryResult.data?.taskTemplate).toBeNull();
   });

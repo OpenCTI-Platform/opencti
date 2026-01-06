@@ -30,7 +30,7 @@ describe('Delete functional errors behaviors', async () => {
       decay_pound: 1,
       decay_revoke_score: 10,
       name: 'Decay for middleware delete test',
-      order: 12
+      order: 12,
     };
     const decayRuleCreated = await addDecayRule(testContext, ADMIN_USER, decayRule);
 
@@ -46,7 +46,7 @@ describe('Delete functional errors behaviors', async () => {
   it('should be able to delete a report using Stix Core Object parent type', async () => {
     const reportAddData: ReportAddInput = {
       name: 'Report for middleware-delete-test',
-      published: utcDate()
+      published: utcDate(),
     };
     const reportToBeDeleted = await addReport(testContext, ADMIN_USER, reportAddData);
     const deleted = await deleteElementById(testContext, ADMIN_USER, reportToBeDeleted.id, ABSTRACT_STIX_CORE_OBJECT);
@@ -58,7 +58,7 @@ describe('Delete functional errors behaviors', async () => {
   it('should be able to delete a report using container parent type', async () => {
     const reportAddData: ReportAddInput = {
       name: 'Report2 for middleware-delete-test',
-      published: utcDate()
+      published: utcDate(),
     };
     const reportToBeDeleted = await addReport(testContext, ADMIN_USER, reportAddData);
     const deleted = await deleteElementById(testContext, ADMIN_USER, reportToBeDeleted.id, ENTITY_TYPE_CONTAINER);
@@ -70,7 +70,7 @@ describe('Delete functional errors behaviors', async () => {
   it('should not be able to delete a report using Observable parent type', async () => {
     const reportAddData: ReportAddInput = {
       name: 'Report3 for middleware-delete-test',
-      published: utcDate()
+      published: utcDate(),
     };
     const reportToBeDeleted = await addReport(testContext, ADMIN_USER, reportAddData);
     await expect(() => deleteElementById(testContext, ADMIN_USER, reportToBeDeleted.id, ABSTRACT_STIX_CYBER_OBSERVABLE))
@@ -86,7 +86,7 @@ describe('Delete functional errors behaviors', async () => {
     const retentionRule: RetentionRuleAddInput = {
       max_retention: 0,
       name: 'Retention rule for middleware-delete-test',
-      scope: RetentionRuleScope.File
+      scope: RetentionRuleScope.File,
     };
     const retentionRuleCreated = await createRetentionRule(testContext, ADMIN_USER, retentionRule);
     const deleted = await deleteElementById(testContext, ADMIN_USER, retentionRuleCreated.id, ENTITY_TYPE_RETENTION_RULE);

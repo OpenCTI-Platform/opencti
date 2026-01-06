@@ -10,15 +10,15 @@ import {
   PYTHON_PATH,
   TEST_ORGANIZATION,
   testContext,
-  USER_EDITOR
+  USER_EDITOR,
 } from '../../utils/testQuery';
 import {
-adminQueryWithSuccess,
-awaitUntilCondition,
-enableCEAndUnSetOrganization,
-enableEEAndSetOrganization,
-queryAsUserIsExpectedError,
-queryAsUserWithSuccess
+  adminQueryWithSuccess,
+  awaitUntilCondition,
+  enableCEAndUnSetOrganization,
+  enableEEAndSetOrganization,
+  queryAsUserIsExpectedError,
+  queryAsUserWithSuccess,
 } from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
 import { execChildPython } from '../../../src/python/pythonBridge';
@@ -117,12 +117,12 @@ describe('Organization sharing standard behavior for container', () => {
     organizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQueryWithSuccess({
       query: ORGANIZATION_SHARING_QUERY,
-      variables: { id: reportInternalId, organizationId }
+      variables: { id: reportInternalId, organizationId },
     });
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
   });
   it('should Editor user access all objects', async () => {
-    await awaitUntilCondition(async () => {   
+    await awaitUntilCondition(async () => {
       const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
         query: REPORT_STIX_DOMAIN_ENTITIES,
         variables: { id: reportInternalId },
@@ -150,8 +150,8 @@ describe('Organization sharing standard behavior for container', () => {
       query: PURGE_QUERY,
       variables: {
         id: reportInternalId,
-        purgeElements: true
-      }
+        purgeElements: true,
+      },
     });
     expect(purgeQueryResult.data.reportEdit.delete).toEqual(reportInternalId);
   });

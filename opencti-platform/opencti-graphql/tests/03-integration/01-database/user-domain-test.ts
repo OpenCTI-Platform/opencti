@@ -14,7 +14,7 @@ import {
   findById as findUserById,
   isUserTheLastAdmin,
   userAddRelation,
-  userDelete
+  userDelete,
 } from '../../../src/domain/user';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
@@ -47,7 +47,7 @@ const createUserForTest = async (adminContext: AuthContext, adminUser: AuthUser,
     user_email: `${username}@opencti.io`,
     name: username,
     firstname: username,
-    lastname: 'opencti'
+    lastname: 'opencti',
   };
   const userAdded = await addUser(adminContext, adminUser, simpleUser);
   await assignGroupToUser(adminContext, adminUser, userAdded.id, AMBER_STRICT_GROUP.name);
@@ -65,7 +65,7 @@ const createNotificationForUser = async (context: AuthContext, user: AuthUser) =
     notification_type: '',
     notification_content: [{
       title: '',
-      events: []
+      events: [],
     }],
     user_id: user.id,
   };
@@ -93,7 +93,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     const privateInvestigationInput: WorkspaceAddInput = {
       name: 'investigation-not-shared',
       description: 'this investigation is not shared to other users.',
-      type: 'investigation'
+      type: 'investigation',
     };
 
     const privateInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, privateInvestigationInput);
@@ -103,12 +103,12 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     const sharedWithAdminRightsInvestigationInput: WorkspaceAddInput = {
       name: 'investigation-shared-with-admin-rights',
       description: 'this investigation will be shared to another user with admin rights.',
-      type: 'investigation'
+      type: 'investigation',
     };
     let sharedWithAdminRightsInvestigationData: StoreEntityWorkspace | BasicStoreEntityWorkspace = await addWorkspace(
       userToDeleteContext,
       userToDeletedAuth,
-      sharedWithAdminRightsInvestigationInput
+      sharedWithAdminRightsInvestigationInput,
     );
     const sharedIAuthMembers: MemberAccessInput[] = sharedWithAdminRightsInvestigationData.restricted_members;
     sharedIAuthMembers.push({ id: 'ALL', access_right: 'admin' });
@@ -121,7 +121,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     const sharedReadOnlyInvestigationInput: WorkspaceAddInput = {
       name: 'investigation-shared-read-only',
       description: 'this investigation will be shared to another user with view rights.',
-      type: 'investigation'
+      type: 'investigation',
     };
     let sharedInvestigationData: StoreEntityWorkspace | BasicStoreEntityWorkspace = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedReadOnlyInvestigationInput);
     const sharedInvestigationAuthMembers: MemberAccessInput[] = sharedInvestigationData.restricted_members;
@@ -135,7 +135,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     const adminInvestigationInput: WorkspaceAddInput = {
       name: 'investigation-owned-by-admin',
       description: 'this investigation is owned by the admin, do not delete.',
-      type: 'investigation'
+      type: 'investigation',
     };
 
     const adminInvestigationData = await addWorkspace(adminContext, ADMIN_USER, adminInvestigationInput);
@@ -208,7 +208,7 @@ describe('Service account User coverage', async () => {
       user_service_account: true,
       groups: [testGroup.id],
       objectOrganization: [testOrganization.id],
-      prevent_default_groups: true
+      prevent_default_groups: true,
     };
     const userAddResult = await addUser(testContext, authUser, userAddInput);
     const userCreated: AuthUser = await findById(testContext, authUser, userAddResult.id);
@@ -320,7 +320,11 @@ describe('Service account with platform organization coverage', async () => {
     expect(userCreated.password).toBeUndefined();
 
     // WHEN user log in with token
-    const fakeReq = { headers: () => { return undefined; }, header: () => { return undefined; }, socket: { remoteAddress: '::1' } };
+    const fakeReq = { headers: () => {
+      return undefined;
+    }, header: () => {
+      return undefined;
+    }, socket: { remoteAddress: '::1' } };
     const loggedInUser = await authenticateUserByTokenOrUserId(testContext, fakeReq, userCreated.api_token);
     expect(loggedInUser).toBeDefined();
 

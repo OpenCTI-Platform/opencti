@@ -15,9 +15,9 @@ const digest = (period: 'hour' | 'day' | 'week' | 'month', triggerTime = ''): Re
       trigger_type: 'digest',
       trigger_time: triggerTime,
       trigger_ids: [],
-      notifiers: []
+      notifiers: [],
     },
-    users: []
+    users: [],
   };
 };
 

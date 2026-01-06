@@ -48,7 +48,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
     expect(stixDomainEntity).not.toBeNull();
     expect(stixDomainEntity.data.stixSightingRelationshipAdd).not.toBeNull();
     expect(stixDomainEntity.data.stixSightingRelationshipAdd.description).toEqual(
-      'stixSightingRelationship description'
+      'stixSightingRelationship description',
     );
     stixSightingRelationshipInternalId = stixDomainEntity.data.stixSightingRelationshipAdd.id;
     stixSightingRelationshipStandardId = stixDomainEntity.data.stixSightingRelationshipAdd.standard_id;
@@ -102,7 +102,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixSightingRelationshipEdit.fieldPatch.description).toEqual(
-      'stixSightingRelationship - test'
+      'stixSightingRelationship - test',
     );
   });
   it('should context patch stixSightingRelationship', async () => {

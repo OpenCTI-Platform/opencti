@@ -14,7 +14,7 @@ interface HeaderFieldAddProps {
   containerStyle: { marginTop: number; width: string };
   setFieldValue?: (name: string, value: unknown) => void;
 }
-// eslint-disable-next-line import/prefer-default-export
+
 export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({
   name,
   values,

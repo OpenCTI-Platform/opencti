@@ -119,9 +119,9 @@ describe('file-storage utility functions', () => {
         metaData: {
           version: '1.0',
           mimetype: 'application/pdf',
-          file_markings: ['marking-1', 'marking-2']
+          file_markings: ['marking-1', 'marking-2'],
         },
-        uploadStatus: 'complete'
+        uploadStatus: 'complete',
       };
 
       const result = storeFileConverter(mockUser, file);
@@ -131,7 +131,7 @@ describe('file-storage utility functions', () => {
         name: 'test.pdf',
         version: '1.0',
         mime_type: 'application/pdf',
-        file_markings: ['marking-1', 'marking-2']
+        file_markings: ['marking-1', 'marking-2'],
       });
     });
 
@@ -145,9 +145,9 @@ describe('file-storage utility functions', () => {
         lastModifiedSinceMin: 0,
         metaData: {
           version: '2.0',
-          mimetype: 'application/json'
+          mimetype: 'application/json',
         },
-        uploadStatus: 'complete'
+        uploadStatus: 'complete',
       };
 
       const result = storeFileConverter(mockUser, file);
@@ -157,7 +157,7 @@ describe('file-storage utility functions', () => {
         name: 'document.json',
         version: '2.0',
         mime_type: 'application/json',
-        file_markings: []
+        file_markings: [],
       });
     });
 
@@ -171,9 +171,9 @@ describe('file-storage utility functions', () => {
         lastModifiedSinceMin: 0,
         metaData: {
           mimetype: 'text/plain',
-          file_markings: []
+          file_markings: [],
         },
-        uploadStatus: 'complete'
+        uploadStatus: 'complete',
       };
 
       const result = storeFileConverter(mockUser, file);
@@ -183,7 +183,7 @@ describe('file-storage utility functions', () => {
         name: 'report.txt',
         version: undefined,
         mime_type: 'text/plain',
-        file_markings: []
+        file_markings: [],
       });
     });
 
@@ -196,7 +196,7 @@ describe('file-storage utility functions', () => {
         lastModified: new Date(),
         lastModifiedSinceMin: 0,
         metaData: {},
-        uploadStatus: 'complete'
+        uploadStatus: 'complete',
       };
 
       const result = storeFileConverter(mockUser, file);
@@ -206,7 +206,7 @@ describe('file-storage utility functions', () => {
         name: 'empty.dat',
         version: undefined,
         mime_type: undefined,
-        file_markings: []
+        file_markings: [],
       });
     });
   });

@@ -47,7 +47,7 @@ describe('Attribute resolver standard behavior', () => {
   it('should retrieve runtime attribute for an entity', async () => {
     const queryResult = await queryAsAdmin({
       query: RUNTIME_ATTRIBUTES_QUERY,
-      variables: { attributeName: 'priority' }
+      variables: { attributeName: 'priority' },
     });
     const attributes = queryResult.data.runtimeAttributes.edges;
     expect(attributes.length).toEqual(0);
@@ -56,7 +56,7 @@ describe('Attribute resolver standard behavior', () => {
     // Internal Object
     let queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: ENTITY_TYPE_MIGRATION_STATUS }
+      variables: { elementType: ENTITY_TYPE_MIGRATION_STATUS },
     });
     let attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
     expect(attributes.length).toEqual(16);
@@ -66,7 +66,7 @@ describe('Attribute resolver standard behavior', () => {
     // Stix Domain Object
     queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: ENTITY_TYPE_VULNERABILITY }
+      variables: { elementType: ENTITY_TYPE_VULNERABILITY },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
     expect(attributes.length).toEqual(78);
@@ -84,7 +84,7 @@ describe('Attribute resolver standard behavior', () => {
     // Stix Meta Object
     queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: ENTITY_TYPE_KILL_CHAIN_PHASE }
+      variables: { elementType: ENTITY_TYPE_KILL_CHAIN_PHASE },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
 
@@ -96,7 +96,7 @@ describe('Attribute resolver standard behavior', () => {
     // Stix Identity Object
     queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: ENTITY_TYPE_IDENTITY_INDIVIDUAL }
+      variables: { elementType: ENTITY_TYPE_IDENTITY_INDIVIDUAL },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
     expect(attributes.length).toEqual(36);
@@ -107,7 +107,7 @@ describe('Attribute resolver standard behavior', () => {
     // Stix Location Object
     queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: ENTITY_TYPE_LOCATION_POSITION }
+      variables: { elementType: ENTITY_TYPE_LOCATION_POSITION },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
     expect(attributes.length).toEqual(36);
@@ -119,7 +119,7 @@ describe('Attribute resolver standard behavior', () => {
     // Internal Relationship
     let queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: RELATION_PARTICIPATE_TO }
+      variables: { elementType: RELATION_PARTICIPATE_TO },
     });
     let attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
     expect(attributes.length).toEqual(19);
@@ -128,7 +128,7 @@ describe('Attribute resolver standard behavior', () => {
     // Stix Ref Relationship
     queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: RELATION_OBJECT_LABEL }
+      variables: { elementType: RELATION_OBJECT_LABEL },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
     expect(attributes.length).toEqual(REL_RELATIONSHIP_ATTRIBUTES_NUMBER);
@@ -138,7 +138,7 @@ describe('Attribute resolver standard behavior', () => {
     // Stix Core Relationship
     queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: RELATION_HOSTS }
+      variables: { elementType: RELATION_HOSTS },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
     expect(attributes.length).toEqual(29);
@@ -147,7 +147,7 @@ describe('Attribute resolver standard behavior', () => {
     // Stix Ref Relationship
     queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: RELATION_OPERATING_SYSTEM }
+      variables: { elementType: RELATION_OPERATING_SYSTEM },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
     expect(attributes.length).toEqual(REL_RELATIONSHIP_ATTRIBUTES_NUMBER);
@@ -157,7 +157,7 @@ describe('Attribute resolver standard behavior', () => {
     // Stix Sighting Relationship
     queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: STIX_SIGHTING_RELATIONSHIP }
+      variables: { elementType: STIX_SIGHTING_RELATIONSHIP },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
     expect(attributes.length).toEqual(29);

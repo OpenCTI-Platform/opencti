@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';

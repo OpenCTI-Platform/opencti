@@ -16,9 +16,9 @@ describe('Taxii push Feed coverage', () => {
       authorized_members: [
         {
           id: connectorsGroup.id,
-          access_right: 'view'
-        }
-      ]
+          access_right: 'view',
+        },
+      ],
     };
     const taxiiPushIngestion = await addIngestion(testContext, ADMIN_USER, ingestionAdd);
     expect(taxiiPushIngestion.id).toBeDefined();
@@ -51,17 +51,17 @@ describe('Taxii push Feed coverage', () => {
             created_at: '2025-10-08T06: 17: 24.882Z',
             updated_at: '2025-10-08T06: 17: 24.882Z',
             creator_ids: [
-              '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
-            ]
+              '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+            ],
           },
           'extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82': {
             extension_type: 'property-extension',
-            score: 50
-          }
+            score: 50,
+          },
         },
-        value: 'patate@truc.fr'
-      }
-    ]
+        value: 'patate@truc.fr',
+      },
+    ],
   };
 
   it.each([
@@ -74,7 +74,7 @@ describe('Taxii push Feed coverage', () => {
       method: 'POST',
       headers: {
         'Content-Type': contentType,
-        Authorization: `Bearer ${ADMIN_API_TOKEN}`
+        Authorization: `Bearer ${ADMIN_API_TOKEN}`,
       },
       body: JSON.stringify(bundleObject),
     });
@@ -100,7 +100,7 @@ describe('Taxii push Feed coverage', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/taxiiiii+json;version=2.1',
-        Authorization: `Bearer ${ADMIN_API_TOKEN}`
+        Authorization: `Bearer ${ADMIN_API_TOKEN}`,
       },
       body: JSON.stringify(bundleObject),
     });
@@ -123,7 +123,7 @@ describe('Should taxii collection coverage', () => {
       filters: JSON.stringify({
         mode: 'and',
         filters: [{ key: ['entity_type'], operator: 'eq', values: ['Indicator'], mode: 'or' }],
-        filterGroups: [] })
+        filterGroups: [] }),
     };
     const taxiiCollection = await createTaxiiCollection(testContext, ADMIN_USER, dataSharingTaxiiPublic);
 
@@ -141,7 +141,7 @@ describe('Should taxii collection coverage', () => {
       filters: JSON.stringify({
         mode: 'and',
         filters: [{ key: ['entity_type'], operator: 'eq', values: ['Malware'], mode: 'or' }],
-        filterGroups: [] })
+        filterGroups: [] }),
     };
     const taxiiCollectionWithauth = await createTaxiiCollection(testContext, ADMIN_USER, dataSharingTaxiiAuth);
 
@@ -157,7 +157,7 @@ describe('Should taxii collection coverage', () => {
 
   it('should taxii root works', async () => {
     const headers = {
-      Authorization: `Bearer ${ADMIN_API_TOKEN}`
+      Authorization: `Bearer ${ADMIN_API_TOKEN}`,
     };
     const taxiiRootResponse = await fetch(`${getBaseUrl()}/taxii2/root/`, { headers });
     const data: any = await taxiiRootResponse.json();
@@ -172,12 +172,12 @@ describe('Should taxii collection coverage', () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/taxii+json;version=2.1',
-          Accept: 'application/taxii+json;version=2.1'
-        }
-      }
+          Accept: 'application/taxii+json;version=2.1',
+        },
+      },
     );
     expect(taxiiCollectionResponse.status).toBe(200);
-    const content = await taxiiCollectionResponse.json() as { more: boolean, next: string };
+    const content = await taxiiCollectionResponse.json() as { more: boolean; next: string };
     expect(content.more).toBeFalsy();
     expect(content.next.length).toBeGreaterThan(0);
   });
@@ -189,9 +189,9 @@ describe('Should taxii collection coverage', () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/taxii+json;version=2.1',
-          Accept: 'application/taxii+json;version=2.1'
-        }
-      }
+          Accept: 'application/taxii+json;version=2.1',
+        },
+      },
     );
     expect(taxiiCollectionResponse.status).toBe(401);
   });

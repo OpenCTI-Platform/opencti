@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { ENTITY_TYPE_FEED } from '../schema/internalObject';
 import { createEntity, deleteElementById } from '../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';

@@ -41,7 +41,7 @@ test('Custom theme creation, edition, and deletion', async ({ page }) => {
   await page.getByTestId('create-theme-btn').click();
 
   // disable on purpose because we want that fill to be sequentially
-  /* eslint-disable no-await-in-loop */
+
   for (const [key, value] of Object.entries(THEME)) {
     await page.locator(`input[name="${key}"]`).fill(value);
   }

@@ -119,7 +119,6 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
     const response = await (client as Mistral)?.chat.stream(request);
     let content = '';
     if (response) {
-      // eslint-disable-next-line no-restricted-syntax
       for await (const chunk of response) {
         if (chunk.data.choices[0].delta.content !== undefined) {
           const streamText = chunk.data.choices[0].delta.content;
@@ -158,7 +157,6 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
     });
     let content = '';
     if (response) {
-      // eslint-disable-next-line no-restricted-syntax
       for await (const chunk of response) {
         if (chunk.choices[0]?.delta.content !== undefined) {
           const streamText = chunk.choices[0].delta.content;

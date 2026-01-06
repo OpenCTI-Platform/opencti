@@ -30,9 +30,9 @@ describe('CSV Feed resolver standard behavior', () => {
           feed_date_attribute: 'created_at',
           feed_attributes: [{
             attribute: 'A',
-            mappings: [{ type: 'City', attribute: 'name' }]
-          }]
-        }
+            mappings: [{ type: 'City', attribute: 'name' }],
+          }],
+        },
       },
     });
     expect(feed).not.toBeNull();
@@ -62,10 +62,10 @@ describe('CSV Feed resolver standard behavior', () => {
           feed_date_attribute: 'created_at',
           feed_attributes: [{
             attribute: 'A',
-            mappings: [{ type: 'Country', attribute: 'name' }]
+            mappings: [{ type: 'Country', attribute: 'name' }],
           }],
-          feed_public: true
-        }
+          feed_public: true,
+        },
       },
     });
     expect(feed).not.toBeNull();
@@ -103,11 +103,11 @@ describe('CSV Feed resolver standard behavior', () => {
           feed_date_attribute: 'created_at',
           feed_attributes: [{
             attribute: 'A',
-            mappings: [{ type: 'Country', attribute: 'name' }]
+            mappings: [{ type: 'Country', attribute: 'name' }],
           }],
           feed_public: true,
           authorized_members: [],
-        }
+        },
       },
     });
     expect(feed).not.toBeNull();
@@ -125,7 +125,7 @@ describe('CSV Feed resolver standard behavior', () => {
     `);
     const feed = await editorQuery({
       query: QUERY_FEED,
-      variables: { id: internalFeedId }
+      variables: { id: internalFeedId },
     });
     expect(feed).not.toBeNull();
     expect(feed.data?.feed.name).toEqual('List of created cities - internal csv feed');
@@ -150,7 +150,7 @@ describe('CSV Feed resolver standard behavior', () => {
           }
         },
       `,
-      variables: {}
+      variables: {},
     });
 
     logApp.info('allFeedsResponse:', allFeedsResponse);
@@ -182,7 +182,7 @@ describe('CSV Feed resolver standard behavior', () => {
           }
         },
       `,
-      variables: {}
+      variables: {},
     });
 
     logApp.info('allFeedsResponse:', allFeedsResponse);
@@ -203,7 +203,7 @@ describe('CSV Feed resolver standard behavior', () => {
           feedDelete(id: $id)
         },
       `,
-      variables: { id: publicFeedId }
+      variables: { id: publicFeedId },
     });
     logApp.info('deletePublicFeedResponse:', deletePublicFeedResponse);
   });
@@ -215,7 +215,7 @@ describe('CSV Feed resolver standard behavior', () => {
           feedDelete(id: $id)
         },
       `,
-      variables: { id: internalFeedId }
+      variables: { id: internalFeedId },
     });
     logApp.info('deleteFeedResponse:', deleteFeedResponse);
   });

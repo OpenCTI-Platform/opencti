@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as R from 'ramda';
 import type Express from 'express';
 import nconf from 'nconf';

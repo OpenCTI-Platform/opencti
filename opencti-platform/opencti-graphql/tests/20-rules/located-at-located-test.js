@@ -127,6 +127,6 @@ describe('Located at located rule', () => {
       const afterDisableRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterDisableRelations.length).toBe(0);
     },
-    FIVE_MINUTES
+    FIVE_MINUTES,
   );
 });

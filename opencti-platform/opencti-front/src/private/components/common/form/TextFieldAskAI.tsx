@@ -24,7 +24,7 @@ import { useTheme } from '@mui/styles';
 import FiligranIcon from '@components/common/FiligranIcon';
 import EETooltip from '../entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
-// eslint-disable-next-line import/no-cycle
+
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';

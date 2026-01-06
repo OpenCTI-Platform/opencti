@@ -110,7 +110,7 @@ describe('Fintel template resolver standard behavior', () => {
       name: 'Fintel template 1',
       description: 'My fintel template description',
       start_date: '2025-01-01T19:00:05.000Z',
-      settings_types: ['Report']
+      settings_types: ['Report'],
     },
   };
   it('should fintel template created', async () => {
@@ -160,7 +160,7 @@ describe('Fintel template resolver standard behavior', () => {
       variables: {
         id: fintelTemplateInternalId,
         input: [{ key: 'description', value: ['new description'] }],
-      }
+      },
     });
     const fintelTemplateDescription = queryResult.data?.fintelTemplateFieldPatch.description;
     expect(fintelTemplateDescription).toEqual('new description');
@@ -197,7 +197,7 @@ describe('Fintel template resolver standard behavior', () => {
       variables: {
         id: fintelTemplateInternalId,
         input: [{ key: 'fintel_template_widgets', object_path: 'fintel_template_widgets/1', value: [fintelTemplateWidgetAddInput] }],
-      }
+      },
     });
     const fintelTemplateWidgets = queryResult.data?.fintelTemplateFieldPatch.fintel_template_widgets;
     expect(fintelTemplateWidgets.length).toEqual(4); // 4 widgets : the modified one and the built-in
@@ -233,7 +233,7 @@ describe('Fintel template resolver standard behavior', () => {
       variables: {
         id: fintelTemplateInternalId,
         input: [{ key: 'fintel_template_widgets', value: [fintelTemplateAttributeWidgetAddInput], operation: 'add' }],
-      }
+      },
     });
     expect(attributeQueryResult.errors?.length).toBe(1);
     expect(attributeQueryResult.errors?.[0].message).toEqual('Attributes should all have a variable name');
@@ -258,7 +258,7 @@ describe('Fintel template resolver standard behavior', () => {
         id: fintelTemplateInternalId,
         input: [{ key: 'fintel_template_widgets', value: [fintelTemplateWidgetAddInput], operation: 'add' }],
 
-      }
+      },
     });
     expect(queryResult.errors?.length).toBe(1);
     expect(queryResult.errors?.[0].message).toEqual('Variable names should not contain spaces or special chars (except - and _)');
@@ -284,7 +284,7 @@ describe('Fintel template resolver standard behavior', () => {
       variables: {
         id: fintelTemplateInternalId,
         input: [{ key: 'fintel_template_widgets', value: [fintelTemplateAttributeWidgetAddInput], operation: 'add' }],
-      }
+      },
     });
     expect(attributeQueryResult.errors?.length).toBe(1);
     expect(attributeQueryResult.errors?.[0].message).toEqual('Variable names should not contain spaces or special chars (except - and _)');

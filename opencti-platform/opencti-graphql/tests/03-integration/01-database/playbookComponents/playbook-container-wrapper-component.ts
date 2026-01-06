@@ -18,9 +18,9 @@ export const container_wrapper_component_bundle = {
           updated_at: '2025-05-09T10:03:11.288Z',
           is_inferred: false,
           creator_ids: [
-            '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
-          ]
-        }
+            '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+          ],
+        },
       },
       created: '2025-02-25T08:13:45.851Z',
       modified: '2025-05-09T10:03:11.288Z',
@@ -28,7 +28,7 @@ export const container_wrapper_component_bundle = {
       confidence: 100,
       lang: 'en',
       name: 'Test Incident',
-      description: ''
-    }
-  ]
+      description: '',
+    },
+  ],
 } as unknown as StixBundle;

@@ -8,12 +8,12 @@ const TEST_DISSEMINATION_USER_SET = buildStandardUser([], [], [{ name: 'SETTINGS
 const TEST_DISSEMINATION_LIST_CREATE_INPUT: DisseminationListAddInput = {
   name: 'Dissemination list',
   description: 'Description',
-  emails: ['example1@email.com', 'sample.account@email.com', 'firstname.lastname@email.com', 'user123@email.com', 'contact@domain.com', 'info@example.net', 'test.email@email.org', 'random.user@email.co', 'support@email.io', 'myaddress@email.biz']
+  emails: ['example1@email.com', 'sample.account@email.com', 'firstname.lastname@email.com', 'user123@email.com', 'contact@domain.com', 'info@example.net', 'test.email@email.org', 'random.user@email.co', 'support@email.io', 'myaddress@email.biz'],
 };
 const TEST_DISSEMINATION_LIST_UPDATE_INPUT: EditInput[] = [
   { key: 'name', value: ['New Dissemination list'] },
   { key: 'description', value: ['New description'] },
-  { key: 'emails', value: ['example1@email.com', 'sample.account@email.com'] }
+  { key: 'emails', value: ['example1@email.com', 'sample.account@email.com'] },
 ];
 
 describe('Create dissemination list', () => {

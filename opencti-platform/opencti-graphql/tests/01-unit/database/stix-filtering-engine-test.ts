@@ -289,17 +289,17 @@ describe('Filter Boolean logic engine ', () => {
             filters: [
               { mode: FilterMode.And, key: ['id'], operator: FilterOperator.NotEq, values: ['aa', 'bb'] }, // F1
               { mode: FilterMode.Or, key: ['refs'], operator: FilterOperator.Eq, values: ['ref1', 'ref2'] }, // F2
-              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Gt, values: ['100'] } // F3
+              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Gt, values: ['100'] }, // F3
             ],
-            filterGroups: []
+            filterGroups: [],
           },
           { // FG2
             mode: FilterMode.And,
             filters: [
               { mode: FilterMode.And, key: ['options'], operator: FilterOperator.Nil, values: [] }, // F4
-              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Lt, values: ['100'] } // F5
+              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Lt, values: ['100'] }, // F5
             ],
-            filterGroups: []
+            filterGroups: [],
           },
           { // FG3
             mode: FilterMode.Or,
@@ -309,21 +309,21 @@ describe('Filter Boolean logic engine ', () => {
                 mode: FilterMode.Or,
                 filters: [
                   { mode: FilterMode.And, key: ['color'], operator: FilterOperator.NotEq, values: ['red', 'yellow'] }, // F6
-                  { mode: FilterMode.And, key: ['height'], operator: FilterOperator.Gt, values: ['100'] } // F7
+                  { mode: FilterMode.And, key: ['height'], operator: FilterOperator.Gt, values: ['100'] }, // F7
                 ],
-                filterGroups: []
+                filterGroups: [],
               },
               { // FG5
                 mode: FilterMode.And,
                 filters: [
                   { mode: FilterMode.And, key: ['posX'], operator: FilterOperator.Lt, values: ['50'] }, // F8
-                  { mode: FilterMode.And, key: ['posY'], operator: FilterOperator.Lt, values: ['10'] } // F9
+                  { mode: FilterMode.And, key: ['posY'], operator: FilterOperator.Lt, values: ['10'] }, // F9
                 ],
-                filterGroups: []
-              }
-            ]
-          }
-        ]
+                filterGroups: [],
+              },
+            ],
+          },
+        ],
       };
 
       // ----> (F1- or F2+ or F3-) --> FG1+
@@ -349,7 +349,7 @@ describe('Filter Boolean logic engine ', () => {
       // failing F4 will propagate to failing FG
       const dataNoMatch1 = {
         ...dataMatch,
-        options: ['opt1']
+        options: ['opt1'],
       };
       expect(engine.testFilterGroup(dataNoMatch1, filterGroup, testerByFilterKeyMap)).toEqual(false);
 

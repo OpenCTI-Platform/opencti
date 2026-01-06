@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_LOCATION } from '../../schema/general';
 import def from './ReportRefLocationLocatedAtDefinition';

@@ -382,7 +382,7 @@ class StixNestedRefRelationshipCreation extends Component {
       defaultMarkingDefinitions,
     } = this.props;
     const relationshipTypes = resolveEntityRef.from;
-    // eslint-disable-next-line no-nested-ternary
+
     const defaultRelationshipType = R.head(relationshipTypes);
     const defaultConfidence = confidence || 15;
     const defaultStartTime = !isNone(startTime) ? startTime : null;
@@ -458,7 +458,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
+                      { }
                       {fromObjects[0].relationship_type ? (
                         t(`relationship_${fromObjects[0].relationship_type}`)
                       ) : fromObjects.length > 1 ? (
@@ -514,7 +514,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
+                      { }
                       {toObjects[0].relationship_type ? (
                         t(`relationship_${toObjects[0].relationship_type}`)
                       ) : toObjects.length > 1 ? (
@@ -818,7 +818,6 @@ class StixNestedRefRelationshipCreation extends Component {
     );
   }
 
-  // eslint-disable-next-line
   renderLoader() {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>

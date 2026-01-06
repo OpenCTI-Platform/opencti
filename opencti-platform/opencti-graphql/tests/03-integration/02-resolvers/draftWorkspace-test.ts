@@ -219,7 +219,7 @@ describe('Drafts workspace resolver testing', () => {
   it('should retrieve a draft by internal id', async () => {
     const draftWorkspaceResult = await queryAsAdmin({
       query: READ_DRAFT_WORKSPACE_QUERY,
-      variables: { id: addedDraftId }
+      variables: { id: addedDraftId },
     });
 
     expect(draftWorkspaceResult.data?.draftWorkspace).toBeDefined();
@@ -335,7 +335,7 @@ describe('Drafts workspace resolver testing', () => {
     upload.file = fileUpload;
     const importPushQueryResult = await queryAsAdmin({
       query: IMPORT_FILE_QUERY,
-      variables: { id: reportInternalId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
+      variables: { id: reportInternalId, file: upload, fileMarkings: [MARKING_TLP_GREEN] },
     }, addedDraftId);
     expect(importPushQueryResult?.data?.stixDomainObjectEdit.importPush.id).toBeDefined();
   });
@@ -426,7 +426,7 @@ describe('Drafts workspace resolver testing', () => {
     upload.file = fileUpload;
     await queryAsAdmin({
       query: IMPORT_FILE_QUERY,
-      variables: { id: reportStandardId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
+      variables: { id: reportStandardId, file: upload, fileMarkings: [MARKING_TLP_GREEN] },
     }, addedDraftId);
 
     // Verify that validation bundle contains report
@@ -448,7 +448,7 @@ describe('Drafts workspace resolver testing', () => {
     // Verify that draft still exists, but that the draft is in validated state.
     const draftWorkspaceResult = await adminQuery({
       query: READ_DRAFT_WORKSPACE_QUERY,
-      variables: { id: addedDraftId }
+      variables: { id: addedDraftId },
     });
 
     expect(draftWorkspaceResult.data?.draftWorkspace).toBeDefined();

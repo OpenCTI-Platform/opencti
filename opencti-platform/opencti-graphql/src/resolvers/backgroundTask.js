@@ -13,7 +13,7 @@ const taskResolvers = {
     deleteBackgroundTask: (_, { id }, context) => deleteTask(context, context.user, id),
   },
   BackgroundTask: {
-    // eslint-disable-next-line
+
     __resolveType(obj) {
       if (obj.type === 'QUERY') return 'QueryTask';
       if (obj.type === 'LIST') return 'ListTask';

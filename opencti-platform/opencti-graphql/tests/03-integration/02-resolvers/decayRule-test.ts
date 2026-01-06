@@ -7,7 +7,7 @@ import {
   type DecayRuleConfiguration,
   FALLBACK_DECAY_RULE,
   findDecayRuleForIndicator,
-  initDecayRules
+  initDecayRules,
 } from '../../../src/modules/decayRule/decayRule-domain';
 import type { AuthContext } from '../../../src/types/user';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
@@ -200,7 +200,7 @@ describe('DecayRule resolver standard behavior', () => {
 
     const FIELD_PATCH_DECAY_RULE = {
       id: customDecayRuleId,
-      input: { key: 'decay_points', value: [80, 20, 60, -5] }
+      input: { key: 'decay_points', value: [80, 20, 60, -5] },
     };
 
     await queryAsAdminWithSuccess({
@@ -210,7 +210,7 @@ describe('DecayRule resolver standard behavior', () => {
 
     const queryResult = await queryAsAdminWithSuccess({
       query: DECAY_RULE_READ_QUERY,
-      variables: { id: customDecayRuleId }
+      variables: { id: customDecayRuleId },
     });
 
     const customDecayRule = queryResult.data?.decayRule;
@@ -341,7 +341,7 @@ describe('DecayRule resolver standard behavior', () => {
 
     const queryResult = await queryAsAdminWithSuccess({
       query: DECAY_RULE_READ_QUERY,
-      variables: { id: defaultDecayRuleId }
+      variables: { id: defaultDecayRuleId },
     });
     expect(queryResult.data?.decayRule).toBeDefined();
     expect(queryResult.data?.decayRule.decay_lifetime).toBe(TEST_FALLBACK_DECAY_RULE.decay_lifetime);
@@ -362,7 +362,7 @@ describe('DecayRule resolver standard behavior', () => {
       // Verify is no longer found
       const queryResult = await queryAsAdminWithSuccess({
         query: INDICATOR_WITH_DECAY_RULE_READ_QUERY,
-        variables: { id: indicatorId }
+        variables: { id: indicatorId },
       });
       expect(queryResult.data?.indicator).toBeNull();
     };

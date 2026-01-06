@@ -66,7 +66,7 @@ export const getFakeAuthUser = (userName: string) => {
     },
     max_shareable_marking: [],
     restrict_delete: false,
-    no_creators: false
+    no_creators: false,
   };
   return user;
 };

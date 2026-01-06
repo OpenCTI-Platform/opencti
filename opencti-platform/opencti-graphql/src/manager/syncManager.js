@@ -216,7 +216,7 @@ const initSyncManager = () => {
       await wait(WAIT_TIME_ACTION);
     }
     // Stopping
-    // eslint-disable-next-line no-restricted-syntax
+
     for (const syncManager of syncManagers.values()) {
       if (syncManager.isRunning()) {
         await syncManager.stop();

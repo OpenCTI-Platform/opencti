@@ -10,7 +10,7 @@ describe('Testing support package filesystem tools - findAllSupportFiles', () =>
       'crapfile.log',
       '.stuff',
       'support.2024-04-28',
-      'support.2024-04-27'
+      'support.2024-04-27',
     ], SUPPORT_LOG_FILE_PREFIX);
 
     expect(filesFound.length).toBe(4);

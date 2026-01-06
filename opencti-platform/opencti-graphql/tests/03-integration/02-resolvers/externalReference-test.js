@@ -104,8 +104,8 @@ describe('ExternalReference resolver standard behavior', () => {
       filterGroups: [{
         mode: 'and',
         filters: [{ key: ['source_name'], values: ['ExternalReferenceForTest'], operator: 'starts_with', mode: 'or' }],
-        filterGroups: []
-      }]
+        filterGroups: [],
+      }],
     };
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10, filters: myFilter } });
     expect(queryResult.data.externalReferences.edges.length).toEqual(1);

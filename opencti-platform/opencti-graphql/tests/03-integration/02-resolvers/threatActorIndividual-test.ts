@@ -34,17 +34,17 @@ const THREAT_ACTOR: ThreatActorIndividualAddInput = {
   hair_color: 'brown',
   height: [{
     measure: 183,
-    date_seen: '2022-10-10T00:00:00Z'
+    date_seen: '2022-10-10T00:00:00Z',
   }],
   weight: [
     {
       measure: 82,
-      date_seen: '2022-10-10T00:00:00Z'
+      date_seen: '2022-10-10T00:00:00Z',
     },
     {
       measure: 81,
-      date_seen: '2022-10-10T00:00:00Z'
-    }
+      date_seen: '2022-10-10T00:00:00Z',
+    },
   ],
 };
 
@@ -194,14 +194,14 @@ describe('Threat actor individual resolver standard behavior', () => {
           input: {
             key: 'overview_layout_customization',
             value: overviewLayoutCustomizationConfiguration,
-          }
-        }
+          },
+        },
       });
 
       expect(
-        entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization
+        entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization,
       ).toEqual(
-        overviewLayoutCustomizationConfiguration
+        overviewLayoutCustomizationConfiguration,
       );
     });
     it('should update order', async () => {
@@ -224,13 +224,13 @@ describe('Threat actor individual resolver standard behavior', () => {
           input: {
             key: 'overview_layout_customization',
             value: overviewLayoutCustomizationConfiguration,
-          }
-        }
+          },
+        },
       });
       expect(
-        entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization
+        entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization,
       ).toEqual(
-        overviewLayoutCustomizationConfiguration
+        overviewLayoutCustomizationConfiguration,
       );
     });
     // reset entity settings overview_layout_customization
@@ -242,13 +242,13 @@ describe('Threat actor individual resolver standard behavior', () => {
           input: {
             key: 'overview_layout_customization',
             value: [],
-          }
-        }
+          },
+        },
       });
       expect(
-        entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization
+        entitySettingsUpdateResult.data?.entitySettingsFieldPatch?.[0]?.overview_layout_customization,
       ).toEqual(
-        defaultTAIOverviewLayoutCustomization
+        defaultTAIOverviewLayoutCustomization,
       );
       resetCacheForEntity(ENTITY_TYPE_SETTINGS);
     });
@@ -394,7 +394,7 @@ describe('Threat actor individual resolver standard behavior', () => {
         fromId: threatActorIndividualInternalId,
         toId: 'location--5acd8b26-51c2-4608-86ed-e9edd43ad971',
         relationship_type,
-      } }
+      } },
     })));
     const { data } = await queryAsAdmin({
       query: getCoreRelationshipsAndFunctionalDates,
@@ -404,7 +404,7 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual).not.toBeNull();
     expect(threatActorIndividual.stixCoreRelationships?.edges).toHaveLength(3);
     const stixCoreRelationships = threatActorIndividual.stixCoreRelationships?.edges?.map((
-      { node }: { node : { relationship_type: string, toId: string } }
+      { node }: { node: { relationship_type: string; toId: string } },
     ) => ({ ...node }));
     expect(stixCoreRelationships).toHaveLength(3);
     // should modify refreshed_at but not updated_at

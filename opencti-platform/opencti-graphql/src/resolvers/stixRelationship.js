@@ -49,7 +49,7 @@ const stixRelationshipResolvers = {
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     toStix: (rel, args, context) => stixLoadByIdStringify(context, context.user, rel.id, args),
     objectMarking: (rel, _, context) => context.batch.markingsBatchLoader.load(rel, context, context.user),
-    // eslint-disable-next-line
+
     __resolveType(obj) {
       if (STIX_REF_RELATIONSHIP_TYPES.some((type) => obj.parent_types.includes(type))) {
         return 'StixRefRelationship';

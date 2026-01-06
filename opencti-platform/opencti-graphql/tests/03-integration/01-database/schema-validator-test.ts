@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, testContext, USER_EDITOR } from '../../utils/testQuery';
-import { ENTITY_TYPE_DATA_COMPONENT, } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_DATA_COMPONENT } from '../../../src/schema/stixDomainObject';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { type AttributeConfiguration, type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { validateInputCreation, validateInputUpdate } from '../../../src/schema/schema-validator';
@@ -55,7 +55,7 @@ const UPDATE_ENTITY_SETTING_QUERY = gql`
 const updateEntitySetting = async (attributesConfiguration: AttributeConfiguration[]) => {
   const queryResult = await queryAsAdmin({
     query: READ_ENTITY_SETTING_QUERY_BY,
-    variables: { targetType: ENTITY_TYPE_DATA_COMPONENT }
+    variables: { targetType: ENTITY_TYPE_DATA_COMPONENT },
   });
   const entitySettingIdDataComponent = queryResult.data?.entitySettingByType.id;
 
@@ -63,7 +63,7 @@ const updateEntitySetting = async (attributesConfiguration: AttributeConfigurati
     query: UPDATE_ENTITY_SETTING_QUERY,
     variables: {
       ids: [entitySettingIdDataComponent],
-      input: { key: 'attributes_configuration', value: [JSON.stringify(attributesConfiguration)] }
+      input: { key: 'attributes_configuration', value: [JSON.stringify(attributesConfiguration)] },
     },
   });
   resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
@@ -74,7 +74,7 @@ describe('Create and Update Validation', () => {
   it('should validate format schema attribute at creation', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'description', mandatory: true }]); // Valid JSON format for Entity Setting
     const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
-    const settings : Partial<BasicStoreEntityEntitySetting> = {};
+    const settings: Partial<BasicStoreEntityEntitySetting> = {};
     await validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING, entitySetting, settings as BasicStoreEntityEntitySetting);
   });
 
@@ -124,7 +124,7 @@ describe('Create and Update Validation', () => {
   it('should validate schema at update', async () => {
     const dataComponent: EditInput[] = [{ key: 'description', value: ['description'], operation: EditOperation.Replace }];
     const dataComponentInitial = { name: 'initial name', confidence: 50 };
-    const settings : Partial<BasicStoreEntityEntitySetting> = {};
+    const settings: Partial<BasicStoreEntityEntitySetting> = {};
     await validateInputUpdate(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponentInitial, dataComponent, settings as BasicStoreEntityEntitySetting);
   });
 
@@ -132,7 +132,7 @@ describe('Create and Update Validation', () => {
     await updateEntitySetting([{ name: 'description', mandatory: false }]);
     await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: CREATE_DATA_COMPONENT_QUERY,
-      variables: { input: { name: 'entity name', stix_id: dataComponentStixId } }
+      variables: { input: { name: 'entity name', stix_id: dataComponentStixId } },
     });
     await updateEntitySetting([{ name: 'description', mandatory: true }]);
 

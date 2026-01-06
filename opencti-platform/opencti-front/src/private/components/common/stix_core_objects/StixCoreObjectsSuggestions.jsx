@@ -113,7 +113,7 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
       setSelectedEntity({ ...selectedEntity, [type]: event.target.value });
     }
   };
-  // eslint-disable-next-line consistent-return
+
   const applySuggestion = async (type, objects) => {
     if (type === 'threats-indicators' && selectedEntity) {
       // create all indicates relationships
@@ -327,7 +327,7 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                           fontSize="small"
                           disabled={suggestions.length === 0}
                           color={
-                            // eslint-disable-next-line no-nested-ternary
+
                             suggestions.length === 0
                               ? 'disabled'
                               : displaySuggestions

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
 import { createInferredRelation, deleteInferredRuleElement } from '../database/middleware';
 import { createRuleContent } from './rules-utils';

@@ -51,7 +51,7 @@ describe('Dissemination list resolver', () => {
       name: 'dissemination list 1',
       description: 'My dissemination list description',
       emails: ['email1@test.com', 'email2@test.com', 'email3@test.com'],
-    }
+    },
   };
   const NEW_DESCRIPTION = 'New description';
 
@@ -83,7 +83,7 @@ describe('Dissemination list resolver', () => {
       variables: {
         id: disseminationListInternalId,
         input: [{ key: 'description', value: [NEW_DESCRIPTION] }],
-      }
+      },
     });
     const disseminationListDescription = queryResult.data?.disseminationListFieldPatch.description;
     expect(disseminationListDescription).toEqual(NEW_DESCRIPTION);
@@ -101,5 +101,4 @@ describe('Dissemination list resolver', () => {
     expect(queryResult.data?.disseminationList).toBeNull();
     await disableEE();
   });
-
 });

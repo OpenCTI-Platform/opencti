@@ -27,7 +27,6 @@ export const convertRepresentationsIds = async (context: AuthContext, user: Auth
   representations.forEach((representation) => {
     representation.attributes.forEach((attribute) => {
       if (attribute && attribute.default_values) {
-        // eslint-disable-next-line no-param-reassign
         attribute.default_values = idsValuesRemap(attribute.default_values, idsMap, from, true);
       }
     });

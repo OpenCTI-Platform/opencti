@@ -63,7 +63,7 @@ describe('Report refs observable rule', () => {
       const indicatorBBasedOnObservableA = await createRelation(testContext, SYSTEM_USER, {
         fromId: indicatorB.internal_id,
         toId: observableA.internal_id,
-        relationship_type: RELATION_BASED_ON
+        relationship_type: RELATION_BASED_ON,
       });
       createdElements.push(indicatorBBasedOnObservableA);
       // Create Report TEST_RULE
@@ -102,7 +102,7 @@ describe('Report refs observable rule', () => {
       const indicatorDBasedOnObservableC = await createRelation(testContext, SYSTEM_USER, {
         fromId: indicatorD.internal_id,
         toId: observableC.internal_id,
-        relationship_type: RELATION_BASED_ON
+        relationship_type: RELATION_BASED_ON,
       });
       createdElements.push(indicatorDBasedOnObservableC);
       // Update report with OBSERVABLE C
@@ -111,7 +111,7 @@ describe('Report refs observable rule', () => {
         description: 'Report TEST_RULE',
         published: '2022-10-06T22:00:00.000Z',
         objects: [observableC.internal_id],
-        update: true
+        update: true,
       });
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
       const afterAddRelations = await getInferences(RELATION_OBJECT);
@@ -134,7 +134,7 @@ describe('Report refs observable rule', () => {
       const indicatorEBasedOnObservableC = await createRelation(testContext, SYSTEM_USER, {
         fromId: indicatorE.internal_id,
         toId: observableC.internal_id,
-        relationship_type: RELATION_BASED_ON
+        relationship_type: RELATION_BASED_ON,
       });
       createdElements.push(indicatorEBasedOnObservableC);
       await wait(TEN_SECONDS); // let some time to rule manager to create the elements
@@ -146,7 +146,7 @@ describe('Report refs observable rule', () => {
       await createRelation(testContext, SYSTEM_USER, {
         fromId: report.internal_id,
         toId: 'indicator--b05c9d26-46f2-59f5-9db6-eda706a523cd',
-        relationship_type: RELATION_OBJECT
+        relationship_type: RELATION_OBJECT,
       });
       const REPORT_STIX_DOMAIN_ENTITIES = gql`
             query report($id: String!) {
@@ -185,7 +185,7 @@ describe('Report refs observable rule', () => {
         report.internal_id,
         observableA.internal_id,
         RELATION_OBJECT,
-        ABSTRACT_STIX_REF_RELATIONSHIP
+        ABSTRACT_STIX_REF_RELATIONSHIP,
       );
       await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
       const afterDeleteARelations = await getInferences(RELATION_OBJECT);
@@ -225,11 +225,11 @@ describe('Report refs observable rule', () => {
                 operator: 'eq',
                 values: ['true'],
                 mode: 'or',
-              }
+              },
             ],
             filterGroups: [],
           },
-        }
+        },
       });
       expect(filterTrueQueryResult.data.stixRelationships.edges.length).toEqual(2);
       const filterNotFalseQueryResult = await queryAsAdmin({
@@ -244,11 +244,11 @@ describe('Report refs observable rule', () => {
                 operator: 'not_eq',
                 values: ['false'],
                 mode: 'or',
-              }
+              },
             ],
             filterGroups: [],
           },
-        }
+        },
       });
       expect(filterNotFalseQueryResult.data.stixRelationships.edges.length).toEqual(2);
       // endregion
@@ -261,6 +261,6 @@ describe('Report refs observable rule', () => {
       // Delete all creation
       await elDeleteElements(testContext, SYSTEM_USER, createdElements);
     },
-    FIVE_MINUTES
+    FIVE_MINUTES,
   );
 });

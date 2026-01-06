@@ -65,8 +65,6 @@ describe('TAXII ingestion resolver standard behavior', () => {
     });
   });
 
-
-
   it('should create a TAXII ingester with existing user', async () => {
     const INGESTER_TO_CREATE = {
       input: {

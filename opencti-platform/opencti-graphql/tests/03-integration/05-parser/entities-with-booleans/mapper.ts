@@ -25,7 +25,7 @@ export const csvMapperMalware: Partial<CsvMapperParsed> = {
             column_name: 'B',
           },
         },
-      ]
-    }
-  ]
+      ],
+    },
+  ],
 };

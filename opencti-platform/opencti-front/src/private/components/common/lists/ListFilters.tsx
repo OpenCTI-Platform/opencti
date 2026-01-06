@@ -127,7 +127,7 @@ const ListFilters = ({
             value: key,
             label: t_i18n(filterDefinition?.label ?? key),
             numberOfOccurences: subEntityTypes.length,
-            // eslint-disable-next-line no-nested-ternary
+
             groupLabel: isFilterKeyForAllTypes
               ? t_i18n('Most used filters')
               : t_i18n('All other filters'),

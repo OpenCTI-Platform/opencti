@@ -53,7 +53,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     const { t, classes, data, entityLink, paginationOptions, stixDomainObjectId } = this.props;
     // Extract all kill chain phases
     const killChainPhases = R.pipe(
-      // eslint-disable-next-line no-nested-ternary
+
       R.map((n) => (n.node
         && n.node.killChainPhases
         && n.node.killChainPhases.length > 0
@@ -92,7 +92,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
       )),
       R.map((n) => R.assoc(
         'killChainPhase',
-        // eslint-disable-next-line no-nested-ternary
+
         n && n.killChainPhases && n.killChainPhases.length > 0
           ? n.killChainPhases[0]
           : n
@@ -187,7 +187,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               </ListItemIcon>
                               <ListItemText
                                 primary={
-                                // eslint-disable-next-line no-nested-ternary
+
                                   !restricted ? (
                                     entityToDisplay.entity_type
                                     === 'Attack-Pattern' ? (

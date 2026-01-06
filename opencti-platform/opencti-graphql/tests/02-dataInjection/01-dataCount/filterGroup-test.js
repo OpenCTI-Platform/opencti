@@ -17,7 +17,7 @@ import {
   RELATION_FROM_TYPES_FILTER,
   RELATION_TO_FILTER,
   RELATION_TO_TYPES_FILTER,
-  SOURCE_RELIABILITY_FILTER
+  SOURCE_RELIABILITY_FILTER,
 } from '../../../src/utils/filtering/filtering-constants';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { addUser, findById } from '../../../src/domain/user';
@@ -249,7 +249,7 @@ describe('Complex filters combinations for elastic queries', () => {
           }],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(0);
   });
@@ -263,7 +263,7 @@ describe('Complex filters combinations for elastic queries', () => {
           filters: [],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(5); // the 4 reports created + the report in DATA-TEST-STIX2_v2.json
     queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY });
@@ -283,11 +283,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['threat-report'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(3); // the reports created + the report in DATA-TEST-STIX2_v2.json
   });
@@ -311,11 +311,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: ['internal-report'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(2); // report1 and the report in DATA-TEST-STIX2_v2.json
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report1').toBeTruthy();
@@ -341,11 +341,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'lt',
               values: ['2021-12-30T00:47:35.000Z'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(3); // report1 and report3 and report in DATA-TEST-STIX2_v2.json
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
@@ -370,11 +370,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'lt',
               values: ['2021-12-30T00:47:35.000Z'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(0);
   });
@@ -392,11 +392,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['internal-report', 'threat-report'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(4); // 3 of the reports created + the report in DATA-TEST-STIX2_v2.json
     // (report_types = internal-report AND threat-report)
@@ -412,11 +412,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['internal-report', 'threat-report'],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(1);
     expect(queryResult.data.reports.edges[0].node.name).toEqual('Report2');
@@ -441,11 +441,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'lt',
               values: ['2023-09-20T00:47:35.000Z'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report2').toBeTruthy();
@@ -463,7 +463,7 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'lt',
               values: ['2023-09-20T00:47:35.000Z'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [
             {
@@ -480,13 +480,13 @@ describe('Complex filters combinations for elastic queries', () => {
                   operator: 'eq',
                   values: ['malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714'],
                   mode: 'or',
-                }
+                },
               ],
               filterGroups: [],
             },
           ],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('Report2').toBeTruthy();
@@ -504,7 +504,7 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [marking1Id, marking2Id],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [
             {
@@ -521,13 +521,13 @@ describe('Complex filters combinations for elastic queries', () => {
                   operator: 'lt',
                   values: ['2023-09-20T00:47:35.000Z'],
                   mode: 'or',
-                }
+                },
               ],
               filterGroups: [],
             },
           ],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(3);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
@@ -559,7 +559,7 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'gt',
               values: ['50'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [
             {
@@ -570,7 +570,7 @@ describe('Complex filters combinations for elastic queries', () => {
                   operator: 'gt',
                   values: ['15'],
                   mode: 'or',
-                }
+                },
               ],
               filterGroups: [
                 {
@@ -581,7 +581,7 @@ describe('Complex filters combinations for elastic queries', () => {
                       operator: 'not_eq',
                       values: ['internal-report'],
                       mode: 'or',
-                    }
+                    },
                   ],
                   filterGroups: [{
                     mode: 'and',
@@ -597,16 +597,16 @@ describe('Complex filters combinations for elastic queries', () => {
                         operator: 'eq',
                         values: [marking2Id],
                         mode: 'and',
-                      }
+                      },
                     ],
                     filterGroups: [],
                   }],
-                }
+                },
               ],
             },
           ],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
@@ -638,7 +638,7 @@ describe('Complex filters combinations for elastic queries', () => {
                   operator: 'eq',
                   values: [marking2Id],
                   mode: 'or',
-                }
+                },
               ],
               filterGroups: [],
             },
@@ -650,7 +650,7 @@ describe('Complex filters combinations for elastic queries', () => {
                   operator: 'lte',
                   values: ['10'],
                   mode: 'or',
-                }
+                },
               ],
               filterGroups: [{
                 mode: 'or',
@@ -666,14 +666,14 @@ describe('Complex filters combinations for elastic queries', () => {
                     operator: 'eq',
                     values: [marking1Id],
                     mode: 'or',
-                  }
+                  },
                 ],
                 filterGroups: [],
               }],
-            }
+            },
           ],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(3);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
@@ -694,11 +694,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'nil',
               values: [],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(1);
     expect(queryResult.data.reports.edges[0].node.name).toEqual('Report3');
@@ -715,11 +715,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_nil',
               values: [],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(4);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
@@ -738,11 +738,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'nil',
               values: [],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy(); // description is empty string
@@ -760,11 +760,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_nil',
               values: [],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(3); // 'Report1', 'Report2', 'A demo for testing purpose'
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
@@ -784,11 +784,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'nil',
               values: [],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     // 4 relationships with no start_time + 4 relationships with start_time <= '1970-01-01T01:00:00.000Z'
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(8);
@@ -805,11 +805,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'nil',
               values: [],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     // 4 relationships with no stop_time + 3 with stop_time <= '1970-01-01T01:00:00.000Z' + 1 with stop_time = '5138-11-16T09:46:40.000Z'
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(8);
@@ -830,7 +830,7 @@ describe('Complex filters combinations for elastic queries', () => {
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     // 24 relationships - 8 with empty stop_time
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(16);
@@ -867,11 +867,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['Report1'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(2);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
@@ -892,11 +892,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'nil',
               values: [],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(0);
     // (entity_type = Malware)
@@ -912,11 +912,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [ENTITY_TYPE_MALWARE],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(2);
     queryResult = await queryAsAdmin({
@@ -931,11 +931,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [ENTITY_TYPE_MALWARE],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(2);
     // (entity_type = Report OR container)
@@ -951,11 +951,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_CONTAINER],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(8); // 8 containers: 4 reports in this file + 1 report, 1 note, 1 observed-data, 1 opinion in DATA-TEST-STIXv2_v2
     // (entity_type = Report AND container)
@@ -971,11 +971,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_CONTAINER],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(5); // 5 reports
     // (entity_type = Report AND Container AND Stix-Core-Object)
@@ -991,11 +991,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_CONTAINER],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(5); // 5 reports
     // (entity_type = Report AND Container AND Internal-Object)
@@ -1011,11 +1011,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_CONTAINER, ABSTRACT_INTERNAL_OBJECT],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(0); // reports are not internal objects
     // (entity_type = Malware OR Software)
@@ -1031,11 +1031,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [ENTITY_TYPE_MALWARE, 'Software'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(3); // 2 malware + 1 software (in DATA-TEST-STIX2_v2.json)
     // (entity_type = Malware) OR (entity_type = Software)
@@ -1051,7 +1051,7 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [ENTITY_TYPE_MALWARE],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [
             {
@@ -1062,13 +1062,13 @@ describe('Complex filters combinations for elastic queries', () => {
                   operator: 'eq',
                   values: ['Software'],
                   mode: 'or',
-                }
+                },
               ],
               filterGroups: [],
-            }
+            },
           ],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(3); // 2 malware + 1 software (in DATA-TEST-STIX2_v2.json)
     // (entity_type = Malware AND Software)
@@ -1084,11 +1084,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [ENTITY_TYPE_MALWARE, 'Software'],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(0);
     // (entity_type = Malware) AND (entity_type = Software)
@@ -1104,7 +1104,7 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [ENTITY_TYPE_MALWARE],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [
             {
@@ -1115,13 +1115,13 @@ describe('Complex filters combinations for elastic queries', () => {
                   operator: 'eq',
                   values: ['Software'],
                   mode: 'and',
-                }
+                },
               ],
               filterGroups: [],
-            }
+            },
           ],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(0);
     // (entity_type != Malware OR != Software)
@@ -1137,11 +1137,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: [ENTITY_TYPE_MALWARE, 'Software'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     const entitiesNumber = queryResult.data.globalSearch.edges.length; // all the entities
     // (entity_type != Malware AND != Software)
@@ -1157,11 +1157,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: [ENTITY_TYPE_MALWARE, 'Software'],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     const entitiesNumberWithoutMalwaresAndSoftware = queryResult.data.globalSearch.edges.length; // all the entities except Malwares and Softwares
     expect(entitiesNumber - entitiesNumberWithoutMalwaresAndSoftware).toEqual(3); // 2 malwares + 1 software
@@ -1178,11 +1178,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_CONTAINER],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     const entitiesExceptContainerNumber = queryResult.data.globalSearch.edges.length; // all the entities that are not containers
     // (entity_type != Report OR != Container)
@@ -1198,11 +1198,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_CONTAINER],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     const entitiesExceptReportsNumber = queryResult.data.globalSearch.edges.length; // all the entities that are not reports
     expect(entitiesExceptReportsNumber - entitiesExceptContainerNumber).toEqual(3); // number of containers that are not reports: 3 = 1 note, 1 observed-data, 1 opinion
@@ -1221,11 +1221,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e', 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(2);
     // (id(stix/internal/standard) = internal-XX OR stix-XX)
@@ -1241,11 +1241,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [report1InternalId, report1StixId],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(1);
     // (id(stix/internal/standard) = internal-XX AND stix-XX) -> not supported
@@ -1261,11 +1261,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [report1InternalId, report1StixId],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.errors[0].message).toEqual('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
   });
@@ -1275,7 +1275,7 @@ describe('Complex filters combinations for elastic queries', () => {
       variables: {
         first: 20,
         filters: undefined,
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(44);
     // (source_reliability is empty)
@@ -1291,11 +1291,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'nil',
               values: [],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(33); // 44 entities - 11 entities with a source reliability = 33
     // (source_reliability is not empty)
@@ -1311,11 +1311,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_nil',
               values: [],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(11); // 11 entities with a source reliability
     // (source_reliability = A - Completely reliable)
@@ -1331,11 +1331,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['A - Completely reliable'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(6);
     // (source_reliability != A - Completely reliable)
@@ -1351,11 +1351,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: ['A - Completely reliable'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(38); // 44 entities - 6 entities with source reliability equals to A = 38
     // (source_reliability = A - Completely reliable OR B - Usually reliable)
@@ -1371,11 +1371,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['A - Completely reliable', 'B - Usually reliable'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(11); // 6 entities with source_reliability A + 5 with source_reliability B
     // (source_reliability = A - Completely reliable AND B - Usually reliable)
@@ -1391,11 +1391,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['A - Completely reliable', 'B - Usually reliable'],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(0);
     // (source_reliability != A - Completely reliable AND != B - Usually reliable)
@@ -1411,11 +1411,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: ['A - Completely reliable', 'B - Usually reliable'],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     const numberOfEntitiesWithSourceReliabilityNotAAndNotB = queryResult.data.globalSearch.edges.length;
     // (source_reliability != A - Completely reliable OR != B - Usually reliable)
@@ -1431,11 +1431,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: ['A - Completely reliable', 'B - Usually reliable'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     const numberOfEntitiesWithSourceReliabilityNotAOrNotB = queryResult.data.globalSearch.edges.length;
     expect(numberOfEntitiesWithSourceReliabilityNotAOrNotB - numberOfEntitiesWithSourceReliabilityNotAAndNotB).toEqual(11); // number of entities with source_reliability A or B
@@ -1454,11 +1454,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'nil',
               values: [],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(31); // 44 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 31
     // (computed_reliability is not empty)
@@ -1474,11 +1474,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_nil',
               values: [],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(13); // 11 entities with a source reliability + 2 entities with a reliability = 13
     // (computed_reliability = A - Completely reliable)
@@ -1494,11 +1494,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['A - Completely reliable'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(7); // 6 entities with source reliability A + 1 entity with reliability A
     // (computed_reliability = A - Completely reliable OR B - Usually reliable)
@@ -1514,11 +1514,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['A - Completely reliable', 'B - Usually reliable'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(13); // 6 with source_reliability A + 3 with source_reliability B + 1 with reliability A + 1 with reliability B
     // (computed_reliability = A - Completely reliable AND B - Usually reliable)
@@ -1534,11 +1534,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['A - Completely reliable', 'B - Usually reliable'],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(0);
   });
@@ -1556,11 +1556,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [locationInternalId],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 report contains this location
     // (targets = internal-id-of-a-location)
@@ -1576,11 +1576,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [locationInternalId],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 intrusion-set targets this location
     expect(queryResult.data.globalSearch.edges[0].node.id).toEqual(intrusionSetInternalId);
@@ -1592,7 +1592,7 @@ describe('Complex filters combinations for elastic queries', () => {
       variables: {
         first: 20,
         filters: undefined,
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24); // 24 stix core relationships
     // (fromOrToTypes = Malware)
@@ -1609,11 +1609,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['Malware'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(4); // 4 relationship with fromType = Malware or toType = Malware
     queryResult = await queryAsAdmin({
@@ -1634,11 +1634,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['Malware'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(4); // 4 relationship with fromType = Malware or toType = Malware
     // (fromOrToTypes != Malware-Analysis)
@@ -1654,11 +1654,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: ['Malware-Analysis'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     // 24 relationships - 1 relationship (relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee) involving a Malware-Analysis
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(23);
@@ -1675,11 +1675,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: ['Malware-Analysis'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     // 24 relationships - 1 relationship (relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee) with a Malware-Analysis as source ref
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(23);
@@ -1696,11 +1696,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['Malware'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(2); // 2 relationships with a Malware as source ref
     // (fromTypes = Malware OR Malware-Analysis)
@@ -1716,11 +1716,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['Malware', 'Malware-Analysis'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(3); // 2 relationships with a Malware as source ref + 1 with Malware-Analysis
     // (fromTypes = Malware AND Malware-Analysis)
@@ -1736,11 +1736,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['Malware', 'Malware-Analysis'],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // 0 relationships with a Malware and a Malware-Analysis as source ref
     // (toTypes != Malware-Analysis)
@@ -1756,11 +1756,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: ['Malware-Analysis'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24); // all the relationships have no malware analysis as target ref
     // (fromOrToTypes = Attack-Pattern OR Malware)
@@ -1776,11 +1776,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['Attack-Pattern', 'Malware'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(5);
     // (fromOrToTypes = Attack-Pattern AND Malware)
@@ -1796,11 +1796,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['Attack-Pattern', 'Malware'],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(2);
     // (fromOrToTypes != Attack-Pattern AND Malware)
@@ -1816,11 +1816,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: ['Attack-Pattern', 'Malware'],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(19); // (24 relationships) - (5 relationships involving malware or attack pattern) = 19
     // (fromOrToTypes is empty)
@@ -1836,11 +1836,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'nil',
               values: [],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0);
     // (fromOrToId is empty)
@@ -1856,11 +1856,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'nil',
               values: [],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0);
     // (fromOrToTypes is not empty)
@@ -1876,11 +1876,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_nil',
               values: [],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24);
     // (fromOrToId is not empty)
@@ -1896,11 +1896,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_nil',
               values: [],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24);
   });
@@ -1917,11 +1917,11 @@ describe('Complex filters combinations for elastic queries', () => {
               key: RELATION_FROM_FILTER,
               operator: 'nil',
               values: [],
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // no relationships have no source entity
     // fromId is not empty
@@ -1936,11 +1936,11 @@ describe('Complex filters combinations for elastic queries', () => {
               key: RELATION_FROM_FILTER,
               operator: 'not_nil',
               values: [],
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24); // all the relationships (ie 24) have a source entity
     // fromId = locationId
@@ -1956,11 +1956,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [locationInternalId],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(1); // 1 relationship with this location as source
     // fromId != locationId
@@ -1976,11 +1976,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: [locationInternalId],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(23); // 24 relationships - 1 relationship with this location as source
     // fromId = locationId OR intrusionSetId
@@ -1996,11 +1996,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [locationInternalId, intrusionSetInternalId],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(4); // 1 relationship with the location as source + 3 relationships with the intrusion set as source
     // fromId != locationId AND != intrusionSetId
@@ -2016,11 +2016,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'not_eq',
               values: [locationInternalId, intrusionSetInternalId],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(20); // 24 relationships - 4 relationship with the location or the intrusion set as source
     // fromId = locationId AND intrusionSetId
@@ -2036,11 +2036,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [locationInternalId, intrusionSetInternalId],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // 0 relationship with both a location and an intrusion set as source
     // toId = locationId
@@ -2056,11 +2056,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [locationInternalId],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(1); // 1 relationship with this location as target
     // toId = locationId OR intrusionSetId
@@ -2076,11 +2076,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [locationInternalId, intrusionSetInternalId],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(3); // 1 relationship with the location as target + 2 relationships with the intrusion set as target
     // toId = locationId AND intrusionSetId
@@ -2096,11 +2096,11 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: [locationInternalId, intrusionSetInternalId],
               mode: 'and',
-            }
+            },
           ],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // 0 relationship with both a location and an intrusion set as target
   });
@@ -2117,7 +2117,7 @@ describe('Complex filters combinations for elastic queries', () => {
               operator: 'eq',
               values: ['Report'],
               mode: 'or',
-            }
+            },
           ],
           filterGroups: [],
         },
@@ -2352,7 +2352,7 @@ describe('Complex filters combinations for elastic queries', () => {
           }],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in September 2023: report1, report2, report4
     // published within last 3 years and now
@@ -2370,7 +2370,7 @@ describe('Complex filters combinations for elastic queries', () => {
           }],
           filterGroups: [],
         },
-      }
+      },
     });
     expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in the last 3 years: report1, report2, report4
   });
@@ -2463,8 +2463,8 @@ describe('Complex filters regarding of for elastic queries', () => {
             key: 'entity_type',
             values: ['Malware', 'Intrusion-Set'],
             operator: 'eq',
-            mode: 'or'
-          }
+            mode: 'or',
+          },
         ],
         filterGroups: [
           {
@@ -2476,15 +2476,15 @@ describe('Complex filters regarding of for elastic queries', () => {
                 values: [
                   {
                     key: 'relationship_type',
-                    values: ['uses']
-                  }
+                    values: ['uses'],
+                  },
                 ],
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ] : [],
-            filterGroups: []
-          }
-        ]
+            filterGroups: [],
+          },
+        ],
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
@@ -2508,8 +2508,8 @@ describe('Complex filters regarding of for elastic queries', () => {
             key: 'entity_type',
             values: ['Malware', 'Intrusion-Set'],
             operator: 'eq',
-            mode: 'or'
-          }
+            mode: 'or',
+          },
         ],
         filterGroups: withRegardingOf ? [
           {
@@ -2523,12 +2523,12 @@ describe('Complex filters regarding of for elastic queries', () => {
                   { key: 'relationship_type', values: ['uses'] },
                   { key: 'direction_forced', values: [false] },
                 ],
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
-          }
-        ] : []
+            filterGroups: [],
+          },
+        ] : [],
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
@@ -2552,8 +2552,8 @@ describe('Complex filters regarding of for elastic queries', () => {
             key: 'entity_type',
             values: ['Malware', 'Intrusion-Set'],
             operator: 'eq',
-            mode: 'or'
-          }
+            mode: 'or',
+          },
         ],
         filterGroups: withRegardingOf ? [
           {
@@ -2568,12 +2568,12 @@ describe('Complex filters regarding of for elastic queries', () => {
                   { key: 'direction_forced', values: [true] },
                   { key: 'direction_reverse', values: [reverse] },
                 ],
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
-          }
-        ] : []
+            filterGroups: [],
+          },
+        ] : [],
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, false) } });
@@ -2604,8 +2604,8 @@ describe('Complex filters regarding of for elastic queries', () => {
             key: 'entity_type',
             values: ['Malware'],
             operator: 'eq',
-            mode: 'or'
-          }
+            mode: 'or',
+          },
         ],
         filterGroups: withRegardingOf ? [
           {
@@ -2625,24 +2625,24 @@ describe('Complex filters regarding of for elastic queries', () => {
                             key: 'entity_type',
                             operator: 'eq',
                             values: [ENTITY_TYPE_ATTACK_PATTERN],
-                            mode: 'or'
-                          }
+                            mode: 'or',
+                          },
                         ],
-                        filterGroups: []
-                      }
-                    ]
+                        filterGroups: [],
+                      },
+                    ],
                   },
                   {
                     key: 'relationship_type',
-                    values: ['uses']
-                  }
+                    values: ['uses'],
+                  },
                 ],
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
-          }
-        ] : []
+            filterGroups: [],
+          },
+        ] : [],
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
@@ -2664,8 +2664,8 @@ describe('Complex filters regarding of for elastic queries', () => {
             key: 'entity_type',
             values: ['Malware'],
             operator: 'eq',
-            mode: 'or'
-          }
+            mode: 'or',
+          },
         ],
         filterGroups: [
           {
@@ -2677,15 +2677,15 @@ describe('Complex filters regarding of for elastic queries', () => {
                 values: [
                   {
                     key: 'relationship_type',
-                    values: relationships
-                  }
+                    values: relationships,
+                  },
                 ],
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ] : [],
-            filterGroups: []
-          }
-        ]
+            filterGroups: [],
+          },
+        ],
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
@@ -2720,8 +2720,8 @@ describe('Complex filters regarding of for elastic queries', () => {
             key: 'entity_type',
             values: ['Malware'],
             operator: 'eq',
-            mode: 'or'
-          }
+            mode: 'or',
+          },
         ],
         filterGroups: [
           {
@@ -2733,15 +2733,15 @@ describe('Complex filters regarding of for elastic queries', () => {
                 values: [
                   {
                     key: 'id',
-                    values: ids
-                  }
+                    values: ids,
+                  },
                 ],
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ] : [],
-            filterGroups: []
-          }
-        ]
+            filterGroups: [],
+          },
+        ],
       };
     };
     const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
@@ -2779,8 +2779,8 @@ describe('Complex filters regarding of for elastic queries', () => {
             key: 'entity_type',
             values: ['Malware', 'Intrusion-Set'],
             operator: 'eq',
-            mode: 'or'
-          }
+            mode: 'or',
+          },
         ],
         filterGroups: [
           {
@@ -2792,19 +2792,19 @@ describe('Complex filters regarding of for elastic queries', () => {
                 values: [
                   {
                     key: 'relationship_type',
-                    values: ['uses']
+                    values: ['uses'],
                   },
                   {
                     key: 'inferred',
-                    values: [isInferredSubFilterValue ? 'true' : 'false']
+                    values: [isInferredSubFilterValue ? 'true' : 'false'],
                   },
                 ],
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ] : [],
-            filterGroups: []
-          }
-        ]
+            filterGroups: [],
+          },
+        ],
       };
     };
     // with inferred subfilter value = false
@@ -2903,7 +2903,7 @@ describe('User filter tests', () => {
             key: 'user_service_account',
             values: ['true'],
             operator: 'eq',
-            mode: 'or'
+            mode: 'or',
           }],
           filterGroups: [],
         },
@@ -2920,7 +2920,7 @@ describe('User filter tests', () => {
             key: 'user_service_account',
             values: ['false'],
             operator: 'eq',
-            mode: 'or'
+            mode: 'or',
           }],
           filterGroups: [],
         },
@@ -2937,7 +2937,7 @@ describe('User filter tests', () => {
             key: 'user_service_account',
             values: ['true'],
             operator: 'not_eq',
-            mode: 'or'
+            mode: 'or',
           }],
           filterGroups: [],
         },
@@ -2954,7 +2954,7 @@ describe('User filter tests', () => {
             key: 'user_service_account',
             values: ['true', 'false'],
             operator: 'eq',
-            mode: 'or'
+            mode: 'or',
           }],
           filterGroups: [],
         },
@@ -2971,7 +2971,7 @@ describe('User filter tests', () => {
             key: 'user_service_account',
             values: ['true', 'false'],
             operator: 'eq',
-            mode: 'and'
+            mode: 'and',
           }],
           filterGroups: [],
         },

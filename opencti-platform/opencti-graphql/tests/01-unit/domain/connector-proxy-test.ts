@@ -36,7 +36,7 @@ const createTestConfigAdapter = (config: Record<string, any>): ConfigAdapter => 
 
     // Mock certificate loading from file path - in tests, return a mock certificate content
     return createMockCert(cert);
-  }
+  },
 });
 
 describe('Connector Proxy configuration tests', () => {
@@ -47,7 +47,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         no_proxy: 'localhost,127.0.0.1,.internal.domain',
         https_proxy_ca: ['/path/to/ca-cert.pem'],
-        https_proxy_reject_unauthorized: true
+        https_proxy_reject_unauthorized: true,
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -66,14 +66,14 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: '',
         no_proxy: '',
         https_proxy_ca: [],
-        https_proxy_reject_unauthorized: undefined
+        https_proxy_reject_unauthorized: undefined,
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
 
       // Empty proxy values should not be included (except reject_unauthorized which has default)
       expect(result).toEqual({
-        HTTPS_PROXY_REJECT_UNAUTHORIZED: 'true'
+        HTTPS_PROXY_REJECT_UNAUTHORIZED: 'true',
       });
     });
 
@@ -82,7 +82,7 @@ describe('Connector Proxy configuration tests', () => {
         http_proxy: 'http://username:password@proxy.example.com:8080',
         https_proxy: 'https://user:pass@secure-proxy.example.com:8443',
         no_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -97,7 +97,7 @@ describe('Connector Proxy configuration tests', () => {
         no_proxy: 'localhost,127.0.0.1,192.168.1.0/24,*.internal.com,.example.org,specific.domain.com',
         http_proxy: '',
         https_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -119,7 +119,7 @@ describe('Connector Proxy configuration tests', () => {
         no_proxy: 'localhost,127.0.0.1:8080,.example.com,api.example.com,10.0.0.1',
         http_proxy: '',
         https_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -140,7 +140,7 @@ describe('Connector Proxy configuration tests', () => {
         no_proxy: '*.example.com,192.168.0.0/16,10.0.0.0/8,*,*.*.example.com',
         http_proxy: '',
         https_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -155,7 +155,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_ca: ['/path/to/ca-cert.pem', '/path/to/ssl-cert.pem', '/path/to/ca-bundle.pem'],
         http_proxy: '',
-        no_proxy: ''
+        no_proxy: '',
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -176,7 +176,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_ca: [inlineCert1, inlineCert2],
         http_proxy: '',
-        no_proxy: ''
+        no_proxy: '',
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -194,7 +194,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_ca: ['/path/to/file-cert.pem', inlineCert, '/path/to/another-cert.pem'],
         http_proxy: '',
-        no_proxy: ''
+        no_proxy: '',
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -216,7 +216,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy_reject_unauthorized: '0',
         http_proxy: '',
         no_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       let result = getProxyConfigurationForContract(configAdapter1);
@@ -228,7 +228,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy_reject_unauthorized: '1',
         http_proxy: '',
         no_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       result = getProxyConfigurationForContract(configAdapter2);
@@ -240,7 +240,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy_reject_unauthorized: undefined,
         http_proxy: '',
         no_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       result = getProxyConfigurationForContract(configAdapter3);
@@ -252,7 +252,7 @@ describe('Connector Proxy configuration tests', () => {
         no_proxy: ' localhost , 127.0.0.1 , .internal.com ',
         http_proxy: '',
         https_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -271,7 +271,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_ca: '/path/to/single-cert.pem',
         http_proxy: '',
-        no_proxy: ''
+        no_proxy: '',
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -285,7 +285,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_ca: ['/path/to/cert1.pem', '', null, '/path/to/cert2.pem'],
         http_proxy: '',
-        no_proxy: ''
+        no_proxy: '',
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -303,7 +303,7 @@ describe('Connector Proxy configuration tests', () => {
         http_proxy: 'invalid-url-without-protocol',
         https_proxy: 'ftp://unsupported-protocol.com:8080',
         no_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -318,7 +318,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_ca: 'this-should-be-an-array',
         http_proxy: '',
-        no_proxy: ''
+        no_proxy: '',
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -332,7 +332,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_ca: 12345,
         http_proxy: '',
-        no_proxy: ''
+        no_proxy: '',
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -346,7 +346,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_ca: [],
         http_proxy: '',
-        no_proxy: ''
+        no_proxy: '',
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -360,7 +360,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_ca: ['/path/to/cert1.pem', 123, { invalid: 'object' }, '/path/to/cert2.pem'],
         http_proxy: '',
-        no_proxy: ''
+        no_proxy: '',
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -377,7 +377,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_ca: ['/path/to/valid.pem', '/not/found.pem', '/invalid/cert.pem'],
         http_proxy: '',
-        no_proxy: ''
+        no_proxy: '',
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -393,7 +393,7 @@ describe('Connector Proxy configuration tests', () => {
         no_proxy: 'localhost,localhost,127.0.0.1,localhost,.example.com,.example.com',
         http_proxy: '',
         https_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -412,7 +412,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: '',
         no_proxy: '',
         https_proxy_ca: [],
-        https_proxy_reject_unauthorized: true
+        https_proxy_reject_unauthorized: true,
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -431,7 +431,7 @@ describe('Connector Proxy configuration tests', () => {
         http_proxy: 'socks5://proxy.example.com:1080',
         https_proxy: 'socks4://proxy.example.com:1080',
         no_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -446,7 +446,7 @@ describe('Connector Proxy configuration tests', () => {
         no_proxy: '   ,  ,   ',
         http_proxy: '',
         https_proxy: '',
-        https_proxy_ca: []
+        https_proxy_ca: [],
       });
 
       const result = getProxyConfigurationForContract(configAdapter);
@@ -460,7 +460,7 @@ describe('Connector Proxy configuration tests', () => {
     it('should inject proxy configuration into existing contract configuration', () => {
       const existingConfig = [
         { key: 'IPINFO_TOKEN', value: 'test-token' },
-        { key: 'CONNECTOR_AUTO', value: 'true' }
+        { key: 'CONNECTOR_AUTO', value: 'true' },
       ];
 
       const configAdapter = createTestConfigAdapter({
@@ -468,7 +468,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: 'https://secure-proxy.example.com:8443',
         no_proxy: 'localhost,127.0.0.1',
         https_proxy_ca: [],
-        https_proxy_reject_unauthorized: true
+        https_proxy_reject_unauthorized: true,
       });
 
       const result = injectProxyConfiguration(existingConfig, configAdapter);
@@ -488,7 +488,7 @@ describe('Connector Proxy configuration tests', () => {
       const existingConfig = [
         { key: 'IPINFO_TOKEN', value: 'test-token' },
         { key: 'HTTP_PROXY', value: 'old-proxy' },
-        { key: 'NO_PROXY', value: 'old-no-proxy' }
+        { key: 'NO_PROXY', value: 'old-no-proxy' },
       ];
 
       const configAdapter = createTestConfigAdapter({
@@ -496,7 +496,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: '',
         no_proxy: 'localhost',
         https_proxy_ca: [],
-        https_proxy_reject_unauthorized: false
+        https_proxy_reject_unauthorized: false,
       });
 
       const result = injectProxyConfiguration(existingConfig, configAdapter);
@@ -519,7 +519,7 @@ describe('Connector Proxy configuration tests', () => {
         https_proxy: '',
         no_proxy: '',
         https_proxy_ca: [],
-        https_proxy_reject_unauthorized: true
+        https_proxy_reject_unauthorized: true,
       });
 
       const result = injectProxyConfiguration(existingConfig, configAdapter);

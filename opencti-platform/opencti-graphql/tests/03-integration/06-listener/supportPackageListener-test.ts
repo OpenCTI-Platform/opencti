@@ -28,7 +28,7 @@ describe('SupportPackage listener standard behavior', () => {
 describe('SupportPackage listener error management', () => {
   it('should entity does it not support package be ignored', async () => {
     const wrongEntity: Partial<BasicStoreEntityDecayRule> = {
-      id: 'testing-errors'
+      id: 'testing-errors',
     };
     await onSupportPackageMessage({ instance: wrongEntity as BasicStoreEntity });
     // expecting no error throw.

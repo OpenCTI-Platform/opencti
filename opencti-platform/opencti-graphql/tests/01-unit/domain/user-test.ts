@@ -91,8 +91,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
-      updated_at: '2024-08-06T13:30:04.478Z'
-    }
+      updated_at: '2024-08-06T13:30:04.478Z',
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -111,8 +111,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: true
-    }
+      can_manage_sensitive_config: true,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -131,8 +131,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
-    }
+      can_manage_sensitive_config: false,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -163,8 +163,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
-    }
+      can_manage_sensitive_config: false,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -195,8 +195,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: true
-    }
+      can_manage_sensitive_config: true,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -215,7 +215,7 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
+      can_manage_sensitive_config: false,
     },
     {
       _index: 'opencti_internal_objects-000001',
@@ -228,8 +228,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
-    }
+      can_manage_sensitive_config: false,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -248,7 +248,7 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
+      can_manage_sensitive_config: false,
     },
     {
       _index: 'opencti_internal_objects-000001',
@@ -261,8 +261,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
-    }
+      can_manage_sensitive_config: false,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(OPENCTI_ADMIN_UUID, roles);
@@ -293,8 +293,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: true
-    }
+      can_manage_sensitive_config: true,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(OPENCTI_ADMIN_UUID, roles);

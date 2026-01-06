@@ -115,7 +115,7 @@ describe('Sector resolver standard behavior', () => {
     expect(queryResult.data.sector.isSubSector).toBeFalsy();
     expect(queryResult.data.sector.subSectors.edges.length).toEqual(1);
     expect(queryResult.data.sector.subSectors.edges[0].node.standard_id).toEqual(
-      'identity--bcd45704-00ab-5e55-b6b2-176bba1717bd'
+      'identity--bcd45704-00ab-5e55-b6b2-176bba1717bd',
     );
   });
   it('should sector parent sectors be accurate', async () => {
@@ -130,7 +130,7 @@ describe('Sector resolver standard behavior', () => {
     expect(queryResult.data.sector.isSubSector).toBeTruthy();
     expect(queryResult.data.sector.parentSectors.edges.length).toEqual(1);
     expect(queryResult.data.sector.parentSectors.edges[0].node.standard_id).toEqual(
-      'identity--6e24d2a6-6ce1-5fbb-b3c6-e37f1dc381ff'
+      'identity--6e24d2a6-6ce1-5fbb-b3c6-e37f1dc381ff',
     );
   });
   it('should list sectors', async () => {

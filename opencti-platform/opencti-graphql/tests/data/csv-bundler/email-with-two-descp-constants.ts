@@ -26,8 +26,8 @@ export const emailWithTwoDescCsvMapper: Partial<CsvMapperParsed> = {
           column: {
             column_name: 'B',
           },
-        }
-      ]
-    }
-  ]
+        },
+      ],
+    },
+  ],
 };

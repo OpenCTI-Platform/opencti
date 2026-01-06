@@ -11,7 +11,7 @@ import {
   securityQuery,
   TEST_ORGANIZATION,
   USER_EDITOR,
-  USER_SECURITY
+  USER_SECURITY,
 } from '../../utils/testQuery';
 import { adminQueryWithSuccess, disableEE, enableCEAndUnSetOrganization, enableEE, enableEEAndSetOrganization, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
@@ -182,9 +182,9 @@ describe('Case Incident Response standard behavior with authorized_members activ
       query: CREATE_QUERY,
       variables: {
         input: {
-          name: 'Case Incident Response With Authorized Members from entity'
-        }
-      }
+          name: 'Case Incident Response With Authorized Members from entity',
+        },
+      },
     });
 
     expect(caseIncidentResponseCreateQueryResult).not.toBeNull();
@@ -207,9 +207,9 @@ describe('Case Incident Response standard behavior with authorized_members activ
       input: [
         {
           id: userEditorId,
-          access_right: 'view'
+          access_right: 'view',
         },
-      ]
+      ],
     };
     await queryAsUserIsExpectedForbidden(USER_SECURITY.client, {
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
@@ -225,18 +225,18 @@ describe('Case Incident Response standard behavior with authorized_members activ
         input: [
           {
             id: ADMIN_USER.id,
-            access_right: 'admin'
-          }
-        ]
-      }
+            access_right: 'admin',
+          },
+        ],
+      },
     });
     expect(caseIncidentResponseUpdatedQueryResult).not.toBeNull();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
         member_id: ADMIN_USER.id,
-        access_right: 'admin'
-      }
+        access_right: 'admin',
+      },
     ]);
   });
   it('should Editor user not access Case Incident Response', async () => {
@@ -254,14 +254,14 @@ describe('Case Incident Response standard behavior with authorized_members activ
         input: [
           {
             id: ADMIN_USER.id,
-            access_right: 'admin'
+            access_right: 'admin',
           },
           {
             id: userEditorId,
-            access_right: 'view'
-          }
-        ]
-      }
+            access_right: 'view',
+          },
+        ],
+      },
     });
     expect(caseIncidentResponseUpdatedQueryResult).not.toBeNull();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit).not.toBeNull();
@@ -270,12 +270,12 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
         member_id: ADMIN_USER.id,
-        access_right: 'admin'
+        access_right: 'admin',
       },
       {
         member_id: userEditorId,
-        access_right: 'view'
-      }
+        access_right: 'view',
+      },
     ]);
   });
   it('should Editor user access Case Incident Response', async () => {
@@ -299,14 +299,14 @@ describe('Case Incident Response standard behavior with authorized_members activ
         input: [
           {
             id: ADMIN_USER.id,
-            access_right: 'admin'
+            access_right: 'admin',
           },
           {
             id: userEditorId,
-            access_right: 'edit'
-          }
-        ]
-      }
+            access_right: 'edit',
+          },
+        ],
+      },
     });
     expect(caseIncidentResponseUpdatedQueryResult).not.toBeNull();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
@@ -340,14 +340,14 @@ describe('Case Incident Response standard behavior with authorized_members activ
         input: [
           {
             id: ADMIN_USER.id,
-            access_right: 'admin'
+            access_right: 'admin',
           },
           {
             id: userEditorId,
-            access_right: 'admin'
-          }
-        ]
-      }
+            access_right: 'admin',
+          },
+        ],
+      },
     });
     expect(caseIncidentResponseUpdatedQueryResult).not.toBeNull();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.currentUserAccessRight).toEqual('admin');
@@ -355,12 +355,12 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
         member_id: ADMIN_USER.id,
-        access_right: 'admin'
+        access_right: 'admin',
       },
       {
         member_id: userEditorId,
-        access_right: 'admin'
-      }
+        access_right: 'admin',
+      },
     ]);
   });
   it('should Editor user Case Incident Response deleted', async () => {
@@ -422,10 +422,10 @@ describe('Case Incident Response standard behavior with authorized_members activ
         default_values: [
           JSON.stringify({
             id: ADMIN_USER.id,
-            access_right: 'admin'
-          })
-        ]
-      }
+            access_right: 'admin',
+          }),
+        ],
+      },
     ]);
     const updateEntitySettingsResult = await adminQuery({
       query: ENTITY_SETTINGS_UPDATE_QUERY,
@@ -436,17 +436,17 @@ describe('Case Incident Response standard behavior with authorized_members activ
       query: CREATE_QUERY,
       variables: {
         input: {
-          name: 'Case Incident Response With Authorized Members via settings'
-        }
-      }
+          name: 'Case Incident Response With Authorized Members via settings',
+        },
+      },
     });
     expect(caseIncidentResponseAuthorizedMembersData).not.toBeNull();
     expect(caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd.authorized_members).not.toBeUndefined();
     expect(caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd.authorized_members).toEqual([
       {
         member_id: ADMIN_USER.id,
-        access_right: 'admin'
-      }
+        access_right: 'admin',
+      },
     ]);
     caseIncidentResponseAuthorizedMembersFromSettings = caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd;
     // Clean
@@ -479,9 +479,9 @@ describe('Case Incident Response and organization sharing standard behavior with
       query: CREATE_QUERY,
       variables: {
         input: {
-          name: 'Case IR without platform Orga'
-        }
-      }
+          name: 'Case IR without platform Orga',
+        },
+      },
     });
 
     expect(caseIRCreateQueryResult).not.toBeNull();
@@ -496,7 +496,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     organizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQuery({
       query: ORGANIZATION_SHARING_QUERY,
-      variables: { id: caseIrId, organizationId, directContainerSharing: true }
+      variables: { id: caseIrId, organizationId, directContainerSharing: true },
     });
     expect(organizationSharingQueryResult).not.toBeNull();
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
@@ -567,8 +567,8 @@ describe('Case Incident Response and organization sharing standard behavior with
         input: [
           { key: 'platform_organization', value: platformOrganizationId },
           { key: 'enterprise_license', value: conf.get('app:enterprise_edition_license') },
-        ]
-      }
+        ],
+      },
     });
     expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_organization).not.toBeUndefined();
     expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_enterprise_edition.license_validated).toBeTruthy();
@@ -580,9 +580,9 @@ describe('Case Incident Response and organization sharing standard behavior with
       query: CREATE_QUERY,
       variables: {
         input: {
-          name: 'Case IR with platform orga'
-        }
-      }
+          name: 'Case IR with platform orga',
+        },
+      },
     });
 
     expect(caseIRCreateQueryResult).not.toBeNull();
@@ -603,26 +603,26 @@ describe('Case Incident Response and organization sharing standard behavior with
         input: [
           {
             id: ADMIN_USER.id,
-            access_right: 'admin'
+            access_right: 'admin',
           },
           {
             id: userEditorId,
-            access_right: 'view'
-          }
-        ]
-      }
+            access_right: 'view',
+          },
+        ],
+      },
     });
     expect(caseIRUpdatedQueryResult).not.toBeNull();
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
         member_id: ADMIN_USER.id,
-        access_right: 'admin'
+        access_right: 'admin',
       },
       {
         member_id: userEditorId,
-        access_right: 'view'
-      }
+        access_right: 'view',
+      },
     ]);
   });
   it('should Editor user access Case Incident Response out of her organization if authorized members activated', async () => {
@@ -635,7 +635,7 @@ describe('Case Incident Response and organization sharing standard behavior with
   it('user without bypass should not be allowed list all auth member restricted entities', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: LIST_RESTRICTED_ENTITIES,
-      variables: { first: 10 }
+      variables: { first: 10 },
     });
   });
   it('should BYPASS user be allowed list all auth member restricted entities', async () => {
@@ -648,7 +648,7 @@ describe('Case Incident Response and organization sharing standard behavior with
       variables: {
         id: caseIrId,
         input: null,
-      }
+      },
     });
     // Verify Editor user has no more access to Case incident
     const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
@@ -660,7 +660,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQuery({
       query: ORGANIZATION_SHARING_QUERY,
-      variables: { id: caseIrId, organizationId: testOrganizationId, directContainerSharing: true }
+      variables: { id: caseIrId, organizationId: testOrganizationId, directContainerSharing: true },
     });
     expect(organizationSharingQueryResult).not.toBeNull();
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
@@ -679,8 +679,8 @@ describe('Case Incident Response and organization sharing standard behavior with
         input: [
           { key: 'platform_organization', value: [] },
           { key: 'enterprise_license', value: [] },
-        ]
-      }
+        ],
+      },
     });
     expect(platformOrganization?.data?.settingsEdit.fieldPatch.platform_organization).toBeNull();
   });
@@ -710,9 +710,9 @@ describe('Restricted entities listing', () => {
       query: CREATE_QUERY,
       variables: {
         input: {
-          name: 'Case IR with platform orga'
-        }
-      }
+          name: 'Case IR with platform orga',
+        },
+      },
     });
     expect(caseIRCreateQueryResult?.data?.caseIncidentAdd).not.toBeUndefined();
     caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
@@ -726,26 +726,26 @@ describe('Restricted entities listing', () => {
         input: [
           {
             id: ADMIN_USER.id,
-            access_right: 'admin'
+            access_right: 'admin',
           },
           {
             id: userEditorId,
-            access_right: 'view'
-          }
-        ]
-      }
+            access_right: 'view',
+          },
+        ],
+      },
     });
     expect(caseIRUpdatedQueryResult).not.toBeNull();
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
         member_id: ADMIN_USER.id,
-        access_right: 'admin'
+        access_right: 'admin',
       },
       {
         member_id: userEditorId,
-        access_right: 'view'
-      }
+        access_right: 'view',
+      },
     ]);
   });
   it('should Report created', async () => { // +1 create
@@ -756,8 +756,8 @@ describe('Restricted entities listing', () => {
         input: {
           name: 'Report name',
           published: '2023-06-01T22:00:00.000Z',
-        }
-      }
+        },
+      },
     });
     expect(reportCreateQueryResult?.data?.reportAdd).not.toBeUndefined();
     reportId = reportCreateQueryResult?.data?.reportAdd.id;
@@ -771,32 +771,32 @@ describe('Restricted entities listing', () => {
         input: [
           {
             id: ADMIN_USER.id,
-            access_right: 'admin'
+            access_right: 'admin',
           },
           {
             id: userEditorId,
-            access_right: 'view'
-          }
-        ]
-      }
+            access_right: 'view',
+          },
+        ],
+      },
     });
     expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
         member_id: ADMIN_USER.id,
-        access_right: 'admin'
+        access_right: 'admin',
       },
       {
         member_id: userEditorId,
-        access_right: 'view'
-      }
+        access_right: 'view',
+      },
     ]);
     expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members_activation_date).toBeDefined();
   }); // +1 update
   it('using platform org - user without bypass should not be allowed list all auth member restricted entities', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
       query: LIST_RESTRICTED_ENTITIES,
-      variables: { first: 10 }
+      variables: { first: 10 },
     });
   });
   it('using platform org - should BYPASS user be allowed list all auth member restricted entities', async () => {

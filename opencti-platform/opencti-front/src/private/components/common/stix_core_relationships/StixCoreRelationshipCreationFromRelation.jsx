@@ -355,7 +355,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     this.setState({ step: 1, targetEntity: stixDomainObject });
   }
 
-  // eslint-disable-next-line class-methods-use-this
   renderFakeList() {
     return (
       <List>
@@ -540,7 +539,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     );
   }
 
-  // eslint-disable-next-line
   renderLoader() {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>

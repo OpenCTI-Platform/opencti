@@ -1,4 +1,3 @@
-/* eslint-disable class-methods-use-this */
 import session from 'express-session';
 import { LRUCache } from 'lru-cache';
 import AsyncLock from 'async-lock';

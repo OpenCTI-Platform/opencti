@@ -53,7 +53,7 @@ const generateEmailTemplateToCreate = (value: number) => ({
   name: `emailTemplate${value}`,
   email_object: `email@template${value}.com`,
   sender_email: `sender@email${value}.com`,
-  template_body: `templateBody${value}`
+  template_body: `templateBody${value}`,
 });
 
 describe('Email template resolver standard behavior', () => {
@@ -64,7 +64,7 @@ describe('Email template resolver standard behavior', () => {
         query: CREATE_TEMPLATE_MUTATION,
         variables: {
           input: generateEmailTemplateToCreate(1),
-        }
+        },
       });
 
       expect(emailTemplate).not.toBeNull();
@@ -78,7 +78,7 @@ describe('Email template resolver standard behavior', () => {
         query: CREATE_TEMPLATE_MUTATION,
         variables: {
           input: generateEmailTemplateToCreate(2),
-        }
+        },
       });
 
       expect(emailTemplate).not.toBeNull();
@@ -95,8 +95,8 @@ describe('Email template resolver standard behavior', () => {
         query: EDIT_TEMPLATE_MUTATION,
         variables: {
           id: emailTemplateIds[0],
-          input: [{ key: 'name', value: ['emailTemplate11'] }]
-        }
+          input: [{ key: 'name', value: ['emailTemplate11'] }],
+        },
       });
 
       expect(emailTemplate).not.toBeNull();
@@ -110,7 +110,7 @@ describe('Email template resolver standard behavior', () => {
         query: READ_TEMPLATE_QUERY,
         variables: {
           id: emailTemplateIds[0],
-        }
+        },
       });
 
       expect(emailTemplate).not.toBeNull();
@@ -121,7 +121,7 @@ describe('Email template resolver standard behavior', () => {
       const listResult = await queryAsAdmin({
         query: READ_TEMPLATES_QUERY,
         variables: {
-          orderMode: 'desc'
+          orderMode: 'desc',
         },
       });
 
@@ -136,8 +136,8 @@ describe('Email template resolver standard behavior', () => {
       await queryAsAdmin({
         query: DELETE_TEMPLATE_MUTATION,
         variables: {
-          id: emailTemplateIds[0]
-        }
+          id: emailTemplateIds[0],
+        },
       });
 
       const emailTemplate = await elLoadById(testContext, ADMIN_USER, emailTemplateIds[0]);
@@ -148,8 +148,8 @@ describe('Email template resolver standard behavior', () => {
       await queryAsAdmin({
         query: DELETE_TEMPLATE_MUTATION,
         variables: {
-          id: emailTemplateIds[1]
-        }
+          id: emailTemplateIds[1],
+        },
       });
 
       const emailTemplate = await elLoadById(testContext, ADMIN_USER, emailTemplateIds[0]);
