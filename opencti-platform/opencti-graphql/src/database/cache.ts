@@ -26,7 +26,7 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_LABEL]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_MARKING_DEFINITION]: [ENTITY_TYPE_RESOLVED_FILTERS],
-  // Status must be reset if depending on status template modifications
+  // Status must be reset depending on status template modifications
   [ENTITY_TYPE_STATUS_TEMPLATE]: [ENTITY_TYPE_STATUS],
 };
 
