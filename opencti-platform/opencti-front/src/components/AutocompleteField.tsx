@@ -1,6 +1,7 @@
 import { ReactNode, useCallback } from 'react';
 import { Add } from '@mui/icons-material';
-import { TextField, IconButton, Autocomplete, AutocompleteProps, TextFieldProps, AutocompleteValue } from '@mui/material';
+import { TextField, Autocomplete, AutocompleteProps, TextFieldProps, AutocompleteValue } from '@mui/material';
+import IconButton from '@common/button/IconButton';
 import { FieldProps, useField } from 'formik';
 import { truncate } from '../utils/String';
 import { useFormatter } from './i18n';
@@ -139,9 +140,7 @@ const AutocompleteField = <
         <IconButton
           disabled={disabled}
           onClick={() => openCreate()}
-          edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
-          size="large"
           title={t_i18n('Add')}
         >
           <Add />
