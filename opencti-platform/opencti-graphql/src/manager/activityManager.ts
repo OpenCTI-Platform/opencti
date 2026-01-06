@@ -208,9 +208,11 @@ const initActivityManager = () => {
       }, SCHEDULE_TIME);
     },
     status: (settings?: BasicStoreSettings) => {
+      const isEnterpriseEdition = settings ? isEnterpriseEditionFromSettings(settings) : false;
+
       return {
         id: 'ACTIVITY_MANAGER',
-        enable: settings && isEnterpriseEditionFromSettings(settings) && booleanConf('activity_manager:enabled', false),
+        enable: isEnterpriseEdition && booleanConf('activity_manager:enabled', false),
         running,
       };
     },
