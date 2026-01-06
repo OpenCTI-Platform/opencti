@@ -38,6 +38,7 @@ import { getManagerConfigurationFromCache, updateManagerConfigurationLastRun } f
 import { allFilesForPaths, getIndexFromDate } from '../modules/internal/document/document-domain';
 import { buildOptionsFromFileManager } from '../domain/file';
 import { internalLoadById } from '../database/middleware-loader';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 
 const FILE_INDEX_MANAGER_KEY = conf.get('file_index_manager:lock_key');
 const SCHEDULE_TIME = conf.get('file_index_manager:interval') || 60000; // 1 minute
@@ -150,7 +151,7 @@ const initFileIndexManager = () => {
   const fileIndexHandler = async () => {
     const context = executionContext(FILE_INDEX_MANAGER_NAME);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    if (settings && settings.valid_enterprise_edition === true) {
+    if (settings && isEnterpriseEditionFromSettings(settings)) {
       let lock;
       try {
         // Lock the manager
@@ -181,7 +182,7 @@ const initFileIndexManager = () => {
   const fileIndexStreamHandler = async () => {
     const context = executionContext(FILE_INDEX_MANAGER_NAME);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    if (settings.valid_enterprise_edition === true) {
+    if (isEnterpriseEditionFromSettings(settings)) {
       let lock;
       try {
         // Lock the manager
@@ -223,7 +224,7 @@ const initFileIndexManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'FILE_INDEX_MANAGER',
-        enable: ENABLED_FILE_INDEX_MANAGER && settings?.valid_enterprise_edition === true,
+        enable: ENABLED_FILE_INDEX_MANAGER && settings && isEnterpriseEditionFromSettings(settings),
         running,
         warning: !isAttachmentProcessorEnabled(),
       };

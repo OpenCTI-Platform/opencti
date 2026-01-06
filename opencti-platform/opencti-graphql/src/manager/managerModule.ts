@@ -10,6 +10,7 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import { utcDate } from '../utils/format';
 import { wait } from '../database/utils';
 import type { DataEvent, SseEvent } from '../types/event';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 
 export interface HandlerInput {
   shutdown?: () => Promise<void>;
@@ -143,10 +144,12 @@ const initManager = (manager: ManagerDefinition) => {
       }
     },
     status: (settings?: BasicStoreSettings) => {
+      const isEnterpriseEdition = settings ? isEnterpriseEditionFromSettings(settings) : false;
+
       return {
         id: manager.id,
         enable: manager.enterpriseEditionOnly
-          ? settings?.valid_enterprise_edition === true && manager.enabled(settings)
+          ? isEnterpriseEdition && manager.enabled(settings)
           : manager.enabled(settings),
         running,
         warning: manager.warning?.() || false,
