@@ -57,7 +57,7 @@ const ThemeLight = (
     ai: {
       main: '#5E1AD5',
       light: '#D6C2FA',
-      dark: '#3C108C',
+      dark: '#B286FF',
       contrastText: '#000000',
       text: {
         primary: '#673ab7',
@@ -76,6 +76,10 @@ const ThemeLight = (
       accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
       shadow: 'rgba(0, 0, 0, .15)',
       secondary: '#FFFFFF',
+      gradient: {
+        start: '#ECECF2',
+        end: '#F7F7F7',
+      },
     },
     text: {
       light: '#494A50',

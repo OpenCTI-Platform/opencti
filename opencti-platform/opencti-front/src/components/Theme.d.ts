@@ -147,7 +147,10 @@ interface ExtendedBackground extends TypeBackground {
   accent: string;
   shadow: string;
   secondary: string;
-  popoverItem: string;
+  gradient: {
+    start: string;
+    end: string;
+  };
 }
 
 interface ExtendedText extends TypeText {
