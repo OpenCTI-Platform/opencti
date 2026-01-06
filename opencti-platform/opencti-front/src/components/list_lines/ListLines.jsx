@@ -87,7 +87,6 @@ const styles = (theme) => ({
   },
   item: {
     paddingLeft: 10,
-    textTransform: 'uppercase',
   },
   headerItem: {
     display: 'flex',
@@ -108,6 +107,10 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    textTransform: 'lowercase',
+    '&::first-letter': {
+      textTransform: 'uppercase',
+    },
   },
   info: {
     paddingTop: 10,
