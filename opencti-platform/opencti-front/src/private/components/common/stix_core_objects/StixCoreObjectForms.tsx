@@ -8,6 +8,7 @@ import StixCoreObjectFormSelector from '@components/common/stix_core_objects/Sti
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import { ToggleButton } from '@mui/material';
 
 // region types
 interface StixCoreObjectFormsProps {
@@ -43,18 +44,14 @@ const StixCoreObjectFormsComponent: FunctionComponent<StixCoreObjectFormsCompone
     <>
       {hasForms && (
         <Tooltip title={t_i18n('Use a form to create')}>
-          <IconButton
+          <ToggleButton
+            size="small"
+            value="formIntake"
             onClick={() => setIsFormSelectorOpen(true)}
             color="primary"
-            style={{
-              border: '1px solid',
-              borderRadius: '4px',
-              padding: '6px',
-              marginLeft: '6px',
-            }}
           >
-            <AssignmentOutlined />
-          </IconButton>
+            <AssignmentOutlined color="primary" />
+          </ToggleButton>
         </Tooltip>
       )}
       <StixCoreObjectFormSelector data={data} open={isFormSelectorOpen} handleClose={() => setIsFormSelectorOpen(false)} />

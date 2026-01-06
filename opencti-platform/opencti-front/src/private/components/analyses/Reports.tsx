@@ -220,7 +220,9 @@ const Reports: FunctionComponent = () => {
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType="Report" />
+                <div style={{ marginLeft: 8 }}>
+                  <StixCoreObjectForms entityType="Report" />
+                </div>
                 <ReportCreation paginationOptions={queryPaginationOptions} />
               </div>
             </Security>

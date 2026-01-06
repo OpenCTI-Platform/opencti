@@ -91,7 +91,7 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
 
         <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canEdit}>
           <>
-            <div>
+            <div style={{ display: 'flex', gap: 4 }}>
               <Security matchAll needs={[PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES]} hasAccess={canManage}>
                 <FormAuthorizedMembersDialog
                   id={id}
