@@ -5,6 +5,7 @@ import {
   createHttpClient,
   editorQuery,
   getOrganizationIdByName,
+  GREEN_GROUP,
   PLATFORM_ORGANIZATION,
   queryAsAdmin,
   securityQuery,
@@ -15,7 +16,7 @@ import { getInferences } from '../../utils/rule-utils';
 import ParticipateToPartsRule from '../../../src/rules/participate-to-parts/ParticipateToPartsRule';
 import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
 import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
-import type { BasicConnection, BasicStoreBase, BasicStoreEntity, BasicStoreRelation } from '../../../src/types/store';
+import type { BasicStoreBase, BasicStoreRelation } from '../../../src/types/store';
 import { createRuleContent } from '../../../src/rules/rules-utils';
 import { createInferredRelation, deleteInferredRuleElement } from '../../../src/database/middleware';
 import { ID_SUBFILTER, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from '../../../src/utils/filtering/filtering-constants';
@@ -31,6 +32,7 @@ import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { addReport } from '../../../src/domain/report';
 import type { AxiosInstance } from 'axios';
 import { INPUT_ASSIGNEE, INPUT_PARTICIPANT } from '../../../src/schema/general';
+import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -195,10 +197,12 @@ describe('Users visibility according to their direct organizations', () => {
   let orgaCInternalId: string;
 
   let USER_A: AuthUser;
+  let USER_A2: AuthUser;
   let USER_AB: AuthUser;
   let USER_O: AuthUser;
 
   let USER_A_CLIENT: AxiosInstance;
+  let USER_A2_CLIENT: AxiosInstance;
   let USER_AB_CLIENT: AxiosInstance;
 
   let reportInternalId: string;
@@ -212,6 +216,7 @@ describe('Users visibility according to their direct organizations', () => {
     fetchUserAB: () => AuthUser,
     fetchUserO: () => AuthUser,
     fetchUserAClient: () => AxiosInstance,
+    fetchUserA2Client: () => AxiosInstance,
     fetchReportInternalId: () => string,
     contextExplanation: string,
   ) => {
@@ -219,6 +224,7 @@ describe('Users visibility according to their direct organizations', () => {
     let USER_AB: AuthUser;
     let USER_O: AuthUser;
     let USER_A_CLIENT: AxiosInstance;
+    let USER_A2_CLIENT: AxiosInstance;
     let reportInternalId: string;
 
     beforeAll(() => {
@@ -226,6 +232,7 @@ describe('Users visibility according to their direct organizations', () => {
       USER_AB = fetchUserAB();
       USER_O = fetchUserO();
       USER_A_CLIENT = fetchUserAClient();
+      USER_A2_CLIENT = fetchUserA2Client();
       reportInternalId = fetchReportInternalId();
     });
 
@@ -244,13 +251,19 @@ describe('Users visibility according to their direct organizations', () => {
       queryResult = await editorQuery({ query: READ_MEMBERS_QUERY, variables: { filters, entityTypes: [ENTITY_TYPE_USER] } });
       expect(queryResult.data?.members.edges.length).toEqual(6);
 
-      let paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters }) as BasicConnection<BasicStoreEntity>;
+      let paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters });
       expect(paginatedMembersResult.edges.filter((n: any) => n.node.entity_type === ENTITY_TYPE_USER).length).toEqual(6);
 
-      paginatedMembersResult = await findMembersPaginated(testContext, USER_O, { filters, entityTypes: [ENTITY_TYPE_USER] }) as BasicConnection<BasicStoreEntity>;
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_A2, { filters });
+      expect(paginatedMembersResult.edges.filter((n: any) => n.node.entity_type === ENTITY_TYPE_USER).length).toEqual(6);
+
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_O, { filters, entityTypes: [ENTITY_TYPE_USER] });
       expect(paginatedMembersResult.edges.length).toEqual(6);
 
-      const membersResult = await findAllMembers(testContext, USER_AB, { filters }) as BasicStoreEntity[];
+      let membersResult = await findAllMembers(testContext, USER_AB, { filters });
+      expect(membersResult.length).toEqual(6);
+
+      membersResult = await findAllMembers(testContext, USER_O, { filters });
       expect(membersResult.length).toEqual(6);
     });
 
@@ -262,6 +275,10 @@ describe('Users visibility according to their direct organizations', () => {
       reportQueryResult = await userQuery(USER_A_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
       expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(6);
       expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(6);
+
+      reportQueryResult = await userQuery(USER_A2_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+      expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(6);
+      expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(6);
     });
 
     it(`should fetch all the users that are assignees of a report if ${contextExplanation}`, async () => {
@@ -269,6 +286,9 @@ describe('Users visibility according to their direct organizations', () => {
       expect(queryResult.data?.assignees.edges.length).toEqual(6);
 
       queryResult = await userQuery(USER_A_CLIENT, { query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
+      expect(queryResult.data?.assignees.edges.length).toEqual(6);
+
+      queryResult = await userQuery(USER_A2_CLIENT, { query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
       expect(queryResult.data?.assignees.edges.length).toEqual(6);
     });
 
@@ -278,12 +298,19 @@ describe('Users visibility according to their direct organizations', () => {
 
       queryResult = await editorQuery({ query: READ_PARTICIPANTS_QUERY, variables: {} });
       expect(queryResult.data?.participants.edges.length).toEqual(6);
+
+      queryResult = await userQuery(USER_A_CLIENT, { query: READ_PARTICIPANTS_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
+      expect(queryResult.data?.participants.edges.length).toEqual(6);
+
+      queryResult = await userQuery(USER_A2_CLIENT, { query: READ_PARTICIPANTS_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
+      expect(queryResult.data?.participants.edges.length).toEqual(6);
     });
   };
 
   beforeAll(async () => {
     // ------ Create the context with users and organizations -------
-    // userA and userA2 participate-to orgaA, userB participate-to orgaB
+    // userA and userA2 participate-to orgaA, userA2 has not the right to see orgaA because of markings
+    // userB participate-to orgaB
     // orgaA and orgaB part of orgaAB
     // userAB part of orgaAB
     // userO part of no organization
@@ -292,7 +319,7 @@ describe('Users visibility according to their direct organizations', () => {
 
     // 01. Create the organizations
     const ORGANIZATIONS_TO_CREATE = [
-      { input: { name: 'orgaA' } },
+      { input: { name: 'orgaA', objectMarking: [MARKING_TLP_GREEN] } },
       { input: { name: 'orgaB' } },
       { input: { name: 'orgaAB' } },
       { input: { name: 'orgaC' } },
@@ -322,6 +349,7 @@ describe('Users visibility according to their direct organizations', () => {
         password: 'userA',
         user_email: 'userA@mail.com',
         objectOrganization: [organizationAId],
+        groups: [GREEN_GROUP.id],
       },
     };
     USER_A_CLIENT = createHttpClient(USER_TO_CREATE_A.input.user_email, USER_TO_CREATE_A.input.password);
@@ -333,6 +361,7 @@ describe('Users visibility according to their direct organizations', () => {
         objectOrganization: [organizationAId],
       },
     };
+    USER_A2_CLIENT = createHttpClient(USER_TO_CREATE_A2.input.user_email, USER_TO_CREATE_A2.input.password);
     const USER_TO_CREATE_B = {
       input: {
         name: 'userB',
@@ -387,6 +416,7 @@ describe('Users visibility according to their direct organizations', () => {
 
     // load the users
     USER_A = await resolveUserById(testContext, userAInternalId);
+    USER_A2 = await resolveUserById(testContext, userA2InternalId);
     USER_AB = await resolveUserById(testContext, userABInternalId);
     USER_O = await resolveUserById(testContext, userOInternalId);
 
@@ -496,6 +526,11 @@ describe('Users visibility according to their direct organizations', () => {
       expect(queryResult.errors?.[0].message).toEqual('regardingOf filter with inferred subfilter only supports eq operator');
     });
 
+    it('regardingOf filter used with ids of entities the user has not access to should throw an error', async () => {
+      const queryResult = await userQuery(USER_A2_CLIENT, { query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaAInternalId]) } });
+      expect(queryResult.errors?.[0].message).toEqual('You are not allowed to do this.');
+    });
+
     it('regardingOf filter with no inferred subfilter and participate-to relationship type should fetch users participating in an organization', async () => {
       // 'eq' regardingOf with no inferred subfilter
       const eqQueryResult = await queryAsAdmin({ query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO) } });
@@ -568,6 +603,7 @@ describe('Users visibility according to their direct organizations', () => {
       () => USER_AB,
       () => USER_O,
       () => USER_A_CLIENT,
+      () => USER_A2_CLIENT,
       () => reportInternalId,
       'no organization sharing',
     );
@@ -597,10 +633,13 @@ describe('Users visibility according to their direct organizations', () => {
       let queryResult = await queryAsAdmin({ query: READ_MEMBERS_QUERY, variables: { filters } });
       expect(queryResult.data?.members.edges.length).toEqual(6); // the admin can see all the users
 
-      let paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters }) as BasicConnection<BasicStoreEntity>;
+      let paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters });
       expect(paginatedMembersResult.edges.length).toEqual(4); // the users visible by userA: userA, userA2, userO, userServiceAccount
 
-      let membersResult = await findAllMembers(testContext, USER_AB, { filters }) as BasicStoreEntity[];
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_A2, { filters });
+      expect(paginatedMembersResult.edges.length).toEqual(4); // the users visible by userA2: userA, userA2, userO, userServiceAccount
+
+      let membersResult = await findAllMembers(testContext, USER_AB, { filters });
       expect(membersResult.length).toEqual(3); // the users visible by userAB: userAB, userO, userServiceAccount
 
       // 02. with entityTypes props
@@ -616,29 +655,37 @@ describe('Users visibility according to their direct organizations', () => {
       expect(queryResult.data?.members.edges.length).toEqual(6); // user with set_access rights can see all the users
 
       // fetch members with pagination
-      paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters, entityTypes: [ENTITY_TYPE_USER] }) as BasicConnection<BasicStoreEntity>;
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters, entityTypes: [ENTITY_TYPE_USER] });
       expect(paginatedMembersResult.edges.length).toEqual(4); // the users visible by userA: userA, userA2, userO, userServiceAccount
       expect([userAInternalId, userA2InternalId, userOInternalId, userServiceAccountInternalId]
         .every((u) => paginatedMembersResult.edges.map((n) => n.node.id).includes(u))).toBeTruthy();
 
-      paginatedMembersResult = await findMembersPaginated(testContext, USER_AB, { filters, entityTypes: [ENTITY_TYPE_USER] }) as BasicConnection<BasicStoreEntity>;
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_A2, { filters, entityTypes: [ENTITY_TYPE_USER] });
+      expect(paginatedMembersResult.edges.length).toEqual(4); // the users visible by userA2: userA, userA2, userO, userServiceAccount
+      expect([userAInternalId, userA2InternalId, userOInternalId, userServiceAccountInternalId]
+        .every((u) => paginatedMembersResult.edges.map((n) => n.node.id).includes(u))).toBeTruthy();
+
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_AB, { filters, entityTypes: [ENTITY_TYPE_USER] });
       expect(paginatedMembersResult.edges.length).toEqual(3); // the users visible by userAB: userAB, userO, userServiceAccount
       expect([userABInternalId, userOInternalId, userServiceAccountInternalId]
         .every((u) => paginatedMembersResult.edges.map((n) => n.node.id).includes(u))).toBeTruthy();
 
-      paginatedMembersResult = await findMembersPaginated(testContext, USER_O, { filters, entityTypes: [ENTITY_TYPE_USER] }) as BasicConnection<BasicStoreEntity>;
+      paginatedMembersResult = await findMembersPaginated(testContext, USER_O, { filters, entityTypes: [ENTITY_TYPE_USER] });
       expect(paginatedMembersResult.edges.length).toEqual(2); // the users visible by userO: userO and userServiceAccount
       expect([userOInternalId, userServiceAccountInternalId]
         .every((u) => paginatedMembersResult.edges.map((n) => n.node.id).includes(u))).toBeTruthy();
 
       // fetch members with no pagination
-      membersResult = await findAllMembers(testContext, USER_A, { filters }) as BasicStoreEntity[];
+      membersResult = await findAllMembers(testContext, USER_A, { filters });
       expect(membersResult.length).toEqual(4);
 
-      membersResult = await findAllMembers(testContext, USER_AB, { filters }) as BasicStoreEntity[];
+      membersResult = await findAllMembers(testContext, USER_A2, { filters });
+      expect(membersResult.length).toEqual(4);
+
+      membersResult = await findAllMembers(testContext, USER_AB, { filters });
       expect(membersResult.length).toEqual(3);
 
-      membersResult = await findAllMembers(testContext, USER_O, { filters }) as BasicStoreEntity[];
+      membersResult = await findAllMembers(testContext, USER_O, { filters });
       expect(membersResult.length).toEqual(2);
     });
 
@@ -649,6 +696,10 @@ describe('Users visibility according to their direct organizations', () => {
 
       reportQueryResult = await userQuery(USER_A_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
       expect(reportQueryResult.data?.report?.[INPUT_ASSIGNEE]?.length).toEqual(6); // all the users before filtering the restricted ones
+      expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(4); // userA, userA2, userO, userServiceAccount
+      expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(4); // userA, userA2, userO, userServiceAccount
+
+      reportQueryResult = await userQuery(USER_A2_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
       expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(4); // userA, userA2, userO, userServiceAccount
       expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(4); // userA, userA2, userO, userServiceAccount
 
@@ -680,6 +731,7 @@ describe('Users visibility according to their direct organizations', () => {
         () => USER_AB,
         () => USER_O,
         () => USER_A_CLIENT,
+        () => USER_A2_CLIENT,
         () => reportInternalId,
         'settings option view_all_users = true',
       );

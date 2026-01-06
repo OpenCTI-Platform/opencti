@@ -990,7 +990,7 @@ export const filterMembersUsersWithUsersOrgs = async (
   // fetch organizations directly linked to the user
   const userDirectOrganizations = await pageEntitiesConnection(
     context,
-    user,
+    SYSTEM_USER, // we need to fetch all the organizations directly linked to the user, even if the user has not the right to see them
     [ENTITY_TYPE_IDENTITY_ORGANIZATION],
     { filters: buildRegardingOfDirectParticipateToFilters([user.id], undefined) },
   );
@@ -1005,7 +1005,7 @@ export const filterMembersUsersWithUsersOrgs = async (
       // fetch organizations directly linked to the member
       const memberDirectOrganizations = await pageEntitiesConnection(
         context,
-        user,
+        SYSTEM_USER, // we use SYSTEM_USER here to be able to use the regardingOf filter with organization the current user has not necessarily access to
         [ENTITY_TYPE_IDENTITY_ORGANIZATION],
         { filters: buildRegardingOfDirectParticipateToFilters([member.id]) },
       );
@@ -1112,16 +1112,21 @@ const fetchMembersWithOrgaRestriction = async <T extends BasicStoreEntity>(
     // fetch organizations directly linked to the user to construct the filter
     const userDirectOrganizations = await pageEntitiesConnection(
       context,
-      user,
+      SYSTEM_USER, // we need to fetch all the organizations directly linked to the user, even if the user has not the right to see them
       [ENTITY_TYPE_IDENTITY_ORGANIZATION],
-      { filters: buildRegardingOfDirectParticipateToFilters([user.id], undefined) },
+      { filters: buildRegardingOfDirectParticipateToFilters([user.id]) },
     );
     let usersWithinUserOrga;
     if (userDirectOrganizations.edges.length > 0) {
       // list the users that are in the user direct organizations
       const userDirectOrganizationsIds = userDirectOrganizations.edges.map((n) => n.node.id);
       const userDirectOrganizationsFilters = buildRegardingOfDirectParticipateToFilters(userDirectOrganizationsIds, filters);
-      usersWithinUserOrga = await membersFetchFunction(context, user, [ENTITY_TYPE_USER], { ...args, filters: userDirectOrganizationsFilters });
+      usersWithinUserOrga = await membersFetchFunction(
+        context,
+        SYSTEM_USER, // we use SYSTEM_USER here to be able to use the regardingOf filter with organization the current user has not necessarily access to
+        [ENTITY_TYPE_USER],
+        { ...args, filters: userDirectOrganizationsFilters },
+      );
     }
     // list the users always visible: users in no organizations OR internal_users OR users with user_service_account=true
     const alwaysVisibleUsersFilter = {
