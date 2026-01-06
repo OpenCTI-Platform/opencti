@@ -80,8 +80,19 @@ export function GradientBorderTextField({
       sx={{
         '& .MuiOutlinedInput-root': {
           position: 'relative',
-          borderRadius: 2,
+          borderRadius: 1,
+          borderWidth: '1px',
           backgroundColor: theme.palette.background.paper,
+
+          '& fieldset': {
+            // default mode without border color
+            borderColor: 'transparent',
+          },
+
+          '&.Mui-focused:not(:hover) fieldset': {
+            // when focus and not hover, prevent default mui change borderwidth
+            borderWidth: '1px',
+          },
 
           ...(isActive && {
             '&.Mui-focused:not(:hover) fieldset': {

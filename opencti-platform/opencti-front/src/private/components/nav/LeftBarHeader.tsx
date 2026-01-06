@@ -109,6 +109,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
   };
 
   const handleClickPopover = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
     event.stopPropagation();
     if (open) {
       setAnchorEl(null);
