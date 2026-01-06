@@ -1,5 +1,5 @@
 import IconButton from '@common/button/IconButton';
-import { ExpandMoreOutlined, OpenInNew } from '@mui/icons-material';
+import { ArrowDropDown, OpenInNew } from '@mui/icons-material';
 import { Box, Divider, List, ListItemButton, ListItemIcon, Popover, Tooltip } from '@mui/material';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -145,14 +145,14 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           alt="logo"
           style={{
             height: 35,
-            maxWidth: navOpen ? '110px' : '30px',
+            maxWidth: navOpen ? '110px' : '23px',
             objectFit: 'contain',
           }}
         />
 
         {navOpen && (
           <IconButton onClick={handleClickPopover}>
-            <ExpandMoreOutlined
+            <ArrowDropDown
               sx={{
                 transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.2s',
