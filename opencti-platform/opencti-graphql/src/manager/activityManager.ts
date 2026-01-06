@@ -36,6 +36,7 @@ import { isActivityEventMatchFilterGroup } from '../utils/filtering/filtering-ac
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { lockResources } from '../lock/master-lock';
 import { ACTIVITY_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -121,7 +122,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<A
   if (events.length > 0) {
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     // If no events or enterprise edition is not activated
-    if (settings.valid_enterprise_edition !== true || isEmptyField(events) || events.length === 0) {
+    if (!isEnterpriseEditionFromSettings(settings) || isEmptyField(events) || events.length === 0) {
       return;
     }
     // Handle alerting and indexing
@@ -209,7 +210,7 @@ const initActivityManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'ACTIVITY_MANAGER',
-        enable: settings?.valid_enterprise_edition === true && booleanConf('activity_manager:enabled', false),
+        enable: settings && isEnterpriseEditionFromSettings(settings) && booleanConf('activity_manager:enabled', false),
         running,
       };
     },

@@ -1,4 +1,5 @@
 import { logApp } from '../../config/conf';
+import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 
@@ -6,7 +7,7 @@ export const verifyRequestAccessEnabled = (settings: BasicStoreSettings, rfiEnti
   const message: string [] = [];
 
   // 1. EE must be enabled
-  const isEEConfigured: boolean = settings.valid_enterprise_edition === true;
+  const isEEConfigured: boolean = isEnterpriseEditionFromSettings(settings);
   if (!isEEConfigured) {
     message.push('Enterprise edition must be enabled.');
   }
