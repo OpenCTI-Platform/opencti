@@ -460,6 +460,15 @@ const ThemeDark = (
         },
       },
     },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          '& .MuiButton-root': {
+            textTransform: 'none',
+          },
+        },
+      },
+    },
     MuiAutocomplete: {
       styleOverrides: {
         root: {
