@@ -3,7 +3,6 @@ import React, { useCallback, useContext, useMemo, useState } from 'react';
 import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
-import GradientButton from '../../../../components/GradientButton';
 import ConfirmationDialog from './ConfirmationDialog';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -302,13 +301,14 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   return (
     <>
       <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
-        <GradientButton
-          size="small"
-          title={getButtonText()}
+        <Button
+          gradient
+          variant="secondary"
+          style={{ marginTop: 10, marginBottom: 10 }}
           onClick={handleOpenDialog}
         >
           {getButtonText()}
-        </GradientButton>
+        </Button>
       </div>
       <ProcessDialog
         open={isDialogOpen}
