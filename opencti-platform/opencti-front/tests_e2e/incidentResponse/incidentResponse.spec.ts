@@ -12,6 +12,7 @@ import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ToolbarPageModel from '../model/toolbar.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
+import CardPage from '../model/card.pageModel';
 
 /**
  * Content of the test
@@ -29,6 +30,7 @@ import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
  */
 test('Incident Response Creation', async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
+  const cardPage = new CardPage(page);
   const leftNavigation = new LeftBarPage(page);
   const incidentResponsePage = new IncidentResponsePage(page);
   const incidentResponseDetailsPage = new IncidentResponseDetailsPage(page);
@@ -170,13 +172,13 @@ test('Incident Response Creation', async ({ page }) => {
   const updateDate = incidentResponseDetailsPage.getTextForHeading('Modification date', now);
   await expect(updateDate).toBeVisible();
 
-  const historyDescription = incidentResponseDetailsPage.getTextForHeading('Most recent history', `admin creates a Case-Incident ${incidentResponseName}`);
+  const historyDescription = cardPage.getTextInCard('Most recent history', `admin creates a Case-Incident ${incidentResponseName}`);
   await expect(historyDescription).toBeVisible();
-  const historyDate = incidentResponseDetailsPage.getTextForHeading('Most recent history', format(new Date(), 'MMM d, yyyy'));
+  const historyDate = cardPage.getTextInCard('Most recent history', format(new Date(), 'MMM d, yyyy'));
   await expect(historyDate).toBeVisible();
 
   await incidentResponseDetailsPage.goToDataTab();
-  const file = incidentResponseDetailsPage.getTextForHeading('UPLOADED FILES', 'incidentResponse.test.md');
+  const file = cardPage.getTextInCard('Uploaded Files', 'incidentResponse.test.md');
   await expect(file).toBeVisible();
 
   // ---------

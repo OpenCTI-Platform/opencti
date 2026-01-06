@@ -1,6 +1,4 @@
 import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import { DatabaseOutline, FlaskOutline } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
@@ -13,6 +11,7 @@ import { indexedVisualizationTypes, WidgetVisualizationTypes } from '../../../ut
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
+import Card from '../../../components/common/card/Card';
 
 const WidgetCreationPerspective = () => {
   const { t_i18n } = useFormatter();
@@ -84,101 +83,89 @@ const WidgetCreationPerspective = () => {
       {getCurrentIsEntities() && (
         <Grid item xs={xs}>
           <Card
+            noPadding
+            aria-label={t_i18n('Entities')}
+            onClick={() => handleSelectPerspective('entities')}
             variant="outlined"
-            style={{
-              height: 180,
+            sx={{
               textAlign: 'center',
             }}
           >
-            <CardActionArea
-              onClick={() => handleSelectPerspective('entities')}
-              style={{ height: '100%' }}
-              aria-label={t_i18n('Entities')}
-            >
-              <CardContent>
-                <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
-                <Typography
-                  gutterBottom
-                  variant="h2"
-                  style={{ marginTop: 20 }}
-                >
-                  {t_i18n('Entities')}
-                </Typography>
-                <br />
-                <Typography variant="body1">
-                  {t_i18n('Display global knowledge with filters and criteria.')}
-                </Typography>
-              </CardContent>
-            </CardActionArea>
+            <CardContent>
+              <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
+              <Typography
+                gutterBottom
+                variant="h2"
+                style={{ marginTop: 20 }}
+              >
+                {t_i18n('Entities')}
+              </Typography>
+              <br />
+              <Typography variant="body1">
+                {t_i18n('Display global knowledge with filters and criteria.')}
+              </Typography>
+            </CardContent>
           </Card>
         </Grid>
       )}
       {getCurrentIsRelationships() && (
         <Grid item xs={xs}>
           <Card
+            noPadding
+            aria-label={t_i18n('Knowledge graph')}
+            onClick={() => handleSelectPerspective('relationships')}
             variant="outlined"
-            style={{
-              height: 180,
+            sx={{
               textAlign: 'center',
             }}
           >
-            <CardActionArea
-              onClick={() => handleSelectPerspective('relationships')}
-              style={{ height: '100%' }}
-              aria-label={t_i18n('Knowledge graph')}
-            >
-              <CardContent>
-                <FlaskOutline style={{ fontSize: 40 }} color="primary" />
-                <Typography
-                  gutterBottom
-                  variant="h2"
-                  style={{ marginTop: 20 }}
-                >
-                  {t_i18n('Knowledge graph')}
-                </Typography>
-                <br />
-                <Typography variant="body1">
-                  {t_i18n(
-                    'Display specific knowledge using relationships and filters.',
-                  )}
-                </Typography>
-              </CardContent>
-            </CardActionArea>
+            <CardContent>
+              <FlaskOutline style={{ fontSize: 40 }} color="primary" />
+              <Typography
+                gutterBottom
+                variant="h2"
+                style={{ marginTop: 20 }}
+              >
+                {t_i18n('Knowledge graph')}
+              </Typography>
+              <br />
+              <Typography variant="body1">
+                {t_i18n(
+                  'Display specific knowledge using relationships and filters.',
+                )}
+              </Typography>
+            </CardContent>
           </Card>
         </Grid>
       )}
       {getCurrentIsAudits() && (
         <Grid item xs={xs}>
           <Card
+            noPadding
+            aria-label={t_i18n('Activity & history')}
+            onClick={() => handleSelectPerspective('audits')}
             variant="outlined"
-            style={{
-              height: 180,
+            sx={{
               textAlign: 'center',
             }}
           >
-            <CardActionArea
-              onClick={() => handleSelectPerspective('audits')}
-              style={{ height: '100%' }}
-              aria-label={t_i18n('Activity & history')}
-            >
-              <CardContent>
-                <LibraryBooksOutlined
-                  style={{ fontSize: 40 }}
-                  color="primary"
-                />
-                <Typography
-                  gutterBottom
-                  variant="h2"
-                  style={{ marginTop: 20 }}
-                >
-                  {t_i18n('Activity & history')}
-                </Typography>
-                <br />
-                <Typography variant="body1">
-                  {t_i18n('Display data related to the history and activity.')}
-                </Typography>
-              </CardContent>
-            </CardActionArea>
+            <CardContent>
+              <LibraryBooksOutlined
+                style={{ fontSize: 40 }}
+                color="primary"
+              />
+              <Typography
+                gutterBottom
+                variant="h2"
+                style={{ marginTop: 20 }}
+              >
+                {t_i18n('Activity & history')}
+              </Typography>
+              <br />
+              <Typography variant="body1">
+                {t_i18n('Display data related to the history and activity.')}
+              </Typography>
+            </CardContent>
           </Card>
         </Grid>
       )}

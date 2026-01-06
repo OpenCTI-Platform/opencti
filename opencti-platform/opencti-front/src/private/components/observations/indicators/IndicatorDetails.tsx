@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
@@ -16,10 +15,9 @@ import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
+import Box from '@mui/material/Box';
 import DecayDialogContent from './DecayDialogContent';
 import DecayExclusionDialogContent from './DecayExclusionDialogContent';
-
-import Box from '@mui/material/Box';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -30,15 +28,11 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
   chip: {
     fontSize: 12,
     lineHeight: '12px',
@@ -70,14 +64,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
 
   return (
     <Box sx={{ height: '100%' }} className="break">
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Details')}
-      </Typography>
-      <Paper
-        classes={{ root: classes.paper }}
-        className="paper-for-grid"
-        variant="outlined"
-      >
+      <Card title={t_i18n('Details')}>
         <Typography variant="h3" gutterBottom={true}>
           {t_i18n('Indicator pattern')}
         </Typography>
@@ -246,7 +233,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
         </Grid>
         <Divider />
         <IndicatorObservables indicator={indicator} />
-      </Paper>
+      </Card>
     </Box>
   );
 };

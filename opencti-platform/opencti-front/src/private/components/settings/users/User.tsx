@@ -2,7 +2,6 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import { DeleteForeverOutlined, DeleteOutlined, RefreshOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -52,24 +51,20 @@ import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ItemCopy from '../../../../components/ItemCopy';
 import { maskString } from '../../../../utils/String';
+import Card from '../../../../components/common/card/Card';
 
 const startDate = yearsAgo(1);
 const endDate = now();
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   floatingButton: {
     float: 'left',
     margin: '-8px 0 0 5px',
   },
   gridContainer: {
     marginBottom: 50,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
   },
 }));
 
@@ -375,10 +370,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         classes={{ container: classes.gridContainer }}
       >
         <Grid item xs={6}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Basic information')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+          <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={3}>
               {!isServiceAccount && (
                 <>
@@ -551,13 +543,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </>
               )}
             </Grid>
-          </Paper>
+          </Card>
         </Grid>
         <Grid item xs={6}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Permissions')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+          <Card title={t_i18n('Permissions')}>
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -741,20 +730,15 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <UserConfidenceLevel user={user} />
               </Grid>
             </Grid>
-          </Paper>
+          </Card>
         </Grid>
         {!isServiceAccount && (
           <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         )}
         <Grid item xs={6} style={{ marginTop: 10 }}>
-          <Typography variant="h4" gutterBottom={true} style={{ paddingBottom: '21px' }}>
-            {t_i18n('Operations')}
-          </Typography>
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ minHeight: 500 }}
-            className="paper-for-grid"
+          <Card
+            title={t_i18n('Operations')}
+            sx={{ minHeight: 500 }}
           >
             {!isEnterpriseEdition ? (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -825,35 +809,24 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 }}
               />
             )}
-          </Paper>
+          </Card>
         </Grid>
         <Grid item xs={6} style={{ marginTop: 10 }}>
           {isGrantedToAudit ? (
             <UserHistory userId={user.id} />
           ) : (
-            <>
-              <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-                {t_i18n('History')}
-              </Typography>
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <Paper
-                  classes={{ root: classes.paper }}
-                  variant="outlined"
-                  className="paper-for-grid"
-                >
-                  <span
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      height: '100%',
-                    }}
-                  >
-                    {t_i18n('You are not authorized to see this data.')}
-                  </span>
-                </Paper>
-              </div>
-            </>
+            <Card title={t_i18n('History')}>
+              <span
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: '100%',
+                }}
+              >
+                {t_i18n('You are not authorized to see this data.')}
+              </span>
+            </Card>
           )}
         </Grid>
       </Grid>

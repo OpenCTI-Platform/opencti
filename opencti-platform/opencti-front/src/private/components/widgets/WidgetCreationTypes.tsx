@@ -1,12 +1,11 @@
 import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import { useFormatter } from '../../../components/i18n';
 import { fintelTemplatesWidgetVisualizationTypes, renderWidgetIcon, workspacesWidgetVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import Card from '../../../components/common/card/Card';
 
 const WidgetCreationTypes = () => {
   const { t_i18n } = useFormatter();
@@ -30,28 +29,24 @@ const WidgetCreationTypes = () => {
       {visualizationTypes.map((visualizationType) => (
         <Grid key={visualizationType.key} item xs={4}>
           <Card
+            noPadding
+            aria-label={t_i18n(visualizationType.name)}
+            onClick={() => changeType(visualizationType.key)}
             variant="outlined"
-            style={{
-              height: 100,
+            sx={{
               textAlign: 'center',
             }}
           >
-            <CardActionArea
-              onClick={() => changeType(visualizationType.key)}
-              style={{ height: '100%' }}
-              aria-label={t_i18n(visualizationType.name)}
-            >
-              <CardContent>
-                {renderWidgetIcon(visualizationType.key, 'large')}
-                <Typography
-                  gutterBottom
-                  variant="body1"
-                  style={{ marginTop: 8 }}
-                >
-                  {t_i18n(visualizationType.name)}
-                </Typography>
-              </CardContent>
-            </CardActionArea>
+            <CardContent>
+              {renderWidgetIcon(visualizationType.key, 'large')}
+              <Typography
+                gutterBottom
+                variant="body1"
+                style={{ marginTop: 8 }}
+              >
+                {t_i18n(visualizationType.name)}
+              </Typography>
+            </CardContent>
           </Card>
         </Grid>
       ))}

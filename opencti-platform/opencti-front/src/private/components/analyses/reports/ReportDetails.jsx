@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Divider from '@mui/material/Divider';
+import Card from '@common/card/Card';
 import RelatedContainers from '../../common/containers/related_containers/RelatedContainers';
 import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
 import { useFormatter } from '../../../../components/i18n';
@@ -14,14 +14,6 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: theme.spacing(2),
-    borderRadius: 4,
-    position: 'relative',
-    display: 'flex',
-    flexFlow: 'column',
-  },
   chip: {
     fontSize: 12,
     lineHeight: '12px',
@@ -90,10 +82,7 @@ const ReportDetails = ({ report }) => {
 
   return (
     <div style={{ height: '100%' }} data-testid="report-overview">
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Entity details')}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+      <Card title={t_i18n('Entity details')}>
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
           <Grid item xs={6} ref={ref}>
             <Typography variant="h3" gutterBottom={true}>
@@ -149,7 +138,7 @@ const ReportDetails = ({ report }) => {
           containerId={reportData.id}
           entityType={reportData.entity_type}
         />
-      </Paper>
+      </Card>
     </div>
   );
 };

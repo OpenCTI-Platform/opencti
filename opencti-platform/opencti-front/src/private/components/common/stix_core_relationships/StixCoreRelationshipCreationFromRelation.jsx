@@ -562,7 +562,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           <IconButton
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
-            style={{ float: 'left', margin: '-6px 0 10px 4px' }}
             size="small"
             variant="tertiary"
           >

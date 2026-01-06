@@ -138,7 +138,7 @@ const StixCoreObjectsPolarArea = ({
   dataSelection,
   parameters,
   height,
-  variant = 'inLine',
+  variant,
   withExportPopover = false,
   isReadOnly = false,
 }: StixCoreObjectsPolarAreaProps) => {

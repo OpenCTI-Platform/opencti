@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import { OpenInBrowserOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@mui/material/Dialog';
@@ -17,17 +15,7 @@ import { ExternalReferenceDetails_externalReference$data } from './__generated__
 import { useFormatter } from '../../../../components/i18n';
 import ItemCreators from '../../../../components/ItemCreators';
 import Transition from '../../../../components/Transition';
-import type { Theme } from '../../../../components/Theme';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-}));
+import Card from '../../../../components/common/card/Card';
 
 interface ExternalReferenceDetailsComponentProps {
   externalReference: ExternalReferenceDetails_externalReference$data;
@@ -36,7 +24,6 @@ interface ExternalReferenceDetailsComponentProps {
 const ExternalReferenceDetailsComponent = ({
   externalReference,
 }: ExternalReferenceDetailsComponentProps) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
@@ -60,10 +47,7 @@ const ExternalReferenceDetailsComponent = ({
 
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Details')}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+      <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -99,7 +83,7 @@ const ExternalReferenceDetailsComponent = ({
             </pre>
           </Grid>
         </Grid>
-      </Paper>
+      </Card>
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}

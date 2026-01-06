@@ -60,7 +60,7 @@ class StixDomainObjectBookmarksComponent extends Component {
             dataList={R.take(8, bookmarks)}
             CardComponent={<StixDomainObjectBookmark />}
             DummyCardComponent={<StixDomainObjectBookmarkDummy />}
-            rowHeight={90}
+            rowHeight={150}
           />
         </div>
       );

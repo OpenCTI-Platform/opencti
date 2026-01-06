@@ -6,15 +6,12 @@ import { useFormatter } from './i18n';
 
 const inlineStyles = {
   green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
     color: '#4caf50',
   },
   red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
     color: '#f44336',
   },
   blueGrey: {
-    backgroundColor: 'rgba(96, 125, 139, 0.08)',
     color: '#607d8b',
   },
 };
@@ -42,22 +39,13 @@ const NumberDifference = ({ value, description }: ItemNumberDifferenceProps) => 
       fontSize: 12,
       display: 'flex',
       alignItems: 'center',
-      padding: '2px 5px 2px 5px',
       gap: theme.spacing(0.25),
-      borderRadius: 1,
-      marginBottom: 4,
     }}
     >
       <Icon color="inherit" style={{ fontSize: 13 }} />
       <span>{value}</span>
       {description && (
-        <span
-          style={{
-            fontSize: 9,
-            color: theme.palette.text?.primary,
-            paddingLeft: theme.spacing(0.5),
-          }}
-        >
+        <span>
           ({t_i18n(description)})
         </span>
       )}

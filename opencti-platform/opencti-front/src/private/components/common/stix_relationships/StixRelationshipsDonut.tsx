@@ -105,7 +105,7 @@ export const stixRelationshipsDonutsDistributionQuery = graphql`
 
 interface StixRelationshipsDonutProps {
   title?: string;
-  variant: string;
+  variant?: string;
   height?: number;
   field?: string;
   startDate: string | null;
@@ -114,7 +114,6 @@ interface StixRelationshipsDonutProps {
   parameters?: WidgetParameters;
   withExportPopover?: boolean;
   isReadOnly?: boolean;
-  withoutTitle?: boolean;
 }
 
 const StixRelationshipsDonut = ({
@@ -128,7 +127,6 @@ const StixRelationshipsDonut = ({
   parameters = {},
   withExportPopover = false,
   isReadOnly = false,
-  withoutTitle = false,
 }: StixRelationshipsDonutProps) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
@@ -185,7 +183,6 @@ const StixRelationshipsDonut = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
       variant={variant}
-      withoutTitle={withoutTitle}
     >
       {renderContent()}
     </WidgetContainer>

@@ -1,4 +1,3 @@
-import React from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -44,7 +43,6 @@ const StixRelationshipsMultiAreaChart = ({
   parameters = {},
   withExportPopover = false,
   isReadOnly = false,
-  withoutTitle = false,
   relationshipTypes,
 }) => {
   const { t_i18n } = useFormatter();
@@ -107,7 +105,6 @@ const StixRelationshipsMultiAreaChart = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Entities history')}
       variant={variant}
-      withoutTitle={withoutTitle}
     >
       {renderContent()}
     </WidgetContainer>

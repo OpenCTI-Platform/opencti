@@ -21,8 +21,6 @@ import StepLabel from '@mui/material/StepLabel';
 import Typography from '@mui/material/Typography';
 import { FileExportOutline, FilePdfBox, InformationOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
 import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import FiligranIcon from '@components/common/FiligranIcon';
@@ -35,6 +33,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAI from '../../../../utils/hooks/useAI';
 import { now } from '../../../../utils/Time';
 import FintelDesignField, { FintelDesignFieldOption } from './FintelDesignField';
+import Card from '../../../../components/common/card/Card';
 
 export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
   fileMarkings: {
@@ -288,57 +287,44 @@ const StixCoreObjectFileExportForm = ({
                     {connectorScopes.map((scope) => (
                       <Grid key={scope} item xs={4}>
                         <Card
+                          aria-label={t_i18n(scope)}
+                          onClick={() => selectFormat(setFieldValue, scope)}
                           variant="outlined"
-                          style={{
-                            height: 100,
-                            textAlign: 'center',
-                          }}
+                          sx={{ textAlign: 'center' }}
                         >
-                          <CardActionArea
-                            onClick={() => selectFormat(setFieldValue, scope)}
-                            style={{ height: '100%' }}
-                            aria-label={t_i18n(scope)}
-                          >
-                            <CardContent>
-                              {renderIcon(scope)}
-                              <Typography
-                                gutterBottom
-                                variant="body1"
-                                style={{ marginTop: 8 }}
-                              >
-                                {t_i18n(scope)}
-                              </Typography>
-                            </CardContent>
-                          </CardActionArea>
+                          <CardContent>
+                            {renderIcon(scope)}
+                            <Typography
+                              gutterBottom
+                              variant="body1"
+                            >
+                              {t_i18n(scope)}
+                            </Typography>
+                          </CardContent>
                         </Card>
                       </Grid>
                     ))}
                     {isContainer && fullyActive && (
                       <Grid item xs={4}>
                         <Card
+                          aria-label={t_i18n('Ask AI')}
                           variant="outlined"
-                          style={{
-                            height: 100,
+                          onClick={() => (isEnterpriseEdition && fullyActive ? selectFormat(setFieldValue, 'ai') : null)}
+                          sx={{
                             textAlign: 'center',
                           }}
                         >
                           <EETooltip forAi={true} title={t_i18n('Ask AI (multiple formats supported)')}>
-                            <CardActionArea
-                              onClick={() => (isEnterpriseEdition && fullyActive ? selectFormat(setFieldValue, 'ai') : null)}
-                              style={{ height: '100%' }}
-                              aria-label={t_i18n('Ask AI')}
-                            >
-                              <CardContent>
-                                {renderIcon('ai')}
-                                <Typography
-                                  gutterBottom
-                                  variant="body1"
-                                  style={{ marginTop: 8 }}
-                                >
-                                  {t_i18n('Ask AI (multiple formats supported)')}
-                                </Typography>
-                              </CardContent>
-                            </CardActionArea>
+                            <CardContent>
+                              {renderIcon('ai')}
+                              <Typography
+                                gutterBottom
+                                variant="body1"
+                                style={{ marginTop: 8 }}
+                              >
+                                {t_i18n('Ask AI (multiple formats supported)')}
+                              </Typography>
+                            </CardContent>
                           </EETooltip>
                         </Card>
                       </Grid>

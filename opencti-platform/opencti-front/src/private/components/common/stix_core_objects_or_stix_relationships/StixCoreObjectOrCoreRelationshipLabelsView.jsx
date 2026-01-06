@@ -14,6 +14,7 @@ import IconButton from '@common/button/IconButton';
 import { Add, CancelOutlined } from '@mui/icons-material';
 import { Label } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
+import CardTitle from '@common/card/CardTitle';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
@@ -26,7 +27,6 @@ import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../
 import CommitMessage from '../form/CommitMessage';
 import Transition from '../../../../components/Transition';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import CardLabel from '../../../../components/CardLabel';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -160,8 +160,8 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
 
   return (
     <>
-      <CardLabel
-        style={{ marginTop: 20 }}
+      <CardTitle
+        sx={{ marginTop: '20px' }}
         action={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <IconButton
@@ -177,7 +177,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
         )}
       >
         {t_i18n('Labels')}
-      </CardLabel>
+      </CardTitle>
       <div className={classes.objectLabel}>
         <FieldOrEmpty source={labels}>
           {map(

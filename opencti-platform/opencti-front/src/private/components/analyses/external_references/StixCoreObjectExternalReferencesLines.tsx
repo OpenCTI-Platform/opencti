@@ -2,8 +2,6 @@ import React, { FunctionComponent, useState } from 'react';
 import { includes } from 'ramda';
 import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -52,16 +50,11 @@ import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapper
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import Card from '../../../../components/common/card/Card';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    margin: '-4px 0 0 0',
-    padding: 0,
-    borderRadius: 4,
-    position: 'relative',
-  },
   buttonExpand: {
     position: 'absolute',
     left: 0,
@@ -252,24 +245,20 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
   };
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('External references')}
-      </Typography>
-      <Security
-        needs={[KNOWLEDGE_KNUPDATE]}
-        placeholder={<div style={{ height: 29 }} />}
+      <Card
+        title={t_i18n('External references')}
+        action={(
+          <Security
+            needs={[KNOWLEDGE_KNUPDATE]}
+            placeholder={<div style={{ height: 29 }} />}
+          >
+            <AddExternalReferences
+              stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
+              stixCoreObjectOrStixCoreRelationshipReferences={data.stixCoreObject?.externalReferences?.edges ?? []}
+            />
+          </Security>
+        )}
       >
-        <AddExternalReferences
-          stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
-          stixCoreObjectOrStixCoreRelationshipReferences={
-            data.stixCoreObject
-              ? data.stixCoreObject.externalReferences?.edges
-              : []
-          }
-        />
-      </Security>
-      <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         {(
           externalReferencesEdges ? externalReferencesEdges.length > 0 : false
         ) ? (
@@ -479,7 +468,8 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
             )}
           </IconButton>
         )}
-      </Paper>
+      </Card>
+
       <DeleteDialog
         deletion={deletion}
         submitDelete={handleRemoval}

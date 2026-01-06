@@ -1,11 +1,5 @@
-import { DescriptionOutlined, DiamondOutlined } from '@mui/icons-material';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import { Biohazard, ShieldSearch } from 'mdi-material-ui';
 import { assoc, head, last, map, pluck } from 'ramda';
 import React, { Suspense } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
@@ -32,34 +26,11 @@ import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocument
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
     marginRight: -20,
     paddingRight: 20,
     paddingBottom: 30,
-  },
-  card: {
-    width: '100%',
-    borderRadius: 4,
-    position: 'relative',
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 0,
-    overflow: 'hidden',
-  },
-  title: {
-    marginTop: 5,
-    textTransform: 'uppercase',
-    fontSize: 12,
-    fontWeight: 500,
-    color: theme.palette.text.secondary,
-  },
-  icon: {
-    position: 'absolute',
-    color: theme.palette.primary.main,
-    top: 35,
-    right: 20,
   },
 }));
 // endregion
@@ -121,7 +92,10 @@ const dashboardStixCoreRelationshipsDistributionQuery = graphql`
     }
   }
 `;
+
 const TargetedCountriesComponent = ({ queryRef }) => {
+  const { t_i18n } = useFormatter();
+
   const data = usePreloadedQuery(
     dashboardStixCoreRelationshipsDistributionQuery,
     queryRef,
@@ -137,12 +111,14 @@ const TargetedCountriesComponent = ({ queryRef }) => {
   );
   return (
     <LocationMiniMapTargets
+      title={t_i18n('Targeted countries (Last 3 months)')}
       center={[48.8566969, 2.3514616]}
       countries={countries}
       zoom={2}
     />
   );
 };
+
 const TargetedCountries = ({ timeField }) => {
   const queryOptions = {
     field: 'internal_id',
@@ -173,7 +149,6 @@ const TargetedCountries = ({ timeField }) => {
 
 const DefaultDashboard = ({ timeField }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   return (
     <Security
       needs={[KNOWLEDGE]}
@@ -183,128 +158,84 @@ const DefaultDashboard = ({ timeField }) => {
     >
       <Grid container={true} spacing={3}>
         <Grid item xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
-            <CardContent>
-              <div className={classes.title}>{t_i18n('Intrusion Sets')}</div>
-              <StixCoreObjectsNumber
-                variant="inLine"
-                withoutTitle={true}
-                dataSelection={[{
-                  filters: {
-                    mode: 'and',
-                    filters: [
-                      {
-                        key: 'entity_type',
-                        values: ['Intrusion-Set'],
-                      },
-                    ],
-                    filterGroups: [],
+          <StixCoreObjectsNumber
+            parameters={{
+              title: 'Intrusion-Set',
+            }}
+            dataSelection={[{
+              filters: {
+                mode: 'and',
+                filters: [
+                  {
+                    key: 'entity_type',
+                    values: ['Intrusion-Set'],
                   },
-                  date_attribute: timeField === 'functional' ? 'start_time' : 'created_at',
-                }]}
-              />
-              <div className={classes.icon}>
-                <DiamondOutlined color="inherit" fontSize="large" />
-              </div>
-            </CardContent>
-          </Card>
+                ],
+                filterGroups: [],
+              },
+              date_attribute: timeField === 'functional' ? 'start_time' : 'created_at',
+            }]}
+          />
         </Grid>
         <Grid item xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
-            <CardContent>
-              <div className={classes.title}>{t_i18n('Malwares')}</div>
-              <StixCoreObjectsNumber
-                variant="inLine"
-                withoutTitle={true}
-                dataSelection={[{
-                  filters: {
-                    mode: 'and',
-                    filters: [
-                      {
-                        key: 'entity_type',
-                        values: ['Malware'],
-                      },
-                    ],
-                    filterGroups: [],
+          <StixCoreObjectsNumber
+            parameters={{
+              title: 'Malware',
+            }}
+            dataSelection={[{
+              filters: {
+                mode: 'and',
+                filters: [
+                  {
+                    key: 'entity_type',
+                    values: ['Malware'],
                   },
-                  date_attribute: timeField === 'functional' ? 'start_time' : 'created_at',
-                }]}
-              />
-              <div className={classes.icon}>
-                <Biohazard color="inherit" fontSize="large" />
-              </div>
-            </CardContent>
-          </Card>
+                ],
+                filterGroups: [],
+              },
+              date_attribute: timeField === 'functional' ? 'start_time' : 'created_at',
+            }]}
+          />
         </Grid>
         <Grid item xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
-            <CardContent>
-              <div className={classes.title}>{t_i18n('Reports')}</div>
-              <StixCoreObjectsNumber
-                variant="inLine"
-                withoutTitle={true}
-                dataSelection={[{
-                  filters: {
-                    mode: 'and',
-                    filters: [
-                      {
-                        key: 'entity_type',
-                        values: ['Report'],
-                      },
-                    ],
-                    filterGroups: [],
+          <StixCoreObjectsNumber
+            parameters={{
+              title: 'Report',
+            }}
+            dataSelection={[{
+              filters: {
+                mode: 'and',
+                filters: [
+                  {
+                    key: 'entity_type',
+                    values: ['Report'],
                   },
-                  date_attribute: timeField === 'functional' ? 'start_time' : 'created_at',
-                }]}
-              />
-              <div className={classes.icon}>
-                <DescriptionOutlined color="inherit" fontSize="large" />
-              </div>
-            </CardContent>
-          </Card>
+                ],
+                filterGroups: [],
+              },
+              date_attribute: timeField === 'functional' ? 'start_time' : 'created_at',
+            }]}
+          />
         </Grid>
         <Grid item xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
-            <CardContent>
-              <div className={classes.title}>{t_i18n('Indicators')}</div>
-              <StixCoreObjectsNumber
-                variant="inLine"
-                withoutTitle={true}
-                dataSelection={[{
-                  filters: {
-                    mode: 'and',
-                    filters: [
-                      {
-                        key: 'entity_type',
-                        values: ['Indicator'],
-                      },
-                    ],
-                    filterGroups: [],
+          <StixCoreObjectsNumber
+            parameters={{
+              title: 'Indicator',
+            }}
+            dataSelection={[{
+              filters: {
+                mode: 'and',
+                filters: [
+                  {
+                    key: 'entity_type',
+                    values: ['Indicator'],
                   },
-                  date_attribute: timeField === 'functional' ? 'created' : 'created_at',
-                }]}
-              />
-              <div className={classes.icon}>
-                <ShieldSearch color="inherit" fontSize="large" />
-              </div>
-            </CardContent>
-          </Card>
+                ],
+                filterGroups: [],
+              },
+              date_attribute: timeField === 'functional' ? 'created' : 'created_at',
+            }]}
+          />
         </Grid>
         <Grid item xs={3}>
           <StixRelationshipsHorizontalBars
@@ -386,7 +317,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3} style={{ marginTop: 25 }}>
+        <Grid item xs={3}>
           <StixRelationshipsPolarArea
             title={t_i18n('Most active malware (Last 3 months)')}
             height={400}
@@ -412,7 +343,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3} style={{ marginTop: 25 }}>
+        <Grid item xs={3}>
           <StixRelationshipsDistributionList
             overflow="hidden"
             title={t_i18n('Most active vulnerabilities (Last 3 months)')}
@@ -440,26 +371,18 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={6} style={{ marginTop: 25 }}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Targeted countries (Last 3 months)')}
-          </Typography>
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ height: 400 }}
+        <Grid item xs={6}>
+          <Suspense
+            fallback={(
+              <LocationMiniMapTargets
+                title={t_i18n('Targeted countries (Last 3 months)')}
+                center={[48.8566969, 2.3514616]}
+                zoom={2}
+              />
+            )}
           >
-            <Suspense
-              fallback={(
-                <LocationMiniMapTargets
-                  center={[48.8566969, 2.3514616]}
-                  zoom={2}
-                />
-              )}
-            >
-              <TargetedCountries timeField={timeField} />
-            </Suspense>
-          </Paper>
+            <TargetedCountries timeField={timeField} />
+          </Suspense>
         </Grid>
         <Grid item xs={8}>
           <StixCoreObjectsList

@@ -1,24 +1,19 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Link } from 'react-router-dom';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Card from '@mui/material/Card';
-import CardActionArea from '@mui/material/CardActionArea';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
-import Avatar from '@mui/material/Avatar';
 import { StarBorderOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import Skeleton from '@mui/material/Skeleton';
 import withTheme from '@mui/styles/withTheme';
+import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
-import ItemIcon from '../../../../components/ItemIcon';
-import { getFileUri } from '../../../../utils/utils';
 import { renderCardTitle } from '../../../../utils/Card';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`
@@ -66,27 +61,8 @@ export const deleteBookMark = (id, type, event = null) => {
 };
 
 const styles = (theme) => ({
-  card: {
-    width: '100%',
-    height: 70,
-    borderRadius: 4,
-  },
-  cardDummy: {
-    width: '100%',
-    height: 70,
-    color: theme.palette.grey[700],
-    borderRadius: 4,
-  },
   avatar: {
     backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    backgroundColor: theme.palette.grey[600],
-  },
-  icon: {
-    margin: '10px 20px 0 0',
-    fontSize: 40,
-    color: '#242d30',
   },
   area: {
     width: '100%',
@@ -94,23 +70,8 @@ const styles = (theme) => ({
   },
   header: {
     height: 55,
-    paddingBottom: 0,
+    padding: 0,
     marginBottom: 0,
-  },
-  content: {
-    width: '100%',
-    paddingTop: 0,
-  },
-  description: {
-    height: 61,
-    display: '-webkit-box',
-    '-webkit-box-orient': 'vertical',
-    '-webkit-line-clamp': 2,
-    overflow: 'hidden',
-  },
-  objectLabel: {
-    height: 45,
-    paddingTop: 15,
   },
   contentDummy: {
     width: '100%',
@@ -118,63 +79,28 @@ const styles = (theme) => ({
     overflow: 'hidden',
     marginTop: 15,
   },
-  placeholderHeader: {
-    display: 'inline-block',
-    height: '.8em',
-    backgroundColor: theme.palette.grey[700],
-  },
-  placeholderHeaderDark: {
-    display: 'inline-block',
-    height: '.8em',
-    backgroundColor: theme.palette.grey[800],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
 });
 
 class StixDomainObjectBookmarkComponent extends Component {
   render() {
-    const { t, fsd, classes, node, theme } = this.props;
+    const { t, fsd, classes, node } = this.props;
     const link = resolveLink(node.entity_type);
     return (
-      <Card classes={{ root: classes.card }} variant="outlined">
-        <CardActionArea
-          classes={{ root: classes.area }}
-          component={Link}
-          to={`${link}/${node.id}`}
-        >
-          <CardHeader
-            classes={{ root: classes.header }}
-            avatar={node.avatar ? (
-              <img
-                style={{ height: '30px' }}
-                src={getFileUri(node.avatar.id)}
-                alt={node.avatar.name}
-              />
-            ) : (
-              <Avatar className={classes.avatar}>
-                <ItemIcon
-                  type={node.entity_type}
-                  color={theme.palette.background.default}
-                />
-              </Avatar>
-            )}
-            title={renderCardTitle(node)}
-            subheader={`${t('Updated on')} ${fsd(node.modified)}`}
-            action={(
-              <IconButton
-                size="small"
-                onClick={deleteBookMark.bind(this, node.id, node.entity_type)}
-                color="secondary"
-              >
-                <StarBorderOutlined />
-              </IconButton>
-            )}
-          />
-        </CardActionArea>
+      <Card to={`${link}/${node.id}`}>
+        <CardHeader
+          classes={{ root: classes.header }}
+          title={renderCardTitle(node)}
+          subheader={`${t('Updated on')} ${fsd(node.modified)}`}
+          action={(
+            <IconButton
+              size="small"
+              onClick={deleteBookMark.bind(this, node.id, node.entity_type)}
+              color="secondary"
+            >
+              <StarBorderOutlined />
+            </IconButton>
+          )}
+        />
       </Card>
     );
   }
@@ -365,67 +291,65 @@ class StixDomainObjectBookmarkDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Card classes={{ root: classes.Dummy }} variant="outlined">
-        <CardActionArea classes={{ root: classes.area }}>
-          <CardHeader
-            classes={{ root: classes.header }}
-            avatar={(
-              <Skeleton
-                animation="wave"
-                variant="circular"
-                width={30}
-                height={30}
-              />
-            )}
-            title={(
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                style={{ marginBottom: 10 }}
-              />
-            )}
-            subheader={(
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                style={{ marginBottom: 10 }}
-              />
-            )}
-            action={(
-              <Skeleton
-                animation="wave"
-                variant="circular"
-                width={30}
-                height={30}
-              />
-            )}
-            slotProps={{
-              title: { color: 'inherit' },
-            }}
+      <Card>
+        <CardHeader
+          classes={{ root: classes.header }}
+          avatar={(
+            <Skeleton
+              animation="wave"
+              variant="circular"
+              width={30}
+              height={30}
+            />
+          )}
+          title={(
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="90%"
+              style={{ marginBottom: 10 }}
+            />
+          )}
+          subheader={(
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="90%"
+              style={{ marginBottom: 10 }}
+            />
+          )}
+          action={(
+            <Skeleton
+              animation="wave"
+              variant="circular"
+              width={30}
+              height={30}
+            />
+          )}
+          slotProps={{
+            title: { color: 'inherit' },
+          }}
+        />
+        <CardContent classes={{ root: classes.contentDummy }}>
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="90%"
+            style={{ marginBottom: 10 }}
           />
-          <CardContent classes={{ root: classes.contentDummy }}>
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              style={{ marginBottom: 10 }}
-            />
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="95%"
-              style={{ marginBottom: 10 }}
-            />
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              style={{ marginBottom: 10 }}
-            />
-          </CardContent>
-        </CardActionArea>
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="95%"
+            style={{ marginBottom: 10 }}
+          />
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="90%"
+            style={{ marginBottom: 10 }}
+          />
+        </CardContent>
       </Card>
     );
   }

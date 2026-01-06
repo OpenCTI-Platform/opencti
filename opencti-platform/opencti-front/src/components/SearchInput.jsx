@@ -25,13 +25,11 @@ const useStyles = makeStyles((theme) => ({
   searchRoot: {
     borderRadius: 4,
     padding: '0 10px 0 10px',
-    backgroundColor: theme.palette.background.paper,
   },
   searchRootTopBar: {
     borderRadius: 4,
     padding: '1px 10px 0 10px',
     marginRight: 5,
-    backgroundColor: theme.palette.background.paper,
     minWidth: 550,
     width: '50%',
   },
@@ -44,7 +42,6 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 4,
     padding: '0 10px 0 10px',
     height: 30,
-    backgroundColor: theme.palette.background.paper,
   },
   searchRootNoAnimation: {
     borderRadius: 4,

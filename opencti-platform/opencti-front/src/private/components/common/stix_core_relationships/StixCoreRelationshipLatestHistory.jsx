@@ -1,8 +1,8 @@
-import React from 'react';
-import Typography from '@mui/material/Typography';
+import { Suspense } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreRelationshipHistoryLines, { stixCoreRelationshipHistoryLinesQuery } from './StixCoreRelationshipHistoryLines';
-import useQueryLoading from 'src/utils/hooks/useQueryLoading';
+import CardTitle from '../../../../components/common/card/CardTitle';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
   const { t_i18n } = useFormatter();
@@ -23,20 +23,25 @@ const StixCoreRelationshipLatestHistory = ({ stixCoreRelationshipId }) => {
     stixCoreRelationshipHistoryLinesQuery,
     paginationOptions,
   );
+
+  const Fallback = (
+    <>
+      <CardTitle>{t_i18n('Most recent history')}</CardTitle>
+      <div />
+    </>
+  );
+
   return (
     <div className="break">
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Most recent history')}
-      </Typography>
       {queryRef && (
-        <React.Suspense fallback={<div />}>
+        <Suspense fallback={Fallback}>
           <StixCoreRelationshipHistoryLines
             stixCoreRelationshipId={stixCoreRelationshipId}
             queryRef={queryRef}
             isRelationLog={false}
             paginationOptions={paginationOptions}
           />
-        </React.Suspense>
+        </Suspense>
       )}
     </div>
   );

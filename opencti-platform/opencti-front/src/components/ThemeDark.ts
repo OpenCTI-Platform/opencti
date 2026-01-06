@@ -66,6 +66,10 @@ const ThemeDark = (
       nav: nav || THEME_DARK_DEFAULT_NAV,
       accent: accent || THEME_DARK_DEFAULT_ACCENT,
       shadow: 'rgba(200, 200, 200, 0.15)',
+      secondary: '#0D182A',
+    },
+    text: {
+      light: '#AFB0B6',
     },
   },
   typography: {

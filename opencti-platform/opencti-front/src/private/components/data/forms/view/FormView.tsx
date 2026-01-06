@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
 import Alert from '@mui/material/Alert';
@@ -29,19 +28,13 @@ import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './For
 import { environment } from '../../../../../relay/environment';
 import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
 import useGranted, { INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
+import Card from '../../../../../components/common/card/Card';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
     padding: '0 0 50px 0',
-  },
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '30px',
-    borderRadius: 4,
   },
   section: {
     marginTop: 30,
@@ -470,7 +463,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           ]}
         />
       )}
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Card>
         <Typography variant="h1" gutterBottom={true}>
           {form.name}
         </Typography>
@@ -928,7 +921,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
             );
           }}
         </Formik>
-      </Paper>
+      </Card>
     </div>
   );
 };

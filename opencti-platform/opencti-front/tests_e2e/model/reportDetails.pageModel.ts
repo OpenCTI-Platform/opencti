@@ -2,11 +2,13 @@ import { Page } from '@playwright/test';
 import AutocompleteFieldPageModel from './field/AutocompleteField.pageModel';
 import SDOTabs from './SDOTabs.pageModel';
 import SDOOverview from './SDOOverview.pageModel';
+import CardPage from './card.pageModel';
 
 export default class ReportDetailsPage {
   labelsSelect = new AutocompleteFieldPageModel(this.page, 'Labels', true);
   tabs = new SDOTabs(this.page);
   overview = new SDOOverview(this.page);
+  card = new CardPage(this.page);
 
   constructor(private page: Page) {}
 
@@ -31,6 +33,10 @@ export default class ReportDetailsPage {
       .getByRole('heading', { name: heading })
       .locator('..')
       .getByText(text);
+  }
+
+  getTextForCard(cardTitle: string, text: string) {
+    return this.card.getTextInCard(cardTitle, text);
   }
 
   openLabelsSelect() {

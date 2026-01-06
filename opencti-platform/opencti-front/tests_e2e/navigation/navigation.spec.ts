@@ -101,6 +101,7 @@ import SettingsCustomizationPage from '../model/settingsCustomization.pageModel'
 import SettingsTaxonomiesPage from '../model/settingsTaxonomies.pageModel';
 import SettingsFileIndexingPage from '../model/settingsFileIndexing.pageModel';
 import SettingsFiligranExperiencePage from '../model/settingsFiligranExperience.pageModel';
+import CardPage from '../model/card.pageModel';
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -151,6 +152,7 @@ const navigateExternalReferences = async (page: Page) => {
  * @param page
  */
 const navigateMalwareAnalyses = async (page: Page) => {
+  const cardPage = new CardPage(page);
   const malwareAnalysesNameFromInitData = 'Spelevo EK analysis';
   const malwareAnalysesPage = new MalwareAnalysesPage(page);
   await malwareAnalysesPage.navigateFromMenu();
@@ -177,7 +179,7 @@ const navigateMalwareAnalyses = async (page: Page) => {
 
   // -- Data
   await malwareAnalysesDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await malwareAnalysesDetailsPage.tabs.goToHistoryTab();
@@ -455,6 +457,7 @@ const navigateRft = async (page: Page) => {
 const navigateTasks = async (page: Page) => {
   const taskNameFromInitData = 'Task Name';
   const taskPage = new TaskPage(page);
+  const cardPage = new CardPage(page);
   await taskPage.navigateFromMenu();
 
   await expect(taskPage.getPage()).toBeVisible();
@@ -469,7 +472,7 @@ const navigateTasks = async (page: Page) => {
 
   // -- Data
   await taskDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await taskDetailsPage.tabs.goToHistoryTab();
@@ -485,6 +488,7 @@ const navigateTasks = async (page: Page) => {
 const navigateFeedbacks = async (page: Page) => {
   const feedbackNameFromInitData = 'Feedback Name';
   const feedbackPage = new FeedbackPage(page);
+  const cardPage = new CardPage(page);
   await feedbackPage.navigateFromMenu();
 
   await expect(feedbackPage.getPage()).toBeVisible();
@@ -499,7 +503,7 @@ const navigateFeedbacks = async (page: Page) => {
 
   // -- Data
   await feedbackDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await feedbackDetailsPage.tabs.goToHistoryTab();
@@ -515,6 +519,7 @@ const navigateFeedbacks = async (page: Page) => {
 const navigateEventsIncident = async (page: Page) => {
   const eventsIncidentFromInitData = 'Incident Name';
   const eventIncidentPage = new EventsIncidentPage(page);
+  const cardPage = new CardPage(page);
   await eventIncidentPage.navigateFromMenu();
 
   await expect(eventIncidentPage.getPage()).toBeVisible();
@@ -539,7 +544,7 @@ const navigateEventsIncident = async (page: Page) => {
 
   // -- Data
   await eventsIncidentDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await eventsIncidentDetailsPage.tabs.goToHistoryTab();
@@ -572,6 +577,7 @@ const navigateSightings = async (page: Page) => {
 const navigateObservedData = async (page: Page) => {
   const observedDataFromInitData = 'Incident Name';
   const observedDataPage = new ObservedDataPage(page);
+  const cardPage = new CardPage(page);
   await observedDataPage.navigateFromMenu();
 
   await expect(observedDataPage.getPage()).toBeVisible();
@@ -591,7 +597,7 @@ const navigateObservedData = async (page: Page) => {
 
   // -- Data
   await observedDataDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await observedDataDetailsPage.tabs.goToHistoryTab();
@@ -645,6 +651,7 @@ const navigateArtifact = async (page: Page) => {
 const navigateIndicators = async (page: Page) => {
   const indicatorsInitData = 'www.sheepster.ru';
   const indicatorPage = new IndicatorPage(page);
+  const cardPage = new CardPage(page);
   await indicatorPage.navigateFromMenu();
   await expect(indicatorPage.getPage()).toBeVisible();
   await expect(page.getByText(indicatorsInitData)).toBeVisible();
@@ -672,7 +679,7 @@ const navigateIndicators = async (page: Page) => {
 
   // -- Data
   await indicatorDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await indicatorDetailsPage.tabs.goToHistoryTab();
@@ -683,6 +690,7 @@ const navigateIndicators = async (page: Page) => {
 const navigateInfrastructure = async (page: Page) => {
   const infrastructureInitData = 'mynewinfratest';
   const infrastructurePage = new InfrastructurePage(page);
+  const cardPage = new CardPage(page);
   await infrastructurePage.navigateFromMenu();
   await expect(infrastructurePage.getPage()).toBeVisible();
   await expect(page.getByText(infrastructureInitData)).toBeVisible();
@@ -706,7 +714,7 @@ const navigateInfrastructure = async (page: Page) => {
 
   // -- Data
   await infrastructureDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await infrastructureDetailsPage.tabs.goToHistoryTab();
@@ -717,6 +725,7 @@ const navigateInfrastructure = async (page: Page) => {
 const navigateThreatActorGroup = async (page: Page) => {
   const threatActorGroupInitData = 'Disco Team Threat Actor Group';
   const threatActorGroupPage = new ThreatActorGroupPage(page);
+  const cardPage = new CardPage(page);
   await threatActorGroupPage.navigateFromMenu();
   await expect(threatActorGroupPage.getPage()).toBeVisible();
   await expect(page.getByText(threatActorGroupInitData)).toBeVisible();
@@ -740,7 +749,7 @@ const navigateThreatActorGroup = async (page: Page) => {
 
   // -- Data
   await threatActorGroupDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await threatActorGroupDetailsPage.tabs.goToHistoryTab();
@@ -751,6 +760,7 @@ const navigateThreatActorGroup = async (page: Page) => {
 const navigateThreatActorIndividual = async (page: Page) => {
   const threatActorIndividualInitData = 'E2E dashboard - Threat actor - now';
   const threatActorIndividualPage = new ThreatActorIndividualPage(page);
+  const cardPage = new CardPage(page);
   await threatActorIndividualPage.navigateFromMenu();
   await expect(threatActorIndividualPage.getPage()).toBeVisible();
   await expect(page.getByText(threatActorIndividualInitData)).toBeVisible();
@@ -774,7 +784,7 @@ const navigateThreatActorIndividual = async (page: Page) => {
 
   // -- Data
   await threatActorIndividualDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await threatActorIndividualDetailsPage.tabs.goToHistoryTab();
@@ -785,6 +795,7 @@ const navigateThreatActorIndividual = async (page: Page) => {
 const navigateIntrusionSet = async (page: Page) => {
   const intrusionSetInitData = 'E2E dashboard - Intrusion set - now';
   const intrusionSetPage = new IntrusionSetPage(page);
+  const cardPage = new CardPage(page);
   await intrusionSetPage.navigateFromMenu();
   await expect(intrusionSetPage.getPage()).toBeVisible();
   await expect(page.getByText(intrusionSetInitData)).toBeVisible();
@@ -808,7 +819,7 @@ const navigateIntrusionSet = async (page: Page) => {
 
   // -- Data
   await intrusionSetDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await intrusionSetDetailsPage.tabs.goToHistoryTab();
@@ -819,6 +830,7 @@ const navigateIntrusionSet = async (page: Page) => {
 const navigateCampaign = async (page: Page) => {
   const campaignInitData = 'A new campaign';
   const campaignPage = new CampaignPageModel(page);
+  const cardPage = new CardPage(page);
   await campaignPage.navigateFromMenu();
   await expect(campaignPage.getPage()).toBeVisible();
   await expect(page.getByText(campaignInitData)).toBeVisible();
@@ -842,7 +854,7 @@ const navigateCampaign = async (page: Page) => {
 
   // -- Data
   await campaignDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await campaignDetailsPage.tabs.goToHistoryTab();
@@ -853,6 +865,7 @@ const navigateCampaign = async (page: Page) => {
 const navigateMalware = async (page: Page) => {
   const malwareInitData = 'E2E dashboard - Malware - now';
   const malwarePage = new MalwarePageModel(page);
+  const cardPage = new CardPage(page);
   await malwarePage.navigateFromMenu();
   await expect(malwarePage.getPage()).toBeVisible();
   await expect(page.getByText(malwareInitData)).toBeVisible();
@@ -876,7 +889,7 @@ const navigateMalware = async (page: Page) => {
 
   // -- Data
   await malwareDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await malwareDetailsPage.tabs.goToHistoryTab();
@@ -887,6 +900,7 @@ const navigateMalware = async (page: Page) => {
 const navigateChannel = async (page: Page) => {
   const channelInitData = 'channel e2e';
   const channelPage = new ChannelPage(page);
+  const cardPage = new CardPage(page);
   await channelPage.navigateFromMenu();
   await expect(channelPage.getPage()).toBeVisible();
   await expect(page.getByText(channelInitData)).toBeVisible();
@@ -910,7 +924,7 @@ const navigateChannel = async (page: Page) => {
 
   // -- Data
   await channelDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- channelDetailsPage
   await channelDetailsPage.tabs.goToHistoryTab();
@@ -921,6 +935,7 @@ const navigateChannel = async (page: Page) => {
 const navigateTool = async (page: Page) => {
   const toolInitData = 'tool e2e';
   const toolPage = new ToolPage(page);
+  const cardPage = new CardPage(page);
   await toolPage.navigateFromMenu();
   await expect(toolPage.getPage()).toBeVisible();
   await expect(page.getByText(toolInitData)).toBeVisible();
@@ -944,7 +959,7 @@ const navigateTool = async (page: Page) => {
 
   // -- Data
   await toolDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await toolDetailsPage.tabs.goToHistoryTab();
@@ -955,6 +970,7 @@ const navigateTool = async (page: Page) => {
 const navigateVulnerability = async (page: Page) => {
   const vulnerabilityInitData = 'E2E dashboard - Vulnerability - now';
   const vulnerabilityPage = new VulnerabilityPage(page);
+  const cardPage = new CardPage(page);
   await vulnerabilityPage.navigateFromMenu();
   await expect(vulnerabilityPage.getPage()).toBeVisible();
   await expect(page.getByText(vulnerabilityInitData)).toBeVisible();
@@ -978,7 +994,7 @@ const navigateVulnerability = async (page: Page) => {
 
   // -- Data
   await vulnerabilityDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await vulnerabilityDetailsPage.tabs.goToHistoryTab();
@@ -989,6 +1005,7 @@ const navigateVulnerability = async (page: Page) => {
 const navigateAttackPattern = async (page: Page) => {
   const attackPatternInitData = 'Attack pattern e2e';
   const attackPatternPage = new AttackPatternPage(page);
+  const cardPage = new CardPage(page);
   await attackPatternPage.navigateFromMenu();
   await expect(attackPatternPage.getPage()).toBeVisible();
   await expect(page.getByText(attackPatternInitData)).toBeVisible();
@@ -1012,7 +1029,7 @@ const navigateAttackPattern = async (page: Page) => {
 
   // -- Data
   await attackPatternDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await attackPatternDetailsPage.tabs.goToHistoryTab();
@@ -1023,6 +1040,7 @@ const navigateAttackPattern = async (page: Page) => {
 const navigateNarrative = async (page: Page) => {
   const narrativeInitData = 'Narrative e2e';
   const narrativePage = new NarrativePage(page);
+  const cardPage = new CardPage(page);
   await narrativePage.navigateFromMenu();
   await expect(narrativePage.getPage()).toBeVisible();
   await expect(page.getByText(narrativeInitData)).toBeVisible();
@@ -1046,7 +1064,7 @@ const navigateNarrative = async (page: Page) => {
 
   // -- Data
   await narrativeDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await narrativeDetailsPage.tabs.goToHistoryTab();
@@ -1057,6 +1075,7 @@ const navigateNarrative = async (page: Page) => {
 const navigateCourseOfAction = async (page: Page) => {
   const courseOfActionInitData = 'Course of action e2e';
   const courseOfActionPage = new CourseOfActionPage(page);
+  const cardPage = new CardPage(page);
   await courseOfActionPage.navigateFromMenu();
   await expect(courseOfActionPage.getPage()).toBeVisible();
   await expect(page.getByText(courseOfActionInitData)).toBeVisible();
@@ -1072,7 +1091,7 @@ const navigateCourseOfAction = async (page: Page) => {
 
   // -- Data
   await courseOfActionDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await courseOfActionDetailsPage.tabs.goToHistoryTab();
@@ -1083,6 +1102,7 @@ const navigateCourseOfAction = async (page: Page) => {
 const navigateDataComponent = async (page: Page) => {
   const dataComponentInitData = 'Data component e2e';
   const dataComponentPage = new DataComponentPage(page);
+  const cardPage = new CardPage(page);
   await dataComponentPage.navigateFromMenu();
   await expect(dataComponentPage.getPage()).toBeVisible();
   await expect(page.getByText(dataComponentInitData)).toBeVisible();
@@ -1098,7 +1118,7 @@ const navigateDataComponent = async (page: Page) => {
 
   // -- Data
   await dataComponentDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await dataComponentDetailsPage.tabs.goToHistoryTab();
@@ -1109,6 +1129,7 @@ const navigateDataComponent = async (page: Page) => {
 const navigateDataSource = async (page: Page) => {
   const dataSourceInitData = 'Data source e2e';
   const dataSourcePage = new DataSourcePage(page);
+  const cardPage = new CardPage(page);
   await dataSourcePage.navigateFromMenu();
   await expect(dataSourcePage.getPage()).toBeVisible();
   await expect(page.getByText(dataSourceInitData)).toBeVisible();
@@ -1124,7 +1145,7 @@ const navigateDataSource = async (page: Page) => {
 
   // -- Data
   await dataSourceDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await dataSourceDetailsPage.tabs.goToHistoryTab();
@@ -1135,6 +1156,7 @@ const navigateDataSource = async (page: Page) => {
 const navigateSector = async (page: Page) => {
   const sectorInitData = 'Sector e2e';
   const sectorPage = new SectorPage(page);
+  const cardPage = new CardPage(page);
   await sectorPage.navigateFromMenu();
   await expect(sectorPage.getPage()).toBeVisible();
   await expect(page.getByText(sectorInitData)).toBeVisible();
@@ -1162,7 +1184,7 @@ const navigateSector = async (page: Page) => {
 
   // -- Data
   await sectorDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await sectorDetailsPage.tabs.goToHistoryTab();
@@ -1172,6 +1194,7 @@ const navigateSector = async (page: Page) => {
 
 const navigateEvent = async (page: Page) => {
   const eventInitData = 'Event e2e';
+  const cardPage = new CardPage(page);
   const eventPage = new EventPage(page);
   await eventPage.navigateFromMenu();
   await expect(eventPage.getPage()).toBeVisible();
@@ -1200,7 +1223,7 @@ const navigateEvent = async (page: Page) => {
 
   // -- Data
   await eventDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await eventDetailsPage.tabs.goToHistoryTab();
@@ -1211,6 +1234,7 @@ const navigateEvent = async (page: Page) => {
 const navigateOrganization = async (page: Page) => {
   const organizationInitData = 'Organization e2e';
   const organizationPage = new OrganizationPage(page);
+  const cardPage = new CardPage(page);
   await organizationPage.navigateFromMenu();
   await expect(organizationPage.getPage()).toBeVisible();
   await expect(page.getByText(organizationInitData)).toBeVisible();
@@ -1238,7 +1262,7 @@ const navigateOrganization = async (page: Page) => {
 
   // -- Data
   await organizationDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await organizationDetailsPage.tabs.goToHistoryTab();
@@ -1249,6 +1273,7 @@ const navigateOrganization = async (page: Page) => {
 const navigateSecurityPlatform = async (page: Page) => {
   const securityPlatformInitData = 'E2e EDR';
   const securityPlatformPage = new SecurityPlatformPage(page);
+  const cardPage = new CardPage(page);
   await securityPlatformPage.navigateFromMenu();
   await expect(securityPlatformPage.getPage()).toBeVisible();
   await expect(page.getByText(securityPlatformInitData)).toBeVisible();
@@ -1272,7 +1297,7 @@ const navigateSecurityPlatform = async (page: Page) => {
 
   // -- Data
   await securityPlatformDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await securityPlatformDetailsPage.tabs.goToHistoryTab();
@@ -1282,6 +1307,7 @@ const navigateSecurityPlatform = async (page: Page) => {
 
 const navigateSystem = async (page: Page) => {
   const systemInitData = 'System e2e';
+  const cardPage = new CardPage(page);
   const systemPage = new SystemPage(page);
   await systemPage.navigateFromMenu();
   await expect(systemPage.getPage()).toBeVisible();
@@ -1310,7 +1336,7 @@ const navigateSystem = async (page: Page) => {
 
   // -- Data
   await systemDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await systemDetailsPage.tabs.goToHistoryTab();
@@ -1320,6 +1346,7 @@ const navigateSystem = async (page: Page) => {
 
 const navigateIndividual = async (page: Page) => {
   const individualInitData = 'Individual e2e';
+  const cardPage = new CardPage(page);
   const individualPage = new IndividualPage(page);
   await individualPage.navigateFromMenu();
   await expect(individualPage.getPage()).toBeVisible();
@@ -1348,7 +1375,7 @@ const navigateIndividual = async (page: Page) => {
 
   // -- Data
   await individualDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await individualDetailsPage.tabs.goToHistoryTab();
@@ -1358,6 +1385,7 @@ const navigateIndividual = async (page: Page) => {
 
 const navigateRegion = async (page: Page) => {
   const regionInitData = 'Region e2e';
+  const cardPage = new CardPage(page);
   const regionPage = new RegionPage(page);
   await regionPage.navigateFromMenu();
   await expect(regionPage.getPage()).toBeVisible();
@@ -1386,7 +1414,7 @@ const navigateRegion = async (page: Page) => {
 
   // -- Data
   await regionDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await regionDetailsPage.tabs.goToHistoryTab();
@@ -1396,6 +1424,7 @@ const navigateRegion = async (page: Page) => {
 
 const navigateCountry = async (page: Page) => {
   const countryInitData = 'Country e2e';
+  const cardPage = new CardPage(page);
   const countryPage = new CountryPage(page);
   await countryPage.navigateFromMenu();
   await expect(countryPage.getPage()).toBeVisible();
@@ -1424,7 +1453,7 @@ const navigateCountry = async (page: Page) => {
 
   // -- Data
   await countryDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await countryDetailsPage.tabs.goToHistoryTab();
@@ -1434,6 +1463,7 @@ const navigateCountry = async (page: Page) => {
 
 const navigateAdministrativeArea = async (page: Page) => {
   const administrativeAreaInitData = 'Administrative area e2e';
+  const cardPage = new CardPage(page);
   const administrativeAreaPage = new AdministrativeAreaPage(page);
   await administrativeAreaPage.navigateFromMenu();
   await expect(administrativeAreaPage.getPage()).toBeVisible();
@@ -1462,7 +1492,7 @@ const navigateAdministrativeArea = async (page: Page) => {
 
   // -- Data
   await administrativeAreaDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await administrativeAreaDetailsPage.tabs.goToHistoryTab();
@@ -1472,6 +1502,7 @@ const navigateAdministrativeArea = async (page: Page) => {
 
 const navigateCity = async (page: Page) => {
   const cityInitData = 'City e2e';
+  const cardPage = new CardPage(page);
   const cityPage = new CityPage(page);
   await cityPage.navigateFromMenu();
   await expect(cityPage.getPage()).toBeVisible();
@@ -1500,7 +1531,7 @@ const navigateCity = async (page: Page) => {
 
   // -- Data
   await cityDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await cityDetailsPage.tabs.goToHistoryTab();
@@ -1510,6 +1541,7 @@ const navigateCity = async (page: Page) => {
 
 const navigatePosition = async (page: Page) => {
   const positionInitData = 'Position e2e';
+  const cardPage = new CardPage(page);
   const positionPage = new PositionPage(page);
   await positionPage.navigateFromMenu();
   await expect(positionPage.getPage()).toBeVisible();
@@ -1538,7 +1570,7 @@ const navigatePosition = async (page: Page) => {
 
   // -- Data
   await positionDetailsPage.tabs.goToDataTab();
-  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+  await expect(cardPage.getCard('Uploaded files')).toBeVisible();
 
   // -- History
   await positionDetailsPage.tabs.goToHistoryTab();

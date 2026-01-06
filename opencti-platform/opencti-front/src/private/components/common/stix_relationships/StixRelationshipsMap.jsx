@@ -165,6 +165,7 @@ const StixRelationshipsMap = ({
   };
   return (
     <WidgetContainer
+      noPadding
       height={height}
       title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
       variant={variant}

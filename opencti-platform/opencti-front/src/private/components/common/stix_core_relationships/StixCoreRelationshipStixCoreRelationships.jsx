@@ -1,9 +1,6 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -12,32 +9,11 @@ import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreRelationshipStixCoreRelationshipsLines, { stixCoreRelationshipStixCoreRelationshipsLinesQuery } from './StixCoreRelationshipStixCoreRelationshipsLines';
-
-const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 4,
-  },
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    width: 24,
-    height: 24,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
+import Card from '../../../../components/common/card/Card';
 
 class StixCoreRelationshipStixCoreRelationships extends Component {
   render() {
-    const { t, classes, entityId, relationshipType } = this.props;
+    const { t, entityId, relationshipType } = this.props;
     const paginationOptions = {
       fromOrToId: entityId,
       relationship_type: relationshipType,
@@ -60,15 +36,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
           }
           return (
             <div style={{ height: '100%' }}>
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Linked entities')}
-              </Typography>
-              <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+              <Card title={t('Linked entities')}>
                 <List>
                   {Array.from(Array(5), (e, i) => (
                     <ListItem key={i} divider={true}>
@@ -102,7 +70,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
                     </ListItem>
                   ))}
                 </List>
-              </Paper>
+              </Card>
             </div>
           );
         }}
@@ -122,5 +90,4 @@ StixCoreRelationshipStixCoreRelationships.propTypes = {
 
 export default compose(
   inject18n,
-  withStyles(styles),
 )(StixCoreRelationshipStixCoreRelationships);

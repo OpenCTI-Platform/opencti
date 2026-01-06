@@ -7,8 +7,6 @@ import withStyles from '@mui/styles/withStyles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import Button from '@common/button/Button';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import { LockOutlined, NoEncryptionOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
@@ -17,9 +15,10 @@ import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/styles';
-import { ListItem, ListItemText, Switch } from '@mui/material';
-import IconButton from '@common/button/IconButton';
-import Box from '@mui/material/Box';
+import { ListItem, ListItemText, Stack, Switch } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import Button from '@common/button/Button';
+import Card from '@common/card/Card';
 import NotifierField from '../common/form/NotifierField';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
@@ -293,7 +292,10 @@ const ProfileOverviewComponent = (props) => {
     ?? [];
 
   return (
-    <div className={classes.container}>
+    <Stack
+      gap={2}
+      sx={{ width: 900, margin: '0 auto' }}
+    >
       <Dialog
         open={display2FA}
         slotProps={{ paper: { elevation: 1 } }}
@@ -307,23 +309,14 @@ const ProfileOverviewComponent = (props) => {
           <OtpComponent closeFunction={() => setDisplay2FA(false)} />
         </DialogContent>
       </Dialog>
-      <Paper
-        classes={{ root: classes.paper }}
-        variant="outlined"
-        sx={{
-          height: 'unset',
-        }}
-      >
-        <Typography variant="h1" gutterBottom={true}>
-          {t('Profile')} {external && `(${t('external')})`}
-        </Typography>
+      <Card title={`${t('Profile')} ${external && `(${t('external')})`}`}>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={userValidation(t)}
         >
           {() => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <Field
                 component={TextField}
                 variant="standard"
@@ -382,18 +375,15 @@ const ProfileOverviewComponent = (props) => {
             </Form>
           )}
         </Formik>
-      </Paper>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
-        <Typography variant="h1" gutterBottom={true} style={{ float: 'left' }}>
-          {t('User experience')}
-        </Typography>
+      </Card>
+      <Card title={t('User experience')}>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={userValidation(t)}
         >
           {() => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form>
               <Field
                 component={SelectField}
                 variant="standard"
@@ -404,7 +394,7 @@ const ProfileOverviewComponent = (props) => {
                   name: 'theme',
                   id: 'theme',
                 }}
-                containerstyle={fieldSpacingContainerStyle}
+                containerstyle={{ width: '100%' }}
                 onChange={handleSubmitField}
               >
                 <MenuItem value="default">{t('Default')}</MenuItem>
@@ -495,21 +485,13 @@ const ProfileOverviewComponent = (props) => {
             </Form>
           )}
         </Formik>
-      </Paper>
-      { hasKnowledgeAccess ? (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <Typography variant="h1" gutterBottom={true}>
-            {t('Dashboard settings')}
-          </Typography>
-          <Box py="20px">
-            <DashboardSettings />
-          </Box>
-        </Paper>
+      </Card>
+      {hasKnowledgeAccess ? (
+        <Card title={t('Dashboard settings')}>
+          <DashboardSettings />
+        </Card>
       ) : null}
-      <Paper classes={{ root: classes.paper }} variant="outlined">
-        <Typography variant="h1" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Authentication')}
-        </Typography>
+      <Card title={t('Authentication')}>
         <div style={{ float: 'right', marginTop: -5 }}>
           {useOtp && (
             <Button
@@ -592,12 +574,9 @@ const ProfileOverviewComponent = (props) => {
             )}
           </Formik>
         )}
-      </Paper>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
-        <Typography variant="h1" gutterBottom={true}>
-          {t('API access')}
-        </Typography>
-        <div style={{ marginTop: 16 }}>
+      </Card>
+      <Card title={t('API access')}>
+        <div>
           <Typography variant="h4" gutterBottom={true}>
             {t('OpenCTI version')}
           </Typography>
@@ -704,9 +683,9 @@ const ProfileOverviewComponent = (props) => {
             </div>
           )}
         </div>
-      </Paper>
+      </Card>
       <ProfileLocalStorage />
-    </div>
+    </Stack>
   );
 };
 

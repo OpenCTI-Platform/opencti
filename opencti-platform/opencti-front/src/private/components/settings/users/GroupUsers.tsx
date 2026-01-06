@@ -1,10 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery } from 'react-relay';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import GroupUsersLines, { groupUsersLinesQuery } from './GroupUsersLines';
@@ -13,17 +9,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { GroupUsersLinesQuery, GroupUsersLinesQuery$variables } from './__generated__/GroupUsersLinesQuery.graphql';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import { UserLineDummy } from './UserLine';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-    position: 'relative',
-  },
-}));
+import Card from '../../../../components/common/card/Card';
 
 interface GroupUsersProps {
   groupId: string;
@@ -41,7 +27,6 @@ export const initialStaticPaginationForGroupUsers = {
 };
 
 const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const LOCAL_STORAGE_KEY = `group-${groupId}-users`;
   const {
@@ -104,22 +89,17 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
   };
   return (
     <Grid item xs={12} style={{ marginTop: 10 }}>
-      <Typography
-        variant="h4"
-        gutterBottom={true}
-        style={{ float: 'left' }}
+      <Card
+        title={t_i18n('Members')}
+        titleSx={{ alignItems: 'end' }}
+        action={(
+          <SearchInput
+            variant="thin"
+            onSubmit={helpers.handleSearch}
+            keyword={searchTerm}
+          />
+        )}
       >
-        {t_i18n('Members')}
-      </Typography>
-      <div style={{ float: 'right', marginTop: -12 }}>
-        <SearchInput
-          variant="thin"
-          onSubmit={helpers.handleSearch}
-          keyword={searchTerm}
-        />
-      </div>
-      <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} variant="outlined">
         <ColumnsLinesTitles
           dataColumns={dataColumns}
           sortBy={sortBy}
@@ -145,7 +125,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
             />
           </React.Suspense>
         )}
-      </Paper>
+      </Card>
     </Grid>
   );
 };

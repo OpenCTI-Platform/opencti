@@ -131,6 +131,11 @@ interface ExtendedBackground extends TypeBackground {
   nav: string;
   accent: string;
   shadow: string;
+  secondary: string;
+}
+
+interface ExtendedText extends TypeText {
+  light: string;
 }
 
 interface ExtendedPaletteOptions extends PaletteOptions {
@@ -156,6 +161,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   gradient: Partial<ExtendedColor>;
   secondary: Partial<ExtendedColor>;
   mode: PaletteMode;
+  text: Partial<ExtendedText>;
 }
 
 interface ExtendedThemeOptions extends ThemeOptions {

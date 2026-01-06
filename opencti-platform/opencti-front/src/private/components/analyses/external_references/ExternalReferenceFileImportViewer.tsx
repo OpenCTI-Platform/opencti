@@ -2,8 +2,6 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { compose, includes } from 'ramda';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
@@ -13,7 +11,6 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
-import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { FragmentRefs } from 'relay-runtime';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -34,18 +31,9 @@ import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapper
 import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import UploadImport from '../../../../components/UploadImport';
+import Card from '../../../../components/common/card/Card';
 
 const interval$ = interval(TEN_SECONDS);
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  paper: {
-    marginTop: -7,
-    padding: '10px 15px 10px 15px',
-    borderRadius: 4,
-  },
-}));
 
 interface ConnectorConfiguration {
   configuration: string;
@@ -95,7 +83,6 @@ interface ExternalReferenceFileImportViewerBaseProps {
 const ExternalReferenceFileImportViewerBase: FunctionComponent<
   ExternalReferenceFileImportViewerBaseProps
 > = ({ externalReference, disableImport, relay, connectorsImport }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [fileToImport, setFileToImport] = useState<
   FileLine_file$data | null | undefined
@@ -177,23 +164,23 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
   return (
     <React.Fragment>
       <div style={{ height: '100%' }} className="break">
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t_i18n('Uploaded files')}
-        </Typography>
-        <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 25 }} />}>
-          <div style={{ float: 'left', marginTop: -15, marginBottom: 5 }}>
-            <UploadImport
-              entityId={id}
-              onSuccess={() => {
-                if (relay.refetch) {
-                  relay.refetch({ id });
-                }
-              }}
-            />
-          </div>
-        </Security>
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+        <Card
+          title={t_i18n('Uploaded files')}
+          action={(
+            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+              <UploadImport
+                size="small"
+                fontSize="small"
+                entityId={id}
+                onSuccess={() => {
+                  if (relay.refetch) {
+                    relay.refetch({ id });
+                  }
+                }}
+              />
+            </Security>
+          )}
+        >
           {importFiles?.edges?.length ? (
             <List>
               {importFiles?.edges?.map(
@@ -234,7 +221,7 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
               </span>
             </div>
           )}
-        </Paper>
+        </Card>
       </div>
       <div>
         <Formik

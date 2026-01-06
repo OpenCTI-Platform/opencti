@@ -3,21 +3,16 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
+import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
   chip: {
     fontSize: 12,
     lineHeight: '12px',
@@ -34,10 +29,7 @@ class NoteDetailsComponent extends Component {
     const { t, classes, note } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Entity details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+        <Card title={t('Entity details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={9}>
               <Typography variant="h3" gutterBottom={true}>
@@ -84,7 +76,7 @@ class NoteDetailsComponent extends Component {
               <ItemLikelihood likelihood={note.likelihood} />
             </Grid>
           </Grid>
-        </Paper>
+        </Card>
       </div>
     );
   }

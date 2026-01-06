@@ -15,9 +15,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { CSSProperties } from 'react';
 import { useFormikContext } from 'formik';
-import { Box, CardActionArea, Typography, CardContent, Card } from '@mui/material';
+import { Box, Typography, CardContent } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { PirCreationFormData } from './pir-form-utils';
+import Card from '../../../../components/common/card/Card';
 
 const PirCreationFormType = () => {
   const { t_i18n } = useFormatter();
@@ -50,17 +51,16 @@ const PirCreationFormType = () => {
         if (disabled) cardStyle.opacity = 0.7;
 
         return (
-          <Card key={i} variant="outlined" sx={cardStyle}>
-            <CardActionArea
-              sx={{ height: '100%' }}
-              disabled={disabled}
-              onClick={() => setFieldValue('type', id)}
-            >
-              <CardContent sx={{ height: '100%' }}>
-                <Typography variant="h4" sx={{ height: 'initial' }}>{label}</Typography>
-                <Typography variant="body2">{description}</Typography>
-              </CardContent>
-            </CardActionArea>
+          <Card
+            onClick={() => setFieldValue('type', id)}
+            key={i}
+            variant="outlined"
+            sx={cardStyle}
+          >
+            <CardContent sx={{ height: '100%' }}>
+              <Typography variant="h4" sx={{ height: 'initial' }}>{label}</Typography>
+              <Typography variant="body2">{description}</Typography>
+            </CardContent>
           </Card>
         );
       })}

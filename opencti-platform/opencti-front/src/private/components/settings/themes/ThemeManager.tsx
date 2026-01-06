@@ -1,6 +1,6 @@
-import React, { FunctionComponent, useRef, useState } from 'react';
-import { Paper, Stack, Tooltip, Typography } from '@mui/material';
+import { FunctionComponent, useState } from 'react';
 import IconButton from '@common/button/IconButton';
+import { Tooltip } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { Disposable, graphql } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -15,6 +15,7 @@ import ThemePopover from './ThemePopover';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import ThemeCreation from './ThemeCreation';
 import ThemeImporter from './ThemeImporter';
+import Card from '../../../../components/common/card/Card';
 
 const LOCAL_STORAGE_KEY = 'themes';
 
@@ -120,7 +121,6 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [displayCreation, setDisplayCreation] = useState<boolean>(false);
-  const ref = useRef(null);
 
   const initialValues = {
     sortBy: 'created_at',
@@ -163,33 +163,29 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
 
   return (
     <>
-      <Stack direction="row" alignItems="center" gap={1} sx={{ marginBottom: 0, marginTop: -0.2 }}>
-        <Typography variant="h4" sx={{ margin: 0 }}>{t_i18n('Themes')}</Typography>
+      <Card
+        title={t_i18n('Themes')}
+        sx={{ flex: '0 auto' }}
+        action={(
+          <Box>
+            <Tooltip title={t_i18n('Create a custom theme')}>
+              <IconButton
+                color="primary"
+                aria-label={t_i18n('Create a custom theme')}
+                onClick={handleOpenCreation}
+                size="small"
+                data-testid="create-theme-btn"
+              >
+                <Add fontSize="small" />
+              </IconButton>
+            </Tooltip>
 
-        <Box>
-          <Tooltip title={t_i18n('Create a custom theme')}>
-            <IconButton
-              color="primary"
-              aria-label={t_i18n('Create a custom theme')}
-              onClick={handleOpenCreation}
-              size="small"
-              data-testid="create-theme-btn"
-            >
-              <Add fontSize="small" />
-            </IconButton>
-          </Tooltip>
-
-          <ThemeImporter
-            handleRefetch={handleRefetch}
-            paginationOptions={queryPaginationOptions}
-          />
-        </Box>
-      </Stack>
-
-      <Paper
-        ref={ref}
-        variant="outlined"
-        style={{ padding: '15px' }}
+            <ThemeImporter
+              handleRefetch={handleRefetch}
+              paginationOptions={queryPaginationOptions}
+            />
+          </Box>
+        )}
       >
         {queryRef && (
           <DataTable
@@ -218,7 +214,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
 
           />
         )}
-      </Paper>
+      </Card>
 
       <ThemeCreation
         open={displayCreation}

@@ -5,7 +5,6 @@ import Typography from '@mui/material/Typography';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import Paper from '@mui/material/Paper';
 import { ArrowRightAlt } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
@@ -14,6 +13,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import RuleListItemProgressBar from './RulesListItemProgressBar';
 import type { Theme } from '../../../../components/Theme';
 import Tag from './RulesListItemTag';
+import Card from '../../../../components/common/card/Card';
 
 interface RulesListItemProps {
   rule: NonNullable<Rule>;
@@ -59,13 +59,13 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
       <Grid size={{ xs: 3 }} sx={styleRuleRoot}>
         <DangerZoneBlock
           type="rules"
+          displayTitle={false}
           title={t_i18n(rule.name)}
           sx={{ title: styleRuleTitle }}
-          component={({ disabled, style }) => (
-            <Paper
-              variant="outlined"
-              sx={{ marginTop: 1, padding: 2, flex: '1' }}
-              style={style}
+          component={({ disabled, style, title }) => (
+            <Card
+              title={title}
+              sx={style}
             >
               <Grid container spacing={3}>
                 <Grid size={{ xs: 6 }}>
@@ -98,15 +98,12 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
                   </Grid>
                 )}
               </Grid>
-            </Paper>
+            </Card>
           )}
         />
       </Grid>
       <Grid size={{ xs: 9 }}>
-        <Paper
-          variant="outlined"
-          sx={{ marginTop: 3, padding: 3, overflowX: 'auto' }}
-        >
+        <Card title=" ">
           <div style={styleDefinition}>
             <div style={{ flex: '1' }}>
               {(rule.display?.if ?? []).map((step, index) => (
@@ -136,7 +133,7 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
               })}
             </div>
           </div>
-        </Paper>
+        </Card>
       </Grid>
     </Grid>
   );

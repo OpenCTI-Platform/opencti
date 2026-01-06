@@ -1,14 +1,18 @@
 import React from 'react';
 import { ImportMode, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
-import { Box, Card, CardActionArea, CardContent } from '@mui/material';
+import { Box, CardContent } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { RouteOutlined, UploadFileOutlined, DescriptionOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../../components/i18n';
+import Card from '../../../../../components/common/card/Card';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../../../components/Theme';
 
 const CARD_WIDTH = 450;
 const CARD_HEIGHT = 300;
 
 const ImportFilesToggleMode = () => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { setActiveStep, importMode, setImportMode, entityId } = useImportFilesContext();
   const modes: { mode: ImportMode; title: string; description: string; icon: React.ReactElement }[] = [
@@ -54,43 +58,33 @@ const ImportFilesToggleMode = () => {
     >
       {modes.map(({ mode, title, description, icon }) => (
         <Card
+          aria-label={title}
           variant="outlined"
+          onClick={() => onSelectMode(mode)}
           key={mode}
-          style={{
+          sx={{
             width: CARD_WIDTH,
             height: CARD_HEIGHT,
             textAlign: 'center',
+            ...(importMode === mode
+              ? { borderColor: theme.palette.primary.main }
+              : {}),
           }}
         >
-          <CardActionArea
-            onClick={() => onSelectMode(mode)}
-            data-active={importMode === mode ? '' : undefined}
-            sx={{
-              height: '100%',
-              '&[data-active]': {
-                backgroundColor: 'action.selected',
-                '&:hover': {
-                  backgroundColor: 'action.selectedHover',
-                },
-              },
-            }}
-            aria-label={title}
-          >
-            <CardContent>
-              {icon}
-              <Typography
-                gutterBottom
-                variant="h2"
-                style={{ marginTop: 20 }}
-              >
-                {title}
-              </Typography>
-              <br />
-              <Typography variant="body1">
-                {description}
-              </Typography>
-            </CardContent>
-          </CardActionArea>
+          <CardContent>
+            {icon}
+            <Typography
+              gutterBottom
+              variant="h2"
+              style={{ marginTop: 20 }}
+            >
+              {title}
+            </Typography>
+            <br />
+            <Typography variant="body1">
+              {description}
+            </Typography>
+          </CardContent>
         </Card>
       ))}
     </Box>

@@ -29,6 +29,7 @@ export interface WidgetDataSelection {
   sort_by?: string | null;
   sort_mode?: string | null;
   field?: string;
+  relationship_type?: string;
 }
 
 interface WidgetParameters {

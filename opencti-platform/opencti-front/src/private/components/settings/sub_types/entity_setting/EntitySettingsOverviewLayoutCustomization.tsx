@@ -151,7 +151,7 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                               ref={providedDrag.innerRef}
                               sx={{
                                 '& td, & th': { borderColor: 'border.lightBackground' },
-                                background: snapshotDrag.isDragging ? theme.palette.background.accent : theme.palette.background.paper,
+                                background: snapshotDrag.isDragging ? theme.palette.background.accent : undefined,
                               }}
                               {...providedDrag.draggableProps}
                             >

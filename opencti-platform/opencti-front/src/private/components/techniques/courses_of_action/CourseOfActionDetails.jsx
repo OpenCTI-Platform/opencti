@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
@@ -16,31 +14,14 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
 import inject18n from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-
-const styles = (theme) => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-  item: {
-    paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-  },
-});
+import Card from '@common/card/Card';
 
 class CourseOfActionDetailsComponent extends Component {
   render() {
-    const { t, classes, courseOfAction } = this.props;
+    const { t, courseOfAction } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+        <Card title={t('Details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -98,7 +79,7 @@ class CourseOfActionDetailsComponent extends Component {
             </Grid>
           </Grid>
           <CoursesOfActionAttackPatterns courseOfAction={courseOfAction} />
-        </Paper>
+        </Card>
       </div>
     );
   }
@@ -106,7 +87,6 @@ class CourseOfActionDetailsComponent extends Component {
 
 CourseOfActionDetailsComponent.propTypes = {
   courseOfAction: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
@@ -132,4 +112,4 @@ const CourseOfActionDetails = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(CourseOfActionDetails);
+export default compose(inject18n)(CourseOfActionDetails);

@@ -2,30 +2,18 @@ import React, { FunctionComponent, useEffect } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import { FileExportOutline } from 'mdi-material-ui';
-import makeStyles from '@mui/styles/makeStyles';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from './FileLine';
 import { useFormatter } from '../../../../components/i18n';
 import { FileExportViewer_entity$data } from './__generated__/FileExportViewer_entity.graphql';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import Card from '../../../../components/common/card/Card';
 
 const interval$ = interval(FIVE_SECONDS);
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  paper: {
-    padding: '10px 15px 10px 15px',
-    borderRadius: 4,
-    marginTop: 2,
-  },
-}));
 
 interface FileExportViewerComponentProps {
   entity: FileExportViewer_entity$data;
@@ -35,7 +23,6 @@ interface FileExportViewerComponentProps {
 }
 
 const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProps> = ({ entity, relay, handleOpenExport, isExportPossible }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   let titleToUse = t_i18n('Generate an export');
@@ -57,28 +44,27 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
 
   return (
     <Grid item xs={6}>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('Exported files')}
-      </Typography>
-      <div style={{ float: 'left', marginTop: -15 }}>
-        <Tooltip
-          title={titleToUse}
-          aria-label="generate-export"
-        >
-          <span>
-            <IconButton
-              onClick={handleOpenExport}
-              disabled={!isExportPossible || !!draftContext}
-              aria-haspopup="true"
-              color="primary"
-            >
-              <FileExportOutline />
-            </IconButton>
-          </span>
-        </Tooltip>
-      </div>
-      <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
+      <Card
+        title={t_i18n('Exported files')}
+        action={(
+          <Tooltip
+            title={titleToUse}
+            aria-label="generate-export"
+          >
+            <span>
+              <IconButton
+                onClick={handleOpenExport}
+                disabled={!isExportPossible || !!draftContext}
+                aria-haspopup="true"
+                color="primary"
+                size="small"
+              >
+                <FileExportOutline fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
+      >
         {exportFiles?.edges?.length ? (
           <List data-testid="FileExportManager">
             {exportFiles.edges.map((file) => (
@@ -105,7 +91,7 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
             </span>
           </div>
         )}
-      </Paper>
+      </Card>
     </Grid>
   );
 };

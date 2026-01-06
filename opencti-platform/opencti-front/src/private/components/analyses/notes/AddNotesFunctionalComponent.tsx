@@ -61,11 +61,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
         color="primary"
         aria-label={t_i18n('Add')}
         onClick={handleOpen}
-        size="large"
-        style={{
-          float: 'right',
-          marginTop: -15,
-        }}
+        size="small"
       >
         <Add
           fontSize="small"

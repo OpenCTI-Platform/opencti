@@ -56,18 +56,16 @@ const DashboardAuditsViz = ({
     case 'number':
       return (
         <AuditsNumber
-          variant="inLine"
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
-          height={undefined} // because calling js component in ts
         />
       );
     case 'list':
       return (
         <AuditsList
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
@@ -78,7 +76,7 @@ const DashboardAuditsViz = ({
     case 'distribution-list':
       return (
         <AuditsDistributionList
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
@@ -89,7 +87,7 @@ const DashboardAuditsViz = ({
     case 'vertical-bar':
       return (
         <AuditsMultiVerticalBars
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -102,7 +100,7 @@ const DashboardAuditsViz = ({
     case 'line':
       return (
         <AuditsMultiLineChart
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -115,7 +113,7 @@ const DashboardAuditsViz = ({
     case 'area':
       return (
         <AuditsMultiAreaChart
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -128,7 +126,7 @@ const DashboardAuditsViz = ({
     case 'donut':
       return (
         <AuditsDonut
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -141,7 +139,7 @@ const DashboardAuditsViz = ({
     case 'polar-area':
       return (
         <AuditsPolarArea
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -154,7 +152,7 @@ const DashboardAuditsViz = ({
     case 'horizontal-bar':
       return (
         <AuditsHorizontalBars
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -167,7 +165,7 @@ const DashboardAuditsViz = ({
     case 'radar':
       return (
         <AuditsRadar
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -180,7 +178,7 @@ const DashboardAuditsViz = ({
     case 'heatmap':
       return (
         <AuditsMultiHeatMap
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           withExportPopover={true}
@@ -192,7 +190,7 @@ const DashboardAuditsViz = ({
     case 'tree':
       return (
         <AuditsTreeMap
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           isReadOnly={isReadonly}
@@ -205,7 +203,7 @@ const DashboardAuditsViz = ({
     case 'wordcloud':
       return (
         <AuditsWordCloud
-          variant="inLine"
+          variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
