@@ -131,7 +131,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               <Chip
                 color={scopeColor as 'warning' | 'secondary' | 'primary'}
                 classes={{ root: classes.chipInList }}
-                label={t_i18n(data.scope.toUpperCase())}
+                label={t_i18n(data.scope)}
                 variant="outlined"
               />
             </div>

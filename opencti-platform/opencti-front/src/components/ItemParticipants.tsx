@@ -45,7 +45,7 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participan
             key={participant.id}
             variant="outlined"
             icon={<PersonOutline color="primary" />}
-            label={truncate(participant.name, 25).toUpperCase()}
+            label={truncate(participant.name, 25)}
             style={{
               color: theme.palette.primary.main,
               borderColor: theme.palette.primary.main,

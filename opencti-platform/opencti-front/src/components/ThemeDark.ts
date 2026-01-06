@@ -436,6 +436,16 @@ const ThemeDark = (
       styleOverrides: {
         root: {
           color: text_color,
+          textTransform: 'lowercase',
+          '&::first-letter': {
+            textTransform: 'uppercase',
+          },
+        },
+        label: {
+          textTransform: 'lowercase',
+          '&::first-letter': {
+            textTransform: 'uppercase',
+          },
         },
       },
     },

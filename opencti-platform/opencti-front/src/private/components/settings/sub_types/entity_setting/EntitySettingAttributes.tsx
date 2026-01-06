@@ -8,6 +8,7 @@ import { EntitySettingAttributes_entitySetting$key } from './__generated__/Entit
 import EntitySettingAttributeLines, { AttributeNode } from './EntitySettingAttributeLines';
 import { useFormatter } from '../../../../../components/i18n';
 import { isNotEmptyField } from '../../../../../utils/utils';
+import { capitalizeFirstLetter } from 'src/utils/String';
 
 const entitySettingAttributesFragment = graphql`
   fragment EntitySettingAttributes_entitySetting on EntitySetting {
@@ -62,7 +63,7 @@ const EntitySettingAttributes = ({
       isSortable: false,
       render: (data: EntitySettingAttributeLine_attribute$data) => {
         const text = data.label ?? data.name;
-        return t_i18n(text.charAt(0).toUpperCase() + text.slice(1));
+        return t_i18n(capitalizeFirstLetter(text));
       },
     },
     mandatory: {
