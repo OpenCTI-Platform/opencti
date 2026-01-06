@@ -580,7 +580,6 @@
       "spec_version": "2.1",
       "x_mitre_id": "T1369",
       "name": "Spear phishing messages with malicious links",
-      "aliases": ["T1369"],
       "labels": ["attack-pattern"],
       "description": "This technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.\n\nEmails with malicious links are designed to get a user to click on the link in order to deliver malware payloads. (Citation: GoogleDrive Phishing) (Citation: RSASEThreat)",
       "created": "2017-12-14T16:46:06.044Z",
