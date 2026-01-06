@@ -1,7 +1,8 @@
+import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
+import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_DETECTS, RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../schema/stixCoreRelationship';
@@ -29,7 +30,17 @@ export const findAttackPatternPaginated = (context: AuthContext, user: AuthUser,
 };
 
 export const addAttackPattern = async (context: AuthContext, user: AuthUser, attackPattern: AttackPatternAddInput) => {
-  const created = await createEntity(context, user, attackPattern, ENTITY_TYPE_ATTACK_PATTERN);
+  let xMitreId = null;
+  if (isEmptyField(attackPattern.x_mitre_id)) {
+    // Extract x_mitre_id from name if not already provided
+    // Match patterns like T0015.001, T0015, FT048
+    const mitreIdMatch = attackPattern.name?.match(/\b([TF]T?\d{4}(?:\.\d{3})?)\b/);
+    if (mitreIdMatch) {
+      xMitreId = mitreIdMatch[1];
+    }
+  }
+  const attackPatternToCreate = xMitreId ? R.assoc('x_mitre_id', xMitreId, attackPattern) : attackPattern;
+  const created = await createEntity(context, user, attackPatternToCreate, ENTITY_TYPE_ATTACK_PATTERN);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
