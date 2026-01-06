@@ -50,6 +50,7 @@ import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/Conne
 import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateStatusMutation.graphql';
 import { ConnectorWorksQuery$data, ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
 import Card from '../../../../components/common/card/Card';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 // Type extension for organization node with authorized_authorities
 interface OrganizationNodeWithAuthorities {
@@ -699,25 +700,21 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           display: 'flex',
           justifyContent: 'space-between',
           width: '100%',
-          marginBottom: theme.spacing(2),
+          marginBottom: theme.spacing(3),
         }}
       >
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          style={{
-            textTransform: 'uppercase',
-            alignItems: 'center',
+        <TitleMainEntity
+          sx={{
             display: 'flex',
+            alignItems: 'center',
             gap: theme.spacing(1),
-            margin: 0,
           }}
         >
           {connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name}
           <div style={{ display: 'inline-block' }}>
             <ConnectorStatusChip connector={connector} />
           </div>
-        </Typography>
+        </TitleMainEntity>
         <div style={{
           float: 'right',
           display: 'flex',

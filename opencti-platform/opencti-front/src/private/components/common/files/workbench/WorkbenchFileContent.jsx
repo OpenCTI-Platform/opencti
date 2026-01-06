@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
 import Alert from '@mui/material/Alert';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../../components/i18n';
@@ -66,20 +66,13 @@ import Security from '../../../../../utils/Security';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
+import TitleMainEntity from '../../../../../components/common/typography/TitleMainEntity';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   container: {
     margin: 0,
-  },
-  title: {
-    float: 'left',
-    textTransform: 'uppercase',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
   },
   createButton: {
     position: 'fixed',
@@ -4181,18 +4174,12 @@ const WorkbenchFileContentComponent = ({
           { label: fileName, current: true },
         ]}
       />
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        classes={{ root: classes.title }}
-      >
-        {fileName}
-      </Typography>
-      <div className={classes.popover}>
+      <Stack direction="row" alignItems="center" gap={1} marginBottom={3}>
+        <TitleMainEntity sx={{ flex: 1 }}>
+          {fileName}
+        </TitleMainEntity>
         <WorkbenchFilePopover file={file} />
-      </div>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <div style={{ float: 'right', display: 'flex', gap: 10 }}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <Button
             variant="secondary"
             onClick={handleOpenConvertToDraft}
@@ -4206,9 +4193,9 @@ const WorkbenchFileContentComponent = ({
           >
             {t_i18n('Validate this workbench')}
           </Button>
-        </div>
-      </Security>
-      <div className="clearfix" />
+        </Security>
+      </Stack>
+
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={currentTab} onChange={handleChangeTab}>
           <Tab label={`${t_i18n('Entities')} (${stixDomainObjects.length})`} />

@@ -72,6 +72,13 @@ class ChatbotManager {
         div[part="bot"] > div > div > div > div > div {
           border: 0 !important;
         }
+        div[part="bot"] > div > div > div > figure {
+          width: 24px !important;
+          height: 24px !important;
+        }
+        div[part="bot"] > div > div > div:first-child > div:first-child {
+          width: 5px !important;
+        }
       `,
       chatWindow: {
         showTitle: true,

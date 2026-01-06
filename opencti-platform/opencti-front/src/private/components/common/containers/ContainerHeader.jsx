@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import { Link, useNavigate } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
@@ -43,6 +42,7 @@ import PopoverMenu from '../../../../components/PopoverMenu';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -499,7 +499,7 @@ const ContainerHeader = (props) => {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(3),
   };
   const overrideContainerStyle = knowledge || currentMode === 'graph' || currentMode === 'correlation';
   if (overrideContainerStyle) {
@@ -557,32 +557,21 @@ const ContainerHeader = (props) => {
     || (displayAuthorizedMembers && !displayAuthorizedMembersButton)
     || (displayEnrollPlaybook && !displayEnrollPlaybookButton) || (!knowledge && canDelete);
 
+  const title = container.name
+    || container.attribute_abstract
+    || container.content
+    || container.opinion
+    || `${fd(container.first_observed)} - ${fd(container.last_observed)}`;
+
   return (
     <div style={containerStyle}>
       <React.Suspense fallback={<span />}>
         {!knowledge && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Tooltip
-              title={
-                container.name
-                || container.attribute_abstract
-                || container.content
-                || container.opinion
-                || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
-              }
-            >
-              <Typography variant="h1" sx={{ margin: 0, lineHeight: 'unset' }}>
-                {truncate(
-                  container.name
-                  || container.attribute_abstract
-                  || container.content
-                  || container.opinion
-                  || `${fd(container.first_observed)} - ${fd(
-                    container.last_observed,
-                  )}`,
-                  80,
-                )}
-              </Typography>
+            <Tooltip title={title}>
+              <TitleMainEntity>
+                {truncate(title, 80)}
+              </TitleMainEntity>
             </Tooltip>
             {container.draftVersion && (
               <DraftChip />

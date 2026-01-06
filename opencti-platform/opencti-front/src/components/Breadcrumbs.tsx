@@ -22,23 +22,35 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin =
   const theme = useTheme<Theme>();
 
   const SplitDiv = ({ show = true }) => (
-    <div style={{ display: show ? 'none' : 'unset', marginLeft: theme.spacing(1), marginRight: theme.spacing(1) }}>/</div>
+    <div
+      style={{
+        display: show ? 'none' : 'unset',
+        marginLeft: theme.spacing(1),
+        marginRight: theme.spacing(1),
+      }}
+    >/
+    </div>
   );
 
   return (
     <div
       id="page-breadcrumb"
       data-testid="navigation"
-      style={{ marginBottom: noMargin ? undefined : theme.spacing(2), display: 'flex' }}
+      style={{
+        marginBottom: noMargin ? undefined : theme.spacing(1),
+        display: 'flex',
+        alignItems: 'center',
+      }}
     >
       {elements.map((element, index) => {
         if (element.current) {
           return (
             <span key={element.label} style={{ display: 'flex', alignItems: 'center' }}>
               <Typography
+                sx={{ fontSize: 12, fontWeight: 700 }}
                 color="text.primary"
               >
-                {truncate(element.label, 30, false)}
+                {truncate(element.label, 50, false)}
               </Typography>
               <SplitDiv show={index === elements.length - 1} />
               {isSensitive && <DangerZoneChip />}
@@ -48,14 +60,23 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin =
         if (!element.link) {
           return (
             <Fragment key={element.label}>
-              <Typography color="common.lightGrey">{truncate(element.label, 30, false)}</Typography>
+              <Typography
+                sx={{ fontSize: 12 }}
+                color="common.lightGrey"
+              >
+                {truncate(element.label, 30, false)}
+              </Typography>
               <SplitDiv show={index === elements.length - 1} />
             </Fragment>
           );
         }
         return (
           <Fragment key={element.label}>
-            <Link to={element.link}>{truncate(element.label, 30, false)}</Link>
+            <Link
+              style={{ fontSize: 12 }}
+              to={element.link}
+            >{truncate(element.label, 30, false)}
+            </Link>
             <SplitDiv show={index === elements.length - 1} />
           </Fragment>
         );

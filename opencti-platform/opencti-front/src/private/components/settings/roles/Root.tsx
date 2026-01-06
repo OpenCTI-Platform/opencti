@@ -5,7 +5,7 @@ import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
 import AccessesMenu from '@components/settings/AccessesMenu';
 import Typography from '@mui/material/Typography';
-import { Box, styled } from '@mui/material';
+import { Box, Stack, styled } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import RoleDeletionDialog from '@components/settings/roles/RoleDeletionDialog';
 import RoleEdition from '@components/settings/roles/RoleEdition';
@@ -23,6 +23,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import type { Theme } from '../../../../components/Theme';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 const roleQuery = graphql`
   query RootRoleQuery($id: String!) {
@@ -74,12 +75,6 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
     },
   );
 
-  const RoleHeader = styled('div')({
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  });
-
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       <>
@@ -93,51 +88,39 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
             { label: role.name, current: true },
           ]}
         />
-        <RoleHeader>
-          <div>
-            <Typography
-              variant="h1"
-              gutterBottom={true}
-              style={{ float: 'left' }}
-            >
-              {role.name}
-            </Typography>
-            <div className="clearfix" />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', paddingRight: 200 }}>
-            <div style={{ display: 'flex' }}>
-              <div style={{ marginRight: theme.spacing(0.5) }}>
-                {canDelete && (
-                  <PopoverMenu>
-                    {({ closeMenu }) => (
-                      <Box>
-                        <MenuItem
-                          disabled={!isAllowed && isSensitive}
-                          onClick={() => {
-                            handleOpenDelete();
-                            closeMenu();
-                          }}
-                        >
-                          {t_i18n('Delete')}
-                        </MenuItem>
-                      </Box>
-                    )}
-                  </PopoverMenu>
+        <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
+          <TitleMainEntity sx={{ flex: 1 }}>
+            {role.name}
+          </TitleMainEntity>
+          <div style={{ marginRight: theme.spacing(0.5) }}>
+            {canDelete && (
+              <PopoverMenu>
+                {({ closeMenu }) => (
+                  <Box>
+                    <MenuItem
+                      disabled={!isAllowed && isSensitive}
+                      onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
+                    >
+                      {t_i18n('Delete')}
+                    </MenuItem>
+                  </Box>
                 )}
-              </div>
-              <RoleDeletionDialog
-                roleId={role.id}
-                isOpen={openDelete}
-                handleClose={handleCloseDelete}
-              />
-              <RoleEdition
-                roleEditionData={roleEditionData}
-                disabled={!isAllowed && isSensitive}
-              />
-            </div>
+              </PopoverMenu>
+            )}
           </div>
-        </RoleHeader>
-        <div className="clearfix" />
+          <RoleDeletionDialog
+            roleId={role.id}
+            isOpen={openDelete}
+            handleClose={handleCloseDelete}
+          />
+          <RoleEdition
+            roleEditionData={roleEditionData}
+            disabled={!isAllowed && isSensitive}
+          />
+        </Stack>
         <>
           {groupsQueryRef ? (
             <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

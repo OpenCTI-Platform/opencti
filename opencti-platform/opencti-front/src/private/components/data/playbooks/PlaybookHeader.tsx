@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { useEffect, useState } from 'react';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -30,7 +29,7 @@ import { interval } from 'rxjs';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import { useTheme } from '@mui/material';
+import { Stack, useTheme } from '@mui/material';
 import ListItemButton from '@mui/material/ListItemButton';
 import PlaybookEdition from '@components/data/playbooks/PlaybookEdition';
 import Drawer from '../../common/drawer/Drawer';
@@ -40,6 +39,7 @@ import PlaybookPopover from './PlaybookPopover';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -85,75 +85,70 @@ const PlaybookHeaderComponent = ({
   const [rawData, setRawData] = useState<string | null | undefined>(null);
   const { t_i18n, nsdt, n } = useFormatter();
   return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', flex: 1, alignItems: 'center' }}>
-        <Typography
-          variant="h1"
-          style={{
-            textTransform: 'uppercase',
-            marginRight: 20,
-            marginBottom: 0,
-          }}
+    <>
+      <Stack direction="row" alignItems="center" gap={1}>
+        <Stack sx={{ flex: 1 }} direction="row" alignItems="center" gap={1}>
+          <TitleMainEntity>
+            {playbook.name}
+          </TitleMainEntity>
+          <Chip
+            style={{
+              fontSize: 12,
+              lineHeight: '12px',
+              height: 25,
+              textTransform: 'uppercase',
+              borderRadius: 4,
+              ...(playbook.playbook_running ? inlineStyles.green : inlineStyles.red),
+            }}
+            label={
+              playbook.playbook_running
+                ? t_i18n('Playbook is running')
+                : t_i18n('Playbook is stopped')
+            }
+          />
+        </Stack>
+        <ToggleButtonGroup
+          size="small"
+          color="secondary"
+          value={openLastExecutions}
+          exclusive={true}
+          onChange={() => setOpenLastExecutions(!openLastExecutions)}
+          style={{ margin: '0 4px 0 0' }}
         >
-          {playbook.name}
-        </Typography>
-        <Chip
-          style={{
-            fontSize: 12,
-            lineHeight: '12px',
-            height: 25,
-            textTransform: 'uppercase',
-            borderRadius: 4,
-            ...(playbook.playbook_running ? inlineStyles.green : inlineStyles.red),
-          }}
-          label={
-            playbook.playbook_running
-              ? t_i18n('Playbook is running')
-              : t_i18n('Playbook is stopped')
-          }
+          <ToggleButton
+            value="cards"
+            aria-label="cards"
+            style={{ padding: '5px' }}
+          >
+            <div>
+              <Chip
+                style={{
+                  fontSize: 12,
+                  lineHeight: '12px',
+                  height: 25,
+                  textTransform: 'uppercase',
+                  borderRadius: 4,
+                  marginRight: 14,
+                }}
+                label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
+              />
+            </div>
+            <Tooltip title={t_i18n('Open last execution traces')}>
+              <Badge
+                badgeContent={(playbook.last_executions ?? []).length}
+                color="secondary"
+              >
+                <ManageHistoryOutlined fontSize="small" color="primary" />
+              </Badge>
+            </Tooltip>
+          </ToggleButton>
+        </ToggleButtonGroup>
+        <PlaybookPopover
+          playbookId={playbook.id}
+          running={!!playbook.playbook_running}
         />
-      </div>
-      <ToggleButtonGroup
-        size="small"
-        color="secondary"
-        value={openLastExecutions}
-        exclusive={true}
-        onChange={() => setOpenLastExecutions(!openLastExecutions)}
-        style={{ margin: '0 4px 0 0' }}
-      >
-        <ToggleButton
-          value="cards"
-          aria-label="cards"
-          style={{ padding: '5px' }}
-        >
-          <div>
-            <Chip
-              style={{
-                fontSize: 12,
-                lineHeight: '12px',
-                height: 25,
-                textTransform: 'uppercase',
-                borderRadius: 4,
-                marginRight: 14,
-              }}
-              label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
-            />
-          </div>
-          <Tooltip title={t_i18n('Open last execution traces')}>
-            <Badge
-              badgeContent={(playbook.last_executions ?? []).length}
-              color="secondary"
-            >
-              <ManageHistoryOutlined fontSize="small" color="primary" />
-            </Badge>
-          </Tooltip>
-        </ToggleButton>
-      </ToggleButtonGroup>
-      <PlaybookPopover
-        playbookId={playbook.id}
-        running={!!playbook.playbook_running}
-      />
-      <PlaybookEdition id={playbook.id} />
+        <PlaybookEdition id={playbook.id} />
+      </Stack>
       <Drawer
         open={openLastExecutions}
         onClose={() => setOpenLastExecutions(false)}
@@ -239,7 +234,7 @@ const PlaybookHeaderComponent = ({
           <pre>{rawData}</pre>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };
 
