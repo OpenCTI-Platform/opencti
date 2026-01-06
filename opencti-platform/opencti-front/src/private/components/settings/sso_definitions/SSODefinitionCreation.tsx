@@ -72,7 +72,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     const finalValues = {
       name: values.name,
       enabled: values.enabled,
-      strategy: 'SamlStrategy',
+      strategy: selectedStrategy,
       configuration: [
         { key: 'ssoUrl', value: values.ssoUrl, type: 'string' },
         { key: 'entityId', value: values.entityId, type: 'string' },
