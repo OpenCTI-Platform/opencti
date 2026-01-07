@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, FieldArray, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { Button, IconButton } from '@mui/material';
 import { TextField } from 'formik-mui';
@@ -26,6 +26,12 @@ export interface SAMLCreationValues {
   sso_binding_type: string;
   force_reauthentication: boolean;
   enable_debug_mode: boolean;
+
+  advancedConfigurations: {
+    key: string;
+    value: string;
+    type: string;
+  }[];
 }
 
 interface SAMLCreationProps {
@@ -65,11 +71,13 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
     sso_binding_type: '',
     force_reauthentication: false,
     enable_debug_mode: false,
+    advancedConfigurations: [],
   };
 
   const mergedInitialValues: SAMLCreationValues = {
     ...defaultValues,
     ...initialValues,
+    advancedConfigurations: initialValues?.advancedConfigurations ?? defaultValues.advancedConfigurations,
   };
 
   return (
@@ -239,56 +247,76 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
           {/*    style={{ marginTop: 20 }} */}
           {/*  /> */}
           {/* </div> */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h2">Add more fields</Typography>
-            <IconButton
-              color="secondary"
-              aria-label="Add"
-              // onClick={() =>
-              // onAddField(setFieldValue, values)
-              // }
-              size="large"
-              style={{ marginBottom: 12 }}
-            >
-              <Add fontSize="small" />
-            </IconButton>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="key"
-              label={t_i18n('Key (in passport)')}
-              containerstyle={{ width: '20%' }}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="value"
-              label={t_i18n('Value (in IDP)')}
-              containerstyle={{ width: '20%' }}
-            />
-            <Field
-              component={SelectField}
-              variant="standard"
-              name="type"
-              label={t_i18n('Field type')}
-              containerstyle={{ width: '20%' }}
-            >
-              <MenuItem value="Boolean">Boolean</MenuItem>
-              <MenuItem value="Integer">Integer</MenuItem>
-              <MenuItem value="String">String</MenuItem>
-              <MenuItem value="Array">Array</MenuItem>
-            </Field>
-            <IconButton
-              color="primary"
-              aria-label={t_i18n('Delete')}
-              style={{ marginTop: 10 }}
-              // onClick={() => onRemove?.()}
-            >
-              <Delete fontSize="small" />
-            </IconButton>
-          </div>
+          <FieldArray name="advancedConfigurations">
+            {({ push, remove, form }) => (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Typography variant="h2">Add more fields</Typography>
+                  <IconButton
+                    color="secondary"
+                    aria-label="Add"
+                    size="large"
+                    style={{ marginBottom: 12 }}
+                    onClick={() =>
+                      push({ key: '', value: '', type: 'String' }) // onAddField
+                    }
+                  >
+                    <Add fontSize="small" />
+                  </IconButton>
+                </div>
+
+                {form.values.advancedConfigurations
+                  && form.values.advancedConfigurations.map(
+                    (conf: { key: string; value: string; type: string }, index: number) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-around',
+                          marginBottom: 8,
+                        }}
+                      >
+                        <Field
+                          component={TextField}
+                          variant="standard"
+                          name={`advancedConfigurations[${index}].key`}
+                          label={t_i18n('Key (in passport)')}
+                          containerstyle={{ width: '20%' }}
+                        />
+                        <Field
+                          component={TextField}
+                          variant="standard"
+                          name={`advancedConfigurations[${index}].value`}
+                          label={t_i18n('Value (in IDP)')}
+                          containerstyle={{ width: '20%' }}
+                        />
+                        <Field
+                          component={SelectField}
+                          variant="standard"
+                          name={`advancedConfigurations[${index}].type`}
+                          label={t_i18n('Field type')}
+                          containerstyle={{ width: '20%' }}
+                        >
+                          <MenuItem value="Boolean">Boolean</MenuItem>
+                          <MenuItem value="Integer">Integer</MenuItem>
+                          <MenuItem value="String">String</MenuItem>
+                          <MenuItem value="Array">Array</MenuItem>
+                        </Field>
+                        <IconButton
+                          color="primary"
+                          aria-label={t_i18n('Delete')}
+                          style={{ marginTop: 10 }}
+                          onClick={() => remove(index)} // Delete
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </div>
+                    ),
+                  )}
+              </>
+            )}
+          </FieldArray>
           <div
             style={{
               marginTop: 20,

@@ -155,7 +155,15 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
         type: 'Boolean',
       },
     ];
-
+    configurationValues.advancedConfigurations.forEach((conf) => {
+      if (conf.key && conf.value && conf.type) {
+        configuration.push({
+          key: conf.key,
+          value: conf.value,
+          type: conf.type,
+        });
+      }
+    });
     const strategyConfig = selectedStrategy === 'SAML' ? 'SamlStrategy'
       : selectedStrategy === 'OpenID' ? 'OpenIDConnectStrategy'
         : selectedStrategy === 'Header' ? 'HeaderStrategy'
