@@ -258,7 +258,6 @@ describe('Migration of SSO environment test coverage', () => {
       };
 
       const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
-      console.log(result);
       const defaultValuesConfiguration = result[0];
       expect(defaultValuesConfiguration.strategy).toBe('SamlStrategy');
       expect(defaultValuesConfiguration.name).toMatch(/My test SAML with default values*/);
