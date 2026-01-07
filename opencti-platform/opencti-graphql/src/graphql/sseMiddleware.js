@@ -243,7 +243,8 @@ const createSseMiddleware = () => {
       processor.shutdown();
       closed = true;
     };
-    req.on('close', close);
+    req.on('close', close); // On closing the request
+    res.on('close', close); // On closing the response
     res.writeHead(200, {
       Connection: 'keep-alive',
       'Content-Type': 'text/event-stream; charset=utf-8',
