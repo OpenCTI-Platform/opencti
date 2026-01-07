@@ -1,12 +1,14 @@
 import IconButton from '@common/button/IconButton';
-import { ExpandMoreOutlined, OpenInNew } from '@mui/icons-material';
+import { ArrowDropDown, OpenInNew } from '@mui/icons-material';
 import { Box, Divider, List, ListItemButton, ListItemIcon, Popover, Tooltip } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 import logoOpenBAS from '../../../static/images/logo_open_bas.svg';
 import logoXTMHub from '../../../static/images/logo_xtm_hub.svg';
 import { isNotEmptyField } from '../../../utils/utils';
+import { Theme } from '../../../components/Theme';
 
 interface PopoverListItemProps {
   logoSrc: string;
@@ -23,6 +25,7 @@ export const PopoverListItem: React.FC<PopoverListItemProps> = ({
   external,
   onClick,
 }) => {
+  const theme = useTheme<Theme>();
   const Component = href ? 'a' : to ? Link : 'div';
 
   return (
@@ -39,9 +42,10 @@ export const PopoverListItem: React.FC<PopoverListItemProps> = ({
         py: 1.5,
         display: 'flex',
         justifyContent: 'space-between',
+        backgroundColor: theme.palette.leftBar.header.itemBackground,
       }}
     >
-      <ListItemIcon sx={{ width: 132 }}>
+      <ListItemIcon sx={{ width: 132, p: 1 }}>
         <Box
           sx={{
             width: '100%',
@@ -145,14 +149,14 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
           alt="logo"
           style={{
             height: 35,
-            maxWidth: navOpen ? '110px' : '30px',
+            maxWidth: navOpen ? '110px' : '23px',
             objectFit: 'contain',
           }}
         />
 
         {navOpen && (
           <IconButton onClick={handleClickPopover}>
-            <ExpandMoreOutlined
+            <ArrowDropDown
               sx={{
                 transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: 'transform 0.2s',
@@ -179,11 +183,11 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
         onClose={handleMouseLeave}
       >
         <List
+          className="left-bar-header"
           dense
+          disablePadding
           sx={{
-            p: 1,
             minWidth: 228,
-            backgroundColor: '#253348',
           }}
         >
           <Tooltip title={isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
@@ -197,7 +201,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
             </span>
           </Tooltip>
 
-          <Divider sx={{ backgroundColor: 'black', m: 1 }} />
+          <Divider />
 
           {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
             <PopoverListItem

@@ -80,6 +80,12 @@ const ThemeLight = (
     text: {
       light: '#494A50',
     },
+    leftBar: {
+      header: {
+        itemBackground: '#ECECF2',
+      },
+      popoverItem: '#ECECF2',
+    },
   },
   typography: {
     fontFamily: '"IBM Plex Sans", sans-serif',
