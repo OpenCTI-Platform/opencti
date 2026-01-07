@@ -27,7 +27,7 @@ import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
  * Delete report.
  * Check deletion.
  */
-test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ page }) => {
+test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
   const leftNavigation = new LeftBarPage(page);
   const reportPage = new ReportPage(page);
@@ -301,7 +301,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ pa
  * Delete report by background task.
  * Check deletion.
  */
-test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ page }) => {
+test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   // const toolbar = new ToolbarPageModel(page);
   const reportPage = new ReportPage(page);
