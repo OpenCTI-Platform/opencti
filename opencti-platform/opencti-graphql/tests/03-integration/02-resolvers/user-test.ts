@@ -21,7 +21,6 @@ import {
   USER_DISINFORMATION_ANALYST,
   USER_EDITOR,
   USER_SECURITY,
-  USER_EDITOR,
 } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
@@ -751,7 +750,6 @@ describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY });
     const usersEdges = queryResult.data.members.edges as { node: Member }[];
-    expect(usersEdges.map((n) => n.node)).toEqual('test');
     expect(usersEdges.length).toEqual(25);
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(entitiesCounter.Group);
