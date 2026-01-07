@@ -53,6 +53,7 @@ const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
 const DEFAULT_LIVE_STREAM = 'live';
 const ONE_HOUR = 1000 * 60 * 60;
+const DEFAULT_SOCKET_BUFFER = 65536;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
@@ -243,7 +244,6 @@ const createSseMiddleware = () => {
       closed = true;
     };
     req.on('close', close);
-    res.on('close', close);
     res.writeHead(200, {
       Connection: 'keep-alive',
       'Content-Type': 'text/event-stream; charset=utf-8',
@@ -275,6 +275,7 @@ const createSseMiddleware = () => {
         if (res.finished || !res.writable) {
           return;
         }
+        // region build message
         let message = '';
         if (eventId) {
           lastEventId = eventId;
@@ -296,10 +297,23 @@ const createSseMiddleware = () => {
           message += '\n';
         }
         message += '\n';
-        if (!res.write(message)) {
-          await once(res, 'drain');
+        // endregion
+        // Send a message to socket by chunk
+        // It's necessary to chuck to prevent any oversized buffer
+        const messageBuffer = Buffer.from(message, 'utf-8');
+        const chunkSize = res.writableHighWaterMark || DEFAULT_SOCKET_BUFFER;
+        let offset = 0;
+        while (offset < messageBuffer.length) {
+          const end = Math.min(offset + chunkSize, messageBuffer.length);
+          const chunk = messageBuffer.subarray(offset, end);
+          if (!res.write(chunk)) {
+            logApp.debug('[STREAM] Buffer draining', { buffer: res.writableLength, limit: res.writableHighWaterMark });
+            await once(res, 'drain');
+          }
+          res.flush();
+          offset += chunkSize;
         }
-        res.flush();
+        // endregion
       },
       close: () => {
         logApp.info('[STREAM] Closing SSE channel', { clientId: channel.userId });
@@ -316,7 +330,9 @@ const createSseMiddleware = () => {
     };
     const heartTimer = async () => {
       try {
-        if (lastEventId) {
+        // heartbeat must be sent to maintain the connection
+        // Only when the last event is accessible and nothing is currently in the socket.
+        if (lastEventId && res.writableLength === 0) {
           const [idTime] = lastEventId.split('-');
           const idDate = utcDate(parseInt(idTime, 10)).toISOString();
           await channel.sendEvent(lastEventId, 'heartbeat', idDate);
