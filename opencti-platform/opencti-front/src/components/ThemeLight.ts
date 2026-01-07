@@ -415,22 +415,22 @@ const ThemeLight = (
           backgroundImage: 'none',
           padding: 0,
           minWidth: 180,
-          elevation: 0
-        }
-      }
+          elevation: 0,
+        },
+      },
     },
     MuiList: {
       styleOverrides: {
         root: {
-          "&.left-bar-header": {
-            backgroundColor: '#FFFFFF'
+          '&.left-bar-header': {
+            backgroundColor: '#E4E4E4',
           },
-          "& hr": {
+          '& hr': {
             backgroundColor: THEME_LIGHT_DEFAULT_PAPER,
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   },
 });
 

@@ -411,21 +411,21 @@ const ThemeDark = (
           backgroundImage: 'none',
           padding: 0,
           minWidth: 180,
-        }
-      }
+        },
+      },
     },
     MuiList: {
       styleOverrides: {
         root: {
-          "&.left-bar-header": {
-            backgroundColor: '#253348'
+          '&.left-bar-header': {
+            backgroundColor: '#253348',
           },
-          "& hr": {
+          '& hr': {
             backgroundColor: THEME_DARK_DEFAULT_PAPER,
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   },
 });
 
