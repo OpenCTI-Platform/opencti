@@ -244,6 +244,12 @@ const ThemeLight = (
         arrow: {
           color: 'rgba(0,0,0,0.7)',
         },
+        popper: {
+          textTransform: 'lowercase',
+          '&::first-letter': {
+            textTransform: 'uppercase',
+          },
+        },
       },
     },
     MuiFormControl: {
@@ -426,6 +432,7 @@ const ThemeLight = (
       styleOverrides: {
         root: {
           color: text_color,
+          textTransform: 'none',
         },
       },
     },

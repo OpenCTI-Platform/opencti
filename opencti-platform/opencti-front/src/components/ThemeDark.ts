@@ -243,6 +243,12 @@ const ThemeDark = (
         arrow: {
           color: 'rgba(0,0,0,0.7)',
         },
+        popper: {
+          textTransform: 'lowercase',
+          '&::first-letter': {
+            textTransform: 'uppercase',
+          },
+        },
       },
     },
     MuiFormControl: {
@@ -422,6 +428,7 @@ const ThemeDark = (
       styleOverrides: {
         root: {
           color: text_color,
+          textTransform: 'none',
         },
       },
     },

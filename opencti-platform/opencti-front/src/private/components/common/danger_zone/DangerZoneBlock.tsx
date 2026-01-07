@@ -134,7 +134,6 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
             paddingLeft: theme.spacing(1),
             paddingRight: theme.spacing(1),
             fontSize: 10,
-            textTransform: 'uppercase',
             fontFamily: '"Geologica", sans-serif',
             fontWeight: 700,
             width: 'fit-content',
