@@ -92,6 +92,7 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
           onClick={handleClickMain}
           title={mainButtonLabel}
           data-testid={`create-${entityType.toLowerCase()}-button`}
+          disabled={mainButtonLabel === defaultButtonValue}
         >
           {mainButtonLabel}
         </Button>

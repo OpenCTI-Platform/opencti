@@ -6,25 +6,34 @@ import { TextField } from 'formik-mui';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import SwitchField from '../../../../components/fields/SwitchField';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
 import { Add, Delete } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 export interface SAMLCreationValues {
-  configurationName: string;
-  loginName: string;
-  enabled: boolean;
-  entityId: string;
-  ssoUrl: string;
-  idpCert: string;
-  callbackUrl: string;
+  private_key: string;
+  entity_id: string;
+  idp_cert: string;
+  saml_callback_url: string;
+  want_assertions_signed: boolean;
+  want_auth_response_signed: boolean;
+  login_idp_directly: boolean;
+  logout_remote: boolean;
+  provider_method: string;
+  idp_signing_certificate: string;
+  sso_binding_type: string;
+  force_reauthentication: boolean;
+  enable_debug_mode: boolean;
 }
 
 interface SAMLCreationProps {
   initialValues?: Partial<SAMLCreationValues>;
-  onSubmit: (values: SAMLCreationValues, helpers: { setSubmitting: (b: boolean) => void; resetForm: () => void }) => void;
+  onSubmit: (
+    values: SAMLCreationValues,
+    helpers: { setSubmitting: (b: boolean) => void; resetForm: () => void },
+  ) => void;
   onCancel: () => void;
 }
 
@@ -37,23 +46,27 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
   const theme = useTheme<Theme>();
 
   const validationSchema = Yup.object().shape({
-    configurationName: Yup.string().required(t_i18n('This field is required')),
-    loginName: Yup.string().required(t_i18n('This field is required')),
-    entityId: Yup.string().required(t_i18n('This field is required')),
-    ssoUrl: Yup.string().url(t_i18n('Must be a valid URL')).required(t_i18n('This field is required')),
-    idpCert: Yup.string().required(t_i18n('This field is required')),
-    callbackUrl: Yup.string().required(t_i18n('This field is required')),
+    entity_id: Yup.string().required(t_i18n('This field is required')),
+    idp_cert: Yup.string().required(t_i18n('This field is required')),
+    saml_callback_url: Yup.string().url(t_i18n('Must be a valid URL')).required(t_i18n('This field is required')),
   });
 
   const defaultValues: SAMLCreationValues = {
-    configurationName: '',
-    loginName: '',
-    enabled: true,
-    entityId: '',
-    ssoUrl: '',
-    idpCert: '',
-    callbackUrl: '',
+    private_key: '',
+    entity_id: '',
+    idp_cert: '',
+    saml_callback_url: '',
+    want_assertions_signed: false,
+    want_auth_response_signed: false,
+    login_idp_directly: false,
+    logout_remote: false,
+    provider_method: '',
+    idp_signing_certificate: '',
+    sso_binding_type: '',
+    force_reauthentication: false,
+    enable_debug_mode: false,
   };
+
   const mergedInitialValues: SAMLCreationValues = {
     ...defaultValues,
     ...initialValues,
@@ -63,7 +76,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
     <Formik
       initialValues={mergedInitialValues}
       validationSchema={validationSchema}
-      onSubmit={(values, helpers) => onSubmit(values, helpers)}
+      onSubmit={onSubmit}
       onReset={onCancel}
     >
       {({ submitForm, handleReset, isSubmitting }) => (
@@ -71,30 +84,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
           <Field
             component={TextField}
             variant="standard"
-            name="configurationName"
-            label={t_i18n('Configuration Name')}
-
-            fullWidth
-          />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="loginName"
-            label={t_i18n('Login Button Name')}
-            fullWidth
-          />
-          <Field
-            component={SwitchField}
-            variant="standard"
-            name="enabled"
-            defaultValue={true}
-            label={t_i18n('Enable SAML authentication')}
-            containerstyle={{ marginLeft: 2, marginTop: 20 }}
-          />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="private"
+            name="private_key"
             label={t_i18n('Private key')}
             fullWidth
             style={{ marginTop: 20 }}
@@ -102,16 +92,16 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
           <Field
             component={SwitchField}
             variant="standard"
-            name="assertion"
-            defaultValue={true}
+            type="checkbox"
+            name="want_assertions_signed"
             label={t_i18n('Want assertion signed')}
             containerstyle={{ marginLeft: 2, marginTop: 20 }}
           />
           <Field
             component={SwitchField}
             variant="standard"
-            name="responses"
-            defaultValue={true}
+            type="checkbox"
+            name="want_auth_response_signed"
             label={t_i18n('Requires SAML responses to be signed')}
             containerstyle={{ marginLeft: 2 }}
           />
@@ -120,16 +110,16 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
             <Field
               component={SwitchField}
               variant="standard"
-              name="login"
-              defaultValue={true}
+              type="checkbox"
+              name="login_idp_directly"
               label={t_i18n('Allow login from identity provider directly')}
               containerstyle={{ marginLeft: 2 }}
             />
             <Field
               component={SwitchField}
               variant="standard"
-              name="responses"
-              defaultValue={true}
+              type="checkbox"
+              name="logout_remote"
               label={t_i18n('Allow logout from Identity provider directly')}
               containerstyle={{ marginLeft: 2 }}
             />
@@ -137,7 +127,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
           <Field
             component={SelectField}
             variant="standard"
-            name="provider-method"
+            name="provider_method"
             label={t_i18n('Method of Provider metadata')}
             fullWidth
             containerstyle={{ width: '100%' }}
@@ -148,7 +138,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
           <Field
             component={TextField}
             variant="standard"
-            name="entityId"
+            name="entity_id"
             label={t_i18n('SAML Entity ID/Issuer')}
             fullWidth
             style={{ marginTop: 20 }}
@@ -156,7 +146,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
           <Field
             component={TextField}
             variant="standard"
-            name="callbackUrl"
+            name="saml_callback_url"
             label={t_i18n('SAML SSO URL')}
             fullWidth
             style={{ marginTop: 20 }}
@@ -165,7 +155,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
             id="filled-multiline-flexible"
             component={TextField}
             variant="standard"
-            name="signing-certificate"
+            name="idp_signing_certificate"
             label={t_i18n('Identity Provider Signing Certificate')}
             fullWidth
             multiline
@@ -176,7 +166,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
             id="filled-multiline-flexible"
             component={TextField}
             variant="standard"
-            name="idpCert"
+            name="idp_cert"
             label={t_i18n('Identity Provider Encryption Certificate')}
             fullWidth
             multiline
@@ -186,7 +176,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
           <Field
             component={SelectField}
             variant="standard"
-            name="binding-type"
+            name="sso_binding_type"
             label={t_i18n('SSO Binding type')}
             fullWidth
             containerstyle={{ width: '100%' }}
@@ -197,57 +187,58 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
           <Field
             component={SwitchField}
             variant="standard"
-            name="force-authentication"
+            type="checkbox"
+            name="force_reauthentication"
             defaultValue={true}
-            label={t_i18n('Force Authentication even if user has valid SSO session')}
+            label={t_i18n('Force re-authentication even if user has valid SSO session')}
             containerstyle={{ marginLeft: 2 }}
           />
           <Field
             component={SwitchField}
             variant="standard"
-            name="debug-mode"
-            defaultValue={true}
+            type="checkbox"
+            name="enable_debug_mode"
             label={t_i18n('Enable debug mode to troubleshoot for this authentication')}
             containerstyle={{ marginLeft: 2 }}
           />
-          <div style={{ marginTop: 40, marginBottom: 20 }}>
-            <Typography variant="h2">OpenCTI Information</Typography>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="metadata-url"
-              label={t_i18n('Metadata URL')}
-              fullWidth
-              style={{ marginTop: 20 }}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="entityID"
-              label={t_i18n('Entity ID')}
-              fullWidth
-              style={{ marginTop: 20 }}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="assertionConsummer"
-              label={t_i18n('Assertion consummer')}
-              fullWidth
-              style={{ marginTop: 20 }}
-            />
-            <Field
-              id="filled-multiline-flexible"
-              component={TextField}
-              variant="standard"
-              name="request"
-              label={t_i18n('Authenticate request signing certificate')}
-              fullWidth
-              multiline
-              rows={4}
-              style={{ marginTop: 20 }}
-            />
-          </div>
+          {/* <div style={{ marginTop: 40, marginBottom: 20 }}> */}
+          {/*  <Typography variant="h2">OpenCTI Information</Typography> */}
+          {/*  <Field */}
+          {/*    component={TextField} */}
+          {/*    variant="standard" */}
+          {/*    name="metadata-url" */}
+          {/*    label={t_i18n('Metadata URL')} */}
+          {/*    fullWidth */}
+          {/*    style={{ marginTop: 20 }} */}
+          {/*  /> */}
+          {/*  <Field */}
+          {/*    component={TextField} */}
+          {/*    variant="standard" */}
+          {/*    name="entityID" */}
+          {/*    label={t_i18n('Entity ID')} */}
+          {/*    fullWidth */}
+          {/*    style={{ marginTop: 20 }} */}
+          {/*  /> */}
+          {/*  <Field */}
+          {/*    component={TextField} */}
+          {/*    variant="standard" */}
+          {/*    name="assertionConsummer" */}
+          {/*    label={t_i18n('Assertion consummer')} */}
+          {/*    fullWidth */}
+          {/*    style={{ marginTop: 20 }} */}
+          {/*  /> */}
+          {/*  <Field */}
+          {/*    id="filled-multiline-flexible" */}
+          {/*    component={TextField} */}
+          {/*    variant="standard" */}
+          {/*    name="request" */}
+          {/*    label={t_i18n('Authenticate request signing certificate')} */}
+          {/*    fullWidth */}
+          {/*    multiline */}
+          {/*    rows={4} */}
+          {/*    style={{ marginTop: 20 }} */}
+          {/*  /> */}
+          {/* </div> */}
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="h2">Add more fields</Typography>
             <IconButton
