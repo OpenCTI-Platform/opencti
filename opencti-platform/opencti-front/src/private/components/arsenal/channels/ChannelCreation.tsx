@@ -63,7 +63,7 @@ interface ChannelAddInput {
 }
 
 interface ChannelFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: ChannelCreationMutation['response']['channelAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -116,9 +116,9 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     resetBulk,
   } = useBulkCommit<ChannelCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'channelAdd');
+        updater(store, 'channelAdd', response?.channelAdd);
       }
     },
   });

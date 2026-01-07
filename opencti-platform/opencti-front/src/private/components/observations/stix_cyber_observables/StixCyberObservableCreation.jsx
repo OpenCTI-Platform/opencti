@@ -297,6 +297,9 @@ const StixCyberObservableCreation = ({
 
   const [bulkSelectedKey, setBulkSelectedKey] = useState(null);
   const bulkConf = useMemo(() => BULK_OBSERVABLES.find(({ type: obsType }) => obsType === status.type), [status]);
+  // Store the latest created observable for callback
+  const lastCreatedObservableRef = React.useRef(null);
+
   useEffect(() => {
     setBulkSelectedKey(bulkConf?.keys.length === 1 ? bulkConf.keys[0] : null);
   }, [bulkConf]);
@@ -306,6 +309,7 @@ const StixCyberObservableCreation = ({
     undefined,
     { successMessage: `${t_i18n('entity_Observable')} ${t_i18n('successfully created')}` },
   );
+
   const {
     bulkCommit,
     bulkCount,
@@ -315,13 +319,17 @@ const StixCyberObservableCreation = ({
   } = useBulkCommit({
     type: 'observables',
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       insertNode(
         store,
         paginationKey,
         paginationOptions,
         'stixCyberObservableAdd',
       );
+      // Store the created observable for callback
+      if (response?.stixCyberObservableAdd) {
+        lastCreatedObservableRef.current = response.stixCyberObservableAdd;
+      }
     },
   });
 
@@ -441,7 +449,11 @@ const StixCyberObservableCreation = ({
           resetForm();
           localHandleClose();
         }
-        if (onCompleted) onCompleted();
+        // Pass the created observable to the callback
+        if (onCompleted) {
+          onCompleted(lastCreatedObservableRef.current);
+          lastCreatedObservableRef.current = null;
+        }
       },
     });
   };

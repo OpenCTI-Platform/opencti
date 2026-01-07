@@ -4,7 +4,7 @@ import EventsIncidentPage from '../model/EventsIncident.pageModel';
 import EventsIncidentFormPage from '../model/form/eventsIncidentForm.pageModel';
 import EventsIncidentDetailsPage from '../model/EventsIncidentDetails.pageModel';
 
-test('Create a new relationship in incident knowledge', async ({ page }) => {
+test('Create a new relationship in incident knowledge', { tag: ['@ce'] }, async ({ page }) => {
   const eventsIncidentPage = new EventsIncidentPage(page);
   const eventsIncidentForm = new EventsIncidentFormPage(page);
   const eventsIncidentDetailsPage = new EventsIncidentDetailsPage(page);

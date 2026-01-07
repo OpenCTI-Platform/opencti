@@ -33,6 +33,21 @@ const getYupValidationForField = (
     case 'createdBy':
       validation = Yup.object().nullable();
       break;
+    case 'openvocab':
+      // OpenVocab fields return objects with value/label or arrays of such objects
+      if (field.multiple) {
+        validation = Yup.array();
+      } else {
+        // Single selection can be string or object - accept both
+        validation = Yup.mixed().transform((value) => {
+          // Transform object to string value for validation if needed
+          if (typeof value === 'object' && value !== null) {
+            return (value as Record<string, unknown>).value || value;
+          }
+          return value;
+        });
+      }
+      break;
     default:
       validation = Yup.string();
   }
@@ -219,6 +234,14 @@ export const convertFormSchemaToYupSchema = (
               case 'createdBy':
                 fieldValidation = Yup.object().nullable();
                 break;
+              case 'openvocab':
+                // OpenVocab fields return objects or arrays - accept both
+                if (field.multiple) {
+                  fieldValidation = Yup.array().nullable();
+                } else {
+                  fieldValidation = Yup.mixed().nullable();
+                }
+                break;
               default:
                 fieldValidation = Yup.string().nullable();
                 break;
@@ -391,6 +414,28 @@ export const formatFormDataForSubmission = (
     if (field.type === 'externalReferences') {
       if (Array.isArray(value)) {
         return value.map((l: Record<string, unknown>) => l?.id || l?.value || l).filter((label: unknown) => label);
+      }
+      return value;
+    }
+
+    // Handle open vocabulary fields (single or multiple)
+    if (field.type === 'openvocab') {
+      if (field.multiple) {
+        // Multiple selection - array of objects
+        if (Array.isArray(value)) {
+          return value.map((v: Record<string, unknown> | string) => {
+            if (typeof v === 'object' && v !== null) {
+              return v.value || v.id || v;
+            }
+            return v;
+          }).filter((v: unknown) => v);
+        }
+        return value;
+      }
+      // Single selection - object with value property
+      if (typeof value === 'object' && value !== null) {
+        const obj = value as Record<string, unknown>;
+        return obj.value || obj.id || value;
       }
       return value;
     }

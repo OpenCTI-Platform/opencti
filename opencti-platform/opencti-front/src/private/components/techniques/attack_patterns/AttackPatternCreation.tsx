@@ -98,7 +98,7 @@ interface AttackPatternAddInput {
 }
 
 interface AttackPatternFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: AttackPatternCreationMutation['response']['attackPatternAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -152,9 +152,9 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
       variables: {
         input,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'attackPatternAdd');
+          updater(store, 'attackPatternAdd', response?.attackPatternAdd);
         }
       },
       onError: (error) => {

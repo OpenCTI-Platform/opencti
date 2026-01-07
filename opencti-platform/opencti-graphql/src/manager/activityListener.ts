@@ -136,10 +136,11 @@ const initActivityManager = () => {
       // 02. Handle activities
       if (action.event_type === 'authentication') {
         if (action.event_scope === 'login') {
-          const { provider, username } = action.context_data;
+          const { session_kill, context_data } = action;
+          const { provider, username } = context_data;
           const isFailLogin = action.status === 'error';
           const message = isFailLogin ? `detects \`login failure\` for \`${username}\``
-            : `login from provider \`${provider}\``;
+            : `login from provider \`${provider}\` ${(session_kill ?? 0) > 0 ? `(killing ${session_kill} sessions)` : ''}`;
           await activityLogger(action, message);
         }
         if (action.event_scope === 'logout') {

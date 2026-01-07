@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest';
+import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import { v4 as uuid } from 'uuid';
 import { getConnectorQueueDetails, metrics, purgeConnectorQueues, pushToConnector, registerConnectorQueues, unregisterConnector } from '../../../src/database/rabbitmq';
 import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../../src/schema/general';
@@ -10,6 +10,25 @@ describe('Rabbit connector management', () => {
   const connectorName = 'MY STIX IMPORTER';
   const connectorType = CONNECTOR_INTERNAL_IMPORT_FILE;
   const connectorScope = 'application/json';
+
+  beforeAll(async () => {
+    try {
+      await purgeConnectorQueues({ id: testConnectorId });
+      await unregisterConnector(testConnectorId);
+    } catch (e) {
+      console.warn(`${e} : unregisterConnector failed in rabbitmq-test`);
+    }
+  });
+
+  afterAll(async () => {
+    try {
+      await purgeConnectorQueues({ id: testConnectorId });
+      await unregisterConnector(testConnectorId);
+    } catch (e) {
+      console.warn(`${e} : unregisterConnector failed in rabbitmq-test`);
+    }
+  });
+
   it('should register the connector', async () => {
     const config = await registerConnectorQueues(testConnectorId, connectorName, connectorType, connectorScope);
     expect(config.uri).not.toBeNull();

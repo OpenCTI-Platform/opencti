@@ -47,7 +47,7 @@ const waitAndRefreshUntilFirstTaskInStatus = async (page: Page, tasksPage: DataP
   }
 };
 
-test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@task', '@filter'] }, async ({ page }) => {
+test('Verify background tasks execution', { tag: ['@ce', '@mutation'] }, async ({ page }) => {
   const incidentPage = new EventsIncidentPage(page);
   const tasksPage = new DataProcessingTasksPage(page);
 

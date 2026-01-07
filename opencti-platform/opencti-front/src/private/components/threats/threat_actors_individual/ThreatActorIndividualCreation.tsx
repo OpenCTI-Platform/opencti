@@ -114,7 +114,7 @@ interface ThreatActorIndividualAddInput {
 }
 
 interface ThreatActorIndividualFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: ThreatActorIndividualCreationMutation['response']['threatActorIndividualAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -217,9 +217,9 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
     resetBulk,
   } = useBulkCommit<ThreatActorIndividualCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'threatActorIndividualAdd');
+        updater(store, 'threatActorIndividualAdd', response?.threatActorIndividualAdd);
       }
     },
   });

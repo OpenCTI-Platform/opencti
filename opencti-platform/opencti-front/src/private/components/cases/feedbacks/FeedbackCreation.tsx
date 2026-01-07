@@ -173,8 +173,6 @@ const FeedbackCreation: FunctionComponent<{
               name="objects"
               required={(mandatoryAttributes.includes('objects'))}
               style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objects}
             />
             <CustomFileUploader setFieldValue={setFieldValue} />
             <ObjectLabelField

@@ -24,8 +24,8 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
   });
 
   // Region cleanup of created data
-  const indicatorCreatedIds : string[] = [];
-  const createIndicator = async (user:AuthUser, input: IndicatorAddInput): Promise<BasicStoreEntityIndicator> => {
+  const indicatorCreatedIds: string[] = [];
+  const createIndicator = async (user: AuthUser, input: IndicatorAddInput): Promise<BasicStoreEntityIndicator> => {
     const indicator = await addIndicator(testContext, user, input);
     indicatorCreatedIds.push(indicator.id);
     return indicator;
@@ -84,7 +84,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 85,
       valid_from: inPast90Days,
-      valid_until: tomorrow
+      valid_until: tomorrow,
     };
 
     const indicatorWithoutDecay = await createIndicator(ADMIN_USER, indicatorNoDecayInput);
@@ -111,7 +111,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 83,
       valid_until: tomorrow,
-      created: fiveDaysAgo
+      created: fiveDaysAgo,
     };
     const indicatorWithoutValidFrom = await createIndicator(ADMIN_USER, indicatorInput);
     const indicatorCreated = await findById(testContext, ADMIN_USER, indicatorWithoutValidFrom.id);
@@ -165,7 +165,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     const lastHistoryEntry = history[0];
     expect(
       lastHistoryEntry?.score,
-      'The lifecycle history should have a new entry with the score set to revoke score'
+      'The lifecycle history should have a new entry with the score set to revoke score',
     ).toBe(indicatorWithDecay.decay_applied_rule.decay_revoke_score);
   });
 
@@ -203,7 +203,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     const lastHistoryEntry = history[0];
     expect(
       lastHistoryEntry.score,
-      'The lifecycle history should have a new entry with the score updated'
+      'The lifecycle history should have a new entry with the score updated',
     ).toBe(indicatorWithDecay.decay_base_score);
   });
 
@@ -217,7 +217,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 85,
       valid_from: inPast90Days,
-      valid_until: tomorrow
+      valid_until: tomorrow,
     };
     const indicatorWithoutDecay = await createIndicator(ADMIN_USER, indicatorNoDecayInput);
 
@@ -291,7 +291,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       x_opencti_score: 5,
       valid_from: inPast90Days,
       valid_until: fiveDaysAgo,
-      revoked: true
+      revoked: true,
     };
     const indicatorRevoked = await createIndicator(ADMIN_USER, indicatorNoDecayInput);
     expect(indicatorRevoked.revoked).toBeTruthy();
@@ -304,7 +304,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       pattern_type: STIX_PATTERN_TYPE,
       valid_from: inPast90Days,
       valid_until: tomorrow,
-      revoked: false
+      revoked: false,
     };
     const indicatorUpsertEntity = await createIndicator(ADMIN_USER, indicatorUpsert);
     expect(indicatorUpsertEntity.revoked).toBeFalsy();
@@ -322,7 +322,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       x_opencti_score: 5,
       valid_from: inPast90Days,
       valid_until: fiveDaysAgo,
-      revoked: true
+      revoked: true,
     };
     const indicatorRevoked = await createIndicator(ADMIN_USER, indicatorNoDecayInput);
     expect(indicatorRevoked.revoked).toBeTruthy();
@@ -336,7 +336,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_from: inPast90Days,
       valid_until: tomorrow,
       x_opencti_score: 80,
-      revoked: false
+      revoked: false,
     };
     const indicatorUpsertEntity = await createIndicator(ADMIN_USER, indicatorUpsert);
     expect(indicatorUpsertEntity.revoked).toBeFalsy();

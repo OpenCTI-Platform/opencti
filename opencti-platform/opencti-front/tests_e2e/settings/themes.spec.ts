@@ -18,7 +18,7 @@ const openThemeEditMenu = async (themeName: string, page: Page) => {
  * MUST edit custom theme.
  * MUST delete custom theme.
  */
-test('Custom theme creation, edition, and deletion', async ({ page }) => {
+test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ page }) => {
   const THEME = {
     name: `${new Date().toISOString()} Test Theme`,
     theme_background: '#e72a2a',
@@ -93,7 +93,7 @@ test('Custom theme creation, edition, and deletion', async ({ page }) => {
 /**
  * MUST ensure cannot delete system theme.
  */
-test('Cannot delete system theme', async ({ page }) => {
+test('Cannot delete system theme', { tag: ['@ce'] }, async ({ page }) => {
   // Navigate to Settings
   const leftBarPage = new LeftBarPage(page);
   await page.goto('/');

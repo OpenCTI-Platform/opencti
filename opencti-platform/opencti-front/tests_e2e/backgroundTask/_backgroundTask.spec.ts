@@ -9,7 +9,7 @@ import { runBackgroundTaskOnIncidentByFilter, runBackgroundTaskOnIncidentBySearc
  * @param page
  */
 
-test('Verify background tasks pre-requisites on incident search', async ({ page }) => {
+test('Verify background tasks pre-requisites on incident search', { tag: ['@ce'] }, async ({ page }) => {
   const incidentPage = new EventsIncidentPage(page);
 
   await incidentPage.goto();
@@ -19,6 +19,6 @@ test('Verify background tasks pre-requisites on incident search', async ({ page 
   await runBackgroundTaskOnIncidentBySearch(page, true);
 });
 
-test('Verify background tasks pre-requisites on data entity search', async ({ page }) => {
+test('Verify background tasks pre-requisites on data entity search', { tag: ['@ce'] }, async ({ page }) => {
   await searchOnDataEntitiesPerLabels(page, true);
 });

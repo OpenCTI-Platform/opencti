@@ -181,8 +181,6 @@ export const ObservedDataCreationForm: FunctionComponent<
             name="objects"
             style={fieldSpacingContainerStyle}
             required={(mandatoryAttributes.includes('objects'))}
-            setFieldValue={setFieldValue}
-            values={values.objects}
           />
           <Field
             component={DateTimePickerField}

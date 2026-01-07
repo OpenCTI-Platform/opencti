@@ -191,7 +191,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
     if (ingestionTaxii) {
       const blob = new Blob([ingestionTaxii.toConfigurationExport], { type: 'text/json' });
       const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
-      const fileName = `${year}${month}${day}_csvFeed_${ingestionTaxii.name}.json`;
+      const fileName = `${year}${month}${day}_taxiiFeed_${ingestionTaxii.name}.json`;
       fileDownload(blob, fileName);
     }
   };
@@ -229,14 +229,14 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         <MenuItem onClick={handleOpenUpdate}>
           {t_i18n('Update')}
         </MenuItem>
+        <MenuItem onClick={handleExport}>
+          {t_i18n('Export')}
+        </MenuItem>
         <MenuItem onClick={handleOpenDelete}>
           {t_i18n('Delete')}
         </MenuItem>
         <MenuItem onClick={handleOpenResetState}>
           {t_i18n('Reset state')}
-        </MenuItem>
-        <MenuItem onClick={handleExport}>
-          {t_i18n('Export')}
         </MenuItem>
       </Menu>
       {displayUpdate && queryRef && (

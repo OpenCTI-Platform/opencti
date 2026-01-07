@@ -25,7 +25,11 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
-import { CourseOfActionCreationMutation, CourseOfActionCreationMutation$variables } from './__generated__/CourseOfActionCreationMutation.graphql';
+import {
+  CourseOfActionCreationMutation,
+  CourseOfActionCreationMutation$data,
+  CourseOfActionCreationMutation$variables,
+} from './__generated__/CourseOfActionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
@@ -74,7 +78,7 @@ interface CourseOfActionAddInput {
 }
 
 interface CourseOfActionFormProps {
-  updater?: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater?: (store: RecordSourceSelectorProxy, key: string, response: CourseOfActionCreationMutation['response']['courseOfActionAdd']) => void;
   paginationOptions?: CoursesOfActionLinesPaginationQuery$variables;
   display?: boolean;
   contextual?: boolean;
@@ -136,9 +140,10 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
       variables: {
         input,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'courseOfActionAdd');
+          const data = response as CourseOfActionCreationMutation$data;
+          updater(store, 'courseOfActionAdd', data?.courseOfActionAdd);
         }
       },
       onError: (error) => {

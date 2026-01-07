@@ -25,7 +25,7 @@ import { ENTITY_TYPE_MALWARE, isStixDomainObject, isStixDomainObjectContainer } 
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { detectObservableType } from '../../utils/observable';
+import { detectObservableType, refangValues } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -584,12 +584,14 @@ export const formSubmit = async (
         mainEntityStixId = mainEntity.standard_id;
       }
     } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
-      for (let index = 0; index < values.mainEntityParsed.length; index += 1) {
+      // Refang (de-sanitize) parsed values to handle defanged IOCs
+      const refangedMainEntityParsed = refangValues(values.mainEntityParsed);
+      for (let index = 0; index < refangedMainEntityParsed.length; index += 1) {
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
         if (schema.mainEntityParseFieldMapping === 'pattern' && schema.mainEntityAutoConvertToStixPattern) {
-          // Auto convert the value
-          const observableType = detectObservableType(values.mainEntityParsed[index]);
-          const observableValue = values.mainEntityParsed[index];
+          // Auto convert the value (using refanged value)
+          const observableValue = refangedMainEntityParsed[index];
+          const observableType = detectObservableType(observableValue);
           const pattern = await createStixPattern(context, user, observableType, observableValue);
           mainEntity[schema.mainEntityParseFieldMapping] = pattern;
           mainEntity.pattern_type = 'stix';
@@ -598,7 +600,7 @@ export const formSubmit = async (
         } else {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
-          mainEntity[schema.mainEntityParseFieldMapping] = values.mainEntityParsed[index];
+          mainEntity[schema.mainEntityParseFieldMapping] = refangedMainEntityParsed[index];
         }
 
         // Apply additional fields to all parsed entities
@@ -724,12 +726,14 @@ export const formSubmit = async (
           }
         } else if (additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
           if (isNotEmptyField(values[`additional_${additionalEntity.id}_parsed`])) {
-            for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_parsed`].length; index2 += 1) {
+            // Refang (de-sanitize) parsed values to handle defanged IOCs
+            const refangedAdditionalParsed = refangValues(values[`additional_${additionalEntity.id}_parsed`]);
+            for (let index2 = 0; index2 < refangedAdditionalParsed.length; index2 += 1) {
               let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
               if (additionalEntity.parseFieldMapping === 'pattern' && additionalEntity.autoConvertToStixPattern) {
-                // Auto convert the value
-                const observableType = detectObservableType(values[`additional_${additionalEntity.id}_parsed`][index2]);
-                const observableValue = values[`additional_${additionalEntity.id}_parsed`][index2];
+                // Auto convert the value (using refanged value)
+                const observableValue = refangedAdditionalParsed[index2];
+                const observableType = detectObservableType(observableValue);
                 const pattern = await createStixPattern(context, user, observableType, observableValue);
                 newAdditionalEntity[additionalEntity.parseFieldMapping] = pattern;
                 newAdditionalEntity.pattern_type = 'stix';
@@ -738,7 +742,7 @@ export const formSubmit = async (
               } else {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error
-                newAdditionalEntity[additionalEntity.parseFieldMapping] = values[`additional_${additionalEntity.id}_parsed`][index2];
+                newAdditionalEntity[additionalEntity.parseFieldMapping] = refangedAdditionalParsed[index2];
               }
 
               // Apply additional fields to all parsed entities

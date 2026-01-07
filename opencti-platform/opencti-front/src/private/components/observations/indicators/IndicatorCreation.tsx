@@ -101,7 +101,7 @@ interface IndicatorAddInput {
 }
 
 interface IndicatorFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: IndicatorCreationMutation['response']['indicatorAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -185,9 +185,9 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       variables: {
         input,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'indicatorAdd');
+          updater(store, 'indicatorAdd', response?.indicatorAdd);
         }
       },
       onError: (error) => {

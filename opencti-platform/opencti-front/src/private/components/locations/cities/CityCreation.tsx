@@ -63,7 +63,7 @@ interface CityAddInput {
 }
 
 interface CityFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: CityCreationMutation['response']['cityAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -115,9 +115,9 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     resetBulk,
   } = useBulkCommit<CityCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'cityAdd');
+        updater(store, 'cityAdd', response?.cityAdd);
       }
     },
   });

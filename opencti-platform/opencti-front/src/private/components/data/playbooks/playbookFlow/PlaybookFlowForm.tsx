@@ -55,6 +55,8 @@ export type PlaybookFlowFormData
       time?: string;
       period?: string;
       day?: string;
+      // Component: Container wrapper
+      all?: boolean;
     };
 
 interface PlaybookFlowFormProps {
@@ -298,8 +300,13 @@ const PlaybookFlowForm = ({
                   }
                   if (property.type === 'boolean') {
                     let helperText = '';
+                    let disabled = false;
                     if (propName === 'create_rel') {
                       helperText = t_i18n('If both entities are of interest for selected PIR, then the target is kept');
+                    }
+                    // excludeMainElement depends on 'all' being enabled
+                    if (propName === 'excludeMainElement') {
+                      disabled = !values.all;
                     }
                     return (
                       <PlaybookFlowFieldBoolean
@@ -307,6 +314,7 @@ const PlaybookFlowForm = ({
                         name={propName}
                         helperText={helperText}
                         label={t_i18n(property.$ref ?? propName)}
+                        disabled={disabled}
                       />
                     );
                   }

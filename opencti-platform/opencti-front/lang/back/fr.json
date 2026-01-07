@@ -564,6 +564,7 @@
   "Marking type": "Type de marquage",
   "Markings": "Marques",
   "Match Pir with source of relationship": "Faire correspondre Pir à la source de la relation",
+  "Max concurrent sessions (0 equals no maximum)": "Nombre maximal de sessions simultanées (0 signifie qu'il n'y a pas de maximum)",
   "Max Confidence": "Confiance maximale",
   "Max policy length": "Longueur maximale de la politique",
   "Max shareable markings": "Marques maximales partageables",
