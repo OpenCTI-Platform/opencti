@@ -63,6 +63,18 @@ class IndicatorEntityLineComponent extends Component {
     const element = node.to?.id === entityId ? node.from : node.to;
     const restricted = isEmptyField(element);
     const link = `${entityLink}/relations/${node.id}`;
+
+    const isRelationship = t(`relationship_${element.entity_type}`) !== `relationship_${element.entity_type}`;
+
+    const displayName = !restricted
+      ? isRelationship
+        ? element.representative?.main
+        ?? `${element.from?.name ?? element.from?.observable_value ?? '-'}
+         ${String.fromCharCode(8594)}
+         ${element.to?.name ?? element.to?.observable_value ?? '-'}`
+        : element.name || element.observable_value
+      : t('Restricted');
+
     return (
       <ListItem
         divider={true}
@@ -117,15 +129,7 @@ class IndicatorEntityLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.name.width }}
                 >
-                  {/* eslint-disable-next-line no-nested-ternary */}
-                  {!restricted
-                    ? element.entity_type === 'stix_relation'
-                    || element.entity_type === 'stix-relation'
-                      ? `${element.from.name} ${String.fromCharCode(8594)} ${
-                        element.to.name || element.to.observable_value
-                      }`
-                      : element.name || element.observable_value
-                    : t('Restricted')}
+                  {displayName}
                 </div>
                 <div
                   className={classes.bodyItem}
@@ -230,6 +234,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
           ... on StixCoreRelationship {
             created_at
             updated_at
+            representative {
+              main
+            }
           }
           ... on AttackPattern {
             name
@@ -465,6 +472,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
           ... on StixCoreRelationship {
             created_at
             updated_at
+            representative {
+              main
+            }
           }
           ... on AttackPattern {
             name
