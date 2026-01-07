@@ -8,7 +8,7 @@ import { Autocomplete, useTheme } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useFormatter } from 'src/components/i18n';
 import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
-import type { Theme } from '../Theme';
+import type { Theme } from '../Theme';
 
 type SavedFiltersAutocompleteProps = {
   isDisabled?: boolean;

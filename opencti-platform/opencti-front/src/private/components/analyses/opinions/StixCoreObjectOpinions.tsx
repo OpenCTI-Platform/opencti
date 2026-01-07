@@ -106,7 +106,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
   const height = 180;
   return (
     <>
-      <Stack direction="row" alignItems="center" gap={0.5} sx={{ marginTop: '20px' }}>
+      <Stack direction="row" alignItems="center" gap={0.5} sx={{ marginTop: '20px' }}>
         <Typography
           variant="h3"
           gutterBottom={true}

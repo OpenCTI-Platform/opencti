@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { UIEvent, useState } from 'react';
 import MoreVert from '@mui/icons-material/MoreVert';
-import IconButton from '@common/button/IconButton';
 import { Menu, MenuItem, PopoverProps, ToggleButton } from '@mui/material';
 import { graphql, useFragment } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
