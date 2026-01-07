@@ -32,7 +32,6 @@ const ControlledDial = ({ onOpen, title }: ControlledDialProps) => {
     <Button
       style={{ marginLeft: theme.spacing(0.5) }}
       aria-label={title}
-      size="small"
       onClick={() => onOpen()}
     >
       {title}

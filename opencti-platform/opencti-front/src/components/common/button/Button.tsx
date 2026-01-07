@@ -62,7 +62,7 @@ const Button: React.FC<CustomButtonProps> = ({
   gradientVariant = 'default',
   gradientStartColor,
   gradientEndColor,
-  gradientAngle = 99.95,
+  gradientAngle = 90,
   iconOnly = false,
   selected = false,
   children,
@@ -113,7 +113,6 @@ const Button: React.FC<CustomButtonProps> = ({
         return gradient
           ? createSecondaryGradientStyles(styleParams)
           : createSecondarySolidStyles(styleParams);
-
       case 'tertiary':
         return gradient
           ? createTertiaryGradientStyles(styleParams)

@@ -52,14 +52,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderTop: 0,
     color: theme.palette.text?.primary,
   },
-  barRight: {
-    marginRight: theme.spacing(2),
-    height: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'end',
-    marginLeft: 'auto',
-  },
 }));
 
 const topBarNotificationNumberSubscription = graphql`
@@ -96,7 +88,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
@@ -207,8 +198,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // draft
   const draftModeColor = getDraftModeColor(theme);
 
-  const appBarGradient = theme.palette.background.default && theme.palette.background.paper
-    ? `${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.9)}`
+  const appBarGradient = theme.palette.background.gradient?.start && theme.palette.background.gradient?.end
+    ? `${alpha(theme.palette.background.gradient.start, 0.9)} 0%, ${alpha(theme.palette.background.gradient.end, 0.9)}`
     : 'rgba(7, 13, 25, 0.90) 0%, rgba(12, 21, 36, 0.90)}';
 
   return (
@@ -220,6 +211,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         width: navOpen ? `calc(100% - ${OPEN_BAR_WIDTH}px)` : `calc(100% - ${SMALL_BAR_WIDTH}px)`,
         backdropFilter: 'blur(4px)',
         background: `linear-gradient(90deg, ${appBarGradient} 100%)`,
+        borderBottom: `1px solid ${theme.palette.background.secondary}`,
+        height: 68,
       }}
     >
       {/* Header and Footer Banners containing classification level of system */}
@@ -227,25 +220,25 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         style={{
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
-          padding: 0,
           borderBottom: draftContext ? `1px solid ${draftModeColor}` : 'initial',
+          height: '100%',
+          minHeight: 68,
+          paddingLeft: theme.spacing(3),
+          paddingRight: theme.spacing(3),
+          display: 'flex',
+          justifyContent: 'space-between',
         }}
       >
         {hasKnowledgeAccess && (
-          <div
-            style={{ display: 'flex', marginLeft: theme.spacing(3) }}
-          >
-            <SearchInput
-              onSubmit={handleSearch}
-              keyword={keyword}
-              variant="topBar"
-              placeholder={`${t_i18n('Search the platform')}...`}
-              fullWidth={true}
-              isNLQLoading={isNLQLoading}
-            />
-          </div>
+          <SearchInput
+            onSubmit={handleSearch}
+            keyword={keyword}
+            variant="topBar"
+            placeholder={`${t_i18n('Search the platform')}...`}
+            isNLQLoading={isNLQLoading}
+          />
         )}
-        <div className={classes.barRight}>
+        <div>
           {!!draftContext && (
             <DraftContextBanner />
           )}
@@ -264,11 +257,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     <UploadImport
                       variant="icon"
                       fontSize="medium"
+                      size="default"
                     />
                   </Security>
                   <Tooltip title={t_i18n('Triggers')}>
                     <IconButton
                       aria-haspopup="true"
+                      size="default"
                       component={Link}
                       to="/dashboard/profile/triggers"
                       selected={location.pathname === '/dashboard/profile/triggers'}
@@ -279,6 +274,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   <Tooltip title={t_i18n('Notifications')}>
                     <IconButton
                       aria-haspopup="true"
+                      size="default"
                       component={Link}
                       to="/dashboard/profile/notifications"
                       selected={location.pathname === '/dashboard/profile/notifications'}
@@ -297,6 +293,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             )}
             <IconButton
               aria-owns={menuOpen.open ? 'menu-appbar' : undefined}
+              size="default"
               aria-haspopup="true"
               aria-label={t_i18n('Profile')}
               id="profile-menu-button"

@@ -76,7 +76,6 @@ const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {
         <EmailTemplatePopover
           onUpdate={() => setFormOpen(true)}
           templateId={template.id}
-          inline={false}
           onDeleteComplete={() => navigate(emailTemplateLink)}
         />
         <Button

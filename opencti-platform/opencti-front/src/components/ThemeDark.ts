@@ -56,7 +56,7 @@ const ThemeDark = (
     ai: {
       main: '#B286FF',
       light: '#D6C2FA',
-      dark: '#5E1AD5',
+      dark: '#B286FF',
       contrastText: '#000000',
       text: {
         primary: '#B286FF',
@@ -75,6 +75,10 @@ const ThemeDark = (
       accent: accent || THEME_DARK_DEFAULT_ACCENT,
       shadow: 'rgba(200, 200, 200, 0.15)',
       secondary: '#0D182A',
+      gradient: {
+        start: '#070d19',
+        end: '#0C1524',
+      },
     },
     text: {
       light: '#AFB0B6',
@@ -410,24 +414,14 @@ const ThemeDark = (
         },
       },
     },
-    // MuiPopover: {
-    //   styleOverrides: {
-    //     paper: {
-    //       backgroundColor: '#070D19',
-    //       backgroundImage: 'none',
-    //       padding: 0,
-    //       minWidth: 180,
-    //     },
-    //   },
-    // },
-    MuiList: {
+    MuiAutocomplete: {
       styleOverrides: {
         root: {
-          '&.left-bar-header': {
-            backgroundColor: '#253348',
-          },
-          '& hr': {
-            backgroundColor: THEME_DARK_DEFAULT_PAPER,
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: '#0D182A',
+            '& fieldset': {
+              borderColor: 'transparent',
+            },
           },
         },
       },

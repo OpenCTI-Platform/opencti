@@ -54,6 +54,7 @@ const UploadImport = ({
         <Tooltip title={title} aria-label={title}>
           <IconButton
             color={color}
+            size={size}
             aria-haspopup="true"
             onClick={() => setOpenImportFilesDialog(true)}
           >

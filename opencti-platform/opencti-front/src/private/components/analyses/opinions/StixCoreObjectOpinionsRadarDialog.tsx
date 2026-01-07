@@ -174,10 +174,6 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
           color="primary"
           aria-label="Label"
           onClick={handleOpen}
-          style={{
-            float: 'left',
-            margin: '-15px 0 0 -2px',
-          }}
         >
           <ThumbsUpDownOutlined fontSize="small" />
         </IconButton>

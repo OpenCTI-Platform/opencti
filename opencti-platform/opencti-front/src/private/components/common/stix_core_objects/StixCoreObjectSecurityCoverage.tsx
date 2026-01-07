@@ -148,9 +148,15 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
         )}
         {coverage && (
           <Button
+            variant="tertiary"
             size="small"
             component={Link}
             to={`/dashboard/analyses/security_coverages/${coverage.id}`}
+            sx={{
+              '&:hover': {
+                backgroundColor: 'transparent',
+              },
+            }}
           >
             <SecurityCoverageInformation coverage_information={coverage?.coverage_information} />
           </Button>

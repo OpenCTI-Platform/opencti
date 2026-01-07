@@ -1,6 +1,6 @@
 import MoreVert from '@mui/icons-material/MoreVert';
 import React, { UIEvent, useState } from 'react';
-import { Menu, MenuItem, PopoverProps } from '@mui/material';
+import { Menu, MenuItem, PopoverProps, ToggleButton } from '@mui/material';
 import IconButton from '@common/button/IconButton';
 import useEmailTemplateDelete from '@components/settings/email_template/useEmailTemplateDelete';
 import { useFormatter } from '../../../../components/i18n';
@@ -65,9 +65,14 @@ const EmailTemplatePopover = ({
   return (
     <>
       {inline ? (
-        <IconButton onClick={onOpenMenu} aria-haspopup="true" color="primary">
-          <MoreVert fontSize="small" />
-        </IconButton>
+        <ToggleButton
+          size="small"
+          onClick={onOpenMenu}
+          aria-haspopup="true"
+          value="Popover of actions"
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
       ) : (
         <IconButton
           onClick={onOpenMenu}
