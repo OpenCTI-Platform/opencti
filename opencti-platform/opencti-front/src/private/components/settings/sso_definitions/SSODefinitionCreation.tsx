@@ -12,6 +12,9 @@ import { Field, Formik, Form } from 'formik';
 import { TextField } from 'formik-mui';
 import SwitchField from '../../../../components/fields/SwitchField';
 import * as Yup from 'yup';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
 
 const ssoDefinitionMutation = graphql`
   mutation SSODefinitionCreationMutation(
@@ -37,8 +40,11 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-
   const [selectedStrategy, setSelectedStrategy] = useState<string | null>(null);
+  const [currentTab, setCurrentTab] = useState(0);
+  const handleChangeTab = (value: number) => {
+    setCurrentTab(value);
+  };
 
   const baseInitialValues: BaseSSOValues = {
     name: '',
@@ -208,53 +214,67 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       }
       controlledDial={CreateSSODefinitionControlledDial}
     >
-      {({ onClose }) => (
-        <Formik
-          enableReinitialize
-          initialValues={baseInitialValues}
-          validationSchema={validationSchema}
-          onSubmit={() => {}}
-          onReset={onClose}
-        >
-          {({ values }) => (
-            <Form>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t_i18n('Configuration Name')}
-                fullWidth
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="label"
-                label={t_i18n('Login Button Name')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={SwitchField}
-                variant="standard"
-                name="enabled"
-                type="checkbox"
-                label={t_i18n('Enable SAML authentication')}
-                containerstyle={{ marginLeft: 2, marginTop: 20 }}
-              />
+      <>
+        <Box>
+          <Tabs sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={currentTab}
+              onChange={(event, value) => handleChangeTab(value)}
+            >
+              <Tab label={t_i18n('Overview')} />
+              <Tab label={t_i18n('Groups mapping')} />
+              <Tab label={t_i18n('Organization mapping')} />
+            </Tabs>
+          </Tabs>
+        </Box>
+        {currentTab === 0 && (
+          <>
+            <Formik
+              enableReinitialize
+              initialValues={baseInitialValues}
+              validationSchema={validationSchema}
+              onSubmit={() => {}}
+            >
+              {({ values }) => (
+                <Form>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="name"
+                    label={t_i18n('Configuration Name')}
+                    fullWidth
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="label"
+                    label={t_i18n('Login Button Name')}
+                    fullWidth
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={SwitchField}
+                    variant="standard"
+                    name="enabled"
+                    type="checkbox"
+                    label={t_i18n('Enable SAML authentication')}
+                    containerstyle={{ marginLeft: 2, marginTop: 20 }}
+                  />
 
-              {selectedStrategy === 'SAML' && (
-                <SAMLCreation
-                  initialValues={{}}
-                  onSubmit={(samlValues, helpers) =>
-                    onSubmit(samlValues, helpers, values)
-                  }
-                  onCancel={onClose}
-                />
+                  {selectedStrategy === 'SAML' && (
+                    <SAMLCreation
+                      initialValues={{}}
+                      onSubmit={(samlValues, helpers) =>
+                        onSubmit(samlValues, helpers, values)
+                      }
+                    />
+                  )}
+                </Form>
               )}
-            </Form>
-          )}
-        </Formik>
-      )}
+            </Formik>
+          </>
+        )}
+      </>
     </Drawer>
   );
 };

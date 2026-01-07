@@ -40,13 +40,11 @@ interface SAMLCreationProps {
     values: SAMLCreationValues,
     helpers: { setSubmitting: (b: boolean) => void; resetForm: () => void },
   ) => void;
-  onCancel: () => void;
 }
 
 const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
   initialValues,
   onSubmit,
-  onCancel,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -85,7 +83,6 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
       initialValues={mergedInitialValues}
       validationSchema={validationSchema}
       onSubmit={onSubmit}
-      onReset={onCancel}
     >
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
@@ -201,14 +198,14 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
             label={t_i18n('Force re-authentication even if user has valid SSO session')}
             containerstyle={{ marginLeft: 2 }}
           />
-          <Field
-            component={SwitchField}
-            variant="standard"
-            type="checkbox"
-            name="enable_debug_mode"
-            label={t_i18n('Enable debug mode to troubleshoot for this authentication')}
-            containerstyle={{ marginLeft: 2 }}
-          />
+          {/* <Field */}
+          {/*  component={SwitchField} */}
+          {/*  variant="standard" */}
+          {/*  type="checkbox" */}
+          {/*  name="enable_debug_mode" */}
+          {/*  label={t_i18n('Enable debug mode to troubleshoot for this authentication')} */}
+          {/*  containerstyle={{ marginLeft: 2 }} */}
+          {/* /> */}
           {/* <div style={{ marginTop: 40, marginBottom: 20 }}> */}
           {/*  <Typography variant="h2">OpenCTI Information</Typography> */}
           {/*  <Field */}
@@ -264,7 +261,6 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
                     <Add fontSize="small" />
                   </IconButton>
                 </div>
-
                 {form.values.advancedConfigurations
                   && form.values.advancedConfigurations.map(
                     (conf: { key: string; value: string; type: string }, index: number) => (
