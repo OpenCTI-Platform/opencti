@@ -64,7 +64,7 @@ class IndicatorEntityLineComponent extends Component {
     const restricted = isEmptyField(element);
     const link = `${entityLink}/relations/${node.id}`;
 
-    const isRelationship = element.__typename === 'StixCoreRelationship';
+    const isRelationship = t(`relationship_${element.entity_type}`) !== `relationship_${element.entity_type}`;
 
     const displayName = !restricted
       ? isRelationship
@@ -231,7 +231,6 @@ const IndicatorEntityLineFragment = createFragmentContainer(
             created_at
             updated_at
           }
-          __typename
           ... on StixCoreRelationship {
             created_at
             updated_at
@@ -470,7 +469,6 @@ const IndicatorEntityLineFragment = createFragmentContainer(
             created_at
             updated_at
           }
-          __typename
           ... on StixCoreRelationship {
             created_at
             updated_at
