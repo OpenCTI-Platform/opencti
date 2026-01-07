@@ -17,6 +17,8 @@ class ChatbotManager {
   private isInitialized = false;
   private theme: Theme | null = null;
   private t_i18n: ((message: string) => string) | null = null;
+  private resizeHandler: (() => void) | null = null;
+  private readonly chatbotWidth = 430;
 
   static getInstance(): ChatbotManager {
     if (!ChatbotManager.instance) {
@@ -28,6 +30,14 @@ class ChatbotManager {
   configure(theme: Theme, t_i18n: (message: string) => string) {
     this.theme = theme;
     this.t_i18n = t_i18n;
+  }
+
+  private positionChatbot() {
+    if (!this.chatbotElement) return;
+
+    const viewportWidth = window.innerWidth;
+    const leftPosition = Math.max(0, viewportWidth - this.chatbotWidth);
+    this.chatbotElement.setAttribute('left', String(leftPosition));
   }
 
   private initialize() {
@@ -46,8 +56,6 @@ class ChatbotManager {
     }
 
     const chatbot = document.createElement('filigran-chatbot') as FiligranChatbotElement;
-    chatbot.setAttribute('left', String(window.screen.width - 430));
-    chatbot.setAttribute('agentic-url', `${APP_BASE_PATH}/chatbot`);
 
     const chatBotTheme = {
       button: {
@@ -129,9 +137,17 @@ class ChatbotManager {
 
     chatbot.theme = chatBotTheme;
     chatbot.open = false;
+    chatbot.setAttribute('agentic-url', `${APP_BASE_PATH}/chatbot`);
 
     this.container.appendChild(chatbot);
     this.chatbotElement = chatbot;
+
+    this.positionChatbot();
+
+    // handle window resize to reposition the chatbot
+    this.resizeHandler = () => this.positionChatbot();
+    window.addEventListener('resize', this.resizeHandler);
+
     this.isInitialized = true;
   }
 
@@ -155,6 +171,11 @@ class ChatbotManager {
   }
 
   destroy() {
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+      this.resizeHandler = null;
+    }
+
     if (this.container) {
       this.container.remove();
       this.container = null;
