@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import { Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import Button from '@common/button/Button';
@@ -13,17 +12,18 @@ import EmailTemplateTestSend from '@components/settings/email_template/EmailTemp
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { EmailTemplateHeader_template$key } from './__generated__/EmailTemplateHeader_template.graphql';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 const headerFragment = graphql`
-    fragment EmailTemplateHeader_template on EmailTemplate {
-        id
-        entity_type
-        name
-        description
-        email_object
-        sender_email
-        template_body
-    }
+  fragment EmailTemplateHeader_template on EmailTemplate {
+    id
+    entity_type
+    name
+    description
+    email_object
+    sender_email
+    template_body
+  }
 `;
 
 interface EmailTemplateHeaderProps {
@@ -46,7 +46,7 @@ const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {
     { label: t_i18n('Settings') },
     { label: t_i18n('Security') },
     { label: t_i18n('Email templates'), link: emailTemplateLink },
-    { label: template.name },
+    { label: template.name, current: true },
   ];
 
   const onSubmit = () => {
@@ -60,10 +60,18 @@ const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <div style={{ display: 'flex', gap: theme.spacing(1), justifyContent: 'right', alignItems: 'center', position: 'relative' }}>
-        <Typography variant="h1" sx={{ marginRight: 'auto' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: theme.spacing(0.5),
+          alignItems: 'center',
+          position: 'relative',
+          marginBottom: theme.spacing(3),
+        }}
+      >
+        <TitleMainEntity sx={{ flex: 1 }}>
           {template.name}
-        </Typography>
+        </TitleMainEntity>
         <EmailTemplateTestSend templateId={template.id} />
         <EmailTemplatePopover
           onUpdate={() => setFormOpen(true)}

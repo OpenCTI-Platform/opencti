@@ -22,6 +22,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 const decayRuleQuery = graphql`
   query DecayRuleQuery($id: String!) {
@@ -93,13 +94,10 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
       />
       <CustomizationMenu />
       <div style={{ marginBottom: theme.spacing(3), display: 'flex' }}>
-        <div style={{ display: 'flex', flex: 1, alignItems: 'center' }}>
-          <Typography
-            variant="h1"
-            style={{ marginBottom: 0, marginRight: 20 }}
-          >
+        <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
+          <TitleMainEntity>
             {decayRule.name}
-          </Typography>
+          </TitleMainEntity>
           <ItemBoolean
             status={decayRule.active ?? false}
             label={decayRule.active ? t_i18n('Active') : t_i18n('Inactive')}

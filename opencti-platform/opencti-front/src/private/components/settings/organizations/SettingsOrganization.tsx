@@ -10,7 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -29,6 +29,7 @@ import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,10 +41,8 @@ const useStyles = makeStyles<Theme>(() => ({
   gridContainer: {
     marginBottom: 20,
   },
-  title: {
-    float: 'left',
-  },
 }));
+
 const settingsOrganizationFragment = graphql`
   fragment SettingsOrganization_organization on Organization {
     id
@@ -110,6 +109,7 @@ const settingsOrganizationFragment = graphql`
     ...SettingsOrganizationHiddenTypesChipList_organization
   }
 `;
+
 const SettingsOrganization = ({
   organizationData,
 }: {
@@ -144,17 +144,18 @@ const SettingsOrganization = ({
   return (
     <div className={classes.container}>
       <AccessesMenu />
-      <Typography variant="h1" gutterBottom={true} className={classes.title}>
-        {organization.name}
-      </Typography>
-      <Security needs={[SETTINGS_SETACCESSES]}>
-        <SettingsOrganizationEdition
-          organization={organization}
-          enableReferences={useIsEnforceReference('Organization')}
-          context={organization.editContext}
-        />
-      </Security>
-      <div className="clearfix" />
+      <Stack direction="row" alignItems="center" marginBottom={3}>
+        <TitleMainEntity sx={{ flex: 1 }}>
+          {organization.name}
+        </TitleMainEntity>
+        <Security needs={[SETTINGS_SETACCESSES]}>
+          <SettingsOrganizationEdition
+            organization={organization}
+            enableReferences={useIsEnforceReference('Organization')}
+            context={organization.editContext}
+          />
+        </Security>
+      </Stack>
       <Grid
         container={true}
         spacing={3}

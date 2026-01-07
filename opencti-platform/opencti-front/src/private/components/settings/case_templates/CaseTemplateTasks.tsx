@@ -1,10 +1,9 @@
-import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import MenuItem from '@mui/material/MenuItem';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { Box, styled } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import ListLines from '../../../../components/list_lines/ListLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -28,6 +27,8 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import type { Theme } from '../../../../components/Theme';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -35,9 +36,6 @@ const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
     padding: '0 200px 50px 0',
-  },
-  title: {
-    float: 'left',
   },
 }));
 
@@ -58,7 +56,6 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
   caseTemplateId,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const theme = useTheme<Theme>();
@@ -105,56 +102,50 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
     nodePath: 'caseTemplate',
   });
 
-  const CaseTemplateHeader = styled('div')({
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  });
+  const breadcrumb = [
+    { label: t_i18n('Settings') },
+    { label: t_i18n('Taxonomies') },
+    { label: t_i18n('Case templates'), link: '/dashboard/settings/vocabularies/case_templates' },
+    { label: caseTemplate.name, current: true },
+  ];
 
   return (
-    <CaseTemplateHeader>
-      <div>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
+    <>
+      <Breadcrumbs elements={breadcrumb} />
+      <Stack direction="row" mb={3}>
+        <TitleMainEntity sx={{ flex: 1 }}>
           {caseTemplate.name}
-        </Typography>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div style={{ display: 'flex' }}>
-          <div style={{ marginRight: theme.spacing(0.5) }}>
-            <PopoverMenu>
-              {({ closeMenu }) => (
-                <Box>
-                  <MenuItem onClick={() => {
-                    handleOpenDelete();
-                    closeMenu();
-                  }}
-                  >
-                    {t_i18n('Delete')}
-                  </MenuItem>
-                </Box>
-              )}
-            </PopoverMenu>
-            <CaseTemplateEdition
-              caseTemplate={caseTemplate}
-              paginationOptions={paginationOptions}
-              openPanel={openEdition}
-              setOpenPanel={setOpenEdition}
-            />
-            <DeleteDialog
-              deletion={deletion}
-              isOpen={openDelete}
-              onClose={handleCloseDelete}
-              submitDelete={submitDelete}
-              message={t_i18n('Do you want to delete this template?')}
-            />
-          </div>
+        </TitleMainEntity>
+        <div style={{ marginRight: theme.spacing(0.5) }}>
+          <PopoverMenu>
+            {({ closeMenu }) => (
+              <Box>
+                <MenuItem onClick={() => {
+                  handleOpenDelete();
+                  closeMenu();
+                }}
+                >
+                  {t_i18n('Delete')}
+                </MenuItem>
+              </Box>
+            )}
+          </PopoverMenu>
+          <CaseTemplateEdition
+            caseTemplate={caseTemplate}
+            paginationOptions={paginationOptions}
+            openPanel={openEdition}
+            setOpenPanel={setOpenEdition}
+          />
+          <DeleteDialog
+            deletion={deletion}
+            isOpen={openDelete}
+            onClose={handleCloseDelete}
+            submitDelete={submitDelete}
+            message={t_i18n('Do you want to delete this template?')}
+          />
         </div>
-      </div>
-    </CaseTemplateHeader>
+      </Stack>
+    </>
   );
 };
 
