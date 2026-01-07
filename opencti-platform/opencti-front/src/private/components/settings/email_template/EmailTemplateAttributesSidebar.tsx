@@ -46,9 +46,9 @@ const EmailTemplateAttributesSidebar = () => {
 
   return (
     <>
-      <Drawer 
-        variant="permanent" 
-        anchor="right" 
+      <Drawer
+        variant="permanent"
+        anchor="right"
         sx={paperStyle}
       >
         <Toolbar />

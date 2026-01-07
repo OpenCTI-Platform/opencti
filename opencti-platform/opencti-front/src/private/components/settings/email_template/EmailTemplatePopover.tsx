@@ -62,17 +62,16 @@ const EmailTemplatePopover = ({
     });
   };
 
-
   return (
     <>
       {inline ? (
-        <ToggleButton 
+        <ToggleButton
           size="small"
           onClick={onOpenMenu}
-          aria-haspopup="true" 
+          aria-haspopup="true"
           value="Popover of actions"
         >
-          <MoreVert fontSize="small" color='primary' />
+          <MoreVert fontSize="small" color="primary" />
         </ToggleButton>
       ) : (
         <IconButton
