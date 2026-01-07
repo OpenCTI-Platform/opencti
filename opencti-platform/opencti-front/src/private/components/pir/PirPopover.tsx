@@ -56,6 +56,7 @@ const PirPopover = ({ data }: PirPopoverProps) => {
         onClick={onOpenMenu}
         value="open-menu"
         size="small"
+        aria-label={t_i18n('Popover of actions')}
       >
         <MoreVert fontSize="small" color="primary" />
       </ToggleButton>
