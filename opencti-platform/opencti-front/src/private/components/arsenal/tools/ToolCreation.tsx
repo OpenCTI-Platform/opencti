@@ -67,7 +67,7 @@ interface ToolAddInput {
 }
 
 interface ToolFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: ToolCreationMutation['response']['toolAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -117,9 +117,9 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     resetBulk,
   } = useBulkCommit<ToolCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'toolAdd');
+        updater(store, 'toolAdd', response?.toolAdd);
       }
     },
   });

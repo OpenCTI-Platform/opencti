@@ -74,7 +74,7 @@ interface CourseOfActionAddInput {
 }
 
 interface CourseOfActionFormProps {
-  updater?: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater?: (store: RecordSourceSelectorProxy, key: string, response: CourseOfActionCreationMutation['response']['courseOfActionAdd']) => void;
   paginationOptions?: CoursesOfActionLinesPaginationQuery$variables;
   display?: boolean;
   contextual?: boolean;
@@ -136,9 +136,10 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
       variables: {
         input,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'courseOfActionAdd');
+          const data = response as CourseOfActionCreationMutation$data;
+          updater(store, 'courseOfActionAdd', data?.courseOfActionAdd);
         }
       },
       onError: (error) => {
