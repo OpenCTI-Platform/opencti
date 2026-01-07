@@ -191,7 +191,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
     if (ingestionTaxii) {
       const blob = new Blob([ingestionTaxii.toConfigurationExport], { type: 'text/json' });
       const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
-      const fileName = `${year}${month}${day}_csvFeed_${ingestionTaxii.name}.json`;
+      const fileName = `${year}${month}${day}_taxiiFeed_${ingestionTaxii.name}.json`;
       fileDownload(blob, fileName);
     }
   };
