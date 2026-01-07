@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { DateTime } from 'luxon';
 import type { AttributeDefinition, AttrType, ObjectAttribute } from '../schema/attribute-definition';
 import { entityType, relationshipType, standardId } from '../schema/attribute-definition';
@@ -338,8 +337,11 @@ const mapRecord = async (
   if (!isValidInput(filledInput)) {
     return null;
   }
-
-  handleId(representation, filledInput);
+  try {
+    handleId(representation, filledInput);
+  } catch {
+    return null;
+  }
   return filledInput;
 };
 
