@@ -21,12 +21,14 @@ interface PlaybookFlowFieldBooleanProps {
   name: string;
   label: string;
   helperText?: string;
+  disabled?: boolean;
 }
 
 const PlaybookFlowFieldBoolean = ({
   name,
   label,
   helperText,
+  disabled,
 }: PlaybookFlowFieldBooleanProps) => {
   return (
     <Field
@@ -36,6 +38,7 @@ const PlaybookFlowFieldBoolean = ({
       helpertext={helperText}
       component={SwitchField}
       containerstyle={fieldSpacingContainerStyle}
+      disabled={disabled}
     />
   );
 };
