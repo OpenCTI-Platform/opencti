@@ -87,7 +87,7 @@ interface NarrativeAddInput {
 }
 
 interface NarrativeFormProps {
-  updater?: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater?: (store: RecordSourceSelectorProxy, key: string, response: NarrativeCreationMutation['response']['narrativeAdd']) => void;
   onReset?: () => void;
   inputValue?: string;
   onCompleted?: () => void;
@@ -135,9 +135,9 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     resetBulk,
   } = useBulkCommit<NarrativeCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'narrativeAdd');
+        updater(store, 'narrativeAdd', response?.narrativeAdd);
       }
     },
   });

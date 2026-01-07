@@ -54,8 +54,6 @@ const ImportFilesOptions = ({
             label={t_i18n('Associated entity')}
             multiple={false}
             disabled={!!entityId}
-            setFieldValue={optionsFormikContext.setFieldValue}
-            values={optionsFormikContext.values.associatedEntity}
           />
         </div>
         {importMode !== 'auto' && !draftContext && (

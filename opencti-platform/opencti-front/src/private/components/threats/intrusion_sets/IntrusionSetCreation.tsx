@@ -61,7 +61,7 @@ interface IntrusionSetAddInput {
 }
 
 interface IntrusionSetFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: IntrusionSetCreationMutation['response']['intrusionSetAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -113,9 +113,9 @@ export const IntrusionSetCreationForm: FunctionComponent<
     resetBulk,
   } = useBulkCommit<IntrusionSetCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'intrusionSetAdd');
+        updater(store, 'intrusionSetAdd', response?.intrusionSetAdd);
       }
     },
   });

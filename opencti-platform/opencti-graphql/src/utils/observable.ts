@@ -340,3 +340,101 @@ export const groupByObservableType = (values: string[]): Record<string, string[]
 
   return grouped;
 };
+
+/**
+ * Refangs (de-sanitizes) a defanged observable value.
+ * Security analysts often work with "defanged" IOCs where dangerous characters
+ * are replaced with safe equivalents to prevent accidental clicking/execution.
+ *
+ * This function converts defanged values back to their original form for proper
+ * processing and storage.
+ *
+ * Examples:
+ * - hxxp://test[.]com → http://test.com
+ * - 192.168.1[.]1 → 192.168.1.1
+ * - test[@]test[.]com → test@test.com
+ * - hxxps[://]evil[.]com → https://evil.com
+ */
+export const refangValue = (value: string): string => {
+  if (!value || typeof value !== 'string') {
+    return value;
+  }
+
+  let refanged = value;
+
+  // Protocol defanging: hxxp, hXXp, etc. → http
+  refanged = refanged.replace(/\bhxxps?:\/\//gi, (match) => {
+    return match.toLowerCase().replace('hxxp', 'http');
+  });
+
+  // Handle protocol with brackets: hxxps[://] or [://]
+  refanged = refanged.replace(/\[:\/{2}\]/g, '://');
+  refanged = refanged.replace(/\[:\/\/\]/g, '://');
+
+  // Protocol variations with mixed case
+  refanged = refanged.replace(/\bh[xX]{2}ps?\b/g, (match) => {
+    return match.toLowerCase().replace(/h[xX]{2}p/i, 'http');
+  });
+
+  // Dot defanging: [.] or (.) or {.} → .
+  refanged = refanged.replace(/\[\.\]/g, '.');
+  refanged = refanged.replace(/\(\.\)/g, '.');
+  refanged = refanged.replace(/\{\.\}/g, '.');
+
+  // @ defanging: [@] or (@) or {@} → @
+  refanged = refanged.replace(/\[@\]/g, '@');
+  refanged = refanged.replace(/\(@\)/g, '@');
+  refanged = refanged.replace(/\{@\}/g, '@');
+
+  // Colon defanging: [:] or (:) → : (often used for ports)
+  refanged = refanged.replace(/\[:\]/g, ':');
+  refanged = refanged.replace(/\(:\)/g, ':');
+
+  // Slash defanging: [/] or (/) → /
+  refanged = refanged.replace(/\[\/\]/g, '/');
+  refanged = refanged.replace(/\(\/\)/g, '/');
+
+  // Handle "dot" written out: test dot com → test.com
+  refanged = refanged.replace(/\s+dot\s+/gi, '.');
+
+  // Handle "at" written out: test at test.com → test@test.com
+  refanged = refanged.replace(/\s+at\s+/gi, '@');
+
+  // Remove spaces around dots that might have been added for safety
+  // e.g., "192 . 168 . 1 . 1" → "192.168.1.1"
+  refanged = refanged.replace(/\s*\.\s*/g, '.');
+
+  return refanged.trim();
+};
+
+/**
+ * Refangs an array of values.
+ */
+export const refangValues = (values: string[]): string[] => {
+  return values.map((value) => refangValue(value));
+};
+
+/**
+ * Checks if a value appears to be defanged (contains common defanging patterns).
+ */
+export const isDefanged = (value: string): boolean => {
+  if (!value || typeof value !== 'string') {
+    return false;
+  }
+
+  const defangPatterns = [
+    /hxxps?:\/\//i, // hxxp:// or hxxps://
+    /\[\.\]/, // [.]
+    /\(\.\)/, // (.)
+    /\{\.\}/, // {.}
+    /\[@\]/, // [@]
+    /\(@\)/, // (@)
+    /\{@\}/, // {@}
+    /\[:\/{2}\]/, // [://]
+    /\[:\/\/\]/, // [://]
+    /\s+dot\s+/i, // " dot "
+    /\s+at\s+/i, // " at "
+  ];
+
+  return defangPatterns.some((pattern) => pattern.test(value));
+};
