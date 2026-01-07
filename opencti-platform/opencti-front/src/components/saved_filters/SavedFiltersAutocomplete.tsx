@@ -4,10 +4,11 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import { DeleteOutlined } from '@mui/icons-material';
 import { AutocompleteOptionType, SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
-import { Autocomplete } from '@mui/material';
+import { Autocomplete, useTheme } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useFormatter } from 'src/components/i18n';
 import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
+import type { Theme } from '../Theme';
 
 type SavedFiltersAutocompleteProps = {
   isDisabled?: boolean;
@@ -19,6 +20,7 @@ type SavedFiltersAutocompleteProps = {
   options?: AutocompleteOptionType[];
 };
 const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onInputChange, onDelete, options }: SavedFiltersAutocompleteProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
   const handleDelete = (option: SavedFiltersSelectionData) => (event: SyntheticEvent) => {
@@ -55,7 +57,9 @@ const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onI
       isOptionEqualToValue={(option, v) => option?.value.id === v.value.id}
       inputValue={inputValue}
       options={options ?? []}
-      sx={{ width: 200 }}
+      sx={{
+        width: 200,
+      }}
       noOptionsText={t_i18n('No available options')}
       onChange={(_, selectedOption: AutocompleteOptionType) => onChange?.(selectedOption)}
       onInputChange={onInputChange}
@@ -66,6 +70,14 @@ const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onI
           variant="outlined"
           size="small"
           label={t_i18n('Select saved filter')}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: value ? theme.palette.background.secondary : 'transparent',
+              '& fieldset': {
+                borderColor: value ? theme.palette.action?.hover : 'transparent',
+              },
+            },
+          }}
         />
       )}
     />
