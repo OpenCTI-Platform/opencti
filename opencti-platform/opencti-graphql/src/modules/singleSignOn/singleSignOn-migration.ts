@@ -2,6 +2,7 @@ import {
   type ConfigurationTypeInput,
   type GroupsManagement,
   type GroupsManagementInput,
+  type OrganizationsManagement,
   type OrganizationsManagementInput,
   type SingleSignOnAddInput,
   type SingleSignOnMigrationResult,
@@ -121,6 +122,13 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
             value: `${mappedConfig[configKey]}`,
           };
           configuration.push(currentConfig);
+        } else if (Array.isArray(currentValue)) {
+          const currentConfig: ConfigurationTypeInput = {
+            key: configKey,
+            type: 'array',
+            value: mappedConfig[configKey].map((val: string) => val),
+          };
+          configuration.push(currentConfig);
         } else {
           const currentConfig: ConfigurationTypeInput = {
             key: configKey,
@@ -164,7 +172,7 @@ const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
 };
 
 const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const { configuration, groups_management } = computeConfiguration(envConfiguration, StrategyType.SamlStrategy);
+  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.SamlStrategy);
   const identifier = envConfiguration?.identifier || 'saml';
 
   const authEntity: SingleSignOnAddInput = {
@@ -176,6 +184,7 @@ const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
     enabled: computeEnabled(envConfiguration),
     configuration,
     groups_management,
+    organizations_management,
   };
   return authEntity;
 };
@@ -328,6 +337,7 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
         id: uuid(),
         configuration: authenticationStrategiesInput[i].configuration,
         groups_management: authenticationStrategiesInput[i].groups_management as GroupsManagement,
+        organizations_management: authenticationStrategiesInput[i].organizations_management as OrganizationsManagement,
       };
       authenticationStrategies.push(queryResult);
     }
