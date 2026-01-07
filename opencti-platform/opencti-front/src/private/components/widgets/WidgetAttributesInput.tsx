@@ -120,6 +120,11 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'height', label: 'Height' },
     { attribute: 'weight', label: 'Weight' },
   ]],
+  ['Incident', [
+    { attribute: 'incident_type', label: 'Incident type' },
+    { attribute: 'severity', label: 'Severity' },
+    { attribute: 'source', label: 'Source' },
+  ]],
   ['Indicator', [
     { attribute: 'indicator_types', label: 'Indicator types' },
   ]],
@@ -217,7 +222,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
 
       <Formik<WidgetAttributesInputValue>
         validationSchema={attributesValidation}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         initialValues={{
           attributes: value.map((column) => ({
             variableName: column.variableName ?? column.attribute,

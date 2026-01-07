@@ -228,6 +228,9 @@ const stixCoreObjectsAttributesQuery = graphql`
                 first_seen
                 last_seen
                 description
+                incident_type
+                severity
+                source
             }
             ... on CaseRfi {
                 severity
