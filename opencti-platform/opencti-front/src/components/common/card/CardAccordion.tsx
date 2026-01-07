@@ -1,14 +1,20 @@
-import React, { PropsWithChildren, ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { ExpandMore } from '@mui/icons-material';
 import { Accordion, AccordionDetails, AccordionSummary, SxProps } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../Theme';
 import Card from './Card';
 
-interface CardAccordionProps extends PropsWithChildren {
+interface ChildrenProps {
+  changeState: (open: boolean) => void;
+}
+
+interface CardAccordionProps {
   title?: string;
   action?: ReactNode;
   preview: ReactNode;
+  children?: ReactNode | ((props: ChildrenProps) => ReactNode);
+  onStateChange?: (open: boolean) => void;
 }
 
 const CardAccordion = ({
@@ -16,8 +22,10 @@ const CardAccordion = ({
   action,
   children,
   preview,
+  onStateChange,
 }: CardAccordionProps) => {
   const theme = useTheme<Theme>();
+  const [expanded, setExpanded] = useState(false);
 
   const containerSx: SxProps = {
     padding: theme.spacing(3),
@@ -45,6 +53,11 @@ const CardAccordion = ({
   return (
     <Card title={title} action={action} noPadding>
       <Accordion
+        expanded={expanded}
+        onChange={(_, val) => {
+          setExpanded(val);
+          onStateChange?.(val);
+        }}
         sx={containerSx}
         slotProps={{ transition: { unmountOnExit: false } }}
       >
@@ -55,7 +68,10 @@ const CardAccordion = ({
           {preview}
         </AccordionSummary>
         <AccordionDetails sx={detailsSx}>
-          {children}
+          {typeof children === 'function'
+            ? children({ changeState: setExpanded })
+            : children
+          }
         </AccordionDetails>
       </Accordion>
     </Card>
