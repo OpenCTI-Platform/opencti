@@ -14,7 +14,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 
 export interface SAMLCreationValues {
   private_key: string;
-  entity_id: string;
+  issuer: string;
   idp_cert: string;
   saml_callback_url: string;
   want_assertions_signed: boolean;
@@ -40,24 +40,26 @@ interface SAMLCreationProps {
     values: SAMLCreationValues,
     helpers: { setSubmitting: (b: boolean) => void; resetForm: () => void },
   ) => void;
+  onCancel: () => void;
 }
 
 const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
   initialValues,
   onSubmit,
+  onCancel,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
   const validationSchema = Yup.object().shape({
-    entity_id: Yup.string().required(t_i18n('This field is required')),
+    issuer: Yup.string().required(t_i18n('This field is required')),
     idp_cert: Yup.string().required(t_i18n('This field is required')),
     saml_callback_url: Yup.string().url(t_i18n('Must be a valid URL')).required(t_i18n('This field is required')),
   });
 
   const defaultValues: SAMLCreationValues = {
     private_key: '',
-    entity_id: '',
+    issuer: '',
     idp_cert: '',
     saml_callback_url: '',
     want_assertions_signed: false,
@@ -83,6 +85,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
       initialValues={mergedInitialValues}
       validationSchema={validationSchema}
       onSubmit={onSubmit}
+      onReset={onCancel}
     >
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
@@ -143,7 +146,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
           <Field
             component={TextField}
             variant="standard"
-            name="entity_id"
+            name="issuer"
             label={t_i18n('SAML Entity ID/Issuer')}
             fullWidth
             style={{ marginTop: 20 }}
@@ -194,7 +197,6 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
             variant="standard"
             type="checkbox"
             name="force_reauthentication"
-            defaultValue={true}
             label={t_i18n('Force re-authentication even if user has valid SSO session')}
             containerstyle={{ marginLeft: 2 }}
           />
@@ -255,7 +257,7 @@ const SAMLCreation: FunctionComponent<SAMLCreationProps> = ({
                     size="large"
                     style={{ marginBottom: 12 }}
                     onClick={() =>
-                      push({ key: '', value: '', type: 'String' }) // onAddField
+                      push({ key: '', value: '', type: 'String' })
                     }
                   >
                     <Add fontSize="small" />

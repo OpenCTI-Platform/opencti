@@ -8,13 +8,19 @@ import { commitMutation, defaultCommitMutation } from '../../../../relay/environ
 import { PaginationOptions } from '../../../../components/list_lines';
 import CreateSplitControlledDial from '../../../../components/CreateSplitControlledDial';
 import SAMLCreation, { SAMLCreationValues } from '@components/settings/sso_definitions/SAMLCreation';
-import { Field, Formik, Form } from 'formik';
+import { Field, Formik, Form, FieldArray } from 'formik';
 import { TextField } from 'formik-mui';
 import SwitchField from '../../../../components/fields/SwitchField';
 import * as Yup from 'yup';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
+import { IconButton } from '@mui/material';
+import { Add, Delete } from '@mui/icons-material';
+import ObjectOrganizationField from '@components/common/form/ObjectOrganizationField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import GroupField from '@components/common/form/GroupField';
 
 const ssoDefinitionMutation = graphql`
   mutation SSODefinitionCreationMutation(
@@ -101,8 +107,8 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
         type: 'String',
       },
       {
-        key: 'entityId',
-        value: configurationValues.entity_id,
+        key: 'issuer',
+        value: configurationValues.issuer,
         type: 'String',
       },
       {
@@ -214,67 +220,227 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       }
       controlledDial={CreateSSODefinitionControlledDial}
     >
-      <>
-        <Box>
-          <Tabs sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      {({ onClose }) => (
+        <>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
               value={currentTab}
               onChange={(event, value) => handleChangeTab(value)}
             >
-              <Tab label={t_i18n('Overview')} />
+              <Tab label={t_i18n('SSO Configuration')} />
               <Tab label={t_i18n('Groups mapping')} />
               <Tab label={t_i18n('Organization mapping')} />
             </Tabs>
-          </Tabs>
-        </Box>
-        {currentTab === 0 && (
-          <>
-            <Formik
-              enableReinitialize
-              initialValues={baseInitialValues}
-              validationSchema={validationSchema}
-              onSubmit={() => {}}
-            >
-              {({ values }) => (
+          </Box>
+          {currentTab === 0 && (
+            <>
+              <Formik
+                enableReinitialize
+                initialValues={baseInitialValues}
+                validationSchema={validationSchema}
+                onSubmit={() => {}}
+                onReset={onClose}
+              >
+                {({ values }) => (
+                  <Form>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="name"
+                      label={t_i18n('Configuration Name')}
+                      fullWidth
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="label"
+                      label={t_i18n('Login Button Name')}
+                      fullWidth
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      component={SwitchField}
+                      variant="standard"
+                      name="enabled"
+                      type="checkbox"
+                      label={t_i18n('Enable SAML authentication')}
+                      containerstyle={{ marginLeft: 2, marginTop: 20 }}
+                    />
+
+                    {selectedStrategy === 'SAML' && (
+                      <SAMLCreation
+                        initialValues={{}}
+                        onSubmit={(samlValues, helpers) =>
+                          onSubmit(samlValues, helpers, values)
+                        }
+                        onCancel={onClose}
+                      />
+                    )}
+                  </Form>
+                )}
+              </Formik>
+            </>
+          )}
+          {currentTab === 1 && (
+            <>
+              <Formik
+                enableReinitialize
+                initialValues={baseInitialValues}
+                validationSchema={validationSchema}
+                onSubmit={() => {}}
+              >
                 <Form>
                   <Field
                     component={TextField}
                     variant="standard"
-                    name="name"
-                    label={t_i18n('Configuration Name')}
+                    name="path"
+                    label={t_i18n('Attribute/path in token')}
+                    containerstyle={{ marginTop: 12 }}
                     fullWidth
                   />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="label"
-                    label={t_i18n('Login Button Name')}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                  />
+                  <FieldArray name="groups_management">
+                    {({ push, remove, form }) => (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
+                          <Typography variant="h2">Add a new value</Typography>
+                          <IconButton
+                            color="secondary"
+                            aria-label="Add a new value"
+                            size="large"
+                            style={{ marginBottom: 12 }}
+                            onClick={() =>
+                              push({ value: '', auto_create: 'Boolean' })
+                            }
+                          >
+                            <Add fontSize="small" />
+                          </IconButton>
+                        </div>
+                        {form.values.groups_management
+                          && form.values.groups_management.map(
+                            (conf: { value: string; auto_create: string }, index: number) => (
+                              <div
+                                key={index}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  marginBottom: 8,
+                                }}
+                              >
+                                <GroupField
+                                  name="groups"
+                                  label="Groups"
+                                  style={fieldSpacingContainerStyle}
+                                  showConfidence={true}
+                                />
+                                <IconButton
+                                  color="primary"
+                                  aria-label={t_i18n('Delete')}
+                                  style={{ marginTop: 10 }}
+                                  onClick={() => remove(index)} // Delete
+                                >
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                                <Field
+                                  component={SwitchField}
+                                  variant="standard"
+                                  type="checkbox"
+                                  name="auto_create_group"
+                                  label={t_i18n('auto-create group')}
+                                  containerstyle={{ marginTop: 10 }}
+                                />
+                              </div>
+                            ),
+                          )}
+                      </>
+                    )}
+                  </FieldArray>
                   <Field
                     component={SwitchField}
                     variant="standard"
-                    name="enabled"
                     type="checkbox"
-                    label={t_i18n('Enable SAML authentication')}
-                    containerstyle={{ marginLeft: 2, marginTop: 20 }}
+                    name="users_to_groups"
+                    label={t_i18n('Automatically add users to default groups')}
+                    containerstyle={{ marginLeft: 2, marginTop: 30 }}
                   />
-
-                  {selectedStrategy === 'SAML' && (
-                    <SAMLCreation
-                      initialValues={{}}
-                      onSubmit={(samlValues, helpers) =>
-                        onSubmit(samlValues, helpers, values)
-                      }
-                    />
-                  )}
                 </Form>
-              )}
-            </Formik>
-          </>
-        )}
-      </>
+              </Formik>
+            </>
+          )}
+          {currentTab === 2 && (
+            <>
+              <Formik
+                enableReinitialize
+                initialValues={baseInitialValues}
+                validationSchema={validationSchema}
+                onSubmit={() => {}}
+              >
+                <Form>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="path"
+                    label={t_i18n('Attribute/path in token')}
+                    containerstyle={{ marginTop: 12 }}
+                    fullWidth
+                  />
+                  <FieldArray name="organizations_management">
+                    {({ push, remove, form }) => (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', marginTop: 20 }}>
+                          <Typography variant="h2">Add a new value</Typography>
+                          <IconButton
+                            color="secondary"
+                            aria-label="Add a new value"
+                            size="large"
+                            style={{ marginBottom: 12 }}
+                            onClick={() =>
+                              push({ value: '', auto_create: 'Boolean' })
+                            }
+                          >
+                            <Add fontSize="small" />
+                          </IconButton>
+                        </div>
+                        {form.values.organizations_management
+                          && form.values.organizations_management.map(
+                            (conf: { value: string }, index: number) => (
+                              <div
+                                key={index}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-around',
+                                  marginBottom: 8,
+                                }}
+                              >
+                                <ObjectOrganizationField
+                                  outlined={false}
+                                  name="objectOrganization"
+                                  label="Organizations"
+                                  containerstyle={{ width: '100%' }}
+                                  style={fieldSpacingContainerStyle}
+                                  fullWidth
+                                />
+                                <IconButton
+                                  color="primary"
+                                  aria-label={t_i18n('Delete')}
+                                  style={{ marginTop: 10 }}
+                                  onClick={() => remove(index)} // Delete
+                                >
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                              </div>
+                            ),
+                          )}
+                      </>
+                    )}
+                  </FieldArray>
+                </Form>
+              </Formik>
+            </>
+          )}
+        </>
+      )}
     </Drawer>
   );
 };
