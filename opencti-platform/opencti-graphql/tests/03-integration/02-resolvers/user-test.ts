@@ -20,6 +20,8 @@ import {
   USER_CONNECTOR,
   USER_DISINFORMATION_ANALYST,
   USER_EDITOR,
+  USER_SECURITY,
+  USER_EDITOR,
 } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
@@ -749,6 +751,7 @@ describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY });
     const usersEdges = queryResult.data.members.edges as { node: Member }[];
+    expect(usersEdges.map((n) => n.node)).toEqual('test');
     expect(usersEdges.length).toEqual(25);
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(entitiesCounter.Group);
@@ -980,6 +983,18 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data.userEdit.fieldPatch.account_status).toEqual('Inactive');
   });
+  it('should not update user with no organization', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: UPDATE_QUERY,
+      variables: { id: ADMIN_USER.id, input: { key: 'account_status', value: ['Inactive'] } },
+    });
+  });
+  it('should not update user from an other organization', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: UPDATE_QUERY,
+      variables: { id: USER_SECURITY.id, input: { key: 'account_status', value: ['Inactive'] } },
+    });
+  });
   it('should not add organization to user if not admin', async () => {
     platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
@@ -987,6 +1002,15 @@ describe('User has no settings capability and is organization admin query behavi
       variables: {
         id: userInternalId,
         organizationId: platformOrganizationId,
+      },
+    });
+  });
+  it('should not add organization to user if user is not in its own organization', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: ORGANIZATION_ADD_QUERY,
+      variables: {
+        id: ADMIN_USER.id,
+        organizationId: testOrganizationId,
       },
     });
   });

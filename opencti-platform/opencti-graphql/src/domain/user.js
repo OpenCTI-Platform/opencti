@@ -534,7 +534,7 @@ const loadUserToUpdateWithAccessCheck = async (context, user, userId) => {
     // Check in an organization admin edits a user that's not in its administrated organizations
     if (isOnlyOrgaAdmin(user)) {
       const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
-      if (!userToUpdate[RELATION_PARTICIPATE_TO].find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
+      if (!userToUpdate[RELATION_PARTICIPATE_TO]?.find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
         throw ForbiddenAccess();
       }
     } else {
