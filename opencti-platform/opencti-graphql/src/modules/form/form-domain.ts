@@ -32,6 +32,7 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 import { checkObservableSyntax } from '../../utils/syntax';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { convertIdentityClass } from './form-utils';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -371,7 +372,7 @@ const transformSpecialFields = async (
   return transformed;
 };
 
-const completeEntity = (entityType: string, entity: StoreEntity) => {
+export const completeEntity = (entityType: string, entity: StoreEntity) => {
   const finalEntity = entity;
   finalEntity.standard_id = generateStandardId(entityType, entity) as StixId;
   finalEntity.internal_id = uuidv4();
@@ -382,6 +383,7 @@ const completeEntity = (entityType: string, entity: StoreEntity) => {
     if (isEmptyField(finalEntity.modified)) {
       finalEntity.modified = new Date();
     }
+    convertIdentityClass(entityType, entity);
   }
   finalEntity.id = finalEntity.internal_id;
   return finalEntity;
@@ -565,12 +567,12 @@ export const formSubmit = async (
           const field = mainEntityFields[i];
           const fieldValue = values.mainEntityGroups[index][field.name];
           // Convert the field value to the correct type
-          const convertedValue = convertFieldType(fieldValue, field);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
-          mainEntity[field.attributeMapping.attributeName] = convertedValue;
+          mainEntity[field.attributeMapping.attributeName] = convertFieldType(fieldValue, field);
         }
         mainEntity = completeEntity(mainEntityType, mainEntity);
+        console.log('mainEntity', mainEntity);
         if (isStixCyberObservable(mainEntity.entity_type)) {
           if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
             throw FunctionalError('Main entity observable is not correctly formatted', {
@@ -590,8 +592,7 @@ export const formSubmit = async (
           // Auto convert the value
           const observableType = detectObservableType(values.mainEntityParsed[index]);
           const observableValue = values.mainEntityParsed[index];
-          const pattern = await createStixPattern(context, user, observableType, observableValue);
-          mainEntity[schema.mainEntityParseFieldMapping] = pattern;
+          mainEntity[schema.mainEntityParseFieldMapping] = await createStixPattern(context, user, observableType, observableValue);
           mainEntity.pattern_type = 'stix';
           mainEntity.name = observableValue;
           mainEntity.x_opencti_main_observable_type = observableType;
@@ -609,10 +610,9 @@ export const formSubmit = async (
             const fieldValue = values.mainEntityFields[field.attributeMapping.attributeName];
             if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
               // Convert the field value to the correct type
-              const convertedValue = convertFieldType(fieldValue, field);
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
-              mainEntity[field.attributeMapping.attributeName] = convertedValue;
+              mainEntity[field.attributeMapping.attributeName] = convertFieldType(fieldValue, field);
             }
           }
           // Transform special fields after applying all field values
@@ -644,10 +644,9 @@ export const formSubmit = async (
         const field = mainEntityFields[i];
         const fieldValue = values[field.name];
         // Convert the field value to the correct type
-        const convertedValue = convertFieldType(fieldValue, field);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
-        mainEntity[field.attributeMapping.attributeName] = convertedValue;
+        mainEntity[field.attributeMapping.attributeName] = convertFieldType(fieldValue, field);
       }
       // Transform special fields after applying all field values
       mainEntity = await transformSpecialFields(context, user, mainEntity, mainEntityFields, false);
@@ -698,10 +697,9 @@ export const formSubmit = async (
                 const field = additionalEntityFields[i];
                 const fieldValue = values[`additional_${additionalEntity.id}_groups`][index2][field.name];
                 // Convert the field value to the correct type
-                const convertedValue = convertFieldType(fieldValue, field);
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error
-                newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
+                newAdditionalEntity[field.attributeMapping.attributeName] = convertFieldType(fieldValue, field);
               }
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
               if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
@@ -730,8 +728,7 @@ export const formSubmit = async (
                 // Auto convert the value
                 const observableType = detectObservableType(values[`additional_${additionalEntity.id}_parsed`][index2]);
                 const observableValue = values[`additional_${additionalEntity.id}_parsed`][index2];
-                const pattern = await createStixPattern(context, user, observableType, observableValue);
-                newAdditionalEntity[additionalEntity.parseFieldMapping] = pattern;
+                newAdditionalEntity[additionalEntity.parseFieldMapping] = await createStixPattern(context, user, observableType, observableValue);
                 newAdditionalEntity.pattern_type = 'stix';
                 newAdditionalEntity.name = observableValue;
                 newAdditionalEntity.x_opencti_main_observable_type = observableType;
@@ -748,10 +745,9 @@ export const formSubmit = async (
                   const fieldValue = values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
                   if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                     // Convert the field value to the correct type
-                    const convertedValue = convertFieldType(fieldValue, field);
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
-                    newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
+                    newAdditionalEntity[field.attributeMapping.attributeName] = convertFieldType(fieldValue, field);
                   }
                 }
                 // Transform special fields after applying all field values
@@ -803,10 +799,9 @@ export const formSubmit = async (
 
                 if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                   // Convert the field value to the correct type
-                  const convertedValue = convertFieldType(fieldValue, field);
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                   // @ts-expect-error
-                  newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
+                  newAdditionalEntity[field.attributeMapping.attributeName] = convertFieldType(fieldValue, field);
                 }
               }
 
@@ -820,7 +815,6 @@ export const formSubmit = async (
               if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(newAdditionalEntity.context)) {
                 newAdditionalEntity.context = 'form';
               }
-
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
               if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
                 if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
