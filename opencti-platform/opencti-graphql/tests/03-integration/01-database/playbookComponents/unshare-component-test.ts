@@ -327,7 +327,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
         playbookNode: createPlaybookNode([orgToRemove.id!], false),
       });
 
-      expect(result.output_port).toBe('out');
+      expect(result.output_port).toBe('unmodified');
 
       const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
       expect(ext.granted_refs).toBeUndefined();
