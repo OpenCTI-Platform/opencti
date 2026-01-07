@@ -230,14 +230,14 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         <MenuItem onClick={handleOpenUpdate}>
           {t_i18n('Update')}
         </MenuItem>
+        <MenuItem onClick={handleExport}>
+          {t_i18n('Export')}
+        </MenuItem>
         <MenuItem onClick={handleOpenDelete}>
           {t_i18n('Delete')}
         </MenuItem>
         <MenuItem onClick={handleOpenResetState}>
           {t_i18n('Reset state')}
-        </MenuItem>
-        <MenuItem onClick={handleExport}>
-          {t_i18n('Export')}
         </MenuItem>
       </Menu>
       {displayUpdate && queryRef && (
