@@ -414,24 +414,14 @@ const ThemeDark = (
         },
       },
     },
-    // MuiPopover: {
-    //   styleOverrides: {
-    //     paper: {
-    //       backgroundColor: '#070D19',
-    //       backgroundImage: 'none',
-    //       padding: 0,
-    //       minWidth: 180,
-    //     },
-    //   },
-    // },
-    MuiList: {
+    MuiAutocomplete: {
       styleOverrides: {
         root: {
-          '&.left-bar-header': {
-            backgroundColor: '#253348',
-          },
-          '& hr': {
-            backgroundColor: THEME_DARK_DEFAULT_PAPER,
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: '#0D182A',
+            '& fieldset': {
+              borderColor: 'transparent',
+            },
           },
         },
       },

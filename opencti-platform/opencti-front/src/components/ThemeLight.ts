@@ -418,6 +418,18 @@ const ThemeLight = (
         },
       },
     },
+    MuiAutocomplete: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: '#ffffff',
+            '& fieldset': {
+              borderColor: 'transparent',
+            },
+          },
+        },
+      },
+    },
   },
 });
 
