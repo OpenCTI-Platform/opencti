@@ -220,9 +220,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         style={{
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
-          padding: 0,
           borderBottom: draftContext ? `1px solid ${draftModeColor}` : 'initial',
           height: '100%',
+          minHeight: 68,
           paddingLeft: theme.spacing(3),
           paddingRight: theme.spacing(3),
           display: 'flex',
@@ -235,21 +235,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             keyword={keyword}
             variant="topBar"
             placeholder={`${t_i18n('Search the platform')}...`}
-            fullWidth={true}
             isNLQLoading={isNLQLoading}
           />
-          // <div
-          //   style={{ display: 'flex', marginLeft: theme.spacing(3) }}
-          // >
-          //   <SearchInput
-          //     onSubmit={handleSearch}
-          //     keyword={keyword}
-          //     variant="topBar"
-          //     placeholder={`${t_i18n('Search the platform')}...`}
-          //     fullWidth={true}
-          //     isNLQLoading={isNLQLoading}
-          //   />
-          // </div>
         )}
         <div>
           {!!draftContext && (
