@@ -76,8 +76,13 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'last_seen', label: 'Last seen' },
   ]],
   ['Malware', [
+    { attribute: 'malware_types', label: 'Malware types' },
     { attribute: 'first_seen', label: 'First seen' },
     { attribute: 'last_seen', label: 'Last seen' },
+    { attribute: 'is_family', label: 'Is family' },
+    { attribute: 'architecture_execution_envs', label: 'Architecture execution environments' },
+    { attribute: 'implementation_languages', label: 'Implementation languages' },
+    { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ]],
   ['Report', [
     { attribute: 'published', label: 'Report publication date' },
