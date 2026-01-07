@@ -46,7 +46,6 @@ class ChatbotManager {
     }
 
     const chatbot = document.createElement('filigran-chatbot') as FiligranChatbotElement;
-    chatbot.setAttribute('left', String(window.screen.width - 430));
     chatbot.setAttribute('agentic-url', `${APP_BASE_PATH}/chatbot`);
 
     const chatBotTheme = {
@@ -64,6 +63,8 @@ class ChatbotManager {
           height: calc(100% - 65px) !important;
           max-height: inherit !important;
           bottom: 0 !important;
+          left: unset !important;
+          right: 0 !important;
         }
         div[part="bot"] > div > div > div {
           border-radius: 0 !important;
@@ -88,7 +89,7 @@ class ChatbotManager {
         titleBackgroundColor: 'linear-gradient(90deg, #3C108C 0%, #5E1AD5 100%)',
         welcomeMessage: this.t_i18n('Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?'),
         errorMessage: this.t_i18n('Sorry, an error has occurred, please try again later.'),
-        backgroundColor: 'rgba(28, 47, 73, 0.94)',
+        backgroundColor: this.theme.palette.ai.background,
         fontSize: 14,
         starterPromptFontSize: 13,
         clearChatOnReload: false,
@@ -119,7 +120,7 @@ class ChatbotManager {
           time: true,
         },
         footer: {
-          textColor: this.theme.palette.text?.disabled,
+          textColor: this.theme.palette.text?.primary,
           text: this.t_i18n('Powered by'),
           company: 'Filigran XTM One',
           companyLink: 'https://filigran.io',

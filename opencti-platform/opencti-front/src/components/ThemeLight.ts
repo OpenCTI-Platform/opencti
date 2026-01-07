@@ -59,6 +59,7 @@ const ThemeLight = (
       light: '#D6C2FA',
       dark: '#3C108C',
       contrastText: '#000000',
+      background: 'rgba(221, 225, 254, 0.94)',
       text: {
         primary: '#673ab7',
       },
