@@ -155,6 +155,17 @@ const stixCoreObjectsAttributesQuery = graphql`
                 first_seen
                 last_seen
                 description
+                malware_types
+                is_family
+                architecture_execution_envs
+                implementation_languages
+                killChainPhases {
+                    id
+                    entity_type
+                    kill_chain_name
+                    phase_name
+                    x_opencti_order
+                }
             }
             ... on MalwareAnalysis {
                 result_name
