@@ -40,12 +40,17 @@ const EmailTemplateAttributesSidebar = () => {
       width: EMAIL_TEMPLATE_SIDEBAR_WIDTH,
       padding: `${theme.spacing(2)} 0`,
       paddingTop: `calc(${theme.spacing(2)} +  ${settingsMessagesBannerHeight}px)`,
+      zIndex: theme.zIndex.appBar - 1,
     },
   };
 
   return (
     <>
-      <Drawer variant="permanent" anchor="right" sx={paperStyle}>
+      <Drawer 
+        variant="permanent" 
+        anchor="right" 
+        sx={paperStyle}
+      >
         <Toolbar />
         <Alert severity="info" variant="outlined" sx={{ margin: 2, marginTop: 0 }}>
           <Typography variant="body2">
