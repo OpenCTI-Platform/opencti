@@ -1,12 +1,11 @@
-import { FunctionComponent, useEffect, useRef, useState } from 'react';
+import { FunctionComponent, useRef, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
-import { EditOutlined, ExpandLessOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
 import { Field, Formik } from 'formik';
 import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
 import { Stack, Box } from '@mui/material';
 import { NOTE_TYPE, noteCreationUserMutation } from './NoteCreation';
 import { insertNode } from '../../../../utils/store';
@@ -132,29 +131,18 @@ interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
 }
 
 type HeaderProps = {
-  onToggleWrite: () => void;
   id: string;
   data: StixCoreObjectOrStixCoreRelationshipNotesCards_data$data;
 } & Pick<StixCoreObjectOrStixCoreRelationshipNotesCardsProps, 'paginationOptions' | 'title'>;
 
-const Header = ({ title, id, data, paginationOptions, onToggleWrite }: HeaderProps) => {
+const Header = ({ title, id, data, paginationOptions }: HeaderProps) => {
   const actions = (
     <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
-      <Box>
-        <IconButton
-          color="primary"
-          onClick={onToggleWrite}
-          size="small"
-        >
-          <EditOutlined fontSize="small" />
-        </IconButton>
-
-        <AddNotesFunctionalComponent
-          stixCoreObjectOrStixCoreRelationshipId={id}
-          stixCoreObjectOrStixCoreRelationshipNotes={data}
-          paginationOptions={paginationOptions}
-        />
-      </Box>
+      <AddNotesFunctionalComponent
+        stixCoreObjectOrStixCoreRelationshipId={id}
+        stixCoreObjectOrStixCoreRelationshipNotes={data}
+        paginationOptions={paginationOptions}
+      />
     </Security>
   );
 
@@ -163,45 +151,17 @@ const Header = ({ title, id, data, paginationOptions, onToggleWrite }: HeaderPro
       {title}
     </CardTitle>
   );
-  return (
-    <Stack direction="row" flex={1}>
-      <Typography variant="h4">{title}</Typography>
-      <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
-        <Stack direction="row" justifyContent="space-between" flex={1}>
-          <IconButton
-            onClick={onToggleWrite}
-            sx={{
-              marginTop: -0.7,
-              marginLeft: 1,
-            }}
-            variant="tertiary"
-            size="small"
-          >
-            <EditOutlined fontSize="small" />
-          </IconButton>
-
-          <AddNotesFunctionalComponent
-            stixCoreObjectOrStixCoreRelationshipId={id}
-            stixCoreObjectOrStixCoreRelationshipNotes={data}
-            paginationOptions={paginationOptions}
-          />
-        </Stack>
-      </Security>
-    </Stack>
-  );
 };
 
 type NoteFormProps = {
   onSubmit: (values: NoteAddInput, formikHelpers: FormikHelpers<NoteAddInput>) => void;
-  onToggleWrite: () => void;
-  onToggleMore: () => void;
+  onCancel: () => void;
+  onToggleMore: (value: boolean) => void;
 } & Pick<StixCoreObjectOrStixCoreRelationshipNotesCardsProps, 'defaultMarkings'>;
 
-const NoteForm = ({ defaultMarkings, onToggleWrite, onToggleMore, onSubmit }: NoteFormProps) => {
+const NoteForm = ({ defaultMarkings, onCancel, onToggleMore, onSubmit }: NoteFormProps) => {
   const { t_i18n } = useFormatter();
-
   const [more, setMore] = useState<boolean>(false);
-
   const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
 
   const initialValues = useDefaultValues<NoteAddInput>(NOTE_TYPE, {
@@ -230,19 +190,19 @@ const NoteForm = ({ defaultMarkings, onToggleWrite, onToggleMore, onSubmit }: No
   );
 
   const handleToggleMore = () => {
-    setMore(!more);
+    setMore((oldValue) => {
+      const newValue = !oldValue;
+      onToggleMore(newValue);
+      return newValue;
+    });
   };
-
-  useEffect(() => {
-    onToggleMore();
-  }, [more]);
 
   return (
     <Formik<NoteAddInput>
       initialValues={initialValues}
       validationSchema={noteValidator}
       onSubmit={onSubmit}
-      onReset={onToggleWrite}
+      onReset={onCancel}
     >
       {({
         submitForm,
@@ -358,6 +318,7 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
   title,
 }) => {
   const { t_i18n } = useFormatter();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const data = usePreloadedFragment<
     StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
@@ -369,9 +330,6 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
   });
 
   const notes = data?.notes?.edges ?? [];
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const [open, setOpen] = useState<boolean>(false);
 
   const scrollToBottom = () => {
     const element = containerRef.current;
@@ -385,7 +343,7 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
         top: targetPosition,
         behavior: 'smooth',
       });
-    }, 200);
+    }, 300);
   };
 
   const scrollToTop = () => {
@@ -402,16 +360,6 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
         behavior: 'smooth',
       });
     }, 100);
-  };
-
-  useEffect(() => {
-    if (containerRef.current && open) {
-      scrollToBottom();
-    }
-  }, [open]);
-
-  const handleToggleWrite = () => {
-    setOpen(!open);
   };
 
   const handleMore = () => {
@@ -445,25 +393,27 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
       <Header
         data={data}
         id={id}
-        onToggleWrite={handleToggleWrite}
         paginationOptions={paginationOptions}
         title={title}
       />
 
       <Stack spacing={2}>
-        {notes.map(({ node }) => {
-          return (
-            <StixCoreObjectOrStixCoreRelationshipNoteCard
-              key={node.id}
-              data={node}
-              stixCoreObjectOrStixCoreRelationshipId={id}
-              paginationOptions={paginationOptions}
-            />
-          );
-        })}
+        {notes.map(({ node }) => (
+          <StixCoreObjectOrStixCoreRelationshipNoteCard
+            key={node.id}
+            data={node}
+            stixCoreObjectOrStixCoreRelationshipId={id}
+            paginationOptions={paginationOptions}
+          />
+        ))}
 
         <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
           <CardAccordion
+            onStateChange={(open) => {
+              if (containerRef.current && open) {
+                scrollToBottom();
+              }
+            }}
             preview={(
               <Stack direction="row" spacing={1}>
                 <RateReviewOutlined />
@@ -471,12 +421,14 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
               </Stack>
             )}
           >
-            <NoteForm
-              defaultMarkings={defaultMarkings}
-              onToggleWrite={handleToggleWrite}
-              onToggleMore={handleMore}
-              onSubmit={onSubmit}
-            />
+            {({ changeState }) => (
+              <NoteForm
+                defaultMarkings={defaultMarkings}
+                onCancel={() => changeState(false)}
+                onToggleMore={handleMore}
+                onSubmit={onSubmit}
+              />
+            )}
           </CardAccordion>
         </Security>
       </Stack>
