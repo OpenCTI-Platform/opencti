@@ -1,18 +1,17 @@
-import Chip from '@mui/material/Chip';
+import Tag from '@common/tag/Tag';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
-import { NotifierLine_node$key, NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
+import { NotifierLine_node$data, NotifierLine_node$key } from './__generated__/NotifierLine_node.graphql';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import NotifierPopover from './NotifierPopover';
-import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -25,13 +24,24 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 5,
+
+    display: 'flex',
+    alignItems: 'center',
+    minWidth: 0,
+    width: '100%',
+  },
+  bodyItemText: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    minWidth: 0,
   },
   goIcon: {
     position: 'absolute',
@@ -39,10 +49,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
-  },
-  chipInList: {
-    ...chipInListBasicStyle,
-    width: 120,
   },
 }));
 
@@ -73,6 +79,8 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
 }) => {
   const classes = useStyles();
   const data = useFragment(NotifierLineFragment, !isNotifierData(node) ? node : null) ?? node as NotifierLine_node$data;
+
+  console.log('dataColumns.description.width ', dataColumns.description.width);
   return (
     <>
       <ListItem classes={{ root: classes.item }} divider>
@@ -83,18 +91,17 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
           primary={(
             <div>
               <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
-                <Chip
-                  classes={{ root: classes.chipInList }}
-                  color="primary"
-                  variant="outlined"
-                  label={data.notifier_connector.name}
-                />
+                <Tag label={data.notifier_connector.name} />
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
-                {data.name}
+                <span className={classes.bodyItemText}>
+                  {data.name}
+                </span>
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
-                {data.description}
+                <span className={classes.bodyItemText}>
+                  {data.description}
+                </span>
               </div>
             </div>
           )}

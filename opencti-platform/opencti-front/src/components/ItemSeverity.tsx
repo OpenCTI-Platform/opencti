@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
+import { SxProps, useTheme } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import { chipInListBasicStyle } from '../utils/chipStyle';
+import Tag from '@common/tag/Tag';
+import type { Theme } from './Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -80,6 +83,7 @@ const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
   severity,
   variant,
 }) => {
+  const theme = useTheme<Theme>();
   const classes = useStyles();
   let style = classes.chip;
   if (variant === 'inList') {
@@ -89,9 +93,45 @@ const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
     style = classes.chipHigh;
   }
   const classStyle = computeSeverityStyle(severity);
-  return (
-    <Chip classes={{ root: style }} style={classStyle} label={label} />
-  );
+
+  console.log('severity', severity);
+  let severityColor = theme.palette.severity.default;
+  // const computeSeverityStyle = (priority: string | undefined | null) => {
+  switch (severity?.toLowerCase()) {
+    case 'low':
+      severityColor = theme.palette.severity.low;
+      break;
+    case 'medium':
+      severityColor = theme.palette.severity.medium;
+      break;
+      // return inlineStyles.blue;
+    case 'high':
+      severityColor = theme.palette.severity.high;
+      break; // return inlineStyles.orange;
+    case 'critical':
+      severityColor = theme.palette.severity.critical;
+      break;
+      // return inlineStyles.red;
+    default:
+      severityColor = theme.palette.severity.default;
+      break;
+        // return inlineStyles.blueGrey;
+  }
+
+  // return (
+  //   <Chip classes={{ root: style }} style={classStyle} label={label} />
+  // );
+
+  const sxStyle: SxProps = {
+    textTransform: 'lowercase',
+    '& :first-letter': {
+      textTransform: 'uppercase',
+    },
+  };
+
+  return <Tag label={label} color={severityColor} sx={sxStyle} />;
 };
 
+// return (
+//   <Chip classes={{ root: style }} style={classStyle} label={label} />
 export default ItemSeverity;

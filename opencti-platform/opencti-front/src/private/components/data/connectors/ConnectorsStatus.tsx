@@ -60,13 +60,20 @@ const useStyles = makeStyles<Theme>({
     height: 50,
   },
   bodyItem: {
-    height: 20,
+    overflow: 'hidden',
     fontSize: 13,
-    float: 'left',
     whiteSpace: 'nowrap',
+    paddingRight: 10,
+    display: 'flex',
+    alignItems: 'center',
+    minWidth: 0,
+    width: '100%',
+  },
+  bodyItemText: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    whiteSpace: 'nowrap',
+    minWidth: 0,
   },
 });
 
@@ -399,19 +406,22 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                           >
                             <Tooltip title={connector.title} placement="top">
                               <div className={classes.bodyItem}>
-                                {
-                                  connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name
-                                }
+                                <span className={classes.bodyItemText}>
+                                  {
+                                    connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name
+                                  }
+                                </span>
                               </div>
                             </Tooltip>
                             <div className={classes.bodyItem}>
-                              {connectorType}
+                              <span className={classes.bodyItemText}>
+                                {connectorType}
+                              </span>
                             </div>
                             <div className={classes.bodyItem}>
                               <ItemBoolean
                                 label={connector.connectorTriggerStatus.label}
                                 status={connector.connectorTriggerStatus.status}
-                                variant="inList"
                               />
                             </div>
                             <div className={classes.bodyItem}>
@@ -421,7 +431,9 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                               <ConnectorStatusChip connector={connector} />
                             </div>
                             <div className={classes.bodyItem}>
-                              {nsdt(connector.updated_at)}
+                              <span className={classes.bodyItemText}>
+                                {nsdt(connector.updated_at)}
+                              </span>
                             </div>
                             <div className={classes.bodyItem}>
                               <ItemBoolean

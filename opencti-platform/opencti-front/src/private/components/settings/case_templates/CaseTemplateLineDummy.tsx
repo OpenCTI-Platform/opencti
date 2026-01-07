@@ -18,7 +18,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     cursor: 'default',
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',

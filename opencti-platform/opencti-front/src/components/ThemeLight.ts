@@ -91,6 +91,15 @@ const ThemeLight = (
       },
       popoverItem: '#ECECF2',
     },
+    severity: {
+      critical: '#EE3838',
+      high: '#E6700F',
+      medium: '#E1B823',
+      low: '#16AD34',
+      info: '#1565c0',
+      none: '#424242',
+      default: '#1C2F49',
+    },
   },
   typography: {
     fontFamily: '"IBM Plex Sans", sans-serif',

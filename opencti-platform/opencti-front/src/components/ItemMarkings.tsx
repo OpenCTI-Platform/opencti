@@ -1,9 +1,10 @@
 import React from 'react';
 import { useTheme } from '@mui/material/styles';
-import { Tooltip, Chip, Grid, Badge } from '@mui/material';
+import { Tooltip, Chip, Grid, Badge, Stack } from '@mui/material';
 import type { Theme } from './Theme';
 import stopEvent from '../utils/domEvent';
 import EnrichedTooltip from './EnrichedTooltip';
+import Tag from '@common/tag/Tag';
 
 interface Marking {
   id: string;
@@ -94,30 +95,85 @@ const ChipMarking = ({
     return monochromeStyle(color);
   };
 
+  const getColor = () => {
+    let color = markingDefinition.x_opencti_color;
+
+    if (color) return color;
+
+    switch (markingDefinition.definition) {
+      case 'CD':
+      case 'CD-SF':
+      case 'DR':
+      case 'DR-SF':
+      case 'TLP:RED':
+      case 'PAP:RED':
+        color = theme.palette.severity.critical; // '#c62828';
+        break;
+      case 'TLP:AMBER':
+      case 'TLP:AMBER+STRICT':
+      case 'PAP:AMBER':
+        color = theme.palette.severity.high; // '#d84315';
+        break;
+      case 'NP':
+      case 'TLP:GREEN':
+      case 'PAP:GREEN':
+        color = theme.palette.severity.low; // '#2e7d32';
+        break;
+      case 'SF':
+        color = theme.palette.severity.info; // '#283593';
+        break;
+      case 'NONE':
+        color = undefined;
+        break;
+      default:
+        color = theme.palette.severity.none; // '#ffffff';
+    }
+
+    return color;
+    // return monochromeStyle(color);
+  };
+
   let width: number | string = variant === 'inList' ? 90 : 120;
   if (isInTooltip) width = '100%';
 
+  // return (
+  //   <Tooltip title={withTooltip ? markingDefinition.definition : undefined}>
+  //     <Chip
+  //       label={markingDefinition.definition}
+  //       style={{
+  //         fontSize: 12,
+  //         lineHeight: '12px',
+  //         borderRadius: 4,
+  //         marginRight: 7,
+  //         marginBottom: variant === 'inList' ? 0 : 7,
+  //         height: variant === 'inList' ? 20 : 25,
+  //         cursor: onClick ? 'pointer' : 'default',
+  //         width,
+  //         ...getStyle(),
+  //       }}
+  //       onClick={(e) => {
+  //         stopEvent(e);
+  //         onClick?.(markingDefinition);
+  //       }}
+  //     />
+  //   </Tooltip>
+
+  // );
+
+  const itemMarkingColor = getColor();
+  const hasClickCallback = onClick !== undefined;
+
   return (
-    <Tooltip title={withTooltip ? markingDefinition.definition : undefined}>
-      <Chip
-        label={markingDefinition.definition}
-        style={{
-          fontSize: 12,
-          lineHeight: '12px',
-          borderRadius: 4,
-          marginRight: 7,
-          marginBottom: variant === 'inList' ? 0 : 7,
-          height: variant === 'inList' ? 20 : 25,
-          cursor: onClick ? 'pointer' : 'default',
-          width,
-          ...getStyle(),
-        }}
-        onClick={(e) => {
+    <Tag
+      label={markingDefinition.definition || 'no definition ??'}
+      {...itemMarkingColor && { color: itemMarkingColor }}
+      {...hasClickCallback && {
+        onClick: (e) => {
           stopEvent(e);
           onClick?.(markingDefinition);
-        }}
-      />
-    </Tooltip>
+        },
+      }}
+    />
   );
 };
 
@@ -128,6 +184,26 @@ const ItemMarkings = ({
   onClick,
 }: ItemMarkingsProps) => {
   const markings = markingDefinitions ?? [];
+
+  if (!limit || markings.length <= 1) {
+    if (markings.length === 0) {
+      return (
+        <ChipMarking markingDefinition={{ definition: 'NONE', id: 'NONE' }} />
+      );
+    }
+
+    return (
+      <Stack direction="row" gap={1} flexWrap="wrap">
+        {markings.map((markingDefinition) => (
+          <ChipMarking
+            key={markingDefinition.id}
+            markingDefinition={markingDefinition}
+            onClick={onClick}
+          />
+        ))}
+      </Stack>
+    );
+  }
 
   if (!limit || markings.length <= 1) {
     return (
@@ -152,6 +228,7 @@ const ItemMarkings = ({
       </span>
     );
   }
+
   return (
     <EnrichedTooltip
       placement="bottom"

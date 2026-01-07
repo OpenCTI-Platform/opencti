@@ -1,14 +1,13 @@
-import Chip from '@mui/material/Chip';
-import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
-import { itemColor } from '../utils/Colors';
-import { useFormatter } from './i18n';
-import ThemeLight from './ThemeLight';
-import ThemeDark from './ThemeDark';
-import ItemIcon from './ItemIcon';
+import makeStyles from '@mui/styles/makeStyles';
+import React, { FunctionComponent } from 'react';
 import { chipInListBasicStyle } from '../utils/chipStyle';
+import { itemColor } from '../utils/Colors';
+import Tag from './common/tag/Tag';
+import { useFormatter } from './i18n';
+import ItemIcon from './ItemIcon';
+import ThemeDark from './ThemeDark';
+import ThemeLight from './ThemeLight';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -84,38 +83,30 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
       width,
     };
   };
+
   const getIcon = () => {
     if (showIcon && !isRelationship) {
       return (
         <ItemIcon
-          variant="inline"
           type={isRestricted ? 'Restricted' : entityType}
+          size="small"
         />
       );
     }
     return null;
   };
+
   const getLabel = () => {
     if (isRestricted) return t_i18n('Restricted');
     return t_i18n(isRelationship ? `relationship_${entityType}` : `entity_${entityType}`);
   };
 
   return (
-    <Tooltip title={getLabel()}>
-      <Chip
-        classes={{ root: rootStyle }}
-        style={{
-          ...getStyle(),
-          ...style,
-        }}
-        label={(
-          <>
-            {getIcon()}
-            {getLabel()}
-          </>
-        )}
-      />
-    </Tooltip>
+    <Tag
+      label={getLabel()}
+      icon={getIcon() ?? undefined}
+      color={isRestricted ? itemColor('Restricted') : itemColor(entityType)}
+    />
   );
 };
 

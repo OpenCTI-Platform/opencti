@@ -25,6 +25,7 @@ import { filterValuesContentQuery } from '../../../components/FilterValuesConten
 import { GqlFilterGroup, removeIdFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
+import Tag from '@common/tag/Tag';
 
 interface PirFiltersDisplayComponentProps extends PropsWithChildren {
   size?: ChipProps['size'];
@@ -78,9 +79,7 @@ const PirCriteriaDisplayComponent = ({
             }}
           >
             {children ? <div>{children}</div> : (
-              <Chip
-                size={size}
-                sx={{ textTransform: 'capitalize', borderRadius: 1, whiteSpace: 'wrap' }}
+              <Tag
                 label={full ? fullTargetsStr : shortTargetsStr}
               />
             )}

@@ -34,7 +34,7 @@ const styles = (theme) => ({
     textTransform: 'uppercase',
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',

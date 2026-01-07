@@ -5,6 +5,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { useLevel } from '../utils/hooks/useScale';
 import { hexToRGB } from '../utils/Colors';
 import { chipInListBasicStyle } from '../utils/chipStyle';
+import Tag from '@common/tag/Tag';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -19,11 +20,6 @@ const useStyles = makeStyles(() => ({
     ...chipInListBasicStyle,
     width: 80,
   },
-  label: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
 }));
 
 interface ItemConfidenceProps {
@@ -36,18 +32,12 @@ const ItemConfidence: FunctionComponent<ItemConfidenceProps> = ({ confidence, va
   const classes = useStyles();
   const { level: confidenceLevel } = useLevel(entityType, 'confidence', confidence);
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
+
   return (
-    <Tooltip title={confidenceLevel.label}>
-      <Chip
-        classes={{ root: style, label: classes.label }}
-        style={{
-          color: confidenceLevel.color,
-          borderColor: confidenceLevel.color,
-          backgroundColor: hexToRGB(confidenceLevel.color),
-        }}
-        label={confidenceLevel.label}
-      />
-    </Tooltip>
+    <Tag
+      label={confidenceLevel.label}
+      color={confidenceLevel.color}
+    />
   );
 };
 

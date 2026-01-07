@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/material/styles';
 import { chipInListBasicStyle } from '../utils/chipStyle';
+import type { Theme } from './Theme';
+import Tag from '@common/tag/Tag';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -71,10 +74,33 @@ const ItemPriority: FunctionComponent<ItemPriorityProps> = ({
   priority,
   variant,
 }) => {
+  const theme = useTheme<Theme>();
   const classes = useStyles();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   const classStyle = computePriorityStyle(priority);
-  return <Chip classes={{ root: style }} style={classStyle} label={label} />;
+
+  let priorityColor = theme.palette.severity.info;
+  switch (priority) {
+    case 'P4':
+      priorityColor = theme.palette.severity.low; //  inlineStyles.green;
+      break;
+    case 'P3':
+      priorityColor = theme.palette.severity.medium; // inlineStyles.blue;
+      break;
+    case 'P2':
+      priorityColor = theme.palette.severity.high; // inlineStyles.orange;
+      break;
+    case 'P1':
+      priorityColor = theme.palette.severity.critical; // nlineStyles.red;
+      break;
+    default:
+      priorityColor = theme.palette.severity.default; // inlineStyles.blueGrey;
+      break;
+  }
+
+  return <Tag label={label} color={priorityColor} />;
+
+  // return <Chip classes={{ root: style }} style={classStyle} label={label} />;
 };
 
 export default ItemPriority;

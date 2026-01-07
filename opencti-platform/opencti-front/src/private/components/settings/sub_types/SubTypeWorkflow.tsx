@@ -21,7 +21,7 @@ import { StatusScopeEnum } from '../../../../utils/statusConstants';
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',

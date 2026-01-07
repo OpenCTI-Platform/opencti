@@ -27,7 +27,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.grey?.[700],
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',

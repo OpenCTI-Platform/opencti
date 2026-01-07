@@ -33,6 +33,7 @@ import { APP_BASE_PATH } from '../../relay/environment';
 import FieldOrEmpty from '../FieldOrEmpty';
 import ItemHistory from '../ItemHistory';
 import { useFormatter } from '../i18n';
+import Tag from '../common/tag/Tag';
 
 const chipStyle: CSSProperties = {
   fontSize: '12px',
@@ -71,24 +72,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 20,
     textTransform: 'uppercase',
     borderRadius: 4,
-  },
-  positive: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-    textTransform: 'uppercase',
-    borderRadius: '0',
-  },
-  negative: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-    textTransform: 'uppercase',
-    borderRadius: '0',
   },
 }));
 
@@ -247,14 +230,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ context }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={context}
-        />
+        <Tag label={context} />
       );
     },
   },
@@ -543,6 +520,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ from }) => {
       if (!from) return '-';
       const { objectLabel } = from;
+      console.log('objectLabel', objectLabel);
       return (
         <StixCoreObjectLabels
           variant="inList"
@@ -584,12 +562,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 9,
     isSortable: true,
     render: ({ incident_type }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
+        <Tag
           label={incident_type || t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
@@ -606,12 +580,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 9,
     isSortable: true,
     render: ({ information_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
+        <Tag
           label={information_types?.at(0) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
@@ -628,12 +598,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: true,
     render: ({ infrastructure_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
+        <Tag
           label={infrastructure_types?.at(0) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
@@ -741,12 +707,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ note_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
+        <Tag
           label={note_types?.at(0) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
@@ -922,12 +884,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ pir_type }: Pirs_PirFragment$data) => {
       const { t_i18n } = useFormatter();
       return (
-        <Chip
-          style={chipStyle}
-          color="primary"
-          variant="outlined"
-          label={t_i18n(pir_type)}
-        />
+        <Tag label={t_i18n(pir_type)} />
       );
     },
   },
@@ -990,21 +947,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 7,
     isSortable: true,
     render: ({ relationship_type }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Tooltip title={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}>
-          <Chip
-            classes={{ root: classes.chipInList }}
-            color="primary"
-            variant="outlined"
-            label={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleAddFilter('relationship_type', relationship_type ?? null, 'eq');
-            }}
-          />
-        </Tooltip>
+        <Tag
+          label={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('relationship_type', relationship_type ?? null, 'eq');
+          }}
+        />
       );
     },
   },
@@ -1014,12 +965,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ report_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
+        <Tag
           label={report_types?.at(0) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
@@ -1371,19 +1318,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: true,
     render: ({ x_opencti_negative }, { t_i18n }) => {
-      const classes = useStyles();
+      const theme = useTheme<Theme>();
       return (
-        <Chip
-          classes={{
-            root: x_opencti_negative
-              ? classes.negative
-              : classes.positive,
-          }}
+        <Tag
           label={
             x_opencti_negative
               ? t_i18n('False positive')
               : t_i18n('True positive')
           }
+          color={x_opencti_negative ? theme.palette.severity.low : theme.palette.severity.critical}
         />
       );
     },
