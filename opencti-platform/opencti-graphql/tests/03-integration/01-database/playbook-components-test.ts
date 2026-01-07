@@ -150,6 +150,8 @@ describe('playbook container wrapper component', () => {
       configuration: {
         container_type: 'Case-Incident',
         all: false,
+        excludeMainElement: false,
+        copyFiles: false,
         newContainer: false,
         caseTemplates: [],
       },

@@ -454,6 +454,8 @@ interface ContainerWrapperConfiguration {
   container_type: string;
   caseTemplates: { label: string; value: string }[];
   all: boolean;
+  excludeMainElement: boolean;
+  copyFiles: boolean;
   newContainer: boolean;
 }
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapperConfiguration> = {
@@ -468,6 +470,8 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapp
       items: { type: 'string', oneOf: [] },
     },
     all: { type: 'boolean', $ref: 'Wrap all elements included in the bundle', default: false },
+    excludeMainElement: { type: 'boolean', $ref: 'Exclude main element from container', default: false },
+    copyFiles: { type: 'boolean', $ref: 'Copy files from main element to the container', default: false },
     newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false },
   },
   required: ['container_type'],
@@ -535,7 +539,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { container_type, all, newContainer, caseTemplates } = playbookNode.configuration;
+    const { container_type, all, excludeMainElement, copyFiles, newContainer, caseTemplates } = playbookNode.configuration;
     if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
       throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
     }
@@ -570,7 +574,12 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       const container = convertStoreToStix_2_1(storeContainer) as StixReport | StixCaseIncident;
       // add all objects in the container if requested in the playbook config
       if (all) {
-        container.object_refs = bundle.objects.map((o: StixObject) => o.id);
+        // If excludeMainElement is true and all is true, exclude the main element from the container
+        if (excludeMainElement) {
+          container.object_refs = bundle.objects.filter((o: StixObject) => o.id !== baseData.id).map((o: StixObject) => o.id);
+        } else {
+          container.object_refs = bundle.objects.map((o: StixObject) => o.id);
+        }
       } else {
         container.object_refs = [baseData.id];
       }
@@ -603,6 +612,10 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       // if the base instance is an incident and we wrap into an Incident Case, we set the same severity
       if ((<StixIncident>baseData).severity && container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
+      }
+      // Copy files from the main element to the container if requested
+      if (copyFiles && baseData.extensions[STIX_EXT_OCTI].files && baseData.extensions[STIX_EXT_OCTI].files.length > 0) {
+        container.extensions[STIX_EXT_OCTI].files = baseData.extensions[STIX_EXT_OCTI].files;
       }
       if (STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
         const tasks = await addTaskFromCaseTemplates(caseTemplates, (container as StixContainer));
