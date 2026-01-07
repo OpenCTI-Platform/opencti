@@ -1,0 +1,41 @@
+{
+  "name": "opencti-schema-viz",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "homepage": "https://OpenCTI-Platform.github.io/opencti-schema/",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "generate": "npx tsx scripts/generate-graph.ts",
+    "check-ts": "tsc --noEmit",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist -e opencti-schema --add -m \"Auto-deploy: Update OpenCTI Schema Viz\""
+  },
+  "dependencies": {
+    "dagre": "^0.8.5",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "reactflow": "^11.11.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/dagre": "^0.7.53",
+    "@types/gh-pages": "^6",
+    "@types/node": "^25.0.3",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "eslint": "^9.39.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "gh-pages": "6.3.0",
+    "globals": "^17.0.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.51.0",
+    "vite": "^7.2.7"
+  },
+  "packageManager": "yarn@4.12.0+sha512.f45ab632439a67f8bc759bf32ead036a1f413287b9042726b7cc4818b7b49e14e9423ba49b18f9e06ea4941c1ad062385b1d8760a8d5091a1a31e5f6219afca8"
+}
