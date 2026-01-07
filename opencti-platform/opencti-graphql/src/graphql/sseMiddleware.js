@@ -53,7 +53,6 @@ const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
 const DEFAULT_LIVE_STREAM = 'live';
 const ONE_HOUR = 1000 * 60 * 60;
-const DEFAULT_SOCKET_BUFFER = 65536;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
@@ -254,8 +253,34 @@ const createSseMiddleware = () => {
     broadcastClients[client.id] = client;
     await client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
   };
+
   const createSseChannel = (req, res, startId) => {
     let lastEventId = startId;
+
+    const buildMessage = (eventId, topic, event) => {
+      let message = '';
+      if (eventId) {
+        message += `id: ${eventId}\n`;
+      }
+      if (topic) {
+        message += `event: ${topic}\n`;
+      }
+      if (event) {
+        message += 'data: ';
+        const isDataTopic = eventId && topic !== 'heartbeat';
+        if (isDataTopic && req.user && !isUserHasCapability(req.user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+          const filtered = { ...event };
+          delete filtered.data.extensions[STIX_EXT_OCTI].granted_refs;
+          message += JSON.stringify(filtered);
+        } else {
+          message += JSON.stringify(event);
+        }
+        message += '\n';
+      }
+      message += '\n';
+      return message;
+    };
+
     const channel = {
       id: generateInternalId(),
       delay: parseInt(extractQueryParameter(req, 'delay') || req.headers['event-delay'] || 0, 10),
@@ -276,45 +301,13 @@ const createSseMiddleware = () => {
         if (res.finished || !res.writable) {
           return;
         }
-        // region build message
-        let message = '';
-        if (eventId) {
-          lastEventId = eventId;
-          message += `id: ${eventId}\n`;
+        lastEventId = eventId || lastEventId;
+        const message = buildMessage(eventId, topic, event);
+        if (!res.write(message)) {
+          logApp.debug('[STREAM] Buffer draining', { buffer: res.writableLength, limit: res.writableHighWaterMark });
+          await once(res, 'drain');
         }
-        if (topic) {
-          message += `event: ${topic}\n`;
-        }
-        if (event) {
-          message += 'data: ';
-          const isDataTopic = eventId && topic !== 'heartbeat';
-          if (isDataTopic && req.user && !isUserHasCapability(req.user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-            const filtered = { ...event };
-            delete filtered.data.extensions[STIX_EXT_OCTI].granted_refs;
-            message += JSON.stringify(filtered);
-          } else {
-            message += JSON.stringify(event);
-          }
-          message += '\n';
-        }
-        message += '\n';
-        // endregion
-        // Send a message to socket by chunk
-        // It's necessary to chuck to prevent any oversized buffer
-        const messageBuffer = Buffer.from(message, 'utf-8');
-        const chunkSize = res.writableHighWaterMark || DEFAULT_SOCKET_BUFFER;
-        let offset = 0;
-        while (offset < messageBuffer.length) {
-          const end = Math.min(offset + chunkSize, messageBuffer.length);
-          const chunk = messageBuffer.subarray(offset, end);
-          if (!res.write(chunk)) {
-            logApp.debug('[STREAM] Buffer draining', { buffer: res.writableLength, limit: res.writableHighWaterMark });
-            await once(res, 'drain');
-          }
-          res.flush();
-          offset += chunkSize;
-        }
-        // endregion
+        res.flush();
       },
       close: () => {
         logApp.info('[STREAM] Closing SSE channel', { clientId: channel.userId });
