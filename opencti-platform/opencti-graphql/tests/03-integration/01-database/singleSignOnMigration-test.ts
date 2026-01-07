@@ -61,7 +61,7 @@ describe('Migration of SSO environment test coverage', () => {
             saml_callback_url: 'http://localhost:2000/auth/saml/callback',
             cert: 'totallyFakeCert3',
             acceptedClockSkewMs: 5,
-            // TODO ARRAY xmlSignatureTransforms: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/2001/10/xml-exc-c14n#'],
+            xmlSignatureTransforms: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/2001/10/xml-exc-c14n#'],
             want_assertions_signed: true,
           },
         },
@@ -81,7 +81,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'callbackUrl', type: 'string', value: 'http://localhost:2000/auth/saml/callback' },
         { key: 'idpCert', type: 'string', value: 'totallyFakeCert3' },
         { key: 'acceptedClockSkewMs', type: 'number', value: '5' },
-        // TODO { key: 'xmlSignatureTransforms', type: 'array', value: '[\'http://www.w3.org/2000/09/xmldsig#enveloped-signature\', \'http://www.w3.org/2001/10/xml-exc-c14n#\']' },
+        { key: 'xmlSignatureTransforms', type: 'array', value: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/2001/10/xml-exc-c14n#'] },
         { key: 'wantAssertionsSigned', type: 'boolean', value: 'true' },
       ]);
     });
@@ -98,7 +98,7 @@ describe('Migration of SSO environment test coverage', () => {
             saml_callback_url: 'http://localhost:3000/auth/saml/callback',
             cert: 'totallyFakeCertGroups',
             groups_management: {
-              groups_attributes: ['samlgroup1', 'samlgroup2'],
+              group_attributes: ['samlgroup1', 'samlgroup2'],
               groups_path: ['groups'],
               groups_mapping: ['group1:Administrators', 'group2:Connectors'],
             },
@@ -134,7 +134,7 @@ describe('Migration of SSO environment test coverage', () => {
       ]);
 
       expect(groupManagementSAMLConfiguration.groups_management).toStrictEqual({
-        groups_attributes: ['samlgroup1', 'samlgroup2'],
+        group_attributes: ['samlgroup1', 'samlgroup2'],
         groups_path: ['groups'],
         groups_mapping: ['group1:Administrators', 'group2:Connectors'],
       });
@@ -152,21 +152,133 @@ describe('Migration of SSO environment test coverage', () => {
       ]);
 
       expect(groupManagementEmptyConfiguration.groups_management).toStrictEqual({
-        groups_attributes: ['groups'],
+        group_attributes: ['groups'],
         groups_mapping: [],
       });
     });
 
-    it.todo('should SAML with deprecated role mapping configuration works', async () => {
-      // TODO
+    it('should SAML with deprecated role mapping configuration works', async () => {
+      const configuration = {
+        saml: {
+          identifier: 'saml',
+          strategy: 'SamlStrategy',
+          config: {
+            issuer: 'openctisaml',
+            entry_point: 'http://localhost:9999/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:4000/auth/saml/callback',
+            cert: 'totallyFakeCert',
+            roles_management: {
+              roles_attributes: ['role1', 'role2'],
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const deprecatedSamlConfiguration = result[0];
+
+      expect(deprecatedSamlConfiguration.strategy).toBe('SamlStrategy');
+      expect(deprecatedSamlConfiguration.name).toMatch(/saml-*/);
+      expect(deprecatedSamlConfiguration.label).toBe('saml');
+      expect(deprecatedSamlConfiguration.enabled).toBeTruthy();
+      expect(deprecatedSamlConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCert' },
+      ]);
     });
 
-    it.todo('should SAML with several SAML config works', async () => {
-      // TODO
+    it('should SAML with several SAML config works', async () => {
+      const configuration = {
+        saml_1: {
+          identifier: 'saml_1',
+          strategy: 'SamlStrategy',
+          config: {
+            issuer: 'openctisaml',
+            entry_point: 'http://localhost:9999/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:4000/auth/saml/callback',
+            cert: 'totallyFakeCert',
+          },
+        },
+        saml_2: {
+          identifier: 'saml_2',
+          strategy: 'SamlStrategy',
+          config: {
+            issuer: 'openctisaml',
+            entry_point: 'http://localhost:9999/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:4000/auth/saml/callback',
+            cert: 'totallyFakeCert2',
+          },
+        },
+      };
+
+      const multiSamlConfigurations = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      expect(multiSamlConfigurations[0].strategy).toBe('SamlStrategy');
+      expect(multiSamlConfigurations[0].name).toMatch(/saml_1-*/);
+      expect(multiSamlConfigurations[0].label).toBe('saml_1');
+      expect(multiSamlConfigurations[0].enabled).toBeTruthy();
+      expect(multiSamlConfigurations[0].configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCert' },
+      ]);
+      expect(multiSamlConfigurations[1].strategy).toBe('SamlStrategy');
+      expect(multiSamlConfigurations[1].name).toMatch(/saml_2-*/);
+      expect(multiSamlConfigurations[1].label).toBe('saml_2');
+      expect(multiSamlConfigurations[1].enabled).toBeTruthy();
+      expect(multiSamlConfigurations[1].configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCert2' },
+      ]);
     });
 
-    it.todo('should SAML with default values works', async () => {
-      // TODO
+    it('should SAML with default values works', async () => {
+      const configuration = {
+        saml_default: {
+          identifier: 'saml_default',
+          strategy: 'SamlStrategy',
+          config: {
+            label: 'My test SAML with default values',
+            issuer: 'openctisaml_default',
+            entry_point: 'http://localhost:8888/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:3000/auth/saml/callback',
+            cert: 'totallyFakeCertGroups',
+            groups_management: {
+            },
+            organizations_management: {
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      console.log(result);
+      const defaultValuesConfiguration = result[0];
+      expect(defaultValuesConfiguration.strategy).toBe('SamlStrategy');
+      expect(defaultValuesConfiguration.name).toMatch(/My test SAML with default values*/);
+      expect(defaultValuesConfiguration.label).toBe('My test SAML with default values');
+      expect(defaultValuesConfiguration.enabled).toBeTruthy();
+      expect(defaultValuesConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+      ]);
+
+      expect(defaultValuesConfiguration.groups_management).toStrictEqual({
+        group_attributes: ['groups'],
+        groups_mapping: [],
+      });
+      expect(defaultValuesConfiguration.organizations_management).toStrictEqual({
+        organizations_mapping: [],
+        organizations_path: ['organizations'],
+      });
     });
 
     it('should OpenID configuration works', async () => {
