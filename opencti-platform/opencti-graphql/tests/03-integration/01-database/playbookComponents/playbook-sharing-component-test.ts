@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, type MockInstance } from 'vitest';
+import { describe, expect, it, vi, afterEach, beforeEach, type MockInstance } from 'vitest';
 import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
 import type { BasicStoreObject } from '../../../../src/types/store';
 import type { StixId } from '../../../../src/types/stix-2-0-common';
@@ -163,6 +163,10 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
     vi.clearAllMocks();
     vi.spyOn(access, 'executionContext').mockReturnValue({} as any);
     internalFindByIdsSpy = vi.spyOn(middlewareLoader, 'internalFindByIds');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   describe('when organizations array is empty or not found', () => {
