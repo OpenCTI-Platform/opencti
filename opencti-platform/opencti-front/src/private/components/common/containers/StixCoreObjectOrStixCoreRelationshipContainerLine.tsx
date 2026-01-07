@@ -126,7 +126,6 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
             >
               <ItemStatus
                 status={node.status}
-                variant="inList"
                 disabled={!node.workflowEnabled}
               />
             </div>

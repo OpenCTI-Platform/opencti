@@ -11,7 +11,7 @@ import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFra
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
-import { DataTableProps, DataTableVariant } from './dataTableTypes';
+import { DataTableProps } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
 import ItemStatus from '../ItemStatus';
 import { emptyFilled } from '../../utils/String';
@@ -868,7 +868,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Pattern type',
     percentWidth: 10,
     isSortable: true,
-    render: ({ pattern_type }) => (<ItemPatternType variant="inList" label={pattern_type} />),
+    render: ({ pattern_type }) => (<ItemPatternType label={pattern_type} />),
   },
   phase_name: {
     id: 'phase_name',
@@ -1429,10 +1429,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Status',
     percentWidth: 8,
     isSortable: true,
-    render: ({ status, workflowEnabled }, { variant, storageHelpers: { handleAddFilter } }) => (
+    render: ({ status, workflowEnabled }, { storageHelpers: { handleAddFilter } }) => (
       <ItemStatus
         status={status}
-        variant={variant === DataTableVariant.default ? 'inList' : 'inLine'}
         disabled={!workflowEnabled}
         onClick={handleAddFilter}
       />

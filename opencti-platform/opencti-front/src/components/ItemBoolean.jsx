@@ -1,7 +1,6 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
-import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import { compose } from 'ramda';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -55,63 +54,22 @@ const styles = () => ({
   },
 });
 
-const computeInlineStyles = (theme) => ({
-  green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-  },
-  red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-  },
-  blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
-  },
-  ee: {
-    backgroundColor: theme.palette.ee.lightBackground,
-    color: theme.palette.ee.main,
-  },
-});
-
 const renderChip = (props) => {
-  const { classes, label, neutralLabel, status, variant, t, reverse } = props;
+  const { label, neutralLabel, status, t, reverse } = props;
   const theme = useTheme();
-  let style = classes.chip;
-  if (variant === 'inList') {
-    style = classes.chipInList;
-  } else if (variant === 'large') {
-    style = classes.chipLarge;
-  } else if (variant === 'xlarge') {
-    style = classes.chipxLarge;
-  } else if (variant === 'high') {
-    style = classes.chipHigh;
-  }
-  const inlineStyles = computeInlineStyles(theme);
+
   if (status === true) {
     return (
       <Tag label={label} color={reverse ? '#f44336' : '#4caf50'} />
     );
-    // return (
-    //   <Chip
-    //     classes={{ root: style }}
-    //     style={reverse ? inlineStyles.red : inlineStyles.green}
-    //     label={label}
-    //   />
-    // );
   }
+
   if (status === null) {
     return (
       <Tag label={neutralLabel || t('Not applicable')} />
     );
-    // return (
-    //   <Chip
-    //     classes={{ root: style }}
-    //     style={inlineStyles.blue}
-    //     label={neutralLabel || t('Not applicable')}
-    //   />
-    // );
   }
+
   if (status === 'ee') {
     return (
       <Tag
@@ -119,27 +77,14 @@ const renderChip = (props) => {
         color={theme.palette.ee.lightBackground}
       />
     );
-    // return (
-    //   <Chip
-    //     classes={{ root: style }}
-    //     style={inlineStyles.ee}
-    //     label={neutralLabel || t('EE')}
-    //   />
-    // );
   }
+
   if (status === undefined) {
     return (
       <Tag
         label={<CircularProgress size={10} color="primary" />}
       />
     );
-    // return (
-    //   <Chip
-    //     classes={{ root: style }}
-    //     style={inlineStyles.blue}
-    //     label={<CircularProgress size={10} color="primary" />}
-    //   />
-    // );
   }
 
   return (
@@ -148,13 +93,6 @@ const renderChip = (props) => {
       color={reverse ? '#4caf50' : '#f44336'}
     />
   );
-  // return (
-  //   <Chip
-  //     classes={{ root: style }}
-  //     style={reverse ? inlineStyles.green : inlineStyles.red}
-  //     label={label}
-  //   />
-  // );
 };
 const ItemBoolean = (props) => {
   const { tooltip } = props;

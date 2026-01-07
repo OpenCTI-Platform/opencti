@@ -125,7 +125,6 @@ export const tasksDataColumns: DataColumns = {
     render: (task: TasksLine_node$data) => (
       <ItemStatus
         status={task.status}
-        variant="inList"
         disabled={!task.workflowEnabled}
       />
     ),
