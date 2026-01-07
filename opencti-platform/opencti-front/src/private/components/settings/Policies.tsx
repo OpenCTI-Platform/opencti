@@ -253,7 +253,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             </DialogContent>
                             <DialogActions>
                               <Button
-                                variant="secondary"
+                                variant="outlined"
                                 onClick={() => {
                                   setFieldValue('platform_organization', platformOrganization);
                                   setOpenPlatformOrganizationChanges(false);

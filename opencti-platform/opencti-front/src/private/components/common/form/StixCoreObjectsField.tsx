@@ -577,11 +577,11 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
         endAdornment={(
           <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
             {!disableCreation && (
-              <IconButton onClick={handleOpenCreation} size="small" edge="end" disabled={disabled} title={t_i18n('Create')}>
+              <IconButton onClick={handleOpenCreation} size="small" disabled={disabled} title={t_i18n('Create')}>
                 <Add fontSize="small" color="primary" />
               </IconButton>
             )}
-            <IconButton onClick={handleOpenSearchScope} size="small" edge="end" disabled={disabled}>
+            <IconButton onClick={handleOpenSearchScope} size="small" disabled={disabled}>
               <PaletteOutlined
                 fontSize="small"
                 color={searchScope[name] && searchScope[name].length > 0 ? 'secondary' : 'primary'}
