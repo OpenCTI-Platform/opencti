@@ -238,6 +238,7 @@ interface StixCoreObjectsFieldProps {
   label?: string;
   disabled?: boolean;
   types?: string[] | null;
+  disableCreation?: boolean;
 }
 
 interface CreatedEntity {
@@ -259,6 +260,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   label,
   disabled = false,
   types = null,
+  disableCreation = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -303,12 +305,12 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   }, [types, searchScope, name]);
 
   const shouldShowCreateOption = useCallback((resultsCount: number) => {
-    if (disabled) return false;
+    if (disabled || disableCreation) return false;
     if (resultsCount >= 10) return false;
     const targetTypes = getTargetTypes();
     if (targetTypes.length === 0) return true;
     return targetTypes.some((t) => isDomainObjectType(t) || isObservableType(t));
-  }, [disabled, getTargetTypes, isDomainObjectType, isObservableType]);
+  }, [disabled, disableCreation, getTargetTypes, isDomainObjectType, isObservableType]);
 
   const getCreationType = useCallback(() => {
     const targetTypes = getTargetTypes();
@@ -574,9 +576,11 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
         }}
         endAdornment={(
           <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
-            <IconButton onClick={handleOpenCreation} size="small" edge="end" disabled={disabled} title={t_i18n('Create')}>
-              <Add fontSize="small" color="primary" />
-            </IconButton>
+            {!disableCreation && (
+              <IconButton onClick={handleOpenCreation} size="small" edge="end" disabled={disabled} title={t_i18n('Create')}>
+                <Add fontSize="small" color="primary" />
+              </IconButton>
+            )}
             <IconButton onClick={handleOpenSearchScope} size="small" edge="end" disabled={disabled}>
               <PaletteOutlined
                 fontSize="small"

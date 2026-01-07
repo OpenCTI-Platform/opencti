@@ -436,6 +436,7 @@ export const convertFormBuilderDataToSchema = (
     allowDraftOverride: values.allowDraftOverride,
     mainEntityMultiple: values.mainEntityMultiple,
     mainEntityLookup: values.mainEntityLookup,
+    mainEntityDisableCreation: values.mainEntityDisableCreation,
     mainEntityFieldMode: values.mainEntityFieldMode,
     mainEntityParseField: values.mainEntityParseField,
     mainEntityParseMode: values.mainEntityParseMode,

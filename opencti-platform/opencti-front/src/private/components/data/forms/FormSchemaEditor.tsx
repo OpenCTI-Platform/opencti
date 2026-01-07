@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { Add, DeleteOutlined, AddCircleOutlined } from '@mui/icons-material';
+import { Add, DeleteOutlined, AddCircleOutlined, ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Button, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -362,6 +362,66 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     }));
   };
 
+  const handleMoveFieldUp = (entityId: string, fieldId: string) => {
+    updateFormData((prev) => {
+      // Get fields for this entity in their current order
+      const entityFields = prev.fields.filter((f) => f.attributeMapping.entity === entityId);
+      const otherFields = prev.fields.filter((f) => f.attributeMapping.entity !== entityId);
+
+      // Find the index of the field within entity fields
+      const fieldIndex = entityFields.findIndex((f) => f.id === fieldId);
+      if (fieldIndex <= 0) return prev; // Can't move up if already at top
+
+      // Swap with the previous field
+      const newEntityFields = [...entityFields];
+      [newEntityFields[fieldIndex - 1], newEntityFields[fieldIndex]] = [newEntityFields[fieldIndex], newEntityFields[fieldIndex - 1]];
+
+      // Reconstruct fields array maintaining entity grouping
+      return {
+        ...prev,
+        fields: [...otherFields, ...newEntityFields].sort((a, b) => {
+          // Keep entity groups together, but use new order within each group
+          if (a.attributeMapping.entity === b.attributeMapping.entity) {
+            const aIdx = newEntityFields.findIndex((f) => f.id === a.id);
+            const bIdx = newEntityFields.findIndex((f) => f.id === b.id);
+            if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+          }
+          return 0;
+        }),
+      };
+    });
+  };
+
+  const handleMoveFieldDown = (entityId: string, fieldId: string) => {
+    updateFormData((prev) => {
+      // Get fields for this entity in their current order
+      const entityFields = prev.fields.filter((f) => f.attributeMapping.entity === entityId);
+      const otherFields = prev.fields.filter((f) => f.attributeMapping.entity !== entityId);
+
+      // Find the index of the field within entity fields
+      const fieldIndex = entityFields.findIndex((f) => f.id === fieldId);
+      if (fieldIndex < 0 || fieldIndex >= entityFields.length - 1) return prev; // Can't move down if already at bottom
+
+      // Swap with the next field
+      const newEntityFields = [...entityFields];
+      [newEntityFields[fieldIndex], newEntityFields[fieldIndex + 1]] = [newEntityFields[fieldIndex + 1], newEntityFields[fieldIndex]];
+
+      // Reconstruct fields array maintaining entity grouping
+      return {
+        ...prev,
+        fields: [...otherFields, ...newEntityFields].sort((a, b) => {
+          // Keep entity groups together, but use new order within each group
+          if (a.attributeMapping.entity === b.attributeMapping.entity) {
+            const aIdx = newEntityFields.findIndex((f) => f.id === a.id);
+            const bIdx = newEntityFields.findIndex((f) => f.id === b.id);
+            if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+          }
+          return 0;
+        }),
+      };
+    });
+  };
+
   const renderRelationshipField = (field: FormFieldAttribute, index: number, relationshipIndex: number) => {
     const fieldPath = `relationships.${relationshipIndex}.fields.${index}`;
     // Available field types for relationships - exclude checkbox, select, multiselect
@@ -495,8 +555,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     );
   };
 
-  const renderField = (field: FormFieldAttribute, index: number, entityType: string) => {
+  const renderField = (field: FormFieldAttribute, index: number, entityType: string, entityFields: FormFieldAttribute[]) => {
     const fieldIndex = formData.fields.findIndex((f) => f.id === field.id);
+    const entityId = field.attributeMapping.entity;
+    const isFirstInEntity = index === 0;
+    const isLastInEntity = index === entityFields.length - 1;
 
     // Get all attributes for this entity type (not filtered by field type yet)
     const entity = entityTypes.find((e) => e.value === entityType);
@@ -611,14 +674,32 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <Typography className={classes.fieldTitle}>
             {field.isMandatory ? `${t_i18n('Field')} ${index + 1} (${t_i18n('Mandatory')})` : `${t_i18n('Field')} ${index + 1}`}
           </Typography>
-          {(!field.isMandatory || isInParsedMode) && (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <IconButton
               size="small"
-              onClick={() => handleRemoveField(field.id)}
+              onClick={() => handleMoveFieldUp(entityId, field.id)}
+              disabled={isFirstInEntity}
+              title={t_i18n('Move up')}
             >
-              <DeleteOutlined fontSize="small" color="primary" />
+              <ArrowUpward fontSize="small" color={isFirstInEntity ? 'disabled' : 'primary'} />
             </IconButton>
-          )}
+            <IconButton
+              size="small"
+              onClick={() => handleMoveFieldDown(entityId, field.id)}
+              disabled={isLastInEntity}
+              title={t_i18n('Move down')}
+            >
+              <ArrowDownward fontSize="small" color={isLastInEntity ? 'disabled' : 'primary'} />
+            </IconButton>
+            {(!field.isMandatory || isInParsedMode) && (
+              <IconButton
+                size="small"
+                onClick={() => handleRemoveField(field.id)}
+              >
+                <DeleteOutlined fontSize="small" color="primary" />
+              </IconButton>
+            )}
+          </div>
         </div>
 
         <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory && !isInParsedMode}>
@@ -990,6 +1071,19 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           style={{ marginTop: 20, display: 'block' }}
         />
 
+        {entity.lookup && (
+          <FormControlLabel
+            control={(
+              <Switch
+                checked={entity.disableCreation || false}
+                onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.disableCreation`, e.target.checked)}
+              />
+            )}
+            label={t_i18n('Disable on-the-fly entity creation')}
+            style={{ marginTop: 10, marginLeft: 20, display: 'block' }}
+          />
+        )}
+
         <FormControlLabel
           control={(
             <Switch
@@ -1154,7 +1248,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             <Typography variant="subtitle1" style={{ marginTop: 20, marginBottom: 10 }}>
               {t_i18n('Fields')}
             </Typography>
-            {entityFields.map((field, idx) => renderField(field, idx, entity.entityType))}
+            {entityFields.map((field, idx) => renderField(field, idx, entity.entityType, entityFields))}
             <Button
               variant="outlined"
               startIcon={<Add />}
@@ -1171,9 +1265,10 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             <Typography variant="subtitle1" style={{ marginTop: 20, marginBottom: 10 }}>
               {t_i18n('Additional Fields (will be applied to all created entities)')}
             </Typography>
-            {entityFields
-              .filter((field) => field.attributeMapping.attributeName !== entity.parseFieldMapping)
-              .map((field, idx) => renderField(field, idx, entity.entityType))}
+            {(() => {
+              const parsedModeFields = entityFields.filter((field) => field.attributeMapping.attributeName !== entity.parseFieldMapping);
+              return parsedModeFields.map((field, idx) => renderField(field, idx, entity.entityType, parsedModeFields));
+            })()}
             <Button
               variant="outlined"
               startIcon={<Add />}
@@ -1410,6 +1505,19 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             style={{ marginTop: 20, display: 'block' }}
           />
 
+          {formData.mainEntityLookup && (
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={formData.mainEntityDisableCreation || false}
+                  onChange={(e) => handleFieldChange('mainEntityDisableCreation', e.target.checked)}
+                />
+              )}
+              label={t_i18n('Disable on-the-fly entity creation')}
+              style={{ marginTop: 10, marginLeft: 20, display: 'block' }}
+            />
+          )}
+
           {isContainer && (
             <FormControlLabel
               control={(
@@ -1600,9 +1708,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       <Typography variant="h6" gutterBottom>
                         {t_i18n('Additional Fields (will be applied to all created entities)')}
                       </Typography>
-                      {(fieldsByEntity.main_entity || [])
-                        .filter((field) => field.attributeMapping.attributeName !== formData.mainEntityParseFieldMapping)
-                        .map((field, idx) => renderField(field, idx, formData.mainEntityType))}
+                      {(() => {
+                        const mainEntityParsedFields = (fieldsByEntity.main_entity || [])
+                          .filter((field) => field.attributeMapping.attributeName !== formData.mainEntityParseFieldMapping);
+                        return mainEntityParsedFields.map((field, idx) => renderField(field, idx, formData.mainEntityType, mainEntityParsedFields));
+                      })()}
                       <Button
                         variant="outlined"
                         startIcon={<Add />}
@@ -1616,12 +1726,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 </>
               );
             }
+            const mainEntityFields = fieldsByEntity.main_entity || [];
             return (
               <div style={{ marginTop: 20 }}>
                 <Typography variant="h6" gutterBottom>
                   {t_i18n('Main Entity Fields')}
                 </Typography>
-                {(fieldsByEntity.main_entity || []).map((field, idx) => renderField(field, idx, formData.mainEntityType))}
+                {mainEntityFields.map((field, idx) => renderField(field, idx, formData.mainEntityType, mainEntityFields))}
                 <Button
                   variant="outlined"
                   startIcon={<Add />}
