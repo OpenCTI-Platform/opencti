@@ -862,7 +862,7 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
         return { output_port: 'out', bundle: patchedBundle };
       }
     }
-    return { output_port: 'unmodified', bundle };
+    return { output_port: 'out', bundle };
   },
 };
 
@@ -979,7 +979,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
         return { output_port: 'out', bundle: patchedBundle };
       }
     }
-    return { output_port: 'unmodified', bundle };
+    return { output_port: 'out', bundle };
   },
 };
 export interface RemoveAccessRestrictionsConfiguration {
@@ -1030,7 +1030,7 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
         return { output_port: 'out', bundle: patchedBundle };
       }
     }
-    return { output_port: 'unmodifed', bundle };
+    return { output_port: 'out', bundle };
   },
 };
 
