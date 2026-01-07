@@ -79,6 +79,12 @@ const ThemeDark = (
     text: {
       light: '#AFB0B6',
     },
+    leftBar: {
+      header: {
+        itemBackground: '#253348',
+      },
+      popoverItem: '#070D19',
+    },
   },
   typography: {
     fontFamily: '"IBM Plex Sans", sans-serif',
@@ -404,16 +410,16 @@ const ThemeDark = (
         },
       },
     },
-    MuiPopover: {
-      styleOverrides: {
-        paper: {
-          backgroundColor: '#070D19',
-          backgroundImage: 'none',
-          padding: 0,
-          minWidth: 180,
-        },
-      },
-    },
+    // MuiPopover: {
+    //   styleOverrides: {
+    //     paper: {
+    //       backgroundColor: '#070D19',
+    //       backgroundImage: 'none',
+    //       padding: 0,
+    //       minWidth: 180,
+    //     },
+    //   },
+    // },
     MuiList: {
       styleOverrides: {
         root: {

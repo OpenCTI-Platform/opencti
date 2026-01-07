@@ -1,12 +1,14 @@
 import IconButton from '@common/button/IconButton';
 import { ArrowDropDown, OpenInNew } from '@mui/icons-material';
-import { Box, Divider, List, ListItemButton, ListItemIcon, Popover, Tooltip, useTheme } from '@mui/material';
+import { Box, Divider, List, ListItemButton, ListItemIcon, Popover, Tooltip } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 import logoOpenBAS from '../../../static/images/logo_open_bas.svg';
 import logoXTMHub from '../../../static/images/logo_xtm_hub.svg';
 import { isNotEmptyField } from '../../../utils/utils';
+import { Theme } from '../../../components/Theme';
 
 interface PopoverListItemProps {
   logoSrc: string;
@@ -23,6 +25,7 @@ export const PopoverListItem: React.FC<PopoverListItemProps> = ({
   external,
   onClick,
 }) => {
+  const theme = useTheme<Theme>();
   const Component = href ? 'a' : to ? Link : 'div';
 
   return (
@@ -39,9 +42,10 @@ export const PopoverListItem: React.FC<PopoverListItemProps> = ({
         py: 1.5,
         display: 'flex',
         justifyContent: 'space-between',
+        backgroundColor: theme.palette.leftBar.header.itemBackground,
       }}
     >
-      <ListItemIcon sx={{ width: 132 }}>
+      <ListItemIcon sx={{ width: 132, p: 1 }}>
         <Box
           sx={{
             width: '100%',
@@ -97,7 +101,6 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
   xtmhubStatus,
   hasXtmHubAccess,
 }) => {
-  const theme = useTheme()
   const { t_i18n } = useFormatter();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -180,10 +183,10 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
         onClose={handleMouseLeave}
       >
         <List
+          className="left-bar-header"
           dense
-          className='left-bar-header'
+          disablePadding
           sx={{
-            p: 1,
             minWidth: 228,
           }}
         >
@@ -198,7 +201,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
             </span>
           </Tooltip>
 
-          <Divider sx={{ m: 1 }} />
+          <Divider />
 
           {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
             <PopoverListItem

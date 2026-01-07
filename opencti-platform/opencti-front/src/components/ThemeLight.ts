@@ -80,6 +80,12 @@ const ThemeLight = (
     text: {
       light: '#494A50',
     },
+    leftBar: {
+      header: {
+        itemBackground: '#ECECF2',
+      },
+      popoverItem: '#ECECF2',
+    },
   },
   typography: {
     fontFamily: '"IBM Plex Sans", sans-serif',
@@ -405,29 +411,6 @@ const ThemeLight = (
       styleOverrides: {
         root: {
           color: text_color,
-        },
-      },
-    },
-    MuiPopover: {
-      styleOverrides: {
-        paper: {
-          backgroundColor: '#FFFFFF',
-          backgroundImage: 'none',
-          padding: 0,
-          minWidth: 180,
-          elevation: 0,
-        },
-      },
-    },
-    MuiList: {
-      styleOverrides: {
-        root: {
-          '&.left-bar-header': {
-            backgroundColor: '#E4E4E4',
-          },
-          '& hr': {
-            backgroundColor: THEME_LIGHT_DEFAULT_PAPER,
-          },
         },
       },
     },

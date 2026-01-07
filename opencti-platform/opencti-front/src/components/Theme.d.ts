@@ -59,6 +59,13 @@ declare module '@mui/material/styles' {
       light?: string;
       dark?: string;
     };
+    background: {
+      paper: string;
+      default: string;
+      secondary: string;
+      nav: string;
+      popoverItem: string;
+    };
   }
 
   interface PaletteOptions {
@@ -76,6 +83,13 @@ declare module '@mui/material/styles' {
       contrastText?: string;
       light?: string;
       dark?: string;
+    };
+    background?: {
+      paper?: string;
+      default?: string;
+      secondary?: string;
+      nav?: string;
+      popoverItem?: string;
     };
   }
 
@@ -101,6 +115,7 @@ declare module '@mui/material/styles' {
         small?: SizeConfig;
       };
     };
+
   }
 }
 
@@ -132,6 +147,7 @@ interface ExtendedBackground extends TypeBackground {
   accent: string;
   shadow: string;
   secondary: string;
+  popoverItem: string;
 }
 
 interface ExtendedText extends TypeText {
@@ -141,6 +157,12 @@ interface ExtendedText extends TypeText {
 interface ExtendedPaletteOptions extends PaletteOptions {
   common: Partial<CommonColors & { grey: string; lightGrey: string }>;
   background: Partial<ExtendedBackground>;
+  leftBar: {
+    header: {
+      itemBackground: string;
+    };
+    popoverItem: string;
+  };
   border: {
     primary: string;
     secondary: string;

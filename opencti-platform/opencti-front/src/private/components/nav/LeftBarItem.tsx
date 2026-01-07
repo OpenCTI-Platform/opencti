@@ -1,8 +1,9 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { alpha, Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/styles';
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Theme } from '../../../components/Theme';
 
 interface SubMenuItem {
   type?: string;
@@ -51,7 +52,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   hiddenEntities = [],
 }) => {
   const location = useLocation();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const anchorRef = useRef<HTMLLIElement | null>(null);
 
   const visibleSubItems = subItems.filter(
@@ -167,11 +168,11 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
       py: 1,
       minHeight: '36px',
       borderLeft: selected ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-      backgroundColor: selected ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+      backgroundColor: selected ? alpha(theme.palette.primary.main || '#00FF00', 0.1) : 'transparent',
       '&:hover': {
         backgroundColor: selected
-          ? theme.palette.action.selected
-          : theme.palette.action.hover,
+          ? theme.palette.action?.selected
+          : theme.palette.action?.hover,
       },
     };
   };
@@ -253,6 +254,8 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
             onMouseLeave: onMenuClose,
             sx: {
               pointerEvents: 'auto',
+              width: 180,
+              backgroundColor: theme.palette.leftBar.popoverItem,
             },
           },
         }}
