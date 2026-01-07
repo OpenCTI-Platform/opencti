@@ -14,8 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { graphql, useFragment } from 'react-relay';
-import React, { useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Stack } from '@mui/material';
 import Button from '@common/button/Button';
 import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
 import PirPopover from './PirPopover';
@@ -27,6 +27,7 @@ import { PirEditionFragment$key } from './pir_form/__generated__/PirEditionFragm
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import { PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
+import TitleMainEntity from '../../../components/common/typography/TitleMainEntity';
 
 const headerFragment = graphql`
   fragment PirHeaderFragment on Pir {
@@ -83,10 +84,10 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-        <Typography variant="h1" sx={{ marginBottom: 0, flex: 1 }}>
+      <Stack direction="row" alignItems="center" gap={0.5} marginBottom={3}>
+        <TitleMainEntity sx={{ flex: 1 }}>
           {name}
-        </Typography>
+        </TitleMainEntity>
 
         <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canEdit}>
           <>
@@ -116,7 +117,7 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
             </Button>
           </>
         </Security>
-      </Box>
+      </Stack>
 
       <PirEdition
         isOpen={isEditionOpen}

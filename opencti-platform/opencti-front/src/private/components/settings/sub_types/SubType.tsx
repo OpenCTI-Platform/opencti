@@ -1,4 +1,3 @@
-import Typography from '@mui/material/Typography';
 import React, { Suspense, useMemo } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import Grid from '@mui/material/Grid';
@@ -23,6 +22,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import Card from '../../../../components/common/card/Card';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -103,9 +103,9 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
       <CustomizationMenu />
 
-      <Typography variant="h1" gutterBottom={true} sx={{ mb: 3 }}>
+      <TitleMainEntity sx={{ mb: 3 }}>
         {t_i18n(`entity_${subType.label}`)}
-      </Typography>
+      </TitleMainEntity>
 
       <Grid container spacing={3}>
         <Grid item xs={hasTemplates ? 6 : 12}>

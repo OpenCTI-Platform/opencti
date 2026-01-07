@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectSharingList from '../../common/stix_core_objects/StixCoreObjectSharingList';
@@ -18,6 +17,8 @@ import StixCoreObjectMenuItemUnderEE from '../../common/stix_core_objects/StixCo
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import { Stack } from '@mui/material';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteComponent }) => {
   const [openSharing, setOpenSharing] = useState(false);
@@ -36,10 +37,10 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
   const handleCloseDelete = () => setOpenDelete(false);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <Typography variant="h1" sx={{ marginBottom: 0, flex: 1 }}>
+    <Stack direction="row" alignItems="center" marginBottom={3}>
+      <TitleMainEntity sx={{ flex: 1 }}>
         {truncate(stixCyberObservable.observable_value, 50)}
-      </Typography>
+      </TitleMainEntity>
 
       {stixCyberObservable.draftVersion && <DraftChip />}
 
@@ -92,7 +93,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
         </div>
       </div>
       <div className="clearfix" />
-    </div>
+    </Stack>
   );
 };
 

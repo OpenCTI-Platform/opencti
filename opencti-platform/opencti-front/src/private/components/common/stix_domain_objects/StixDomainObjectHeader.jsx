@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
-import Typography from '@mui/material/Typography';
 import IconButton from '@common/button/IconButton';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
@@ -61,6 +60,7 @@ import PopoverMenu from '../../../../components/PopoverMenu';
 import { resolveLink } from '../../../../utils/Entity';
 import { authorizedMembersToOptions, CAN_USE_ENTITY_TYPES, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -480,18 +480,12 @@ const StixDomainObjectHeader = (props) => {
 
   return (
     <React.Suspense fallback={<span />}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(1) }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(3) }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
           <Tooltip title={getMainRepresentative(stixDomainObject)}>
-            <Typography
-              variant="h1"
-              sx={{
-                margin: 0,
-                lineHeight: 'unset',
-              }}
-            >
+            <TitleMainEntity>
               {truncate(getMainRepresentative(stixDomainObject), 80)}
-            </Typography>
+            </TitleMainEntity>
           </Tooltip>
           {stixDomainObject.draftVersion && (
             <DraftChip />

@@ -1,8 +1,6 @@
 import Button from '@common/button/Button';
 import { Box, Tooltip } from '@mui/material';
-import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
-import React from 'react';
 import { useTheme } from '@mui/material/styles';
 import { truncate } from '../../../../utils/String';
 import PopoverMenu from '../../../../components/PopoverMenu';
@@ -12,6 +10,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 interface StixSightingRelationshipHeaderProps {
   headerName?: string;
@@ -42,15 +41,9 @@ const StixSightingRelationshipHeader = ({
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
         <Tooltip title={headerName}>
-          <Typography
-            variant="h1"
-            sx={{
-              margin: 0,
-              lineHeight: 'unset',
-            }}
-          >
+          <TitleMainEntity>
             {truncate(headerName, 80)}
-          </Typography>
+          </TitleMainEntity>
         </Tooltip>
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>

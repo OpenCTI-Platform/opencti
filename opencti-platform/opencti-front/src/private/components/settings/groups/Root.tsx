@@ -5,8 +5,7 @@ import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import AccessesMenu from '@components/settings/AccessesMenu';
-import Typography from '@mui/material/Typography';
-import { Box, styled } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import GroupDeletionDialog from '@components/settings/groups/GroupDeletionDialog';
 import GroupEdition from '@components/settings/groups/GroupEdition';
@@ -23,6 +22,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import type { Theme } from '../../../../components/Theme';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 const subscription = graphql`
     subscription RootGroupsSubscription($id: ID!) {
@@ -79,12 +79,6 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
 
   const { isAllowed, isSensitive } = useSensitiveModifications('groups', group.standard_id);
 
-  const GroupHeader = styled('div')({
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  });
-
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       <>
@@ -98,50 +92,39 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
             { label: group.name, current: true },
           ]}
         />
-        <GroupHeader>
-          <div>
-            <Typography
-              variant="h1"
-              gutterBottom={true}
-              style={{ float: 'left' }}
-            >
-              {group.name}
-            </Typography>
-            <div className="clearfix" />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', paddingRight: 200 }}>
-            <div style={{ display: 'flex' }}>
-              <div style={{ marginRight: theme.spacing(0.5) }}>
-                {canDelete && (
-                  <PopoverMenu>
-                    {({ closeMenu }) => (
-                      <Box>
-                        <MenuItem
-                          disabled={!isAllowed && isSensitive}
-                          onClick={() => {
-                            handleOpenDelete();
-                            closeMenu();
-                          }}
-                        >
-                          {t_i18n('Delete')}
-                        </MenuItem>
-                      </Box>
-                    )}
-                  </PopoverMenu>
+        <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
+          <TitleMainEntity sx={{ flex: 1 }}>
+            {group.name}
+          </TitleMainEntity>
+          <div style={{ marginRight: theme.spacing(0.5) }}>
+            {canDelete && (
+              <PopoverMenu>
+                {({ closeMenu }) => (
+                  <Box>
+                    <MenuItem
+                      disabled={!isAllowed && isSensitive}
+                      onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
+                    >
+                      {t_i18n('Delete')}
+                    </MenuItem>
+                  </Box>
                 )}
-              </div>
-              <GroupDeletionDialog
-                groupId={group.id}
-                isOpen={openDelete}
-                handleClose={handleCloseDelete}
-              />
-              <GroupEdition
-                groupId={group.id}
-                disabled={!isAllowed && isSensitive}
-              />
-            </div>
+              </PopoverMenu>
+            )}
           </div>
-        </GroupHeader>
+          <GroupDeletionDialog
+            groupId={group.id}
+            isOpen={openDelete}
+            handleClose={handleCloseDelete}
+          />
+          <GroupEdition
+            groupId={group.id}
+            disabled={!isAllowed && isSensitive}
+          />
+        </Stack>
         <Routes>
           <Route
             path="/"
