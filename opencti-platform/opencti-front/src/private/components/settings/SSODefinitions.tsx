@@ -10,7 +10,6 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { SSODefinitionsLinesPaginationQuery } from '@components/settings/__generated__/SSODefinitionsLinesPaginationQuery.graphql';
 import { SSODefinitionsLines_data$data } from '@components/settings/__generated__/SSODefinitionsLines_data.graphql';
-import ItemCopy from '../../../components/ItemCopy';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
 
@@ -41,9 +40,21 @@ const ssoDefinitionsLineFragment = graphql`
   fragment SSODefinitionsLine_node on SingleSignOn {
     id
     name
+    identifier
+    label
     description
     enabled
     strategy
+    organizations_management {
+      organizations_path
+      organizations_mapping
+    }
+    groups_management{
+      group_attributes
+      groups_path
+      groups_mapping
+      read_userinfo
+    }
     configuration {
       key
       value
@@ -111,21 +122,20 @@ const SSODefinitions = () => {
       percentWidth: 25,
       render: (node: { strategy: string }) => <div>{node.strategy}</div>,
     },
+    name: {
+      label: 'Configuration name',
+      percentWidth: 25,
+      render: (node: { name: string }) => <div>{node.name}</div>,
+    },
     enabled: {
       label: 'Enabled',
       percentWidth: 25,
       render: (node: { enabled: boolean }) => <div>{JSON.stringify(node.enabled)}</div>,
     },
-    name: {
-      label: 'Name',
+    label: {
+      label: 'Login Name Button',
       percentWidth: 25,
-      render: (node: { name: string }) => <div>{node.name}</div>,
-    },
-    id: {
-      label: 'ID',
-      percentWidth: 25,
-      isSortable: true,
-      render: (node: { id: string }) => <ItemCopy content={node.id} variant="inLine" />,
+      render: (node: { label: string }) => <div>{node.label}</div>,
     },
   };
 
@@ -168,8 +178,8 @@ const SSODefinitions = () => {
           entityTypes={['SingleSignOn']}
           searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
           disableNavigation
-          // disableToolBar
-          // removeSelectAll
+          disableToolBar
+          removeSelectAll
           createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
         />
       )}

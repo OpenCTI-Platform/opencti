@@ -4,11 +4,11 @@ import {
   AlternateEmailOutlined,
   CenterFocusStrongOutlined,
   EmailOutlined,
+  KeyOutlined,
   LocalPoliceOutlined,
   PermIdentityOutlined,
   ReceiptOutlined,
   SecurityOutlined,
-  LoginOutlined,
 } from '@mui/icons-material';
 import { AccountGroupOutline } from 'mdi-material-ui';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
@@ -75,7 +75,7 @@ const AccessesMenu: FunctionComponent = () => {
     {
       path: '/dashboard/settings/accesses/single_sign_on',
       label: 'SSO definition',
-      icon: <LoginOutlined fontSize="medium" />,
+      icon: <KeyOutlined fontSize="medium" />,
       isEE: true,
     },
   ];
