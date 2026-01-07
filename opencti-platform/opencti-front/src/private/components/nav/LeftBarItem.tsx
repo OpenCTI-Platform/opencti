@@ -1,5 +1,6 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { alpha, Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip, useTheme } from '@mui/material';
+import { alpha, Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -164,8 +165,8 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
       px: 2,
       pr: 1,
       py: 1,
-      minHeight: '40px',
-      borderLeft: selected ? `3px solid ${theme.palette.primary.main}` : '3px solid transparent',
+      minHeight: '36px',
+      borderLeft: selected ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
       backgroundColor: selected ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
       '&:hover': {
         backgroundColor: selected
@@ -245,6 +246,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         onClose={onMenuClose}
         disableRestoreFocus
         disableScrollLock
+        elevation={0}
         slotProps={{
           paper: {
             onMouseEnter: () => onMenuOpen(id),
@@ -255,7 +257,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           },
         }}
       >
-        <MenuList component="nav">
+        <MenuList component="nav" disablePadding>
           {visibleSubItems.map((item) => renderSubMenuItem(item, false))}
         </MenuList>
       </Popover>

@@ -1,6 +1,6 @@
 import IconButton from '@common/button/IconButton';
 import { ArrowDropDown, OpenInNew } from '@mui/icons-material';
-import { Box, Divider, List, ListItemButton, ListItemIcon, Popover, Tooltip } from '@mui/material';
+import { Box, Divider, List, ListItemButton, ListItemIcon, Popover, Tooltip, useTheme } from '@mui/material';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
@@ -97,6 +97,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
   xtmhubStatus,
   hasXtmHubAccess,
 }) => {
+  const theme = useTheme()
   const { t_i18n } = useFormatter();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -180,10 +181,10 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
       >
         <List
           dense
+          className='left-bar-header'
           sx={{
             p: 1,
             minWidth: 228,
-            backgroundColor: '#253348',
           }}
         >
           <Tooltip title={isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
@@ -197,7 +198,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
             </span>
           </Tooltip>
 
-          <Divider sx={{ backgroundColor: 'black', m: 1 }} />
+          <Divider sx={{ m: 1 }} />
 
           {(xtmhubStatus === 'registered' || !hasXtmHubAccess) ? (
             <PopoverListItem
