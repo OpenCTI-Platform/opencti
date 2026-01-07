@@ -58,6 +58,7 @@ const ThemeDark = (
       light: '#D6C2FA',
       dark: '#B286FF',
       contrastText: '#000000',
+      background: 'rgba(28, 47, 73, 0.94)',
       text: {
         primary: '#B286FF',
       },
