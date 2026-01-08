@@ -176,6 +176,7 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'password_policy_min_words',
   'password_policy_min_lowercase',
   'password_policy_min_uppercase',
+  'auth_strategy_migrated',
 ];
 
 const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [

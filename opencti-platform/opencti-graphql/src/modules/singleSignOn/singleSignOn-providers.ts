@@ -4,17 +4,17 @@ import { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import passport from 'passport/lib';
 import { login, loginFromProvider } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { findAllSingleSignOn } from './singleSignOn-domain';
-import { AuthType, EnvStrategyType, PROVIDERS } from '../../config/providers-configuration';
+import { findAllSingleSignOn, logAuth } from './singleSignOn-domain';
+import { AuthType } from '../../config/providers-configuration';
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
 import { ConfigurationError } from '../../config/errors';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy';
 import type { PassportSamlConfig, VerifyWithoutRequest } from '@node-saml/passport-saml/lib/types';
 import { isNotEmptyField } from '../../database/utils';
 import * as R from 'ramda';
+import { registerAuthenticationProvider, unregisterAuthenticationProvider } from '../../config/providers-initialization';
 
 export const providerLoginHandler = (userInfo: any, done: any, opts = {}) => {
   loginFromProvider(userInfo, opts)
@@ -52,7 +52,6 @@ export const buildAllConfiguration = async (ssoEntity: BasicStoreEntitySingleSig
         ssoConfiguration[currentConfig.key] = currentConfig.value;
       }
     }
-    logApp.info('[SSO SAML] full computed configuration:', { ...ssoConfiguration, idpCert: '***secret***' });
     return ssoConfiguration;
   } else {
     throw ConfigurationError('SSO configuration is empty', { id: ssoEntity.id, name: ssoEntity.name, strategy: ssoEntity.strategy });
@@ -94,10 +93,7 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
         ssoOtherOptions[currentConfig.key] = currentConfig.value;
       }
     }
-
-    const ssoFullOptions = { ...ssoOptions, ...ssoOtherOptions } as PassportSamlConfig;
-    logApp.info('[SSO SAML] full computed options:', { ...ssoFullOptions, idpCert: '***secret***' });
-    return ssoFullOptions;
+    return { ...ssoOptions, ...ssoOtherOptions } as PassportSamlConfig;
   } else {
     throw ConfigurationError('SSO configuration is empty', { id: ssoEntity.id, name: ssoEntity.name, strategy: ssoEntity.strategy });
   }
@@ -105,6 +101,8 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
 
 export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
   const providerRef = ssoEntity.identifier || 'saml';
+  logAuth('Configuring SAML', StrategyType.SamlStrategy, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
+
   const providerName = ssoEntity?.label || ssoEntity?.identifier || ssoEntity.id;
   const ssoConfiguration: any = await buildAllConfiguration(ssoEntity);
   const samlOptions: PassportSamlConfig = await buildSAMLOptions(ssoEntity);
@@ -116,7 +114,7 @@ export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) =
       throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
     }
 
-    logApp.info('[SSO SAML] Successfully logged', { profile, done });
+    logAuth('Successfully logged', StrategyType.SamlStrategy, { profile, done });
     addUserLoginCount();
     const nameID = profile['nameID'];
     const nameIDFormat = profile['nameIDFormat'];
@@ -125,13 +123,13 @@ export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) =
     const groupAttributes = groupsManagement?.group_attributes || ['groups'];
 
     if (ssoConfiguration.mail_attribute && !samlAttributes[ssoConfiguration.mail_attribute]) {
-      logApp.info(`[SSO SAML] custom mail_attribute "${ssoConfiguration.mail_attribute}" in configuration but the custom field is not present SAML server response.`);
+      logAuth(`Custom mail_attribute "${ssoConfiguration.mail_attribute}" in configuration but the custom field is not present SAML server response.`, StrategyType.SamlStrategy);
     }
     const userName = samlAttributes[ssoConfiguration.account_attribute] || '';
     const firstname = samlAttributes[ssoConfiguration.firstname_attribute] || '';
     const lastname = samlAttributes[ssoConfiguration.lastname_attribute] || '';
     const isGroupBaseAccess = (isNotEmptyField(groupsManagement) && isNotEmptyField(groupsManagement?.groups_mapping));
-    logApp.info('[SSO SAML] Groups management configuration', { groupsManagement: groupsManagement });
+    logAuth('Groups management configuration', StrategyType.SamlStrategy, { groupsManagement: groupsManagement });
     // region groups mapping
     const computeGroupsMapping = () => {
       const attrGroups: any[][] = groupAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
@@ -155,7 +153,7 @@ export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) =
     };
     const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
     // endregion
-    logApp.info('[SSO SAML] Login handler', { isGroupBaseAccess, groupsToAssociate });
+    logAuth('Login handler', StrategyType.SamlStrategy, { isGroupBaseAccess, groupsToAssociate });
     if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
       const opts = {
         providerGroups: groupsToAssociate,
@@ -171,15 +169,14 @@ export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) =
 
   const samlLogoutCallback: VerifyWithoutRequest = (profile) => {
     // SAML Logout function
-    logApp.info(`[SSO SAML] Logout done for ${profile}`);
+    logAuth(`Logout done for ${profile}`, StrategyType.SamlStrategy);
   };
   samlOptions.name = ssoEntity.identifier || 'saml';
   const samlStrategy = new SamlStrategy(samlOptions, samlLoginCallback, samlLogoutCallback);
-
   // TODO samlStrategy.logout_remote = samlOptions.logout_remote;
-  logApp.info(`[SSO SAML] passport SAML configured with providerRef:${providerRef}`);
-  passport.use(providerRef, samlStrategy);
-  PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy: StrategyType.SamlStrategy, provider: providerRef });
+  const providerConfig = { name: providerName, type: AuthType.AUTH_SSO, strategy: StrategyType.SamlStrategy, provider: providerRef };
+  registerAuthenticationProvider(providerRef, samlStrategy, providerConfig);
+  logAuth('Passport SAML configured', StrategyType.SamlStrategy, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
 };
 
 export const addLocalStrategy = async (providerName: string) => {
@@ -188,7 +185,7 @@ export const addLocalStrategy = async (providerName: string) => {
   const localStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
     return login(username, password)
       .then((info) => {
-        logApp.info('[LOCAL] Successfully logged', { username });
+        logAuth('Successfully logged', StrategyType.LocalStrategy, { username });
         addUserLoginCount();
         return done(null, info);
       })
@@ -196,16 +193,11 @@ export const addLocalStrategy = async (providerName: string) => {
         done(err);
       });
   });
-  passport.use(localStrategy);
 
-  // Only one local can be enabled, remove all others first
-  let indexToRemove = PROVIDERS.findIndex((conf) => conf.strategy === StrategyType.LocalStrategy || conf.strategy === EnvStrategyType.STRATEGY_LOCAL);
-  while (indexToRemove != -1) {
-    PROVIDERS.splice(indexToRemove, 1);
-    indexToRemove = PROVIDERS.findIndex((conf) => conf.strategy === StrategyType.LocalStrategy || conf.strategy === EnvStrategyType.STRATEGY_LOCAL);
-  }
-
-  PROVIDERS.push({ name: providerName, type: AuthType.AUTH_FORM, strategy: StrategyType.LocalStrategy, provider: 'local' });
+  // Only one local, remove existing.
+  const providerConfig = { name: providerName, type: AuthType.AUTH_FORM, strategy: StrategyType.LocalStrategy, provider: 'local' };
+  unregisterAuthenticationProvider('local');
+  registerAuthenticationProvider('local', localStrategy, providerConfig);
 };
 
 /**
@@ -219,31 +211,32 @@ export const initAuthenticationProviders = async (context: AuthContext, user: Au
 
   if (providersFromDatabase.length === 0) {
     // No configuration in database, fallback to default local strategy
-    logApp.info('[SSO INIT] configuring default local strategy');
+    logAuth('configuring default local strategy', StrategyType.LocalStrategy);
     await addLocalStrategy('local');
   } else {
     for (let i = 0; i < providersFromDatabase.length; i++) {
       const currentSSOconfig = providersFromDatabase[i];
       if (currentSSOconfig.strategy) {
-        logApp.info(`[SSO INIT] configuring ${currentSSOconfig.strategy} strategy ${currentSSOconfig?.name}`);
         switch (currentSSOconfig.strategy) {
           case StrategyType.LocalStrategy:
+            logAuth(`[INIT] configuring ${currentSSOconfig?.name} - ${currentSSOconfig?.identifier}`, StrategyType.LocalStrategy);
             await addLocalStrategy(currentSSOconfig.name);
             break;
           case StrategyType.SamlStrategy:
+            logAuth(`[INIT] configuring ${currentSSOconfig?.name} - ${currentSSOconfig?.identifier}`, StrategyType.SamlStrategy);
             await addSAMLStrategy(currentSSOconfig);
             break;
           case StrategyType.OpenIdConnectStrategy:
-            logApp.error(`[SSO INIT] ${currentSSOconfig.strategy} not implemented yet`);
+            logApp.debug(`[SSO] ${currentSSOconfig.strategy} not implemented yet`);
             break;
           case StrategyType.LdapStrategy:
-            logApp.error(`[SSO INIT] ${currentSSOconfig.strategy} not implemented yet`);
+            logApp.debug(`[SSO] ${currentSSOconfig.strategy} not implemented yet`);
             break;
           case StrategyType.HeaderStrategy:
-            logApp.error(`[SSO INIT] ${currentSSOconfig.strategy} not implemented yet`);
+            logApp.debug(`[SSO] ${currentSSOconfig.strategy} not implemented yet`);
             break;
           case StrategyType.ClientCertStrategy:
-            logApp.error(`[SSO INIT] ${currentSSOconfig.strategy} not implemented yet`);
+            logApp.debug(`[SSO] ${currentSSOconfig.strategy} not implemented yet`);
             break;
 
           default:

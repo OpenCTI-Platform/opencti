@@ -8,6 +8,8 @@ import { StrategyType } from '../../generated/graphql';
 
 const StrategyTypeList = Object.values(StrategyType);
 
+export const SINGLE_SIGN_ON_FF = 'SINGLE_SIGN_ON_ENABLED';
+
 const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixSingleSignOn> = {
   type: {
     id: 'singleSignOn',
@@ -21,15 +23,15 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
     },
   },
   attributes: [
-    { name: 'name', label: 'Authentication name', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'SINGLE_SIGN_ON_ENABLED' },
-    { name: 'identifier', label: 'IDP Identifier', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'SINGLE_SIGN_ON_ENABLED' },
-    { name: 'description', label: 'Description', mandatoryType: 'customizable', type: 'string', format: 'text', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'SINGLE_SIGN_ON_ENABLED' },
-    { name: 'enabled', label: 'Enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'SINGLE_SIGN_ON_ENABLED' },
-    { name: 'strategy', label: 'Strategy', mandatoryType: 'internal', type: 'string', format: 'enum', values: StrategyTypeList, editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'SINGLE_SIGN_ON_ENABLED' },
-    { name: 'label', label: 'Button display name', mandatoryType: 'no', type: 'string', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: 'SINGLE_SIGN_ON_ENABLED' },
-    { name: 'organizations_management', label: 'Organizations management', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'SINGLE_SIGN_ON_ENABLED' },
-    { name: 'groups_management', label: 'Groups management', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'SINGLE_SIGN_ON_ENABLED' },
-    { name: 'configuration', label: 'SSO Configuration', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: true, upsert: false, isFilterable: false, featureFlag: 'SINGLE_SIGN_ON_ENABLED' },
+    { name: 'name', label: 'Authentication name', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
+    { name: 'identifier', label: 'IDP Identifier', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
+    { name: 'description', label: 'Description', mandatoryType: 'customizable', type: 'string', format: 'text', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
+    { name: 'enabled', label: 'Enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
+    { name: 'strategy', label: 'Strategy', mandatoryType: 'internal', type: 'string', format: 'enum', values: StrategyTypeList, editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
+    { name: 'label', label: 'Button display name', mandatoryType: 'no', type: 'string', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
+    { name: 'organizations_management', label: 'Organizations management', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: SINGLE_SIGN_ON_FF },
+    { name: 'groups_management', label: 'Groups management', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: SINGLE_SIGN_ON_FF },
+    { name: 'configuration', label: 'SSO Configuration', mandatoryType: 'no', type: 'object', format: 'flat', editDefault: false, multiple: true, upsert: false, isFilterable: false, featureFlag: SINGLE_SIGN_ON_FF },
   ],
   relations: [],
   representative: (stix: StixSingleSignOn) => {
@@ -38,7 +40,7 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
   converter_2_1: convertSingleSignOnToStix,
 };
 
-export const isSingleSignOnInGuiEnabled = isFeatureEnabled('SINGLE_SIGN_ON_ENABLED');
+export const isSingleSignOnInGuiEnabled = isFeatureEnabled(SINGLE_SIGN_ON_FF);
 
 if (isSingleSignOnInGuiEnabled) {
   registerDefinition(SINGLE_SIGN_ON_DEFINITION);

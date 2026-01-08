@@ -14,8 +14,14 @@ import { nowTime } from '../../utils/format';
 import { addSingleSignOn } from './singleSignOn-domain';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { v4 as uuid } from 'uuid';
-import { EnvStrategyType } from '../../config/providers-configuration';
-import { configRemapping } from '../../config/providers-initialization';
+import { EnvStrategyType, isAuthenticationProviderMigrated, LOCAL_STRATEGY_IDENTIFIER } from '../../config/providers-configuration';
+import { configRemapping, MIGRATED_STRATEGY } from '../../config/providers-initialization';
+import { getEntityFromCache } from '../../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings } from '../../types/settings';
+import { settingsEditField } from '../../domain/settings';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
+import { AuthRequired } from '../../config/errors';
 
 // Key that should not be present after migration
 const DEPRECATED_KEYS = ['roles_management'];
@@ -44,7 +50,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
     const mappedConfig = configRemapping(envConfiguration.config);
 
     for (const configKey in mappedConfig) {
-      logApp.info(`[SSO MIGRATION] current config key:${configKey}`);
+      logApp.debug(`[SSO MIGRATION] current config key:${configKey}`);
 
       if (DEPRECATED_KEYS.some((deprecatedKey) => deprecatedKey === configKey)) {
         // 1. Check if it's a deprecated key that should be ignored
@@ -207,50 +213,7 @@ const parseLocalStrategyConfiguration = (ssoKey: string, envConfiguration: any, 
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
     description: `${StrategyType.LocalStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
-  };
-  return authEntity;
-};
-
-const parseGoogleStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const authEntity: SingleSignOnAddInput = {
-    strategy: StrategyType.OpenIdConnectStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration),
-    label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.OpenIdConnectStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}.\nGoogle configuration is no longer supported, configuration has been migrated to OpenID.`,
-    enabled: computeEnabled(envConfiguration),
-  };
-  return authEntity;
-};
-
-const parseGithubStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const authEntity: SingleSignOnAddInput = {
-    strategy: StrategyType.OpenIdConnectStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration),
-    label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.OpenIdConnectStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}.\nGithub configuration is no longer supported, configuration has been migrated to OpenID.`,
-    enabled: computeEnabled(envConfiguration),
-  };
-  return authEntity;
-};
-
-const parseFacebookStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const authEntity: SingleSignOnAddInput = {
-    strategy: StrategyType.OpenIdConnectStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration),
-    label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.OpenIdConnectStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}.\nFacebook configuration is no longer supported, configuration has been migrated to OpenID.`,
-    enabled: computeEnabled(envConfiguration),
-  };
-  return authEntity;
-};
-
-const parseAuth0StrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const authEntity: SingleSignOnAddInput = {
-    strategy: StrategyType.OpenIdConnectStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration),
-    label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.OpenIdConnectStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}.\nAuth0 configuration is no longer supported, configuration has been migrated to OpenID.`,
-    enabled: computeEnabled(envConfiguration),
+    identifier: LOCAL_STRATEGY_IDENTIFIER,
   };
   return authEntity;
 };
@@ -281,49 +244,64 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
   const authenticationStrategiesInput: SingleSignOnAddInput[] = [];
   for (const ssoKey in envConfiguration) {
     const currentSSOconfig = envConfiguration[ssoKey];
-    logApp.info(`[SSO MIGRATION] reading ${ssoKey}`, currentSSOconfig);
-    if (currentSSOconfig.strategy) {
-      switch (currentSSOconfig.strategy) {
-        case EnvStrategyType.STRATEGY_LOCAL:
-          authenticationStrategiesInput.push(parseLocalStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-          break;
-        case EnvStrategyType.STRATEGY_OPENID:
-          authenticationStrategiesInput.push(parseOpenIdStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-          break;
-        case EnvStrategyType.STRATEGY_SAML:
-          authenticationStrategiesInput.push(parseSAMLStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-          break;
-        case EnvStrategyType.STRATEGY_LDAP:
-          authenticationStrategiesInput.push(parseLDAPStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-          break;
-        case EnvStrategyType.STRATEGY_FACEBOOK:
-          authenticationStrategiesInput.push(parseFacebookStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-          break;
-        case EnvStrategyType.STRATEGY_AUTH0:
-          authenticationStrategiesInput.push(parseAuth0StrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-          break;
-        case EnvStrategyType.STRATEGY_GITHUB:
-          authenticationStrategiesInput.push(parseGithubStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-          break;
-        case EnvStrategyType.STRATEGY_GOOGLE:
-          authenticationStrategiesInput.push(parseGoogleStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-          break;
-        case EnvStrategyType.STRATEGY_CERT:
-          authenticationStrategiesInput.push(parseCertStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-          break;
-        case EnvStrategyType.STRATEGY_HEADER:
-          authenticationStrategiesInput.push(parseHeaderStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
-          break;
+    logApp.info(`[SSO MIGRATION] reading ${ssoKey}`);
 
-        default:
-          logApp.error('[SSO MIGRATION] unknown strategy in configuration', { providerKey: ssoKey, strategy: currentSSOconfig.strategy });
-          break;
+    if (currentSSOconfig.strategy) {
+      if (!MIGRATED_STRATEGY.some((strategyName) => strategyName === currentSSOconfig.strategy)) {
+        // Allow migration only for full migrated strategies.
+        logApp.info(`[SSO MIGRATION] ${currentSSOconfig.strategy} detected but migration is not implemented yet`);
+      } else {
+        switch (currentSSOconfig.strategy) {
+          case EnvStrategyType.STRATEGY_LOCAL:
+            logApp.info('[SSO MIGRATION] starting LocalStrategy migration');
+            authenticationStrategiesInput.push(parseLocalStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            break;
+          case EnvStrategyType.STRATEGY_OPENID:
+            logApp.info('[SSO MIGRATION] starting OpenID migration');
+            authenticationStrategiesInput.push(parseOpenIdStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            break;
+          case EnvStrategyType.STRATEGY_SAML:
+            logApp.info('[SSO MIGRATION] starting SAML migration');
+            authenticationStrategiesInput.push(parseSAMLStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            break;
+          case EnvStrategyType.STRATEGY_LDAP:
+            logApp.info('[SSO MIGRATION] starting LDAP migration');
+            authenticationStrategiesInput.push(parseLDAPStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            break;
+          case EnvStrategyType.STRATEGY_CERT:
+            authenticationStrategiesInput.push(parseCertStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            break;
+          case EnvStrategyType.STRATEGY_HEADER:
+            authenticationStrategiesInput.push(parseHeaderStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            break;
+          case EnvStrategyType.STRATEGY_FACEBOOK:
+            logApp.warn(`[SSO MIGRATION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+            break;
+          case EnvStrategyType.STRATEGY_AUTH0:
+            logApp.warn(`[SSO MIGRATION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+            break;
+          case EnvStrategyType.STRATEGY_GITHUB:
+            logApp.warn(`[SSO MIGRATION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+            break;
+          case EnvStrategyType.STRATEGY_GOOGLE:
+            logApp.warn(`[SSO MIGRATION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
+            break;
+
+          default:
+            logApp.error('[SSO MIGRATION] unknown strategy in configuration', {
+              providerKey: ssoKey,
+              strategy: currentSSOconfig.strategy,
+            });
+            break;
+        }
       }
     } else {
       logApp.error('[SSO MIGRATION] strategy not defined in configuration', { providerKey: ssoKey });
     }
   }
 
+  // checking capa before doing all database changes
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) throw AuthRequired('SETTINGS_SET_ACCESSES is required');
   if (dryRun) {
     // When dryRun: convert authenticationStrategiesInput into display object
     const authenticationStrategies: SingleSignOnMigrationResult[] = [];
@@ -344,20 +322,46 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
     return authenticationStrategies;
   } else {
     // When no dry run: save in database, and then convert BasicStore into display object
+    logApp.info('[SSO MIGRATION] starting to write migrated SSO in database');
     const authenticationStrategies: SingleSignOnMigrationResult[] = [];
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+    const migratedIdentifier: string[] = [];
     for (let i = 0; i < authenticationStrategiesInput.length; i++) {
-      const created = await addSingleSignOn(context, user, authenticationStrategiesInput[i]);
-      const queryResult: SingleSignOnMigrationResult = {
-        enabled: created.enabled,
-        name: created.name,
-        label: created.label,
-        strategy: created.strategy,
-        description: created.description,
-        id: created.id,
-        configuration: created.configuration,
-      };
-      authenticationStrategies.push(queryResult);
+      const currentAuthProvider = authenticationStrategiesInput[i];
+      const identifier = currentAuthProvider.identifier;
+      if (identifier && !isAuthenticationProviderMigrated(settings, identifier)) {
+        logApp.info(`[SSO MIGRATION] creating new configuration for ${identifier}`);
+        const created = await addSingleSignOn(context, user, currentAuthProvider);
+        const queryResult: SingleSignOnMigrationResult = {
+          enabled: created.enabled,
+          name: created.name,
+          label: created.label,
+          strategy: created.strategy,
+          description: created.description,
+          id: created.id,
+          configuration: created.configuration,
+          identifier: created.identifier,
+        };
+        migratedIdentifier.push(identifier);
+        authenticationStrategies.push(queryResult);
+      } else {
+        logApp.info(`[SSO MIGRATION] skipping ${currentAuthProvider.strategy} - ${identifier} as it's already in database.`, { auth_strategy_migrated: settings?.auth_strategy_migrated });
+      }
     }
+
+    if (migratedIdentifier.length > 0) {
+      let newList: string[];
+      if (settings.auth_strategy_migrated) {
+        newList = migratedIdentifier.concat(settings.auth_strategy_migrated);
+      } else {
+        newList = migratedIdentifier;
+      }
+      logApp.info('[SSO MIGRATION] New list of migrated identifier saved in settings', { newList });
+      await settingsEditField(context, user, settings.id, [
+        { key: 'auth_strategy_migrated', value: newList },
+      ]);
+    }
+
     return authenticationStrategies;
   }
 };

@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
+import { type EditInput, type SingleSignMigrationInput, type SingleSignOnAddInput, StrategyType } from '../../generated/graphql';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntitySingleSignOn, ENTITY_TYPE_SINGLE_SIGN_ON, type StoreEntitySingleSignOn } from './singleSignOn-types';
-import { type EditInput, type SingleSignMigrationInput, type SingleSignOnAddInput } from '../../generated/graphql';
 import { now } from '../../utils/format';
 import { createInternalObject } from '../../domain/internalObject';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
@@ -13,47 +13,12 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { isSingleSignOnInGuiEnabled } from './singleSignOn';
 import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
-// Create a function to check all mandatory fields before creation
-
-// export const getStrategyAttributes = (strategy: StrategyType) => {
-// in case of a creation, we do not resolve the mandatory field list because we do not fetch anything before creating
-// maybe we should create a record, map or something like that to have all attributes for a strategy ( mandatory, optional, ... )
-// Need to be fetched in front, when the strategy is selected, to generate the form
-// If this solution is used, maybe we will not have to keep the value on resolver : mandatoryFields
-// something like :
-/*
-    export enum AttributeType {
-      STRING = 'string',
-      NUMBER = 'number',
-      BOOLEAN = 'boolean',
-      STRATEGY_LDAP = 'LdapStrategy',
-    }
-
-    type StrategyAttributesType = {
-      ["string"]: {
-        key: string;
-        displayName: string;
-        type: AttributeType;
-        mandatory: boolean;
-        tooltip?: string;
-      }
-    }
-
-    const STRATEGY_ATTRIBUTES: StrategyAttributesType = {
-      [StrategyType.STRATEGY_SAML]: [
-        { key: 'name', displayName: 'name', type: AttributeType.STRING , mandatory: true, order: 1 },
-        { key: 'description', displayName: 'description', type: AttributeType.BOOLEAN, mandatory: false, order: 2 },
-        { key: 'issuer', displayName: 'issuer', type:  AttributeType.STRING, mandatory: true, order: 3 },
-        { key: 'cert', displayName: 'certificat', type: AttributeType.STRING, mandatory: true, order: 4, tooltip: 'Here is a tooltip' },
-        {....}
-      ],
-      [StrategyType.STRATEGY_LDAP]: [{....}],
-    };
-
-    return STRATEGY_ATTRIBUTES[strategy];
-  */
-// };
+// For now it's only a logApp, but will be also send to UI via Redis.
+export const logAuth = (message: string, strategyType: StrategyType, meta?: any) => {
+  logApp.info(`[Auth][${strategyType.toString()}]${message}`, { meta });
+};
 
 export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
   if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
@@ -116,17 +81,13 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
 };
 
 export const runSingleSignOnRunMigration = async (context: AuthContext, user: AuthUser, input: SingleSignMigrationInput) => {
+  if (!await isEnterpriseEdition(context)) throw UnsupportedError('Enterprise license is required to run SSO migration');
   logApp.info(`[SSO MIGRATION] dry run ? ${input.dry_run}`);
   const ssoConfigurationEnv = nconf.get('providers');
-  logApp.info('[SSO MIGRATION] provider configuration:', { providers: ssoConfigurationEnv });
   return parseSingleSignOnRunConfiguration(context, user, ssoConfigurationEnv, input.dry_run);
 };
 
 export const findAllSingleSignOn = (context: AuthContext, user: AuthUser): Promise<BasicStoreEntitySingleSignOn[]> => {
   if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
   return fullEntitiesList(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON]);
-};
-
-export const getAdvancedConfiguration = (context: AuthContext, user: AuthUser, singleSignOn: BasicStoreEntitySingleSignOn) => {
-  return [];
 };

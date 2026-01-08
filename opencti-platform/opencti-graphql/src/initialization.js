@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
-import { initializeAdminUser } from './config/providers-initialization';
+import { initializeAdminUser, initializeEnvAuthenticationProviders } from './config/providers-initialization';
 import { storageInit, initializeBucket } from './database/raw-file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
@@ -135,6 +135,10 @@ const platformInit = async (withMarkings = true) => {
       await initDecayRules(context, SYSTEM_USER);
     }
     await initExclusionListCache();
+
+    // Authentication
+    // Env authorization will be deprecated but for now both env and database works together.
+    await initializeEnvAuthenticationProviders(context, SYSTEM_USER);
     if (isSingleSignOnInGuiEnabled) {
       await initAuthenticationProviders(context, SYSTEM_USER);
     }

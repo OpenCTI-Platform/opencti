@@ -27751,6 +27751,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   __typename?: 'Settings';
   activity_listeners?: Maybe<Array<Member>>;
   analytics_google_analytics_v4?: Maybe<Scalars['String']['output']>;
+  auth_strategy_migrated?: Maybe<Array<Scalars['String']['output']>>;
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -27880,7 +27881,6 @@ export type SingleSignMigrationInput = {
 
 export type SingleSignOn = BasicObject & InternalObject & {
   __typename?: 'SingleSignOn';
-  advanced_configuration?: Maybe<Array<ConfigurationType>>;
   configuration?: Maybe<Array<ConfigurationType>>;
   created_at: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
@@ -27900,7 +27900,6 @@ export type SingleSignOn = BasicObject & InternalObject & {
 };
 
 export type SingleSignOnAddInput = {
-  advanced_configuration?: InputMaybe<Array<ConfigurationTypeInput>>;
   configuration?: InputMaybe<Array<ConfigurationTypeInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   enabled: Scalars['Boolean']['input'];
@@ -46548,6 +46547,7 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
   activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   analytics_google_analytics_v4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  auth_strategy_migrated?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46642,7 +46642,6 @@ export type SettingsMessageResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type SingleSignOnResolvers<ContextType = any, ParentType extends ResolversParentTypes['SingleSignOn'] = ResolversParentTypes['SingleSignOn']> = ResolversObject<{
-  advanced_configuration?: Resolver<Maybe<Array<ResolversTypes['ConfigurationType']>>, ParentType, ContextType>;
   configuration?: Resolver<Maybe<Array<ResolversTypes['ConfigurationType']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

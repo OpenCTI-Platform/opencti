@@ -1,23 +1,10 @@
 import type { Resolvers } from '../../generated/graphql';
-import {
-  findSingleSignOnById,
-  findSingleSignOnPaginated,
-  addSingleSignOn,
-  fieldPatchSingleSignOn,
-  deleteSingleSignOn,
-  runSingleSignOnRunMigration,
-  getAdvancedConfiguration,
-} from './singleSignOn-domain';
+import { findSingleSignOnById, findSingleSignOnPaginated, addSingleSignOn, fieldPatchSingleSignOn, deleteSingleSignOn, runSingleSignOnRunMigration } from './singleSignOn-domain';
 
 const singleSignOnResolver: Resolvers = {
   Query: {
     singleSignOn: (_, { id }, context) => findSingleSignOnById(context, context.user, id),
     singleSignOns: (_, args, context) => findSingleSignOnPaginated(context, context.user, args),
-    // to be fetched when strategy is selected in front
-    // strategyAttributes: (_, { strategy }, context) => getStrategyAttributes(strategy),
-  },
-  SingleSignOn: {
-    advanced_configuration: (singleSignOn, _, context) => getAdvancedConfiguration(context, context.user, singleSignOn),
   },
   Mutation: {
     singleSignOnAdd: (_, { input }, context) => {
