@@ -51,7 +51,11 @@ const CardNumber = ({
         )}
       </Stack>
 
-      <Stack direction="row" justifyContent="space-between">
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+      >
         <div
           data-testid={`card-number-${label}`}
           style={valueStyle}
@@ -59,7 +63,11 @@ const CardNumber = ({
           {n(value)}
         </div>
         {entityType && (
-          <ItemIcon type={entityType} size="large" />
+          <ItemIcon
+            type={entityType}
+            size="large"
+            color={theme.palette.text.secondary}
+          />
         )}
         {icon}
       </Stack>

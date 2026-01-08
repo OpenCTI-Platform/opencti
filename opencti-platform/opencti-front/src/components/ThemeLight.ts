@@ -83,6 +83,7 @@ const ThemeLight = (
       },
     },
     text: {
+      secondary: '#494A50',
       light: '#494A50',
     },
     leftBar: {
