@@ -11,7 +11,6 @@ const DangerZoneChip = ({ style }: { style?: React.CSSProperties }) => {
     <div
       style={{
         fontSize: 'xx-small',
-        textTransform: 'uppercase',
         fontWeight: 500,
         height: 14,
         display: 'inline-flex',

@@ -2,6 +2,7 @@ import React from 'react';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { isEmptyField } from '../../utils/utils';
+import { capitalizeFirstLetter } from 'src/utils/String';
 
 export const SYSTEM_BANNER_HEIGHT = 20;
 const BANNER_Z_INDEX = 2000;
@@ -63,7 +64,7 @@ const bannerColorClassName = (color, prefix = 'banner') => {
     return '';
   }
   let colorName = color.toLowerCase();
-  colorName = colorName.substring(0, 1).toUpperCase() + colorName.substring(1);
+  colorName = capitalizeFirstLetter(colorName);
   return `${prefix}${colorName}`;
 };
 

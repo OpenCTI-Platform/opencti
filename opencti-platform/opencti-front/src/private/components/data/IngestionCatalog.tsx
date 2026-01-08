@@ -22,7 +22,7 @@ import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import GradientButton from '../../../components/GradientButton';
+import Button from '@common/button/Button';
 import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters';
 import GradientCard from '../../../components/GradientCard';
 import { MESSAGING$ } from '../../../relay/environment';
@@ -83,15 +83,16 @@ const BrowseMoreButton = () => {
   const { t_i18n } = useFormatter();
 
   return (
-    <GradientButton
-      size="small"
-      sx={{ marginLeft: 1 }}
+    <Button
+      gradient
+      variant="secondary"
+      style={{ marginTop: 9, marginBottom: 10 }}
       href="https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76"
       target="_blank"
-      title={t_i18n('Browse more')}
+      title={t_i18n('Browse More')}
     >
-      {t_i18n('Browse more')}
-    </GradientButton>
+      {t_i18n('Browse More')}
+    </Button>
   );
 };
 

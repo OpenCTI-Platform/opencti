@@ -25,6 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
+import { capitalizeFirstLetter } from 'src/utils/String';
 import Card from '../../../../components/common/card/Card';
 
 const securityCoverageAttackPatternsFragment = graphql`
@@ -189,10 +190,10 @@ const SecurityCoverageAttackPatterns = ({
                 {killChains.map((chain) => (
                   <MenuItem key={chain} value={chain}>
                     {(() => {
-                      if (chain === 'mitre-attack') return 'MITRE ATT&CK';
+                      if (chain === 'mitre-attack') return 'Mitre Attack';
                       if (chain === 'capec') return 'CAPEC';
-                      if (chain === 'disarm') return 'DISARM';
-                      return chain.toUpperCase();
+                      if (chain === 'disarm') return 'Disarm';
+                      return capitalizeFirstLetter(chain);
                     })()}
                   </MenuItem>
                 ))}

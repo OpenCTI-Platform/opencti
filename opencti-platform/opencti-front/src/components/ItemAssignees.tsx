@@ -47,7 +47,7 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
             key={assignee.id}
             variant="outlined"
             icon={<PersonOutline color="primary" />}
-            label={truncate(assignee.name, 25).toUpperCase()}
+            label={truncate(assignee.name, 25)}
             style={{
               color: theme.palette.primary.main,
               borderColor: theme.palette.primary.main,
