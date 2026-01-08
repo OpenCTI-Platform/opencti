@@ -2345,10 +2345,6 @@ type MigrationAssessment {
   missing: [MissingConfigKey!]!
 }
 
-type MigrateConnectorToManagedResult {
-  connector: Connector!
-}
-
 type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
@@ -9729,7 +9725,7 @@ type Mutation {
   updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
-  connectorMigrateToManaged(input: MigrateConnectorToManagedInput!, dryRun: Boolean): MigrateConnectorToManagedResult!
+  connectorMigrateToManaged(input: MigrateConnectorToManagedInput!, dryRun: Boolean): ManagedConnector!
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!
   feedEdit(id: ID!, input: FeedAddInput!): Feed!

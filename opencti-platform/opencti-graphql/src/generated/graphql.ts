@@ -15000,11 +15000,6 @@ export type MigrateConnectorToManagedInput = {
   resetConnectorState?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
-export type MigrateConnectorToManagedResult = {
-  __typename?: 'MigrateConnectorToManagedResult';
-  connector: Connector;
-};
-
 export type MigrationAssessment = {
   __typename?: 'MigrationAssessment';
   connector_id: Scalars['ID']['output'];
@@ -15113,8 +15108,8 @@ export type Mutation = {
   checkXTMHubConnectivity: CheckXtmHubConnectivityResponse;
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
+  connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
-  connectorMigrateToManaged: MigrateConnectorToManagedResult;
   containerEdit?: Maybe<ContainerEditMutations>;
   countryAdd?: Maybe<Country>;
   countryEdit?: Maybe<CountryEditMutations>;
@@ -36588,7 +36583,6 @@ export type ResolversTypes = ResolversObject<{
   MetricDefinition: ResolverTypeWrapper<MetricDefinition>;
   MetricsByMimeType: ResolverTypeWrapper<MetricsByMimeType>;
   MigrateConnectorToManagedInput: MigrateConnectorToManagedInput;
-  MigrateConnectorToManagedResult: ResolverTypeWrapper<Omit<MigrateConnectorToManagedResult, 'connector'> & { connector: ResolversTypes['Connector'] }>;
   MigrationAssessment: ResolverTypeWrapper<MigrationAssessment>;
   MigrationAssessmentSummary: ResolverTypeWrapper<MigrationAssessmentSummary>;
   MissingConfigKey: ResolverTypeWrapper<MissingConfigKey>;
@@ -37549,7 +37543,6 @@ export type ResolversParentTypes = ResolversObject<{
   MetricDefinition: MetricDefinition;
   MetricsByMimeType: MetricsByMimeType;
   MigrateConnectorToManagedInput: MigrateConnectorToManagedInput;
-  MigrateConnectorToManagedResult: Omit<MigrateConnectorToManagedResult, 'connector'> & { connector: ResolversParentTypes['Connector'] };
   MigrationAssessment: MigrationAssessment;
   MigrationAssessmentSummary: MigrationAssessmentSummary;
   MissingConfigKey: MissingConfigKey;
@@ -43109,10 +43102,6 @@ export type MetricsByMimeTypeResolvers<ContextType = any, ParentType extends Res
   size?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
 }>;
 
-export type MigrateConnectorToManagedResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['MigrateConnectorToManagedResult'] = ResolversParentTypes['MigrateConnectorToManagedResult']> = ResolversObject<{
-  connector?: Resolver<ResolversTypes['Connector'], ParentType, ContextType>;
-}>;
-
 export type MigrationAssessmentResolvers<ContextType = any, ParentType extends ResolversParentTypes['MigrationAssessment'] = ResolversParentTypes['MigrationAssessment']> = ResolversObject<{
   connector_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   connector_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -43214,8 +43203,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   checkXTMHubConnectivity?: Resolver<ResolversTypes['CheckXTMHubConnectivityResponse'], ParentType, ContextType>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
+  connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType>;
-  connectorMigrateToManaged?: Resolver<ResolversTypes['MigrateConnectorToManagedResult'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   containerEdit?: Resolver<Maybe<ResolversTypes['ContainerEditMutations']>, ParentType, ContextType, RequireFields<MutationContainerEditArgs, 'id'>>;
   countryAdd?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<MutationCountryAddArgs, 'input'>>;
   countryEdit?: Resolver<Maybe<ResolversTypes['CountryEditMutations']>, ParentType, ContextType, RequireFields<MutationCountryEditArgs, 'id'>>;
@@ -48920,7 +48909,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MetricAttributes?: MetricAttributesResolvers<ContextType>;
   MetricDefinition?: MetricDefinitionResolvers<ContextType>;
   MetricsByMimeType?: MetricsByMimeTypeResolvers<ContextType>;
-  MigrateConnectorToManagedResult?: MigrateConnectorToManagedResultResolvers<ContextType>;
   MigrationAssessment?: MigrationAssessmentResolvers<ContextType>;
   MigrationAssessmentSummary?: MigrationAssessmentSummaryResolvers<ContextType>;
   MissingConfigKey?: MissingConfigKeyResolvers<ContextType>;

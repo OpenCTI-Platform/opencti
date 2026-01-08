@@ -5,7 +5,7 @@ import { fullEntitiesList, storeLoadById } from '../database/middleware-loader';
 import { unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { notify } from '../database/redis';
 import { completeConnector, connector } from '../database/repository';
-import type { ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
+import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, findContractByContainerImage } from '../modules/catalog/catalog-domain';
@@ -45,31 +45,17 @@ type IgnoredKey = {
   reason: string;
 };
 
-export const getConnector = async (context: AuthContext, user: AuthUser, id: string) => {
-  const connectorFound = connector(context, user, id);
-
-  if (!connectorFound) {
-    throw FunctionalError('No connector found with the specified ID', { id });
-  }
-};
-
-const buildConfigMap = (configuration: ConfigInput[] | Record<string, string>): Map<string, string> => {
+const buildConfigMap = (configuration: ConfigInput[]): Map<string, string> => {
   const configMap = new Map<string, string>();
 
-  if (Array.isArray(configuration)) {
-    configuration.forEach((c) => {
-      configMap.set(c.key.toUpperCase(), c.value);
-    });
-  } else {
-    Object.entries(configuration).forEach(([key, value]) => {
-      configMap.set(key.toUpperCase(), value);
-    });
-  }
+  configuration.forEach((c) => {
+    configMap.set(c.key.toUpperCase(), c.value);
+  });
 
   return configMap;
 };
 
-const autoMapConnectorFields = (connectorOjb: any): Map<string, string> => {
+const autoMapConnectorFields = (connectorOjb: Connector): Map<string, string> => {
   const autoMapped = new Map<string, string>();
 
   if (connectorOjb.name) {
@@ -77,10 +63,7 @@ const autoMapConnectorFields = (connectorOjb: any): Map<string, string> => {
   }
 
   if (connectorOjb.connector_scope) {
-    const scopeValue = Array.isArray(connectorOjb.connector_scope)
-      ? connectorOjb.connector_scope.join(',')
-      : connectorOjb.connector_scope;
-    autoMapped.set('CONNECTOR_SCOPE', scopeValue);
+    autoMapped.set('CONNECTOR_SCOPE', connectorOjb.connector_scope.join(','));
   }
 
   if (connectorOjb.connector_type) {
@@ -98,6 +81,9 @@ const categorizeKeys = (
 ): { mapped: MappedKey[]; missing: MissingKey[] } => {
   const mapped: MappedKey[] = [];
   const missing: MissingKey[] = [];
+
+  console.log('CONFIG MAP ', configMap);
+  console.log('autoMappedKeys ', autoMappedKeys);
 
   Object.keys(schemaProperties).forEach((schemaKey) => {
     const propSchema = schemaProperties[schemaKey];
@@ -172,27 +158,27 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     throw FunctionalError('Cannot parse contract found');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { logo, description, short_description, ...contractDefinition } = contract;
-
   // Check type are correct
-  if (existingConnector.connector_type !== contractDefinition.container_type) {
+  if (existingConnector.connector_type !== contract.container_type) {
     throw FunctionalError('Connector type mismatch', {
       connector_type: existingConnector.connector_type,
-      contract_type: contractDefinition.container_type,
+      contract_type: contract.container_type,
     });
   }
 
   // Build configuration maps
   const autoMappedConfig = autoMapConnectorFields(existingConnector);
-  const userConfig = buildConfigMap(configuration || {});
+  const userConfig = buildConfigMap(configuration || []);
+
+  console.log('autoMappedConfig', autoMappedConfig);
+  console.log('userConfig', userConfig);
 
   // Merge: auto-mapped first, then user config (user overrides auto)
   const configMap = new Map([...autoMappedConfig, ...userConfig]);
 
   // Categorize configuration keys
-  const schemaProperties = contractDefinition.config_schema.properties;
-  const requiredKeys = contractDefinition.config_schema.required || [];
+  const schemaProperties = contract.config_schema.properties;
+  const requiredKeys = contract.config_schema.required || [];
 
   const { mapped, missing } = categorizeKeys(
     schemaProperties,
@@ -210,9 +196,9 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     connector_id: connectorId,
     connector_name: existingConnector.name,
     connector_type: existingConnector.connector_type,
-    contract_slug: contractDefinition.contract_slug,
-    contract_title: contractDefinition.title,
-    contract_image: contractDefinition.container_image,
+    contract_slug: contract.contract_slug,
+    contract_title: contract.title,
+    contract_image: contract.container_image,
     summary: {
       total_source_keys: configMap.size,
       mapped_keys: mapped.length,
@@ -288,6 +274,7 @@ export const migrateConnectorToManaged = async (
 
   const autoMappedConfig = autoMapConnectorFields(existingConnector);
   const userConfig = buildConfigMap(configuration || []);
+
   const configMap = new Map([...autoMappedConfig, ...userConfig]);
 
   const schemaProperties = contract.config_schema.properties;
@@ -402,7 +389,5 @@ export const migrateConnectorToManaged = async (
 
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, completedConnector, user);
 
-  return {
-    connector: completedConnector,
-  };
+  return completedConnector;
 };

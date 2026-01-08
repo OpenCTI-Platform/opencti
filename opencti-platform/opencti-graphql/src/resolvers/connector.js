@@ -192,7 +192,7 @@ const connectorResolvers = {
     synchronizerTest: (_, { input }, context) => testSync(context, context.user, input),
 
     connectorMigrateToManaged: (_, { input }, context) => {
-      const { connectorId, containerImage, configuration, resetConnectorState, convertUserToServiceAccount = false } = input;
+      const { connectorId, containerImage, configuration, resetConnectorState, convertUserToServiceAccount } = input;
       return migrateConnectorToManaged(
         context,
         context.user,

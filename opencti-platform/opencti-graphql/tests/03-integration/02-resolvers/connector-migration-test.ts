@@ -32,18 +32,16 @@ const DELETE_USER_MUTATION = gql`
 const MIGRATE_CONNECTOR_TO_MANAGED = gql`
   mutation MigrateConnectorToManaged($input: MigrateConnectorToManagedInput!) {
     connectorMigrateToManaged(input: $input){
-      connector {
-        id
-        name
-        standard_id
-        manager_contract_configuration {
-          key
-          value
-        }
-        connector_user {
-          user_service_account
-        }
-      }   
+      id
+      name
+      standard_id
+      manager_contract_configuration {
+        key
+        value
+      }
+      connector_user {
+        user_service_account
+      } 
     }
 }`;
 
@@ -206,18 +204,15 @@ describe('Check connector migration', () => {
         }
 
         // same values excluded from catalog-domain
-        const RUNTIME_KEYS = ['CONNECTOR_ID', 'CONNECTOR_TYPE', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
-        const managedConnector = managedConnectorResult.data.connectorMigrateToManaged.connector;
+        const RUNTIME_KEYS = ['OPENCTI_TOKEN', 'CONNECTOR_ID', 'CONNECTOR_TYPE', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
+        const managedConnector = managedConnectorResult.data.connectorMigrateToManaged;
         const rawConfig = managedConnector.manager_contract_configuration;
         rawConfig.filter((c: any) => !RUNTIME_KEYS.includes(c.key));
 
         const actualConfig = rawConfig.filter((c: { key: string }) => !RUNTIME_KEYS.includes(c.key));
         const schemaProperties = contractParsed.config_schema.properties;
 
-        const expectedKeys = Object.keys(schemaProperties).filter(
-          (key) => !key.endsWith('API_KEY'),
-        );
-
+        const expectedKeys = Object.keys(schemaProperties);
         const actualKeys = actualConfig.map((c: { key: string }) => c.key);
 
         // Assert all expected keys are present and no extra keys
