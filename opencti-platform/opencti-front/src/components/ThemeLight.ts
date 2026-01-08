@@ -98,7 +98,7 @@ const ThemeLight = (
       low: '#16AD34',
       info: '#1565c0',
       none: '#424242',
-      default: '#1C2F49',
+      default: '#DDE1FE',
     },
   },
   typography: {
