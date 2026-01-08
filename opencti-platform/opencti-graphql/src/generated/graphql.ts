@@ -19059,7 +19059,7 @@ export type Notifier = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
-  notifier_configuration?: Maybe<Scalars['String']['output']>;
+  notifier_configuration: Scalars['String']['output'];
   notifier_connector: NotifierConnector;
   notifier_connector_id: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
@@ -43785,7 +43785,7 @@ export type NotifierResolvers<ContextType = any, ParentType extends ResolversPar
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  notifier_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  notifier_configuration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notifier_connector?: Resolver<ResolversTypes['NotifierConnector'], ParentType, ContextType>;
   notifier_connector_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;

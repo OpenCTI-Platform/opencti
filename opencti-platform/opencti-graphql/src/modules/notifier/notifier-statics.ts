@@ -168,6 +168,7 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
     name: 'User interface',
     description: 'Publish notification to the user interface',
     notifier_connector_id: NOTIFIER_CONNECTOR_UI,
+    notifier_configuration: '',
   },
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
