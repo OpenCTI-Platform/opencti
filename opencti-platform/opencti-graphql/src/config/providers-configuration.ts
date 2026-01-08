@@ -1,7 +1,9 @@
 // Providers definition
 import type { StrategyType } from '../generated/graphql';
+import type { BasicStoreSettings } from '../types/settings';
 
 export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__';
+export const LOCAL_STRATEGY_IDENTIFIER = 'local';
 
 export enum AuthType {
   AUTH_SSO = 'SSO',
@@ -34,3 +36,7 @@ export interface ProviderConfiguration {
 export const PROVIDERS: ProviderConfiguration[] = [];
 
 export const isStrategyActivated = (strategy: EnvStrategyType) => PROVIDERS.map((p) => p.strategy).includes(strategy);
+
+export const isAuthenticationProviderMigrated = (settings: BasicStoreSettings, authIdentifier: string) => {
+  return settings && settings.auth_strategy_migrated && settings.auth_strategy_migrated.some((strategyIdentifier) => strategyIdentifier === authIdentifier);
+};

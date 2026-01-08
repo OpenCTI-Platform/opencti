@@ -63,6 +63,7 @@ describe('Migration of SSO environment test coverage', () => {
             acceptedClockSkewMs: 5,
             xmlSignatureTransforms: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/2001/10/xml-exc-c14n#'],
             want_assertions_signed: true,
+            organizations_default: ['OpenCTI'],
           },
         },
       };

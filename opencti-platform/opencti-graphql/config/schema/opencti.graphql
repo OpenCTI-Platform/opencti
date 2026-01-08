@@ -1503,6 +1503,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   view_all_users: Boolean
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
+  auth_strategy_migrated: [String!] @auth(for: [SETTINGS_SETACCESSES])
   # XTM Hub
   xtm_hub_token: String
   xtm_hub_registration_user_id: String

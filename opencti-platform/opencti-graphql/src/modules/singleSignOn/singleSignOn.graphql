@@ -16,7 +16,6 @@ type SingleSignOn implements InternalObject & BasicObject {
   organizations_management: OrganizationsManagement
   groups_management: GroupsManagement
   configuration: [ConfigurationType!]
-  advanced_configuration: [ConfigurationType!]
 }
 
 type OrganizationsManagement {
@@ -106,7 +105,6 @@ input SingleSignOnAddInput {
   organizations_management: OrganizationsManagementInput
   groups_management: GroupsManagementInput
   configuration: [ConfigurationTypeInput!]
-  advanced_configuration: [ConfigurationTypeInput!]
   label: String
 }
 
