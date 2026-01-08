@@ -12,11 +12,11 @@ import useAttributes from '../../../../utils/hooks/useAttributes';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
 
 interface SearchScopeElementProps {
-  name: string,
-  disabled?: boolean,
-  searchScope: Record<string, string[]>,
-  setSearchScope:  React.Dispatch<React.SetStateAction<Record<string, string[]>>>,
-  availableRelationFilterTypes?: Record<string, string[]>,
+  name: string;
+  disabled?: boolean;
+  searchScope: Record<string, string[]>;
+  setSearchScope: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+  availableRelationFilterTypes?: Record<string, string[]>;
 }
 
 const SearchScopeElement = ({
@@ -56,7 +56,7 @@ const SearchScopeElement = ({
     }));
   };
 
-  let color: 'secondary' | 'primary' = searchScope[name] && searchScope[name].length > 0
+  const color: 'secondary' | 'primary' = searchScope[name] && searchScope[name].length > 0
     ? 'secondary'
     : 'primary';
 
