@@ -20,6 +20,7 @@ import {
   USER_CONNECTOR,
   USER_DISINFORMATION_ANALYST,
   USER_EDITOR,
+  USER_PARTICIPATE,
   USER_SECURITY,
 } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
@@ -836,13 +837,15 @@ describe('User has no capability query behavior', () => {
   });
 });
 
-describe('User has no settings capability and is organization admin query behavior', () => {
+describe('User has no settings capability and is organization admin query behavior', async () => {
   let userInternalId: string;
-  let userEditorId: string;
   let testOrganizationId: string;
   let amberGroupId: string;
   let platformOrganizationId: string;
   const organizationsIds: string[] = [];
+
+  const userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+  const userParticipateId = await getUserIdByEmail(USER_PARTICIPATE.email);
 
   const ORGA_ADMIN_ADD_QUERY = gql`
       mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
@@ -918,7 +921,8 @@ describe('User has no settings capability and is organization admin query behavi
     }
   });
   it('should has the capability to administrate the Organization', async () => {
-    userEditorId = await getUserIdByEmail(USER_EDITOR.email); // USER_EDITOR is perfect because she has no settings capabilities and is part of TEST_ORGANIZATION
+    // set USER_EDITOR has organization administrator of TEST_ORGANIZATION
+    // USER_EDITOR is perfect because he has no settings capabilities and is part of TEST_ORGANIZATION
     const organizationAdminAddQueryResult = await adminQueryWithSuccess({
       query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: {
@@ -972,6 +976,15 @@ describe('User has no settings capability and is organization admin query behavi
     expect(user.data.userAdd).not.toBeNull();
     expect(user.data.userAdd.name).toEqual('User');
     userInternalId = user.data.userAdd.id;
+  });
+  it('should list users from its own organization', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: LIST_QUERY,
+      variables: {},
+    });
+    expect(queryResult.data.users.edges.length).toEqual(3);
+    expect([userInternalId, userEditorId, userParticipateId].every((userId) => queryResult.data.users.edges.map((n: any) => n.node.id).includes(userId)))
+      .toBeTruthy();
   });
   it('should update user from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
