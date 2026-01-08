@@ -77,21 +77,15 @@ const categorizeKeys = (
   schemaProperties: any,
   requiredKeys: string[],
   configMap: Map<string, string>,
-  autoMappedKeys: Map<string, string>,
 ): { mapped: MappedKey[]; missing: MissingKey[] } => {
   const mapped: MappedKey[] = [];
   const missing: MissingKey[] = [];
-
-  console.log('CONFIG MAP ', configMap);
-  console.log('autoMappedKeys ', autoMappedKeys);
 
   Object.keys(schemaProperties).forEach((schemaKey) => {
     const propSchema = schemaProperties[schemaKey];
 
     const keyUpper = schemaKey.toUpperCase();
-    const value = autoMappedKeys.has(keyUpper)
-      ? autoMappedKeys.get(keyUpper)
-      : configMap.get(keyUpper);
+    const value = configMap.get(keyUpper);
 
     if (value !== null && value !== undefined) {
       mapped.push({
@@ -170,9 +164,6 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
   const autoMappedConfig = autoMapConnectorFields(existingConnector);
   const userConfig = buildConfigMap(configuration || []);
 
-  console.log('autoMappedConfig', autoMappedConfig);
-  console.log('userConfig', userConfig);
-
   // Merge: auto-mapped first, then user config (user overrides auto)
   const configMap = new Map([...autoMappedConfig, ...userConfig]);
 
@@ -184,7 +175,6 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     schemaProperties,
     requiredKeys,
     configMap,
-    autoMappedConfig,
   );
 
   const ignored = findIgnoredKeys(schemaProperties, configMap);
