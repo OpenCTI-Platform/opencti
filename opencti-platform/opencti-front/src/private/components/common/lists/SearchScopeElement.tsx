@@ -26,7 +26,6 @@ const SearchScopeElement = ({
   setSearchScope,
   availableRelationFilterTypes,
 }: SearchScopeElementProps) => {
-  console.log('test');
   const { t_i18n } = useFormatter();
   const [anchorElSearchScope, setAnchorElSearchScope] = useState<PopoverProps['anchorEl']>();
   const { stixCoreObjectTypes: entityTypes } = useAttributes();
