@@ -177,7 +177,6 @@ const SSODefinitions = () => {
           // )}
           entityTypes={['SingleSignOn']}
           searchContextFinal={{ entityTypes: ['SingleSignOn'] }}
-          disableNavigation
           disableToolBar
           removeSelectAll
           createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
