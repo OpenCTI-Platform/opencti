@@ -74,7 +74,7 @@ import { defaultMarkingDefinitionsFromGroups, findGroupPaginated as findGroups }
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { addFilter, extractFilterKeys, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, extractFilterKeys } from '../utils/filtering/filtering-utils';
 import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
 import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
