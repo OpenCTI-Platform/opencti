@@ -81,7 +81,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'callbackUrl', type: 'string', value: 'http://localhost:2000/auth/saml/callback' },
         { key: 'idpCert', type: 'string', value: 'totallyFakeCert3' },
         { key: 'acceptedClockSkewMs', type: 'number', value: '5' },
-        { key: 'xmlSignatureTransforms', type: 'array', value: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature', 'http://www.w3.org/2001/10/xml-exc-c14n#'] },
+        { key: 'xmlSignatureTransforms', type: 'array', value: '["http://www.w3.org/2000/09/xmldsig#enveloped-signature","http://www.w3.org/2001/10/xml-exc-c14n#"]' },
         { key: 'wantAssertionsSigned', type: 'boolean', value: 'true' },
       ]);
     });
