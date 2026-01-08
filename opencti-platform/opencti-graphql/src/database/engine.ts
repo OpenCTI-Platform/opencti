@@ -1735,7 +1735,7 @@ export const elFindByIds = async <T extends BasicStoreBase> (
   } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type] as string[];
-  const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
+  const processIds = idsArray.filter((id) => isNotEmptyField(id));
   if (processIds.length === 0) {
     return toMap ? {} as Record<string, T> : [] as T[];
   }

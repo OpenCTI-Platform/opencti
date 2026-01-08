@@ -19,12 +19,12 @@ import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache }
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
-  internalFindByIds,
-  internalLoadById,
   fullEntitiesList,
   fullEntitiesThoughAggregationConnection,
-  fullRelationsList,
   fullEntitiesThroughRelationsToList,
+  fullRelationsList,
+  internalFindByIds,
+  internalLoadById,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById,
@@ -50,12 +50,14 @@ import {
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import {
-  applyOrganizationRestriction,
+  buildRegardingOfDirectParticipateToFilters,
   BYPASS,
   CAPABILITIES_IN_DRAFT_NAMES,
   executionContext,
   FilterMembersMode,
-  filterMembersWithUsersOrgs,
+  filterMembersUsersWithUsersOrgs,
+  findAllMembersWithOrgaRestriction,
+  findMembersPaginatedWithOrgaRestriction,
   INTERNAL_USERS,
   INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
@@ -73,7 +75,7 @@ import { defaultMarkingDefinitionsFromGroups, findGroupPaginated as findGroups }
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { addFilter, extractFilterKeys, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, extractFilterKeys } from '../utils/filtering/filtering-utils';
 import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
 import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
@@ -93,7 +95,6 @@ const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
-export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
 const ME_USER_MODIFIABLE_ATTRIBUTES = [
@@ -199,80 +200,56 @@ export const findById = async (context, user, userId) => {
   return buildCompleteUser(context, withoutPassword);
 };
 
-const buildUserOrganizationRestrictedFilters = (user, filters) => {
+// build user organization restriction filters
+// for the list of users in Settings
+const buildUserOrganizationRestrictedFiltersForSettings = (user, filters) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    // If user is not a set access administrator, user can only see attached organization users
+    // If user is not a set access administrator, user can only see directly attached organization users
     const organizationIds = user.administrated_organizations.map((organization) => organization.id);
-    return {
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'relationship_type',
-              values: ['participate-to'],
-            },
-            {
-              key: 'id',
-              values: organizationIds,
-            },
-          ],
-          mode: 'or',
-        },
-      ],
-      filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
-    };
+    return buildRegardingOfDirectParticipateToFilters(organizationIds, filters);
   }
   return filters;
 };
 
 export const findAllUser = async (context, user, args) => {
-  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
+  const filters = buildUserOrganizationRestrictedFiltersForSettings(user, args.filters);
   return fullEntitiesList(context, user, [ENTITY_TYPE_USER], { ...args, filters });
 };
 
 export const findUserPaginated = async (context, user, args) => {
-  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
+  const filters = buildUserOrganizationRestrictedFiltersForSettings(user, args.filters);
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_USER], { ...args, filters });
+};
+
+const postResolveMembersFunction = (context, user) => {
+  return async (usersResult) => {
+    return filterMembersUsersWithUsersOrgs(context, user, usersResult, FilterMembersMode.EXCLUDE);
+  };
 };
 
 export const findCreators = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const creatorsFilter = async (creators) => {
-    return filterMembersWithUsersOrgs(context, user, creators, FilterMembersMode.EXCLUDE);
-  };
+  const creatorsFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: creatorsFilter });
 };
 
 export const findAssignees = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const assigneesFilter = async (assignees) => {
-    return filterMembersWithUsersOrgs(context, user, assignees, FilterMembersMode.EXCLUDE);
-  };
+  const assigneesFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: assigneesFilter });
 };
 export const findParticipants = (context, user, args) => {
   const { entityTypes = [] } = args;
-  const participantsFilter = async (participants) => {
-    return filterMembersWithUsersOrgs(context, user, participants, FilterMembersMode.EXCLUDE);
-  };
+  const participantsFilter = postResolveMembersFunction(context, user);
   return fullEntitiesThoughAggregationConnection(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: participantsFilter });
 };
 
 export const findMembersPaginated = async (context, user, args) => {
-  const { entityTypes = null } = args;
-  const types = entityTypes || MEMBERS_ENTITY_TYPES;
-  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return pageEntitiesConnection(context, user, types, restrictedArgs);
+  return findMembersPaginatedWithOrgaRestriction(context, user, args);
 };
 
 export const findAllMembers = async (context, user, args) => {
-  const { entityTypes = null } = args;
-  const types = entityTypes || MEMBERS_ENTITY_TYPES;
-  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
-  return fullEntitiesList(context, user, types, restrictedArgs);
+  return findAllMembersWithOrgaRestriction(context, user, args);
 };
 
 export const findUserWithCapabilities = async (context, user, capabilities) => {
@@ -1029,7 +1006,7 @@ export const bookmarks = async (context, user, args) => {
   // handle filters
   if (filters) {
     // check filters are supported
-    // i.e. filters can only contains filters with key=entity_type
+    // i.e. filters can only contain filters with key=entity_type
     if (extractFilterKeys(filters).filter((f) => f !== 'entity_type').length > 0) {
       throw UnsupportedError('Bookmarks widgets only support filter with key=entity_type.');
     }
