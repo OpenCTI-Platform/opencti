@@ -16,7 +16,7 @@ const FilterIconButtonGlobalMode: FunctionComponent<
   const { t_i18n } = useFormatter();
   return (
     <div className={classOperator} onClick={handleSwitchGlobalMode}>
-      {t_i18n(globalMode.toUpperCase())}
+      {t_i18n(globalMode.toLowerCase())}
     </div>
   );
 };
