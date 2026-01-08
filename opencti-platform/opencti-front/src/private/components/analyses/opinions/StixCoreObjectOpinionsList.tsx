@@ -130,7 +130,6 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                   </Tooltip>
                   <div style={{ marginRight: 50 }}>
                     <ItemMarkings
-                      variant="inList"
                       markingDefinitions={opinion?.objectMarking ?? []}
                       limit={1}
                     />

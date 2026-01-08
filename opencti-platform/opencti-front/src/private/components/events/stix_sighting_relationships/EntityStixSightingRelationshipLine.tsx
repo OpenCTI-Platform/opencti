@@ -348,7 +348,10 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <ItemConfidence confidence={data.confidence} entityType={data.entity_type} variant="inList" />
+                <ItemConfidence
+                  confidence={data.confidence}
+                  entityType={data.entity_type}
+                />
               </div>
             </div>
           )}

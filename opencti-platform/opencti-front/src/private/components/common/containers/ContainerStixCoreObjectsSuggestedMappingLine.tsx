@@ -159,7 +159,6 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
                 style={{ width: dataColumns.objectMarking.width }}
               >
                 <ItemMarkings
-                  variant="inList"
                   markingDefinitions={matchedEntity.objectMarking ?? []}
                   limit={1}
                 />

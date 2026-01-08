@@ -228,7 +228,6 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                 }
                               />
                               <ItemMarkings
-                                variant="inList"
                                 markingDefinitions={attackPattern.objectMarking ?? []}
                                 limit={1}
                               />

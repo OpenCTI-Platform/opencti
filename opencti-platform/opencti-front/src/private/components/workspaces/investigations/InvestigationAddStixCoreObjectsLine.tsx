@@ -117,7 +117,6 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                variant="inList"
                 markingDefinitions={(node.objectMarking ?? [])}
                 limit={1}
               />

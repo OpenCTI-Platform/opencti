@@ -528,7 +528,6 @@ const RelationshipDetailsComponent: FunctionComponent<
       </Typography>
       <ItemEntityType
         entityType={stixRelationship.relationship_type ?? 'unknown'}
-        inList={false}
       />
       {!stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (

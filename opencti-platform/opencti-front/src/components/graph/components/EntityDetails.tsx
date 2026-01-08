@@ -370,7 +370,7 @@ const EntityDetailsComponent: FunctionComponent<
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Type')}
       </Typography>
-      <ItemEntityType entityType={stixCoreObject.entity_type} inList={false} />
+      <ItemEntityType entityType={stixCoreObject.entity_type} />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Platform creation date')}
       </Typography>

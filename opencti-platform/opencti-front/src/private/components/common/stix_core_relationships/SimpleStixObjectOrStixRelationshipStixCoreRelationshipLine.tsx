@@ -656,7 +656,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
               >
                 <ItemEntityType
                   entityType={element.entity_type ?? ''}
-                  size="large"
                   showIcon
                   isRestricted={!row}
                 />
@@ -685,7 +684,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 <ItemConfidence
                   confidence={data.confidence}
                   entityType={data.entity_type}
-                  variant="inList"
                 />
               </div>
               <div
@@ -693,7 +691,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 style={{ width: dataColumns.markings.width }}
               >
                 <ItemMarkings
-                  variant="inList"
                   markingDefinitions={data.objectMarking ?? []}
                   limit={1}
                 />

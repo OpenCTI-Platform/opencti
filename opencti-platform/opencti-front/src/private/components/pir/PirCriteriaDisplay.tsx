@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { PropsWithChildren } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Chip, { ChipProps } from '@mui/material/Chip';
+import { ChipProps } from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
@@ -38,7 +38,6 @@ const PirCriteriaDisplayComponent = ({
   queryRef,
   criteria,
   full = false,
-  size = 'medium',
   children,
 }: PirFiltersDisplayComponentProps) => {
   const theme = useTheme<Theme>();

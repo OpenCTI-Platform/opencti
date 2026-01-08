@@ -3,6 +3,7 @@ import Button from '@common/button/Button';
 import { Link } from 'react-router-dom';
 import Security from '../utils/Security';
 import { SETTINGS_SETACCESSES } from '../utils/hooks/useGranted';
+import { Stack } from '@mui/material';
 
 const systemUsers = [
   '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505', // SYSTEM
@@ -15,7 +16,7 @@ const systemUsers = [
 const ItemCreators = (props) => {
   const { creators } = props;
   return (
-    <>
+    <Stack direction="row" gap={1} flexWrap="wrap">
       {creators.map((creator) => {
         return (
           <Security
@@ -50,7 +51,7 @@ const ItemCreators = (props) => {
           </Security>
         );
       })}
-    </>
+    </Stack>
   );
 };
 

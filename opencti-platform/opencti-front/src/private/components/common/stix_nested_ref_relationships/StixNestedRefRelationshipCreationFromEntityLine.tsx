@@ -328,7 +328,6 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                variant="inList"
                 markingDefinitions={data.objectMarking ?? []}
                 limit={1}
               />

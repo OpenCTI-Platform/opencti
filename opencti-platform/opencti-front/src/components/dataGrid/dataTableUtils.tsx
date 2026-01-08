@@ -118,7 +118,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ allowed_markings }) => (
       <ItemMarkings
-        variant="inList"
         markingDefinitions={allowed_markings ?? []}
         limit={2}
       />
@@ -221,7 +220,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ confidence, entity_type }) => (
-      <ItemConfidence confidence={confidence} entityType={entity_type} variant="inList" />
+      <ItemConfidence
+        confidence={confidence}
+        entityType={entity_type}
+      />
     ),
   },
   context: {
@@ -347,7 +349,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 10,
     isSortable: false,
-    render: (data) => <ItemEntityType showIcon entityType={data.entity_type} inList />,
+    render: (data) => <ItemEntityType showIcon entityType={data.entity_type} />,
   },
   entity_types: {
     id: 'entity_types',
@@ -483,7 +485,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: (node) => (
-      <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
+      <ItemEntityType
+        showIcon
+        entityType={node.from?.entity_type}
+        isRestricted={!node.from}
+      />
     ),
   },
   from_created_at: {
@@ -510,7 +516,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'from_entity_type',
     label: 'Source type',
     percentWidth: 10,
-    render: ({ from }) => (<ItemEntityType showIcon entityType={from?.entity_type} inList />),
+    render: ({ from }) => (<ItemEntityType showIcon entityType={from?.entity_type} />),
   },
   from_objectLabel: {
     id: 'from_objectLabel',
@@ -539,7 +545,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const { objectMarking } = from;
       return (
         <ItemMarkings
-          variant="inList"
           markingDefinitions={objectMarking ?? []}
           limit={1}
           onClick={(m) => handleAddFilter('objectMarking', m.id, 'eq')}
@@ -761,7 +766,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ objectMarking }, { storageHelpers: { handleAddFilter } }) => (
       <ItemMarkings
-        variant="inList"
         markingDefinitions={objectMarking ?? []}
         limit={1}
         onClick={(m) => handleAddFilter('objectMarking', m.id, 'eq')}
@@ -1201,14 +1205,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: (node) => (
-      <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
+      <ItemEntityType
+        showIcon
+        entityType={node.to?.entity_type}
+        isRestricted={!node.to}
+      />
     ),
   },
   to_entity_type: {
     id: 'to_entity_type',
     label: 'Target type',
     percentWidth: 10,
-    render: ({ to }) => (<ItemEntityType showIcon entityType={to?.entity_type} inList />),
+    render: ({ to }) => (<ItemEntityType showIcon entityType={to?.entity_type} />),
   },
   to_relationship_type: {
     id: 'to_relationship_type',

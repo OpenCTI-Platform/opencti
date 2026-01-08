@@ -133,7 +133,6 @@ const SearchIndexedFilesComponent = () => {
           <>
             {node.entity && (
               <ItemMarkings
-                variant="inList"
                 markingDefinitions={node.entity.objectMarking ?? []}
                 limit={1}
               />

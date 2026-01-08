@@ -39,7 +39,7 @@ const Tag = ({
     fontWeight: 400,
     paddingLeft: '8px',
     cursor: onClick ? 'pointer' : 'default',
-    textTransform: 'capitalize'
+    textTransform: 'capitalize',
   };
 
   const sxStyles: SxProps<Theme> = {

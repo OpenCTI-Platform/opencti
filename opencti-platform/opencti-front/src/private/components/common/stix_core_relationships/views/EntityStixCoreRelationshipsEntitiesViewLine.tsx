@@ -319,7 +319,6 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                variant="inList"
                 markingDefinitions={stixCoreObject.objectMarking ?? []}
                 limit={1}
               />

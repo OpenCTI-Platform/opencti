@@ -177,7 +177,6 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       isSortable: isRuntimeSort ?? false,
       render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (
         <ItemMarkings
-          variant="inList"
           markingDefinitions={stixCoreObject.objectMarking ?? []}
           limit={1}
         />

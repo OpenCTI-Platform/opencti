@@ -134,7 +134,6 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                variant="inList"
                 markingDefinitions={node.objectMarking ?? []}
                 limit={1}
               />

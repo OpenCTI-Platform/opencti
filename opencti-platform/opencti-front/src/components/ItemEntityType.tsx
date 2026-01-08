@@ -1,88 +1,23 @@
-import { useTheme } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
-import { chipInListBasicStyle } from '../utils/chipStyle';
 import { itemColor } from '../utils/Colors';
 import Tag from './common/tag/Tag';
 import { useFormatter } from './i18n';
 import ItemIcon from './ItemIcon';
-import ThemeDark from './ThemeDark';
-import ThemeLight from './ThemeLight';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  chip: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    width: 120,
-  },
-  chipInList: {
-    ...chipInListBasicStyle,
-    width: 120,
-    textTransform: 'uppercase',
-  },
-}));
 
 interface ItemEntityTypeProps {
   entityType: string;
-  inList?: boolean;
   showIcon?: boolean;
   isRestricted?: boolean;
-  style?: React.CSSProperties;
-  size?: 'small' | 'medium' | 'large';
 }
 
 const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
-  inList = true,
   entityType,
   showIcon = false,
   isRestricted = false,
-  style = {},
-  size = 'medium',
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const rootStyle = inList ? classes.chipInList : classes.chip;
 
   const isRelationship = t_i18n(`relationship_${entityType}`) !== `relationship_${entityType}`;
-
-  const { palette: { mode } } = useTheme();
-  const theme = mode === 'dark'
-    ? ThemeDark()
-    : ThemeLight();
-  const getStyle = () => {
-    let width;
-    switch (size) {
-      case 'small':
-        width = 100;
-        break;
-      case 'large':
-        width = 140;
-        break;
-      case 'medium':
-      default:
-        width = 120;
-    }
-    if (isRestricted) {
-      const restrictedColor = itemColor('Restricted');
-      return {
-        backgroundColor: theme.palette.background.default,
-        color: theme.palette.chip.main,
-        border: `1px solid ${restrictedColor}`,
-        width,
-      };
-    }
-    return {
-      backgroundColor: theme.palette.background.default,
-      color: isRelationship ? theme.palette.primary.main : theme.palette.chip.main,
-      border: `1px solid ${isRelationship ? theme.palette.primary.main : itemColor(entityType)}`,
-      width,
-    };
-  };
 
   const getIcon = () => {
     if (showIcon && !isRelationship) {

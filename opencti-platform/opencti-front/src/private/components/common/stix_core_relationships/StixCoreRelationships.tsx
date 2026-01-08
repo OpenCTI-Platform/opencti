@@ -277,7 +277,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
       percentWidth: 10,
       isSortable: false,
       render: (node) => (
-        <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
+        <ItemEntityType showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
       ),
     },
     relationship_type: {
@@ -289,7 +289,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
       percentWidth: 10,
       isSortable: false,
       render: (node) => (
-        <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
+        <ItemEntityType showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
       ),
     },
     toName: {

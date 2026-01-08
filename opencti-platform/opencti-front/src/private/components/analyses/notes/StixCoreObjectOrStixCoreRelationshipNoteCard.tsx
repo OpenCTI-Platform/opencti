@@ -169,7 +169,6 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
             </Stack>
 
             <ItemMarkings
-              variant="inList"
               markingDefinitions={note.objectMarking ?? []}
               limit={1}
             />

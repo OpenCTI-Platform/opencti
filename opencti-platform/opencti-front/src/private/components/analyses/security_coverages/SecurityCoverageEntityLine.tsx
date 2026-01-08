@@ -108,7 +108,6 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                variant="inList"
                 markingDefinitions={entity.objectMarking ?? []}
                 limit={1}
               />
