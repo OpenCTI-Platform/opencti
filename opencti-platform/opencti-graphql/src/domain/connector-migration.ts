@@ -94,7 +94,7 @@ const categorizeKeys = (
   schemaProperties: any,
   requiredKeys: string[],
   configMap: Map<string, string>,
-  autoMappedKeys: Map<string, string>
+  autoMappedKeys: Map<string, string>,
 ): { mapped: MappedKey[]; missing: MissingKey[] } => {
   const mapped: MappedKey[] = [];
   const missing: MissingKey[] = [];
@@ -112,7 +112,7 @@ const categorizeKeys = (
         key: schemaKey,
         value: String(value),
         type: propSchema.type,
-        required: requiredKeys.includes(schemaKey)
+        required: requiredKeys.includes(schemaKey),
       });
     } else {
       missing.push({
@@ -122,7 +122,7 @@ const categorizeKeys = (
         format: propSchema.format,
         required: requiredKeys.includes(schemaKey),
         default: propSchema.default ?? null,
-        enum: propSchema.enum ?? null
+        enum: propSchema.enum ?? null,
       });
     }
   });
@@ -133,7 +133,7 @@ const categorizeKeys = (
 const findIgnoredKeys = (schemaProperties: any, configMap: Map<string, string>): IgnoredKey[] => {
   const ignored: IgnoredKey[] = [];
   const schemaKeysUpper = new Set(
-    Object.keys(schemaProperties).map((k) => k.toUpperCase())
+    Object.keys(schemaProperties).map((k) => k.toUpperCase()),
   );
 
   configMap.forEach((value: string, key: string) => {
@@ -141,7 +141,7 @@ const findIgnoredKeys = (schemaProperties: any, configMap: Map<string, string>):
       ignored.push({
         key,
         value: String(value),
-        reason: 'Not in target contract schema'
+        reason: 'Not in target contract schema',
       });
     }
   });
@@ -179,7 +179,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
   if (existingConnector.connector_type !== contractDefinition.container_type) {
     throw FunctionalError('Connector type mismatch', {
       connector_type: existingConnector.connector_type,
-      contract_type: contractDefinition.container_type
+      contract_type: contractDefinition.container_type,
     });
   }
 
@@ -198,7 +198,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     schemaProperties,
     requiredKeys,
     configMap,
-    autoMappedConfig
+    autoMappedConfig,
   );
 
   const ignored = findIgnoredKeys(schemaProperties, configMap);
@@ -227,7 +227,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     missing,
     message: configuration === null
       ? 'No configuration provided. You must provide configuration manually with exact schema keys.'
-      : null
+      : null,
   };
 };
 
@@ -272,14 +272,14 @@ export const migrateConnectorToManaged = async (
   if (existingConnector.connector_type !== contract.container_type) {
     throw FunctionalError('Connector type mismatch', {
       connector_type: existingConnector.connector_type,
-      contract_type: contract.container_type
+      contract_type: contract.container_type,
     });
   }
 
   const connectorManagers = await fullEntitiesList<BasicStoreEntityConnectorManager>(
     context,
     user,
-    [ENTITY_TYPE_CONNECTOR_MANAGER]
+    [ENTITY_TYPE_CONNECTOR_MANAGER],
   );
   if (connectorManagers?.length < 1) {
     throw FunctionalError('No connector manager configured');
@@ -292,7 +292,7 @@ export const migrateConnectorToManaged = async (
 
   const schemaProperties = contract.config_schema.properties;
   const schemaKeysUpper = new Set(
-    Object.keys(schemaProperties).map((k) => k.toUpperCase())
+    Object.keys(schemaProperties).map((k) => k.toUpperCase()),
   );
 
   const invalidKeys: string[] = [];
@@ -305,13 +305,13 @@ export const migrateConnectorToManaged = async (
   if (invalidKeys.length > 0) {
     throw FunctionalError('Invalid configuration keys provided', {
       invalid_keys: invalidKeys,
-      message: `The following keys do not exist in the contract schema: ${invalidKeys.join(', ')}`
+      message: `The following keys do not exist in the contract schema: ${invalidKeys.join(', ')}`,
     });
   }
 
   const configurationArray: ContractConfigInput[] = Array.from(configMap.entries()).map(([key, value]) => ({
     key,
-    value
+    value,
   }));
 
   let configurations: ConnectorContractConfiguration[];
@@ -324,7 +324,7 @@ export const migrateConnectorToManaged = async (
   } catch (err: any) {
     throw FunctionalError('Configuration validation failed', {
       message: err.message,
-      details: err.data
+      details: err.data,
     });
   }
 
@@ -332,14 +332,14 @@ export const migrateConnectorToManaged = async (
   // so remove them
   const RUNTIME_PROVIDED_FIELDS = ['CONNECTOR_NAME', 'CONNECTOR_ID', 'CONNECTOR_TYPE'];
   const filteredConfigurations = configurations.filter(
-    (config) => !RUNTIME_PROVIDED_FIELDS.includes(config.key)
+    (config) => !RUNTIME_PROVIDED_FIELDS.includes(config.key),
   );
 
   const existingUser = await storeLoadById(
     context,
     user,
     existingConnector.connector_user_id,
-    ENTITY_TYPE_USER
+    ENTITY_TYPE_USER,
   );
 
   // If existing user is not a service account, transform it to service account
@@ -352,7 +352,7 @@ export const migrateConnectorToManaged = async (
       context,
       user,
       existingUser.id,
-      [{ key: 'user_service_account', value: [true] }]
+      [{ key: 'user_service_account', value: [true] }],
     );
   }
 
@@ -371,14 +371,16 @@ export const migrateConnectorToManaged = async (
 
   // delete queues like in connector.deleteQueues but for that specific connector id
   await unregisterConnector(existingConnector.id);
-  try { await unregisterExchanges(); } catch { /* nothing */ }
+  try {
+    await unregisterExchanges();
+  } catch { /* nothing */ }
 
   const { element } = await patchAttribute(
     context,
     user,
     existingConnector.id,
     ENTITY_TYPE_CONNECTOR,
-    managedConnectorData
+    managedConnectorData,
   );
 
   const completedConnector = completeConnector(element);
@@ -395,7 +397,7 @@ export const migrateConnectorToManaged = async (
       id: existingConnector.internal_id,
       entity_type: ENTITY_TYPE_CONNECTOR,
       input: managedConnectorData,
-    }
+    },
   });
 
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, completedConnector, user);

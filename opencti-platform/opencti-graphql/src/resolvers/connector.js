@@ -91,7 +91,7 @@ const connectorResolvers = {
     connectorManagers: (_, __, context) => connectorManagers(context, context.user),
     connectorMigrationAssessment: async (_, { connectorId, containerImage, configuration }, context) => {
       return assessConnectorMigration(context, context.user, connectorId, containerImage, configuration);
-    }
+    },
     // endregion
   },
   Connector: {
