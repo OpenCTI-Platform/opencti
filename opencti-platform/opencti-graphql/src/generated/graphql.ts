@@ -15354,6 +15354,7 @@ export type Mutation = {
   supportPackageDelete?: Maybe<Scalars['ID']['output']>;
   supportPackageForceZip?: Maybe<SupportPackage>;
   synchronizerAdd?: Maybe<Synchronizer>;
+  synchronizerAddAutoUser?: Maybe<Synchronizer>;
   synchronizerEdit?: Maybe<SynchronizerEditMutations>;
   synchronizerStart?: Maybe<Synchronizer>;
   synchronizerStop?: Maybe<Synchronizer>;
@@ -17528,6 +17529,12 @@ export type MutationSupportPackageForceZipArgs = {
 
 export type MutationSynchronizerAddArgs = {
   input: SynchronizerAddInput;
+};
+
+
+export type MutationSynchronizerAddAutoUserArgs = {
+  id: Scalars['ID']['input'];
+  input: SynchronizerAddAutoUserInput;
 };
 
 
@@ -30278,7 +30285,14 @@ export type Synchronizer = {
   user?: Maybe<Creator>;
 };
 
+export type SynchronizerAddAutoUserInput = {
+  confidence_level: Scalars['Int']['input'];
+  user_name: Scalars['String']['input'];
+};
+
 export type SynchronizerAddInput = {
+  automatic_user?: InputMaybe<Scalars['Boolean']['input']>;
+  confidence_level?: InputMaybe<Scalars['Int']['input']>;
   current_state_date?: InputMaybe<Scalars['DateTime']['input']>;
   listen_deletion: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
@@ -30289,7 +30303,7 @@ export type SynchronizerAddInput = {
   synchronized?: InputMaybe<Scalars['Boolean']['input']>;
   token?: InputMaybe<Scalars['String']['input']>;
   uri: Scalars['String']['input'];
-  user_id?: InputMaybe<Scalars['String']['input']>;
+  user_id: Scalars['String']['input'];
 };
 
 export type SynchronizerConnection = {
@@ -36836,6 +36850,7 @@ export type ResolversTypes = ResolversObject<{
   SupportPackageForceZipInput: SupportPackageForceZipInput;
   SupportPackageOrdering: SupportPackageOrdering;
   Synchronizer: ResolverTypeWrapper<Synchronizer>;
+  SynchronizerAddAutoUserInput: SynchronizerAddAutoUserInput;
   SynchronizerAddInput: SynchronizerAddInput;
   SynchronizerConnection: ResolverTypeWrapper<SynchronizerConnection>;
   SynchronizerEdge: ResolverTypeWrapper<SynchronizerEdge>;
@@ -37744,6 +37759,7 @@ export type ResolversParentTypes = ResolversObject<{
   SupportPackageEdge: Omit<SupportPackageEdge, 'node'> & { node: ResolversParentTypes['SupportPackage'] };
   SupportPackageForceZipInput: SupportPackageForceZipInput;
   Synchronizer: Synchronizer;
+  SynchronizerAddAutoUserInput: SynchronizerAddAutoUserInput;
   SynchronizerAddInput: SynchronizerAddInput;
   SynchronizerConnection: SynchronizerConnection;
   SynchronizerEdge: SynchronizerEdge;
@@ -43378,6 +43394,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   supportPackageDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSupportPackageDeleteArgs, 'id'>>;
   supportPackageForceZip?: Resolver<Maybe<ResolversTypes['SupportPackage']>, ParentType, ContextType, RequireFields<MutationSupportPackageForceZipArgs, 'input'>>;
   synchronizerAdd?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<MutationSynchronizerAddArgs, 'input'>>;
+  synchronizerAddAutoUser?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<MutationSynchronizerAddAutoUserArgs, 'id' | 'input'>>;
   synchronizerEdit?: Resolver<Maybe<ResolversTypes['SynchronizerEditMutations']>, ParentType, ContextType, RequireFields<MutationSynchronizerEditArgs, 'id'>>;
   synchronizerStart?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<MutationSynchronizerStartArgs, 'id'>>;
   synchronizerStop?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<MutationSynchronizerStopArgs, 'id'>>;

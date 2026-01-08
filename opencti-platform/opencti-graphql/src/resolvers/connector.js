@@ -24,7 +24,7 @@ import {
   syncCleanContext,
   syncDelete,
   syncEditContext,
-  syncEditField,
+  syncEditField, synchronizerAddAutoUser,
   testSync,
   updateConnectorCurrentStatus,
   updateConnectorManagerStatus,
@@ -177,6 +177,7 @@ const connectorResolvers = {
     workDelete: (_, { connectorId }, context) => deleteWorkForConnector(context, context.user, connectorId),
     // Sync part
     synchronizerAdd: (_, { input }, context) => registerSync(context, context.user, input),
+    synchronizerAddAutoUser: (_, { id, input }, context) => synchronizerAddAutoUser(context, context.user, id, input),
     synchronizerEdit: (_, { id }, context) => ({
       delete: () => syncDelete(context, context.user, id),
       fieldPatch: ({ input }) => syncEditField(context, context.user, id, input),

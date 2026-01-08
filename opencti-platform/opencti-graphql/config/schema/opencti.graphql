@@ -833,13 +833,20 @@ input SynchronizerAddInput {
   uri: String! @constraint(minLength: 2)
   token: String
   stream_id: String! @constraint(minLength: 2)
-  user_id: String
+  user_id: String!
+    automatic_user: Boolean
+    confidence_level: Int
   recover: DateTime
   current_state_date: DateTime
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
   synchronized: Boolean
+}
+
+input SynchronizerAddAutoUserInput {
+    user_name: String!
+    confidence_level: Int!
 }
 
 input SynchronizerFetchInput {
@@ -15300,6 +15307,7 @@ type Mutation {
 
   ### SYNC
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer @auth(for: [CONNECTORAPI])
+  synchronizerAddAutoUser(id: ID!, input: SynchronizerAddAutoUserInput!): Synchronizer @auth(for:[CONNECTORAPI])
   synchronizerEdit(id: ID!): SynchronizerEditMutations @auth(for: [CONNECTORAPI])
   synchronizerStart(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
   synchronizerStop(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
