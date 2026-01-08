@@ -126,7 +126,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
           const currentConfig: ConfigurationTypeInput = {
             key: configKey,
             type: 'array',
-            value: mappedConfig[configKey].map((val: string) => val),
+            value: JSON.stringify(mappedConfig[configKey].map((val: string) => val)),
           };
           configuration.push(currentConfig);
         } else {
