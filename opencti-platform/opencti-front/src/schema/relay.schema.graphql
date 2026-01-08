@@ -870,6 +870,7 @@ type Synchronizer {
   ssl_verify: Boolean
   synchronized: Boolean
   queue_messages: Int!
+  toConfigurationExport: String!
 }
 
 type SynchronizerEdge {

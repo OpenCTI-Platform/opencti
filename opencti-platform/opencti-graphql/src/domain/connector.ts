@@ -48,7 +48,7 @@ import {
   type UpdateConnectorManagerStatusInput,
   ValidationMode,
 } from '../generated/graphql';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
 import { defaultValidationMode, loadFile, uploadJobImport } from '../database/file-storage';
@@ -672,6 +672,23 @@ export const syncDelete = async (context: AuthContext, user: AuthUser, syncId: s
     context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input: deleted },
   });
   return syncId;
+};
+export const synchronizerExport = async (synchronizer: BasicStoreEntitySynchronizer) => {
+  const { name, uri, stream_id, current_state_date, listen_deletion, ssl_verify, no_dependencies, synchronized } = synchronizer;
+  return JSON.stringify({
+    openCTI_version: PLATFORM_VERSION,
+    type: 'openCTI_stream',
+    configuration: {
+      name,
+      uri,
+      stream_id,
+      current_state_date,
+      listen_deletion,
+      ssl_verify,
+      no_dependencies,
+      synchronized,
+    },
+  });
 };
 export const syncCleanContext = async (context: AuthContext, user: AuthUser, syncId: string) => {
   await delEditContext(user, syncId);
