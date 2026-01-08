@@ -601,12 +601,22 @@ class OpenCTIStix2:
                         )["id"]
                     if "x_opencti_files" in external_reference:
                         for file in external_reference["x_opencti_files"]:
+                            data = None
                             if "data" in file:
+                                data = base64.b64decode(file["data"])
+                            elif "uri" in file:
+                                url = self.opencti.api_url.replace(
+                                    "/graphql", file["uri"]
+                                )
+                                data = self.opencti.fetch_opencti_file(
+                                    fetch_uri=url, binary=True, serialize=False
+                                )
+                            if data is not None:
                                 self.opencti.external_reference.add_file(
                                     id=external_reference_id,
                                     file_name=file["name"],
                                     version=file.get("version", None),
-                                    data=base64.b64decode(file["data"]),
+                                    data=data,
                                     fileMarkings=file.get("object_marking_refs", None),
                                     mime_type=file["mime_type"],
                                     no_trigger_import=file.get(
@@ -622,12 +632,22 @@ class OpenCTIStix2:
                         for file in self.opencti.get_attribute_in_extension(
                             "files", external_reference
                         ):
+                            data = None
                             if "data" in file:
+                                data = base64.b64decode(file["data"])
+                            elif "uri" in file:
+                                url = self.opencti.api_url.replace(
+                                    "/graphql", file["uri"]
+                                )
+                                data = self.opencti.fetch_opencti_file(
+                                    fetch_uri=url, binary=True, serialize=False
+                                )
+                            if data is not None:
                                 self.opencti.external_reference.add_file(
                                     id=external_reference_id,
                                     file_name=file["name"],
                                     version=file.get("version", None),
-                                    data=base64.b64decode(file["data"]),
+                                    data=data,
                                     fileMarkings=file.get("object_marking_refs", None),
                                     mime_type=file["mime_type"],
                                     no_trigger_import=file.get(
@@ -779,12 +799,20 @@ class OpenCTIStix2:
                     )["id"]
                 if "x_opencti_files" in external_reference:
                     for file in external_reference["x_opencti_files"]:
+                        data = None
                         if "data" in file:
+                            data = base64.b64decode(file["data"])
+                        elif "uri" in file:
+                            url = self.opencti.api_url.replace("/graphql", file["uri"])
+                            data = self.opencti.fetch_opencti_file(
+                                fetch_uri=url, binary=True, serialize=False
+                            )
+                        if data is not None:
                             self.opencti.external_reference.add_file(
                                 id=external_reference_id,
                                 file_name=file["name"],
                                 version=file.get("version", None),
-                                data=base64.b64decode(file["data"]),
+                                data=data,
                                 fileMarkings=file.get("object_marking_refs", None),
                                 mime_type=file["mime_type"],
                                 no_trigger_import=file.get("no_trigger_import", False),
@@ -797,12 +825,20 @@ class OpenCTIStix2:
                     for file in self.opencti.get_attribute_in_extension(
                         "files", external_reference
                     ):
+                        data = None
                         if "data" in file:
+                            data = base64.b64decode(file["data"])
+                        elif "uri" in file:
+                            url = self.opencti.api_url.replace("/graphql", file["uri"])
+                            data = self.opencti.fetch_opencti_file(
+                                fetch_uri=url, binary=True, serialize=False
+                            )
+                        if data is not None:
                             self.opencti.external_reference.add_file(
                                 id=external_reference_id,
                                 file_name=file["name"],
                                 version=file.get("version", None),
-                                data=base64.b64decode(file["data"]),
+                                data=data,
                                 fileMarkings=file.get("object_marking_refs", None),
                                 mime_type=file["mime_type"],
                                 no_trigger_import=file.get("no_trigger_import", False),
@@ -1110,12 +1146,20 @@ class OpenCTIStix2:
             # Add files
             if "x_opencti_files" in stix_object:
                 for file in stix_object["x_opencti_files"]:
+                    data = None
                     if "data" in file:
+                        data = base64.b64decode(file["data"])
+                    elif "uri" in file:
+                        url = self.opencti.api_url.replace("/graphql", file["uri"])
+                        data = self.opencti.fetch_opencti_file(
+                            fetch_uri=url, binary=True, serialize=False
+                        )
+                    if data is not None:
                         self.opencti.stix_domain_object.add_file(
                             id=stix_object_result["id"],
                             file_name=file["name"],
                             version=file.get("version", None),
-                            data=base64.b64decode(file["data"]),
+                            data=data,
                             fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
@@ -1128,12 +1172,20 @@ class OpenCTIStix2:
                 for file in self.opencti.get_attribute_in_extension(
                     "files", stix_object
                 ):
+                    data = None
                     if "data" in file:
+                        data = base64.b64decode(file["data"])
+                    elif "uri" in file:
+                        url = self.opencti.api_url.replace("/graphql", file["uri"])
+                        data = self.opencti.fetch_opencti_file(
+                            fetch_uri=url, binary=True, serialize=False
+                        )
+                    if data is not None:
                         self.opencti.stix_domain_object.add_file(
                             id=stix_object_result["id"],
                             file_name=file["name"],
                             version=file.get("version", None),
-                            data=base64.b64decode(file["data"]),
+                            data=data,
                             fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
@@ -1241,12 +1293,20 @@ class OpenCTIStix2:
             # Add files
             if "x_opencti_files" in stix_object:
                 for file in stix_object["x_opencti_files"]:
+                    data = None
                     if "data" in file:
+                        data = base64.b64decode(file["data"])
+                    elif "uri" in file:
+                        url = self.opencti.api_url.replace("/graphql", file["uri"])
+                        data = self.opencti.fetch_opencti_file(
+                            fetch_uri=url, binary=True, serialize=False
+                        )
+                    if data is not None:
                         self.opencti.stix_cyber_observable.add_file(
                             id=stix_observable_result["id"],
                             file_name=file["name"],
                             version=file.get("version", None),
-                            data=base64.b64decode(file["data"]),
+                            data=data,
                             fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
@@ -1259,12 +1319,20 @@ class OpenCTIStix2:
                 for file in self.opencti.get_attribute_in_extension(
                     "files", stix_object
                 ):
+                    data = None
                     if "data" in file:
+                        data = base64.b64decode(file["data"])
+                    elif "uri" in file:
+                        url = self.opencti.api_url.replace("/graphql", file["uri"])
+                        data = self.opencti.fetch_opencti_file(
+                            fetch_uri=url, binary=True, serialize=False
+                        )
+                    if data is not None:
                         self.opencti.stix_cyber_observable.add_file(
                             id=stix_observable_result["id"],
                             file_name=file["name"],
                             version=file.get("version", None),
-                            data=base64.b64decode(file["data"]),
+                            data=data,
                             fileMarkings=file.get("object_marking_refs", None),
                             mime_type=file["mime_type"],
                             no_trigger_import=file.get("no_trigger_import", False),
@@ -1711,10 +1779,7 @@ class OpenCTIStix2:
                 ):
                     external_reference["x_opencti_files"] = []
                     for file in entity_external_reference["importFiles"]:
-                        url = (
-                            self.opencti.api_url.replace("graphql", "storage/get/")
-                            + file["id"]
-                        )
+                        url = self.opencti.api_url.replace("/graphql", file["uri"])
                         data = self.opencti.fetch_opencti_file(
                             url, binary=True, serialize=True
                         )
