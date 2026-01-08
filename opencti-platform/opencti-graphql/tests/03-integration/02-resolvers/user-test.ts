@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { elLoadById } from '../../../src/database/engine';
-import { generateStandardId } from '../../../src/schema/identifier';
+import { generateStandardId, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import {
   ADMIN_USER,
@@ -28,17 +28,19 @@ import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
   adminQueryWithError,
   adminQueryWithSuccess,
-  unSetOrganization,
-  setOrganization,
   queryAsAdminWithSuccess,
   queryAsUserIsExpectedError,
   queryAsUserIsExpectedForbidden,
   queryAsUserWithSuccess,
+  setOrganization,
+  unSetOrganization,
 } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
+import { stixDomainObjectAddRelation, stixDomainObjectDeleteRelation } from '../../../src/domain/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 
 const LIST_QUERY = gql`
   query users(
@@ -985,6 +987,28 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.users.edges.length).toEqual(3);
     expect([userInternalId, userEditorId, userParticipateId].every((userId) => queryResult.data.users.edges.map((n: any) => n.node.id).includes(userId)))
       .toBeTruthy();
+  });
+  it('should list users from its own organization even if he has not the rights to see its organization', async () => {
+    const tlpRedMarking = await storeLoadById(testContext, ADMIN_USER, MARKING_TLP_RED, ENTITY_TYPE_MARKING_DEFINITION);
+    // add TLP:RED marking to the test organization so that USER_EDITOR is not able to see its own organization
+    await stixDomainObjectAddRelation(
+      testContext,
+      ADMIN_USER,
+      testOrganizationId,
+      { relationship_type: 'object-marking', toId: tlpRedMarking.id },
+    );
+
+    // list the users of the organization
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      query: LIST_QUERY,
+      variables: {},
+    });
+    expect(queryResult.data.users.edges.length).toEqual(3);
+    expect([userInternalId, userEditorId, userParticipateId].every((userId) => queryResult.data.users.edges.map((n: any) => n.node.id).includes(userId)))
+      .toBeTruthy();
+
+    // remove TLP:RED marking of the organization
+    await stixDomainObjectDeleteRelation(testContext, ADMIN_USER, testOrganizationId, tlpRedMarking.id, 'object-marking');
   });
   it('should update user from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
