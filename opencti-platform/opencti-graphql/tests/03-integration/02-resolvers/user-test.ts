@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
@@ -20,6 +20,7 @@ import {
   USER_CONNECTOR,
   USER_DISINFORMATION_ANALYST,
   USER_EDITOR,
+  USER_SECURITY,
 } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
@@ -37,7 +38,6 @@ import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
-import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const LIST_QUERY = gql`
   query users(
@@ -980,6 +980,18 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data.userEdit.fieldPatch.account_status).toEqual('Inactive');
   });
+  it('should not update user with no organization', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: UPDATE_QUERY,
+      variables: { id: ADMIN_USER.id, input: { key: 'account_status', value: ['Inactive'] } },
+    });
+  });
+  it('should not update user from an other organization', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: UPDATE_QUERY,
+      variables: { id: USER_SECURITY.id, input: { key: 'account_status', value: ['Inactive'] } },
+    });
+  });
   it('should not add organization to user if not admin', async () => {
     platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
@@ -987,6 +999,15 @@ describe('User has no settings capability and is organization admin query behavi
       variables: {
         id: userInternalId,
         organizationId: platformOrganizationId,
+      },
+    });
+  });
+  it('should not add organization to user if user is not in its own organization', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: ORGANIZATION_ADD_QUERY,
+      variables: {
+        id: ADMIN_USER.id,
+        organizationId: testOrganizationId,
       },
     });
   });

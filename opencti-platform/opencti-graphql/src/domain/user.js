@@ -184,7 +184,7 @@ const extractTokenFromBasicAuth = async (authorization) => {
 
 export const findById = async (context, user, userId) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
-    // if no organization in common with the logged user
+    // if no organization in common with the logged user administrated organizations
     const memberOrganizations = await fullEntitiesThroughRelationsToList(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const myOrganizationsIds = user.administrated_organizations.map((organization) => organization.id);
     if (!memberOrganizations.map((organization) => organization.id).find((orgaId) => myOrganizationsIds.includes(orgaId))) {
@@ -525,6 +525,25 @@ const isUserAdministratingOrga = (user, organizationId) => {
   return user.administrated_organizations.some(({ id }) => id === organizationId);
 };
 
+const loadUserToUpdateWithAccessCheck = async (context, user, userId) => {
+  const userToUpdate = await internalLoadById(context, user, userId, { type: ENTITY_TYPE_USER });
+  if (!userToUpdate) {
+    throw FunctionalError(`${ENTITY_TYPE_USER} cannot be found.`, { userId });
+  }
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES) && user.id !== userId) {
+    // Check in an organization admin edits a user that's not in its administrated organizations
+    if (isOnlyOrgaAdmin(user)) {
+      const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
+      if (!userToUpdate[RELATION_PARTICIPATE_TO]?.find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
+        throw ForbiddenAccess();
+      }
+    } else {
+      throw ForbiddenAccess();
+    }
+  }
+  return userToUpdate;
+};
+
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
   if (isOnlyOrgaAdmin(user)) {
     // When user is organization admin, we make sure she is also admin of organization added
@@ -532,10 +551,9 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
       throw ForbiddenAccess();
     }
   }
-  const targetUser = await findById(context, user, userId);
-  if (!targetUser) {
-    throw FunctionalError('Cannot add the relation, User cannot be found.', { userId });
-  }
+  // check the user is accessible
+  const targetUser = await loadUserToUpdateWithAccessCheck(context, user, userId);
+
   const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   const created = await createRelation(context, user, input);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : created.from.user_email;
@@ -899,14 +917,7 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 // User related
 export const userEditField = async (context, user, userId, rawInputs) => {
   const inputs = [];
-  const userToUpdate = await internalLoadById(context, user, userId);
-  // Check in an organization admin edits a user that's not in its administrated organizations
-  const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
-  if (isOnlyOrgaAdmin(user)) {
-    if (userId !== user.id && !userToUpdate[RELATION_PARTICIPATE_TO].find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
-      throw ForbiddenAccess();
-    }
-  }
+  const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
@@ -1186,14 +1197,9 @@ export const deleteAllNotificationByUser = async (userId) => {
  * @returns {Promise<*>}
  */
 export const userDelete = async (context, user, userId) => {
-  if (isOnlyOrgaAdmin(user)) {
-    // When user is organization admin, we make sure that the deleted user is in one of the administrated organizations of the admin
-    const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
-    const myAdministratedOrganizationsIds = user.administrated_organizations.map(({ id }) => id);
-    if (!userData[RELATION_PARTICIPATE_TO].find((orga) => myAdministratedOrganizationsIds.includes(orga))) {
-      throw ForbiddenAccess();
-    }
-  }
+  // check rights
+  await loadUserToUpdateWithAccessCheck(context, user, userId);
+
   await deleteAllTriggerAndDigestByUser(userId);
   await deleteAllNotificationByUser(userId);
   await deleteAllWorkspaceForUser(context, user, userId);
@@ -1213,14 +1219,14 @@ export const userDelete = async (context, user, userId) => {
 };
 
 export const userAddRelation = async (context, user, userId, input) => {
-  const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
-  if (!userData) {
-    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`, { userId });
-  }
+  // check the user is accessible
+  const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
+
+  // check the relationship type
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
   }
-  // Check in case organization admins adds non-grantable goup a user
+  // Check in case organization admins adds non-grantable group a user
   const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
   if (isOnlyOrgaAdmin(user)) {
     if (input.relationship_type === 'member-of' && !myGrantableGroups.includes(input.toId)) {
@@ -1260,10 +1266,9 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
 };
 
 export const userIdDeleteRelation = async (context, user, userId, toId, relationshipType) => {
-  const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
-  if (!userData) {
-    throw FunctionalError('Cannot delete the relation, User cannot be found.', { userId });
-  }
+  // check the user is accessible
+  const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
+
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
@@ -1277,10 +1282,8 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
       throw ForbiddenAccess();
     }
   }
-  const targetUser = await findById(context, user, userId);
-  if (!targetUser) {
-    throw FunctionalError('Cannot delete the relation, User cannot be found.', { userId });
-  }
+  // check the user is accessible
+  const targetUser = await loadUserToUpdateWithAccessCheck(context, user, userId);
 
   const { to } = await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
   if (to.authorized_authorities?.includes(userId)) {
@@ -1690,10 +1693,9 @@ export const userRenewToken = async (context, user, userId) => {
     throw FunctionalError('Cannot renew token of admin user defined in configuration, please change configuration instead.');
   }
 
-  const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
-  if (!userData) {
-    throw FunctionalError(`Cannot renew token, ${userId} user cannot be found.`);
-  }
+  // check the user is accessible
+  const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
+
   const patch = { api_token: uuid() };
   const { element } = await patchAttribute(context, user, userId, ENTITY_TYPE_USER, patch);
 
@@ -1872,11 +1874,13 @@ export const findDefaultDashboards = async (context, user, currentUser) => {
 
 // region context
 export const userCleanContext = async (context, user, userId) => {
+  await loadUserToUpdateWithAccessCheck(context, user, userId);
   await delEditContext(user, userId);
   return storeLoadById(context, user, userId, ENTITY_TYPE_USER);
 };
 
 export const userEditContext = async (context, user, userId, input) => {
+  await loadUserToUpdateWithAccessCheck(context, user, userId);
   await setEditContext(user, userId, input);
   return storeLoadById(context, user, userId, ENTITY_TYPE_USER);
 };
