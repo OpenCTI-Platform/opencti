@@ -51,6 +51,7 @@ import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import {
   applyOrganizationRestriction,
+  buildUserOrganizationRestrictedFiltersOptions,
   BYPASS,
   CAPABILITIES_IN_DRAFT_NAMES,
   executionContext,
@@ -199,43 +200,14 @@ export const findById = async (context, user, userId) => {
   return buildCompleteUser(context, withoutPassword);
 };
 
-const buildUserOrganizationRestrictedFilters = (user, filters) => {
-  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    // If user is not a set access administrator, user can only see attached organization users
-    const organizationIds = user.administrated_organizations.map((organization) => organization.id);
-    return {
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'relationship_type',
-              values: ['participate-to'],
-            },
-            {
-              key: 'id',
-              values: organizationIds,
-            },
-          ],
-          mode: 'or',
-        },
-      ],
-      filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
-    };
-  }
-  return filters;
-};
-
 export const findAllUser = async (context, user, args) => {
-  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
-  return fullEntitiesList(context, user, [ENTITY_TYPE_USER], { ...args, filters });
+  const { filters, noRegardingOfFilterIdsCheck } = buildUserOrganizationRestrictedFiltersOptions(user, args.filters);
+  return fullEntitiesList(context, user, [ENTITY_TYPE_USER], { ...args, filters, noRegardingOfFilterIdsCheck });
 };
 
 export const findUserPaginated = async (context, user, args) => {
-  const filters = buildUserOrganizationRestrictedFilters(user, args.filters);
-  return pageEntitiesConnection(context, user, [ENTITY_TYPE_USER], { ...args, filters });
+  const { filters, noRegardingOfFilterIdsCheck } = buildUserOrganizationRestrictedFiltersOptions(user, args.filters);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_USER], { ...args, filters, noRegardingOfFilterIdsCheck });
 };
 
 export const findCreators = (context, user, args) => {
