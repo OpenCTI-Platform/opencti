@@ -24,7 +24,7 @@ import {
   syncCleanContext,
   syncDelete,
   syncEditContext,
-  syncEditField,
+  syncEditField, synchronizerExport,
   synchronizerAddAutoUser,
   testSync,
   updateConnectorCurrentStatus,
@@ -128,6 +128,7 @@ const connectorResolvers = {
   Synchronizer: {
     user: (sync, _, context) => context.batch.creatorBatchLoader.load(sync.user_id),
     queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id),
+    toConfigurationExport: (synchronizer) => synchronizerExport(synchronizer),
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),

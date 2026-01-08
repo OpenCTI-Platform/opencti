@@ -30539,6 +30539,7 @@ export type Synchronizer = {
   ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   stream_id: Scalars['String']['output'];
   synchronized?: Maybe<Scalars['Boolean']['output']>;
+  toConfigurationExport: Scalars['String']['output'];
   token?: Maybe<Scalars['String']['output']>;
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
@@ -47204,6 +47205,7 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   synchronized?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
