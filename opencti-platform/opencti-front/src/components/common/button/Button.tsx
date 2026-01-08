@@ -73,10 +73,22 @@ const Button: React.FC<CustomButtonProps> = ({
 }) => {
   const theme = useTheme();
 
-  // color takes over intent
-  const currentIntent: ButtonColorKey = color ?? intent;
+  const determineColorKey = (): ButtonColorKey => {
+    // color takes over intent
+    if (color) return color;
+    if (intent !== 'default') return intent;
+
+    switch (variant) {
+      case 'secondary': return 'secondary';
+      case 'primary': return 'primary';
+      case 'tertiary': return 'default';
+      default: return 'default';
+    }
+  };
+
+  const currentColorKey = determineColorKey();
   const colors = getColorDefinitions(theme);
-  const currentColor = colors[currentIntent];
+  const currentColor = colors[currentColorKey];
 
   const isGradient = gradient || variant === 'extra';
 
