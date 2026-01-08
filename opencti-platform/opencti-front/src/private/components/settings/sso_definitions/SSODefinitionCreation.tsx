@@ -24,6 +24,7 @@ import { Add, Delete } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
+import useFormikToSSOConfig from './useFormikToSSOConfig';
 
 const ssoDefinitionMutation = graphql`
   mutation SSODefinitionCreationMutation(
@@ -39,7 +40,7 @@ interface SSODefinitionCreationProps {
   paginationOptions: PaginationOptions;
 }
 
-interface FormValues {
+export interface SSODefinitionFormValues {
   name: string;
   label: string;
   enabled: boolean;
@@ -77,9 +78,8 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
   };
-
+  const { formikToSamlConfig } = useFormikToSSOConfig();
   const initialValues = {
-    // base
     name: '',
     label: '',
     enabled: true,
@@ -148,76 +148,11 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   );
 
   const onSubmit = (
-    values: FormValues,
+    values: SSODefinitionFormValues,
     { setSubmitting, resetForm }: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
   ) => {
-    const configuration = [
-      {
-        key: 'privateKey',
-        value: values.private_key,
-        type: 'String',
-      },
-      {
-        key: 'issuer',
-        value: values.issuer,
-        type: 'String',
-      },
-      {
-        key: 'idpCert',
-        value: values.idp_cert,
-        type: 'String',
-      },
-      {
-        key: 'callbackUrl',
-        value: values.saml_callback_url,
-        type: 'String',
-      },
-      {
-        key: 'assertionSigned',
-        value: values.want_assertions_signed ? 'true' : 'false',
-        type: 'Boolean',
-      },
-      {
-        key: 'authResponseSigned',
-        value: values.want_auth_response_signed ? 'true' : 'false',
-        type: 'Boolean',
-      },
-      {
-        key: 'loginIdpDirectly',
-        value: values.login_idp_directly ? 'true' : 'false',
-        type: 'Boolean',
-      },
-      {
-        key: 'logoutRemote',
-        value: values.logout_remote ? 'true' : 'false',
-        type: 'Boolean',
-      },
-      {
-        key: 'providerMethod',
-        value: values.provider_method,
-        type: 'String',
-      },
-      {
-        key: 'idpSigningCertificate',
-        value: values.idp_signing_certificate,
-        type: 'String',
-      },
-      {
-        key: 'ssoBindingType',
-        value: values.sso_binding_type,
-        type: 'String',
-      },
-      {
-        key: 'forceReauthentication',
-        value: values.force_reauthentication ? 'true' : 'false',
-        type: 'Boolean',
-      },
-      {
-        key: 'enableDebugMode',
-        value: values.enable_debug_mode ? 'true' : 'false',
-        type: 'Boolean',
-      },
-    ];
+    const configuration = formikToSamlConfig(values);
+
     values.advancedConfigurations.forEach((conf) => {
       if (conf.key && conf.value && conf.type) {
         configuration.push({
@@ -436,7 +371,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
                   />
                 </Form>
               )}
-
               {currentTab === 2 && (
                 <Form>
                   <div style={{ marginTop: 20 }}>
