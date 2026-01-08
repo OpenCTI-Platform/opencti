@@ -29,7 +29,7 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import IngestionCreationUserHandling from '@components/data/IngestionCreationUserHandling';
+import IngestionCreationUserHandling from '../../../../private/components/data/IngestionCreationUserHandling';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -116,7 +116,6 @@ const SyncCreation = ({ paginationOptions }) => {
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
     };
-    console.log('input', input);
     commitMutation({
       mutation: syncCheckMutation,
       variables: { input },
@@ -138,7 +137,6 @@ const SyncCreation = ({ paginationOptions }) => {
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
     };
-    console.log('input', input);
     commitMutation({
       mutation: syncCreationMutation,
       variables: { input },
