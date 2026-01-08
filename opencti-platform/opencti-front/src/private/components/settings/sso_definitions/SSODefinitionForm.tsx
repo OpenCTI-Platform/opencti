@@ -1,0 +1,331 @@
+import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionCreation';
+import { useFormatter } from '../../../../components/i18n';
+import * as Yup from 'yup';
+import { Field, FieldArray, Form, Formik } from 'formik';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { TextField } from 'formik-mui';
+import SwitchField from '../../../../components/fields/SwitchField';
+import SAMLCreation from '@components/settings/sso_definitions/SAMLCreation';
+import Typography from '@mui/material/Typography';
+import { IconButton } from '@mui/material';
+import { Add, Delete } from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import React, { useState } from 'react';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../components/Theme';
+
+interface SSODefinitionFormProps {
+  onCancel: () => void;
+  onSubmit: (
+    values: SSODefinitionFormValues,
+    formikHelpers: { setSubmitting: (b: boolean) => void; resetForm: () => void },
+  ) => void;
+  selectedStrategy: string | null;
+}
+const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy }: SSODefinitionFormProps) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const [currentTab, setCurrentTab] = useState(0);
+
+  const handleChangeTab = (value: number) => {
+    setCurrentTab(value);
+  };
+  const validationSchema = Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    label: Yup.string().required(t_i18n('This field is required')),
+    issuer: Yup.string().required(t_i18n('This field is required')),
+    idp_cert: Yup.string().required(t_i18n('This field is required')),
+    saml_callback_url: Yup.string()
+      .url(t_i18n('Must be a valid URL'))
+      .required(t_i18n('This field is required')),
+  });
+  const initialValues = {
+    name: '',
+    label: '',
+    enabled: true,
+    // SAML
+    private_key: '',
+    issuer: '',
+    idp_cert: '',
+    saml_callback_url: '',
+    want_assertions_signed: false,
+    want_auth_response_signed: false,
+    login_idp_directly: false,
+    logout_remote: false,
+    provider_method: '',
+    idp_signing_certificate: '',
+    sso_binding_type: '',
+    force_reauthentication: false,
+    enable_debug_mode: false,
+    advancedConfigurations: [],
+    groups_path: [],
+    groups_mapping: [],
+    read_userinfo: false,
+    organizations_path: [],
+    organizations_mapping: [],
+  };
+  return (
+    <Formik
+      enableReinitialize
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={onSubmit}
+      onReset={onCancel}
+    >
+      {({ handleReset, submitForm, isSubmitting }) => (
+        <Form>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={currentTab}
+              onChange={(event, value) => handleChangeTab(value)}
+            >
+              <Tab label={t_i18n('SSO Configuration')} />
+              <Tab label={t_i18n('Groups mapping')} />
+              <Tab label={t_i18n('Organization mapping')} />
+            </Tabs>
+          </Box>
+          {currentTab === 0 && (
+            <Form>
+              <div style={{ marginTop: 20 }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="name"
+                  label={t_i18n('Configuration Name *')}
+                  fullWidth
+                />
+              </div>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="label"
+                label={t_i18n('Login Button Name *')}
+                fullWidth
+                style={{ marginTop: 20 }}
+              />
+              <Field
+                component={SwitchField}
+                variant="standard"
+                name="enabled"
+                type="checkbox"
+                label={t_i18n('Enable SAML authentication')}
+                containerstyle={{ marginLeft: 2, marginTop: 20 }}
+              />
+              {selectedStrategy === 'SAML' && <SAMLCreation />}
+            </Form>
+          )}
+          {currentTab === 1 && (
+            <Form>
+              <div style={{ marginTop: 20 }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="groups_path"
+                  label={t_i18n('Attribute/path in token')}
+                  containerstyle={{ marginTop: 12 }}
+                  fullWidth
+                />
+              </div>
+              <FieldArray name="groups_mapping">
+                {({ push, remove, form }) => (
+                  <>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginTop: 20,
+                      }}
+                    >
+                      <Typography variant="h2">Add a group mapping</Typography>
+                      <IconButton
+                        color="secondary"
+                        aria-label="Add a new value"
+                        size="large"
+                        style={{ marginBottom: 12 }}
+                        onClick={() =>
+                          push({ value: '', auto_create: 'Boolean' })
+                        }
+                      >
+                        <Add fontSize="small" />
+                      </IconButton>
+                    </div>
+                    {form.values.groups_mapping
+                      && form.values.groups_mapping.map(
+                        (value: string, index: number) => (
+                          <div
+                            key={index}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              marginBottom: 8,
+                            }}
+                          >
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name={`groups_mapping[${index}]`}
+                              label={t_i18n('Group mapping value')}
+                              fullWidth
+                              style={{ marginTop: 20 }}
+                            />
+                            {/* <div */}
+                            {/*  style={{ */}
+                            {/*    flexBasis: '70%', */}
+                            {/*    maxWidth: '70%', */}
+                            {/*    marginBottom: 20, */}
+                            {/*  }} */}
+                            {/* > */}
+                            {/*  <GroupField */}
+                            {/*    name="groups" */}
+                            {/*    label="Groups" */}
+                            {/*    style={fieldSpacingContainerStyle} */}
+                            {/*    showConfidence={true} */}
+                            {/*  /> */}
+                            {/* </div> */}
+                            <IconButton
+                              color="primary"
+                              aria-label={t_i18n('Delete')}
+                              style={{ marginTop: 10 }}
+                              onClick={() => remove(index)} // Delete
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                            <Field
+                              component={SwitchField}
+                              variant="standard"
+                              type="checkbox"
+                              name="auto_create_group"
+                              label={t_i18n('auto-create group')}
+                              containerstyle={{ marginTop: 10 }}
+                            />
+                          </div>
+                        ),
+                      )}
+                  </>
+                )}
+              </FieldArray>
+              <Field
+                component={SwitchField}
+                variant="standard"
+                type="checkbox"
+                name="read_userinfo"
+                label={t_i18n('Automatically add users to default groups')}
+                containerstyle={{ marginLeft: 2, marginTop: 30 }}
+              />
+            </Form>
+          )}
+          {currentTab === 2 && (
+            <Form>
+              <div style={{ marginTop: 20 }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="organizations_path"
+                  label={t_i18n('Attribute/path in token')}
+                  fullWidth
+                />
+              </div>
+              <FieldArray name="organizations_mapping">
+                {({ push, remove, form }) => (
+                  <>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginTop: 20,
+                      }}
+                    >
+                      <Typography variant="h2">Add a new value</Typography>
+                      <IconButton
+                        color="secondary"
+                        aria-label="Add a new value"
+                        size="large"
+                        style={{ marginBottom: 12 }}
+                        onClick={() =>
+                          push({ value: '', auto_create: 'Boolean' })
+                        }
+                      >
+                        <Add fontSize="small" />
+                      </IconButton>
+                    </div>
+                    {form.values.organizations_mapping
+                      && form.values.organizations_mapping.map(
+                        (value: string, index: number) => (
+                          <div
+                            key={index}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              marginBottom: 8,
+                            }}
+                          >
+                            <Field
+                              component={TextField}
+                              variant="standard"
+                              name={`organizations_mapping[${index}]`}
+                              label={t_i18n('Value organizations mappings')}
+                              fullWidth
+                              style={{ marginTop: 20 }}
+                            />
+                            {/* <div */}
+                            {/*  style={{ flexBasis: '70%', maxWidth: '70%' }} */}
+                            {/* > */}
+                            {/*  <ObjectOrganizationField */}
+                            {/*    outlined={false} */}
+                            {/*    name="objectOrganization" */}
+                            {/*    label="Organizations" */}
+                            {/*    containerstyle={{ width: '100%' }} */}
+                            {/*    style={fieldSpacingContainerStyle} */}
+                            {/*    fullWidth */}
+                            {/*  /> */}
+                            {/* </div> */}
+                            <IconButton
+                              color="primary"
+                              aria-label={t_i18n('Delete')}
+                              style={{ marginTop: 30, marginLeft: 50 }}
+                              onClick={() => remove(index)}
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          </div>
+                        ),
+                      )}
+                  </>
+                )}
+              </FieldArray>
+            </Form>
+          )}
+          <div
+            style={{
+              marginTop: 20,
+              textAlign: 'right',
+            }}
+          >
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              style={{ marginLeft: theme.spacing(2) }}
+            >
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              style={{ marginLeft: theme.spacing(2) }}
+            >
+              {t_i18n('Create')}
+            </Button>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
+};
+
+export default SSODefinitionForm;
