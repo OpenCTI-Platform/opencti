@@ -428,8 +428,8 @@ export const findCatalog = async (_context: AuthContext, _user: AuthUser) => {
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
 };
 
-const findContract = (_context: AuthContext, _user: AuthUser, predicate: (contract: any) => boolean) => {
-  const catalogDefinitions = getCatalogs();
+const findContract = async (_context: AuthContext, _user: AuthUser, predicate: (contract: any) => boolean) => {
+  const catalogDefinitions = await getCatalogs();
   if (!catalogDefinitions) {
     return null;
   }
@@ -453,9 +453,5 @@ export const findContractBySlug = (context: AuthContext, user: AuthUser, contrac
 };
 
 export const findContractByContainerImage = (context: AuthContext, user: AuthUser, containerImage: string) => {
-  return findContract(context, user, (contract) => {
-    const { container_image } = contract;
-    console.log('---  container_image', container_image);
-    return contract.container_image === containerImage;
-  });
+  return findContract(context, user, (contract) => contract.container_image === containerImage);
 };

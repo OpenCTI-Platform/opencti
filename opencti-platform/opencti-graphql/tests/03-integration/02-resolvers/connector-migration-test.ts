@@ -189,7 +189,7 @@ describe('Check connector migration', () => {
           },
         });
 
-        const contractFound = catalogDomain.findContractByContainerImage(testContext, ADMIN_USER, 'opencti/connector-cve');
+        const contractFound = await catalogDomain.findContractByContainerImage(testContext, ADMIN_USER, 'opencti/connector-cve');
         if (!contractFound?.contract) {
           throw new Error('Connector nist-nvd-cve container-image not found in catalog');
         }
