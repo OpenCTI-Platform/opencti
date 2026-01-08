@@ -834,8 +834,8 @@ input SynchronizerAddInput {
   token: String
   stream_id: String! @constraint(minLength: 2)
   user_id: String!
-    automatic_user: Boolean
-    confidence_level: Int
+  automatic_user: Boolean
+  confidence_level: Int
   recover: DateTime
   current_state_date: DateTime
   listen_deletion: Boolean!
