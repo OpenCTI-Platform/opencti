@@ -845,6 +845,7 @@ input SynchronizerAddInput {
   synchronized: Boolean
 }
 
+
 input SynchronizerAddAutoUserInput {
     user_name: String!
     confidence_level: Int!
@@ -13792,6 +13793,17 @@ input StixRefRelationshipsAddInput {
   toIds: [StixRef!]!
 }
 
+type SynchronizerAddInputFromImport {
+    name: String!
+    uri: String!
+    stream_id: String!
+    current_state_date: DateTime
+    listen_deletion: Boolean!
+    ssl_verify: Boolean!
+    no_dependencies: Boolean!
+    synchronized: Boolean!
+}
+
 ### QUERIES
 
 type Query {
@@ -14033,7 +14045,9 @@ type Query {
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
   synchronizer(id: String!): Synchronizer @auth(for: [INGESTION])
-  synchronizers(
+    synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport! @auth(for: [CONNECTORAPI])
+
+    synchronizers(
     first: Int
     after: ID
     orderBy: SynchronizersOrdering

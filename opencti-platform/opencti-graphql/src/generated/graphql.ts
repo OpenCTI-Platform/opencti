@@ -22385,6 +22385,7 @@ export type Query = {
   supportPackage?: Maybe<SupportPackage>;
   supportPackages?: Maybe<SupportPackageConnection>;
   synchronizer?: Maybe<Synchronizer>;
+  synchronizerAddInputFromImport: SynchronizerAddInputFromImport;
   synchronizerFetch?: Maybe<Array<Maybe<RemoteStreamCollection>>>;
   synchronizers?: Maybe<SynchronizerConnection>;
   system?: Maybe<System>;
@@ -25107,6 +25108,11 @@ export type QuerySupportPackagesArgs = {
 
 export type QuerySynchronizerArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QuerySynchronizerAddInputFromImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -30564,6 +30570,18 @@ export type SynchronizerAddInput = {
   token?: InputMaybe<Scalars['String']['input']>;
   uri: Scalars['String']['input'];
   user_id: Scalars['String']['input'];
+};
+
+export type SynchronizerAddInputFromImport = {
+  __typename?: 'SynchronizerAddInputFromImport';
+  current_state_date?: Maybe<Scalars['DateTime']['output']>;
+  listen_deletion: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  no_dependencies: Scalars['Boolean']['output'];
+  ssl_verify: Scalars['Boolean']['output'];
+  stream_id: Scalars['String']['output'];
+  synchronized: Scalars['Boolean']['output'];
+  uri: Scalars['String']['output'];
 };
 
 export type SynchronizerConnection = {
@@ -37169,6 +37187,7 @@ export type ResolversTypes = ResolversObject<{
   Synchronizer: ResolverTypeWrapper<Synchronizer>;
   SynchronizerAddAutoUserInput: SynchronizerAddAutoUserInput;
   SynchronizerAddInput: SynchronizerAddInput;
+  SynchronizerAddInputFromImport: ResolverTypeWrapper<SynchronizerAddInputFromImport>;
   SynchronizerConnection: ResolverTypeWrapper<SynchronizerConnection>;
   SynchronizerEdge: ResolverTypeWrapper<SynchronizerEdge>;
   SynchronizerEditMutations: ResolverTypeWrapper<SynchronizerEditMutations>;
@@ -38078,6 +38097,7 @@ export type ResolversParentTypes = ResolversObject<{
   Synchronizer: Synchronizer;
   SynchronizerAddAutoUserInput: SynchronizerAddAutoUserInput;
   SynchronizerAddInput: SynchronizerAddInput;
+  SynchronizerAddInputFromImport: SynchronizerAddInputFromImport;
   SynchronizerConnection: SynchronizerConnection;
   SynchronizerEdge: SynchronizerEdge;
   SynchronizerEditMutations: SynchronizerEditMutations;
@@ -45421,6 +45441,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   supportPackage?: Resolver<Maybe<ResolversTypes['SupportPackage']>, ParentType, ContextType, RequireFields<QuerySupportPackageArgs, 'id'>>;
   supportPackages?: Resolver<Maybe<ResolversTypes['SupportPackageConnection']>, ParentType, ContextType, Partial<QuerySupportPackagesArgs>>;
   synchronizer?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<QuerySynchronizerArgs, 'id'>>;
+  synchronizerAddInputFromImport?: Resolver<ResolversTypes['SynchronizerAddInputFromImport'], ParentType, ContextType, RequireFields<QuerySynchronizerAddInputFromImportArgs, 'file'>>;
   synchronizerFetch?: Resolver<Maybe<Array<Maybe<ResolversTypes['RemoteStreamCollection']>>>, ParentType, ContextType, Partial<QuerySynchronizerFetchArgs>>;
   synchronizers?: Resolver<Maybe<ResolversTypes['SynchronizerConnection']>, ParentType, ContextType, Partial<QuerySynchronizersArgs>>;
   system?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, Partial<QuerySystemArgs>>;
@@ -47209,6 +47230,17 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+}>;
+
+export type SynchronizerAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['SynchronizerAddInputFromImport'] = ResolversParentTypes['SynchronizerAddInputFromImport']> = ResolversObject<{
+  current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  listen_deletion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  no_dependencies?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  ssl_verify?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  stream_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  synchronized?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type SynchronizerConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SynchronizerConnection'] = ResolversParentTypes['SynchronizerConnection']> = ResolversObject<{
@@ -49325,6 +49357,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SupportPackageConnection?: SupportPackageConnectionResolvers<ContextType>;
   SupportPackageEdge?: SupportPackageEdgeResolvers<ContextType>;
   Synchronizer?: SynchronizerResolvers<ContextType>;
+  SynchronizerAddInputFromImport?: SynchronizerAddInputFromImportResolvers<ContextType>;
   SynchronizerConnection?: SynchronizerConnectionResolvers<ContextType>;
   SynchronizerEdge?: SynchronizerEdgeResolvers<ContextType>;
   SynchronizerEditMutations?: SynchronizerEditMutationsResolvers<ContextType>;
