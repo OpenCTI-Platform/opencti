@@ -35,7 +35,7 @@ const WidgetBookmarks = ({ bookmarks }: WidgetBookmarksProps) => {
           return (
             <Grid item xs={4} key={bookmark.id}>
               <Card
-                noPadding
+                padding="none"
                 variant="outlined"
                 to={`${link}/${bookmark.id}`}
               >

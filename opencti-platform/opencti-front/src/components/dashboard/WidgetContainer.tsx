@@ -1,12 +1,12 @@
 import { CSSProperties, FunctionComponent, ReactNode } from 'react';
-import Card from '../common/card/Card';
+import Card, { CardProps } from '../common/card/Card';
 
 interface WidgetContainerProps {
   children: ReactNode;
   height?: CSSProperties['height'];
   title?: string;
   variant?: string;
-  noPadding?: boolean;
+  padding?: CardProps['padding'];
 }
 
 const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
@@ -14,12 +14,12 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
   height,
   title,
   variant,
-  noPadding,
+  padding,
 }) => {
   return (
     <div style={{ height: height || '100%' }}>
       {variant !== 'inLine' && variant !== 'inEntity'
-        ? <Card title={title} noPadding={noPadding}>{children}</Card>
+        ? <Card title={title} padding={padding}>{children}</Card>
         : children
       }
     </div>
