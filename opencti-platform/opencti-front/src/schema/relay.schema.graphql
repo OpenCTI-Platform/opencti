@@ -2333,6 +2333,7 @@ type MissingConfigKey {
   format: String
   enum: [String!]
   default: JSON
+  required: Boolean!
 }
 
 type MigrationAssessment {

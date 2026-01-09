@@ -15028,6 +15028,7 @@ export type MissingConfigKey = {
   enum?: Maybe<Array<Scalars['String']['output']>>;
   format?: Maybe<Scalars['String']['output']>;
   key: Scalars['String']['output'];
+  required: Scalars['Boolean']['output'];
   type: Scalars['String']['output'];
 };
 
@@ -43126,6 +43127,7 @@ export type MissingConfigKeyResolvers<ContextType = any, ParentType extends Reso
   enum?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   format?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  required?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
