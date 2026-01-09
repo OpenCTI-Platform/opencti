@@ -1,5 +1,6 @@
 import * as R from 'ramda';
-import type { AttributeDefinition, } from '../../schema/attribute-definition';
+import type { AttributeDefinition } from '../../schema/attribute-definition';
+import { xOpenctiModifiedAt } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -34,12 +35,13 @@ import {
   ENTITY_USER_ACCOUNT,
   ENTITY_USER_AGENT,
   ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
 } from '../../schema/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const stixCyberObservableAttributes: Array<AttributeDefinition> = [
+  xOpenctiModifiedAt,
   { name: 'x_opencti_description', label: 'Observable description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
 ];
@@ -66,7 +68,7 @@ const hashDefinition: AttributeDefinition = {
   mandatoryType: 'no',
   isFilterable: true,
   multiple: false,
-  upsert: true
+  upsert: true,
 };
 
 const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> } = {
@@ -231,7 +233,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
       editDefault: false,
       multiple: false,
       upsert: true,
-      isFilterable: true
+      isFilterable: true,
     },
     { name: 'credential', label: 'Credential', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'account_login', label: 'Account login', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
@@ -304,7 +306,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'persona_type', label: 'Persona type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_SSH_KEY]: [
-    { name: 'key_type', label: 'Key type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'key_type', label: 'Key type', type: 'string', format: 'vocabulary', vocabularyCategory: 'key_type_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'public_key', label: 'Public key', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'fingerprint_sha256', label: 'Fingerprint sha256', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'fingerprint_md5', label: 'Fingerprint MD5', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
@@ -312,6 +314,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'comment', label: 'Comment', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'created', label: 'Created', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'expiration_date', label: 'Expiration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-  ]
+  ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixCyberObservablesAttributes);

@@ -53,7 +53,7 @@ export const findSessions = () => {
             id: s.redis_key_id,
             created: s.user.session_creation,
             ttl: s.redis_key_ttl,
-            originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
+            originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000),
           };
         });
         return { user_id: k, sessions: userSessions };
@@ -82,10 +82,8 @@ export const killSession = async (id) => {
   });
 };
 
-export const killUserSessions = async (userId) => {
+export const killSessions = async (sessionsIds) => {
   const { store } = applicationSession;
-  const sessions = await findUserSessions(userId);
-  const sessionsIds = sessions.map((s) => s.id);
   const killedSessions = [];
   for (let index = 0; index < sessionsIds.length; index += 1) {
     const sessionId = sessionsIds[index];
@@ -96,9 +94,10 @@ export const killUserSessions = async (userId) => {
   return killedSessions;
 };
 
-export const findSessionsForUsers = async (userIds) => {
-  const sessions = await findSessions();
-  return sessions.filter((s) => userIds.includes(s.user_id)).map((s) => s.sessions).flat();
+export const killUserSessions = async (userId) => {
+  const sessions = await findUserSessions(userId);
+  const sessionsIds = sessions.map((s) => s.id);
+  return killSessions(sessionsIds);
 };
 
 export const applicationSession = createSessionMiddleware();

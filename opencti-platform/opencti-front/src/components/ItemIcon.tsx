@@ -603,11 +603,11 @@ const iconSelector = (
 };
 
 interface ItemIconProps {
-  type?: string | null,
-  size?: 'inherit' | 'large' | 'medium' | 'small',
-  variant?: string,
-  color?: string | null,
-  isReversed?: boolean,
+  type?: string | null;
+  size?: 'inherit' | 'large' | 'medium' | 'small';
+  variant?: string;
+  color?: string | null;
+  isReversed?: boolean;
 }
 
 const ItemIcon = ({ type, size = 'medium', variant, color = null, isReversed = false }: ItemIconProps) => {

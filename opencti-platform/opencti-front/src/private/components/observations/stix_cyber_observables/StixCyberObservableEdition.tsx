@@ -21,9 +21,9 @@ export const stixCyberObservableEditionQuery = graphql`
 `;
 
 interface StixCyberObservableEditionProps {
-  stixCyberObservableId: string,
-  open?: boolean,
-  handleClose?: () => void,
+  stixCyberObservableId: string;
+  open?: boolean;
+  handleClose?: () => void;
 }
 
 const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionProps> = ({
@@ -50,14 +50,14 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
   };
   const transition = theme.transitions?.create
     ? theme.transitions.create('width', {
-      easing: theme.transitions.easing?.sharp,
-      duration: theme.transitions.duration?.enteringScreen,
-    })
+        easing: theme.transitions.easing?.sharp,
+        duration: theme.transitions.duration?.enteringScreen,
+      })
     : undefined;
 
   const renderClassic = () => (
     <>
-      <EditEntityControlledDial onOpen={handleOpen} onClose={() => {}}/>
+      <EditEntityControlledDial onOpen={handleOpen} onClose={() => {}} />
       <Drawer
         open={open}
         anchor="right"

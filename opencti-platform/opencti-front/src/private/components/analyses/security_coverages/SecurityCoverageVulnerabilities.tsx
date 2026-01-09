@@ -52,15 +52,15 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                 dense={true}
                 divider={true}
                 disablePadding={true}
-                secondaryAction={
+                secondaryAction={(
                   <StixCoreRelationshipPopover
                     objectId={securityCoverage.id}
-                    connectionKey={'Pagination_vulnerabilities'}
+                    connectionKey="Pagination_vulnerabilities"
                     stixCoreRelationshipId={vulnerabilityEdge.node.id}
                     paginationOptions={paginationOptions}
                     isCoverage={true}
                   />
-                }
+                )}
               >
                 <ListItemButton
                   component={Link}
@@ -71,7 +71,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                     <ItemIcon color={theme.palette.primary.main} type="vulnerability" />
                   </ListItemIcon>
                   <ListItemText
-                    primary={
+                    primary={(
                       <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                         <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{vulnerability?.name}</Typography>
                         <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
@@ -81,7 +81,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                           />
                         </Box>
                       </Box>
-                    }
+                    )}
                   />
                 </ListItemButton>
               </ListItem>

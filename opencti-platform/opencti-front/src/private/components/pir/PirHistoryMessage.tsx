@@ -36,8 +36,8 @@ export interface PirLog {
 }
 
 interface PirHistoryMessageProps {
-  log: PirLog
-  pirName: string
+  log: PirLog;
+  pirName: string;
 }
 
 const PirHistoryMessage = ({ log }: PirHistoryMessageProps) => {

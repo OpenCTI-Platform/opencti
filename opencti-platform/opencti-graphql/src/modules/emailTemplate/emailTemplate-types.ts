@@ -27,6 +27,6 @@ export interface StixEmailTemplate extends StixObject {
   sender_email: string;
   template_body: string;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }

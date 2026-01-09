@@ -94,10 +94,10 @@ const AddThreatActorIndividualDemographicLine = ({
   currentTargets,
   handleClick,
 }: {
-  id: string,
-  name: string,
-  currentTargets: string[],
-  handleClick: () => void,
+  id: string;
+  name: string;
+  currentTargets: string[];
+  handleClick: () => void;
 }) => {
   const theme = useTheme();
   return (
@@ -108,7 +108,7 @@ const AddThreatActorIndividualDemographicLine = ({
       <ListItemIcon>
         {currentTargets.includes(id)
           ? <CheckCircle style={{ color: theme.palette.primary.main }} />
-          : <ItemIcon type='Country' />
+          : <ItemIcon type="Country" />
         }
       </ListItemIcon>
       <ListItemText
@@ -123,9 +123,9 @@ const AddThreatActorIndividualDemographicLines = ({
   fragmentKey,
   relType,
 }: {
-  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
-  fragmentKey: AddThreatActorIndividualDemographicLines_data$key,
-  relType: string,
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data;
+  fragmentKey: AddThreatActorIndividualDemographicLines_data$key;
+  relType: string;
 }) => {
   const data = useFragment(
     AddThreatActorIndividualDemographicLinesFragment,

@@ -39,10 +39,10 @@ export const stixCoreObjectOpinionsRadarDistributionQuery = graphql`
 `;
 
 interface StixCoreObjectOpinionsRadarProps {
-  queryRef: PreloadedQuery<StixCoreObjectOpinionsRadarDistributionQuery>
-  height: number
-  opinionOptions: { label: string, value: number }[]
-  handleOpen: () => void
+  queryRef: PreloadedQuery<StixCoreObjectOpinionsRadarDistributionQuery>;
+  height: number;
+  opinionOptions: { label: string; value: number }[];
+  handleOpen: () => void;
 }
 
 const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadarProps> = ({ queryRef, opinionOptions, height, handleOpen }) => {

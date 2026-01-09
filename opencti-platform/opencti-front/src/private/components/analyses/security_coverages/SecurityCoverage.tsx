@@ -88,6 +88,10 @@ const securityCoverageFragment = graphql`
         entity_type
       }
     }
+    periodicity
+    duration
+    type_affinity
+    platforms_affinity
     coverage_last_result
     coverage_valid_from
     coverage_valid_to
@@ -102,7 +106,7 @@ const securityCoverageFragment = graphql`
 
 interface SecurityCoverageComponentProps {
   data: SecurityCoverage_securityCoverage$key;
-  killChainsQueryRef: PreloadedQuery<SecurityCoverageKillChainsQuery>
+  killChainsQueryRef: PreloadedQuery<SecurityCoverageKillChainsQuery>;
 }
 
 const SecurityCoverageComponent = ({
@@ -151,7 +155,7 @@ const SecurityCoverageComponent = ({
 };
 
 interface SecurityCoverageProps {
-  data: SecurityCoverage_securityCoverage$key,
+  data: SecurityCoverage_securityCoverage$key;
 }
 
 const SecurityCoverage = ({ data }: SecurityCoverageProps) => {

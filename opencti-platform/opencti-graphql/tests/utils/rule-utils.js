@@ -6,9 +6,10 @@ import { isNotEmptyField, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES, READ
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
 import { internalFindByIds, internalLoadById, topEntitiesList } from '../../src/database/middleware-loader';
 import { queryAsAdmin, testContext } from './testQuery';
-import { fetchStreamInfo } from '../../src/database/redis';
+import { fetchStreamInfo } from '../../src/database/stream/stream-handler';
 import { logApp } from '../../src/config/conf';
 import { TASK_TYPE_RULE } from '../../src/domain/backgroundTask-common';
+import { getManagerInfo } from '../../src/manager/ruleManager';
 
 export const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {
   for (let index = 0; index < inferences.length; index += 1) {
@@ -73,10 +74,10 @@ export const changeRule = async (ruleId, active) => {
   let stableCount = 1;
   while (stableCount < 3) {
     const innerInfo = await fetchStreamInfo();
-    const ruleManager = await internalLoadById(testContext, SYSTEM_USER, 'rule_engine_settings');
+    const ruleManagerInfo = await getManagerInfo(testContext, SYSTEM_USER);
     await wait(2000);
     const lastEventDate = new Date(parseInt(innerInfo.lastEventId.split('-').at(0), 10));
-    const managerEventDate = new Date(parseInt(ruleManager.lastEventId.split('-').at(0), 10));
+    const managerEventDate = new Date(parseInt(ruleManagerInfo.lastEventId.split('-').at(0), 10));
     if (managerEventDate >= lastEventDate) {
       stableCount += 1;
     }

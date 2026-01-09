@@ -1,9 +1,6 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { createFragmentContainer, graphql } from 'react-relay';
+import React, { useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
-import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
 import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LinkOffOutlined, LinkOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
@@ -20,492 +17,337 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
 import IconButton from '@mui/material/IconButton';
-import { Link } from 'react-router-dom';
-import withTheme from '@mui/styles/withTheme';
-import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
-import { truncate } from '../../../../utils/String';
-import inject18n from '../../../../components/i18n';
+import { ListItemButton } from '@mui/material';
+import { Link } from 'react-router-dom';
+import { useTheme } from '@mui/styles';
+import { truncate } from 'src/utils/String';
+import { useFormatter } from 'src/components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import ItemIcon from '../../../../components/ItemIcon';
 import Transition from '../../../../components/Transition';
 
-const styles = () => ({
-  container: {
-    marginBottom: 5,
-  },
-  line: {
-    content: ' ',
-    display: 'block',
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    width: 1,
-    height: 18,
-  },
-  avatar: {
-    float: 'left',
-    width: 30,
-    height: 30,
-    margin: '7px 0 0 0',
-  },
-  content: {
-    width: 'auto',
-    overflow: 'hidden',
-  },
-  tooltip: {
-    maxWidth: '80%',
-    lineHeight: 2,
-    padding: 10,
-  },
-  paper: {
-    width: '100%',
-    height: '100%',
-    padding: '8px 15px 0 15px',
-    background: 0,
-  },
-  description: {
-    height: '100%',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  date: {
-    float: 'right',
-    textAlign: 'right',
-    width: 180,
-    paddingTop: 4,
-    fontSize: 11,
-  },
-});
-
-class StixCoreRelationshipHistoryLineComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false,
-      displayExternalLink: false,
-      externalLink: null,
-    };
+export const StixCoreRelationshipHistoryFragment = graphql`
+  fragment StixCoreRelationshipHistoryLine_node on Log {
+    id
+    event_type
+    event_scope
+    timestamp
+    user {
+      name
+    }
+    context_data {
+      message
+      commit
+      external_references {
+        id
+        source_name
+        external_id
+        url
+        description
+      }
+      changes{
+        field
+        previous
+        new
+        added
+        removed
+      }
+    }
   }
+`;
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
+  const theme = useTheme();
+  const { t_i18n, nsdt } = useFormatter();
+  const [open, setOpen] = useState(false);
+  const node = useFragment(StixCoreRelationshipHistoryFragment, nodeRef);
 
-  handleClose() {
-    this.setState({ open: false });
-  }
+  const [openExternalLink, setOpenExternalLink] = useState(false);
+  const [externalLink, setExternalLink] = useState(null);
 
-  handleOpenExternalLink(url) {
-    this.setState({ displayExternalLink: true, externalLink: url });
-  }
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
-  handleCloseExternalLink() {
-    this.setState({ displayExternalLink: false, externalLink: null });
-  }
-
-  handleBrowseExternalLink() {
-    window.open(this.state.externalLink, '_blank');
-    this.setState({ displayExternalLink: false, externalLink: null });
-  }
-
-  renderIcon(eventScope, isRelation, eventMesage, commit) {
-    const { theme } = this.props;
+  const handleClose = () => setOpen(false);
+  const handleOpenExternalLink = (url) => {
+    setExternalLink(url);
+    setOpenExternalLink(true);
+  };
+  const handleCloseExternalLink = () => {
+    setOpenExternalLink(false);
+    setExternalLink(null);
+  };
+  const handleBrowseExternalLink = () => {
+    if (externalLink) window.open(externalLink, '_blank');
+    handleCloseExternalLink();
+  };
+  const getIconConfig = (eventScope, eventMessage) => {
     if (isRelation) {
       if (eventScope === 'create') {
-        return (
-          <Avatar
-            sx={{
-              width: 25,
-              height: 25,
-              backgroundColor: 'transparent',
-              border: `1px solid ${pink[500]}`,
-              color: theme.palette.text.primary,
-              cursor: commit ? 'pointer' : 'auto',
-            }}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <LinkOutlined style={{ fontSize: 12 }} />
-          </Avatar>
-        );
+        return { color: pink[500], Icon: LinkOutlined, clickable: true };
       }
       if (eventScope === 'delete') {
-        return (
-          <Avatar
-            sx={{
-              width: 25,
-              height: 25,
-              backgroundColor: 'transparent',
-              border: `1px solid ${deepPurple[500]}`,
-              color: theme.palette.text.primary,
-              cursor: commit ? 'pointer' : 'auto',
-            }}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <LinkOffOutlined style={{ fontSize: 12 }} />
-          </Avatar>
-        );
+        return { color: deepPurple[500], Icon: LinkOffOutlined, clickable: true };
       }
     } else {
       if (eventScope === 'create') {
-        return (
-          <Avatar
-            sx={{
-              width: 25,
-              height: 25,
-              backgroundColor: 'transparent',
-              border: `1px solid ${pink[500]}`,
-              color: theme.palette.text.primary,
-              cursor: commit ? 'pointer' : 'auto',
-            }}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <AddOutlined style={{ fontSize: 12 }} />
-          </Avatar>
-        );
+        return { color: pink[500], Icon: AddOutlined, clickable: true };
       }
       if (eventScope === 'merge') {
-        return (
-          <Avatar
-            sx={{
-              width: 25,
-              height: 25,
-              backgroundColor: 'transparent',
-              border: `1px solid ${teal[500]}`,
-              color: theme.palette.text.primary,
-              cursor: commit ? 'pointer' : 'auto',
-            }}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <Merge style={{ fontSize: 12 }} />
-          </Avatar>
-        );
+        return { color: teal[500], Icon: Merge, clickable: true };
       }
-      if (eventScope === 'update' && eventMesage.includes('replaces')) {
-        return (
-          <Avatar
-            sx={{
-              width: 25,
-              height: 25,
-              backgroundColor: 'transparent',
-              border: `1px solid ${green[500]}`,
-              color: theme.palette.text.primary,
-              cursor: commit ? 'pointer' : 'auto',
-            }}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <EditOutlined style={{ fontSize: 12 }} />
-          </Avatar>
-        );
+      if (eventScope === 'update' && eventMessage.includes('replaces')) {
+        return { color: green[500], Icon: EditOutlined, clickable: true };
       }
-      if (eventScope === 'update' && eventMesage.includes('changes')) {
-        return (
-          <Avatar
-            sx={{
-              width: 25,
-              height: 25,
-              backgroundColor: 'transparent',
-              border: `1px solid ${green[500]}`,
-              color: theme.palette.text.primary,
-              cursor: commit ? 'pointer' : 'auto',
-            }}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <EditOutlined style={{ fontSize: 12 }} />
-          </Avatar>
-        );
+      if (eventScope === 'update' && eventMessage.includes('changes')) {
+        return { color: green[500], Icon: EditOutlined, clickable: true };
       }
-      if (eventScope === 'update' && eventMesage.includes('adds')) {
-        return (
-          <Avatar
-            sx={{
-              width: 25,
-              height: 25,
-              backgroundColor: 'transparent',
-              border: `1px solid ${indigo[500]}`,
-              color: theme.palette.text.primary,
-              cursor: commit ? 'pointer' : 'auto',
-            }}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <LinkVariantPlus style={{ fontSize: 12 }} />
-          </Avatar>
-        );
+      if (eventScope === 'update' && eventMessage.includes('removes')) {
+        return { color: deepOrange[500], Icon: LinkVariantRemove, clickable: true };
       }
-      if (eventScope === 'update' && eventMesage.includes('removes')) {
-        return (
-          <Avatar
-            sx={{
-              width: 25,
-              height: 25,
-              backgroundColor: 'transparent',
-              border: `1px solid ${deepOrange[500]}`,
-              color: theme.palette.text.primary,
-              cursor: commit ? 'pointer' : 'auto',
-            }}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <LinkVariantRemove style={{ fontSize: 12 }} />
-          </Avatar>
-        );
+      if (eventScope === 'update') {
+        return { color: indigo[500], Icon: LinkVariantPlus, clickable: true };
       }
       if (eventScope === 'delete') {
-        return (
-          <Avatar
-            sx={{
-              width: 25,
-              height: 25,
-              backgroundColor: 'transparent',
-              border: `1px solid ${red[500]}`,
-              color: theme.palette.text.primary,
-            }}
-          >
-            <DeleteOutlined style={{ fontSize: 12 }} />
-          </Avatar>
-        );
+        return { color: red[500], Icon: DeleteOutlined, clickable: false };
       }
     }
+    return { color: yellow[500], Icon: HelpOutlined, clickable: true };
+  };
+  const renderIcon = (
+    eventScope,
+    isRelation,
+    eventMessage,
+    commit,
+  ) => {
+    const { color, Icon, clickable } = getIconConfig(eventScope, eventMessage, isRelation);
+    const canClick = clickable && !!commit;
     return (
       <Avatar
-        style={{
+        sx={{
           width: 25,
           height: 25,
           backgroundColor: 'transparent',
-          border: `1px solid ${yellow[500]}`,
+          border: `1px solid ${color}`,
           color: theme.palette.text.primary,
-          cursor: commit ? 'pointer' : 'auto',
+          cursor: canClick ? 'pointer' : 'auto',
         }}
-        onClick={() => commit && this.handleOpen()}
+        onClick={canClick ? handleOpen : undefined}
       >
-        <HelpOutlined style={{ fontSize: 12 }} />
+        <Icon style={{ fontSize: 12 }} />
       </Avatar>
     );
-  }
+  };
 
-  render() {
-    const { nsdt, classes, node, isRelation, t } = this.props;
-    return (
-      <div className={classes.container}>
-        <div className={classes.avatar}>
-          <Badge
-            color="secondary"
-            overlap="circular"
-            badgeContent="M"
-            invisible={node.context_data.commit === null}
-          >
-            {this.renderIcon(
-              node.event_scope,
-              isRelation,
-              node.context_data.message,
-              node.context_data.commit,
-            )}
-          </Badge>
-        </div>
-        <div
-          className={classes.content}
-          style={{
-            height:
-              node.context_data.external_references
-              && node.context_data.external_references.length > 0
-                ? 'auto'
-                : 40,
-          }}
+  const externalRefs = node.context_data?.external_references ?? [];
+  const hasExternalRefs = externalRefs.length > 0;
+
+  return (
+    <div style={{
+      marginBottom: 5,
+    }}
+    >
+      <div style={{
+        float: 'left',
+        width: 30,
+        height: 30,
+        margin: '7px 0 0 0',
+      }}
+      >
+        <Badge
+          color="secondary"
+          overlap="circular"
+          badgeContent="M"
+          invisible={node.context_data.commit == null}
         >
-          <Paper classes={{ root: classes.paper }}>
-            <div className={classes.date}>{nsdt(node.timestamp)}</div>
-            <Tooltip
-              classes={{ tooltip: classes.tooltip }}
-              title={
-                <MarkdownDisplay
-                  content={`\`${node.user.name}\` ${node.context_data.message}`}
-                  remarkGfmPlugin={true}
-                  commonmark={true}
-                />
-              }
-            >
-              <div className={classes.description}>
-                <MarkdownDisplay
-                  content={`\`${node.user.name}\` ${node.context_data.message}`}
-                  remarkGfmPlugin={true}
-                  commonmark={true}
-                />
-              </div>
-            </Tooltip>
-            {node.context_data.external_references
-              && node.context_data.external_references.length > 0 && (
-                <List>
-                  {node.context_data.external_references.map(
-                    (externalReference) => {
-                      const externalReferenceId = externalReference.external_id
-                        ? `(${externalReference.external_id})`
-                        : '';
-                      let externalReferenceSecondary = '';
-                      if (
-                        externalReference.url
-                        && externalReference.url.length > 0
-                      ) {
-                        externalReferenceSecondary = externalReference.url;
-                      } else if (
-                        externalReference.description
-                        && externalReference.description.length > 0
-                      ) {
-                        externalReferenceSecondary = externalReference.description;
-                      }
-                      if (externalReference.url) {
-                        return (
-                          <ListItem
-                            key={externalReference.id}
-                            dense={true}
-                            divider={true}
-                            secondaryAction={
-                              <Tooltip title={t('Browse the link')}>
-                                <IconButton
-                                  onClick={this.handleOpenExternalLink.bind(
-                                    this,
-                                    externalReference.url,
-                                  )}
-                                  size="large"
-                                  color="primary"
-                                >
-                                  <OpenInBrowserOutlined />
-                                </IconButton>
-                              </Tooltip>
-                            }
-                          >
-                            <ListItemButton
-                              component={Link}
-                              to={`/dashboard/analyses/external_references/${externalReference.id}`}
-                            >
-                              <ListItemIcon>
-                                <ItemIcon type="External-Reference" />
-                              </ListItemIcon>
-                              <ListItemText
-                                primary={`${externalReference.source_name} ${externalReferenceId}`}
-                                secondary={truncate(
-                                  externalReferenceSecondary,
-                                  90,
-                                )}
-                              />
-                            </ListItemButton>
-                          </ListItem>
-                        );
-                      }
-                      return (
-                        <ListItemButton
-                          component={Link}
-                          key={externalReference.id}
-                          to={`/dashboard/analyses/external_references/${externalReference.id}`}
-                          dense={true}
-                          divider={true}
-                        >
-                          <ListItemIcon>
-                            <ItemIcon type="External-Reference" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={`${externalReference.source_name} ${externalReferenceId}`}
-                            secondary={truncate(
-                              externalReference.description,
-                              120,
-                            )}
-                          />
-                        </ListItemButton>
-                      );
-                    },
-                  )}
-                </List>
-            )}
-          </Paper>
-        </div>
-        <div className={classes.line} />
-        <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
-          open={this.state.open}
-          onClose={this.handleClose.bind(this)}
-          fullWidth={true}
-        >
-          <DialogTitle>{t('Commit message')}</DialogTitle>
-          <DialogContent>
-            <MarkdownDisplay
-              content={node.context_data.commit}
-              remarkGfmPlugin={true}
-              commonmark={true}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button color="primary" onClick={this.handleClose.bind(this)}>
-              {t('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
-          open={this.state.displayExternalLink}
-          keepMounted={true}
-          slots={{ transition: Transition }}
-          onClose={this.handleCloseExternalLink.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to browse this external link?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleCloseExternalLink.bind(this)}>
-              {t('Cancel')}
-            </Button>
-            <Button
-              button={true}
-              color="secondary"
-              onClick={this.handleBrowseExternalLink.bind(this)}
-            >
-              {t('Browse the link')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+          {renderIcon(
+            node.event_scope,
+            isRelation,
+            node.context_data.message,
+            node.context_data.commit,
+          )}
+        </Badge>
       </div>
-    );
-  }
-}
+      <div
+        style={{
+          width: 'auto',
+          overflow: 'hidden',
+          height: hasExternalRefs ? 'auto' : 40 }}
+      >
+        <Paper style={{
+          width: '100%',
+          height: '100%',
+          padding: '8px 15px 0 15px',
+          background: 0,
+        }}
+        >
+          <div style={{
+            float: 'right',
+            textAlign: 'right',
+            width: 180,
+            paddingTop: 4,
+            fontSize: 11,
+          }}
+          >{nsdt(node.timestamp)}
+          </div>
+          <Tooltip
+            style={{
+              maxWidth: '80%',
+              lineHeight: 2,
+              padding: 10,
+            }}
+            title={(
+              <MarkdownDisplay
+                content={`\`${node.user.name}\` ${node.context_data.message}`}
+                remarkGfmPlugin={true}
+                commonmark={true}
+              />
+            )}
+          >
+            <div style={{
+              height: '100%',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+            >
+              <MarkdownDisplay
+                content={`\`${node.user.name}\` ${node.context_data.message}`}
+                remarkGfmPlugin={true}
+                commonmark={true}
+              />
+            </div>
+          </Tooltip>
+          {hasExternalRefs && (
+            <List>
+              {externalRefs.map((externalReference) => {
+                const externalReferenceId = externalReference.external_id
+                  ? `(${externalReference.external_id})`
+                  : '';
+                let externalReferenceSecondary = '';
+                if (externalReference.url && externalReference.url.length > 0) {
+                  externalReferenceSecondary = externalReference.url;
+                } else if (
+                  externalReference.description
+                  && externalReference.description.length > 0
+                ) {
+                  externalReferenceSecondary = externalReference.description;
+                }
 
-StixCoreRelationshipHistoryLineComponent.propTypes = {
-  node: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  nsdt: PropTypes.func,
-  isRelation: PropTypes.bool,
+                if (externalReference.url) {
+                  return (
+                    <ListItem
+                      key={externalReference.id}
+                      dense
+                      divider
+                      secondaryAction={(
+                        <Tooltip title={t_i18n('Browse the link')}>
+                          <IconButton
+                            onClick={() =>
+                              handleOpenExternalLink(externalReference.url)
+                            }
+                            size="large"
+                            color="primary"
+                          >
+                            <OpenInBrowserOutlined />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    >
+                      <ListItemButton
+                        component={Link}
+                        to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="External-Reference" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${externalReference.source_name} ${externalReferenceId}`}
+                          secondary={truncate(externalReferenceSecondary, 90)}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                }
+
+                return (
+                  <ListItemButton
+                    key={externalReference.id}
+                    component={Link}
+                    to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                    dense
+                    divider
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type="External-Reference" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={`${externalReference.source_name} ${externalReferenceId}`}
+                      secondary={truncate(
+                        externalReference.description,
+                        120,
+                      )}
+                    />
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          )}
+        </Paper>
+      </div>
+      <div style={{
+        content: ' ',
+        display: 'block',
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        width: 1,
+        height: 18,
+      }}
+      />
+      <Dialog
+        slotProps={{ paper: { elevation: 1 } }}
+        open={open}
+        onClose={handleClose}
+        fullWidth
+      >
+        <DialogTitle>{t_i18n('Commit message')}</DialogTitle>
+        <DialogContent>
+          <MarkdownDisplay
+            content={node.context_data.commit}
+            remarkGfmPlugin={true}
+            commonmark={true}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button color="primary" onClick={handleClose}>
+            {t_i18n('Close')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        slotProps={{ paper: { elevation: 1 } }}
+        open={openExternalLink}
+        keepMounted
+        slots={{ transition: Transition }}
+        onClose={handleCloseExternalLink}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to browse this external link?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
+          <Button color="secondary" onClick={handleBrowseExternalLink}>
+            {t_i18n('Browse the link')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
 };
 
-const StixCoreRelationshipHistoryLine = createFragmentContainer(
-  StixCoreRelationshipHistoryLineComponent,
-  {
-    node: graphql`
-      fragment StixCoreRelationshipHistoryLine_node on Log {
-        id
-        event_type
-        event_scope
-        timestamp
-        user {
-          name
-        }
-        context_data {
-          message
-          commit
-          external_references {
-            id
-            source_name
-            external_id
-            url
-            description
-          }
-        }
-      }
-    `,
-  },
-);
-
-export default compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(StixCoreRelationshipHistoryLine);
+export default StixCoreRelationshipHistoryLine;

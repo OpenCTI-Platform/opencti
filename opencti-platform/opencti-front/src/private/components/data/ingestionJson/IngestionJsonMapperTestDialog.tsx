@@ -27,10 +27,10 @@ const ingestionJsonMapperTestMutation = graphql`
 `;
 
 interface IngestionJsonMapperTestDialogProps {
-  open: boolean
-  onClose: () => void
-  values: IngestionJsonAddInput
-  setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>
+  open: boolean;
+  onClose: () => void;
+  values: IngestionJsonAddInput;
+  setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDialogProps> = ({
@@ -74,7 +74,7 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
         },
       },
       onCompleted: (data) => {
-        const resultTest = (data as IngestionJsonMapperTestDialogMutation$data);
+        const resultTest = data as IngestionJsonMapperTestDialogMutation$data;
         if (resultTest) {
           setResult(resultTest);
           if (setIsCreateDisabled) {
@@ -117,38 +117,41 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
           </Button>
           {loading && (
             <Box sx={{ marginLeft: '8px' }}>
-              <Loader variant={LoaderVariant.inElement}/>
+              <Loader variant={LoaderVariant.inElement} />
             </Box>
           )}
           {result
-            && <Box
-              sx={{
-                paddingTop: '8px',
-                marginLeft: '12px',
-                fontSize: '1rem',
-                gap: '8px',
-                justifyContent: 'center',
-                display: 'flex',
-              }}
-               >
-              <span>{t_i18n('Objects found')} : </span>
-              <span><strong>{result?.ingestionJsonTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
-              <span><strong>{result?.ingestionJsonTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
-            </Box>
+            && (
+              <Box
+                sx={{
+                  paddingTop: '8px',
+                  marginLeft: '12px',
+                  fontSize: '1rem',
+                  gap: '8px',
+                  justifyContent: 'center',
+                  display: 'flex',
+                }}
+              >
+                <span>{t_i18n('Objects found')} : </span>
+                <span><strong>{result?.ingestionJsonTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
+                <span><strong>{result?.ingestionJsonTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
+              </Box>
+            )
           }
         </Box>
         <Box sx={{ marginTop: '8px' }}>
           <h3>State</h3>
-          <CodeBlock customHeight={'50px'}
+          <CodeBlock
+            customHeight="50px"
             code={result?.ingestionJsonTester?.state || t_i18n('You will find here the computed state.')}
-            language={'json'}
+            language="json"
           />
         </Box>
         <Box sx={{ marginTop: '8px' }}>
           <h3>Objects</h3>
           <CodeBlock
             code={result?.ingestionJsonTester?.objects || t_i18n('You will find here the result in JSON format.')}
-            language={'json'}
+            language="json"
           />
         </Box>
       </DialogContent>

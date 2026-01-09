@@ -28,7 +28,7 @@ import {
   testSync,
   updateConnectorCurrentStatus,
   updateConnectorManagerStatus,
-  updateConnectorRequestedStatus
+  updateConnectorRequestedStatus,
 } from '../domain/connector';
 import {
   addDraftContext,
@@ -43,7 +43,7 @@ import {
   updateExpectationsNumber,
   updateProcessedTime,
   updateReceivedTime,
-  worksForConnector
+  worksForConnector,
 } from '../domain/work';
 import { now, sinceNowInMinutes } from '../utils/format';
 import {
@@ -60,7 +60,7 @@ import {
   connectorsForImport,
   connectorsForManagers,
   connectorsForNotification,
-  connectorsForWorker
+  connectorsForWorker,
 } from '../database/repository';
 import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
@@ -93,7 +93,9 @@ const connectorResolvers = {
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
-    connector_priority_group: (cn) => { return cn.connector_priority_group ?? ConnectorPriorityGroup.Default; },
+    connector_priority_group: (cn) => {
+      return cn.connector_priority_group ?? ConnectorPriorityGroup.Default;
+    },
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
     manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
@@ -115,7 +117,7 @@ const connectorResolvers = {
   },
   ConnectorManager: {
     active: (cm) => sinceNowInMinutes(cm.last_sync_execution) < 5,
-    about_version: () => PLATFORM_VERSION
+    about_version: () => PLATFORM_VERSION,
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
@@ -124,7 +126,7 @@ const connectorResolvers = {
   },
   Synchronizer: {
     user: (sync, _, context) => context.batch.creatorBatchLoader.load(sync.user_id),
-    queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id)
+    queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id),
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),

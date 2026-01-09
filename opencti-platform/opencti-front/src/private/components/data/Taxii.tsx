@@ -27,7 +27,7 @@ const Taxii = () => {
     location,
     LOCAL_STORAGE_KEY,
   );
-  const [taxiiState, setTaxiiState] = useState<{ orderAsc: boolean, searchTerm: string, view: string, sortBy: string }>({
+  const [taxiiState, setTaxiiState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
@@ -93,11 +93,11 @@ const Taxii = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <TaxiiCollectionCreation paginationOptions={paginationOptions} />
           </Security>
-        }
+        )}
       >
         <QueryRenderer
           query={TaxiiLinesQuery}
@@ -108,7 +108,8 @@ const Taxii = () => {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-            />)}
+            />
+          )}
         />
       </ListLines>
     );
@@ -121,14 +122,15 @@ const Taxii = () => {
   };
   return (
     <div data-testid="taxii-collections-page">
-      <Box sx={{
-        margin: 0,
-        padding: '0 200px 50px 0',
-      }}
+      <Box
+        sx={{
+          margin: 0,
+          padding: '0 200px 50px 0',
+        }}
         aria-label="TaxiiCollections"
       >
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
-        <SharingMenu/>
+        <SharingMenu />
         {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
       </Box>
     </div>

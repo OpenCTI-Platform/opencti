@@ -27,12 +27,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface NotifierFieldProps {
-  label?: string
+  label?: string;
   name: string;
   style?: { marginTop: number };
   helpertext?: string;
   onChange: (name: string, value: FieldOption[]) => void;
-  required?: boolean
+  required?: boolean;
 }
 
 export const NotifierFieldQuery = graphql`
@@ -102,12 +102,13 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
           option: FieldOption,
-        ) => (<li {...props} key={option.value}>
-          <div className={classes.icon}>
-            <ItemIcon type="Notifier" />
-          </div>
-          <div className={classes.text}>{option.label}</div>
-        </li>
+        ) => (
+          <li {...props} key={option.value}>
+            <div className={classes.icon}>
+              <ItemIcon type="Notifier" />
+            </div>
+            <div className={classes.text}>{option.label}</div>
+          </li>
         )}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />

@@ -1,10 +1,10 @@
 import type { StixCoreObject, StixId, StixRelationshipObject } from '../types/stix-2-1-common';
 
 export interface NotificationData {
-  notification_id: string
-  instance: StixCoreObject | StixRelationshipObject | Partial<{ id: string | StixId | null }>
-  type: string
-  message: string
+  notification_id: string;
+  instance: StixCoreObject | StixRelationshipObject | Partial<{ id: string | StixId | null }>;
+  type: string;
+  message: string;
 }
 const DEFAULT_NOTIFICATION: NotificationData = {
   notification_id: 'default_notification_id',
@@ -24,7 +24,7 @@ const DEFAULT_DIGEST: NotificationData[] = [
     notification_id: 'default_notification_id_2',
     instance: { id: 'instanceId2' },
     type: 'live',
-    message: '[TEST] Udpates a malware with id : instanceId2',
+    message: '[TEST] Updates a malware with id : instanceId2',
   },
 ];
 
@@ -37,13 +37,13 @@ const DEFAULT_ACTIVITY = {
       {
         key: 'name',
         value: [
-          'Some name'
-        ]
+          'Some name',
+        ],
       },
-    ]
+    ],
   },
   type: 'update',
-  message: '`admin` updates `name` for report `Some Name`'
+  message: '`admin` updates `name` for report `Some Name`',
 };
 
 export const MOCK_NOTIFICATIONS: Record<string, NotificationData[]> = {

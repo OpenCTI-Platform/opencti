@@ -73,7 +73,7 @@ const Entities = () => {
   } as UsePreloadedPaginationFragment<EntitiesStixDomainObjectsLinesPaginationQuery>;
 
   return (
-    <div data-testid='data-entities-page'>
+    <div data-testid="data-entities-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Entities'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -83,7 +83,7 @@ const Entities = () => {
           resolvePath={(data: EntitiesStixDomainObjectsLines_data$data) => data.stixDomainObjects?.edges?.map((n) => n?.node)}
           dataColumns={dataColumns}
           lineFragment={entitiesFragment}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           exportContext={{ entity_type: 'Stix-Domain-Object' }}
           availableEntityTypes={['Stix-Domain-Object']}
         />

@@ -1,13 +1,12 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field } from 'formik';
+import React, { FunctionComponent, SyntheticEvent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { CountryFieldSearchQuery$data } from '@components/common/form/__generated__/CountryFieldSearchQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import { FieldOption } from '../../../../utils/field';
+import Field, { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -30,7 +29,7 @@ interface CountryFieldProps {
   id: string;
   name: string;
   label: string;
-  onChange?: (name: string, value: FieldOption) => void;
+  onChange?: (name: string, value: FieldOption | null) => void;
   containerStyle?: Record<string, string | number>;
   helpertext?: string;
   required?: boolean;
@@ -60,42 +59,39 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [countries, setCountries] = useState<
-  {
-    label: string | undefined;
-    value: string | undefined;
-  }[]
-  >([]);
+  const [countries, setCountries] = useState<FieldOption[]>([]);
 
-  const searchCountries = (event: React.ChangeEvent<HTMLInputElement>) => {
-    fetchQuery(CountryFieldQuery, {
-      search: event && event.target.value ? event.target.value : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const NewCountries = (
-          (data as CountryFieldSearchQuery$data)?.countries?.edges ?? []
-        ).map((n) => ({
-          label: n?.node.name,
-          value: n?.node.id,
-        }));
-        const templateValues = [...countries, ...NewCountries];
-        // Keep only the unique list of options
-        const uniqTemplates = templateValues.filter((item, index) => {
-          return (
-            templateValues.findIndex((e) => e.value === item.value) === index
-          );
+  const searchCountries = (event?: SyntheticEvent<Element, Event>) => {
+    if (event?.target instanceof HTMLInputElement) {
+      const search = event.target.value ?? '';
+      fetchQuery(CountryFieldQuery, { search })
+        .toPromise()
+        .then((data) => {
+          const NewCountries = (
+            (data as CountryFieldSearchQuery$data)?.countries?.edges ?? []
+          ).map((n) => ({
+            label: n?.node.name,
+            value: n?.node.id,
+          }));
+          const templateValues = [...countries, ...NewCountries];
+          // Keep only the unique list of options
+          const uniqTemplates = templateValues.filter((item, index) => {
+            return (
+              templateValues.findIndex((e) => e.value === item.value) === index
+            );
+          });
+          setCountries(uniqTemplates);
         });
-        setCountries(uniqTemplates);
-      });
+    }
   };
 
   return (
     <div style={{ width: '100%' }}>
-      <Field
+      <Field<AutocompleteFieldProps<false>>
         id={id}
         component={AutocompleteField}
         name={name}
+        multiple={false}
         required={required}
         textfieldprops={{
           variant: 'standard',
@@ -109,10 +105,7 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
         noOptionsText={t_i18n('No available options')}
         options={countries}
         onInputChange={searchCountries}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: { color: string; label: string },
-        ) => (
+        renderOption={(props, option) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="Country" />

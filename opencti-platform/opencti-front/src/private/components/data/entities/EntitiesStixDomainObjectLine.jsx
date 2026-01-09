@@ -87,7 +87,7 @@ const EntitiesStixDomainObjectLineComponent = ({
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -140,7 +140,7 @@ const EntitiesStixDomainObjectLineComponent = ({
               />
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
@@ -389,7 +389,7 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -469,7 +469,7 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
               />
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />

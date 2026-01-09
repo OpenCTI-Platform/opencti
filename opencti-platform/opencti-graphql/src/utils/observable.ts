@@ -54,7 +54,7 @@ export const detectObservableType = (value: string): string => {
         /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
         /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/\d{1,2}$/, // CIDR notation
       ],
-      priority: 10
+      priority: 10,
     },
     {
       type: ENTITY_IPV6_ADDR,
@@ -62,7 +62,7 @@ export const detectObservableType = (value: string): string => {
         /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/,
         /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})\/\d{1,3}$/, // CIDR notation
       ],
-      priority: 10
+      priority: 10,
     },
     {
       type: ENTITY_MAC_ADDR,
@@ -70,7 +70,7 @@ export const detectObservableType = (value: string): string => {
         /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/,
         /^([0-9A-Fa-f]{4}\.){2}[0-9A-Fa-f]{4}$/,
       ],
-      priority: 10
+      priority: 10,
     },
     {
       type: ENTITY_URL,
@@ -78,7 +78,7 @@ export const detectObservableType = (value: string): string => {
         /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i,
         /^(https?|ftp):\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$/i,
       ],
-      priority: 9
+      priority: 9,
     },
 
     // Email and communication
@@ -87,7 +87,7 @@ export const detectObservableType = (value: string): string => {
       patterns: [
         /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
       ],
-      priority: 9
+      priority: 9,
     },
     {
       type: ENTITY_PHONE_NUMBER,
@@ -96,7 +96,7 @@ export const detectObservableType = (value: string): string => {
         /^\+?[1-9]\d{1,14}$/, // E.164 format
         /^(\+\d{1,3}[-.\s]?)?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/,
       ],
-      priority: 8
+      priority: 8,
     },
 
     // Domain and hostname
@@ -106,14 +106,14 @@ export const detectObservableType = (value: string): string => {
         /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$/,
         /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i,
       ],
-      priority: 7
+      priority: 7,
     },
     {
       type: ENTITY_HOSTNAME,
       patterns: [
         /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
       ],
-      priority: 6
+      priority: 6,
     },
 
     // File system
@@ -124,7 +124,7 @@ export const detectObservableType = (value: string): string => {
         /^\/(?:[^/]+\/)*[^/]*$/, // Unix path
         /^[a-zA-Z]:\\(?:[^\\/:*?"<>|]+\\)*[^\\/:*?"<>|]*$/, // Windows with backslashes
       ],
-      priority: 7
+      priority: 7,
     },
     {
       type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
@@ -133,7 +133,7 @@ export const detectObservableType = (value: string): string => {
         /^\/(?:[^/]+\/)*[^/]+\.[a-zA-Z0-9]+$/, // Unix file with extension
         /\.(exe|dll|pdf|doc|docx|xls|xlsx|zip|tar|gz|jpg|jpeg|png|gif|mp4|mp3|txt|log|dat|bin|iso|dmg|pkg|deb|rpm)$/i,
       ],
-      priority: 8
+      priority: 8,
     },
 
     // Hashes and cryptographic
@@ -145,7 +145,7 @@ export const detectObservableType = (value: string): string => {
         /^[a-fA-F0-9]{64}$/, // SHA-256
         /^[a-fA-F0-9]{128}$/, // SHA-512
       ],
-      priority: 9
+      priority: 9,
     },
     {
       type: ENTITY_CRYPTOGRAPHIC_KEY,
@@ -153,7 +153,7 @@ export const detectObservableType = (value: string): string => {
         /^-----BEGIN (RSA |DSA |EC |OPENSSH |PGP |)?(PUBLIC|PRIVATE) KEY-----/m,
         /^ssh-(rsa|dss|ed25519|ecdsa) [A-Za-z0-9+/]+[=]{0,2}(\s|$)/,
       ],
-      priority: 8
+      priority: 8,
     },
     {
       type: ENTITY_CRYPTOGRAPHIC_WALLET,
@@ -163,7 +163,7 @@ export const detectObservableType = (value: string): string => {
         /^[LM3][a-km-zA-HJ-NP-Z1-9]{25,34}$/, // Litecoin address
         /^bc1[a-z0-9]{39,59}$/, // Bitcoin Bech32 address
       ],
-      priority: 8
+      priority: 8,
     },
 
     // System and process
@@ -174,7 +174,7 @@ export const detectObservableType = (value: string): string => {
         /^(pid:|process:|PID:)\s*\d+$/i,
         /^\d+\s+[a-zA-Z0-9_-]+(\.(exe|dll|so))?$/i, // PID followed by process name
       ],
-      priority: 6
+      priority: 6,
     },
     {
       type: ENTITY_MUTEX,
@@ -182,7 +182,7 @@ export const detectObservableType = (value: string): string => {
         /^(Global\\|Local\\|Session\\)?[a-zA-Z0-9_-]+$/,
         /^\\BaseNamedObjects\\[a-zA-Z0-9_-]+$/,
       ],
-      priority: 5
+      priority: 5,
     },
     {
       type: ENTITY_SOFTWARE,
@@ -190,7 +190,7 @@ export const detectObservableType = (value: string): string => {
         /^[a-zA-Z0-9\s._-]+\s+v?\d+(\.\d+)*$/i, // Software with version
         /^[a-zA-Z0-9\s._-]+\s+\d+(\.\d+)+(\.\d+)?$/i, // Name with version numbers
       ],
-      priority: 5
+      priority: 5,
     },
 
     // Windows Registry
@@ -200,7 +200,7 @@ export const detectObservableType = (value: string): string => {
         /^(HKEY_|HKLM\\|HKCU\\|HKU\\|HKCR\\|HKCC\\)/i,
         /^(HKEY_LOCAL_MACHINE|HKEY_CURRENT_USER|HKEY_USERS|HKEY_CLASSES_ROOT|HKEY_CURRENT_CONFIG)(\\[^\\]+)*$/i,
       ],
-      priority: 8
+      priority: 8,
     },
 
     // User and credentials
@@ -211,14 +211,14 @@ export const detectObservableType = (value: string): string => {
         /^(admin|administrator|root|user|guest|test)[0-9]*$/i,
         /^[a-zA-Z0-9_-]{3,32}$/, // Simple username
       ],
-      priority: 4
+      priority: 4,
     },
     {
       type: ENTITY_CREDENTIAL,
       patterns: [
         /^[a-zA-Z0-9._-]+:[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+$/, // username:password format
       ],
-      priority: 7
+      priority: 7,
     },
 
     // Financial
@@ -231,7 +231,7 @@ export const detectObservableType = (value: string): string => {
         /^3[47][0-9]{13}$/, // American Express
         /^6(?:011|5[0-9]{2})[0-9]{12}$/, // Discover
       ],
-      priority: 7
+      priority: 7,
     },
     {
       type: ENTITY_BANK_ACCOUNT,
@@ -240,7 +240,7 @@ export const detectObservableType = (value: string): string => {
         /^[0-9]{8,12}$/, // Basic account number
         /^\d{3}-\d{2}-\d{4}$/, // US SSN format (sometimes used for banking)
       ],
-      priority: 6
+      priority: 6,
     },
 
     // Tracking
@@ -252,7 +252,7 @@ export const detectObservableType = (value: string): string => {
         /^[0-9]{12,14}$/, // FedEx
         /^[A-Z]{2}[0-9]{9}[A-Z]{2}$/i, // International shipping
       ],
-      priority: 6
+      priority: 6,
     },
 
     // Network Traffic
@@ -263,7 +263,7 @@ export const detectObservableType = (value: string): string => {
         /^port:\s*\d{1,5}$/i,
         /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$/, // IP:Port
       ],
-      priority: 7
+      priority: 7,
     },
 
     // User Agent
@@ -274,7 +274,7 @@ export const detectObservableType = (value: string): string => {
         /^(Chrome|Firefox|Safari|Edge|Opera)\/[0-9.]+/i,
         /(Chrome|Firefox|Safari|Edge|Opera|Mozilla|AppleWebKit|Gecko|Trident)/i,
       ],
-      priority: 6
+      priority: 6,
     },
 
     // Autonomous System
@@ -284,7 +284,7 @@ export const detectObservableType = (value: string): string => {
         /^AS\d{1,10}$/i,
         /^ASN?\s*\d{1,10}$/i,
       ],
-      priority: 8
+      priority: 8,
     },
 
     // Certificate
@@ -295,7 +295,7 @@ export const detectObservableType = (value: string): string => {
         /^-----BEGIN X509 CRL-----/m,
         /^MII[A-Za-z0-9+/]+={0,2}$/, // Base64 encoded certificate
       ],
-      priority: 8
+      priority: 8,
     },
   ];
 
@@ -339,4 +339,102 @@ export const groupByObservableType = (values: string[]): Record<string, string[]
   });
 
   return grouped;
+};
+
+/**
+ * Refangs (de-sanitizes) a defanged observable value.
+ * Security analysts often work with "defanged" IOCs where dangerous characters
+ * are replaced with safe equivalents to prevent accidental clicking/execution.
+ *
+ * This function converts defanged values back to their original form for proper
+ * processing and storage.
+ *
+ * Examples:
+ * - hxxp://test[.]com → http://test.com
+ * - 192.168.1[.]1 → 192.168.1.1
+ * - test[@]test[.]com → test@test.com
+ * - hxxps[://]evil[.]com → https://evil.com
+ */
+export const refangValue = (value: string): string => {
+  if (!value || typeof value !== 'string') {
+    return value;
+  }
+
+  let refanged = value;
+
+  // Protocol defanging: hxxp, hXXp, etc. → http
+  refanged = refanged.replace(/\bhxxps?:\/\//gi, (match) => {
+    return match.toLowerCase().replace('hxxp', 'http');
+  });
+
+  // Handle protocol with brackets: hxxps[://] or [://]
+  refanged = refanged.replace(/\[:\/{2}\]/g, '://');
+  refanged = refanged.replace(/\[:\/\/\]/g, '://');
+
+  // Protocol variations with mixed case
+  refanged = refanged.replace(/\bh[xX]{2}ps?\b/g, (match) => {
+    return match.toLowerCase().replace(/h[xX]{2}p/i, 'http');
+  });
+
+  // Dot defanging: [.] or (.) or {.} → .
+  refanged = refanged.replace(/\[\.\]/g, '.');
+  refanged = refanged.replace(/\(\.\)/g, '.');
+  refanged = refanged.replace(/\{\.\}/g, '.');
+
+  // @ defanging: [@] or (@) or {@} → @
+  refanged = refanged.replace(/\[@\]/g, '@');
+  refanged = refanged.replace(/\(@\)/g, '@');
+  refanged = refanged.replace(/\{@\}/g, '@');
+
+  // Colon defanging: [:] or (:) → : (often used for ports)
+  refanged = refanged.replace(/\[:\]/g, ':');
+  refanged = refanged.replace(/\(:\)/g, ':');
+
+  // Slash defanging: [/] or (/) → /
+  refanged = refanged.replace(/\[\/\]/g, '/');
+  refanged = refanged.replace(/\(\/\)/g, '/');
+
+  // Handle "dot" written out: test dot com → test.com
+  refanged = refanged.replace(/\s+dot\s+/gi, '.');
+
+  // Handle "at" written out: test at test.com → test@test.com
+  refanged = refanged.replace(/\s+at\s+/gi, '@');
+
+  // Remove spaces around dots that might have been added for safety
+  // e.g., "192 . 168 . 1 . 1" → "192.168.1.1"
+  refanged = refanged.replace(/\s*\.\s*/g, '.');
+
+  return refanged.trim();
+};
+
+/**
+ * Refangs an array of values.
+ */
+export const refangValues = (values: string[]): string[] => {
+  return values.map((value) => refangValue(value));
+};
+
+/**
+ * Checks if a value appears to be defanged (contains common defanging patterns).
+ */
+export const isDefanged = (value: string): boolean => {
+  if (!value || typeof value !== 'string') {
+    return false;
+  }
+
+  const defangPatterns = [
+    /hxxps?:\/\//i, // hxxp:// or hxxps://
+    /\[\.\]/, // [.]
+    /\(\.\)/, // (.)
+    /\{\.\}/, // {.}
+    /\[@\]/, // [@]
+    /\(@\)/, // (@)
+    /\{@\}/, // {@}
+    /\[:\/{2}\]/, // [://]
+    /\[:\/\/\]/, // [://]
+    /\s+dot\s+/i, // " dot "
+    /\s+at\s+/i, // " at "
+  ];
+
+  return defangPatterns.some((pattern) => pattern.test(value));
 };

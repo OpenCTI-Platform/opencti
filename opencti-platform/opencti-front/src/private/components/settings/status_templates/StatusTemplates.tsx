@@ -144,7 +144,7 @@ const StatusTemplates = () => {
           resolvePath={(data) => data.statusTemplates?.edges?.map(({ node }: { node: StatusTemplatesLine_node$data }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           lineFragment={StatusTemplatesLineFragment}
           disableNavigation
           disableLineSelection
@@ -152,14 +152,16 @@ const StatusTemplates = () => {
           actions={(row) => <StatusTemplatePopover data={row} paginationOptions={paginationOptions} />}
           searchContextFinal={{ entityTypes: ['StatusTemplates'] }}
           icon={(data) => <FactCheckOutlined sx={{ color: data.color }} />}
-          createButton={<StatusTemplateCreation
-            paginationOptions={paginationOptions}
-            contextual={false}
-            creationCallback={() => { }}
-            handleClose={() => { }}
-            inputValueContextual={''}
-            open={false}
-                        />}
+          createButton={(
+            <StatusTemplateCreation
+              paginationOptions={paginationOptions}
+              contextual={false}
+              creationCallback={() => { }}
+              handleClose={() => { }}
+              inputValueContextual=""
+              open={false}
+            />
+          )}
         />
       )}
     </div>

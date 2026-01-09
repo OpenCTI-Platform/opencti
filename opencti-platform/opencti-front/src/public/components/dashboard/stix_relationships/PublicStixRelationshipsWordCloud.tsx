@@ -70,8 +70,8 @@ const publicStixRelationshipsWordCloudQuery = graphql`
 `;
 
 interface PublicStixRelationshipsWordCloudComponentProps {
-  queryRef: PreloadedQuery<PublicStixRelationshipsWordCloudQuery>
-  dataSelection: Widget['dataSelection']
+  queryRef: PreloadedQuery<PublicStixRelationshipsWordCloudQuery>;
+  dataSelection: Widget['dataSelection'];
 }
 
 const PublicStixCoreObjectsWordCloudComponent = ({

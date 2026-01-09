@@ -6,10 +6,8 @@ it('Check if python is well configured', async () => {
   const check = await checkPythonAvailability(testContext, ADMIN_USER);
   expect(check).not.toBeNull();
   expect(check).toEqual("[text:value = 'test']");
-  // noinspection ES6MissingAwait
-  expect(execChildPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('Cannot execute Python with empty script path or name');
-  // noinspection ES6MissingAwait
-  expect(createStixPattern(testContext, ADMIN_USER, 'fail')).resolves.toEqual(null);
+  await expect(execChildPython(testContext, ADMIN_USER, '/missing')).rejects.toThrow('Cannot execute Python with empty script path or name');
+  await expect(createStixPattern(testContext, ADMIN_USER, 'fail')).resolves.toEqual(null);
 });
 
 it('Check createStixPattern bad pattern', async () => {

@@ -47,12 +47,12 @@ import { fileUri } from '../../../relay/environment';
 import SecurityPlatform from '../../../static/images/entities/security-platform.svg';
 
 interface GraphImage {
-  img: HTMLImageElement
-  rawImg: string
+  img: HTMLImageElement;
+  rawImg: string;
 }
 
 type GraphImages = {
-  [key: string]: GraphImage
+  [key: string]: GraphImage;
 };
 
 const generateHtmlImageElement = (src: string) => {

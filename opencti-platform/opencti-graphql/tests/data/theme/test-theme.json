@@ -1,0 +1,13 @@
+{
+  "name": "Test import theme",
+  "theme_background": "#2bb6d3",
+  "theme_paper": "#303030",
+  "theme_nav": "#2bb6d3",
+  "theme_primary": "#4c88a0",
+  "theme_secondary": "#692929",
+  "theme_accent": "#833365",
+  "theme_text_color": "#ffffff",
+  "theme_logo": "http://www.test.com/image.svg",
+  "theme_logo_collapsed": "",
+  "theme_logo_login": ""
+}

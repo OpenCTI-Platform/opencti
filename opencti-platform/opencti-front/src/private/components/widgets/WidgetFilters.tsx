@@ -34,7 +34,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   let availableEntityTypes;
   let searchContext;
   if (perspective === 'relationships') {
-    searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains'] };
+    searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains', 'object-label'] };
   } else if (perspective === 'audits') {
     availableEntityTypes = ['History', 'Activity'];
     searchContext = { entityTypes: ['History'] };
@@ -100,13 +100,15 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       </Box>
 
       <Box sx={{ paddingTop: 1 }}>
-        {isFilterGroupNotEmpty(filtersDynamicFrom) && (<div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
-          {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
-        </div>)}
+        {isFilterGroupNotEmpty(filtersDynamicFrom) && (
+          <div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
+            {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
+          </div>
+        )}
         <FilterIconButton
           filters={filtersDynamicFrom}
           helpers={helpersDynamicFrom}
-          chipColor={'warning'}
+          chipColor="warning"
           entityTypes={['Stix-Core-Object']}
           searchContext={searchContext}
           availableEntityTypes={[
@@ -117,14 +119,16 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         />
 
         {isFilterGroupNotEmpty(filtersDynamicTo)
-          && (<div style={{ marginTop: 8, color: '#03A847', marginBottom: 4 }}>
-            {t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}
-          </div>)
+          && (
+            <div style={{ marginTop: 8, color: '#03A847', marginBottom: 4 }}>
+              {t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}
+            </div>
+          )
         }
         <FilterIconButton
           filters={filtersDynamicTo}
           helpers={helpersDynamicTo}
-          chipColor={'success'}
+          chipColor="success"
           entityTypes={['Stix-Core-Object']}
           searchContext={searchContext}
           availableEntityTypes={[

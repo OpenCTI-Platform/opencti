@@ -63,7 +63,7 @@ const ingestionTaxiiLineFragment = graphql`
     }
 `;
 
-export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiLineProps> = ({
+export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLineProps> = ({
   dataColumns,
   node,
   paginationOptions,
@@ -76,7 +76,7 @@ export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiL
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionTaxiiPopover
             ingestionTaxiiId={data.id}
@@ -85,13 +85,13 @@ export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiL
             setStateValue={setStateValue}
           />
         </Security>
-    }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <AccessPoint />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -134,7 +134,7 @@ export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiL
               <ItemCopy content={stateValue} variant="inLine" />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );
@@ -157,7 +157,7 @@ export const IngestionTaxiiLineDummy = ({ dataColumns }: { dataColumns: DataColu
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -226,7 +226,7 @@ export const IngestionTaxiiLineDummy = ({ dataColumns }: { dataColumns: DataColu
               />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );

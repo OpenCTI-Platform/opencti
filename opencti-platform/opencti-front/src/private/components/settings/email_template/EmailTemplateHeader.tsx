@@ -26,7 +26,7 @@ const headerFragment = graphql`
 `;
 
 interface EmailTemplateHeaderProps {
-  data: EmailTemplateHeader_template$key
+  data: EmailTemplateHeader_template$key;
 }
 
 const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {

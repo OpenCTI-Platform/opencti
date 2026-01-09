@@ -17,7 +17,7 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM]: [{ src: NAME_FIELD }, { src: 'identity_class', dependencies: [NAME_FIELD] }]
+      [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM]: [{ src: NAME_FIELD }, { src: 'identity_class', dependencies: [NAME_FIELD] }],
     },
     resolvers: {
       name(data: object) {
@@ -38,16 +38,16 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
       name: RELATION_SHOULD_COVER,
       targets: [
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
-      ]
+      ],
     },
   ],
   relationsRefs: [
-    { ...objectOrganization, isFilterable: false }
+    { ...objectOrganization, isFilterable: false },
   ],
   representative: (stix: StixSecurityPlatform) => {
     return stix.name;
   },
-  converter_2_1: convertSecurityPlatformToStix
+  converter_2_1: convertSecurityPlatformToStix,
 };
 
 registerDefinition(SECURITY_PLATFORM_DEFINITION);

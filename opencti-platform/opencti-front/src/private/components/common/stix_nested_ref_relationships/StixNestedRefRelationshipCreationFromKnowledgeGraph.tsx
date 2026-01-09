@@ -14,13 +14,13 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface StixNestedRefRelationshipCreationFromKnowledgeGraphProps {
-  nestedRelationExist: boolean,
-  openCreateNested: boolean,
-  nestedEnabled: boolean,
-  relationFromObjects: NodeObject[],
-  relationToObjects: NodeObject[],
-  handleSetNestedRelationExist: (val: boolean) => void,
-  handleOpenCreateNested: () => void,
+  nestedRelationExist: boolean;
+  openCreateNested: boolean;
+  nestedEnabled: boolean;
+  relationFromObjects: NodeObject[];
+  relationToObjects: NodeObject[];
+  handleSetNestedRelationExist: (val: boolean) => void;
+  handleOpenCreateNested: () => void;
 }
 const StixNestedRefRelationshipCreationFromKnowledgeGraph = ({
   nestedRelationExist,
@@ -34,12 +34,12 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraph = ({
   const { t_i18n } = useFormatter();
   const queryRef = (nestedEnabled && relationFromObjects[0] && relationToObjects[0] && !openCreateNested)
     ? useQueryLoading<StixNestedRefRelationshipCreationResolveQuery>(
-      stixNestedRefRelationshipCreationResolveQuery,
-      {
-        id: relationFromObjects[0].id as string,
-        toType: relationToObjects[0].entity_type,
-      },
-    ) : undefined;
+        stixNestedRefRelationshipCreationResolveQuery,
+        {
+          id: relationFromObjects[0].id as string,
+          toType: relationToObjects[0].entity_type,
+        },
+      ) : undefined;
   return (
     <>
       {queryRef ? (
@@ -53,17 +53,17 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraph = ({
         </React.Suspense>
       )
         : (
-          <Tooltip title={t_i18n('Create a nested relationship')}>
-            <span>
-              <IconButton
-                color="primary"
-                disabled={true}
-              >
-                <ReadMoreOutlined />
-              </IconButton>
-            </span>
-          </Tooltip>
-        )}
+            <Tooltip title={t_i18n('Create a nested relationship')}>
+              <span>
+                <IconButton
+                  color="primary"
+                  disabled={true}
+                >
+                  <ReadMoreOutlined />
+                </IconButton>
+              </span>
+            </Tooltip>
+          )}
     </>
   );
 };

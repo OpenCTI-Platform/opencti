@@ -46,7 +46,7 @@ const GARBAGE_COLLECTION_MANAGER_DEFINITION: ManagerDefinition = {
   },
   enabled(): boolean {
     return this.enabledByConfig;
-  }
+  },
 };
 
 registerManager(GARBAGE_COLLECTION_MANAGER_DEFINITION);

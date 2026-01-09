@@ -74,15 +74,15 @@ const DynamicResolutionField = ({
           .map((val) => {
             const filteredStixDomainObjects = stixDomainObjects.filter(
               (n) => (types.includes(convertFromStixType(n.type))
-                  || types.includes(n.x_opencti_location_type)
-                  || types.includes(n.identity_class))
-                && (n.name === val.trim() || n.value === val.trim()),
+                || types.includes(n.x_opencti_location_type)
+                || types.includes(n.identity_class))
+              && (n.name === val.trim() || n.value === val.trim()),
             );
 
             if (filteredStixDomainObjects.length > 0) {
               const firstStixDomainObject = R.head(filteredStixDomainObjects);
               const targetSelectedType = firstStixDomainObject.x_opencti_location_type
-                  ?? filteredStixDomainObjects.identity_class ?? firstStixDomainObject.type;
+                ?? filteredStixDomainObjects.identity_class ?? firstStixDomainObject.type;
               return {
                 id: firstStixDomainObject.id,
                 type: targetSelectedType,
@@ -120,17 +120,17 @@ const DynamicResolutionField = ({
                 }
                 return currentValueIndexed[val]
                   ? {
-                    id: currentValueIndexed[val].id,
-                    type: currentValueIndexed[val].type,
-                    name: currentValueIndexed[val].name,
-                    in_platform: false,
-                  }
+                      id: currentValueIndexed[val].id,
+                      type: currentValueIndexed[val].type,
+                      name: currentValueIndexed[val].name,
+                      in_platform: false,
+                    }
                   : {
-                    id: `${convertToStixType(R.head(types))}--${uuid()}`,
-                    type: R.head(types),
-                    name: val.trim(),
-                    in_platform: false,
-                  };
+                      id: `${convertToStixType(R.head(types))}--${uuid()}`,
+                      type: R.head(types),
+                      name: val.trim(),
+                      in_platform: false,
+                    };
               });
           }),
       );
@@ -156,10 +156,10 @@ const DynamicResolutionField = ({
       field.name,
       field.value.map((n) => (n.id === id
         ? {
-          ...n,
-          id: `${convertToStixType(event.target.value)}--${uuid()}`,
-          type: event.target.value,
-        }
+            ...n,
+            id: `${convertToStixType(event.target.value)}--${uuid()}`,
+            type: event.target.value,
+          }
         : n)),
     );
   };
@@ -191,7 +191,7 @@ const DynamicResolutionField = ({
                     <ItemIcon type={convertFromStixType(item.type)} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={
+                    primary={(
                       <div>
                         <div style={inlineStyles.type}>
                           {item.in_platform ? (
@@ -235,7 +235,7 @@ const DynamicResolutionField = ({
                           />
                         </div>
                       </div>
-                    }
+                    )}
                   />
                 </ListItem>
               ))}

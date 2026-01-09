@@ -1,4 +1,5 @@
 import { findStixMetaObjectPaginated, findById } from '../domain/stixMetaObject';
+import { getSpecVersionOrDefault } from '../domain/stixRelationship';
 
 const stixMetaObjectResolvers = {
   Query: {
@@ -6,7 +7,7 @@ const stixMetaObjectResolvers = {
     stixMetaObjects: (_, args, context) => findStixMetaObjectPaginated(context, context.user, args),
   },
   StixMetaObject: {
-    // eslint-disable-next-line
+
     __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
@@ -14,6 +15,8 @@ const stixMetaObjectResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
+    // Retro compatibility
+    spec_version: getSpecVersionOrDefault,
   },
 };
 

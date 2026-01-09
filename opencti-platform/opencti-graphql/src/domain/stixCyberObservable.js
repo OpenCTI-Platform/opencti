@@ -15,7 +15,7 @@ import {
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   loadEntityThroughRelationsPaginated,
-  storeLoadById
+  storeLoadById,
 } from '../database/middleware-loader';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { elCount } from '../database/engine';
@@ -30,7 +30,7 @@ import {
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
-  stixCyberObservableOptions
+  stixCyberObservableOptions,
 } from '../schema/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, buildRefRelationKey, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixRefRelationship';
@@ -225,7 +225,7 @@ export const addStixCyberObservable = async (context, user, input) => {
     objectLabel,
     externalReferences,
     update,
-    ...input[graphQLType]
+    ...input[graphQLType],
   };
   if (internal_id) {
     observableInput.internal_id = internal_id;
@@ -286,10 +286,10 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
         stixCyberObservableId,
         ABSTRACT_STIX_CYBER_OBSERVABLE,
         [{ key: 'url', values: null }],
-        opts
+        opts,
       );
     }
-    throw FunctionalError('Cannot update url when payload_bin is present.');
+    throw FunctionalError('Cannot update url when payload_bin is present.', { stixCyberObservableId });
   } else if (isNotEmptyField(originalStixCyberObservable.url) && payloadBinInput) {
     if (isNotEmptyField(originalStixCyberObservable.payload_bin)) {
       await updateAttribute(
@@ -298,10 +298,10 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
         stixCyberObservableId,
         ABSTRACT_STIX_CYBER_OBSERVABLE,
         [{ key: 'payload_bin', values: null }],
-        opts
+        opts,
       );
     }
-    throw FunctionalError('Cannot update payload_bin when url is present.');
+    throw FunctionalError('Cannot update payload_bin when url is present.', { stixCyberObservableId });
   }
   const { element: stixCyberObservable } = await updateAttribute(
     context,
@@ -309,7 +309,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     stixCyberObservableId,
     ABSTRACT_STIX_CYBER_OBSERVABLE,
     input,
-    opts
+    opts,
   );
   // Delete the key when updating a numeric field with an empty value (e.g. to delete this value) to avoid a schema error
   Object.entries(stixCyberObservable).forEach(([key, value]) => {
@@ -321,10 +321,10 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
       user,
       stixCyberObservableId,
       RELATION_BASED_ON,
-      ENTITY_TYPE_INDICATOR
+      ENTITY_TYPE_INDICATOR,
     );
     await Promise.all(
-      indicators.map((indicator) => updateAttribute(context, user, indicator.id, ENTITY_TYPE_INDICATOR, [scoreInput], opts))
+      indicators.map((indicator) => updateAttribute(context, user, indicator.id, ENTITY_TYPE_INDICATOR, [scoreInput], opts)),
     );
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
@@ -396,7 +396,7 @@ const extractInfectedZipFile = async (file) => {
 const ignore_extract_types = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
 ];
 
 // Office Open XML file extensions that should not be extracted (even if MIME type is wrong)

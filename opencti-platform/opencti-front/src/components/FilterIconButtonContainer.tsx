@@ -132,7 +132,7 @@ interface FilterIconButtonContainerProps {
 }
 
 const FilterIconButtonContainer: FunctionComponent<
-FilterIconButtonContainerProps
+  FilterIconButtonContainerProps
 > = ({
   filters,
   handleSwitchGlobalMode,
@@ -283,7 +283,7 @@ FilterIconButtonContainerProps
             {truncate(filterLabel, 20)}
             {!isOperatorDisplayed && (
               <Box
-                component={'span'}
+                component="span"
                 sx={{ padding: '0 4px', fontWeight: 'normal' }}
               >
                 {t_i18n(filterOperator)}
@@ -311,16 +311,18 @@ FilterIconButtonContainerProps
               title={
                 filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf'
                   ? undefined
-                  : <FilterValues
-                      label={keyLabel}
-                      tooltip={true}
-                      currentFilter={currentFilter}
-                      handleSwitchLocalMode={handleSwitchLocalMode}
-                      filtersRepresentativesMap={filtersRepresentativesMap}
-                      redirection={redirection}
-                      entityTypes={entityTypes}
-                      filtersRestrictions={filtersRestrictions}
-                    />
+                  : (
+                      <FilterValues
+                        label={keyLabel}
+                        tooltip={true}
+                        currentFilter={currentFilter}
+                        handleSwitchLocalMode={handleSwitchLocalMode}
+                        filtersRepresentativesMap={filtersRepresentativesMap}
+                        redirection={redirection}
+                        entityTypes={entityTypes}
+                        filtersRestrictions={filtersRestrictions}
+                      />
+                    )
               }
             >
               <Box
@@ -339,7 +341,7 @@ FilterIconButtonContainerProps
                   classes={{ root: classFilter, label: classes.chipLabel }}
                   variant={chipVariant}
                   sx={{ ...chipSx, borderRadius: 1 }}
-                  label={
+                  label={(
                     <FilterValues
                       label={keyLabel}
                       tooltip={false}
@@ -353,17 +355,17 @@ FilterIconButtonContainerProps
                       entityTypes={entityTypes}
                       filtersRestrictions={filtersRestrictions}
                     />
-                  }
+                  )}
                   disabled={
                     disabledPossible ? displayedFilters.length === 1 : undefined
                   }
                   onDelete={
                     (isReadWriteFilter && authorizeFilterRemoving)
                       ? () => manageRemoveFilter(
-                        currentFilter.id,
-                        filterKey,
-                        filterOperator,
-                      )
+                          currentFilter.id,
+                          filterKey,
+                          filterOperator,
+                        )
                       : undefined
                   }
                 />

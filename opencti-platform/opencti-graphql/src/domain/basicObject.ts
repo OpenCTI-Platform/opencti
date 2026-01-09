@@ -14,16 +14,21 @@ import { INTERNAL_USERS } from '../utils/access';
 import { SELF_ID, SELF_ID_VALUE } from '../utils/fintelTemplate/__fintelTemplateWidgets';
 
 interface FilterRepresentative {
-  id: string
-  value: string
-  entity_type: string | null
-  color: string | null
+  id: string;
+  value: string;
+  entity_type: string | null;
+  color: string | null;
 }
 
 // region filters representatives
 // return an array of the value of the ids existing in inputFilters:
 // the entity representative for entities, null for deleted or restricted entities, the id for ids not corresponding to an entity
-export const findFiltersRepresentatives = async (context: AuthContext, user: AuthUser, inputFilters: FilterGroup) => {
+export const findFiltersRepresentatives = async (
+  context: AuthContext,
+  user: AuthUser,
+  inputFilters: FilterGroup,
+  opts?: { isMeValueForbidden?: boolean | null },
+) => {
   const filtersRepresentatives: FilterRepresentative[] = [];
   // extract the ids to resolve from inputFilters
   const keysToResolve = schemaRelationsRefDefinition.getAllInputNames()
@@ -56,7 +61,7 @@ export const findFiltersRepresentatives = async (context: AuthContext, user: Aut
       id: idsToResolve[index],
       value: (entity ? extractEntityRepresentativeName(entity) : null),
       entity_type: entity?.entity_type ?? null,
-      color: entity?.color || entity?.x_opencti_color || null
+      color: entity?.color || entity?.x_opencti_color || null,
     });
   }
   // resolve SELF_ID differently
@@ -77,7 +82,7 @@ export const findFiltersRepresentatives = async (context: AuthContext, user: Aut
     });
   }
   // resolve ME_FILTER_VALUE differently
-  if (idsToResolve.includes(ME_FILTER_VALUE)) {
+  if (!opts?.isMeValueForbidden && idsToResolve.includes(ME_FILTER_VALUE)) {
     filtersRepresentatives.push({
       id: ME_FILTER_VALUE,
       value: ME_FILTER_VALUE,
@@ -90,7 +95,7 @@ export const findFiltersRepresentatives = async (context: AuthContext, user: Aut
     id,
     value: id,
     entity_type: null,
-    color: null
+    color: null,
   })));
 };
 // endregion

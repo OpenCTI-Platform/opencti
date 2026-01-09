@@ -25,7 +25,7 @@ export interface StixNarrative extends StixDomainObject {
   narrative_types: Array<string>;
   aliases: Array<string>;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }
 // endregion

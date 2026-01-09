@@ -17,16 +17,16 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface AddThreatActorIndividualDemographicComponentProps {
-  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
-  relType: string,
-  title:string,
-  queryRef: PreloadedQuery<AddThreatActorIndividualDemographicLinesQuery>,
-  onSearch: (search: string) => void,
-  paginationOptions: AddThreatActorIndividualDemographicLinesQuery$variables,
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data;
+  relType: string;
+  title: string;
+  queryRef: PreloadedQuery<AddThreatActorIndividualDemographicLinesQuery>;
+  onSearch: (search: string) => void;
+  paginationOptions: AddThreatActorIndividualDemographicLinesQuery$variables;
 }
 
 const AddThreatActorIndividualDemographicComponent: FunctionComponent<
-AddThreatActorIndividualDemographicComponentProps
+  AddThreatActorIndividualDemographicComponentProps
 > = ({
   threatActorIndividual,
   relType,
@@ -45,51 +45,53 @@ AddThreatActorIndividualDemographicComponentProps
     queryRef,
   );
 
-  return (<div>
-    <IconButton
-      color='primary'
-      onClick={handleOpen}
-    >
-      <Add fontSize="small" />
-    </IconButton>
-    <Drawer
-      open={open}
-      onClose={handleClose}
-      title={title}
-      header={
-        <div
-          style={{
-            marginLeft: 'auto',
-            marginRight: '20px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'flex-end',
-            alignItems: 'flex-end',
-          }}
-        >
-          <SearchInput
-            variant='inDrawer'
-            onSubmit={onSearch}
-          />
-          <CountryCreation
-            paginationOptions={paginationOptions}
-          />
-        </div>
-      }
-    >
-      <AddThreatActorIndividualDemographicLines
-        threatActorIndividual={threatActorIndividual}
-        fragmentKey={data}
-        relType={relType}
-      />
-    </Drawer>
-  </div>);
+  return (
+    <div>
+      <IconButton
+        color="primary"
+        onClick={handleOpen}
+      >
+        <Add fontSize="small" />
+      </IconButton>
+      <Drawer
+        open={open}
+        onClose={handleClose}
+        title={title}
+        header={(
+          <div
+            style={{
+              marginLeft: 'auto',
+              marginRight: '20px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-end',
+            }}
+          >
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={onSearch}
+            />
+            <CountryCreation
+              paginationOptions={paginationOptions}
+            />
+          </div>
+        )}
+      >
+        <AddThreatActorIndividualDemographicLines
+          threatActorIndividual={threatActorIndividual}
+          fragmentKey={data}
+          relType={relType}
+        />
+      </Drawer>
+    </div>
+  );
 };
 
 interface AddThreatActorIndividualDemographicProps {
-  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
-  relType: string,
-  title:string,
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data;
+  relType: string;
+  title: string;
 }
 
 const AddThreatActorIndividualDemographic: FunctionComponent<AddThreatActorIndividualDemographicProps> = (props) => {

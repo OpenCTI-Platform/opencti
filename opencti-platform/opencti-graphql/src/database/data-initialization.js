@@ -22,6 +22,9 @@ import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
 import { ConfigurationError } from '../config/errors';
+import { initDefaultTheme } from '../modules/theme/theme-domain';
+import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
+import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -166,13 +169,13 @@ export const CAPABILITIES = [
     description: 'Access ingestion',
     dependencies: [
       { name: 'SETINGESTIONS', description: 'Manage ingestion', attribute_order: 2610 },
-    ]
+    ],
   },
   {
     name: 'CSVMAPPERS',
     description: 'Manage data mappers',
-    attribute_order: 2700
-  }
+    attribute_order: 2700,
+  },
 ];
 // endregion
 
@@ -249,7 +252,7 @@ const createVocabularies = async (context) => {
         aliases: aliases ?? [],
         category,
         order,
-        builtIn: builtInOv.includes(category)
+        builtIn: builtInOv.includes(category),
       };
       await addVocabulary(context, SYSTEM_USER, data);
     }
@@ -278,13 +281,13 @@ export const createInitialRequestAccessFlow = async (context) => {
     context,
     SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_CASE_RFI,
-    { template_id: statusTemplateDeclined.id, order: 1, scope: StatusScope.RequestAccess }
+    { template_id: statusTemplateDeclined.id, order: 1, scope: StatusScope.RequestAccess },
   );
   const statusEntityRFIApproved = await createStatus(
     context,
     SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_CASE_RFI,
-    { template_id: statusTemplateApproved.id, order: 1, scope: StatusScope.RequestAccess }
+    { template_id: statusTemplateApproved.id, order: 1, scope: StatusScope.RequestAccess },
   );
 
   const initialConfig = {
@@ -295,7 +298,7 @@ export const createInitialRequestAccessFlow = async (context) => {
   const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
   if (rfiEntitySettings) {
     const editInput = [
-      { key: 'request_access_workflow', value: [initialConfig] }
+      { key: 'request_access_workflow', value: [initialConfig] },
     ];
     await updateAttribute(context, SYSTEM_USER, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, editInput);
   }
@@ -379,7 +382,7 @@ const createBasicRolesAndCapabilities = async (context) => {
       'SETTINGS_SETVOCABULARIES',
       'SETTINGS_SETKILLCHAINPHASES',
     ],
-    can_manage_sensitive_config: false
+    can_manage_sensitive_config: false,
   };
 
   const connectorRole = await addRole(context, SYSTEM_USER, connectorRoleInput);
@@ -390,7 +393,7 @@ const createBasicRolesAndCapabilities = async (context) => {
     name: 'Connectors',
     description: 'Connector group',
     auto_new_marking: true,
-    auto_integration_assignation: ['global']
+    auto_integration_assignation: ['global'],
   });
   const connectorRoleRelationInput = {
     toId: connectorRole.id,
@@ -407,13 +410,17 @@ export const initializeData = async (context, withMarkings = true) => {
     logApp.warn(`[INIT] Platform identifier forced to [${platformId}]`);
   }
 
+  const darkTheme = await initDefaultTheme(context);
+
   await addSettings(context, SYSTEM_USER, {
     internal_id: platformId,
     platform_title: 'OpenCTI - Cyber Threat Intelligence Platform',
     platform_email: 'admin@opencti.io',
-    platform_theme: 'dark',
+    platform_theme: darkTheme.id,
     platform_language: 'auto',
+    view_all_users: false,
   });
+
   await initCreateEntitySettings(context, SYSTEM_USER);
   await initManagerConfigurations(context, SYSTEM_USER);
   await initDecayRules(context, SYSTEM_USER);
@@ -421,6 +428,7 @@ export const initializeData = async (context, withMarkings = true) => {
   await createInitialRequestAccessFlow(context);
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
+  await addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT, false);
   if (withMarkings) {
     await createMarkingDefinitions(context);
   }
@@ -440,7 +448,7 @@ export const setPlatformId = async (context, platformId) => {
       // to change the id in elastic, we have no choice but to create a patched copy and delete the old document
       const response = await elRawGet({
         index: INDEX_INTERNAL_OBJECTS,
-        id: platformSettings.id
+        id: platformSettings.id,
       });
       await elRawIndex({
         index: INDEX_INTERNAL_OBJECTS,
@@ -448,14 +456,14 @@ export const setPlatformId = async (context, platformId) => {
         body: {
           ...response._source,
           internal_id: platformId,
-          id: platformId
+          id: platformId,
         },
-        refresh: true
+        refresh: true,
       });
       await elRawDelete({
         index: INDEX_INTERNAL_OBJECTS,
         id: platformSettings.id,
-        refresh: true
+        refresh: true,
       });
     }
   }

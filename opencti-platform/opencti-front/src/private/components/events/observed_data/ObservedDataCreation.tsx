@@ -86,7 +86,7 @@ interface ObservedDataFormProps {
 }
 
 export const ObservedDataCreationForm: FunctionComponent<
-ObservedDataFormProps
+  ObservedDataFormProps
 > = ({
   updater,
   onReset,
@@ -181,8 +181,6 @@ ObservedDataFormProps
             name="objects"
             style={fieldSpacingContainerStyle}
             required={(mandatoryAttributes.includes('objects'))}
-            setFieldValue={setFieldValue}
-            values={values.objects}
           />
           <Field
             component={DateTimePickerField}
@@ -285,7 +283,7 @@ const ObservedDataCreation = ({
     'observedDataAdd',
   );
   const CreateObservedDataControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Observed-Data' {...props} />
+    <CreateEntityControlledDial entityType="Observed-Data" {...props} />
   );
   return (
     <Drawer

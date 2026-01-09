@@ -65,19 +65,18 @@ const RootDashboard = () => {
                 <Routes>
                   <Route
                     path="/"
-                    element={
+                    element={(
                       <Dashboard
                         data={props.workspace}
-                        settings={props.settings}
                       />
-                        }
+                    )}
                   />
                 </Routes>
               );
             }
-            return <ErrorNotFound/>;
+            return <ErrorNotFound />;
           }
-          return <Loader/>;
+          return <Loader />;
         }}
       />
     </div>

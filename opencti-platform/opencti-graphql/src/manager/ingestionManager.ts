@@ -84,9 +84,9 @@ const shouldExecuteIngestion = (ingestion: BasicStoreEntityIngestionRss | BasicS
 };
 
 interface UpdateInfo {
-  state?: any
-  buffering?: boolean
-  messages_size?: number
+  state?: any;
+  buffering?: boolean;
+  messages_size?: number;
 }
 const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string | undefined, id: string, opts: UpdateInfo = {}) => {
   // Patch the related connector
@@ -99,7 +99,7 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string 
       run_and_terminate: false,
       buffering: opts.buffering ?? false,
       queue_threshold: 0,
-      queue_messages_size: (opts.messages_size ?? 0) / 1000000 // In Mb
+      queue_messages_size: (opts.messages_size ?? 0) / 1000000, // In Mb
     },
     connector_user_id: user_id,
   };
@@ -111,7 +111,7 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string 
 };
 
 const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson) => {
+  | BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson) => {
   const connector = { internal_id: connectorIdFromIngestId(ingestion.id), connector_type: ConnectorType.ExternalImport };
   const workName = `run @ ${now()}`;
   const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
@@ -119,7 +119,7 @@ const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStor
 };
 
 export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson, bundle: StixBundle) => {
+  | BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson, bundle: StixBundle) => {
   // Push the bundle to absorption queue
   const connectorId = connectorIdFromIngestId(ingestion.id);
   const work: any = await createWorkForIngestion(context, ingestion);
@@ -134,7 +134,7 @@ export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion
     applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
     content,
     work_id: work.id,
-    update: true
+    update: true,
   });
   return work.id;
 };
@@ -144,39 +144,44 @@ export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion
 type Getter = (uri: string) => Promise<object>;
 
 interface RssElement {
-  pubDate: { _: string }
-  lastBuildDate: { _: string }
-  updated: { _: string }
+  pubDate: { _: string };
+  lastBuildDate: { _: string };
+  updated: { _: string };
 }
 
 interface RssItem {
-  title: { _: string }
-  summary: { _: string }
-  description: { _: string }
-  link: { _: string, href?: string }
-  content: { _: string }
-  'content:encoded': { _: string }
-  category: { _: string } | { _: string }[]
-  pubDate: { _: string }
-  lastBuildDate: { _: string }
-  updated: { _: string }
+  title: { _: string };
+  summary: { _: string };
+  description: { _: string };
+  link: { _: string; href?: string };
+  content: { _: string };
+  'content:encoded': { _: string };
+  category: { _: string } | { _: string }[];
+  pubDate: { _: string };
+  lastBuildDate: { _: string };
+  updated: { _: string };
 }
 
 interface DataItem {
-  title: string
-  description: string
-  link: string | undefined
-  content: string
-  labels: string[]
-  pubDate: Moment
+  title: string;
+  description: string;
+  link: string | undefined;
+  content: string;
+  labels: string[];
+  pubDate: Moment;
 }
 
 const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, entry: RssItem): DataItem => {
   const { updated } = feed;
+  // Safe access to link with fallback to empty string
+  const link = entry.link?.href?.trim() ?? '';
+  // Use link as fallback if title is missing, or 'Untitled' as last resort
+  const title = entry.title?._ || link || 'Untitled';
+
   return {
-    title: entry.title._,
+    title,
     description: turndownService.turndown(entry.summary?._ ?? ''),
-    link: isNotEmptyField(entry.link) ? (entry.link as { href: string }).href?.trim() : '',
+    link: link || undefined,
     content: turndownService.turndown(entry.content?._ ?? ''),
     labels: [], // No label in rss v1
     pubDate: utcDate(sanitizeForMomentParsing(entry.updated?._ ?? updated?._ ?? FROM_START_STR)),
@@ -185,10 +190,15 @@ const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, en
 
 const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement, item: RssItem): DataItem => {
   const { pubDate } = channel;
+  // Safe access to link with fallback to empty string
+  const link = item.link?._?.trim() ?? '';
+  // Use link as fallback if title is missing, or 'Untitled' as last resort
+  const title = item.title?._ || link || 'Untitled';
+
   return {
-    title: item.title._ ?? '',
+    title,
     description: turndownService.turndown(item.description?._ ?? ''),
-    link: isNotEmptyField(item.link) ? ((item.link as { _: string })._ ?? '').trim() : '',
+    link: link || undefined,
     content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),
     labels: R.uniq(asArray(item.category).filter((c) => isNotEmptyField(c)).map((c) => (c as { _: string })._.trim())),
     pubDate: utcDate(sanitizeForMomentParsing(item.pubDate?._ ?? pubDate?._ ?? FROM_START_STR)),
@@ -198,7 +208,7 @@ const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement,
 const rssHttpGetter = (): Getter => {
   const httpClientOptions: GetHttpClient = {
     responseType: 'text',
-    headers: { 'User-Agent': RSS_FEED_USER_AGENT }
+    headers: { 'User-Agent': RSS_FEED_USER_AGENT },
   };
   const httpClient = getHttpClient(httpClientOptions);
   return async (uri: string) => {
@@ -254,7 +264,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
         report.external_references = [{
           source_name: item.title,
           description: `${ingestion.name} ${item.title}. Retrieved ${item.pubDate.toISOString()}.`,
-          url: item.link
+          url: item.link,
         }];
       }
       return report;
@@ -325,14 +335,14 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
 
 // region Taxii ingestion
 export interface TaxiiResponseData {
-  data: { more: boolean | undefined, next: string | undefined, objects: StixObject[] },
-  addedLastHeader: string | undefined | null
+  data: { more: boolean | undefined; next: string | undefined; objects: StixObject[] };
+  addedLastHeader: string | undefined | null;
 }
 
 interface TaxiiGetParams {
-  next: string | undefined,
-  added_after: Date | undefined,
-  limit?: string | undefined
+  next: string | undefined;
+  added_after: Date | undefined;
+  limit?: string | undefined;
 }
 
 /**
@@ -381,7 +391,7 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
     request: {
       params,
       url,
-    }
+    },
   });
   const { data, headers, status } = await httpClient.get(url, { params });
   logApp.info('[OPENCTI-MODULE] Taxii HTTP Get done.', {
@@ -425,7 +435,7 @@ export const handleConfidenceToScoreTransformation = (ingestion: BasicStoreEntit
   return objects;
 };
 
-export const processTaxiiResponse = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse:TaxiiResponseData) => {
+export const processTaxiiResponse = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse: TaxiiResponseData) => {
   const { data, addedLastHeader } = taxiResponse;
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
@@ -446,7 +456,7 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
       const state = {
         current_state_cursor: undefined,
         added_after_start: addedLastHeader ? utcDate(addedLastHeader).toISOString() : now(),
-        last_execution_date: now()
+        last_execution_date: now(),
       };
       const ingestionUpdate = await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
       const connectorState = { current_state_cursor: ingestionUpdate.current_state_cursor, added_after_start: ingestionUpdate.added_after_start };
@@ -461,7 +471,7 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
       more: data.more,
       addedLastHeader,
       ingestionId: ingestion.id,
-      ingestionName: ingestion.name
+      ingestionName: ingestion.name,
     });
   }
 };
@@ -471,7 +481,7 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
   await processTaxiiResponse(context, ingestion, taxiResponse);
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
-  [TaxiiVersion.V21]: taxiiV21DataHandler
+  [TaxiiVersion.V21]: taxiiV21DataHandler,
 };
 const taxiiExecutor = async (context: AuthContext) => {
   const filters = {
@@ -512,7 +522,7 @@ export const processCsvLines = async (
   ingestion: BasicStoreEntityIngestionCsv,
   csvMapperParsed: CsvMapperParsed,
   csvLines: string[],
-  addedLast: string | undefined | null
+  addedLast: string | undefined | null,
 ) => {
   const linesContent = csvLines.join('');
   const hashedIncomingData = hashSHA256(linesContent);
@@ -528,7 +538,7 @@ export const processCsvLines = async (
     }
     logApp.info(`[OPENCTI-MODULE] INGESTION - ingesting ${csvLines.length} csv lines`);
     const work = await createWorkForIngestion(context, ingestion);
-    const bundlerOpts : CsvBundlerIngestionOpts = {
+    const bundlerOpts: CsvBundlerIngestionOpts = {
       workId: work.id,
       applicantUser: ingestionUser as AuthUser,
       entity: undefined, // TODO is it possible to ingest in entity context ?

@@ -42,7 +42,7 @@ export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: st
   return sendEmailToUser(context, user, { target_user_id: user.id, email_template_id: id });
 };
 
-export const addEmailTemplate = async (context: AuthContext, user: AuthUser, input: EmailTemplateAddInput) => {
+export const addEmailTemplate = async (context: AuthContext, user: AuthUser, input: EmailTemplateAddInput, useTelemetry: boolean = true) => {
   const emailTemplateToCreate = {
     name: input.name,
     description: input.description,
@@ -50,7 +50,9 @@ export const addEmailTemplate = async (context: AuthContext, user: AuthUser, inp
     sender_email: input.sender_email,
     template_body: input.template_body,
   };
-  await addEmailTemplateCreatedCount();
+  if (useTelemetry) {
+    await addEmailTemplateCreatedCount();
+  }
   return createInternalObject<StoreEntityEmailTemplate>(context, user, emailTemplateToCreate, ENTITY_TYPE_EMAIL_TEMPLATE);
 };
 

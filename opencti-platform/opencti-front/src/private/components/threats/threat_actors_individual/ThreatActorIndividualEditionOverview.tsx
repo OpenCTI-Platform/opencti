@@ -138,7 +138,7 @@ interface ThreatActorIndividualEditionFormValues {
 }
 
 const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
-ThreatActorIndividualEditionOverviewProps
+  ThreatActorIndividualEditionOverviewProps
 > = ({ threatActorIndividualRef, enableReferences, handleClose, context }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -317,12 +317,12 @@ ThreatActorIndividualEditionOverviewProps
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   field="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

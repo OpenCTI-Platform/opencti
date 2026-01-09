@@ -45,7 +45,7 @@ export const connector = async (context, user, id) => {
 };
 
 export const computeManagerConnectorContract = async (_context, _user, cn) => {
-  const contracts = getSupportedContractsByImage();
+  const contracts = await getSupportedContractsByImage();
   const contract = contracts.get(cn.manager_contract_image);
   return contract ? JSON.stringify(contract) : contract;
 };
@@ -55,7 +55,7 @@ export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
     return null;
   }
 
-  const contracts = getSupportedContractsByImage();
+  const contracts = await getSupportedContractsByImage();
   const contract = contracts.get(cn.manager_contract_image);
 
   if (!contract) {
@@ -65,7 +65,7 @@ export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
 
   return {
     title: contract.title,
-    slug: contract.slug
+    slug: contract.slug,
   };
 };
 
@@ -89,15 +89,15 @@ export const computeManagerConnectorConfiguration = async (context, _user, cn, h
   return configWithProxy.sort();
 };
 
-export const computeManagerConnectorImage = (cn) => {
-  const contracts = getSupportedContractsByImage();
+export const computeManagerConnectorImage = async (cn) => {
+  const contracts = await getSupportedContractsByImage();
   const contract = contracts.get(cn.manager_contract_image);
   if (!contract) return '';
   return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${contract.container_version}` : null;
 };
 
 export const computeManagerContractHash = async (context, user, cn) => {
-  const image = computeManagerConnectorImage(cn);
+  const image = await computeManagerConnectorImage(cn);
   const config = await computeManagerConnectorConfiguration(context, user, cn);
   const subHash = config.map((c) => `${c.key}|${c.value}`);
   return shortHash({ image, subHash, state: cn.connector_state_timestamp });
@@ -124,7 +124,7 @@ export const connectorsForManagers = async (context, user) => {
       filters: [{ key: 'catalog_id', values: ['EXISTS'] }],
       filterGroups: [],
     },
-    noFiltersChecking: true
+    noFiltersChecking: true,
   };
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR], args);
   return elements.map((conn) => completeConnector(conn));
@@ -140,14 +140,14 @@ export const connectorsForWorker = async (context, user) => {
     name: '[DEPRECATED] Internal sync manager',
     connector_scope: [],
     config: connectorConfig('sync'),
-    active: true
+    active: true,
   });
   registeredConnectors.push({
     id: 'playbook',
     name: '[DEPRECATED] Internal playbook manager',
     connector_scope: [],
     config: connectorConfig('playbook'),
-    active: true
+    active: true,
   });
   // endregion
   // Expose syncs
@@ -159,7 +159,7 @@ export const connectorsForWorker = async (context, user) => {
       name: `Sync ${sync.internal_id} queue`,
       connector_scope: [],
       config: connectorConfig(sync.internal_id),
-      active: true
+      active: true,
     });
   }
   // Expose playbooks
@@ -171,7 +171,7 @@ export const connectorsForWorker = async (context, user) => {
       name: `Playbook ${playbook.internal_id} queue`,
       connector_scope: [],
       config: connectorConfig(playbook.internal_id),
-      active: true
+      active: true,
     });
   }
   // Expose background task queues
@@ -181,7 +181,7 @@ export const connectorsForWorker = async (context, user) => {
       name: `Background task ${i} queue`,
       connector_scope: [],
       config: connectorConfig(`background-task-${i}`),
-      active: true
+      active: true,
     });
   }
   // Expose pirs
@@ -193,7 +193,7 @@ export const connectorsForWorker = async (context, user) => {
       name: `Pir ${pir.internal_id} queue`,
       connector_scope: [],
       config: connectorConfig(pir.internal_id),
-      active: true
+      active: true,
     });
   }
   return registeredConnectors;
@@ -212,7 +212,7 @@ const filterConnectors = (instances, type, scope, onlyAlive = false, onlyAuto = 
     filter((c) => (onlyContextual ? c.only_contextual === true : true)),
     filter((c) => (scope && c.connector_scope && c.connector_scope.length > 0
       ? includes(scope.toLowerCase(), map((s) => s.toLowerCase(), c.connector_scope))
-      : true))
+      : true)),
   )(instances);
 };
 

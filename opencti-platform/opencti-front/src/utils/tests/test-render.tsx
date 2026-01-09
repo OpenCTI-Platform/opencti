@@ -11,12 +11,13 @@ import AppIntlProvider from '../../components/AppIntlProvider';
 
 // 'unknown' to facilitate mocking partial context without having TS errors
 interface CreateUserContextOptions {
-  me?: unknown,
-  settings?: unknown,
-  bannerSettings?: unknown,
-  entitySettings?: unknown,
-  platformModuleHelpers?: unknown,
-  schema?: unknown,
+  me?: unknown;
+  settings?: unknown;
+  bannerSettings?: unknown;
+  entitySettings?: unknown;
+  platformModuleHelpers?: unknown;
+  schema?: unknown;
+  themes?: unknown;
 }
 
 /**
@@ -34,6 +35,7 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     entitySettings,
     platformModuleHelpers,
     schema,
+    themes,
   } = options ?? {};
 
   return {
@@ -59,13 +61,14 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     about: {
       version: '6.7.17',
     },
+    themes: (themes ?? {}) as UserContextType['themes'],
   };
 };
 
 export interface ProvidersWrapperProps {
-  children: ReactNode
-  relayEnv: RelayMockEnvironment
-  userContext?: Partial<UserContextType>
+  children: ReactNode;
+  relayEnv: RelayMockEnvironment;
+  userContext?: Partial<UserContextType>;
 }
 
 export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersWrapperProps) => {
@@ -85,8 +88,8 @@ export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersW
 };
 
 interface TestRenderOptions {
-  relayConfig?: Partial<EnvironmentConfig>,
-  userContext?: Partial<UserContextType>,
+  relayConfig?: Partial<EnvironmentConfig>;
+  userContext?: Partial<UserContextType>;
 }
 
 /**

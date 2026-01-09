@@ -80,9 +80,9 @@ export const buildQueryFilters = async (context, user, filters, search, taskPosi
         filters: {
           mode: FilterMode.And,
           filters: [{ key: ['type'], values: ['dashboard'] }],
-          filterGroups: []
-        }
-      }
+          filterGroups: [],
+        },
+      },
     );
     const dashboardIds = dashboards.map((n) => n.id);
     inputFilters = addFilter(inputFilters, 'dashboard_id', dashboardIds);
@@ -115,11 +115,11 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
   const opts = enable
     ? buildEntityFilters(scan.types, scan)
     : { filters: {
-      mode: 'and',
-      filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
-      filterGroups: [],
-    }
-    };
+        mode: 'and',
+        filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
+        filterGroups: [],
+      },
+      };
   const queryData = await elPaginate(context, user, READ_DATA_INDICES, { ...opts, first: 1 });
   const countExpected = queryData.pageInfo.globalCount;
   const task = await createDefaultTask(context, user, input, TASK_TYPE_RULE, countExpected);
@@ -149,7 +149,7 @@ export const createQueryTask = async (context, user, input) => {
     event_scope: 'create',
     event_access: 'extended',
     message: 'creates `background task`',
-    context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: queryTask }
+    context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: queryTask },
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, queryTask);
   return queryTask;
@@ -180,7 +180,7 @@ export const deleteTask = async (context, user, taskId) => {
     event_scope: 'delete',
     event_access: 'extended',
     message: 'deletes `background task`',
-    context_data: { id: deleted.id, entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: deleted }
+    context_data: { id: deleted.id, entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: deleted },
   });
   // if task has an associated work, delete it
   if (taskToDelete.work_id) {

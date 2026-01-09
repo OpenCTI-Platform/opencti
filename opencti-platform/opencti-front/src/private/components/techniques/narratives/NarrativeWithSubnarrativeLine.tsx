@@ -48,7 +48,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div
                 style={{
@@ -78,7 +78,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
                 {emptyFilled(data.description)}
               </div>
             </>
-              }
+          )}
         />
         <ListItemIcon style={{ position: 'absolute', right: -10 }}>
           <KeyboardArrowRightOutlined />

@@ -4,11 +4,10 @@ import ObjectMembersField, { OptionMember } from '@components/common/form/Object
 import FormHelperText from '@mui/material/FormHelperText';
 import { Field, FieldArray, FieldProps, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
-import { Add } from '@mui/icons-material';
+import { Button } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import React, { useState } from 'react';
+import React, { CSSProperties, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import { FormikHelpers } from 'formik/dist/types';
 import AuthorizedMembersFieldListItem from '@components/common/form/AuthorizedMembersFieldListItem';
@@ -54,6 +53,8 @@ interface AuthorizedMembersFieldProps
   dynamicKeysForPlaybooks?: boolean;
   isCanUseEnable?: boolean;
   customInfoMessage?: string;
+  style?: CSSProperties;
+  isDraftEntity?: boolean;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -93,19 +94,23 @@ const AuthorizedMembersField = ({
   dynamicKeysForPlaybooks = false,
   isCanUseEnable = false,
   customInfoMessage,
+  style,
+  isDraftEntity,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
   const { name, value } = field;
   const { me } = useAuth();
   const draftContext = useDraftContext();
+  const isDisabledInDraft = !!draftContext && !isDraftEntity; // Disable if in draft mode and not the draft entity itself
   const { isFeatureEnable } = useHelper();
   const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
 
   // Value in sync with internal Formik field 'applyAccesses'.
   // Require to use a state in addition to the Formik field because
   // we use the value outside the scope of the internal Formik form.
-  const [applyAccesses, setApplyAccesses] = useState(enableAccesses || (value && Array.isArray(value) && value.length > 0));
+  const hasValue = value && Array.isArray(value) && value.length > 0;
+  const [applyAccesses, setApplyAccesses] = useState(enableAccesses || hasValue);
   const accessForAllMembers = (value ?? []).find(
     (o) => o.value === ALL_MEMBERS_AUTHORIZED_CONFIG.id,
   );
@@ -141,6 +146,32 @@ const AuthorizedMembersField = ({
       { label: t_i18n('can manage'), value: 'admin' },
     ];
   }
+
+  // Initialize the field with owner and/or current on enableAccesses truthly.
+  useEffect(() => {
+    if (enableAccesses && !hasValue) {
+      const values: AuthorizedMemberOption[] = [];
+      if (owner) {
+        values.push({
+          label: owner.name,
+          type: owner.entity_type,
+          value: owner.id,
+          accessRight: 'admin',
+          groupsRestriction: [],
+        });
+      }
+      if (addMeUserWithAdminRights && me.id !== owner?.id) {
+        values.push({
+          label: me.name,
+          type: 'User',
+          value: me.id,
+          accessRight: 'admin',
+          groupsRestriction: [],
+        });
+      }
+      setFieldValue(name, values);
+    }
+  }, []);
 
   /**
    * Add a new authorized member in the value of the field,
@@ -251,13 +282,13 @@ const AuthorizedMembersField = ({
       if (!modifiedAccess) {
         modifiedAccess = id === ALL_MEMBERS_AUTHORIZED_CONFIG.id
           ? {
-            ...allMembersOption,
-            accessRight,
-          }
+              ...allMembersOption,
+              accessRight,
+            }
           : {
-            ...creatorOption,
-            accessRight,
-          };
+              ...creatorOption,
+              accessRight,
+            };
       }
       setFieldValue(name, [
         ...(value ?? []).filter((option) => option.value !== id),
@@ -300,7 +331,7 @@ const AuthorizedMembersField = ({
   };
 
   return (
-    <>
+    <div style={style}>
       {/* Internal Formik component to be able to use our custom field components */}
       <Formik<AuthorizedMembersFieldInternalValue>
         validationSchema={formikSchema}
@@ -328,7 +359,7 @@ const AuthorizedMembersField = ({
             {(!hideInfo && !!accessInfoMessage) && (
               <Alert severity="info">{accessInfoMessage}</Alert>
             )}
-            {!!draftContext && (
+            {isDisabledInDraft && (
               <Alert style={{ marginTop: 15 }} severity="warning">
                 {t_i18n('Not available in draft')}
               </Alert>
@@ -344,7 +375,7 @@ const AuthorizedMembersField = ({
                 type="checkbox"
                 name="applyAccesses"
                 label={t_i18n('Activate access restriction')}
-                disabled={!!draftContext}
+                disabled={isDisabledInDraft}
                 onChange={(_: string, val: string) => {
                   changeApplyAccesses(val === 'true', resetForm, setField);
                 }}
@@ -401,7 +432,7 @@ const AuthorizedMembersField = ({
                       </MenuItem>
                     ))}
                   </Field>
-                  <IconButton
+                  <Button
                     color="primary"
                     aria-label="More"
                     onClick={() => handleSubmit()}
@@ -413,8 +444,8 @@ const AuthorizedMembersField = ({
                     }
                     style={{ marginTop: 10 }}
                   >
-                    <Add fontSize="small" />
-                  </IconButton>
+                    {t_i18n('Add')}
+                  </Button>
                 </div>
                 {values.newAccessMember && values.newAccessMember.type === 'Organization' && (
                   <div style={fieldSpacingContainerStyle}>
@@ -489,24 +520,24 @@ const AuthorizedMembersField = ({
                 <List sx={{ pt: 0 }}>
                   {value.map((authorizedMember, index) => (
                     !isGenericOption(authorizedMember.value)
-                      && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID
-                      ) ? (
-                        <AuthorizedMembersFieldListItem
-                          key={index}
-                          authorizedMember={authorizedMember}
-                          name={`${name}[${index}].accessRight`}
-                          accessRights={accessRights}
-                          ownerId={owner?.id}
-                          onRemove={() => arrayHelpers.remove(index)}
-                        />
-                      ) : null))}
+                    && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID
+                    ) ? (
+                          <AuthorizedMembersFieldListItem
+                            key={index}
+                            authorizedMember={authorizedMember}
+                            name={`${name}[${index}].accessRight`}
+                            accessRights={accessRights}
+                            ownerId={owner?.id}
+                            onRemove={() => arrayHelpers.remove(index)}
+                          />
+                        ) : null))}
                 </List>
               )}
             </>
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 

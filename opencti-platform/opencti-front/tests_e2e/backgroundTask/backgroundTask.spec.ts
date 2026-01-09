@@ -20,7 +20,7 @@ import { runBackgroundTaskOnIncidentByFilter, runBackgroundTaskOnIncidentBySearc
  * @param page
  */
 
-const waitAndRefreshUntilFirstTaskInStatus = async (page:Page, tasksPage: DataProcessingTasksPage, status: string, expectVisible: boolean) => {
+const waitAndRefreshUntilFirstTaskInStatus = async (page: Page, tasksPage: DataProcessingTasksPage, status: string, expectVisible: boolean) => {
   await tasksPage.goto();
   await expect(tasksPage.getPage()).toBeVisible();
 
@@ -42,13 +42,12 @@ const waitAndRefreshUntilFirstTaskInStatus = async (page:Page, tasksPage: DataPr
 
   let isStatusOk = await isOneStatusTaskOk();
   while (!isStatusOk && loopCurrent < loopCount) {
-    // eslint-disable-next-line no-await-in-loop
     isStatusOk = await isOneStatusTaskOk();
     loopCurrent += 1;
   }
 };
 
-test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@task', '@filter'] }, async ({ page }) => {
+test('Verify background tasks execution', { tag: ['@ce', '@mutation'] }, async ({ page }) => {
   const incidentPage = new EventsIncidentPage(page);
   const tasksPage = new DataProcessingTasksPage(page);
 

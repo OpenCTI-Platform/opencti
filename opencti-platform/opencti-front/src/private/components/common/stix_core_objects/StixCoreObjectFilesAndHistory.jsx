@@ -16,7 +16,7 @@ import Button from '@mui/material/Button';
 import { InfoOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import DraftWorkspaceViewer from '../files/draftWorkspace/DraftWorkspaceViewer';
-import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
+import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE, fileManagerCreateDraftAskJobImportMutation } from '../files/FileManager';
 import ManageImportConnectorMessage from '../../data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from '../files/FileExportViewer';
@@ -30,6 +30,8 @@ import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import useAuth from '../../../../utils/hooks/useAuth';
+import AuthorizedMembersField from '../form/AuthorizedMembersField';
 
 const styles = (theme) => ({
   container: {
@@ -137,6 +139,8 @@ const StixCoreObjectFilesAndHistory = ({
   bypassEntityId,
 }) => {
   const { t_i18n } = useFormatter();
+  const { me: owner, settings } = useAuth();
+  const showAllMembersLine = !settings.platform_organization?.id;
   const draftContext = useDraftContext();
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
@@ -158,7 +162,7 @@ const StixCoreObjectFilesAndHistory = ({
   const handleCloseExport = () => setOpenExport(false);
   const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
-    const { connector_id, configuration, objectMarking, validation_mode } = values;
+    const { connector_id, configuration, objectMarking, validation_mode, authorizedMembers } = values;
     let config = configuration;
     // Dynamically inject the markings chosen by the user into the csv mapper.
     const isCsvConnector = selectedConnector?.name === 'ImportCsv';
@@ -170,13 +174,24 @@ const StixCoreObjectFilesAndHistory = ({
       }
     }
     commitMutation({
-      mutation: stixCoreObjectFilesAndHistoryAskJobImportMutation,
+      mutation: validation_mode === 'draft' ? fileManagerCreateDraftAskJobImportMutation : stixCoreObjectFilesAndHistoryAskJobImportMutation,
       variables: {
         fileName: fileToImport.id,
         connectorId: connector_id,
         bypassEntityId: bypassEntityId ? id : null,
         configuration: config,
         validationMode: validation_mode,
+        authorized_members: !authorizedMembers
+          ? null
+          : authorizedMembers
+              .filter((v) => v.accessRight !== 'none')
+              .map((member) => ({
+                id: member.value,
+                access_right: member.accessRight,
+                groups_restriction_ids: member.groupsRestriction?.length > 0
+                  ? member.groupsRestriction.map((group) => group.value)
+                  : undefined,
+              })),
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -295,7 +310,7 @@ const StixCoreObjectFilesAndHistory = ({
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
       >
-        {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid, values }) => (
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               slotProps={{ paper: { elevation: 1 } }}
@@ -344,40 +359,55 @@ const StixCoreObjectFilesAndHistory = ({
                     setFieldValue={setFieldValue}
                   >
                     <MenuItem
-                      key={'workbench'}
-                      value={'workbench'}
+                      key="workbench"
+                      value="workbench"
                     >
-                      {'Workbench'}
+                      Workbench
                     </MenuItem>
                     <MenuItem
-                      key={'draft'}
-                      value={'draft'}
+                      key="draft"
+                      value="draft"
                     >
-                      {'Draft'}
+                      Draft
                     </MenuItem>
                   </Field>
                 )}
+                {values.validation_mode === 'draft' && (
+                  <Field
+                    name="authorizedMembers"
+                    component={AuthorizedMembersField}
+                    owner={owner}
+                    showAllMembersLine={showAllMembersLine}
+                    canDeactivate
+                    addMeUserWithAdminRights
+                    enableAccesses
+                    applyAccesses
+                    style={fieldSpacingContainerStyle}
+                  />
+                )}
                 {selectedConnector?.configurations?.length > 0
-                  ? <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="configuration"
-                      label={t_i18n('Configuration')}
-                      fullWidth={true}
-                      containerstyle={{ marginTop: 20, width: '100%' }}
-                      onChange={(_, value) => onCsvMapperSelection(value)}
-                    >
-                    {selectedConnector.configurations.map((config) => {
-                      return (
-                        <MenuItem
-                          key={config.id}
-                          value={config.configuration}
-                        >
-                          {config.name}
-                        </MenuItem>
-                      );
-                    })}
-                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name} />
+                  ? (
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="configuration"
+                        label={t_i18n('Configuration')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                        onChange={(_, value) => onCsvMapperSelection(value)}
+                      >
+                        {selectedConnector.configurations.map((config) => {
+                          return (
+                            <MenuItem
+                              key={config.id}
+                              value={config.configuration}
+                            >
+                              {config.name}
+                            </MenuItem>
+                          );
+                        })}
+                      </Field>
+                    ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
                 }
                 {selectedConnector?.name === 'ImportCsv'
                   && hasUserChoiceCsvMapper

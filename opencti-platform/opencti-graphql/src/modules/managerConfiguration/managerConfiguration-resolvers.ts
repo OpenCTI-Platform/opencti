@@ -25,7 +25,7 @@ const managerConfigurationResolvers: Resolvers = {
         return setting;
       }
       return config.manager_setting;
-    }
+    },
   },
   Subscription: {
     managerConfiguration: {
@@ -37,7 +37,7 @@ const managerConfigurationResolvers: Resolvers = {
         return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_MANAGER_CONFIGURATION, notifySelf: true });
       },
     },
-  }
+  },
 };
 
 export default managerConfigurationResolvers;

@@ -11,10 +11,10 @@ import { handleError, MESSAGING$ } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 
 interface EmailTemplateFormDrawerProps {
-  isOpen: boolean
-  onClose: () => void
-  template?: { id: string } & EmailTemplateFormInputs
-  updater?: (store: RecordSourceSelectorProxy, rootField: string) => void
+  isOpen: boolean;
+  onClose: () => void;
+  template?: { id: string } & EmailTemplateFormInputs;
+  updater?: (store: RecordSourceSelectorProxy, rootField: string) => void;
 }
 
 const FintelTemplateFormDrawer = ({
@@ -68,7 +68,7 @@ const FintelTemplateFormDrawer = ({
   const onEdit = (field: EmailTemplateFormInputKeys, value: unknown) => {
     if (!template) return;
 
-    const input: { key:string, value: [unknown] } = { key: field, value: [value] };
+    const input: { key: string; value: [unknown] } = { key: field, value: [value] };
     commitEditMutation({
       variables: { id: template.id, input: [input] },
     });

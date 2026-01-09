@@ -16,7 +16,7 @@ const useFintelTemplateFormDelete = (entitySettingId: string) => {
   const [commitDeleteMutation] = useApiMutation<useFintelTemplateDeleteMutation>(fintelTemplateDeleteMutation);
 
   const mutation = (
-    id:string,
+    id: string,
     { variables, onCompleted, onError }: UseMutationConfig<useFintelTemplateDeleteMutation>,
   ) => {
     setMutating(true);

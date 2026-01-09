@@ -73,7 +73,7 @@ interface StixMetaObjectDetailsComponentProps {
 }
 
 const StixMetaObjectDetailsComponent: FunctionComponent<
-StixMetaObjectDetailsComponentProps
+  StixMetaObjectDetailsComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
@@ -124,7 +124,7 @@ interface StixMetaObjectDetailsProps {
 }
 
 const StixMetaObjectDetails: FunctionComponent<
-Omit<StixMetaObjectDetailsProps, 'queryRef'>
+  Omit<StixMetaObjectDetailsProps, 'queryRef'>
 > = ({ entity }) => {
   const queryRef = useQueryLoading<StixMetaObjectDetailsQuery>(
     stixMetaObjectDetailsQuery,

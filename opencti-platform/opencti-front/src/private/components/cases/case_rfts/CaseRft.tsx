@@ -95,7 +95,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                   <Grid key={key} item xs={width} ref={ref}>
                     {queryRef && (
                       <React.Suspense
-                        fallback={
+                        fallback={(
                           <div style={{ height: '100%' }}>
                             <Typography
                               variant="h4"
@@ -129,7 +129,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
                               </ListLines>
                             </Paper>
                           </div>
-                        }
+                        )}
                       >
                         <CaseTasksLines
                           queryRef={queryRef}

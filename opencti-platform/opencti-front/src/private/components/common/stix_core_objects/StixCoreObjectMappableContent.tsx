@@ -75,10 +75,10 @@ interface StixCoreObjectMappableContentProps {
 }
 
 interface StixCoreObjectMappableContentValues {
-  content: string
-  description: string
-  message?: string | null
-  references?: ExternalReferencesValues
+  content: string;
+  description: string;
+  message?: string | null;
+  references?: ExternalReferencesValues;
 }
 
 const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableContentProps> = ({
@@ -219,10 +219,10 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     return (
       <div
         className={
-              navOpen
-                ? classes.documentContainerNavOpen
-                : classes.documentContainer
-            }
+          navOpen
+            ? classes.documentContainerNavOpen
+            : classes.documentContainer
+        }
       >
         {isNotEmptyField(description) && (
           <>
@@ -283,12 +283,12 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               onSelect={handleTextSelection}
               disabled={!editionMode}
               askAi={askAi}
-              helperText={
+              helperText={(
                 <SubscriptionFocus
                   context={containerData.editContext}
                   fieldName="description"
                 />
-                      }
+              )}
               controlledSelectedTab={selectedTab}
               controlledSetSelectTab={handleChangeSelectedTab}
               height={400}
@@ -307,12 +307,12 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
                 minHeight: enrichedEditorHeight,
                 height: enrichedEditorHeight,
               }}
-              helperText={
+              helperText={(
                 <SubscriptionFocus
                   context={containerData.editContext}
                   fieldName="content"
                 />
-                      }
+              )}
             />
             {editionMode && enableReferences && (
               <CommitMessage

@@ -1844,149 +1844,153 @@ const navigateAllMenu = async (page: Page) => {
   await leftBarPage.expectBreadcrumb('Investigations');
 };
 
-test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
+test.describe('Navigation available on CE', { tag: ['@ce'] }, () => {
+  test('Check navigation on all pages', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
 
-  // For faster debugging, each navigated can be commented.
-  // so they should be all independent and start from the left menu.
-  await navigateAllMenu(page);
+    // For faster debugging, each navigated can be commented.
+    // so they should be all independent and start from the left menu.
+    await navigateAllMenu(page);
+  });
+
+  test('Check navigation on Analyses menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateReports(page);
+    await navigateGroupings(page);
+    await navigateMalwareAnalyses(page);
+    await navigateNotes(page);
+    await navigateExternalReferences(page);
+  });
+
+  test('Check navigation on Cases menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateIncidentResponse(page);
+    await navigateRfi(page);
+    await navigateRft(page);
+    await navigateTasks(page);
+    await navigateFeedbacks(page);
+  });
+
+  test('Check navigation on Events menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateEventsIncident(page);
+    await navigateSightings(page);
+    await navigateObservedData(page);
+  });
+
+  test('Check navigation on Observations menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateObservables(page);
+    await navigateArtifact(page);
+    await navigateIndicators(page);
+    await navigateInfrastructure(page);
+  });
+
+  test('Check navigation on Threats menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateIntrusionSet(page);
+    await navigateCampaign(page);
+    await navigateThreatActorGroup(page);
+    await navigateThreatActorIndividual(page);
+  });
+
+  test('Check navigation on Arsenal menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateMalware(page);
+    await navigateChannel(page);
+    await navigateTool(page);
+    await navigateVulnerability(page);
+  });
+
+  test('Check navigation on Techniques menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateAttackPattern(page);
+    await navigateNarrative(page);
+    await navigateCourseOfAction(page);
+    await navigateDataComponent(page);
+    await navigateDataSource(page);
+  });
+
+  test('Check navigation on Entities menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateSector(page);
+    await navigateEvent(page);
+    await navigateOrganization(page);
+    await navigateSecurityPlatform(page);
+    await navigateSystem(page);
+    await navigateIndividual(page);
+  });
+
+  test('Check navigation on Locations menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateRegion(page);
+    await navigateCountry(page);
+    await navigateAdministrativeArea(page);
+    await navigateCity(page);
+    await navigatePosition(page);
+  });
+
+  test.skip('Check navigation on Data menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateDataEntities(page);
+    await navigateDataRelationships(page);
+    await navigateIngestion(page);
+    await navigateDataImport(page);
+    await navigateProcessing(page);
+    await navigateDataSharing(page);
+    await navigateDataManagement(page);
+  });
+
+  test('Check navigation on Trash menu', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateTrash(page);
+  });
 });
 
-test('Check navigation on Analyses menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateReports(page);
-  await navigateGroupings(page);
-  await navigateMalwareAnalyses(page);
-  await navigateNotes(page);
-  await navigateExternalReferences(page);
-});
+test.describe('Navigation available only EE', { tag: ['@ee'] }, () => {
+  // Separating settings menu in two to avoid timeout while testing as this part is too long
 
-test('Check navigation on Cases menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateIncidentResponse(page);
-  await navigateRfi(page);
-  await navigateRft(page);
-  await navigateTasks(page);
-  await navigateFeedbacks(page);
-});
+  test('Check navigation on Settings menu part one', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateSettings(page);
+    await navigateSecurity(page);
+    await navigateCustomization(page);
+    await navigateTaxonomies(page);
+  });
 
-test('Check navigation on Events menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateEventsIncident(page);
-  await navigateSightings(page);
-  await navigateObservedData(page);
-});
-
-test('Check navigation on Observations menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateObservables(page);
-  await navigateArtifact(page);
-  await navigateIndicators(page);
-  await navigateInfrastructure(page);
-});
-
-test('Check navigation on Threats menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateIntrusionSet(page);
-  await navigateCampaign(page);
-  await navigateThreatActorGroup(page);
-  await navigateThreatActorIndividual(page);
-});
-
-test('Check navigation on Arsenal menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateMalware(page);
-  await navigateChannel(page);
-  await navigateTool(page);
-  await navigateVulnerability(page);
-});
-
-test('Check navigation on Techniques menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateAttackPattern(page);
-  await navigateNarrative(page);
-  await navigateCourseOfAction(page);
-  await navigateDataComponent(page);
-  await navigateDataSource(page);
-});
-
-test('Check navigation on Entities menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateSector(page);
-  await navigateEvent(page);
-  await navigateOrganization(page);
-  await navigateSecurityPlatform(page);
-  await navigateSystem(page);
-  await navigateIndividual(page);
-});
-
-test('Check navigation on Locations menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateRegion(page);
-  await navigateCountry(page);
-  await navigateAdministrativeArea(page);
-  await navigateCity(page);
-  await navigatePosition(page);
-});
-
-test.skip('Check navigation on Data menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateDataEntities(page);
-  await navigateDataRelationships(page);
-  await navigateIngestion(page);
-  await navigateDataImport(page);
-  await navigateProcessing(page);
-  await navigateDataSharing(page);
-  await navigateDataManagement(page);
-});
-
-test('Check navigation on Trash menu', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateTrash(page);
-});
-
-// Separating settings menu in two to avoid timeout while testing as this part is too long
-
-test('Check navigation on Settings menu part one', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateSettings(page);
-  await navigateSecurity(page);
-  await navigateCustomization(page);
-  await navigateTaxonomies(page);
-});
-
-test('Check navigation on Settings menu part two', async ({ page }) => {
-  await page.goto('/');
-  const leftBarPage = new LeftBarPage(page);
-  await leftBarPage.open();
-  await navigateSettings(page);
-  await navigateActivity(page);
-  await navigateFileIndexing(page);
-  await navigateExperience(page);
+  test('Check navigation on Settings menu part two', async ({ page }) => {
+    await page.goto('/');
+    const leftBarPage = new LeftBarPage(page);
+    await leftBarPage.open();
+    await navigateSettings(page);
+    await navigateActivity(page);
+    await navigateFileIndexing(page);
+    await navigateExperience(page);
+  });
 });

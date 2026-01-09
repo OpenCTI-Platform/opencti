@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import ToolBar from '../../../data/ToolBar';
@@ -14,6 +14,7 @@ import { DataColumns, PaginationOptions } from '../../../../../components/list_l
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { Filter, FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -31,7 +32,7 @@ interface EntityStixCoreRelationshipsEntitiesViewProps {
 }
 
 const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<
-EntityStixCoreRelationshipsEntitiesViewProps
+  EntityStixCoreRelationshipsEntitiesViewProps
 > = ({
   entityId,
   defaultStartTime,
@@ -61,7 +62,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
     numberOfElements,
     openExports,
   } = viewStorage;
-
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
@@ -152,6 +153,29 @@ EntityStixCoreRelationshipsEntitiesViewProps
     setReversedRelation(!reversedRelation);
   };
 
+  useInitCreateRelationshipContext({
+    reversed: false,
+    stixCoreObjectTypes,
+    relationshipTypes,
+    connectionKey: 'Pagination_stixCoreObjects',
+    handleReverseRelation,
+  });
+
+  useEffect(() => {
+    setCreateRelationshipContext({
+      paginationOptions,
+      reversed: reversedRelation,
+      handleReverseRelation,
+    });
+  }, [reversedRelation]);
+  useEffect(() => {
+    setCreateRelationshipContext({
+      paginationOptions,
+      handleReverseRelation,
+      onCreate: undefined,
+    });
+  }, [localStorage]);
+
   const finalView = currentView || view;
 
   return (
@@ -182,26 +206,26 @@ EntityStixCoreRelationshipsEntitiesViewProps
         availableRelationFilterTypes={{
           targets: isRelationReversed
             ? [
-              'Position',
-              'City',
-              'Country',
-              'Region',
-              'Individual',
-              'System',
-              'Organization',
-              'Sector',
-              'Event',
-              'Vulnerability',
-            ]
+                'Position',
+                'City',
+                'Country',
+                'Region',
+                'Individual',
+                'System',
+                'Organization',
+                'Sector',
+                'Event',
+                'Vulnerability',
+              ]
             : [
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Incident',
-              'Malware',
-              'Tool',
-              'Malware-Analysis',
-            ],
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Incident',
+                'Malware',
+                'Tool',
+                'Malware-Analysis',
+              ],
         }}
         availableEntityTypes={stixCoreObjectTypes}
         availableRelationshipTypes={relationshipTypes}

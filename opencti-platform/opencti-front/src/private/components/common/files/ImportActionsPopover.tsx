@@ -93,11 +93,11 @@ const ImportActionsPopover = ({
           color={file.works?.length ? 'primary' : 'inherit'}
           size="large"
         >
-          <ProgressUpload fontSize="small"/>
+          <ProgressUpload fontSize="small" />
         </IconButton>
       </Tooltip>
       <IconButton onClick={handleOpen} size="large" color="primary">
-        <MoreVert fontSize="small"/>
+        <MoreVert fontSize="small" />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem
@@ -118,7 +118,7 @@ const ImportActionsPopover = ({
         submitDelete={submitDelete}
         message={isWorkbench ? t_i18n('Do you want to delete this workbench?') : t_i18n('Do you want to delete this file?')}
       />
-      {openWorks && (<ImportWorksDrawer open={openWorks} onClose={() => setOpenWorks(false)} file={file}/>)}
+      {openWorks && (<ImportWorksDrawer open={openWorks} onClose={() => setOpenWorks(false)} file={file} />)}
     </div>
   );
 };

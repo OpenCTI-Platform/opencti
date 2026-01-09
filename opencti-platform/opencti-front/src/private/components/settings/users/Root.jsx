@@ -136,11 +136,11 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               >
                 {data.name}
               </Typography>
-              <div className="clearfix"/>
+              <div className="clearfix" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }} >
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
               <div style={{ display: 'flex', gap: theme.spacing(0.5) }}>
-                <UserEmailSend outlined userId={userId}/>
+                <UserEmailSend outlined userId={userId} />
                 {canDelete && (
                   <PopoverMenu>
                     {({ closeMenu }) => (
@@ -166,11 +166,11 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                 isOpen={openDelete}
                 handleClose={handleCloseDelete}
               />
-              <UserEdition userEditionData={userEditionData}/>
+              <UserEdition userEditionData={userEditionData} />
             </div>
           </UserHeader>
 
-          <div className="clearfix"/>
+          <div className="clearfix" />
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}
           >
@@ -204,7 +204,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
             />
             <Route
               path="/analytics"
-              element={ (
+              element={(
                 <UserAnalytics data={data} refetch={refetch} />
               )}
             />

@@ -158,7 +158,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           resolvePath={(data: ExternalReferencesLines_data$data) => data.externalReferences?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={externalReferencesLineFragment}
           entityTypes={['External-Reference']}

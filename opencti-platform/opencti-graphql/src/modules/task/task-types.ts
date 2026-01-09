@@ -7,29 +7,29 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 export const ENTITY_TYPE_CONTAINER_TASK = 'Task';
 
 export interface BasicStoreEntityTask extends BasicStoreEntity {
-  name: string
-  description: string
-  due_date: string
+  name: string;
+  description: string;
+  due_date: string;
 }
 
 export interface StoreEntityTask extends StoreEntity {
-  name: string
-  description: string
-  due_date: string
+  name: string;
+  description: string;
+  due_date: string;
 }
 
 export interface StixTask extends StixContainer {
-  name: string
-  description: string
-  due_date: StixDate
+  name: string;
+  description: string;
+  due_date: StixDate;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
-  }
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
+  };
 }
 
 // STIX 2.0
 export interface Stix2Task extends Stix2Container {
-  name: string
-  description: string
-  due_date: StixDate
+  name: string;
+  description: string;
+  due_date: StixDate;
 }

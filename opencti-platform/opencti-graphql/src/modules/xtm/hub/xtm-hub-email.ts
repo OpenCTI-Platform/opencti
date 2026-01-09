@@ -1,4 +1,3 @@
-import ejs from 'ejs';
 import conf, { getBaseUrl, logApp } from '../../../config/conf';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { findUserWithCapabilities } from '../../../domain/user';
@@ -7,6 +6,8 @@ import type { BasicStoreSettings } from '../../../types/settings';
 import { OCTI_EMAIL_TEMPLATE } from '../../../utils/emailTemplates/octiEmailTemplate';
 import type { SendMailArgs } from '../../../types/smtp';
 import { sendMail, smtpComputeFrom } from '../../../database/smtp';
+import { safeRender } from '../../../utils/safeEjs.client';
+import { sanitizeSettings } from '../../../utils/templateContextSanitizer';
 
 const MAX_EMAIL_LIST_SIZE = conf.get('smtp:email_max_cc_size') || 500;
 const TO_EMAIL = conf.get('xtm:xtmhub_to_email') || 'no-reply@filigran.io';
@@ -34,7 +35,7 @@ const loadAdministratorsList = async (context: AuthContext) => {
 export const sendAdministratorsLostConnectivityEmail = async (context: AuthContext, settings: BasicStoreSettings) => {
   const administrators = await loadAdministratorsList(context);
   const subject = 'Action Required: Re-register OpenCTI Platform Due to Lost Connectivity with XTM Hub';
-  const html = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: EMAIL_BODY });
+  const html = await safeRender(OCTI_EMAIL_TEMPLATE, { settings: sanitizeSettings(settings), body: EMAIL_BODY });
 
   const sendMailArgs: SendMailArgs = {
     from: await smtpComputeFrom(),

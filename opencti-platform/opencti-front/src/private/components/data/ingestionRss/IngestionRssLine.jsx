@@ -72,7 +72,7 @@ class IngestionRssLineLineComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={
+        secondaryAction={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <IngestionRssPopover
               ingestionRssId={node.id}
@@ -80,13 +80,13 @@ class IngestionRssLineLineComponent extends Component {
               running={node.ingestion_running}
             />
           </Security>
-        }
+        )}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <RssBox />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -123,7 +123,7 @@ class IngestionRssLineLineComponent extends Component {
                 {nsdt(node.current_state_date) || '-'}
               </div>
             </div>
-          }
+          )}
         />
       </ListItem>
     );
@@ -178,7 +178,7 @@ class IngestionRssDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -236,7 +236,7 @@ class IngestionRssDummyComponent extends Component {
                 />
               </div>
             </div>
-          }
+          )}
         />
       </ListItem>
     );

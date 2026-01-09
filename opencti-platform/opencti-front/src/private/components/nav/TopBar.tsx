@@ -133,6 +133,12 @@ interface TopBarProps {
 const topBarQuery = graphql`
   query TopBarQuery {
     myUnreadNotificationsCount
+    settings {
+      platform_theme {
+        theme_logo
+        theme_logo_collapsed
+      }
+    }
   }
 `;
 
@@ -191,6 +197,10 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
+
+  const platformTheme = data.settings?.platform_theme;
+  const logo = navOpen ? platformTheme?.theme_logo || theme.logo : platformTheme?.theme_logo_collapsed || theme.logo_collapsed;
+
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -289,7 +299,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
           <Link to="/dashboard">
             <img
-              src={navOpen ? theme.logo : theme.logo_collapsed}
+              src={logo}
               alt="logo"
               className={navOpen ? classes.logo : classes.logoCollapsed}
             />
@@ -311,51 +321,51 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         )}
         <div className={classes.barRight}>
           {!!draftContext && (
-            <DraftContextBanner/>
+            <DraftContextBanner />
           )}
           <div className={classes.barRightContainer}>
             {!draftContext && (
-            <Security needs={[KNOWLEDGE]}>
-              <>
-                { ee.license_type === 'nfr' && <ItemBoolean variant="large" label={'EE DEV LICENSE'} status={false}/> }
-                <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-                  <UploadImport
-                    variant="icon"
-                    size="medium"
-                    fontSize="medium"
-                    color="inherit"
-                  />
-                </Security>
-                <Tooltip title={t_i18n('Triggers')}>
-                  <IconButton
-                    size="medium"
-                    aria-haspopup="true"
-                    component={Link}
-                    to="/dashboard/profile/triggers"
-                    color={location.pathname === '/dashboard/profile/triggers' ? 'primary' : 'inherit'}
-                  >
-                    <AlarmOnOutlined fontSize="medium" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t_i18n('Notifications')}>
-                  <IconButton
-                    size="medium"
-                    aria-haspopup="true"
-                    component={Link}
-                    to="/dashboard/profile/notifications"
-                    color={location.pathname === '/dashboard/profile/notifications' ? 'primary' : 'inherit'}
-                  >
-                    <Badge
-                      color="secondary"
-                      variant="dot"
-                      invisible={!isNewNotification}
+              <Security needs={[KNOWLEDGE]}>
+                <>
+                  { ee.license_type === 'nfr' && <ItemBoolean variant="large" label="EE DEV LICENSE" status={false} /> }
+                  <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+                    <UploadImport
+                      variant="icon"
+                      size="medium"
+                      fontSize="medium"
+                      color="inherit"
+                    />
+                  </Security>
+                  <Tooltip title={t_i18n('Triggers')}>
+                    <IconButton
+                      size="medium"
+                      aria-haspopup="true"
+                      component={Link}
+                      to="/dashboard/profile/triggers"
+                      color={location.pathname === '/dashboard/profile/triggers' ? 'primary' : 'inherit'}
                     >
-                      <NotificationsOutlined fontSize="medium"/>
-                    </Badge>
-                  </IconButton>
-                </Tooltip>
-              </>
-            </Security>
+                      <AlarmOnOutlined fontSize="medium" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t_i18n('Notifications')}>
+                    <IconButton
+                      size="medium"
+                      aria-haspopup="true"
+                      component={Link}
+                      to="/dashboard/profile/notifications"
+                      color={location.pathname === '/dashboard/profile/notifications' ? 'primary' : 'inherit'}
+                    >
+                      <Badge
+                        color="secondary"
+                        variant="dot"
+                        invisible={!isNewNotification}
+                      >
+                        <NotificationsOutlined fontSize="medium" />
+                      </Badge>
+                    </IconButton>
+                  </Tooltip>
+                </>
+              </Security>
             )}
             <IconButton
               color="inherit"
@@ -365,7 +375,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               id="xtm-menu-button"
               onClick={handleOpenXtm}
             >
-              <AppsOutlined fontSize="medium"/>
+              <AppsOutlined fontSize="medium" />
             </IconButton>
             <Popover
               anchorEl={xtmOpen.anchorEl}
@@ -412,8 +422,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                         </Badge>
                       </a>
                     ) : (
-                      <Link className={classes.xtmItem} to='/dashboard/settings/experience' onClick={handleCloseXtm}>
-                        <Badge variant="dot" color='warning'>
+                      <Link className={classes.xtmItem} to="/dashboard/settings/experience" onClick={handleCloseXtm}>
+                        <Badge variant="dot" color="warning">
                           <img style={{ width: 200, paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
                         </Badge>
                       </Link>
@@ -435,7 +445,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   : 'inherit'
               }
             >
-              <AccountCircleOutlined fontSize="medium"/>
+              <AccountCircleOutlined fontSize="medium" />
             </IconButton>
             <Menu
               id="menu-appbar"
@@ -477,14 +487,14 @@ const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = () => {
     <>
       {queryRef && (
         <React.Suspense
-          fallback={
+          fallback={(
             <AppBar
               position="fixed"
               className={classes.appBar}
               variant="elevation"
               elevation={1}
             />
-          }
+          )}
         >
           <TopBarComponent queryRef={queryRef} />
         </React.Suspense>

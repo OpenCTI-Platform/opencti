@@ -8,7 +8,7 @@ export interface FormFieldAttribute {
   name: string;
   label: string; // Display label for the field
   description?: string;
-  type: string; // Field type: text, select, openvocab, etc.
+  type: string; // Field type: text, select, open vocabulary, etc.
   required: boolean;
   isMandatory?: boolean; // Whether this field is for a mandatory attribute
   width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
@@ -31,6 +31,7 @@ export interface AdditionalEntity {
   minAmount?: number; // For multiple entities, minimum required instances
   required?: boolean; // For non-multiple entities, whether it's required
   lookup?: boolean; // Whether this is an entity lookup (select existing entities)
+  disableCreation?: boolean; // Whether to disable on-the-fly entity creation in lookup mode
   fieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
   parseField?: 'text' | 'textarea'; // Type of field when using parsed mode
   parseMode?: 'comma' | 'line'; // How to parse the field (comma-separated or line-by-line)
@@ -56,6 +57,7 @@ export interface FormBuilderData {
   allowDraftOverride: boolean; // Whether users can override the draft setting
   mainEntityMultiple: boolean; // Whether main entity allows multiple
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing entities)
+  mainEntityDisableCreation?: boolean; // Whether to disable on-the-fly entity creation in main entity lookup mode
   mainEntityFieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
   mainEntityParseField?: 'text' | 'textarea'; // Type of field when using parsed mode for main entity
   mainEntityParseMode?: 'comma' | 'line'; // How to parse the field for main entity
@@ -92,6 +94,7 @@ export interface FormSchemaDefinition {
   allowDraftOverride?: boolean; // Whether users can override the draft setting
   mainEntityMultiple?: boolean;
   mainEntityLookup?: boolean;
+  mainEntityDisableCreation?: boolean; // Whether to disable on-the-fly entity creation in main entity lookup mode
   mainEntityFieldMode?: 'multiple' | 'parsed';
   mainEntityParseField?: 'text' | 'textarea';
   mainEntityParseMode?: 'comma' | 'line';
@@ -161,7 +164,7 @@ export interface AttributeOption {
   type?: string;
   mandatory?: boolean;
   multiple?: boolean;
-  defaultValues?: { id: string; name: string; }[] | null;
+  defaultValues?: { id: string; name: string }[] | null;
 }
 
 // Relationship type option for UI display

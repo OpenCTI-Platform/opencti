@@ -181,24 +181,24 @@ class RootArtifact extends Component {
                           <StixCyberObservable
                             stixCyberObservableData={stixCyberObservable}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/knowledge"
-                        element={
+                        element={(
                           <StixCyberObservableKnowledge
                             stixCyberObservable={stixCyberObservable}
                             connectorsForImport={props.connectorsForImport}
                           />
-                                }
+                        )}
                       />
                       <Route
                         path="/content/*"
-                        element={
+                        element={(
                           <StixCoreObjectContentRoot
                             stixCoreObject={stixCyberObservable}
                           />
-                                }
+                        )}
                       />
                       <Route
                         path="/sightings"
@@ -219,7 +219,7 @@ class RootArtifact extends Component {
                               'System',
                             ]}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/files"
@@ -232,7 +232,7 @@ class RootArtifact extends Component {
                             isArtifact={true}
                             directDownload={true}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/history"
@@ -240,7 +240,7 @@ class RootArtifact extends Component {
                           <StixCoreObjectHistory
                             stixCoreObjectId={observableId}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/knowledge/relations/:relationId"
@@ -248,7 +248,7 @@ class RootArtifact extends Component {
                           <StixCoreRelationship
                             entityId={observableId}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/knowledge/sightings/:sightingId"
@@ -257,7 +257,7 @@ class RootArtifact extends Component {
                             entityId={observableId}
                             paddingRight
                           />
-                                )}
+                        )}
                       />
                     </Routes>
                   </div>

@@ -77,7 +77,7 @@ const ToolBar: FunctionComponent<{
       if (keyword) {
         return (
           node.target_type.toLowerCase().indexOf(keyword.toLowerCase())
-            !== -1
+          !== -1
           || t_i18n(`entity_${node.target_type}`)
             .toLowerCase()
             .indexOf(keyword.toLowerCase()) !== -1
@@ -103,7 +103,7 @@ const ToolBar: FunctionComponent<{
   const [value, setValue] = useState<boolean>(false);
   const [key, setKey] = useState<string>('');
   const [notAvailableSetting, setNotAvailableSetting] = useState<
-  EntitySetting[]
+    EntitySetting[]
   >([]);
   const [commit] = useApiMutation(entitySettingPatch);
   const handleOpen = () => setDisplay(true);
@@ -202,8 +202,8 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                  === retrieveNotAvailableSetting('platform_entity_files_ref')
-                    .length
+                === retrieveNotAvailableSetting('platform_entity_files_ref')
+                  .length
               }
               onClick={handleOpenFilesRef}
               color="primary"
@@ -220,7 +220,7 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                  === retrieveNotAvailableSetting('platform_hidden_type').length
+                === retrieveNotAvailableSetting('platform_hidden_type').length
               }
               onClick={handleOpenHidden}
               color="primary"
@@ -237,7 +237,7 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                  === retrieveNotAvailableSetting('enforce_reference').length
+                === retrieveNotAvailableSetting('enforce_reference').length
               }
               onClick={handleOpenEnforceRef}
               color="primary"

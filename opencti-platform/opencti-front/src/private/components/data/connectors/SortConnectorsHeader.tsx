@@ -51,12 +51,12 @@ const sortHeaderStyle: Record<string, CSSProperties> = {
 };
 
 interface SortConnectorsHeaderProps {
-  field: string
-  label: string
-  isSortable: boolean
-  orderAsc: boolean
-  sortBy: string
-  reverseBy: (field: string) => void
+  field: string;
+  label: string;
+  isSortable: boolean;
+  orderAsc: boolean;
+  sortBy: string;
+  reverseBy: (field: string) => void;
 }
 
 const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({ field, label, isSortable, orderAsc, sortBy, reverseBy }) => {

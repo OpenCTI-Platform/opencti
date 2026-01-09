@@ -23,6 +23,7 @@ import { initExclusionListCache } from './database/exclusionListCache';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
+import { initializeStreamStack } from './database/stream/stream-handler';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -100,12 +101,13 @@ const platformInit = async (withMarkings = true) => {
     if (!alreadyExists) {
       logApp.info('[INIT] New platform detected, initialization...');
       await initializeInternalQueues();
+      await initializeStreamStack();
       await initializeBucket();
       await initializeSchema();
       if (ES_IS_INIT_MIGRATION) {
         logApp.warn(`Templates and indices created with ${ES_INIT_MAPPING_MIGRATION} compatible mapping protection. `
-            + 'This is only used to help indices reindex and migration. For retro option, please reindex, restart and then '
-            + 'trigger a rollover to secure the new indices');
+          + 'This is only used to help indices reindex and migration. For retro option, please reindex, restart and then '
+          + 'trigger a rollover to secure the new indices');
         process.exit(1);
       }
       await initializeMigration(context);
@@ -122,6 +124,7 @@ const platformInit = async (withMarkings = true) => {
       await patchPlatformId(context);
       await refreshMappingsAndIndices();
       await initializeInternalQueues();
+      await initializeStreamStack();
       await enforceQueuesConsistency(context, SYSTEM_USER);
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);

@@ -44,7 +44,7 @@ type ParametersType = {
   icon: ReactNode;
   tooltip: string;
   placeholder: string;
-  color: 'primary' | 'success' | 'warning'
+  color: 'primary' | 'success' | 'warning';
 };
 
 type OptionType = {
@@ -79,19 +79,19 @@ const ListFilters = ({
   const getParameters = (relationshipType?: string): ParametersType => {
     switch (relationshipType) {
       case 'from': return {
-        icon: <RayStartArrow fontSize='medium' />,
+        icon: <RayStartArrow fontSize="medium" />,
         tooltip: t_i18n('Dynamic source filters'),
         placeholder: t_i18n('Dynamic source filters'),
         color: 'warning',
       };
       case 'to': return {
-        icon: <RayEndArrow fontSize='medium' />,
+        icon: <RayEndArrow fontSize="medium" />,
         tooltip: t_i18n('Dynamic target filters'),
         placeholder: t_i18n('Dynamic target filters'),
         color: 'success',
       };
       default: return {
-        icon: <FilterListOutlined fontSize='medium' />,
+        icon: <FilterListOutlined fontSize="medium" />,
         tooltip: t_i18n('Filters'),
         placeholder: t_i18n('Add filter'),
         color: 'primary',
@@ -118,33 +118,33 @@ const ListFilters = ({
 
   const options = isNotUniqEntityTypes
     ? availableFilterKeys
-      .map((key) => {
-        const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
-        const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-        const isFilterKeyForAllTypes = (entityTypes.length === 1 && subEntityTypes.some((subType) => entityTypes.includes(subType)))
-          || (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)));
-        return {
-          value: key,
-          label: t_i18n(filterDefinition?.label ?? key),
-          numberOfOccurences: subEntityTypes.length,
-          // eslint-disable-next-line no-nested-ternary
-          groupLabel: isFilterKeyForAllTypes
-            ? t_i18n('Most used filters')
-            : t_i18n('All other filters'),
-          groupOrder: isFilterKeyForAllTypes ? 1 : 0,
-        };
-      })
-      .sort((a, b) => a.label.localeCompare(b.label))
-      .sort((a, b) => b.groupOrder - a.groupOrder) // 'Most used filters' before 'All other filters'
+        .map((key) => {
+          const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
+          const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
+          const isFilterKeyForAllTypes = (entityTypes.length === 1 && subEntityTypes.some((subType) => entityTypes.includes(subType)))
+            || (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)));
+          return {
+            value: key,
+            label: t_i18n(filterDefinition?.label ?? key),
+            numberOfOccurences: subEntityTypes.length,
+            // eslint-disable-next-line no-nested-ternary
+            groupLabel: isFilterKeyForAllTypes
+              ? t_i18n('Most used filters')
+              : t_i18n('All other filters'),
+            groupOrder: isFilterKeyForAllTypes ? 1 : 0,
+          };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label))
+        .sort((a, b) => b.groupOrder - a.groupOrder) // 'Most used filters' before 'All other filters'
     : availableFilterKeys
-      .map((key) => {
-        const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
-        return {
-          value: key,
-          label: t_i18n(filterDefinition?.label ?? key),
-        };
-      })
-      .sort((a, b) => a.label.localeCompare(b.label));
+        .map((key) => {
+          const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
+          return {
+            value: key,
+            label: t_i18n(filterDefinition?.label ?? key),
+          };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <>
@@ -165,7 +165,7 @@ const ListFilters = ({
           <MUIAutocomplete
             disabled={disabled}
             options={options as OptionType[]}
-            groupBy={isNotUniqEntityTypes ? ((option) => option?.groupLabel ?? '') : undefined}
+            groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
             sx={{ width: 200 }}
             value={null}
             onChange={(event, selectOptionValue) => {
@@ -199,10 +199,10 @@ const ListFilters = ({
             <IconButton
               color={color}
               onClick={handleClearFilters}
-              size='small'
+              size="small"
               disabled={disabled}
             >
-              <FilterListOffOutlined fontSize='small' />
+              <FilterListOffOutlined fontSize="small" />
             </IconButton>
           </Tooltip>
           {isDatatable && variant === 'default' && (

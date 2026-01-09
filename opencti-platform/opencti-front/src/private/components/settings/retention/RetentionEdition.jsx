@@ -190,50 +190,52 @@ const RetentionEditionContainer = (props) => {
               }}
             />
             {retentionRule.scope === 'knowledge'
-              && <>
-                <Box
-                  sx={{
-                    paddingTop: 4,
-                    display: 'flex',
-                    gap: 1,
-                  }}
-                >
-                  <Filters
-                    availableFilterKeys={[
-                      'entity_type',
-                      'workflow_id',
-                      'objectAssignee',
-                      'objects',
-                      'objectMarking',
-                      'objectLabel',
-                      'creator_id',
-                      'createdBy',
-                      'priority',
-                      'severity',
-                      'x_opencti_score',
-                      'x_opencti_detection',
-                      'x_opencti_main_observable_type',
-                      'revoked',
-                      'confidence',
-                      'indicator_types',
-                      'pattern_type',
-                      'fromId',
-                      'toId',
-                      'fromTypes',
-                      'toTypes',
-                    ]}
+              && (
+                <>
+                  <Box
+                    sx={{
+                      paddingTop: 4,
+                      display: 'flex',
+                      gap: 1,
+                    }}
+                  >
+                    <Filters
+                      availableFilterKeys={[
+                        'entity_type',
+                        'workflow_id',
+                        'objectAssignee',
+                        'objects',
+                        'objectMarking',
+                        'objectLabel',
+                        'creator_id',
+                        'createdBy',
+                        'priority',
+                        'severity',
+                        'x_opencti_score',
+                        'x_opencti_detection',
+                        'x_opencti_main_observable_type',
+                        'revoked',
+                        'confidence',
+                        'indicator_types',
+                        'pattern_type',
+                        'fromId',
+                        'toId',
+                        'fromTypes',
+                        'toTypes',
+                      ]}
+                      helpers={helpers}
+                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                    />
+                  </Box>
+                  <FilterIconButton
+                    filters={filters}
                     helpers={helpers}
+                    styleNumber={2}
+                    redirection
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                   />
-                </Box>
-                <FilterIconButton
-                  filters={filters}
-                  helpers={helpers}
-                  styleNumber={2}
-                  redirection
-                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-                />
-              </>
+                </>
+              )
             }
             <div className={classes.buttons}>
               <Button

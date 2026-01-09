@@ -29,7 +29,7 @@ export const indicatorDecayHandler = async () => {
   if (errorCount > 0) {
     logApp.error('[OPENCTI-MODULE] Indicator decay manager got errors. Please have a look to previous warning.', {
       errors_count: errorCount,
-      indicators_count: indicatorsToUpdate.length
+      indicators_count: indicatorsToUpdate.length,
     });
   } else {
     logApp.debug('[OPENCTI-MODULE] Indicator decay manager updated', { indicators_count: indicatorsToUpdate.length });
@@ -51,7 +51,7 @@ const INDICATOR_DECAY_MANAGER_DEFINITION: ManagerDefinition = {
   },
   enabled(): boolean {
     return this.enabledByConfig;
-  }
+  },
 };
 
 registerManager(INDICATOR_DECAY_MANAGER_DEFINITION);

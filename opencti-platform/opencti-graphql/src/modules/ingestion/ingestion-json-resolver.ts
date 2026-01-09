@@ -23,7 +23,7 @@ import {
   findJsonMapperForIngestionById,
   ingestionJsonEditField,
   ingestionJsonResetState,
-  testJsonIngestionMapping
+  testJsonIngestionMapping,
 } from './ingestion-json-domain';
 import { connectorIdFromIngestId } from '../../domain/connector';
 

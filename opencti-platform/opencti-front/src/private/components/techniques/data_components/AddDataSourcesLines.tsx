@@ -54,11 +54,11 @@ interface AddDataSourcesLinesContainerProps {
 }
 
 const AddDataSourcesLines: FunctionComponent<
-AddDataSourcesLinesContainerProps
+  AddDataSourcesLinesContainerProps
 > = ({ dataComponentId, queryRef }) => {
   const { data } = usePreloadedPaginationFragment<
-  AddDataSourcesLinesQuery,
-  AddDataSourcesLines_data$key
+    AddDataSourcesLinesQuery,
+    AddDataSourcesLines_data$key
   >({
     linesQuery: addDataSourcesLinesQuery,
     linesFragment: addDataSourcesLinesFragment,
@@ -90,14 +90,14 @@ AddDataSourcesLinesContainerProps
             return (
               <ListItemText
                 key={idx}
-                primary={
+                primary={(
                   <Skeleton
                     animation="wave"
                     variant="rectangular"
                     width="90%"
                     height="100%"
                   />
-                }
+                )}
               />
             );
           }

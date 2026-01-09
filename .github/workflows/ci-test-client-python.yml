@@ -2,6 +2,11 @@ name: Run Client Python - PyCti tests
 
 on:
   workflow_call:
+    inputs:
+      checkout_ref:
+        description: "Reference of the branch or commit sha"
+        type: string
+        default: ${{ github.sha }}
 
 jobs:
   client-python-test:
@@ -14,16 +19,36 @@ jobs:
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Runner information
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
+    - name: Set up Python environment for flake8 lint
+      uses: actions/setup-python@v6
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        python-version: ${{ matrix.python-version }}
+
+    - name: flake8 Lint
+      uses: py-actions/flake8@v2
+      with:
+          ignore: "E,W"
+          path: "/client-python" 
+
+    - name: Download image platform
+      continue-on-error: true
+      uses: actions/download-artifact@v7
+      with:
+        name: docker-image-opencti-platform
+        path: /tmp
+
+    - name: Load image
+      run: |
+          set -eux
+          docker load --input /tmp/opencti-platform.tar
+          docker images
 
     - name: Set up Docker Compose for backends
       run: |
@@ -44,15 +69,30 @@ jobs:
           -v ${{ github.workspace }}:/home/workspace \
           -e OPENCTI_API_URL=http://opencti-pycti-start:4100 \
           -e OPENCTI_API_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
-         python:${{ matrix.python-version }} \
-          sh -c 'set -ex;
-            cd /home/workspace/client-python
-            pip3 install -r requirements.txt --user
-            pip3 install -r test-requirements.txt --user
-            sleep 180
-            python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
-            '
+        python:${{ matrix.python-version }} \
+        sh -c 'set -ex;
+          cd /home/workspace/client-python
+          pip3 install -r requirements.txt --user
+          pip3 install -r test-requirements.txt --user
+          sleep 180
+          python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+          '
 
+    - name: Run pycti example tests
+      run: |
+        docker run --network runner-docker-network \
+          --name pycti-example-tests \
+          -v ${{ github.workspace }}:/home/workspace \
+          -e OPENCTI_API_URL=http://opencti-pycti-start:4100 \
+          -e OPENCTI_API_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+        python:${{ matrix.python-version }} \
+        sh -c 'set -ex;
+          cd /home/workspace/client-python
+          pip3 install -r test-requirements.txt --user
+          pip3 install .
+          cd examples/
+          /bin/bash run_all.sh
+          '
 
     - name: Logs opencti-pycti-start
       if: always()
@@ -72,4 +112,3 @@ jobs:
       if: always()
       continue-on-error: true
       run: cat runner_resource_stat.log
-

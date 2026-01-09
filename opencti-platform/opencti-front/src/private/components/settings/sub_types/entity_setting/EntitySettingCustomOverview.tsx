@@ -72,14 +72,14 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
               color="primary"
             >
               <Tooltip title={t_i18n('Reset to default layout')}>
-                <RestartAlt fontSize={'small'} color={'primary'} />
+                <RestartAlt fontSize="small" color="primary" />
               </Tooltip>
             </IconButton>
           </Box>
         </Typography>
         <Paper
           variant="outlined"
-          className={'paper-for-grid'}
+          className="paper-for-grid"
           style={paperStyle}
         >
           <EntitySettingsOverviewLayoutCustomization
@@ -93,14 +93,14 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
         </Typography>
         <Paper
           variant="outlined"
-          className={'paper-for-grid'}
+          className="paper-for-grid"
           style={paperStyle}
         >
           <Grid container>
             {layout.map(({ key, width, label }) => (
               <Grid item xs={width} key={key}>
                 <Paper
-                  className={'paper-for-grid'}
+                  className="paper-for-grid"
                   style={{
                     borderRadius: 4,
                     position: 'relative',

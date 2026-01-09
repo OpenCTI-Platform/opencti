@@ -44,14 +44,14 @@ type WorkspaceHeaderProps = {
   data: WorkspaceHeaderFragment$key;
   variant: 'dashboard' | 'investigation';
   adjust?: () => void;
-  handleDateChange?: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void
+  handleDateChange?: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void;
   config?: {
-    startDate: string | null
-    endDate: string | null
-    relativeDate: string | null
-  },
+    startDate: string | null;
+    endDate: string | null;
+    relativeDate: string | null;
+  };
   handleAddWidget?: () => void;
-  handleImportWidget?: (widgetFile: File) => void
+  handleImportWidget?: (widgetFile: File) => void;
 };
 
 const WorkspaceHeader = ({
@@ -114,20 +114,22 @@ const WorkspaceHeader = ({
             handleExportDashboard={handleExportDashboard}
           />
           <WorkspaceKebabMenu data={workspace} />
-          {variant === 'dashboard' && (<>
-            <Security
-              needs={[EXPLORE_EXUPDATE]}
-              hasAccess={canEdit}
-            >
-              <WorkspaceWidgetConfig
-                onComplete={handleAddWidget}
-                handleImportWidget={handleImportWidget}
-              />
-            </Security>
-          </>)}
+          {variant === 'dashboard' && (
+            <>
+              <Security
+                needs={[EXPLORE_EXUPDATE]}
+                hasAccess={canEdit}
+              >
+                <WorkspaceWidgetConfig
+                  onComplete={handleAddWidget}
+                  handleImportWidget={handleImportWidget}
+                />
+              </Security>
+            </>
+          )}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
             <Button
-              variant='contained'
+              variant="contained"
               disableElevation
               sx={{ marginLeft: 1 }}
               onClick={handleOpenEdit}

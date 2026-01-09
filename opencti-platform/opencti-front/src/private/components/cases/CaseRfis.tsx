@@ -196,14 +196,14 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           resolvePath={(data: CaseRfisLinesCases_data$data) => data.caseRfis?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={caseFragment}
           exportContext={{ entity_type: 'Case-Rfi' }}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Case-Rfi' />
+                <StixCoreObjectForms entityType="Case-Rfi" />
                 <CaseRfiCreation paginationOptions={queryPaginationOptions} />
               </div>
             </Security>

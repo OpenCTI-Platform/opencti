@@ -25,7 +25,7 @@ import BulkTextModalButton from 'src/components/fields/BulkTextField/BulkTextMod
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import { PaginationOptions } from 'src/components/list_lines';
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
-import { allEntitiesKeyList, type StixCoreResultsType } from '../utils/querySearchEntityByText';
+import { type StixCoreResultsType } from '../utils/querySearchEntityByText';
 import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
 
 export const searchStixCoreObjectsByRepresentativeQuery = graphql`
@@ -78,6 +78,7 @@ interface BulkRelationDialogProps {
   paginationKey: string;
   paginationOptions: PaginationOptions;
   targetObjectTypes: string[];
+  onBulkCreate: () => void;
 }
 
 export interface BulkEntityTypeInfo {
@@ -124,7 +125,7 @@ const querySearchEntityByText = async (text: string) => {
       mode: 'and',
       filters: [
         {
-          key: allEntitiesKeyList,
+          key: 'bulkSearchKeywords',
           values: [text],
         },
       ],
@@ -161,7 +162,7 @@ const EntityTypeWithoutBulkEntityCreation = [
   'Position',
 ];
 
-const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
+const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
   stixDomainObjectId,
   stixDomainObjectType,
   stixDomainObjectName,
@@ -172,6 +173,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   paginationKey,
   paginationOptions,
   targetObjectTypes,
+  onBulkCreate,
 }) => {
   const { t_i18n } = useFormatter();
   const [textAreaValue, setTextAreaValue] = useState<string[]>([...selectedEntities.map((item) => item.name ?? '')]);
@@ -404,7 +406,6 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
         toId: foundEntityType.id,
       };
       try {
-        // eslint-disable-next-line no-await-in-loop
         await commit(finalValues);
       } catch (error) {
         const { errors } = (error as unknown as RelayError).res;
@@ -414,6 +415,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     }
     setIsSubmitting(false);
     onClose();
+    onBulkCreate();
     dispatchEvent(new CustomEvent(ForceUpdateEvent));
   };
   const getTextAreaValue = () => textAreaValue.join('\n');
@@ -478,7 +480,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} slotProps={{ paper: { elevation: 1 } }} scroll='paper' sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
+      <Dialog open={isOpen} slotProps={{ paper: { elevation: 1 } }} scroll="paper" sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
         {isSubmitting && renderLoader()}
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
           <div>{t_i18n('Create relations in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}</div>
@@ -488,7 +490,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <Typography sx={{ height: '25px', paddingLeft: '10px' }}>{t_i18n('relationship_from')}</Typography>
             <Box sx={{ display: 'flex' }}>
-              <Box id='entityCard' sx={{ display: 'flex', justifyContent: 'center', padding: '0 10px', flexDirection: 'column' }}>
+              <Box id="entityCard" sx={{ display: 'flex', justifyContent: 'center', padding: '0 10px', flexDirection: 'column' }}>
                 <EntityRelationshipCard
                   entityName={stixDomainObjectName}
                   entityType={stixDomainObjectType}
@@ -508,7 +510,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           </Box>
           <Box>
             {renderHeaders()}
-            <Box id="forms" sx={{ display: 'flex', height: '100%', overflowY: 'auto', width: '100%', gap: '10px' }} >
+            <Box id="forms" sx={{ display: 'flex', height: '100%', overflowY: 'auto', width: '100%', gap: '10px' }}>
               <Box sx={{ width: `${toHeaderWidth}px` }}>
                 <TextField
                   disabled={isSubmitting}

@@ -260,6 +260,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         external_references = kwargs.get("externalReferences", None)
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
+        resolve_result_indicators = kwargs.get("resolve_result_indicators", True)
 
         create_indicator = (
             observable_data["x_opencti_create_indicator"]
@@ -377,115 +378,126 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 "externalReferences": external_references,
                 "update": update,
             }
-            query = """
-                mutation StixCyberObservableAdd(
-                    $type: String!,
-                    $stix_id: StixId,
-                    $x_opencti_score: Int,
-                    $x_opencti_description: String,
-                    $createIndicator: Boolean,
-                    $createdBy: String,
-                    $objectMarking: [String],
-                    $objectLabel: [String],
-                    $objectOrganization: [String],
-                    $externalReferences: [String],
-                    $update: Boolean,
-                    $AutonomousSystem: AutonomousSystemAddInput,
-                    $Directory: DirectoryAddInput,
-                    $DomainName: DomainNameAddInput,
-                    $EmailAddr: EmailAddrAddInput,
-                    $EmailMessage: EmailMessageAddInput,
-                    $EmailMimePartType: EmailMimePartTypeAddInput,
-                    $Artifact: ArtifactAddInput,
-                    $StixFile: StixFileAddInput,
-                    $X509Certificate: X509CertificateAddInput,
-                    $IPv4Addr: IPv4AddrAddInput,
-                    $IPv6Addr: IPv6AddrAddInput,
-                    $MacAddr: MacAddrAddInput,
-                    $Mutex: MutexAddInput,
-                    $NetworkTraffic: NetworkTrafficAddInput,
-                    $Process: ProcessAddInput,
-                    $Software: SoftwareAddInput,
-                    $Url: UrlAddInput,
-                    $UserAccount: UserAccountAddInput,
-                    $WindowsRegistryKey: WindowsRegistryKeyAddInput,
-                    $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput,
-                    $CryptographicKey: CryptographicKeyAddInput,
-                    $CryptocurrencyWallet: CryptocurrencyWalletAddInput,
-                    $Hostname: HostnameAddInput
-                    $Text: TextAddInput,
-                    $UserAgent: UserAgentAddInput
-                    $BankAccount: BankAccountAddInput
-                    $PhoneNumber: PhoneNumberAddInput
-                    $Credential: CredentialAddInput
-                    $TrackingNumber: TrackingNumberAddInput
-                    $PaymentCard: PaymentCardAddInput
-                    $Persona: PersonaAddInput
-                    $MediaContent: MediaContentAddInput
-                    $SSHKey: SSHKeyAddInput
-                ) {
-                    stixCyberObservableAdd(
-                        type: $type,
-                        stix_id: $stix_id,
-                        x_opencti_score: $x_opencti_score,
-                        x_opencti_description: $x_opencti_description,
-                        createIndicator: $createIndicator,
-                        createdBy: $createdBy,
-                        objectMarking: $objectMarking,
-                        objectLabel: $objectLabel,
-                        update: $update,
-                        externalReferences: $externalReferences,
-                        objectOrganization: $objectOrganization,
-                        AutonomousSystem: $AutonomousSystem,
-                        Directory: $Directory,
-                        DomainName: $DomainName,
-                        EmailAddr: $EmailAddr,
-                        EmailMessage: $EmailMessage,
-                        EmailMimePartType: $EmailMimePartType,
-                        Artifact: $Artifact,
-                        StixFile: $StixFile,
-                        X509Certificate: $X509Certificate,
-                        IPv4Addr: $IPv4Addr,
-                        IPv6Addr: $IPv6Addr,
-                        MacAddr: $MacAddr,
-                        Mutex: $Mutex,
-                        NetworkTraffic: $NetworkTraffic,
-                        Process: $Process,
-                        Software: $Software,
-                        Url: $Url,
-                        UserAccount: $UserAccount,
-                        WindowsRegistryKey: $WindowsRegistryKey,
-                        WindowsRegistryValueType: $WindowsRegistryValueType,
-                        CryptographicKey: $CryptographicKey,
-                        CryptocurrencyWallet: $CryptocurrencyWallet,
-                        Hostname: $Hostname,
-                        Text: $Text,
-                        UserAgent: $UserAgent
-                        BankAccount: $BankAccount
-                        PhoneNumber: $PhoneNumber
-                        Credential: $Credential
-                        TrackingNumber: $TrackingNumber
-                        PaymentCard: $PaymentCard
-                        Persona: $Persona
-                        MediaContent: $MediaContent
-                        SSHKey: $SSHKey
+            query = (
+                """
+                    mutation StixCyberObservableAdd(
+                        $type: String!,
+                        $stix_id: StixId,
+                        $x_opencti_score: Int,
+                        $x_opencti_description: String,
+                        $createIndicator: Boolean,
+                        $createdBy: String,
+                        $objectMarking: [String],
+                        $objectLabel: [String],
+                        $objectOrganization: [String],
+                        $externalReferences: [String],
+                        $update: Boolean,
+                        $AutonomousSystem: AutonomousSystemAddInput,
+                        $Directory: DirectoryAddInput,
+                        $DomainName: DomainNameAddInput,
+                        $EmailAddr: EmailAddrAddInput,
+                        $EmailMessage: EmailMessageAddInput,
+                        $EmailMimePartType: EmailMimePartTypeAddInput,
+                        $Artifact: ArtifactAddInput,
+                        $StixFile: StixFileAddInput,
+                        $X509Certificate: X509CertificateAddInput,
+                        $IPv4Addr: IPv4AddrAddInput,
+                        $IPv6Addr: IPv6AddrAddInput,
+                        $MacAddr: MacAddrAddInput,
+                        $Mutex: MutexAddInput,
+                        $NetworkTraffic: NetworkTrafficAddInput,
+                        $Process: ProcessAddInput,
+                        $Software: SoftwareAddInput,
+                        $Url: UrlAddInput,
+                        $UserAccount: UserAccountAddInput,
+                        $WindowsRegistryKey: WindowsRegistryKeyAddInput,
+                        $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput,
+                        $CryptographicKey: CryptographicKeyAddInput,
+                        $CryptocurrencyWallet: CryptocurrencyWalletAddInput,
+                        $Hostname: HostnameAddInput
+                        $Text: TextAddInput,
+                        $UserAgent: UserAgentAddInput
+                        $BankAccount: BankAccountAddInput
+                        $PhoneNumber: PhoneNumberAddInput
+                        $Credential: CredentialAddInput
+                        $TrackingNumber: TrackingNumberAddInput
+                        $PaymentCard: PaymentCardAddInput
+                        $Persona: PersonaAddInput
+                        $MediaContent: MediaContentAddInput
+                        $SSHKey: SSHKeyAddInput
                     ) {
-                        id
-                        standard_id
-                        entity_type
-                        parent_types
-                        indicators {
-                            edges {
-                                node {
-                                    id
-                                    pattern
-                                    pattern_type
+                        stixCyberObservableAdd(
+                            type: $type,
+                            stix_id: $stix_id,
+                            x_opencti_score: $x_opencti_score,
+                            x_opencti_description: $x_opencti_description,
+                            createIndicator: $createIndicator,
+                            createdBy: $createdBy,
+                            objectMarking: $objectMarking,
+                            objectLabel: $objectLabel,
+                            update: $update,
+                            externalReferences: $externalReferences,
+                            objectOrganization: $objectOrganization,
+                            AutonomousSystem: $AutonomousSystem,
+                            Directory: $Directory,
+                            DomainName: $DomainName,
+                            EmailAddr: $EmailAddr,
+                            EmailMessage: $EmailMessage,
+                            EmailMimePartType: $EmailMimePartType,
+                            Artifact: $Artifact,
+                            StixFile: $StixFile,
+                            X509Certificate: $X509Certificate,
+                            IPv4Addr: $IPv4Addr,
+                            IPv6Addr: $IPv6Addr,
+                            MacAddr: $MacAddr,
+                            Mutex: $Mutex,
+                            NetworkTraffic: $NetworkTraffic,
+                            Process: $Process,
+                            Software: $Software,
+                            Url: $Url,
+                            UserAccount: $UserAccount,
+                            WindowsRegistryKey: $WindowsRegistryKey,
+                            WindowsRegistryValueType: $WindowsRegistryValueType,
+                            CryptographicKey: $CryptographicKey,
+                            CryptocurrencyWallet: $CryptocurrencyWallet,
+                            Hostname: $Hostname,
+                            Text: $Text,
+                            UserAgent: $UserAgent
+                            BankAccount: $BankAccount
+                            PhoneNumber: $PhoneNumber
+                            Credential: $Credential
+                            TrackingNumber: $TrackingNumber
+                            PaymentCard: $PaymentCard
+                            Persona: $Persona
+                            MediaContent: $MediaContent
+                            SSHKey: $SSHKey
+                        ) {
+                            id
+                            standard_id
+                            entity_type
+                            parent_types
+                            """
+                + (
+                    """
+                            indicators {
+                                edges {
+                                    node {
+                                        id
+                                        pattern
+                                        pattern_type
+                                    }
                                 }
                             }
+                    """
+                    if resolve_result_indicators
+                    else ""
+                )
+                + """
                         }
                     }
-                }
-            """
+                """
+            )
+
             if type == "Autonomous-System":
                 input_variables["AutonomousSystem"] = {
                     "number": observable_data["number"],

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { Add, DeleteOutlined, AddCircleOutlined } from '@mui/icons-material';
+import { Add, DeleteOutlined, AddCircleOutlined, ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Button, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -362,6 +362,66 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     }));
   };
 
+  const handleMoveFieldUp = (entityId: string, fieldId: string) => {
+    updateFormData((prev) => {
+      // Get fields for this entity in their current order
+      const entityFields = prev.fields.filter((f) => f.attributeMapping.entity === entityId);
+      const otherFields = prev.fields.filter((f) => f.attributeMapping.entity !== entityId);
+
+      // Find the index of the field within entity fields
+      const fieldIndex = entityFields.findIndex((f) => f.id === fieldId);
+      if (fieldIndex <= 0) return prev; // Can't move up if already at top
+
+      // Swap with the previous field
+      const newEntityFields = [...entityFields];
+      [newEntityFields[fieldIndex - 1], newEntityFields[fieldIndex]] = [newEntityFields[fieldIndex], newEntityFields[fieldIndex - 1]];
+
+      // Reconstruct fields array maintaining entity grouping
+      return {
+        ...prev,
+        fields: [...otherFields, ...newEntityFields].sort((a, b) => {
+          // Keep entity groups together, but use new order within each group
+          if (a.attributeMapping.entity === b.attributeMapping.entity) {
+            const aIdx = newEntityFields.findIndex((f) => f.id === a.id);
+            const bIdx = newEntityFields.findIndex((f) => f.id === b.id);
+            if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+          }
+          return 0;
+        }),
+      };
+    });
+  };
+
+  const handleMoveFieldDown = (entityId: string, fieldId: string) => {
+    updateFormData((prev) => {
+      // Get fields for this entity in their current order
+      const entityFields = prev.fields.filter((f) => f.attributeMapping.entity === entityId);
+      const otherFields = prev.fields.filter((f) => f.attributeMapping.entity !== entityId);
+
+      // Find the index of the field within entity fields
+      const fieldIndex = entityFields.findIndex((f) => f.id === fieldId);
+      if (fieldIndex < 0 || fieldIndex >= entityFields.length - 1) return prev; // Can't move down if already at bottom
+
+      // Swap with the next field
+      const newEntityFields = [...entityFields];
+      [newEntityFields[fieldIndex], newEntityFields[fieldIndex + 1]] = [newEntityFields[fieldIndex + 1], newEntityFields[fieldIndex]];
+
+      // Reconstruct fields array maintaining entity grouping
+      return {
+        ...prev,
+        fields: [...otherFields, ...newEntityFields].sort((a, b) => {
+          // Keep entity groups together, but use new order within each group
+          if (a.attributeMapping.entity === b.attributeMapping.entity) {
+            const aIdx = newEntityFields.findIndex((f) => f.id === a.id);
+            const bIdx = newEntityFields.findIndex((f) => f.id === b.id);
+            if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+          }
+          return 0;
+        }),
+      };
+    });
+  };
+
   const renderRelationshipField = (field: FormFieldAttribute, index: number, relationshipIndex: number) => {
     const fieldPath = `relationships.${relationshipIndex}.fields.${index}`;
     // Available field types for relationships - exclude checkbox, select, multiselect
@@ -482,12 +542,12 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         </FormControl>
 
         <FormControlLabel
-          control={
+          control={(
             <Switch
               checked={field.required}
               onChange={(e) => handleFieldChange(`${fieldPath}.required`, e.target.checked)}
             />
-          }
+          )}
           label={t_i18n('Required')}
           style={{ marginTop: 20 }}
         />
@@ -495,8 +555,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     );
   };
 
-  const renderField = (field: FormFieldAttribute, index: number, entityType: string) => {
+  const renderField = (field: FormFieldAttribute, index: number, entityType: string, entityFields: FormFieldAttribute[]) => {
     const fieldIndex = formData.fields.findIndex((f) => f.id === field.id);
+    const entityId = field.attributeMapping.entity;
+    const isFirstInEntity = index === 0;
+    const isLastInEntity = index === entityFields.length - 1;
 
     // Get all attributes for this entity type (not filtered by field type yet)
     const entity = entityTypes.find((e) => e.value === entityType);
@@ -611,14 +674,32 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <Typography className={classes.fieldTitle}>
             {field.isMandatory ? `${t_i18n('Field')} ${index + 1} (${t_i18n('Mandatory')})` : `${t_i18n('Field')} ${index + 1}`}
           </Typography>
-          {(!field.isMandatory || isInParsedMode) && (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <IconButton
               size="small"
-              onClick={() => handleRemoveField(field.id)}
+              onClick={() => handleMoveFieldUp(entityId, field.id)}
+              disabled={isFirstInEntity}
+              title={t_i18n('Move up')}
             >
-              <DeleteOutlined fontSize="small" color="primary" />
+              <ArrowUpward fontSize="small" color={isFirstInEntity ? 'disabled' : 'primary'} />
             </IconButton>
-          )}
+            <IconButton
+              size="small"
+              onClick={() => handleMoveFieldDown(entityId, field.id)}
+              disabled={isLastInEntity}
+              title={t_i18n('Move down')}
+            >
+              <ArrowDownward fontSize="small" color={isLastInEntity ? 'disabled' : 'primary'} />
+            </IconButton>
+            {(!field.isMandatory || isInParsedMode) && (
+              <IconButton
+                size="small"
+                onClick={() => handleRemoveField(field.id)}
+              >
+                <DeleteOutlined fontSize="small" color="primary" />
+              </IconButton>
+            )}
+          </div>
         </div>
 
         <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory && !isInParsedMode}>
@@ -893,13 +974,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         </FormControl>
 
         <FormControlLabel
-          control={
+          control={(
             <Switch
               checked={field.required}
               onChange={(e) => handleFieldChange(`fields.${fieldIndex}.required`, e.target.checked)}
               disabled={field.isMandatory && !isInParsedMode}
             />
-          }
+          )}
           label={t_i18n('Required')}
           style={{ marginTop: 20 }}
         />
@@ -942,14 +1023,14 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
                 const newMandatoryFields = shouldAddMandatoryFields
                   ? getInitialMandatoryFields(newEntityType, entityTypes, t_i18n)
-                    .map((field) => ({
-                      ...field,
-                      attributeMapping: {
-                        ...field.attributeMapping,
-                        entity: entity.id,
-                        mappingType: 'nested' as const,
-                      },
-                    }))
+                      .map((field) => ({
+                        ...field,
+                        attributeMapping: {
+                          ...field.attributeMapping,
+                          entity: entity.id,
+                          mappingType: 'nested' as const,
+                        },
+                      }))
                   : [];
 
                 // Remove old fields for this entity and add new mandatory fields
@@ -980,23 +1061,36 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         />
 
         <FormControlLabel
-          control={
+          control={(
             <Switch
               checked={entity.lookup}
               onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.lookup`, e.target.checked)}
             />
-          }
+          )}
           label={t_i18n('Entity lookup (select existing entities)')}
           style={{ marginTop: 20, display: 'block' }}
         />
 
+        {entity.lookup && (
+          <FormControlLabel
+            control={(
+              <Switch
+                checked={entity.disableCreation || false}
+                onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.disableCreation`, e.target.checked)}
+              />
+            )}
+            label={t_i18n('Disable on-the-fly entity creation')}
+            style={{ marginTop: 10, marginLeft: 20, display: 'block' }}
+          />
+        )}
+
         <FormControlLabel
-          control={
+          control={(
             <Switch
               checked={entity.multiple}
               onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.multiple`, e.target.checked)}
             />
-          }
+          )}
           label={t_i18n('Allow multiple instances')}
           style={{ marginTop: 20, display: 'block' }}
         />
@@ -1024,13 +1118,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
           return (
             <FormControlLabel
-              control={
+              control={(
                 <Switch
                   checked={entity.required || false}
                   onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.required`, e.target.checked)}
                   disabled={entityHasDefaultValues}
                 />
-              }
+              )}
               label={entityHasDefaultValues
                 ? t_i18n('Required (auto-set due to default values)')
                 : t_i18n('Required')}
@@ -1136,12 +1230,12 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {/* Show auto-convert to STIX pattern toggle for Indicator type */}
             {entity.entityType === 'Indicator' && (
               <FormControlLabel
-                control={
+                control={(
                   <Switch
                     checked={entity.autoConvertToStixPattern || false}
                     onChange={() => handleFieldChange(`additionalEntities.${entityIndex}.autoConvertToStixPattern`, !entity.autoConvertToStixPattern)}
                   />
-                }
+                )}
                 label={t_i18n('Automatically convert to STIX patterns')}
                 style={{ marginTop: 20 }}
               />
@@ -1154,7 +1248,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             <Typography variant="subtitle1" style={{ marginTop: 20, marginBottom: 10 }}>
               {t_i18n('Fields')}
             </Typography>
-            {entityFields.map((field, idx) => renderField(field, idx, entity.entityType))}
+            {entityFields.map((field, idx) => renderField(field, idx, entity.entityType, entityFields))}
             <Button
               variant="outlined"
               startIcon={<Add />}
@@ -1171,9 +1265,10 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             <Typography variant="subtitle1" style={{ marginTop: 20, marginBottom: 10 }}>
               {t_i18n('Additional Fields (will be applied to all created entities)')}
             </Typography>
-            {entityFields
-              .filter((field) => field.attributeMapping.attributeName !== entity.parseFieldMapping)
-              .map((field, idx) => renderField(field, idx, entity.entityType))}
+            {(() => {
+              const parsedModeFields = entityFields.filter((field) => field.attributeMapping.attributeName !== entity.parseFieldMapping);
+              return parsedModeFields.map((field, idx) => renderField(field, idx, entity.entityType, parsedModeFields));
+            })()}
             <Button
               variant="outlined"
               startIcon={<Add />}
@@ -1304,12 +1399,12 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         </FormControl>
 
         <FormControlLabel
-          control={
+          control={(
             <Switch
               checked={relationship.required || false}
               onChange={(e) => handleFieldChange(`relationships.${relationshipIndex}.required`, e.target.checked)}
             />
-          }
+          )}
           label={t_i18n('Required')}
           style={{ marginTop: 20 }}
         />
@@ -1389,59 +1484,72 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </FormControl>
 
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 checked={formData.mainEntityMultiple}
                 onChange={(e) => handleFieldChange('mainEntityMultiple', e.target.checked)}
               />
-            }
+            )}
             label={t_i18n('Allow multiple instances of main entity')}
             style={{ marginTop: 20, display: 'block' }}
           />
 
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 checked={formData.mainEntityLookup}
                 onChange={(e) => handleFieldChange('mainEntityLookup', e.target.checked)}
               />
-            }
+            )}
             label={t_i18n('Entity lookup (select existing entities)')}
             style={{ marginTop: 20, display: 'block' }}
           />
 
+          {formData.mainEntityLookup && (
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={formData.mainEntityDisableCreation || false}
+                  onChange={(e) => handleFieldChange('mainEntityDisableCreation', e.target.checked)}
+                />
+              )}
+              label={t_i18n('Disable on-the-fly entity creation')}
+              style={{ marginTop: 10, marginLeft: 20, display: 'block' }}
+            />
+          )}
+
           {isContainer && (
             <FormControlLabel
-              control={
+              control={(
                 <Switch
                   checked={formData.includeInContainer}
                   onChange={(e) => handleFieldChange('includeInContainer', e.target.checked)}
                 />
-              }
+              )}
               label={t_i18n('Include entities in container')}
               style={{ marginTop: 20, display: 'block' }}
             />
           )}
 
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 checked={formData.isDraftByDefault}
                 onChange={(e) => handleFieldChange('isDraftByDefault', e.target.checked)}
               />
-            }
+            )}
             label={t_i18n('Create as draft by default')}
             style={{ marginTop: 20, display: 'block' }}
           />
 
           {formData.isDraftByDefault && (
             <FormControlLabel
-              control={
+              control={(
                 <Switch
                   checked={formData.allowDraftOverride}
                   onChange={(e) => handleFieldChange('allowDraftOverride', e.target.checked)}
                 />
-              }
+              )}
               label={t_i18n('Allow users to uncheck draft mode')}
               style={{ marginTop: 20, display: 'block' }}
             />
@@ -1538,22 +1646,22 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               {formData.mainEntityType === 'Indicator' && (
                 <>
                   <FormControlLabel
-                    control={
+                    control={(
                       <Switch
                         checked={formData.mainEntityAutoConvertToStixPattern || false}
                         onChange={() => handleFieldChange('mainEntityAutoConvertToStixPattern', !formData.mainEntityAutoConvertToStixPattern)}
                       />
-                    }
+                    )}
                     label={t_i18n('Automatically convert to STIX patterns')}
                     style={{ marginTop: 20 }}
                   />
                   <FormControlLabel
-                    control={
+                    control={(
                       <Switch
                         checked={formData.autoCreateObservableFromIndicator || false}
                         onChange={() => handleFieldChange('autoCreateObservableFromIndicator', !formData.autoCreateObservableFromIndicator)}
                       />
-                    }
+                    )}
                     label={t_i18n('Automatically create observables from indicators')}
                     style={{ marginTop: 10 }}
                   />
@@ -1568,12 +1676,12 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 'Phone-Number', 'Payment-Card', 'Media-Content',
               ].includes(formData.mainEntityType) && (
                 <FormControlLabel
-                  control={
+                  control={(
                     <Switch
                       checked={formData.autoCreateIndicatorFromObservable || false}
                       onChange={() => handleFieldChange('autoCreateIndicatorFromObservable', !formData.autoCreateIndicatorFromObservable)}
                     />
-                  }
+                  )}
                   label={t_i18n('Automatically create indicators from observables')}
                   style={{ marginTop: 20 }}
                 />
@@ -1600,9 +1708,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       <Typography variant="h6" gutterBottom>
                         {t_i18n('Additional Fields (will be applied to all created entities)')}
                       </Typography>
-                      {(fieldsByEntity.main_entity || [])
-                        .filter((field) => field.attributeMapping.attributeName !== formData.mainEntityParseFieldMapping)
-                        .map((field, idx) => renderField(field, idx, formData.mainEntityType))}
+                      {(() => {
+                        const mainEntityParsedFields = (fieldsByEntity.main_entity || [])
+                          .filter((field) => field.attributeMapping.attributeName !== formData.mainEntityParseFieldMapping);
+                        return mainEntityParsedFields.map((field, idx) => renderField(field, idx, formData.mainEntityType, mainEntityParsedFields));
+                      })()}
                       <Button
                         variant="outlined"
                         startIcon={<Add />}
@@ -1616,12 +1726,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 </>
               );
             }
+            const mainEntityFields = fieldsByEntity.main_entity || [];
             return (
               <div style={{ marginTop: 20 }}>
                 <Typography variant="h6" gutterBottom>
                   {t_i18n('Main Entity Fields')}
                 </Typography>
-                {(fieldsByEntity.main_entity || []).map((field, idx) => renderField(field, idx, formData.mainEntityType))}
+                {mainEntityFields.map((field, idx) => renderField(field, idx, formData.mainEntityType, mainEntityFields))}
                 <Button
                   variant="outlined"
                   startIcon={<Add />}

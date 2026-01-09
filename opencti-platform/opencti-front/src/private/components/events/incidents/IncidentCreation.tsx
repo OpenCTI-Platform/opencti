@@ -9,6 +9,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { IncidentsLinesQuery$variables } from '@components/events/incidents/__generated__/IncidentsLinesQuery.graphql';
+import { IncidentCreationMutation, IncidentCreationMutation$data } from './__generated__/IncidentCreationMutation.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -77,7 +78,7 @@ interface IncidentAddInput {
 }
 
 interface IncidentCreationProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: IncidentCreationMutation['response']['incidentAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -143,9 +144,10 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       variables: {
         input,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'incidentAdd');
+          const data = response as IncidentCreationMutation$data;
+          updater(store, 'incidentAdd', data?.incidentAdd);
         }
       },
       onError: (error) => {
@@ -307,7 +309,7 @@ const IncidentCreation = ({
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
   const CreateIncidentControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Incident' {...props} />
+    <CreateEntityControlledDial entityType="Incident" {...props} />
   );
   return (
     <Drawer

@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import LocationDetails from '@components/locations/LocationDetails';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -92,6 +93,8 @@ const CountryComponent = ({
 }: {
   countryData: Country_country$key;
 }) => {
+  useInitCreateRelationshipContext();
+
   const classes = useStyles();
   const country = useFragment<Country_country$key>(
     countryFragment,

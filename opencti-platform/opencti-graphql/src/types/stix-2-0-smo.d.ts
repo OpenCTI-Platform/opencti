@@ -10,5 +10,5 @@ export interface StixInternalExternalReference {
 export interface StixInternalKillChainPhase {
   kill_chain_name: string;
   phase_name: string;
-  x_opencti_order: number,
+  x_opencti_order: number;
 }

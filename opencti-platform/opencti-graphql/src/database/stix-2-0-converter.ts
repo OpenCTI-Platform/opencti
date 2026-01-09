@@ -15,7 +15,7 @@ import {
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
-  isStixDomainObjectThreatActor
+  isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
@@ -36,7 +36,7 @@ const CUSTOM_ENTITY_TYPES = [
   ENTITY_TYPE_CONTAINER_FEEDBACK,
   ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
   ENTITY_TYPE_CONTAINER_CASE_RFI,
-  ENTITY_TYPE_CONTAINER_CASE_RFT
+  ENTITY_TYPE_CONTAINER_CASE_RFT,
 ];
 
 export const buildStixId = (instanceType: string, standard_id: S.StixId): S.StixId => {
@@ -105,10 +105,12 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
 const buildStixObject = (instance: StoreObject): S.StixObject => {
   return {
     id: buildStixId(instance.entity_type, instance.standard_id),
-    x_opencti_id: instance.id,
-    spec_version: '2.0',
-    x_opencti_type: instance.entity_type,
     type: convertTypeToStix2Type(instance.entity_type),
+    spec_version: '2.0',
+    // extensions
+    x_opencti_id: instance.id,
+    x_opencti_type: instance.entity_type,
+    x_opencti_modified_at: convertToStixDate(instance.x_opencti_modified_at),
     x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
     x_opencti_workflow_id: instance.x_opencti_workflow_id,
     x_opencti_files: ((instance.x_opencti_files ?? []).map((file: StoreFileWithRefs) => ({
@@ -118,6 +120,9 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
       version: file.version,
       object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
     }))),
+    // TODO Add missing attribute 2.1 extension
+    // x_created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
+    // x_created_by_ref_type: instance[INPUT_CREATED_BY]?.entity_type,
   };
 };
 

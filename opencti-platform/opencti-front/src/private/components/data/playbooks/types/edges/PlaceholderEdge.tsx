@@ -1,19 +1,8 @@
 import React from 'react';
-import { getBezierPath, EdgeProps, EdgeLabelRenderer } from 'reactflow';
-import { makeStyles } from '@mui/styles';
+import { EdgeLabelRenderer, EdgeProps, getBezierPath } from 'reactflow';
 import { useFormatter } from 'src/components/i18n';
+import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  placeholderPath: {
-    strokeWidth: 0.5,
-    strokeDasharray: '3 3',
-    stroke: theme.palette.chip.main,
-    fill: 'none',
-  },
-}));
 
 function EdgeLabel({ transform, label }: { transform: string; label: string }) {
   const { t_i18n } = useFormatter();
@@ -46,7 +35,7 @@ export default function PlaceholderEdge({
   markerEnd,
   sourceHandleId,
 }: EdgeProps) {
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
@@ -59,8 +48,13 @@ export default function PlaceholderEdge({
     <>
       <path
         id={id}
-        style={style}
-        className={classes.placeholderPath}
+        style={{
+          ...style,
+          strokeWidth: 0.5,
+          strokeDasharray: '3 3',
+          stroke: theme.palette.chip.main,
+          fill: 'none',
+        }}
         d={edgePath}
         markerEnd={markerEnd}
       />

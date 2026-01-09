@@ -31,7 +31,7 @@ const HUB_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
   },
   enabled(): boolean {
     return this.enabledByConfig;
-  }
+  },
 };
 
 registerManager(HUB_REGISTRATION_MANAGER_DEFINITION);

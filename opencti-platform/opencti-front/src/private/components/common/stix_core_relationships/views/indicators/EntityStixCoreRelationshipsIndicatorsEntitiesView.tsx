@@ -1,4 +1,5 @@
-import React, { FunctionComponent } from 'react';
+import * as R from 'ramda';
+import React, { FunctionComponent, useContext, useEffect } from 'react';
 import { graphql } from 'react-relay';
 import {
   EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery,
@@ -23,15 +24,16 @@ import DataTable from '../../../../../../components/dataGrid/DataTable';
 import { useQueryLoadingWithLoadQuery } from '../../../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../../../utils/hooks/usePreloadedPaginationFragment';
 import { useFormatter } from '../../../../../../components/i18n';
+import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
-  entityId: string
-  relationshipTypes: string[]
-  defaultStartTime: string
-  defaultStopTime: string
-  localStorage: PaginationLocalStorage<PaginationOptions>
-  isRelationReversed: boolean
-  currentView: string
+  entityId: string;
+  relationshipTypes: string[];
+  defaultStartTime: string;
+  defaultStopTime: string;
+  localStorage: PaginationLocalStorage<PaginationOptions>;
+  isRelationReversed: boolean;
+  currentView: string;
 }
 
 export const entityStixCoreRelationshipsIndicatorsEntitiesViewQuery = graphql`
@@ -134,7 +136,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     orderAsc,
     openExports,
   } = viewStorage;
-
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
   const dataColumns = {
@@ -231,23 +233,36 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     </ToggleButton>
   );
 
+  useInitCreateRelationshipContext({
+    stixCoreObjectTypes: ['Indicator'],
+    relationshipTypes,
+    connectionKey: 'Pagination_indicators',
+    reversed: isRelationReversed,
+  });
+
+  useEffect(() => {
+    setCreateRelationshipContext({
+      paginationOptions: R.dissoc('count', queryPaginationOptions),
+      onCreate: undefined,
+    });
+  }, [localStorage]);
+
   const viewButtons = [entitiesViewButton, relationshipsView, knowledgeFromRelatedContainersView];
 
   return (
     <>
       {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data) => (data.indicators?.edges ?? []).map((n) => n?.node)}
-        storageKey={localStorageKey}
-        initialValues={initialValues}
-        toolbarFilters={contextFilters}
-        additionalFilters={contextFilters}
-        preloadedPaginationProps={preloadedPaginationProps}
-        lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
-        exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}
-        additionalHeaderButtons={[...viewButtons]}
-      />
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data) => (data.indicators?.edges ?? []).map((n) => n?.node)}
+          storageKey={localStorageKey}
+          initialValues={initialValues}
+          contextFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
+          exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}
+          additionalHeaderButtons={[...viewButtons]}
+        />
       )}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity

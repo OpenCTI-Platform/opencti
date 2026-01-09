@@ -168,9 +168,9 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.stixDomainObjectsTypes === 'string') {
     finalParams.stixDomainObjectsTypes = finalParams.stixDomainObjectsTypes
       ? (finalParams.stixDomainObjectsTypes = split(
-        ',',
-        finalParams.stixDomainObjectsTypes,
-      ))
+          ',',
+          finalParams.stixDomainObjectsTypes,
+        ))
       : [];
   }
   if (typeof finalParams.indicatorTypes === 'string') {
@@ -209,6 +209,21 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.createdBy === 'string') {
     finalParams.createdBy = finalParams.createdBy
       ? split(',', finalParams.createdBy)
+      : [];
+  }
+  if (typeof finalParams.disabledEntityTypes === 'string') {
+    finalParams.disabledEntityTypes = finalParams.disabledEntityTypes
+      ? split(',', finalParams.disabledEntityTypes)
+      : [];
+  }
+  if (typeof finalParams.disabledCreators === 'string') {
+    finalParams.disabledCreators = finalParams.disabledCreators
+      ? split(',', finalParams.disabledCreators)
+      : [];
+  }
+  if (typeof finalParams.disabledMarkings === 'string') {
+    finalParams.disabledMarkings = finalParams.disabledMarkings
+      ? split(',', finalParams.disabledMarkings)
       : [];
   }
   if (typeof finalParams.selectedTimeRangeInterval === 'string') {

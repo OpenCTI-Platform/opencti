@@ -135,17 +135,17 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Playbook' } } }],
-            }
+            },
           },
         ],
         minimum_should_match: 1,
       },
-    }
+    },
   };
   await elUpdateByQueryForMigration(
     '[MIGRATION] Playbooks CRON filters keys conversion fix',
     READ_DATA_INDICES,
-    playbooksUpdateQuery
+    playbooksUpdateQuery,
   );
   logMigration.info(`${message} > done`);
   next();

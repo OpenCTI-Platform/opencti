@@ -64,7 +64,7 @@ export const up = async (next) => {
     // 2. Merge everything else inside the target
     await mergeEntities(context, SYSTEM_USER, updatedTarget.internal_id, sources);
     logApp.info(
-      `[MIGRATION] URL ${updatedTarget.value} merged (${urlsToMerge.length}) -- ${index + 1}/${buckets.length}`
+      `[MIGRATION] URL ${updatedTarget.value} merged (${urlsToMerge.length}) -- ${index + 1}/${buckets.length}`,
     );
   }
   next();

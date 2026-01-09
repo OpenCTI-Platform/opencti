@@ -1,6 +1,5 @@
 declare module '*.graphql' {
-  // eslint-disable-next-line import/extensions
-  import { DocumentNode } from 'graphql/index.js';
+  import { DocumentNode } from 'graphql';
 
   const Schema: DocumentNode;
 

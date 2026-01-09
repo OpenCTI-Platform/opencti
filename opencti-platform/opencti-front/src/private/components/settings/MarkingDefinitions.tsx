@@ -145,7 +145,7 @@ const MarkingDefinitions = () => {
       label: 'ID',
       percentWidth: 25,
       isSortable: true,
-      render: (node: { id: string; }) => <ItemCopy content={node.id} variant="inLine" />,
+      render: (node: { id: string }) => <ItemCopy content={node.id} variant="inLine" />,
     },
     x_opencti_color: { percentWidth: 15 },
     x_opencti_order: { percentWidth: 10 },
@@ -173,20 +173,20 @@ const MarkingDefinitions = () => {
         { label: t_i18n('Marking definitions'), current: true },
       ]}
       />
-      <AccessesMenu/>
+      <AccessesMenu />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
           resolvePath={(data: MarkingDefinitionsLines_data$data) => data.markingDefinitions?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           lineFragment={markingDefinitionLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
           icon={(data) => {
             const { x_opencti_color } = data;
             return (
-              <MarkingIcon theme={theme} color={x_opencti_color}/>
+              <MarkingIcon theme={theme} color={x_opencti_color} />
             );
           }}
           actions={(markingDefinition) => (
@@ -201,7 +201,7 @@ const MarkingDefinitions = () => {
           disableToolBar
           removeSelectAll
           disableLineSelection
-          createButton={<MarkingDefinitionCreation paginationOptions={queryPaginationOptions}/>}
+          createButton={<MarkingDefinitionCreation paginationOptions={queryPaginationOptions} />}
         />
       )}
     </div>

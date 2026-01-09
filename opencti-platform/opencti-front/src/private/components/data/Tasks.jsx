@@ -43,8 +43,9 @@ const Tasks = () => {
     );
   }
   return (
-    <div className={classes.container}
-      data-testid='processing-tasks-page'
+    <div
+      className={classes.container}
+      data-testid="processing-tasks-page"
     >
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('Tasks'), current: true }]} />
       <ProcessingMenu />

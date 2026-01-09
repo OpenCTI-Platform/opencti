@@ -6,9 +6,10 @@ import {
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField
+  stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
 import type { BasicStoreEntityDataComponent } from '../dataComponent/dataComponent-types';
+import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 
 const dataSourceResolvers: Resolvers = {
   Query: {
@@ -23,7 +24,7 @@ const dataSourceResolvers: Resolvers = {
       return dataSourceAdd(context, context.user, input);
     },
     dataSourceDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_DATA_SOURCE);
     },
     dataSourceFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
@@ -46,7 +47,7 @@ const dataSourceResolvers: Resolvers = {
     dataSourceDataComponentDelete: (_, { id, dataComponentId }, context) => {
       return dataSourceDataComponentDelete(context, context.user, id, dataComponentId);
     },
-  }
+  },
 };
 
 export default dataSourceResolvers;

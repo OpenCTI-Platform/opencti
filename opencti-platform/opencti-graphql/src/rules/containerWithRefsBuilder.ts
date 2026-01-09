@@ -16,10 +16,11 @@ import type { RelationCreation, UpdateEvent } from '../types/event';
 import { READ_DATA_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import type { AuthContext } from '../types/user';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
-import { buildStixUpdateEvent, publishStixToStream } from '../database/redis';
+import { publishStixToStream } from '../database/stream/stream-handler';
 import { INPUT_DOMAIN_TO, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { asyncFilter } from '../utils/data-processing';
+import { buildStixUpdateEvent } from '../database/stream/stream-utils';
 
 const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: string, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
@@ -39,7 +40,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       `${partOfTargetId}_ref`,
     ];
   };
-  type ArrayRefs = Array<{ partOfFromId: string, partOfId: string, partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
+  type ArrayRefs = Array<{ partOfFromId: string; partOfId: string; partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
   // eslint-disable-next-line max-len
   const createObjectRefsInferences = async (context: AuthContext, data: StixReport, addedTargets: ArrayRefs, deletedTargets: Array<BasicStoreRelation>): Promise<void> => {
     if (addedTargets.length === 0 && deletedTargets.length === 0) {
@@ -109,7 +110,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         inputs.push({ key: INPUT_OBJECTS, value: deletedTargetRefs, operation: UPDATE_OPERATION_REMOVE });
       }
       const message = await generateUpdateMessage(context, RULE_MANAGER_USER, report.extensions[STIX_EXT_OCTI].type, inputs);
-      const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message);
+      const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message, []);
       await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
     }
   };
@@ -141,9 +142,12 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
           await createObjectRefsInferences(context, report, addedTargets, []);
         }
       };
-      const listArgs = isSource ? { fromId: originIds, toTypes: [relationTypes.rightType] } : { toId: originIds, fromTypes: [relationTypes.leftType] };
-      const fullListArgs = { ...listArgs, callback: listAddedRefsCallback };
-      await fullRelationsList<BasicStoreRelation>(context, RULE_MANAGER_USER, relationTypes.creationType, fullListArgs);
+      // If originIds could no longer be found, we don't try to list relations since the fromId filter will not be applied
+      if (originIds.length > 0) {
+        const listArgs = isSource ? { fromId: originIds, toTypes: [relationTypes.rightType] } : { toId: originIds, fromTypes: [relationTypes.leftType] };
+        const fullListArgs = { ...listArgs, callback: listAddedRefsCallback };
+        await fullRelationsList<BasicStoreRelation>(context, RULE_MANAGER_USER, relationTypes.creationType, fullListArgs);
+      }
     }
 
     // Find all current inferences that need to be deleted

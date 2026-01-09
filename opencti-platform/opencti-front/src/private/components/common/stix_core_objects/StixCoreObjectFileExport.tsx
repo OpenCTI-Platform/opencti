@@ -130,8 +130,8 @@ const stixCoreObjectFileExportQuery = graphql`
 `;
 
 interface OpenComponentProps {
-  onOpen: () => void
-  isExportPossible: boolean
+  onOpen: () => void;
+  isExportPossible: boolean;
 }
 
 type StixCoreObjectFileExportComponentProps = {
@@ -141,8 +141,8 @@ type StixCoreObjectFileExportComponentProps = {
   scoEntityType: string;
   scoName?: string;
   redirectToContentTab?: boolean;
-  onClose?: () => void
-  onExportCompleted?: (fileName?: string, isDeleted?: boolean) => void
+  onClose?: () => void;
+  onExportCompleted?: (fileName?: string, isDeleted?: boolean) => void;
 } & Pick<StixCoreObjectFileExportFormProps, 'defaultValues'>;
 
 const StixCoreObjectFileExportComponent = ({
@@ -426,7 +426,7 @@ const StixCoreObjectFileExportComponent = ({
           instanceId={stixCoreObject.id}
           instanceName={stixCoreObject.representative.main}
           instanceType={stixCoreObject.entity_type}
-          type='container'
+          type="container"
           optionsOpen={askAiOpen}
           handleCloseOptions={handleCloseAskAi}
         />

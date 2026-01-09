@@ -112,7 +112,7 @@ const IngestionJson = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         keyword={searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <IngestionJsonCreationContainer
               open={false}
@@ -121,11 +121,11 @@ const IngestionJson = () => {
               isDuplicated={false}
             />
           </Security>
-        }
+        )}
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -133,7 +133,7 @@ const IngestionJson = () => {
                     <IngestionJsonLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <IngestionJsonLines
               queryRef={queryRef}
@@ -152,7 +152,7 @@ const IngestionJson = () => {
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
-        <IngestionMenu/>
+        <IngestionMenu />
       </div>
     );
   }
@@ -160,7 +160,7 @@ const IngestionJson = () => {
   return (
     <div className={classes.container} data-testid="json-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('JSON Feeds'), current: true }]} />
-      <IngestionMenu/>
+      <IngestionMenu />
       <>{renderLines()}</>
     </div>
   );

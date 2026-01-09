@@ -22,10 +22,10 @@ import {
   ENTITY_TYPE_STATUS,
   ENTITY_TYPE_STATUS_TEMPLATE,
   ENTITY_TYPE_STREAM_COLLECTION,
-  ENTITY_TYPE_USER
+  ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -37,7 +37,7 @@ import type {
   BasicWorkflowStatusEntity,
   BasicWorkflowTemplateEntity,
   StoreEntity,
-  StoreRelation
+  StoreRelation,
 } from '../types/store';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
@@ -54,6 +54,8 @@ import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { fromB64 } from '../utils/base64';
+import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -72,17 +74,17 @@ const workflowStatuses = (context: AuthContext) => {
   return { values: null, fn: reloadStatuses };
 };
 // extract the filters of the instance in case of resolved filters cache update
-const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
+export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
   const initialFilterGroup = JSON.stringify(emptyFilterGroup);
   const filteringIds = []; // will contain the ids that are in the instance filters values
   if (instance.entity_type === ENTITY_TYPE_STREAM_COLLECTION) {
     const streamFilterIds = extractFilterGroupValuesToResolveForCache(
-      JSON.parse((instance as BasicStreamEntity).filters ?? initialFilterGroup)
+      JSON.parse((instance as BasicStreamEntity).filters ?? initialFilterGroup),
     );
     filteringIds.push(...streamFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_TRIGGER) {
     const triggerFilterIds = extractFilterGroupValuesToResolveForCache(
-      JSON.parse((instance as BasicTriggerEntity).filters ?? initialFilterGroup)
+      JSON.parse((instance as BasicTriggerEntity).filters ?? initialFilterGroup),
     );
     filteringIds.push(...triggerFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_CONNECTOR) {
@@ -92,21 +94,34 @@ const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
     const connFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse(connFilters));
     filteringIds.push(...connFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PLAYBOOK) {
-    const playbookFilterIds = ((JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition)) as ComponentDefinition)
-      .nodes.map((n) => JSON.parse(n.configuration))
+    const definition = JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition) as ComponentDefinition;
+    const configurations = definition.nodes.map((n) => JSON.parse(n.configuration));
+    // IDs from filters in playbook components.
+    const playbookFilterIds = configurations
       .map((config) => config.filters)
       .filter((f) => isNotEmptyField(f))
       .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
       .flat();
-    filteringIds.push(...playbookFilterIds);
+    // IDs from list of PIRs to listen.
+    const playbookInPirFilterIds = configurations
+      .map((config) => config.inPirFilters)
+      .map((f) => (f ?? []).map((i: { value: string }) => i.value))
+      .flat();
+    filteringIds.push(...playbookFilterIds, ...playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {
     const pirFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityPir).pir_filters));
     const pirCriteriaIds = (instance as BasicStoreEntityPir).pir_criteria
       .map((c) => extractFilterGroupValuesToResolveForCache(JSON.parse(c.filters)))
       .flat();
     filteringIds.push(...pirFilterIds, ...pirCriteriaIds);
+  } else if (instance.entity_type === ENTITY_TYPE_DECAY_EXCLUSION_RULE) {
+    const decayExclusionRuleIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityDecayExclusionRule).decay_exclusion_filters));
+    filteringIds.push(...decayExclusionRuleIds);
   } else {
-    throw FunctionalError('Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type', { entity_type: instance.entity_type });
+    throw FunctionalError(
+      'Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type',
+      { entity_type: instance.entity_type },
+    );
   }
   return filteringIds;
 };
@@ -118,8 +133,9 @@ const platformResolvedFilters = (context: AuthContext) => {
     const connectors = await fullEntitiesList<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR]);
     const playbooks = await fullEntitiesList<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK]);
     const pirs = await fullEntitiesList<BasicStoreEntityPir>(context, SYSTEM_USER, [ENTITY_TYPE_PIR]);
+    const decayExclusionRules = await fullEntitiesList<BasicStoreEntityDecayExclusionRule>(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_EXCLUSION_RULE]);
     // Fetch the filters of those entities
-    const filteringIds = [...streams, ...triggers, ...connectors, ...playbooks, ...pirs].map((s) => extractResolvedFiltersFromInstance(s)).flat();
+    const filteringIds = [...streams, ...triggers, ...connectors, ...playbooks, ...pirs, ...decayExclusionRules].map((s) => extractResolvedFiltersFromInstance(s)).flat();
     // Resolve the filters ids
     if (filteringIds.length > 0) {
       const resolvingIds = R.uniq(filteringIds);
@@ -129,15 +145,20 @@ const platformResolvedFilters = (context: AuthContext) => {
     return new Map();
   };
   const refreshFilter = async (values: Map<string, StixObject>, instance: BasicStoreCommon) => {
-    const filteringIds = extractResolvedFiltersFromInstance(instance);
     // Resolve filters ids that are not already in the cache
     const currentFiltersValues = values; // current cache map
     const idsToSolve: string[] = []; // will contain the ids to resolve that are not already in the cache
-    filteringIds.forEach((id) => {
-      if (!currentFiltersValues.has(id)) {
-        idsToSolve.push(id);
-      }
-    });
+    // If a label or marking was updated, we always need to update it in the cache
+    if (instance.entity_type === ENTITY_TYPE_LABEL || instance.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
+      idsToSolve.push(instance.internal_id);
+    } else {
+      const filteringIds = extractResolvedFiltersFromInstance(instance);
+      filteringIds.forEach((id) => {
+        if (!currentFiltersValues.has(id)) {
+          idsToSolve.push(id);
+        }
+      });
+    }
     const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, R.uniq(idsToSolve)); // fetch the stix instance of the ids
     // Add resolved stix entities to the cache map
     loadedDependencies.forEach((l: StixObject) => currentFiltersValues.set(l.extensions[STIX_EXT_OCTI].id, l));
@@ -162,6 +183,12 @@ const platformDecayRules = (context: AuthContext) => {
     return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_RULE]);
   };
   return { values: null, fn: reloadDecayRules };
+};
+const platformDecayExclusionRules = (context: AuthContext) => {
+  const reloadDecayExclusionRules = () => {
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_EXCLUSION_RULE]);
+  };
+  return { value: null, fn: reloadDecayExclusionRules };
 };
 const platformMarkings = (context: AuthContext) => {
   const reloadMarkings = () => {
@@ -286,7 +313,7 @@ const platformPublicDashboards = (context: AuthContext) => {
           user_id: dash.user_id,
           allowed_markings_ids: dash.allowed_markings_ids,
           allowed_markings: markings,
-        }
+        },
       );
     }
     return publicDashboardsForCache;
@@ -312,9 +339,9 @@ const platformPirs = (context: AuthContext) => {
 type SubEvent = { instance: StoreEntity | StoreRelation };
 
 const initCacheManager = () => {
-  let subscribeAdd: { topic: string; unsubscribe: () => void; };
-  let subscribeEdit: { topic: string; unsubscribe: () => void; };
-  let subscribeDelete: { topic: string; unsubscribe: () => void; };
+  let subscribeAdd: { topic: string; unsubscribe: () => void };
+  let subscribeEdit: { topic: string; unsubscribe: () => void };
+  let subscribeDelete: { topic: string; unsubscribe: () => void };
   const initCacheContent = () => {
     const context = executionContext('cache_manager');
     writeCacheForEntity(ENTITY_TYPE_SETTINGS, platformSettings(context));
@@ -334,6 +361,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD, platformPublicDashboards(context));
     writeCacheForEntity(ENTITY_TYPE_DRAFT_WORKSPACE, platformDraftWorkspaces(context));
     writeCacheForEntity(ENTITY_TYPE_PIR, platformPirs(context));
+    writeCacheForEntity(ENTITY_TYPE_DECAY_EXCLUSION_RULE, platformDecayExclusionRules(context));
   };
   return {
     init: () => initCacheContent(), // Use for testing
@@ -352,11 +380,17 @@ const initCacheManager = () => {
     },
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping cache manager');
-      try { subscribeAdd.unsubscribe(); } catch { /* dont care */ }
-      try { subscribeEdit.unsubscribe(); } catch { /* dont care */ }
-      try { subscribeDelete.unsubscribe(); } catch { /* dont care */ }
+      try {
+        subscribeAdd.unsubscribe();
+      } catch { /* dont care */ }
+      try {
+        subscribeEdit.unsubscribe();
+      } catch { /* dont care */ }
+      try {
+        subscribeDelete.unsubscribe();
+      } catch { /* dont care */ }
       return true;
-    }
+    },
   };
 };
 const cacheManager = initCacheManager();

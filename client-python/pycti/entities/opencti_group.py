@@ -64,6 +64,9 @@ class Group:
                         capabilities {
                             id, name
                         }
+                        capabilitiesInDraft {
+                            id, name
+                        }
                     }
                 }
             }

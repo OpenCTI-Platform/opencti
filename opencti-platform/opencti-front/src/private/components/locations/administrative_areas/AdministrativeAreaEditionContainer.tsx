@@ -11,10 +11,10 @@ import { AdministrativeAreaEditionContainerQuery } from './__generated__/Adminis
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 interface AdministrativeAreaEditionContainerProps {
-  queryRef: PreloadedQuery<AdministrativeAreaEditionContainerQuery>
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  queryRef: PreloadedQuery<AdministrativeAreaEditionContainerQuery>;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 export const administrativeAreaEditionQuery = graphql`

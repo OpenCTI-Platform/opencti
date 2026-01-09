@@ -78,7 +78,7 @@ interface ThreatActorIndividualEditionBiographicsComponentProps {
 }
 
 const ThreatActorIndividualEditionBiographicsComponent: React.FunctionComponent<
-ThreatActorIndividualEditionBiographicsComponentProps
+  ThreatActorIndividualEditionBiographicsComponentProps
 > = ({
   threatActorIndividualRef,
   enableReferences,

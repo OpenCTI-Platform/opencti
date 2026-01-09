@@ -12,7 +12,7 @@ import {
   getFilesFromTemplate,
   getFintelTemplates,
   aiSummary,
-  containersDistributionByEntity
+  containersDistributionByEntity,
 } from '../domain/container';
 import {
   stixDomainObjectAddRelation,
@@ -84,7 +84,7 @@ const containerResolvers = {
   // },
   Mutation: {
     containerEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

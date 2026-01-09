@@ -35,7 +35,7 @@ const emailTemplateResolver: Resolvers = {
     emailTemplateTestSend: (_, { id }, context) => {
       return sendTestEmail(context, context.user, id);
     },
-  }
+  },
 };
 
 export default emailTemplateResolver;

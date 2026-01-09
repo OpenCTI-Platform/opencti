@@ -12,7 +12,7 @@ import type {
   TriggerActivityLiveAddInput,
   TriggerDigestAddInput,
   TriggerLiveAddInput,
-  TriggerType
+  TriggerType,
 } from '../../generated/graphql';
 import { TriggerType as TriggerTypeValue } from '../../generated/graphql';
 import { internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -22,7 +22,7 @@ import {
   ENTITY_TYPE_NOTIFICATION,
   ENTITY_TYPE_TRIGGER,
   NOTIFICATION_NUMBER,
-  type NotificationAddInput
+  type NotificationAddInput,
 } from './notification-types';
 import { now } from '../../utils/format';
 import { elCount } from '../../database/engine';
@@ -41,7 +41,7 @@ import {
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
   SETTINGS_SECURITYACTIVITY,
-  isOnlyOrgaAdmin
+  isOnlyOrgaAdmin,
 } from '../../utils/access';
 import { AlreadyDeletedError, ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -56,7 +56,7 @@ const extractUniqRecipient = async (
   context: AuthContext,
   user: AuthUser,
   triggerInput: TriggerDigestAddInput | TriggerLiveAddInput,
-  type: TriggerType
+  type: TriggerType,
 ): Promise<BasicStoreEntity> => {
   const { recipients } = triggerInput;
   let recipient = user.id;
@@ -76,7 +76,7 @@ export const addTrigger = async (
   context: AuthContext,
   user: AuthUser,
   triggerInput: TriggerDigestAddInput | TriggerLiveAddInput,
-  type: TriggerType
+  type: TriggerType,
 ): Promise<BasicStoreEntityTrigger> => {
   if (type === TriggerTypeValue.Live && (triggerInput as TriggerLiveAddInput).event_types.length === 0) {
     throw UnsupportedError('Attribute "trigger_events" of a live trigger should have at least one event');
@@ -108,7 +108,7 @@ export const addTrigger = async (
     trigger_scope: 'knowledge',
     instance_trigger: type === TriggerTypeValue.Digest ? false : (triggerInput as TriggerLiveAddInput).instance_trigger,
     restricted_members: members,
-    authorized_authorities: [SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN] // Add extra capabilities
+    authorized_authorities: [SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN], // Add extra capabilities
   };
   const trigger = { ...triggerInput, ...defaultOpts };
   const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
@@ -118,7 +118,7 @@ export const addTrigger = async (
     event_scope: 'create',
     event_access: isSelfTrigger ? 'extended' : 'administration',
     message: `creates ${type} trigger \`${created.name}\` for ${isSelfTrigger ? '`themselves`' : `\`${recipient.name}\``}`,
-    context_data: { id: created.id, entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
 };
@@ -127,7 +127,7 @@ export const addTriggerActivity = async (
   context: AuthContext,
   user: AuthUser,
   triggerInput: TriggerActivityLiveAddInput | TriggerActivityDigestAddInput,
-  type: TriggerType
+  type: TriggerType,
 ): Promise<BasicStoreEntityTrigger> => {
   const members = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, triggerInput.recipients);
   if (members.length === 0) {
@@ -149,7 +149,7 @@ export const addTriggerActivity = async (
     trigger_scope: 'activity',
     trigger_type: type,
     restricted_members: [...(triggerInput.recipients ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }))],
-    authorized_authorities: [SETTINGS_SECURITYACTIVITY] // Add extra capabilities
+    authorized_authorities: [SETTINGS_SECURITYACTIVITY], // Add extra capabilities
   };
   const trigger = { ...triggerInput, ...defaultOpts };
   const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
@@ -159,7 +159,7 @@ export const addTriggerActivity = async (
     event_scope: 'create',
     event_access: 'administration',
     message: `creates ${type} activity trigger \`${created.name}\` for ${members.map((m) => `\`${m.name}\``).join(', ')}`,
-    context_data: { id: created.id, entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
 };
@@ -256,7 +256,7 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
     event_scope: 'delete',
     event_access: isSelfTrigger ? 'extended' : 'administration',
     message: `deletes trigger \`${deleted.name}\` for ${isSelfTrigger ? '`themselves`' : `${recipientNames.map((r) => `\`${r}\``).join(', ')}`}`,
-    context_data: { id: triggerId, entity_type: ENTITY_TYPE_TRIGGER, input: deleted }
+    context_data: { id: triggerId, entity_type: ENTITY_TYPE_TRIGGER, input: deleted },
   });
   return triggerId;
 };
@@ -331,7 +331,7 @@ export const addNotification = async (context: AuthContext, user: AuthUser, noti
   const notificationWithAuthorized = {
     ...notification,
     restricted_members: members,
-    authorized_authorities: [SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN] // Add extra capabilities
+    authorized_authorities: [SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN], // Add extra capabilities
   };
   const created = await createEntity(context, user, notificationWithAuthorized, ENTITY_TYPE_NOTIFICATION);
   const unreadNotificationsCount = await myUnreadNotificationsCount(context, user, created.user_id);

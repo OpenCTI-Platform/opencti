@@ -11,7 +11,7 @@ services:
   elasticsearch:
     container_name: elasticsearch
     profiles: ["backend"]
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.2
+    image: elasticsearch:8.19.9
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -146,7 +146,7 @@ services:
 
   opencti-test-worker:
     container_name: opencti-test-worker
-    profiles: ["ci-test-api-sync","ci-test-api"]
+    profiles: ["ci-test-api-sync","ci-test-rules"]
     image: filigran/worker:${TAG}
     restart: unless-stopped
     environment:

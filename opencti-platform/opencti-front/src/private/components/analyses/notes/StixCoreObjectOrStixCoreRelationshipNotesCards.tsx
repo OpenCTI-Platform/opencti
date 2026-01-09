@@ -128,14 +128,14 @@ interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
   marginTop?: number;
   queryRef: PreloadedQuery<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>;
   paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
-  readonly defaultMarkings?: readonly DefaultMarking[]
+  readonly defaultMarkings?: readonly DefaultMarking[];
   title: string;
 }
 
 type HeaderProps = {
-  onToggleWrite: () => void
-  id: string
-  data: StixCoreObjectOrStixCoreRelationshipNotesCards_data$data
+  onToggleWrite: () => void;
+  id: string;
+  data: StixCoreObjectOrStixCoreRelationshipNotesCards_data$data;
 } & Pick<StixCoreObjectOrStixCoreRelationshipNotesCardsProps, 'paginationOptions' | 'title'>;
 
 const Header = ({ title, id, data, paginationOptions, onToggleWrite }: HeaderProps) => {
@@ -167,9 +167,9 @@ const Header = ({ title, id, data, paginationOptions, onToggleWrite }: HeaderPro
 };
 
 type NoteFormProps = {
-  onSubmit: (values: NoteAddInput, formikHelpers: FormikHelpers<NoteAddInput>) => void
-  onToggleWrite: () => void
-  onToggleMore: () => void
+  onSubmit: (values: NoteAddInput, formikHelpers: FormikHelpers<NoteAddInput>) => void;
+  onToggleWrite: () => void;
+  onToggleMore: () => void;
 } & Pick<StixCoreObjectOrStixCoreRelationshipNotesCardsProps, 'defaultMarkings'>;
 
 const NoteForm = ({ defaultMarkings, onToggleWrite, onToggleMore, onSubmit }: NoteFormProps) => {
@@ -326,7 +326,7 @@ const NoteForm = ({ defaultMarkings, onToggleWrite, onToggleMore, onSubmit }: No
 };
 
 const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipNotesCardsProps
+  StixCoreObjectOrStixCoreRelationshipNotesCardsProps
 > = ({
   id,
   marginTop = 0,
@@ -338,8 +338,8 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   const { t_i18n } = useFormatter();
 
   const data = usePreloadedFragment<
-  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
-  StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
+    StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+    StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
   >({
     queryDef: stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
     fragmentDef: stixCoreObjectOrStixCoreRelationshipNotesCardsFragment,

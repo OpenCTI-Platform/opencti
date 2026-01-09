@@ -17,7 +17,7 @@ import {
   ViewListOutline,
 } from 'mdi-material-ui';
 import React from 'react';
-// eslint-disable-next-line import/extensions
+
 import type { WidgetDataSelection } from './widget';
 
 const widgetVisualizationTypes = [
@@ -203,10 +203,10 @@ const widgetVisualizationTypes = [
   },
 ] as const;
 
-export type WidgetVisualizationTypes =
-  (typeof widgetVisualizationTypes)[number]['key'];
+export type WidgetVisualizationTypes
+  = (typeof widgetVisualizationTypes)[number]['key'];
 
-export const RELATIONSHIP_WIDGETS_TYPES = ['Stix-Core-Relationship', 'stix-sighting-relationship', 'object', 'object-label'];
+export const RELATIONSHIP_WIDGETS_TYPES = ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'];
 
 export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => w.key !== 'attribute');
 
@@ -239,41 +239,41 @@ export const isWidgetListOrTimeline = (type: string) => {
 export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'medium') => {
   switch (key) {
     case 'attribute':
-      return <TagTextOutline fontSize={fontSize} color="primary"/>;
+      return <TagTextOutline fontSize={fontSize} color="primary" />;
     case 'map':
-      return <MapOutlined fontSize={fontSize} color="primary"/>;
+      return <MapOutlined fontSize={fontSize} color="primary" />;
     case 'horizontal-bar':
-      return <AlignHorizontalLeft fontSize={fontSize} color="primary"/>;
+      return <AlignHorizontalLeft fontSize={fontSize} color="primary" />;
     case 'vertical-bar':
-      return <ChartBar fontSize={fontSize} color="primary"/>;
+      return <ChartBar fontSize={fontSize} color="primary" />;
     case 'donut':
-      return <ChartDonut fontSize={fontSize} color="primary"/>;
+      return <ChartDonut fontSize={fontSize} color="primary" />;
     case 'area':
-      return <ChartAreasplineVariant fontSize={fontSize} color="primary"/>;
+      return <ChartAreasplineVariant fontSize={fontSize} color="primary" />;
     case 'timeline':
-      return <ChartTimeline fontSize={fontSize} color="primary"/>;
+      return <ChartTimeline fontSize={fontSize} color="primary" />;
     case 'list':
-      return <ViewListOutline fontSize={fontSize} color="primary"/>;
+      return <ViewListOutline fontSize={fontSize} color="primary" />;
     case 'distribution-list':
-      return <FormatListNumberedRtl fontSize={fontSize} color="primary"/>;
+      return <FormatListNumberedRtl fontSize={fontSize} color="primary" />;
     case 'number':
-      return <Counter fontSize={fontSize} color="primary"/>;
+      return <Counter fontSize={fontSize} color="primary" />;
     case 'text':
-      return <FormatShapesOutlined fontSize={fontSize} color="primary"/>;
+      return <FormatShapesOutlined fontSize={fontSize} color="primary" />;
     case 'heatmap':
-      return <ChartBubble fontSize={fontSize} color="primary"/>;
+      return <ChartBubble fontSize={fontSize} color="primary" />;
     case 'line':
-      return <ChartLine fontSize={fontSize} color="primary"/>;
+      return <ChartLine fontSize={fontSize} color="primary" />;
     case 'radar':
-      return <Radar fontSize={fontSize} color="primary"/>;
+      return <Radar fontSize={fontSize} color="primary" />;
     case 'polar-area':
-      return <PieChartOutlined fontSize={fontSize} color="primary"/>;
+      return <PieChartOutlined fontSize={fontSize} color="primary" />;
     case 'tree':
-      return <ChartTree fontSize={fontSize} color="primary"/>;
+      return <ChartTree fontSize={fontSize} color="primary" />;
     case 'bookmark':
-      return <StarSettingsOutline fontSize={fontSize} color="primary"/>;
+      return <StarSettingsOutline fontSize={fontSize} color="primary" />;
     case 'wordcloud':
-      return <ViewQuiltOutlined fontSize={fontSize} color="primary"/>;
+      return <ViewQuiltOutlined fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }

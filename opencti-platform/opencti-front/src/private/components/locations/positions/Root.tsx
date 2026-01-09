@@ -9,6 +9,8 @@ import { RootPositionQuery } from '@components/locations/positions/__generated__
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootPositionsSubscription } from '@components/locations/positions/__generated__/RootPositionsSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Position from './Position';
 import PositionKnowledge from './PositionKnowledge';
@@ -54,6 +56,7 @@ const positionQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Position_position
       ...PositionKnowledge_position
@@ -99,13 +102,13 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
   const paddingRight = getPaddingRight(location.pathname, positionId, '/dashboard/locations/positions');
 
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {position ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -125,7 +128,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                   ]}
                   data={position}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -144,7 +147,14 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                   <PositionEdition positionId={position.id} />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={position}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <PositionDeletion positionId={position.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -222,19 +232,19 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <PositionKnowledge positionData={position} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={position}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -244,7 +254,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={position.id}
                     entityLink={link}
@@ -261,18 +271,18 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                       'System',
                     ]}
                   />
-                }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={positionId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={position}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
@@ -286,11 +296,11 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
-  const { positionId } = useParams() as { positionId: string; };
+  const { positionId } = useParams() as { positionId: string };
   const queryRef = useQueryLoading<RootPositionQuery>(positionQuery, {
     id: positionId,
   });

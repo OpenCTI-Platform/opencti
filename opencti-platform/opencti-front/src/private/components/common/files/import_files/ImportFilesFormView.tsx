@@ -32,7 +32,7 @@ const ImportFilesFormViewContent: React.FC<ImportFilesFormViewContentProps> = ({
 
   if (!form) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 3, marginInline: -20 }}>
         <Alert severity="error">
           {t_i18n('Form not found')}
         </Alert>
@@ -42,7 +42,7 @@ const ImportFilesFormViewContent: React.FC<ImportFilesFormViewContentProps> = ({
 
   if (!form.active) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 3, marginInline: -20 }}>
         <Alert severity="warning">
           {t_i18n('This form is currently inactive')}
         </Alert>
@@ -55,9 +55,10 @@ const ImportFilesFormViewContent: React.FC<ImportFilesFormViewContentProps> = ({
     <Box sx={{
       height: '100%',
       overflow: 'auto',
+      marginInline: -20, // Offset the dialog's paddingInline to make form full width
+      paddingInline: 3,
       '& .MuiPaper-root': {
         boxShadow: 'none',
-        backgroundColor: 'transparent',
       },
     }}
     >
@@ -76,7 +77,7 @@ const ImportFilesFormView: React.FC<ImportFilesFormViewProps> = ({ onSuccess }) 
 
   if (!selectedFormId) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 3, marginInline: -20 }}>
         <Alert severity="warning">
           {t_i18n('No form selected. Please go back and select a form.')}
         </Alert>
@@ -91,18 +92,18 @@ const ImportFilesFormView: React.FC<ImportFilesFormViewProps> = ({ onSuccess }) 
 
   if (!queryRef) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400, marginInline: -20 }}>
         <Loader />
       </Box>
     );
   }
 
   return (
-    <React.Suspense fallback={
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+    <React.Suspense fallback={(
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400, marginInline: -20 }}>
         <Loader />
       </Box>
-    }
+    )}
     >
       <ImportFilesFormViewContent queryRef={queryRef} onSuccess={onSuccess} />
     </React.Suspense>

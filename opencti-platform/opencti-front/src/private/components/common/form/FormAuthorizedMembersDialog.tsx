@@ -7,7 +7,7 @@ import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { AuthorizedMemberOption, Creator } from '../../../../utils/authorizedMembers';
-import { handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -37,7 +37,8 @@ const FormAuthorizedMembersDialog = ({
   customInfoMessage,
 }: FormAuthorizedMembersDialogProps) => {
   const draftContext = useDraftContext();
-  const disabledInDraft = !!draftContext;
+  const isDraftEntity = !!draftContext && id === draftContext.id;
+  const disabledInDraft = !!draftContext || !!isDraftEntity;
   const { t_i18n } = useFormatter();
   const [openDrawer, setOpenDrawer] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -58,20 +59,21 @@ const FormAuthorizedMembersDialog = ({
         input: !values.authorizedMembers
           ? null
           : values.authorizedMembers
-            .filter((v) => v.accessRight !== 'none')
-            .map((member) => ({
-              id: member.value,
-              access_right: member.accessRight,
-              groups_restriction_ids: member.groupsRestriction?.length > 0
-                ? member.groupsRestriction.map((group) => group.value)
-                : undefined,
-            })),
+              .filter((v) => v.accessRight !== 'none')
+              .map((member) => ({
+                id: member.value,
+                access_right: member.accessRight,
+                groups_restriction_ids: member.groupsRestriction?.length > 0
+                  ? member.groupsRestriction.map((group) => group.value)
+                  : undefined,
+              })),
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
         handleClose?.();
         setOpenDrawer(false);
+        MESSAGING$.notifySuccess(t_i18n('Authorized members successfully updated'));
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -107,6 +109,7 @@ const FormAuthorizedMembersDialog = ({
         showAllMembersLine={showAllMembersLine}
         isCanUseEnable={isCanUseEnable}
         customInfoMessage={customInfoMessage}
+        isDraftEntity={isDraftEntity}
       />
     </>
   );

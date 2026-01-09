@@ -10,10 +10,10 @@ import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValue
 type JsonMapperRepresentations = JsonMapperEditionContainerFragment_jsonMapper$data['representations'];
 
 type JsonMapperAddInput = {
-  id: string,
-  name: string,
-  errors: string | null | undefined,
-  representations: JsonMapperRepresentations,
+  id: string;
+  name: string;
+  errors: string | null | undefined;
+  representations: JsonMapperRepresentations;
 };
 
 /**

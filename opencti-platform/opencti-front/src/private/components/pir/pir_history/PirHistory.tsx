@@ -120,7 +120,7 @@ const historyFragment = graphql`
 `;
 
 interface PirHistoryProps {
-  data: PirHistoryFragment$key,
+  data: PirHistoryFragment$key;
 }
 
 const PirHistory = ({ data }: PirHistoryProps) => {
@@ -208,7 +208,7 @@ const PirHistory = ({ data }: PirHistoryProps) => {
         dataColumns={dataColumns}
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
-        toolbarFilters={contextFilters}
+        contextFilters={contextFilters}
         lineFragment={pirHistoryLogFragment}
         entityTypes={['History']}
         getComputeLink={({ context_data }: PirHistoryLogFragment$data) => {

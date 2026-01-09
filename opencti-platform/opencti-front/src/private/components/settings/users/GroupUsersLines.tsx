@@ -78,8 +78,8 @@ const GroupUsersLines: FunctionComponent<GroupUsersLinesProps> = ({
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  GroupUsersLinesQuery,
-  GroupUsersLines_data$key
+    GroupUsersLinesQuery,
+    GroupUsersLines_data$key
   >({
     linesQuery: groupUsersLinesQuery,
     linesFragment: groupUsersLinesFragment,

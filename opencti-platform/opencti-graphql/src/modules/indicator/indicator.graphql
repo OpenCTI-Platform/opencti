@@ -43,6 +43,13 @@ type IndicatorDecayRule {
   decay_revoke_score: Int!
 }
 
+type IndicatorDecayExclusionRule {
+  decay_exclusion_id: String!
+  decay_exclusion_name: String!
+  decay_exclusion_created_at: DateTime!
+  decay_exclusion_filters: String!
+}
+
 type DecayLiveDetails {
   live_score: Int!
   live_points: [DecayHistory!]
@@ -62,7 +69,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -71,6 +78,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -178,6 +186,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   decay_base_score : Int
   decay_base_score_date : DateTime
   decay_applied_rule: IndicatorDecayRule
+  decay_exclusion_applied_rule: IndicatorDecayExclusionRule
   decay_history: [DecayHistory!]
   decayLiveDetails: DecayLiveDetails
   decayChartData: DecayChartData
@@ -239,6 +248,7 @@ input IndicatorAddInput {
   clientMutationId: String
   update: Boolean
   createObservables: Boolean
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   file: Upload
   basedOn: [String!]

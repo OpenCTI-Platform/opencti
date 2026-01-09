@@ -7,10 +7,10 @@ import type { Theme } from '../Theme';
 import useDistributionGraphData, { DistributionQueryData } from '../../utils/hooks/useDistributionGraphData';
 
 interface WidgetPolarAreaProps {
-  data: DistributionQueryData
-  groupBy: string
-  withExport?: boolean
-  readonly?: boolean
+  data: DistributionQueryData;
+  groupBy: string;
+  withExport?: boolean;
+  readonly?: boolean;
 }
 
 const WidgetPolarArea = ({

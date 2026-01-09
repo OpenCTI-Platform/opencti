@@ -35,11 +35,11 @@ const CreateMarkingDefinitionControlledDial = (
 );
 
 interface MarkingDefinitionCreationProps {
-  paginationOptions: PaginationOptions,
+  paginationOptions: PaginationOptions;
 }
 
 const MarkingDefinitionCreation: FunctionComponent<
-MarkingDefinitionCreationProps
+  MarkingDefinitionCreationProps
 > = ({
   paginationOptions,
 }) => {
@@ -66,8 +66,8 @@ MarkingDefinitionCreationProps
   const onSubmit = (
     values: typeof initialValues,
     { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void,
-      resetForm: () => void,
+      setSubmitting: (flag: boolean) => void;
+      resetForm: () => void;
     },
   ) => {
     const finalValues = {

@@ -20,9 +20,9 @@ interface CreateEventOpts extends EventOpts {
 interface UpdateEventOpts extends EventOpts {
   commit?: CommitContext | undefined;
   related_restrictions?: { markings: string[] };
-  pir_ids?: string[]
-  allow_only_modified?: boolean
-  noHistory?: boolean
+  pir_ids?: string[];
+  allow_only_modified?: boolean;
+  noHistory?: boolean;
 }
 
 interface RelationCreation {
@@ -38,17 +38,27 @@ interface BaseEvent {
 }
 
 interface StreamNotifEvent extends BaseEvent {
-  notification_id: string
+  notification_id: string;
   type: 'live' | 'digest' | 'action';
 }
 
+export type StreamDataEventType = 'update' | 'create' | 'delete';
+
 interface StreamDataEvent extends BaseEvent {
   scope: 'internal' | 'external';
-  type: 'update' | 'create' | 'delete';
+  type: StreamDataEventType;
   origin: Partial<UserOrigin>;
   message: string;
-  data: StixCoreObject
+  data: StixCoreObject;
   noHistory?: boolean;
+}
+
+interface Change {
+  field: string;
+  previous?: Array<string>;
+  new?: Array<string>;
+  added?: Array<string>;
+  removed?: Array<string>;
 }
 
 interface UpdateEvent extends StreamDataEvent {
@@ -58,7 +68,8 @@ interface UpdateEvent extends StreamDataEvent {
     patch: Array<Operation>;
     reverse_patch: Array<Operation>;
     related_restrictions?: { markings: string[] };
-    pir_ids?: string[]
+    pir_ids?: string[];
+    changes: Change[];
   };
 }
 
@@ -69,9 +80,9 @@ interface DeleteEvent extends StreamDataEvent {
 interface MergeEvent extends StreamDataEvent {
   type: 'merge';
   context: {
-    patch: Array<Operation>
-    reverse_patch: Array<Operation>
-    sources: Array<StixCoreObject>
+    patch: Array<Operation>;
+    reverse_patch: Array<Operation>;
+    sources: Array<StixCoreObject>;
   };
 }
 
@@ -84,13 +95,13 @@ export interface SseEvent<T extends BaseEvent> {
 type DataEvent = UpdateEvent | DataEvent | MergeEvent;
 
 export interface ActivityStreamEvent {
-  version: string
-  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
-  event_access: 'extended' | 'administration'
-  prevent_indexing: boolean
-  event_scope: string
-  message: string
-  status: 'error' | 'success'
-  origin: Partial<UserOrigin>
-  data: Partial<{ id: string, object_marking_refs_ids?: string[], granted_refs_ids?: string[], marking_definitions?: string[] }>
+  version: string;
+  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command';
+  event_access: 'extended' | 'administration';
+  prevent_indexing: boolean;
+  event_scope: string;
+  message: string;
+  status: 'error' | 'success';
+  origin: Partial<UserOrigin>;
+  data: Partial<{ id: string; object_marking_refs_ids?: string[]; granted_refs_ids?: string[]; marking_definitions?: string[] }>;
 }

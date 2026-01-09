@@ -39,25 +39,24 @@ class Settings:
             platform_user_statuses {
                 status, message
             }
-            platform_theme
-            platform_theme_dark_background
-            platform_theme_dark_paper
-            platform_theme_dark_nav
-            platform_theme_dark_primary
-            platform_theme_dark_secondary
-            platform_theme_dark_accent
-            platform_theme_dark_logo
-            platform_theme_dark_logo_collapsed
-            platform_theme_dark_logo_login
-            platform_theme_light_background
-            platform_theme_light_paper
-            platform_theme_light_nav
-            platform_theme_light_primary
-            platform_theme_light_secondary
-            platform_theme_light_accent
-            platform_theme_light_logo
-            platform_theme_light_logo_collapsed
-            platform_theme_light_logo_login
+            platform_theme {
+                id
+                standard_id
+                entity_type
+                parent_types
+                name
+                theme_background
+                theme_paper
+                theme_nav
+                theme_primary
+                theme_secondary
+                theme_accent
+                theme_logo
+                theme_logo_collapsed
+                theme_logo_login
+                theme_text_color
+                built_in
+            }
             platform_map_tile_server_dark
             platform_map_tile_server_light
             platform_ai_enabled
@@ -171,25 +170,6 @@ class Settings:
             platform_favicon
             platform_email
             platform_language
-            platform_theme
-            platform_theme_dark_background
-            platform_theme_dark_paper
-            platform_theme_dark_nav
-            platform_theme_dark_primary
-            platform_theme_dark_secondary
-            platform_theme_dark_accent
-            platform_theme_dark_logo
-            platform_theme_dark_logo_collapsed
-            platform_theme_dark_logo_login
-            platform_theme_light_background
-            platform_theme_light_paper
-            platform_theme_light_nav
-            platform_theme_light_primary
-            platform_theme_light_secondary
-            platform_theme_light_accent
-            platform_theme_light_logo
-            platform_theme_light_logo_collapsed
-            platform_theme_light_logo_login
             platform_login_message
             platform_consent_message
             platform_consent_confirm_text

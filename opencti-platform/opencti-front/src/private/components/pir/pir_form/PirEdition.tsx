@@ -39,9 +39,9 @@ const editionFragment = graphql`
 `;
 
 interface PirEditionProps {
-  isOpen: boolean
-  onClose: () => void
-  data: PirEditionFragment$key
+  isOpen: boolean;
+  onClose: () => void;
+  data: PirEditionFragment$key;
 }
 
 const PirEdition = ({
@@ -59,7 +59,7 @@ const PirEdition = ({
   );
 
   const onEdit = (field: PirEditionFormInputKeys, value: unknown) => {
-    const input: { key:string, value: [unknown] } = { key: field, value: [value] };
+    const input: { key: string; value: [unknown] } = { key: field, value: [value] };
     editMutation({
       variables: { id: pir.id, input: [input] },
     });

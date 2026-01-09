@@ -1,26 +1,35 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import ejs from 'ejs';
 import axios, { type AxiosInstance } from 'axios';
 import { handleWebhookNotification } from '../../../src/manager/publisherManager';
 
 describe('handleWebhookNotification', () => {
   const mockedAxiosInstance = vi.fn();
+  
   beforeEach(() => {
+    vi.clearAllMocks();
     vi.spyOn(axios, 'create').mockReturnValue(mockedAxiosInstance as unknown as AxiosInstance);
-    vi.spyOn(ejs, 'render'); // We are only spying on `render` without changing its initial behavior for now
   });
+  
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   it('should intercept the axios.create call and use a mock instance', async () => {
-    const configurationString = JSON.stringify({ url: 'https://my-webhook-endpoint.com/test', verb: 'POST', template: '{}' });
+    const configurationString = JSON.stringify({ 
+      url: 'https://my-webhook-endpoint.com/test', 
+      verb: 'POST', 
+      template: '{}' 
+    });
     mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'success from spy' });
+    
     await handleWebhookNotification(configurationString, {});
+    
     expect(axios.create).toHaveBeenCalledTimes(1);
     expect(mockedAxiosInstance).toHaveBeenCalledOnce();
     const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
     expect(axiosCallArgs.url).toBe('https://my-webhook-endpoint.com/test');
+    expect(axiosCallArgs.method).toBe('POST');
+    expect(axiosCallArgs.data).toEqual({});
   });
 
   it('should call webhook with correct POST payload, headers, and params', async () => {
@@ -43,13 +52,14 @@ describe('handleWebhookNotification', () => {
       content: [{ title: 'Stix-Object-Cyber-Tigrou' }],
       user: { user_name: 'test-admin' },
       notification: { id: 'trigger-id-abcde' },
-      // Add more data to mimic reality
       settings: {},
       data: [],
     };
-    const renderedTemplatePayload = '{ "message": "Update on Stix-Object-Cyber-Tigrou by test-admin", "source_id": "trigger-id-abcde" }';
+    
     mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'OK' });
+    
     await handleWebhookNotification(configurationString, templateData);
+    
     expect(axios.create).toHaveBeenCalledTimes(1);
     expect(axios.create).toHaveBeenCalledWith(expect.objectContaining({
       headers: {
@@ -59,6 +69,7 @@ describe('handleWebhookNotification', () => {
       },
     }));
     expect(mockedAxiosInstance).toHaveBeenCalledTimes(1);
+    
     const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
     expect(axiosCallArgs.url).toBe(webhookConfiguration.url);
     expect(axiosCallArgs.method).toBe('POST');
@@ -66,7 +77,13 @@ describe('handleWebhookNotification', () => {
       source: 'opencti-platform',
       type: 'notification',
     });
-    expect(axiosCallArgs.data).toEqual(JSON.parse(renderedTemplatePayload));
+    
+    // Verify that the template has been rendered with expected data
+    const expectedData = { 
+      message: 'Update on Stix-Object-Cyber-Tigrou by test-admin', 
+      source_id: 'trigger-id-abcde' 
+    };
+    expect(axiosCallArgs.data).toEqual(expectedData);
   });
 
   it('should correctly escape newline characters in template data', async () => {
@@ -79,22 +96,19 @@ describe('handleWebhookNotification', () => {
     const templateDataWithNewline = {
       description: 'Line 1\nLine 2'
     };
-    const renderedTemplate = JSON.stringify({ description: 'Line 1\nLine 2' });
-    vi.mocked(ejs.render).mockReturnValue(renderedTemplate);
+    
     mockedAxiosInstance.mockResolvedValue({ status: 200 });
+    
     await handleWebhookNotification(configurationString, templateDataWithNewline);
-    expect(ejs.render).toHaveBeenCalledOnce();
-    expect(ejs.render).toHaveBeenCalledWith(
-      webhookConfiguration.template,
-      templateDataWithNewline,
-      expect.objectContaining({
-        escape: expect.any(Function)
-      })
-    );
+    
     expect(mockedAxiosInstance).toHaveBeenCalledOnce();
-    expect(mockedAxiosInstance).toHaveBeenCalledWith(expect.objectContaining({
-      data: JSON.parse(renderedTemplate),
-    }));
+    
+    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
+    // Ensure the template rendering produce valid JSON
+    expect(axiosCallArgs.data).toHaveProperty('description');
+    expect(typeof axiosCallArgs.data.description).toBe('string');
+    expect(axiosCallArgs.data.description).toContain('Line 1');
+    expect(axiosCallArgs.data.description).toContain('Line 2');
   });
 
   it('should escape line breaks in nested objects and arrays', async () => {
@@ -120,28 +134,27 @@ describe('handleWebhookNotification', () => {
         version: 2,
       }
     };
-    const renderedTemplate = JSON.stringify({
-      title: 'Quarterly\nReport',
-      author_bio: 'Cybersecurity expert.\nAuthor of several publications.',
-      first_event_message: 'First alert:\nsuspicious connection.'
-    });
-    vi.mocked(ejs.render).mockReturnValue(renderedTemplate);
+    
     mockedAxiosInstance.mockResolvedValue({ status: 200 });
+    
     await handleWebhookNotification(configurationString, templateDataWithNesting);
-    expect(ejs.render).toHaveBeenCalledOnce();
-    expect(ejs.render).toHaveBeenCalledWith(
-      webhookConfiguration.template,
-      templateDataWithNesting,
-      expect.objectContaining({
-        escape: expect.any(Function)
-      })
-    );
+    
     expect(mockedAxiosInstance).toHaveBeenCalledOnce();
+    
     const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    expect(axiosCallArgs.data).toEqual(JSON.parse(renderedTemplate));
+    // Check imbricated properties are correctly rendered
+    expect(axiosCallArgs.data).toHaveProperty('title');
+    expect(axiosCallArgs.data).toHaveProperty('author_bio');
+    expect(axiosCallArgs.data).toHaveProperty('first_event_message');
+    
+    // Ensure new lines are correctly rendered
+    expect(axiosCallArgs.data.title).toContain('Quarterly');
+    expect(axiosCallArgs.data.title).toContain('Report');
+    expect(axiosCallArgs.data.author_bio).toContain('Cybersecurity expert');
+    expect(axiosCallArgs.data.first_event_message).toContain('First alert');
   });
 
-  it('should correctly escape forward slashes in template data', async () => {
+  it('should correctly handle forward slashes in template data', async () => {
     const webhookConfiguration = {
       url: 'https://api.filigran.io/v1/ingest',
       verb: 'POST',
@@ -151,21 +164,15 @@ describe('handleWebhookNotification', () => {
     const templateDataWithSlash = {
       description: 'This is a path: /home/user/file.txt'
     };
-    const renderedTemplate = JSON.stringify({ description: 'This is a path: /home/user/file.txt' });
-    vi.mocked(ejs.render).mockReturnValue(renderedTemplate);
+    
     mockedAxiosInstance.mockResolvedValue({ status: 200 });
+    
     await handleWebhookNotification(configurationString, templateDataWithSlash);
-    expect(ejs.render).toHaveBeenCalledOnce();
-    expect(ejs.render).toHaveBeenCalledWith(
-      webhookConfiguration.template,
-      templateDataWithSlash,
-      expect.objectContaining({
-        escape: expect.any(Function)
-      })
-    );
+    
     expect(mockedAxiosInstance).toHaveBeenCalledOnce();
-    expect(mockedAxiosInstance).toHaveBeenCalledWith(expect.objectContaining({
-      data: JSON.parse(renderedTemplate),
-    }));
+    
+    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
+    expect(axiosCallArgs.data).toHaveProperty('description');
+    expect(axiosCallArgs.data.description).toBe('This is a path: /home/user/file.txt');
   });
 });

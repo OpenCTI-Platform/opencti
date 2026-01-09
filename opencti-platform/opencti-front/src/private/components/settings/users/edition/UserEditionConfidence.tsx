@@ -21,17 +21,17 @@ export interface OverrideFormData {
 export interface ConfidenceFormData {
   user_confidence_level_enabled: boolean;
   user_confidence_level: number | null | undefined;
-  overrides: OverrideFormData[]
+  overrides: OverrideFormData[];
 }
 
 interface UserEditionConfidenceProps {
   user: UserEdition_user$data;
   context:
-  | readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
-  } | null)[]
-  | null | undefined;
+    | readonly ({
+      readonly focusOn: string | null | undefined;
+      readonly name: string;
+    } | null)[]
+    | null | undefined;
 }
 
 const userConfidenceValidation = (t: (value: string) => string) => {

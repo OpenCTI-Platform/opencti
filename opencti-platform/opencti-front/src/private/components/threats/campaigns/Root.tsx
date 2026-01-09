@@ -28,6 +28,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CampaignEdition from './CampaignEdition';
 import CampaignDeletion from './CampaignDeletion';
+import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -64,6 +66,7 @@ const campaignQuery = graphql`
           coverage_score
         }
       }
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Campaign_campaign
       ...CampaignKnowledge_campaign
@@ -85,7 +88,7 @@ const campaignQuery = graphql`
 
 type RootCampaignProps = {
   campaignId: string;
-  queryRef: PreloadedQuery<RootCampaignQuery>
+  queryRef: PreloadedQuery<RootCampaignQuery>;
 };
 
 const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
@@ -106,13 +109,13 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
   const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaignId}`;
   const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {campaign ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -133,7 +136,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   data={campaign}
                   attribution={['Intrusion-Set', 'Threat-Actor-Individual', 'Threat-Actor-Group']}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -151,7 +154,14 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   <CampaignEdition campaignId={campaign.id} />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={campaign}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <CampaignDeletion id={campaign.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -212,7 +222,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={campaign.id}/>
+                  <AIInsights id={campaign.id} />
                   <StixCoreObjectSecurityCoverage id={campaign.id} coverage={campaign.securityCoverage} />
                 </div>
               )}
@@ -221,8 +231,8 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               <Route
                 path="/"
                 element={
-                  <Campaign campaignData={campaign}/>
-                  }
+                  <Campaign campaignData={campaign} />
+                }
               />
               <Route
                 path="/knowledge"
@@ -232,19 +242,19 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <CampaignKnowledge campaignData={campaign} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={campaign}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -254,14 +264,14 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={campaignId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={campaign}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
@@ -275,12 +285,12 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
 const Root = () => {
-  const { campaignId } = useParams() as { campaignId: string; };
+  const { campaignId } = useParams() as { campaignId: string };
   const queryRef = useQueryLoading<RootCampaignQuery>(campaignQuery, {
     id: campaignId,
   });

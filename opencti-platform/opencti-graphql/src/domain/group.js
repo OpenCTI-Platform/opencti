@@ -6,7 +6,7 @@ import {
   topEntitiesList,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
-  storeLoadById
+  storeLoadById,
 } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -53,7 +53,7 @@ export const findDefaultIngestionGroups = async (context, user) => {
         },
       ],
       filterGroups: [],
-    }
+    },
   });
 };
 
@@ -147,11 +147,12 @@ export const groupDelete = async (context, user, groupId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes group \`${group.name}\``,
-    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input: group }
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input: group },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].DELETE_TOPIC, group, user).then(() => groupId);
 };
 
+const groupAttributesUserCacheNoReset = ['name', 'description'];
 export const groupEditField = async (context, user, groupId, input) => {
   const { element } = await updateAttribute(context, user, groupId, ENTITY_TYPE_GROUP, input);
   await publishUserAction({
@@ -160,10 +161,10 @@ export const groupEditField = async (context, user, groupId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for group \`${element.name}\``,
-    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input },
   });
-  // on editing the group confidence level, all members might have changed their effective level
-  if (input.find((i) => ['group_confidence_level', 'max_shareable_markings', 'restrict_delete'].includes(i.key))) {
+  // On editing the group, refresh the cache (only when really needed)
+  if (input.find((i) => !groupAttributesUserCacheNoReset.includes(i.key))) {
     await groupUsersCacheRefresh(context, user, groupId);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
@@ -174,7 +175,7 @@ export const groupEditField = async (context, user, groupId, input) => {
 export const groupAddRelation = async (context, user, groupId, input) => {
   const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
   if (!group) {
-    throw FunctionalError('Cannot add the relation, Group cannot be found.');
+    throw FunctionalError('Cannot add the relation, Group cannot be found.', { groupId });
   }
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
@@ -194,7 +195,7 @@ export const groupAddRelation = async (context, user, groupId, input) => {
       event_scope: 'update',
       event_access: 'administration',
       message: `adds ${group.entity_type} \`${extractEntityRepresentativeName(group)}\` for user \`${created.user_email}\``,
-      context_data: { id: created.id, entity_type: ENTITY_TYPE_USER, input: finalInput }
+      context_data: { id: created.id, entity_type: ENTITY_TYPE_USER, input: finalInput },
     });
     return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, created, user).then(() => createdRelation);
   }
@@ -204,7 +205,7 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${created.entity_type} \`${extractEntityRepresentativeName(created)}\` for group \`${group.name}\``,
-    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input },
   });
   await groupUsersCacheRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user).then(() => createdRelation);
@@ -213,10 +214,10 @@ export const groupAddRelation = async (context, user, groupId, input) => {
 export const groupDeleteRelation = async (context, user, groupId, fromId, toId, relationshipType) => {
   const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
   if (!group) {
-    throw FunctionalError('Cannot delete the relation, Group cannot be found.');
+    throw FunctionalError('Cannot delete the relation, Group cannot be found.', { groupId });
   }
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${input.relationship_type}.`);
   }
   let target;
   if (fromId) {
@@ -234,7 +235,7 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
       event_scope: 'update',
       event_access: 'administration',
       message: `removes ${group.entity_type} \`${extractEntityRepresentativeName(group)}\` for user \`${target.user_email}\``,
-      context_data: { id: target.id, entity_type: ENTITY_TYPE_USER, input }
+      context_data: { id: target.id, entity_type: ENTITY_TYPE_USER, input },
     });
     await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, target, user);
   }
@@ -244,7 +245,7 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
     event_scope: 'update',
     event_access: 'administration',
     message: `removes ${target.entity_type} \`${extractEntityRepresentativeName(target)}\` for group \`${group.name}\``,
-    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input },
   });
   await groupUsersCacheRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);

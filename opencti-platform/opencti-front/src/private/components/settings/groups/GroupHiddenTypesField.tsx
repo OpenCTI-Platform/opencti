@@ -27,7 +27,7 @@ const groupHiddenTypesFieldFragment = graphql`
 const GroupHiddenTypesField = ({
   groupData,
 }: {
-  groupData: GroupHiddenTypesField_group$key
+  groupData: GroupHiddenTypesField_group$key;
 }) => {
   const group = useFragment<GroupHiddenTypesField_group$key>(groupHiddenTypesFieldFragment, groupData);
   const [commit] = useApiMutation(groupHiddenTypesFieldPatch);

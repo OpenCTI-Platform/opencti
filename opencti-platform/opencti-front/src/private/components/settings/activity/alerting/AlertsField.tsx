@@ -41,7 +41,7 @@ interface TriggersFieldProps {
       label?: string;
       value: string;
       entity?: { id: string; name: string };
-    }[]
+    }[],
   ) => void;
   setFieldValue: (
     field: string,
@@ -53,7 +53,7 @@ interface TriggersFieldProps {
         name: string;
       };
     }[],
-    shouldValidate?: boolean
+    shouldValidate?: boolean,
   ) => void;
   values: {
     label?: string;
@@ -80,14 +80,14 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
   const { t_i18n } = useFormatter();
   const [triggerCreation, setTriggerCreation] = useState(false);
   const [triggers, setTriggers] = useState<
-  {
-    label?: string;
-    value: string;
-    entity?: {
-      id: string;
-      name: string;
-    };
-  }[]
+    {
+      label?: string;
+      value: string;
+      entity?: {
+        id: string;
+        name: string;
+      };
+    }[]
   >([]);
   const handleOpenTriggerCreation = () => {
     setTriggerCreation(true);

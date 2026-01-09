@@ -106,7 +106,7 @@ interface ThreatActorIndividualDetailsProps {
 }
 
 const ThreatActorIndividualDetails: FunctionComponent<
-ThreatActorIndividualDetailsProps
+  ThreatActorIndividualDetailsProps
 > = ({ threatActorIndividualData }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
@@ -127,7 +127,7 @@ ThreatActorIndividualDetailsProps
       <Typography variant="h4">
         {t_i18n('Details')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item xs={hasImages ? 7 : 6}>
             <Grid container={true} spacing={3}>
@@ -166,11 +166,11 @@ ThreatActorIndividualDetailsProps
           <Grid item xs={hasImages ? 5 : 6}>
             <ThreatActorIndividualDetailsChips
               data={data}
-              relType='known-as'
+              relType="known-as"
             />
             <ThreatActorIndividualDetailsChips
               data={data}
-              relType='impersonates'
+              relType="impersonates"
             />
             <ThreatActorIndividualLocation threatActorIndividual={data} />
             <CardLabel style={{ marginTop: 20 }}>
@@ -245,13 +245,13 @@ ThreatActorIndividualDetailsProps
                         <DramaMasks />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <ItemOpenVocab
                             type="threat-actor-individual-role-ov"
                             value={role}
                             small
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}
@@ -297,13 +297,13 @@ ThreatActorIndividualDetailsProps
                         <ArmFlexOutline />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <ItemOpenVocab
                             type="attack-motivation-ov"
                             value={secondaryMotivation}
                             small
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}
@@ -328,13 +328,13 @@ ThreatActorIndividualDetailsProps
                         <ArmFlexOutline />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <ItemOpenVocab
                             type="attack-motivation-ov"
                             value={personalMotivation}
                             small
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}

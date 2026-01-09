@@ -19,13 +19,13 @@ interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefin
   isEmbeddedInExternalReferenceCreation?: boolean;
   label?: string;
   formikErrors?: {
-    file?: string,
-  }
+    file?: string;
+  };
   acceptMimeTypes?: string; // html input "accept" with MIME types only
   sizeLimit?: number; // in bytes
   disabled?: boolean;
-  noFileSelectedLabel?: string
-  noMargin?: boolean
+  noFileSelectedLabel?: string;
+  noMargin?: boolean;
   required?: boolean;
   onChange?: (key: string, value: File | undefined) => void;
 }

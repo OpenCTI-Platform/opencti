@@ -65,14 +65,14 @@ const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilter
     <>
       {queryRef
         ? (
-          <Suspense fallback={<SavedFiltersAutocomplete isDisabled/>}>
-            <SavedFiltersComponent
-              queryRef={queryRef}
-              currentSavedFilter={currentSavedFilter}
-              setCurrentSavedFilter={setCurrentSavedFilter}
-            />
-          </Suspense>
-        )
+            <Suspense fallback={<SavedFiltersAutocomplete isDisabled />}>
+              <SavedFiltersComponent
+                queryRef={queryRef}
+                currentSavedFilter={currentSavedFilter}
+                setCurrentSavedFilter={setCurrentSavedFilter}
+              />
+            </Suspense>
+          )
         : <SavedFiltersAutocomplete isDisabled />
       }
     </>

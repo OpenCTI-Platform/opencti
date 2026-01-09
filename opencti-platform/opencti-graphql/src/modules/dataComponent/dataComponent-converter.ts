@@ -19,8 +19,8 @@ const convertDataComponentToStix = (instance: StoreEntityDataComponent): StixDat
       }),
       [STIX_EXT_MITRE]: {
         extension_type: 'new-sdo',
-      }
-    }
+      },
+    },
   };
 };
 

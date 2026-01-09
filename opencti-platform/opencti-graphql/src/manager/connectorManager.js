@@ -30,7 +30,7 @@ const closeOldWorks = async (context, connector) => {
       filters: [
         { key: 'connector_id', values: [connector.internal_id] },
         { key: 'status', values: ['wait', 'progress'] },
-        { key: 'timestamp', values: [timestamp], operator: 'lt' }
+        { key: 'timestamp', values: [timestamp], operator: 'lt' },
       ],
       filterGroups: [],
     };
@@ -52,8 +52,8 @@ const closeOldWorks = async (context, connector) => {
                 script: {
                   source: sourceScript,
                   lang: 'painless',
-                  params
-                }
+                  params,
+                },
               });
             }
           }
@@ -83,7 +83,7 @@ export const deleteCompletedWorks = async (context, connector) => {
     filters: [
       { key: 'connector_id', values: [connector.internal_id] },
       { key: 'status', values: ['complete'] },
-      { key: 'completed_time', values: [`now-${CONNECTOR_WORK_RANGE}d/d`], operator: 'lte' }
+      { key: 'completed_time', values: [`now-${CONNECTOR_WORK_RANGE}d/d`], operator: 'lte' },
     ],
     filterGroups: [],
   };

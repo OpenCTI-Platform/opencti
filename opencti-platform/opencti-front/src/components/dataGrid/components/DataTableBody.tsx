@@ -125,7 +125,9 @@ const DataTableBody = ({
       defaultComputation();
     }
 
-    return () => { observer?.disconnect(); };
+    return () => {
+      observer?.disconnect();
+    };
   }, [settingsMessagesBannerHeight, rootRef, filters]);
 
   const rowWidth = useMemo(() => (

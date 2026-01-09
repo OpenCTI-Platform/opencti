@@ -11,6 +11,8 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import Country from './Country';
 import CountryKnowledge from './CountryKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -58,6 +60,7 @@ const countryQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Country_country
       ...CountryKnowledge_country
@@ -78,7 +81,7 @@ const countryQuery = graphql`
 
 const RootCountryComponent = ({ queryRef, countryId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootCountriesSubscription>
+    GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
     () => ({
       subscription,
@@ -96,13 +99,13 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
   const isOverview = location.pathname === `/dashboard/locations/countries/${countryId}`;
   const paddingRight = getPaddingRight(location.pathname, country?.id, '/dashboard/locations/countries');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {country ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -122,7 +125,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                   ]}
                   data={country}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -141,7 +144,14 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                   <CountryEdition countryId={country.id} />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={country}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <CountryDeletion id={country.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -207,73 +217,73 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                 />
               </Tabs>
               {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={country.id}/>
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <AIInsights id={country.id} />
+                </div>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
-                element={<Country countryData={country}/>}
+                element={<Country countryData={country} />}
               />
               <Route
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} replace={true} />
-              }
-              />
-              <Route
-                path="/knowledge/*"
-                element={
-                  <div key={forceUpdate}>
-                    <CountryKnowledge countryData={country} />
-                  </div>
                 }
               />
               <Route
+                path="/knowledge/*"
+                element={(
+                  <div key={forceUpdate}>
+                    <CountryKnowledge countryData={country} />
+                  </div>
+                )}
+              />
+              <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={country}
                   />
-              }
+                )}
               />
               <Route
                 path="/analyses"
-                element={
+                element={(
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={country}
                   />
-              }
+                )}
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={country.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={countryId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={country}
                   />
-              }
+                )}
               />
               <Route
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={countryId} />
-              }
+                }
               />
             </Routes>
           </div>
@@ -281,7 +291,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 

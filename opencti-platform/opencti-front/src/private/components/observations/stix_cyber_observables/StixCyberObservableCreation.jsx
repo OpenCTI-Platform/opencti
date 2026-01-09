@@ -297,6 +297,9 @@ const StixCyberObservableCreation = ({
 
   const [bulkSelectedKey, setBulkSelectedKey] = useState(null);
   const bulkConf = useMemo(() => BULK_OBSERVABLES.find(({ type: obsType }) => obsType === status.type), [status]);
+  // Store the latest created observable for callback
+  const lastCreatedObservableRef = React.useRef(null);
+
   useEffect(() => {
     setBulkSelectedKey(bulkConf?.keys.length === 1 ? bulkConf.keys[0] : null);
   }, [bulkConf]);
@@ -306,6 +309,7 @@ const StixCyberObservableCreation = ({
     undefined,
     { successMessage: `${t_i18n('entity_Observable')} ${t_i18n('successfully created')}` },
   );
+
   const {
     bulkCommit,
     bulkCount,
@@ -315,13 +319,17 @@ const StixCyberObservableCreation = ({
   } = useBulkCommit({
     type: 'observables',
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       insertNode(
         store,
         paginationKey,
         paginationOptions,
         'stixCyberObservableAdd',
       );
+      // Store the created observable for callback
+      if (response?.stixCyberObservableAdd) {
+        lastCreatedObservableRef.current = response.stixCyberObservableAdd;
+      }
     },
   });
 
@@ -441,7 +449,11 @@ const StixCyberObservableCreation = ({
           resetForm();
           localHandleClose();
         }
-        if (onCompleted) onCompleted();
+        // Pass the created observable to the callback
+        if (onCompleted) {
+          onCompleted(lastCreatedObservableRef.current);
+          lastCreatedObservableRef.current = null;
+        }
       },
     });
   };
@@ -466,7 +478,7 @@ const StixCyberObservableCreation = ({
             const translatedOrderedList = subTypesEdges
               .map((edge) => edge.node)
               .filter((node) => !stixCyberObservableTypes
-                    || stixCyberObservableTypes.includes(node.id))
+                || stixCyberObservableTypes.includes(node.id))
               .map((node) => ({
                 ...node,
                 tlabel: t_i18n(`entity_${node.label}`),
@@ -786,7 +798,7 @@ const StixCyberObservableCreation = ({
                                 key={attribute.value}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
-                                bulkType='observables'
+                                bulkType="observables"
                               />
                             );
                           }
@@ -800,7 +812,7 @@ const StixCyberObservableCreation = ({
                                   label={t_i18n('hash_md5')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
-                                  bulkType='observables'
+                                  bulkType="observables"
                                 />
                                 <Field
                                   component={isFieldInBulk('hashes_SHA-1') ? BulkTextField : TextField}
@@ -809,7 +821,7 @@ const StixCyberObservableCreation = ({
                                   label={t_i18n('hash_sha-1')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
-                                  bulkType='observables'
+                                  bulkType="observables"
                                 />
                                 <Field
                                   component={isFieldInBulk('hashes_SHA-256') ? BulkTextField : TextField}
@@ -818,7 +830,7 @@ const StixCyberObservableCreation = ({
                                   label={t_i18n('hash_sha-256')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
-                                  bulkType='observables'
+                                  bulkType="observables"
                                 />
                                 <Field
                                   component={isFieldInBulk('hashes_SHA-512') ? BulkTextField : TextField}
@@ -827,7 +839,7 @@ const StixCyberObservableCreation = ({
                                   label={t_i18n('hash_sha-512')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
-                                  bulkType='observables'
+                                  bulkType="observables"
                                 />
                               </div>
                             );
@@ -1021,11 +1033,13 @@ const StixCyberObservableCreation = ({
             </IconButton>
             <Typography variant="subtitle2">{t_i18n('Create an observable')}</Typography>
             {!isFromBulkRelation && status.type
-              ? <BulkTextModalButton
-                  onClick={() => setBulkOpen(true)}
-                  title={t_i18n('Create multiple observables')}
-                  disabled={!bulkConf}
-                />
+              ? (
+                  <BulkTextModalButton
+                    onClick={() => setBulkOpen(true)}
+                    title={t_i18n('Create multiple observables')}
+                    disabled={!bulkConf}
+                  />
+                )
               : <></>
             }
           </div>
@@ -1074,12 +1088,14 @@ const StixCyberObservableCreation = ({
           <DialogTitle style={{ display: 'flex' }}>
             {t_i18n('Create an observable')}
             {!isFromBulkRelation && status.type
-              ? <BulkTextModalButton
-                  sx={{ marginRight: 0 }}
-                  onClick={() => setBulkOpen(true)}
-                  title={t_i18n('Create multiple observables')}
-                  disabled={!bulkConf}
-                />
+              ? (
+                  <BulkTextModalButton
+                    sx={{ marginRight: 0 }}
+                    onClick={() => setBulkOpen(true)}
+                    title={t_i18n('Create multiple observables')}
+                    disabled={!bulkConf}
+                  />
+                )
               : <></>
             }
           </DialogTitle>

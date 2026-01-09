@@ -394,13 +394,13 @@ class StixNestedRefRelationshipCreation extends Component {
       stop_time: defaultEndTime,
       objectMarking: defaultMarkingDefinitions
         ? R.map(
-          (n) => ({
-            label: n.definition,
-            value: n.id,
-            color: n.x_opencti_color,
-          }),
-          defaultMarkingDefinitions,
-        )
+            (n) => ({
+              label: n.definition,
+              value: n.id,
+              color: n.x_opencti_color,
+            }),
+            defaultMarkingDefinitions,
+          )
         : [],
     };
     return (
@@ -472,14 +472,16 @@ class StixNestedRefRelationshipCreation extends Component {
                 <div className={classes.middle} style={{ paddingTop: 25 }}>
                   <ArrowRightAlt fontSize="large" />
                   <br />
-                  {canReverseRelation && <Button
-                    variant="outlined"
-                    onClick={this.handleReverseRelation.bind(this)}
-                    color="secondary"
-                    size="small"
-                                         >
+                  {canReverseRelation && (
+                    <Button
+                      variant="outlined"
+                      onClick={this.handleReverseRelation.bind(this)}
+                      color="secondary"
+                      size="small"
+                    >
                       {t('Reverse')}
-                    </Button>}
+                    </Button>
+                  )}
                 </div>
                 <div
                   className={classes.item}
@@ -846,33 +848,35 @@ class StixNestedRefRelationshipCreation extends Component {
         onClose={this.handleClose.bind(this)}
       >
         {step === 0
-        || step === undefined
-        || fromObject === null
-        || toObjects === null
+          || step === undefined
+          || fromObject === null
+          || toObjects === null
           ? this.renderLoader()
           : ''}
         {step === 1 ? this.renderSelectRelation() : ''}
-        {step === 2 ? <QueryRenderer
-          query={stixNestedRefRelationshipCreationResolveQuery}
-          variables={{
-            id: this.props.fromObjects[0].id,
-            toType: this.props.toObjects[0].entity_type,
-          }}
-          render={({ props }) => {
-            if (props && props.stixSchemaRefRelationships) {
-              if (props.stixSchemaRefRelationships.from.length === 0 && props.stixSchemaRefRelationships.to.length > 0) {
-                this.handleReverseRelation();
-                return this.renderLoader();
+        {step === 2 ? (
+          <QueryRenderer
+            query={stixNestedRefRelationshipCreationResolveQuery}
+            variables={{
+              id: this.props.fromObjects[0].id,
+              toType: this.props.toObjects[0].entity_type,
+            }}
+            render={({ props }) => {
+              if (props && props.stixSchemaRefRelationships) {
+                if (props.stixSchemaRefRelationships.from.length === 0 && props.stixSchemaRefRelationships.to.length > 0) {
+                  this.handleReverseRelation();
+                  return this.renderLoader();
+                }
+                return (
+                  <div>
+                    {this.renderForm(props.stixSchemaRefRelationships, props.stixSchemaRefRelationships.to.length > 0)}
+                  </div>
+                );
               }
-              return (
-                <div>
-                  {this.renderForm(props.stixSchemaRefRelationships, props.stixSchemaRefRelationships.to.length > 0)}
-                </div>
-              );
-            }
-            return this.renderLoader();
-          }}
-                      />
+              return this.renderLoader();
+            }}
+          />
+        )
           : ''}
       </Drawer>
     );

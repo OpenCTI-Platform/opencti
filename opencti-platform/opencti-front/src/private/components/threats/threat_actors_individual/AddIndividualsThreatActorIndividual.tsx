@@ -16,14 +16,14 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface AddIndividualsThreatActorIndividualComponentProps {
-  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
-  queryRef: PreloadedQuery<AddIndividualsThreatActorIndividualLinesQuery>,
-  onSearch: (search: string) => void,
-  paginationOptions: AddIndividualsThreatActorIndividualLinesQuery$variables,
+  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data;
+  queryRef: PreloadedQuery<AddIndividualsThreatActorIndividualLinesQuery>;
+  onSearch: (search: string) => void;
+  paginationOptions: AddIndividualsThreatActorIndividualLinesQuery$variables;
 }
 
 const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
-AddIndividualsThreatActorIndividualComponentProps
+  AddIndividualsThreatActorIndividualComponentProps
 > = ({
   threatActorIndividual,
   queryRef,
@@ -41,49 +41,51 @@ AddIndividualsThreatActorIndividualComponentProps
     queryRef,
   );
 
-  return (<div>
-    <IconButton
-      color='primary'
-      onClick={handleOpen}
-    >
-      <Add fontSize="small" />
-    </IconButton>
-    <Drawer
-      open={open}
-      onClose={handleClose}
-      title={t_i18n('Add individual')}
-      header={
-        <div
-          style={{
-            marginLeft: 'auto',
-            marginRight: '20px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'flex-end',
-            alignItems: 'flex-end',
-          }}
-        >
-          <SearchInput
-            variant='inDrawer'
-            onSubmit={onSearch}
-          />
-          <div style={{ height: 5 }} />
-          <IndividualCreation
-            paginationOptions={paginationOptions}
-          />
-        </div>
-      }
-    >
-      <AddIndividualsThreatActorIndividualLines
-        threatActorIndividual={threatActorIndividual}
-        fragmentKey={data}
-      />
-    </Drawer>
-  </div>);
+  return (
+    <div>
+      <IconButton
+        color="primary"
+        onClick={handleOpen}
+      >
+        <Add fontSize="small" />
+      </IconButton>
+      <Drawer
+        open={open}
+        onClose={handleClose}
+        title={t_i18n('Add individual')}
+        header={(
+          <div
+            style={{
+              marginLeft: 'auto',
+              marginRight: '20px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-end',
+            }}
+          >
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={onSearch}
+            />
+            <div style={{ height: 5 }} />
+            <IndividualCreation
+              paginationOptions={paginationOptions}
+            />
+          </div>
+        )}
+      >
+        <AddIndividualsThreatActorIndividualLines
+          threatActorIndividual={threatActorIndividual}
+          fragmentKey={data}
+        />
+      </Drawer>
+    </div>
+  );
 };
 
 interface AddIndividualsThreatActorIndividualProps {
-  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data;
 }
 
 const AddIndividualsThreatActorIndividual: FunctionComponent<AddIndividualsThreatActorIndividualProps> = (props) => {

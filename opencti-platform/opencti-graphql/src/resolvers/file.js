@@ -3,7 +3,7 @@ import { deleteImport, filesMetrics, uploadAndAskJobImport, uploadImport, upload
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { buildDraftVersion } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { getDraftContextFilesPrefix } from '../database/draft-utils';
-import { askJobImport } from '../domain/connector';
+import { askJobImport, createDraftAndAskJobImport } from '../domain/connector';
 
 const fileResolvers = {
   Query: {
@@ -33,6 +33,7 @@ const fileResolvers = {
     deleteImport: (_, { fileName }, context) => deleteImport(context, context.user, fileName),
     askJobImport: (_, args, context) => askJobImport(context, context.user, args),
     uploadAndAskJobImport: (_, args, context) => uploadAndAskJobImport(context, context.user, args),
+    createDraftAndAskJobImport: (_, args, context) => createDraftAndAskJobImport(context, context.user, args),
   },
 };
 

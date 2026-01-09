@@ -17,14 +17,14 @@
 export const promiseMap = async <T, R>(
   items: T[],
   mapper: (item: T, index: number) => Promise<R>,
-  concurrency: number
+  concurrency: number,
 ): Promise<R[]> => {
   const results: R[] = [];
 
   for (let i = 0; i < items.length; i += concurrency) {
     const chunk = items.slice(i, i + concurrency);
     const chunkResults = await Promise.all(
-      chunk.map((item, chunkIndex) => mapper(item, i + chunkIndex))
+      chunk.map((item, chunkIndex) => mapper(item, i + chunkIndex)),
     );
     results.push(...chunkResults);
   }

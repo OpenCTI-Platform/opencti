@@ -16,7 +16,9 @@ const useResizeObserver = (ref: MutableRefObject<HTMLDivElement | null>) => {
     if (ref.current) {
       observer = callbackResizeObserver(ref.current, setSize);
     }
-    return () => { observer?.disconnect(); };
+    return () => {
+      observer?.disconnect();
+    };
   }, [ref]);
 
   return { width, height };

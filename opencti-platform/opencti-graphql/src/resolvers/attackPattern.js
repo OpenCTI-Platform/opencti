@@ -6,16 +6,17 @@ import {
   findAttackPatternPaginated,
   findById,
   getAttackPatternsMatrix,
-  parentAttackPatternsPaginated
+  parentAttackPatternsPaginated,
 } from '../domain/attackPattern';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_KILLCHAIN } from '../schema/general';
 
@@ -35,7 +36,7 @@ const attackPatternResolvers = {
   },
   Mutation: {
     attackPatternEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_ATTACK_PATTERN),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
