@@ -29,7 +29,8 @@ import {
   testSync,
   updateConnectorCurrentStatus,
   updateConnectorManagerStatus,
-  updateConnectorRequestedStatus, syncAddInputFromImport,
+  updateConnectorRequestedStatus,
+  syncAddInputFromImport,
 } from '../domain/connector';
 import {
   addDraftContext,

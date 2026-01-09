@@ -35,3 +35,22 @@ Additional configuration options:
 - Use perfect synchronization: This option is specifically for synchronizing two platforms. If an imported entity already exists on the platform, the one from the stream will overwrite it.
 
 ![Live stream additional configuration](../assets/live-stream-additional-configuration.png)
+
+## Export a OpenCTI Stream
+
+You can export your existing OpenCTI Stream from the platform, making it easy to share your configuration with others.
+
+To export your OpenCTI Stream, click on "Export", in the burger menu.
+![OpenCTI Stream export](../assets/opencti-stream-export.png)
+
+## Import an OpenCTI Stream
+
+If you have a JSON OpenCTI Stream file you can import it by clicking on the icon next to "Import from hub"
+![OpenCTI Stream import button](../assets/opencti-stream-import-icon.png)
+
+When you click, you can select the desired file. After that, a drawer will open with the form pre-filled with the relevant information.
+Add your desired platform's token. 
+By default, a user is already provided.
+
+You can select OpenCTI Stream from the XTM Hub by clicking the ```Import from Hub``` button
+

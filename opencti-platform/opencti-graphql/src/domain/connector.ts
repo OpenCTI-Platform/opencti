@@ -65,8 +65,9 @@ import type { Work } from '../types/work';
 import { AxiosError } from 'axios';
 import { URL } from 'node:url';
 import { isCompatibleVersionWithMinimal } from '../utils/version';
-import {extractContentFrom} from "../utils/fileToContent";
-import type {FileHandle} from "fs/promises";
+import { extractContentFrom } from '../utils/fileToContent';
+import type { FileHandle } from 'fs/promises';
+
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
 const sanitizeContainerName = (label: string): string => {
@@ -644,7 +645,7 @@ export const registerSync = async (
   return element;
 };
 
-export const syncAddInputFromImport= async (file: Promise<FileHandle>) => {
+export const syncAddInputFromImport = async (file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
 
   // check platform version compatibility
