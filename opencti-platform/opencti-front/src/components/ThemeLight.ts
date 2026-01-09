@@ -6,12 +6,12 @@ import LogoCollapsed from '../static/images/logo_light.png';
 import { hexToRGB } from '../utils/Colors';
 import { lighten } from '@mui/material';
 
-const EE_COLOR = '#0c7e69';
+const EE_COLOR = '#00BD94';
 
 export const THEME_LIGHT_DEFAULT_BACKGROUND = '#ececf2';
 export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
-const THEME_LIGHT_DEFAULT_PRIMARY = '#001bda';
-const THEME_LIGHT_DEFAULT_SECONDARY = '#0c7e69';
+const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8';
+const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94';
 const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
 const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
 const THEME_LIGHT_DEFAULT_NAV = '#ffffff';
@@ -51,7 +51,7 @@ const ThemeLight = (
     success: { main: '#03a847' },
     primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
-    gradient: { main: '#00f1bd' },
+    gradient: { main: '#00BD94' },
     border: {
       lightBackground: hexToRGB('#000000', 0.15),
       primary: hexToRGB((primary || THEME_LIGHT_DEFAULT_PRIMARY), 0.3),

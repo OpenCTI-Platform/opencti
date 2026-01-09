@@ -76,7 +76,7 @@ const defaultTheme: AppThemeType = {
   theme_nav: '#070d19',
   theme_paper: '#09101e',
   theme_primary: '#0fbcff',
-  theme_secondary: '#00f1bd',
+  theme_secondary: '#00f18d',
   theme_text_color: '#ffffff',
 };
 

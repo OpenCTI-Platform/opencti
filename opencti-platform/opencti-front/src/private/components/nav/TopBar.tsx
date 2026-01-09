@@ -4,7 +4,7 @@ import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
-import { alpha, Badge, lighten, Stack } from '@mui/material';
+import { alpha, Badge, Stack } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -38,7 +38,6 @@ import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_BODY_END_GRADIENT } from 'src/components/ThemeLight';
 import { THEME_DARK_DEFAULT_BACKGROUND, THEME_DARK_DEFAULT_BODY_END_GRADIENT } from 'src/components/ThemeDark';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -201,17 +200,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const draftModeColor = getDraftModeColor(theme);
 
   const getAppTopBarGradient = (): string => {
-    const defaultBackground = theme.palette.background.default;
     const defaultGradientDark = `${alpha(THEME_DARK_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(THEME_DARK_DEFAULT_BODY_END_GRADIENT, 0.9)}`;
-    const defaultGradientLight = `${alpha(THEME_LIGHT_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(THEME_LIGHT_DEFAULT_BODY_END_GRADIENT, 0.9)}`;
-
-    if (defaultBackground === THEME_DARK_DEFAULT_BACKGROUND) {
-      return defaultGradientDark;
-    } else if (defaultBackground === THEME_LIGHT_DEFAULT_BACKGROUND) {
-      return defaultGradientLight;
-    } else if (defaultBackground) {
-      const endGradientColor = lighten(defaultBackground, 0.04);
-      return `${alpha(defaultBackground, 0.9)} 0%, ${alpha(endGradientColor, 0.9)}`;
+    if (theme.palette.background.gradient?.start && theme.palette.background.gradient?.start) {
+      return `${alpha(theme.palette.background.gradient?.start, 0.9)} 0%, ${alpha(theme.palette.background.gradient?.end, 0.9)}`;
     }
     return defaultGradientDark;
   };
