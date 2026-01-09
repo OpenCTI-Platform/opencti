@@ -150,32 +150,6 @@ opencti/
 
 **Pre-commit checks**: Lint (`yarn lint`, `black . && isort . && flake8 .`), types (`yarn check-ts`), tests (`yarn test:ci-unit`, `pytest`). **CodeQL** auto-runs on PRs.
 
-**Review Focus**:
-
-**Security Critical**: Check for hardcoded secrets/credentials, SQL injection/XSS vulnerabilities, input validation/sanitization, auth logic.
-
-**Performance**: Identify N+1 queries, inefficient loops, memory leaks, missing resource cleanup, caching opportunities.
-
-**Code Quality**: Functions should be focused and appropriately sized, use clear naming, ensure proper error handling.
-
-**Review Style**: Be specific and actionable, explain the "why", acknowledge good patterns, ask clarifying questions.
-
-Always prioritize security vulnerabilities and performance issues. Suggest changes for readability:
-```js
-// Instead of:
-if (user.email && user.email.includes('@') && user.email.length > 5) {
-  submitButton.enabled = true;
-} else {
-  submitButton.enabled = false;
-}
-
-// Consider:
-function isValidEmail(email) {
-  return email && email.includes('@') && email.length > 5;
-}
-submitButton.enabled = isValidEmail(user.email);
-```
-
 ## Commit Message Format
 
 **Required**: `[component] Message (#issuenumber)`
