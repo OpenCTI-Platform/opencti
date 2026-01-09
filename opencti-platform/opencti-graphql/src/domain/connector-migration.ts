@@ -1,8 +1,7 @@
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { patchAttribute } from '../database/middleware';
-import { fullEntitiesList, storeLoadById } from '../database/middleware-loader';
-import { unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { notify } from '../database/redis';
 import { completeConnector, connector } from '../database/repository';
 import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
@@ -10,7 +9,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, findContractByContainerImage } from '../modules/catalog/catalog-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/internalObject';
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isServiceAccountUser } from '../utils/access';
@@ -308,7 +307,7 @@ export const migrateConnectorToManaged = async (
     (config) => !RUNTIME_PROVIDED_FIELDS.includes(config.key),
   );
 
-  const existingUser = await resolveUserByIdFromCache(existingConnector.connector_user_id) as AuthUser;
+  const existingUser = await resolveUserByIdFromCache(context, existingConnector.connector_user_id) as AuthUser;
 
   // If existing user is not a service account, transform it to service account
   if (
@@ -335,12 +334,6 @@ export const migrateConnectorToManaged = async (
   if (resetConnectorState && existingConnector.connector_state) {
     managedConnectorData.connector_state = null;
   }
-
-  // delete queues like in connector.deleteQueues but for that specific connector id
-  await unregisterConnector(existingConnector.id);
-  try {
-    await unregisterExchanges();
-  } catch { /* nothing */ }
 
   const { element } = await patchAttribute(
     context,
