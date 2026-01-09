@@ -4,15 +4,25 @@ import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text_dark.png';
 import LogoCollapsed from '../static/images/logo_dark.png';
 import { hexToRGB } from '../utils/Colors';
+import { lighten } from '@mui/material';
 
-const EE_COLOR = '#00f1bd';
+const EE_COLOR = '#00f18d';
 
 export const THEME_DARK_DEFAULT_BACKGROUND = '#070d19';
-const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
-const THEME_DARK_DEFAULT_SECONDARY = '#00f1bd';
-const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
-const THEME_DARK_DEFAULT_PAPER = '#09101e';
+export const THEME_DARK_DEFAULT_BODY_END_GRADIENT = '#0C1524';
+export const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
+export const THEME_DARK_DEFAULT_SECONDARY = '#00f18d';
+export const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
+export const THEME_DARK_DEFAULT_PAPER = '#09101e';
+export const THEME_DARK_DEFAULT_TEXT = '#F2F2F3';
 const THEME_DARK_DEFAULT_NAV = '#070d19';
+
+const getAppBodyGradientEndColor = (background: string | null): string => {
+  if (background && background !== THEME_DARK_DEFAULT_BACKGROUND) {
+    return lighten(background, 0.05);
+  }
+  return THEME_DARK_DEFAULT_BODY_END_GRADIENT;
+};
 
 const ThemeDark = (
   logo: string | null = null,
@@ -23,7 +33,7 @@ const ThemeDark = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
-  text_color = 'rgba(255, 255, 255, 0.7)',
+  text_color = THEME_DARK_DEFAULT_TEXT,
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
@@ -42,7 +52,7 @@ const ThemeDark = (
     success: { main: '#03a847' },
     primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
-    gradient: { main: '#00f1bd' },
+    gradient: { main: '#00f18d' },
     border: {
       primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
       secondary: hexToRGB((secondary || THEME_DARK_DEFAULT_SECONDARY), 0.3),
@@ -66,7 +76,7 @@ const ThemeDark = (
     },
     ee: {
       main: EE_COLOR,
-      contrastText: '#ffffff',
+      contrastText: THEME_DARK_DEFAULT_TEXT,
       background: hexToRGB(EE_COLOR, 0.2),
       lightBackground: hexToRGB(EE_COLOR, 0.08),
     },
@@ -78,8 +88,8 @@ const ThemeDark = (
       shadow: 'rgba(200, 200, 200, 0.15)',
       secondary: '#0D182A',
       gradient: {
-        start: '#070d19',
-        end: '#0C1524',
+        start: background || THEME_DARK_DEFAULT_BACKGROUND,
+        end: getAppBodyGradientEndColor(background),
       },
     },
     text: {
@@ -309,6 +319,7 @@ const ThemeDark = (
           scrollbarWidth: 'thin',
         },
         body: {
+          background: `linear-gradient(100deg, ${background || THEME_DARK_DEFAULT_BACKGROUND} 0%, ${getAppBodyGradientEndColor(background)} 100%)`,
           scrollbarColor: `${background || THEME_DARK_DEFAULT_BACKGROUND} ${accent || THEME_DARK_DEFAULT_ACCENT}`,
           scrollbarWidth: 'thin',
           html: {

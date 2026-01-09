@@ -2,7 +2,14 @@ import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ThemeOptions } from '@mui/material/styles/createTheme';
-import themeDark from './ThemeDark';
+import themeDark, {
+  THEME_DARK_DEFAULT_ACCENT,
+  THEME_DARK_DEFAULT_BACKGROUND,
+  THEME_DARK_DEFAULT_PAPER,
+  THEME_DARK_DEFAULT_PRIMARY,
+  THEME_DARK_DEFAULT_SECONDARY,
+  THEME_DARK_DEFAULT_TEXT,
+} from './ThemeDark';
 import themeLight from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
@@ -68,16 +75,16 @@ const themeBuilder = (
 
 const defaultTheme: AppThemeType = {
   name: 'Dark',
-  theme_accent: '#0f1e38',
-  theme_background: '#070d19',
+  theme_accent: THEME_DARK_DEFAULT_ACCENT,
+  theme_background: THEME_DARK_DEFAULT_BACKGROUND,
   theme_logo: '',
   theme_logo_collapsed: '',
   theme_logo_login: '',
-  theme_nav: '#070d19',
-  theme_paper: '#09101e',
-  theme_primary: '#0fbcff',
-  theme_secondary: '#00f1bd',
-  theme_text_color: '#ffffff',
+  theme_nav: THEME_DARK_DEFAULT_BACKGROUND,
+  theme_paper: THEME_DARK_DEFAULT_PAPER,
+  theme_primary: THEME_DARK_DEFAULT_PRIMARY,
+  theme_secondary: THEME_DARK_DEFAULT_SECONDARY,
+  theme_text_color: THEME_DARK_DEFAULT_TEXT,
 };
 
 const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
