@@ -238,9 +238,6 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
     endpoint: AI_ENDPOINT,
     model: AI_MODEL,
   });
-  if (!AI_ENABLED) {
-    throw UnsupportedError('AI is disabled in platform settings');
-  }
   initClients();
   if (!nlqChat) {
     throw badAiConfigError;
