@@ -526,7 +526,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ from }) => {
       if (!from) return '-';
       const { objectLabel } = from;
-      console.log('objectLabel', objectLabel);
       return (
         <StixCoreObjectLabels
           variant="inList"

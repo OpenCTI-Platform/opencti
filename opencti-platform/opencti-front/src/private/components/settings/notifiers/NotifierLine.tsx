@@ -80,7 +80,6 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
   const classes = useStyles();
   const data = useFragment(NotifierLineFragment, !isNotifierData(node) ? node : null) ?? node as NotifierLine_node$data;
 
-  console.log('dataColumns.description.width ', dataColumns.description.width);
   return (
     <>
       <ListItem classes={{ root: classes.item }} divider>

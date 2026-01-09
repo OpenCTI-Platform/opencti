@@ -101,6 +101,9 @@ const ThemeLight = (
       default: '#DDE1FE',
     },
   },
+  tag: {
+    overflow: primary || THEME_LIGHT_DEFAULT_PRIMARY,
+  },
   typography: {
     fontFamily: '"IBM Plex Sans", sans-serif',
     body2: {
