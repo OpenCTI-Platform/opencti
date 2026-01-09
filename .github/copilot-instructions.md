@@ -34,31 +34,30 @@ yarn install
 ```bash
 cd opencti-platform/opencti-graphql
 cp ../.yarnrc.yml .yarnrc.yml
-yarn install                    # Install Node dependencies (~5 min first time)
-yarn install:python             # Install Python deps: pip3 install -r src/python/requirements.txt
-yarn build:prod                 # Production build with type checking (~3 min)
-# OR for development:
-yarn build:dev                  # Dev build with schema generation (~2 min)
+yarn install                    # ~5 min first time
+yarn install:python             # Python deps: pip3 install -r src/python/requirements.txt
+yarn build:prod                 # Production build (~3 min)
+# OR: yarn build:dev            # Dev build with schema (~2 min)
 ```
 
 **Linting & Type Checking**:
 ```bash
-yarn check-ts                   # TypeScript type checking (~30s)
-yarn lint                       # ESLint with timing (~45s)
+yarn check-ts                   # TypeScript (~30s)
+yarn lint                       # ESLint (~45s)
 ```
 
-**Testing** (requires Docker dependencies):
+**Testing** (requires Docker):
 ```bash
-yarn test:ci-unit              # Unit tests only, no Docker needed (~2 min)
-yarn test:ci-integration-sync  # Integration tests (~10-15 min, needs Docker backend)
-yarn test:ci-rules-and-others  # Rules and TAXII tests (~8 min, needs Docker)
+yarn test:ci-unit              # Unit tests (~2 min)
+yarn test:ci-integration-sync  # Integration tests (~10-15 min)
+yarn test:ci-rules-and-others  # Rules/TAXII tests (~8 min)
 ```
 
 **Common Issues**:
-- **Missing Python deps**: Always run `yarn install:python` after `yarn install`
-- **Build timeout**: Use `NODE_OPTIONS=--max_old_space_size=8192` for large builds
-- **Schema errors**: Run `yarn build:schema` to regenerate GraphQL schema
-- **"Cannot find module opencti-manifest.json"**: Run `yarn get-connectors-manifest` to generate the manifest file (automatically run by `yarn build:prod` and `yarn build:dev`)
+- **Missing Python deps**: Run `yarn install:python` after `yarn install`
+- **Build timeout**: Use `NODE_OPTIONS=--max_old_space_size=8192`
+- **Schema errors**: Run `yarn build:schema`
+- **"Cannot find module opencti-manifest.json"**: Run `yarn get-connectors-manifest`
 
 ### Frontend (opencti-front)
 
@@ -66,14 +65,14 @@ yarn test:ci-rules-and-others  # Rules and TAXII tests (~8 min, needs Docker)
 ```bash
 cd opencti-platform/opencti-front
 cp ../.yarnrc.yml .yarnrc.yml
-yarn install                    # Install dependencies (~4 min)
+yarn install                    # ~4 min
 yarn relay                      # Generate Relay artifacts (~1 min)
 yarn build                      # Production build (~5 min)
 ```
 
 **Linting & Type Checking**:
 ```bash
-yarn check-ts                   # TypeScript checking (~40s)
+yarn check-ts                   # TypeScript (~40s)
 yarn lint                       # ESLint (~30s)
 ```
 
@@ -81,12 +80,8 @@ yarn lint                       # ESLint (~30s)
 ```bash
 yarn test                       # Unit tests with Vitest (~2 min)
 yarn test:coverage              # With coverage (~3 min)
-yarn test:e2e                   # End-to-end Playwright tests (~10 min, needs full stack)
-```
-
-**Translation Validation** (runs in CI):
-```bash
-node script/verify-translation.js  # Validates i18n files
+yarn test:e2e                   # E2E Playwright tests (~10 min, needs full stack)
+node script/verify-translation.js  # Translation validation (runs in CI)
 ```
 
 ### Client Python (pycti)
@@ -96,15 +91,10 @@ node script/verify-translation.js  # Validates i18n files
 cd client-python
 pip3 install -r requirements.txt
 pip3 install -r test-requirements.txt
-pip3 install -e .[dev,doc]     # Editable install with dev dependencies
+pip3 install -e .[dev,doc]     # Editable install
 
-# Linting (pre-commit hooks use these):
-flake8 .                        # Ignore E,W (enforced in CI)
-black .                         # Code formatting
-isort .                         # Import sorting
-
-# Testing (requires running OpenCTI instance):
-python3 -m pytest --cov=pycti --no-header -vv
+# Linting: flake8 . (ignore E,W), black ., isort .
+# Testing: python3 -m pytest --cov=pycti --no-header -vv (requires OpenCTI instance)
 ```
 
 ### Worker
@@ -191,6 +181,16 @@ opencti/
 4. **Build out of memory**: Add `NODE_OPTIONS=--max_old_space_size=8192` before yarn commands
 5. **ElasticSearch won't start**: Run `sudo sysctl -w vm.max_map_count=262144`
 6. **Unsigned commits rejected**: Configure GPG signing: https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits
+
+## Code Review & Security
+
+**Pre-commit checks**:
+- Lint: `yarn lint` (JS/TS), `black . && isort . && flake8 .` (Python)
+- Types: `yarn check-ts` (TypeScript)
+- Tests: `yarn test:ci-unit`, `yarn test`, `pytest`
+- **CodeQL**: Auto-runs on PRs (JS/Python security scan)
+
+**Checklist**: Build passes, tests pass, no lint/type errors, follows patterns, proper commit format, GPG signed
 
 ## Commit Message Format
 
