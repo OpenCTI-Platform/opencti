@@ -54,6 +54,12 @@ describe('Single Sign On', () => {
       name: 'test name 1',
       strategy: StrategyType.SamlStrategy,
       enabled: true,
+      identifier: 'test1',
+      configuration: [
+        { key: 'callbackUrl', value: 'http://myopencti/auth/samlTestDomain/callback', type: 'string' },
+        { key: 'idpCert', value: '21341234', type: 'string' },
+        { key: 'issuer', value: 'issuer', type: 'string' },
+      ],
     };
     it('should not create single sign on entity without SETAUTH capa', async () => {
       await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
@@ -77,6 +83,7 @@ describe('Single Sign On', () => {
         name: 'test name 2',
         strategy: StrategyType.OpenIdConnectStrategy,
         enabled: false,
+        identifier: 'test2',
       };
       const singleSignOn2 = await queryAsAdminWithSuccess({
         query: SINGLE_SIGN_ON_CREATE,

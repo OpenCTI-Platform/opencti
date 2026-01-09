@@ -11,7 +11,7 @@ import {
 import { logApp } from '../../config/conf';
 import { now } from 'moment';
 import { nowTime } from '../../utils/format';
-import { addSingleSignOn } from './singleSignOn-domain';
+import { addSingleSignOn, internalAddSingleSignOn } from './singleSignOn-domain';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { v4 as uuid } from 'uuid';
 import { EnvStrategyType, isAuthenticationProviderMigrated, LOCAL_STRATEGY_IDENTIFIER } from '../../config/providers-configuration';
@@ -153,7 +153,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
 };
 
 const computeEnabled = (envConfiguration: any) => {
-  return !(envConfiguration?.disabled === true);
+  return !(envConfiguration?.config?.disabled === true);
 };
 
 const computeAuthenticationName = (ssoKey: string, envConfiguration: any, identifier: string) => {
@@ -301,7 +301,7 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
       const identifier = currentAuthProvider.identifier;
       if (identifier && !isAuthenticationProviderMigrated(settings, identifier)) {
         logApp.info(`[SSO MIGRATION] creating new configuration for ${identifier}`);
-        const created = await addSingleSignOn(context, user, currentAuthProvider);
+        const created = await internalAddSingleSignOn(context, user, currentAuthProvider, true);
         const queryResult: SingleSignOnMigrationResult = {
           enabled: created.enabled,
           name: created.name,

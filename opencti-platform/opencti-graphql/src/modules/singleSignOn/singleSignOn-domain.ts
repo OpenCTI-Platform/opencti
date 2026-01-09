@@ -53,9 +53,8 @@ export const findSingleSignOnPaginated = (context: AuthContext, user: AuthUser, 
   return pageEntitiesConnection<BasicStoreEntitySingleSignOn>(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON], args);
 };
 
-export const addSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
-  await checkAllowed(context);
-  // Call here the function to check that all mandatory field are in the input
+// For migration purpose, we need to be able to create an SSO enabled, but not start it immediately
+export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput, skipRegister: boolean) => {
   const defaultOps = { created_at: now(), updated_at: now() };
   const singleSignOnInput = { ...input, ...defaultOps };
   const created: BasicStoreEntitySingleSignOn = await createEntity(
@@ -75,11 +74,17 @@ export const addSingleSignOn = async (context: AuthContext, user: AuthUser, inpu
     context_data: { id: ssoId, entity_type: ENTITY_TYPE_SINGLE_SIGN_ON, input: singleSignOnInput },
   });
 
-  if (created.enabled) {
+  if (created.enabled && !skipRegister) {
     logAuthInfo('Activating new strategy', toEnv(input.strategy), { identifier: input.identifier });
     await registerStrategy(created);
   }
+  return created;
+};
 
+export const addSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
+  await checkAllowed(context);
+  // Call here the function to check that all mandatory field are in the input
+  const created = await internalAddSingleSignOn(context, user, input, false);
   return created;
 };
 
@@ -141,7 +146,7 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
 
 export const runSingleSignOnRunMigration = async (context: AuthContext, user: AuthUser, input: SingleSignMigrationInput) => {
   await checkAllowed(context);
-  logApp.info(`[SSO MIGRATION] dry run ? ${input.dry_run}`);
+  logApp.info(`[SSO MIGRATION] Migration requested with dry_run = ${input.dry_run}`);
   const ssoConfigurationEnv = nconf.get('providers');
   return parseSingleSignOnRunConfiguration(context, user, ssoConfigurationEnv, input.dry_run);
 };
