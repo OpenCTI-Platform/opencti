@@ -107,17 +107,19 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
     headers[k] = String(v);
   });
   if (ingestion.authentication_type === IngestionAuthType.Basic) {
-    const auth = Buffer.from(IngestionAuthType.Basic, 'utf-8').toString('base64');
+    const basicAuthenticationValue = ingestion.authentication_value as string;
+    const auth = Buffer.from(basicAuthenticationValue, 'utf-8').toString('base64');
     headers.Authorization = `Basic ${auth}`;
   }
   if (ingestion.authentication_type === IngestionAuthType.Bearer) {
-    headers.Authorization = `Bearer ${IngestionAuthType.Bearer}`;
+    headers.Authorization = `Bearer ${ingestion.authentication_value}`;
   }
   if (ingestion.authentication_type === IngestionAuthType.Certificate) {
+    const certificateAuthenticationValue = ingestion.authentication_value as string;
     certificates = {
-      cert: IngestionAuthType.Certificate.split(':')[0],
-      key: IngestionAuthType.Certificate.split(':')[1],
-      ca: IngestionAuthType.Certificate.split(':')[2],
+      cert: certificateAuthenticationValue.split(':')[0],
+      key: certificateAuthenticationValue.split(':')[1],
+      ca: certificateAuthenticationValue.split(':')[2],
     };
   }
   const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
