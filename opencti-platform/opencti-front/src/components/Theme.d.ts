@@ -44,9 +44,9 @@ declare module '@mui/material/Alert' {
 
 declare module '@mui/material/styles' {
   interface Palette {
-    border?: {
-      main?: string;
-      primary?: string;
+    border: {
+      main: string;
+      primary: string;
     };
     gradient?: {
       main: string;

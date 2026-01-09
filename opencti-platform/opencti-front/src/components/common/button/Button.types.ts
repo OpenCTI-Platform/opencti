@@ -18,7 +18,6 @@ export interface ColorDefinition {
   focus: string;
   text: string;
   border: string;
-  borderColor: string;
 }
 
 export interface GradientColor {

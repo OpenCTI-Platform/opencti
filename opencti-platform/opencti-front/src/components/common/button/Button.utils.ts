@@ -1,4 +1,4 @@
-import { Theme } from '@mui/material';
+import { Theme } from '@mui/material/styles';
 import type { GradientVariant, ColorDefinition, GradientColor, ButtonSize, ButtonColorKey } from './Button.types';
 
 export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorDefinition> => {
@@ -9,7 +9,6 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       focus: theme.palette.text.primary,
       text: theme.palette.primary.contrastText,
       border: theme.palette.primary.main,
-      borderColor: theme.palette?.border?.main ?? '#252A35',
     },
     destructive: {
       main: theme.palette.error.main,
@@ -17,7 +16,6 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       focus: theme.palette.text.primary,
       text: theme.palette.error.main,
       border: theme.palette.error.main,
-      borderColor: theme.palette?.border?.main ?? '#252A35',
     },
     ai: {
       main: theme.palette.ai?.main ?? '#B286FF',
@@ -25,7 +23,6 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       focus: theme.palette?.ai?.main ?? '#B286FF',
       text: theme.palette.ai?.contrastText ?? '#B286FF',
       border: theme.palette?.ai?.light ?? '#B286FF',
-      borderColor: '#252A35',
     },
     primary: {
       main: theme.palette.primary.main,
@@ -33,15 +30,13 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       focus: theme.palette.primary.light,
       text: theme.palette.primary.contrastText,
       border: theme.palette.primary.main,
-      borderColor: theme.palette.primary.main,
     },
     secondary: {
-      main: theme.palette.secondary.main,
-      hover: theme.palette.secondary.dark,
-      focus: theme.palette.secondary.light,
-      text: theme.palette.secondary.contrastText,
-      border: theme.palette.secondary.main,
-      borderColor: theme.palette.secondary.main,
+      main: theme.palette.primary.main,
+      hover: theme.palette.primary.dark,
+      focus: theme.palette.primary.light,
+      text: theme.palette.primary.contrastText,
+      border: theme.palette.border.main,
     },
     success: {
       main: theme.palette.success.main,
@@ -49,7 +44,6 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       focus: theme.palette.success.light,
       text: theme.palette.success.contrastText,
       border: theme.palette.success.main,
-      borderColor: theme.palette.success.main,
     },
     error: {
       main: theme.palette.error.main,
@@ -57,7 +51,6 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       focus: theme.palette.error.light,
       text: theme.palette.error.contrastText,
       border: theme.palette.error.main,
-      borderColor: theme.palette.error.main,
     },
     warning: {
       main: theme.palette.warning.main,
@@ -65,7 +58,6 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       focus: theme.palette.warning.light,
       text: theme.palette.warning.contrastText,
       border: theme.palette.warning.main,
-      borderColor: theme.palette.warning.main,
     },
     info: {
       main: theme.palette.info.main,
@@ -73,7 +65,6 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
       focus: theme.palette.info.light,
       text: theme.palette.info.contrastText,
       border: theme.palette.info.main,
-      borderColor: theme.palette.info.main,
     },
   };
 };
