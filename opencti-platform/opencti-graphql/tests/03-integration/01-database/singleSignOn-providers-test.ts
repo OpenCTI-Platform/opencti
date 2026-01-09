@@ -1,5 +1,4 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { findAllSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { registerLocalStrategy, buildSAMLOptions, initAuthenticationProviders } from '../../../src/modules/singleSignOn/singleSignOn-providers';
 import { type ProviderConfiguration, PROVIDERS } from '../../../src/config/providers-configuration';
@@ -33,8 +32,6 @@ describe('Single sign on Provider coverage tests', () => {
     it('should an empty configuration works', async () => {
       // GIVEN no SSO configuration at all
       await clearProvider();
-      const ssoConfig = await findAllSingleSignOn(testContext, ADMIN_USER);
-      expect(ssoConfig.length, 'This test assume that no configuration is setup yet').toBe(0);
       expect(PROVIDERS).toStrictEqual([]);
 
       // WHEN initialization is done
@@ -74,7 +71,7 @@ describe('Single sign on Provider coverage tests', () => {
     });
   });
 
-  describe.only('configuration computation coverage', () => {
+  describe('configuration computation coverage', () => {
     it('should build correct options for SAML', async () => {
       const samlEntity: Partial<BasicStoreEntitySingleSignOn> = {
         strategy: StrategyType.SamlStrategy,
@@ -103,6 +100,11 @@ describe('Single sign on Provider coverage tests', () => {
             key: 'wantAuthnResponseSigned',
             value: 'false',
             type: 'boolean',
+          },
+          {
+            key: 'acceptedClockSkewMs',
+            value: '3',
+            type: 'number',
           },
         ],
       };

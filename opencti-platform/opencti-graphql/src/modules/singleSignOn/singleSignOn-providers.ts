@@ -5,7 +5,7 @@ import LocalStrategy from 'passport-local';
 import { login, loginFromProvider } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { findAllSingleSignOn, logAuthInfo } from './singleSignOn-domain';
-import { AuthType, EnvStrategyType, isAuthenticationActivatedByIdentifier, isStrategyActivated, type ProviderConfiguration } from '../../config/providers-configuration';
+import { AuthType, EnvStrategyType, isAuthenticationActivatedByIdentifier, type ProviderConfiguration } from '../../config/providers-configuration';
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
 import { ConfigurationError, UnsupportedError } from '../../config/errors';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy';
@@ -46,13 +46,17 @@ export const buildAllConfiguration = async (ssoEntity: BasicStoreEntitySingleSig
         ssoConfiguration[currentConfig.key] = +currentConfig.value;
       } else if (currentConfig.type === 'boolean') {
         ssoConfiguration[currentConfig.key] = currentConfig.value === 'true';
+      } else if (currentConfig.type === 'array') {
+        ssoConfiguration[currentConfig.key] = JSON.parse(ssoConfiguration[currentConfig.key]);
       } else {
         ssoConfiguration[currentConfig.key] = currentConfig.value;
       }
     }
     return ssoConfiguration;
   } else {
-    throw ConfigurationError('SSO configuration is empty', { id: ssoEntity.id, name: ssoEntity.name, strategy: ssoEntity.strategy });
+    if (ssoEntity.strategy !== StrategyType.LocalStrategy) {
+      throw ConfigurationError('SSO configuration is empty', { id: ssoEntity.id, name: ssoEntity.name, strategy: ssoEntity.strategy });
+    }
   }
 };
 
@@ -209,7 +213,7 @@ export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntit
 };
 
 export const registerStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
-  if (authenticationStrategy.strategy) {
+  if (authenticationStrategy.strategy && authenticationStrategy.identifier) {
     switch (authenticationStrategy.strategy) {
       case StrategyType.LocalStrategy:
         logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LOCAL);
@@ -234,7 +238,7 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
         break;
     }
   } else {
-    logApp.error('[SSO INIT] configuration without strategy should not be possible, skipping', { id: authenticationStrategy?.id });
+    logApp.error('[SSO INIT] configuration without strategy or identifier should not be possible, skipping', { id: authenticationStrategy?.id, strategy: authenticationStrategy.strategy, identifier: authenticationStrategy.identifier });
   }
 };
 

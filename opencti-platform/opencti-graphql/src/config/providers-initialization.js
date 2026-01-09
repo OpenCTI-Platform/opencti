@@ -18,7 +18,15 @@ import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../utils/access';
 import { enrichWithRemoteCredentials } from './credentials';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { addUserLoginCount } from '../manager/telemetryManager';
-import { AuthType, INTERNAL_SECURITY_PROVIDER, PROVIDERS, EnvStrategyType, isAuthenticationProviderMigrated, LOCAL_STRATEGY_IDENTIFIER } from './providers-configuration';
+import {
+  AuthType,
+  INTERNAL_SECURITY_PROVIDER,
+  PROVIDERS,
+  EnvStrategyType,
+  isAuthenticationProviderMigrated,
+  LOCAL_STRATEGY_IDENTIFIER,
+  isAuthenticationActivatedByIdentifier,
+} from './providers-configuration';
 import { genConfigMapper, providerLoginHandler } from '../modules/singleSignOn/singleSignOn-providers';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -49,6 +57,11 @@ export const unregisterAuthenticationProvider = (providerRef) => {
 
 // (providerRef: string, strategy: any, configuration: ProviderConfiguration)
 export const registerAuthenticationProvider = (providerRef, strategy, configuration) => {
+  if (isAuthenticationActivatedByIdentifier(configuration.provider)) {
+    logApp.warn(`[SSO] identifier ${configuration.provider} already registered. Please check your configuration to see if there is not 2 time the same identifier.`);
+    unregisterAuthenticationProvider(configuration.provider);
+  }
+
   passport.use(providerRef, strategy);
   PROVIDERS.push(configuration);
   logAuthInfo(`Strategy ${providerRef} registered on node ${NODE_INSTANCE_ID}`, configuration.strategy);
@@ -145,7 +158,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   const confProviders = conf.get('providers');
   const providerKeys = Object.keys(confProviders);
 
-  let shouldRunLocalMigration = false;
+  let willLocalBeInDatabase = false;
   let shouldRunSSOMigration = false;
 
   for (let i = 0; i < providerKeys.length; i += 1) {
@@ -162,8 +175,10 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
         if (isFeatureEnabled(SINGLE_SIGN_ON_FF)) {
           if (isAuthenticationProviderMigrated(settings, LOCAL_STRATEGY_IDENTIFIER)) {
             logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy migrated, skipping old configuration');
+            willLocalBeInDatabase = true;
           } else {
-            shouldRunLocalMigration = true;
+            willLocalBeInDatabase = true;
+            shouldRunSSOMigration = true;
           }
         } else {
           const localStrategy = new LocalStrategy({}, (username, password, done) => {
@@ -647,7 +662,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
 
     // In case of disable local strategy, setup protected fallback for the admin user
     const hasLocal = PROVIDERS.find((p) => p.strategy === EnvStrategyType.STRATEGY_LOCAL);
-    if (!hasLocal && !shouldRunLocalMigration) {
+    if (!hasLocal && !willLocalBeInDatabase) {
       logApp.info('[ENV-PROVIDER][FALLBACK] No local strategy, adding the fallback one');
       const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
         const adminEmail = conf.get('app:admin:email');
@@ -669,7 +684,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   }
 
   if (isFeatureEnabled(SINGLE_SIGN_ON_FF)) {
-    if (shouldRunLocalMigration || shouldRunSSOMigration) {
+    if (shouldRunSSOMigration) {
       await runSingleSignOnRunMigration(context, user, { dry_run: false });
     }
   }

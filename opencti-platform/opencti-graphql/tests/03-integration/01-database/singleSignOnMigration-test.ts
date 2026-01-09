@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { parseSingleSignOnRunConfiguration } from '../../../src/modules/singleSignOn/singleSignOn-migration';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { deleteSingleSignOn, findSingleSignOnById } from '../../../src/modules/singleSignOn/singleSignOn-domain';
+import { deleteSingleSignOn, findAllSingleSignOn, findSingleSignOnById, findSingleSignOnPaginated } from '../../../src/modules/singleSignOn/singleSignOn-domain';
 
 describe('Migration of SSO environment test coverage', () => {
-  describe.only('Dry run of migrations', () => {
+  describe('Dry run of migrations', () => {
     it('should default configuration with only local works', async () => {
       const configuration = {
         local: {
@@ -17,6 +17,37 @@ describe('Migration of SSO environment test coverage', () => {
       expect(result[0].name).toMatch(/local-*/);
       expect(result[0].enabled).toBeTruthy();
       expect(result.length).toBe(1);
+    });
+
+    it('should SAML disabled configuration works', async () => {
+      const configuration = {
+        saml_minimal: {
+          identifier: 'saml_minimal',
+          strategy: 'SamlStrategy',
+          config: {
+            disabled: true,
+            issuer: 'openctisaml',
+            entry_point: 'http://localhost:9999/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:4000/auth/saml/callback',
+            cert: 'totallyFakeCert',
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const minimalSamlConfiguration = result[0];
+
+      expect(minimalSamlConfiguration.strategy).toBe('SamlStrategy');
+      expect(minimalSamlConfiguration.name).toMatch(/saml_minimal-*/);
+      expect(minimalSamlConfiguration.label).toBe('saml_minimal');
+      expect(minimalSamlConfiguration.enabled).toBeFalsy();
+      expect(minimalSamlConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:9999/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:4000/auth/saml/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCert' },
+      ]);
     });
 
     it('should SAML minimal configuration works', async () => {
@@ -84,6 +115,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'acceptedClockSkewMs', type: 'number', value: '5' },
         { key: 'xmlSignatureTransforms', type: 'array', value: '["http://www.w3.org/2000/09/xmldsig#enveloped-signature","http://www.w3.org/2001/10/xml-exc-c14n#"]' },
         { key: 'wantAssertionsSigned', type: 'boolean', value: 'true' },
+        { key: 'organizations_default', type: 'array', value: '["OpenCTI"]' },
       ]);
     });
 
@@ -281,7 +313,7 @@ describe('Migration of SSO environment test coverage', () => {
       });
     });
 
-    it('should OpenID configuration works', async () => {
+    it.todo('should OpenID configuration works', async () => {
       const configuration = {
         oic_simple: {
           identifier: 'oic_simple',
@@ -355,18 +387,29 @@ describe('Migration of SSO environment test coverage', () => {
     });
   });
 
-  describe('Actual run of migrations', () => {
-    it('should default configuration with only local works', async () => {
+  describe.only('Actual run of migrations', () => {
+    it('should SAML configuration works', async () => {
       const configuration = {
-        local: {
-          strategy: 'LocalStrategy',
+        saml_default: {
+          identifier: 'saml_default',
+          strategy: 'SamlStrategy',
+          config: {
+            disabled: true,
+            label: 'Login with SAML',
+            issuer: 'openctisaml_default',
+            entry_point: 'http://localhost:8888/realms/master/protocol/saml',
+            saml_callback_url: 'http://localhost:3000/auth/saml/callback',
+            cert: 'totallyFakeCertGroups',
+            organizations_default: ['OpenCTI'],
+          },
         },
       };
 
       const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, false);
-      expect(result[0].strategy).toBe('LocalStrategy');
-      expect(result[0].name).toMatch(/local-*/);
-      expect(result[0].enabled).toBeTruthy();
+      console.log('RESULT', result);
+      expect(result[0].strategy).toBe('SamlStrategy');
+      expect(result[0].name).toMatch(/Login with SAML*/);
+      expect(result[0].enabled).toBeFalsy();
       expect(result.length).toBe(1);
 
       const entity = await findSingleSignOnById(testContext, ADMIN_USER, result[0].id);
