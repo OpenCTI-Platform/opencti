@@ -76,8 +76,13 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'last_seen', label: 'Last seen' },
   ]],
   ['Malware', [
+    { attribute: 'malware_types', label: 'Malware types' },
     { attribute: 'first_seen', label: 'First seen' },
     { attribute: 'last_seen', label: 'Last seen' },
+    { attribute: 'is_family', label: 'Is family' },
+    { attribute: 'architecture_execution_envs', label: 'Architecture execution environments' },
+    { attribute: 'implementation_languages', label: 'Implementation languages' },
+    { attribute: 'killChainPhases.phase_name', label: 'Kill chain phases' },
   ]],
   ['Report', [
     { attribute: 'published', label: 'Report publication date' },
@@ -89,18 +94,53 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'due_date', label: 'Due date' },
   ]],
   ['Threat-Actor-Group', [
+    { attribute: 'threat_actor_types', label: 'Threat actor types' },
     { attribute: 'first_seen', label: 'First seen' },
     { attribute: 'last_seen', label: 'Last seen' },
   ]],
   ['Threat-Actor-Individual', [
+    { attribute: 'threat_actor_types', label: 'Threat actor types' },
     { attribute: 'first_seen', label: 'First seen' },
     { attribute: 'last_seen', label: 'Last seen' },
+    { attribute: 'secondary_motivations', label: 'Secondary motivations' },
+    { attribute: 'personal_motivations', label: 'Personal motivations' },
+    { attribute: 'primary_motivation', label: 'Primary motivation' },
+    { attribute: 'roles', label: 'Roles' },
+    { attribute: 'sophistication', label: 'Sophistication' },
+    { attribute: 'resource_level', label: 'Resource level' },
+    { attribute: 'goals', label: 'Goals' },
+    { attribute: 'bornIn.name', label: 'Born in' },
+    { attribute: 'ethnicity.name', label: 'Ethnicity' },
+    { attribute: 'date_of_birth', label: 'Date of birth' },
+    { attribute: 'gender', label: 'Gender' },
+    { attribute: 'marital_status', label: 'Marital status' },
+    { attribute: 'job_title', label: 'Job title' },
+    { attribute: 'eye_color', label: 'Eye color' },
+    { attribute: 'hair_color', label: 'Hair color' },
+    { attribute: 'height.measure', label: 'Height' },
+    { attribute: 'weight.measure', label: 'Weight' },
+  ]],
+  ['Incident', [
+    { attribute: 'incident_type', label: 'Incident type' },
+    { attribute: 'severity', label: 'Severity' },
+    { attribute: 'source', label: 'Source' },
   ]],
   ['Indicator', [
     { attribute: 'indicator_types', label: 'Indicator types' },
   ]],
   ['Note', [
     { attribute: 'attribute_abstract', label: 'Attribute abstract' },
+  ]],
+  ['Vulnerability', [
+    { attribute: 'x_opencti_cvss_v2_vector_string', label: 'CVSS v2 vector string' },
+    { attribute: 'x_opencti_cvss_v2_base_score', label: 'CVSS v2 base score' },
+    { attribute: 'x_opencti_cvss_vector_string', label: 'CVSS vector string' },
+    { attribute: 'x_opencti_cvss_base_score', label: 'CVSS base score' },
+    { attribute: 'x_opencti_cvss_v4_vector_string', label: 'CVSS v4 vector string' },
+    { attribute: 'x_opencti_cvss_v4_base_score', label: 'CVSS v4 base score' },
+    { attribute: 'x_opencti_cisa_kev', label: 'CISA KEV' },
+    { attribute: 'x_opencti_epss_score', label: 'EPSS score' },
+    { attribute: 'x_opencti_epss_percentile', label: 'EPSS percentile' },
   ]],
 ]);
 
@@ -182,7 +222,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
 
       <Formik<WidgetAttributesInputValue>
         validationSchema={attributesValidation}
-        onSubmit={() => {}}
+        onSubmit={() => { }}
         initialValues={{
           attributes: value.map((column) => ({
             variableName: column.variableName ?? column.attribute,
