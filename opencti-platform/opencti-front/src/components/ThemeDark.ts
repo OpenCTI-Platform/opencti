@@ -6,12 +6,12 @@ import LogoCollapsed from '../static/images/logo_dark.png';
 import { hexToRGB } from '../utils/Colors';
 import { lighten } from '@mui/material';
 
-const EE_COLOR = '#00f1bd';
+const EE_COLOR = '#00f18d';
 
 export const THEME_DARK_DEFAULT_BACKGROUND = '#070d19';
 export const THEME_DARK_DEFAULT_BODY_END_GRADIENT = '#0C1524';
 const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
-const THEME_DARK_DEFAULT_SECONDARY = '#00f1bd';
+const THEME_DARK_DEFAULT_SECONDARY = '#00f18d';
 const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
 const THEME_DARK_DEFAULT_PAPER = '#09101e';
 const THEME_DARK_DEFAULT_NAV = '#070d19';
@@ -51,7 +51,7 @@ const ThemeDark = (
     success: { main: '#03a847' },
     primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
-    gradient: { main: '#00f1bd' },
+    gradient: { main: '#00f18d' },
     border: {
       primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
       secondary: hexToRGB((secondary || THEME_DARK_DEFAULT_SECONDARY), 0.3),
