@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { addSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
+import { addSingleSignOn, deleteSingleSignOn, findAllSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { type SingleSignOnAddInput, StrategyType } from '../../../src/generated/graphql';
 import { PROVIDERS } from '../../../src/config/providers-configuration';
 
 describe('Single sign on Domain coverage tests', () => {
-  let createdSamlId;
+  let createdSamlId: string;
 
   it('should add new minimal SAML provider', async () => {
     const input: SingleSignOnAddInput = {
@@ -106,5 +106,16 @@ describe('Single sign on Domain coverage tests', () => {
       .rejects.toThrowError('issuer is mandatory for SAML');
 
     expect(PROVIDERS.some((strategyProv) => strategyProv.provider === 'samlTestNotOk')).toBeFalsy();
+  });
+
+  it('should remove SAML provider created', async () => {
+    await deleteSingleSignOn(testContext, ADMIN_USER, createdSamlId);
+
+    const allSso = await findAllSingleSignOn(testContext, ADMIN_USER);
+    for (let i = 0; i < allSso.length; i++) {
+      if (allSso[i].identifier === 'samlTestNotOk') {
+        await deleteSingleSignOn(testContext, ADMIN_USER, allSso[i].id);
+      }
+    }
   });
 });
