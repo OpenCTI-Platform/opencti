@@ -946,6 +946,9 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
       access_right: n.accessRight,
       groups_restriction_ids: n.groupsRestriction.map((o) => o.value),
     }));
+    if (input.length === 0) {
+      return { output_port: 'out', bundle };
+    }
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
