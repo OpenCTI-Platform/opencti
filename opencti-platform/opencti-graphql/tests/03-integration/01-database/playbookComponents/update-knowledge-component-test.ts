@@ -44,6 +44,68 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
     previousPlaybookNodeId: undefined,
   };
 
+  it('should replace labels by field patch', async () => {
+    const bundle = {
+      ...baseBundle,
+      objects: [{
+        ...baseBundleObject,
+        labels: ['unicorn', 'honey badger', 'pangolin'],
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: 'some--id',
+            type: ENTITY_TYPE_CONTAINER_REPORT,
+            extension_type: 'property-extension',
+            labels_ids: ['unicorn-id', 'honey-badger-id', 'pangolin-id'],
+          } as StixOpenctiExtension,
+        },
+      } as StixObject],
+    } as StixBundle;
+
+    const playbookNode = {
+      ...basePlaybookNode,
+      configuration: {
+        all: false,
+        actions: [
+          {
+            op: 'replace' as const,
+            attribute: 'objectLabel',
+            value: [
+              {
+                label: 'Unicorn',
+                value: 'unicorn-id',
+                patch_value: 'unicorn',
+              },
+              {
+                label: 'Honey badger',
+                value: 'honey-badger-id',
+                patch_value: 'honey badger',
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    const result = await PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.executor({
+      ...baseExecutorParams,
+      previousStepBundle: bundle,
+      dataInstanceId: threatObjectId,
+      playbookNode,
+      bundle,
+    });
+
+    const updatedActor = result.bundle.objects.find((o) => o.id === threatObjectId) as StixThreatActor;
+    const objectExtensions = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+    if (!objectExtensions.opencti_upsert_operations || !objectExtensions.opencti_upsert_operations[0]) {
+      assert.fail('Field patch missing');
+    }
+    expect(objectExtensions.opencti_upsert_operations[0].operation).toBe('replace');
+    expect(objectExtensions.opencti_upsert_operations[0].key).toBe('objectLabel');
+    expect(objectExtensions.opencti_upsert_operations[0].value[0]).toBe('unicorn-id');
+    expect(objectExtensions.opencti_upsert_operations[0].value[1]).toBe('honey-badger-id');
+    expect(updatedActor.labels).toEqual(['unicorn', 'honey badger']);
+  });
+
   it('should remove labels by field patch', async () => {
     const bundle = {
       ...baseBundle,
