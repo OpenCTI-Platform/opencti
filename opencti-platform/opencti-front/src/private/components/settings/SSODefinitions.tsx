@@ -40,6 +40,7 @@ const ssoDefinitionsLineFragment = graphql`
   fragment SSODefinitionsLine_node on SingleSignOn {
     id
     name
+    entity_type
     identifier
     label
     description

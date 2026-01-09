@@ -1,15 +1,18 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import { Field, FieldArray } from 'formik';
 import { IconButton } from '@mui/material';
-import { TextField } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
 import { Add, Delete } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import SwitchField from '../../../../components/fields/SwitchField';
-
-const SAMLCreation: FunctionComponent = () => {
+import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
+import TextField from '../../../../components/TextField';
+interface Props {
+  updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
+}
+const SAMLCreation = ({ updateField }: Props) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -19,6 +22,7 @@ const SAMLCreation: FunctionComponent = () => {
         variant="standard"
         name="private_key"
         label={t_i18n('Private key')}
+        onSubmit={updateField}
         fullWidth
         style={{ marginTop: 20 }}
       />

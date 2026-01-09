@@ -3,8 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionCreation';
-import SSODefinitionForm from '@components/settings/sso_definitions/SSODefinitionForm';
+import SSODefinitionForm, { SSOEditionFormInputKeys } from '@components/settings/sso_definitions/SSODefinitionForm';
 import { SSODefinitionEditionMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 
@@ -19,6 +18,7 @@ export const ssoDefinitionEditionMutation = graphql`
 export const ssoDefinitionEditionFragment = graphql`
   fragment SSODefinitionEditionFragment on SingleSignOn {
     id
+    name
     identifier
     label
     description
@@ -48,7 +48,6 @@ interface SSODefinitionEditionProps {
   selectedStrategy: string;
   data: SSODefinitionEditionFragment$key;
 }
-export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
 
 const SSODefinitionEdition = ({
   isOpen,
@@ -65,7 +64,14 @@ const SSODefinitionEdition = ({
   );
   const selectedStrategy = sso.strategy;
   const onEdit = (field: SSOEditionFormInputKeys, value: unknown) => {
-    const input: { key: string; value: [unknown] } = { key: field, value: [value] };
+    const input: { key: string; value: unknown[] } = { key: field, value: [value] };
+    if (field === 'private_key') {
+      input.key = 'configuration';
+      input.value = (sso.configuration ?? []).map((e) => {
+        if (e.key !== field) return e;
+        return { key: e.key, value: value, type: e.type };
+      });
+    }
     editMutation({
       variables: { id: sso.id, input: [input] },
     });

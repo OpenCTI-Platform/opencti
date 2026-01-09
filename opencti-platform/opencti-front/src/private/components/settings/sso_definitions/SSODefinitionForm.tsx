@@ -1,11 +1,9 @@
-import { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionCreation';
 import { useFormatter } from '../../../../components/i18n';
 import * as Yup from 'yup';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { TextField } from 'formik-mui';
 import SwitchField from '../../../../components/fields/SwitchField';
 import SAMLCreation from '@components/settings/sso_definitions/SAMLCreation';
 import Typography from '@mui/material/Typography';
@@ -15,7 +13,8 @@ import Button from '@mui/material/Button';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
-import { SSOEditionFormInputKeys } from '@components/settings/sso_definitions/SSODefinitionEdition';
+import { SSODefinitionEditionFragment$data } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
+import TextField from '../../../../components/TextField';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -25,10 +24,45 @@ interface SSODefinitionFormProps {
   ) => void;
   selectedStrategy: string | null;
   onSubmitField?: (field: SSOEditionFormInputKeys, value: unknown) => void;
-  data?: SSODefinitionFormValues | null;
+  data?: SSODefinitionEditionFragment$data;
   isOpen?: boolean;
 }
-const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy, onSubmitField }: SSODefinitionFormProps) => {
+export interface SSODefinitionFormValues {
+  name: string;
+  label: string;
+  enabled: boolean;
+  private_key: string;
+  issuer: string;
+  idp_cert: string;
+  saml_callback_url: string;
+  want_assertions_signed: boolean;
+  want_auth_response_signed: boolean;
+  login_idp_directly: boolean;
+  logout_remote: boolean;
+  provider_method: string;
+  idp_signing_certificate: string;
+  sso_binding_type: string;
+  force_reauthentication: boolean;
+  enable_debug_mode: boolean;
+  advanced_configurations: {
+    key: string;
+    value: string;
+    type: string;
+  }[];
+  groups_path: string[];
+  groups_mapping: string[];
+  organizations_path: string[];
+  organizations_mapping: string[];
+  read_userinfo: boolean;
+}
+export type SSOEditionFormInputKeys = keyof SSODefinitionFormValues;
+
+const SSODefinitionForm = ({
+  data,
+  onCancel,
+  onSubmit,
+  selectedStrategy,
+  onSubmitField }: SSODefinitionFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [currentTab, setCurrentTab] = useState(0);
@@ -63,19 +97,33 @@ const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy, onSubmitField
     sso_binding_type: '',
     force_reauthentication: false,
     enable_debug_mode: false,
-    advancedConfigurations: [],
+    advanced_configurations: [],
     groups_path: [],
     groups_mapping: [],
     read_userinfo: false,
     organizations_path: [],
     organizations_mapping: [],
   };
+
+  if (data) {
+    initialValues.name = data.name;
+  }
+
+  const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
+    if (onSubmitField) {
+      // validationSchema.validateAt(field, { [field]: value })
+      //   .then(() => onSubmitField(field, value))
+      //   .catch(() => false);
+      onSubmitField(field, value);
+    }
+  };
+
   return (
     <Formik
       enableReinitialize
       initialValues={initialValues}
       validationSchema={validationSchema}
-      onSubmit={onSubmit}
+      onSubmit={onSubmit ? onSubmit : () => {}}
       onReset={onCancel}
     >
       {({ handleReset, submitForm, isSubmitting }) => (
@@ -91,12 +139,13 @@ const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy, onSubmitField
             </Tabs>
           </Box>
           {currentTab === 0 && (
-            <Form>
+            <>
               <div style={{ marginTop: 20 }}>
                 <Field
                   component={TextField}
                   variant="standard"
                   name="name"
+                  onSubmit={updateField}
                   label={t_i18n('Configuration Name *')}
                   fullWidth
                 />
@@ -117,11 +166,11 @@ const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy, onSubmitField
                 label={t_i18n('Enable SAML authentication')}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
-              {selectedStrategy === 'SAML' && <SAMLCreation />}
-            </Form>
+              {selectedStrategy === 'SAML' && <SAMLCreation updateField={updateField} />}
+            </>
           )}
           {currentTab === 1 && (
-            <Form>
+            <>
               <div style={{ marginTop: 20 }}>
                 <Field
                   component={TextField}
@@ -207,6 +256,7 @@ const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy, onSubmitField
                             />
                           </div>
                         ),
+
                       )}
                   </>
                 )}
@@ -219,10 +269,10 @@ const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy, onSubmitField
                 label={t_i18n('Automatically add users to default groups')}
                 containerstyle={{ marginLeft: 2, marginTop: 30 }}
               />
-            </Form>
+            </>
           )}
           {currentTab === 2 && (
-            <Form>
+            <>
               <div style={{ marginTop: 20 }}>
                 <Field
                   component={TextField}
@@ -300,7 +350,7 @@ const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy, onSubmitField
                   </>
                 )}
               </FieldArray>
-            </Form>
+            </>
           )}
           {!onSubmitField && (
             <div
