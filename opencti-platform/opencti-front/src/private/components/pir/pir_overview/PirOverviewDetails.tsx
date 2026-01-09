@@ -20,7 +20,6 @@ import { useTheme } from '@mui/material/styles';
 import { PirOverviewDetailsRedisFragment$key } from '@components/pir/pir_overview/__generated__/PirOverviewDetailsRedisFragment.graphql';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import Chip from '@mui/material/Chip';
 import { PirOverviewDetailsFragment$key } from './__generated__/PirOverviewDetailsFragment.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
