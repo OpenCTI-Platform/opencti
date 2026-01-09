@@ -64,7 +64,10 @@ import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-doma
 import type { Work } from '../types/work';
 import { AxiosError } from 'axios';
 import { URL } from 'node:url';
-
+import { isCompatibleVersionWithMinimal } from '../utils/version';
+import {extractContentFrom} from "../utils/fileToContent";
+import type {FileHandle} from "fs/promises";
+const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
 const sanitizeContainerName = (label: string): string => {
   const withHyphens = label.replace(/([a-z])([A-Z])/g, '$1-$2');
@@ -639,6 +642,20 @@ export const registerSync = async (
   }
 
   return element;
+};
+
+export const syncAddInputFromImport= async (file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file);
+
+  // check platform version compatibility
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
+
+  return parsedData.configuration;
 };
 
 export const synchronizerAddAutoUser = async (context: AuthContext, user: AuthUser, synchronizerId: string, input: SynchronizerAddAutoUserInput) => {

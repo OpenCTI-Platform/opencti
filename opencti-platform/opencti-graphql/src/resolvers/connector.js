@@ -29,7 +29,7 @@ import {
   testSync,
   updateConnectorCurrentStatus,
   updateConnectorManagerStatus,
-  updateConnectorRequestedStatus,
+  updateConnectorRequestedStatus, syncAddInputFromImport,
 } from '../domain/connector';
 import {
   addDraftContext,
@@ -84,6 +84,7 @@ const connectorResolvers = {
     work: (_, { id }, context) => findById(context, context.user, id),
     isWorkAlive: (_, { id }, context) => isWorkAlive(context, context.user, id),
     synchronizer: (_, { id }, context) => findSyncById(context, context.user, id, true),
+    synchronizerAddInputFromImport: (_, { file }) => syncAddInputFromImport(file),
     synchronizers: (_, args, context) => findSyncPaginated(context, context.user, args),
     synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
     // region new managed connectors
