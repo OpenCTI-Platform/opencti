@@ -7,7 +7,8 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Setting labels
         uses: FiligranHQ/auto-label@1.0.0
         with:

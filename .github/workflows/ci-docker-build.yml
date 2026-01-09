@@ -23,7 +23,8 @@ jobs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
     steps:
-    - uses: actions/checkout@v6
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -60,7 +61,8 @@ jobs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
     steps:
-    - uses: actions/checkout@v6
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
