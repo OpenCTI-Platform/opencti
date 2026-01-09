@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { findAllSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { addLocalStrategy, buildSAMLOptions, initAuthenticationProviders } from '../../../src/modules/singleSignOn/singleSignOn-providers';
+import { registerLocalStrategy, buildSAMLOptions, initAuthenticationProviders } from '../../../src/modules/singleSignOn/singleSignOn-providers';
 import { type ProviderConfiguration, PROVIDERS } from '../../../src/config/providers-configuration';
 import type { BasicStoreEntitySingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-types';
 import { StrategyType } from '../../../src/generated/graphql';
 
-describe('Single sign on Domain coverage tests', () => {
+describe('Single sign on Provider coverage tests', () => {
   describe('initialization coverage', () => {
     const clearProvider = async () => {
       for (let i = 0; i < PROVIDERS.length; i++) {
@@ -58,9 +58,9 @@ describe('Single sign on Domain coverage tests', () => {
       expect(PROVIDERS).toStrictEqual([]);
 
       // WHEN calling addLocalStrategy twice
-      await addLocalStrategy('localFirst');
+      await registerLocalStrategy('localFirst');
       console.log('PROVIDERS:', PROVIDERS);
-      await addLocalStrategy('localSecond');
+      await registerLocalStrategy('localSecond');
 
       // THEN only last local strategy is configured and enabled
       expect(PROVIDERS).toStrictEqual([
@@ -103,13 +103,6 @@ describe('Single sign on Domain coverage tests', () => {
             key: 'wantAuthnResponseSigned',
             value: 'false',
             type: 'boolean',
-          },
-        ],
-        advanced_configuration: [
-          {
-            key: 'acceptedClockSkewMs',
-            value: '3',
-            type: 'number',
           },
         ],
       };

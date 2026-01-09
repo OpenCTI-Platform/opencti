@@ -27566,7 +27566,7 @@ export type SingleSignOn = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   groups_management?: Maybe<GroupsManagement>;
   id: Scalars['ID']['output'];
-  identifier?: Maybe<Scalars['String']['output']>;
+  identifier: Scalars['String']['output'];
   label?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
@@ -27582,7 +27582,7 @@ export type SingleSignOnAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   enabled: Scalars['Boolean']['input'];
   groups_management?: InputMaybe<GroupsManagementInput>;
-  identifier?: InputMaybe<Scalars['String']['input']>;
+  identifier: Scalars['String']['input'];
   label?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   organizations_management?: InputMaybe<OrganizationsManagementInput>;
@@ -27608,7 +27608,7 @@ export type SingleSignOnMigrationResult = {
   enabled: Scalars['Boolean']['output'];
   groups_management?: Maybe<GroupsManagement>;
   id: Scalars['ID']['output'];
-  identifier?: Maybe<Scalars['String']['output']>;
+  identifier: Scalars['String']['output'];
   label?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   organizations_management?: Maybe<OrganizationsManagement>;
@@ -46198,7 +46198,7 @@ export type SingleSignOnResolvers<ContextType = any, ParentType extends Resolver
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groups_management?: Resolver<Maybe<ResolversTypes['GroupsManagement']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46226,7 +46226,7 @@ export type SingleSignOnMigrationResultResolvers<ContextType = any, ParentType e
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   groups_management?: Resolver<Maybe<ResolversTypes['GroupsManagement']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organizations_management?: Resolver<Maybe<ResolversTypes['OrganizationsManagement']>, ParentType, ContextType>;

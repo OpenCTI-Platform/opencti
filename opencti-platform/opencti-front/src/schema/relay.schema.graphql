@@ -14908,7 +14908,7 @@ type SingleSignOn implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   name: String!
-  identifier: String
+  identifier: String!
   label: String
   description: String
   enabled: Boolean!
@@ -14983,7 +14983,7 @@ input ConfigurationTypeInput {
 
 input SingleSignOnAddInput {
   name: String!
-  identifier: String
+  identifier: String!
   description: String
   enabled: Boolean!
   strategy: StrategyType!
@@ -14996,7 +14996,7 @@ input SingleSignOnAddInput {
 type SingleSignOnMigrationResult {
   id: ID!
   name: String!
-  identifier: String
+  identifier: String!
   label: String
   description: String
   enabled: Boolean!
