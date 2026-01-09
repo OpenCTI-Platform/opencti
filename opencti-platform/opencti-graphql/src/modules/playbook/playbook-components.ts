@@ -1210,8 +1210,8 @@ export const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfig
                 return {
                   op: action.op,
                   attribute: action.attribute,
-                  value: R.uniq([...currentValues, ...actionValues]),
-                  patchOperation: { op: EditOperation.Replace, path, value: actionPatchValues },
+                  value: actionValues,
+                  patchOperation: { op: EditOperation.Replace, path, value: R.uniq([...currentValues, ...actionPatchValues]) },
                 };
               }
               if (action.op === EditOperation.Replace) {
