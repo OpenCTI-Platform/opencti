@@ -1,5 +1,5 @@
 ---
-applyTo: "*"
+applyTo: "**/*"
 ---
 
 When reviewing code, focus on:
