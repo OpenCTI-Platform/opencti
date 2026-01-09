@@ -21,7 +21,7 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration(
     '[MIGRATION] Status add scope migration and default to GLOBAL',
     [READ_INDEX_INTERNAL_OBJECTS],
-    updateQuery
+    updateQuery,
   );
   logMigration.info(`${message} > done`);
   next();

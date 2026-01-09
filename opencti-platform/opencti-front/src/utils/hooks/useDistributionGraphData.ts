@@ -6,21 +6,21 @@ import type { Widget } from '../widget/widget';
 
 // common type compatible with all distribution queries
 type DistributionNode = {
-  readonly label: string,
-  readonly value?: number | null,
+  readonly label: string;
+  readonly value?: number | null;
 
   readonly entity?: {
-    readonly entity_type?: string,
-    readonly id?: string,
+    readonly entity_type?: string;
+    readonly id?: string;
     // when colors are requested from Labels, Markings or Status for instance
-    readonly color?: string | null,
-    readonly x_opencti_color?: string | null,
+    readonly color?: string | null;
+    readonly x_opencti_color?: string | null;
     readonly template?: {
-      readonly color?: string | null
-    } | null
+      readonly color?: string | null;
+    } | null;
     // workspaces
-    readonly type?: string,
-  } | null,
+    readonly type?: string;
+  } | null;
 };
 
 export type DistributionQueryData = ReadonlyArray<DistributionNode | null | undefined>;
@@ -42,13 +42,13 @@ const useDistributionGraphData = () => {
     }
     if (n.entity?.x_opencti_color) {
       color = theme.palette.mode === 'light'
-      && n.entity.x_opencti_color === '#ffffff'
+        && n.entity.x_opencti_color === '#ffffff'
         ? '#000000'
         : n.entity.x_opencti_color;
     }
     if (n.entity?.template?.color) {
       color = theme.palette.mode === 'light'
-      && n.entity.template.color === '#ffffff'
+        && n.entity.template.color === '#ffffff'
         ? '#000000'
         : n.entity.template.color;
     }

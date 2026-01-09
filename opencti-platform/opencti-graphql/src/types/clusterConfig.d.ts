@@ -1,8 +1,8 @@
 export type ClusterConfig = {
-  platform_id: string
+  platform_id: string;
   managers: {
-    id: string,
-    enable: boolean,
-    running: boolean
-  }[]
+    id: string;
+    enable: boolean;
+    running: boolean;
+  }[];
 };

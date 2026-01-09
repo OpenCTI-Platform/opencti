@@ -133,18 +133,18 @@ export const infrastructureEditionOverviewFragment = graphql`
 const INFRASTRUCTURE_TYPE = 'Infrastructure';
 
 interface InfrastructureEditionOverviewProps {
-  infrastructureData: InfrastructureEditionOverview_infrastructure$key,
+  infrastructureData: InfrastructureEditionOverview_infrastructure$key;
   context?: readonly (GenericContext | null)[] | null;
-  enableReferences: boolean
-  handleClose: () => void
+  enableReferences: boolean;
+  handleClose: () => void;
 }
 
 interface InfrastructureEditionFormValues {
-  message?: string
-  references?: FieldOption[]
-  createdBy: FieldOption | undefined
-  x_opencti_workflow_id: FieldOption
-  objectMarking?: FieldOption[]
+  message?: string;
+  references?: FieldOption[];
+  createdBy: FieldOption | undefined;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
   killChainPhases?: FieldOption[];
   first_seen: null | Date;
   last_seen: null | Date;
@@ -347,13 +347,12 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             name="killChainPhases"
             required={(mandatoryAttributes.includes('killChainPhases'))}
             style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            helpertext={
+            helpertext={(
               <SubscriptionFocus
                 context={context}
                 fieldName="killChainPhases"
               />
-            }
+            )}
             onChange={editor.changeKillChainPhases}
           />
           <Field
@@ -379,12 +378,12 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

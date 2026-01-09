@@ -36,7 +36,7 @@ interface ResponseDialogProps {
   followUpActions: {
     key: string;
     label: string;
-  }[]
+  }[];
 }
 
 const subscription = graphql`
@@ -91,7 +91,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     return setContent(newContent ?? '');
   };
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<ResponseDialogAskAISubscription>>(
+    GraphQLSubscriptionConfig<ResponseDialogAskAISubscription>>(
     () => ({
       subscription,
       variables: { id },
@@ -158,33 +158,33 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
               />
             )}
             {format === 'markdown' && (
-            <ReactMde
-              childProps={{
-                textArea: {
-                  ref: markdownFieldRef,
-                },
-              }}
-              readOnly={isDisabled}
-              value={content}
-              minEditorHeight={height - 80}
-              maxEditorHeight={height - 80}
-              onChange={setContent}
-              selectedTab={markdownSelectedTab}
-              onTabChange={setMarkdownSelectedTab}
-              generateMarkdownPreview={(markdown) => Promise.resolve(
-                <MarkdownDisplay
-                  content={markdown}
-                  remarkGfmPlugin={true}
-                  commonmark={true}
-                />,
-              )}
-              l18n={{
-                write: t_i18n('Write'),
-                preview: t_i18n('Preview'),
-                uploadingImage: t_i18n('Uploading image'),
-                pasteDropSelect: t_i18n('Paste'),
-              }}
-            />
+              <ReactMde
+                childProps={{
+                  textArea: {
+                    ref: markdownFieldRef,
+                  },
+                }}
+                readOnly={isDisabled}
+                value={content}
+                minEditorHeight={height - 80}
+                maxEditorHeight={height - 80}
+                onChange={setContent}
+                selectedTab={markdownSelectedTab}
+                onTabChange={setMarkdownSelectedTab}
+                generateMarkdownPreview={(markdown) => Promise.resolve(
+                  <MarkdownDisplay
+                    content={markdown}
+                    remarkGfmPlugin={true}
+                    commonmark={true}
+                  />,
+                )}
+                l18n={{
+                  write: t_i18n('Write'),
+                  preview: t_i18n('Preview'),
+                  uploadingImage: t_i18n('Uploading image'),
+                  pasteDropSelect: t_i18n('Paste'),
+                }}
+              />
             )}
             {(format === 'markdown' || format === 'html') && (
               <TextFieldAskAI
@@ -200,7 +200,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
             )}
           </div>
           <div className="clearfix" />
-          <Alert severity="warning" variant="outlined" style={ format === 'html' ? { marginTop: 30 } : {}}>
+          <Alert severity="warning" variant="outlined" style={format === 'html' ? { marginTop: 30 } : {}}>
             {t_i18n('Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.')}
           </Alert>
         </DialogContent>

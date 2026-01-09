@@ -54,9 +54,9 @@ const publicStixRelationshipsTreeMapsQuery = graphql`
 `;
 
 interface PublicStixRelationshipsTreeMapComponentProps {
-  parameters: Widget['parameters']
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsTreeMapQuery>
+  parameters: Widget['parameters'];
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsTreeMapQuery>;
 }
 
 const PublicStixRelationshipsTreeMapComponent = ({

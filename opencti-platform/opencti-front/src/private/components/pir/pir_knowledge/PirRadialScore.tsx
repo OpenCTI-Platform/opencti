@@ -19,7 +19,7 @@ import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 
 interface PirRadialScoreProps {
-  value: number
+  value: number;
 }
 
 const PirRadialScore = ({ value }: PirRadialScoreProps) => {

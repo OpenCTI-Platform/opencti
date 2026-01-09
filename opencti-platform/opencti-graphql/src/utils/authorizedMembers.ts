@@ -1,9 +1,28 @@
 import { uniq } from 'ramda';
+import { BUS_TOPICS } from '../config/conf';
+import { FunctionalError, UnsupportedError } from '../config/errors';
+import { getEntityFromCache } from '../database/cache';
+import { patchAttribute } from '../database/middleware';
+import { notify } from '../database/redis';
 import { isEmptyField } from '../database/utils';
-import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
+import { findById as findGroup } from '../domain/group';
+import { findAllMembers, findById as findUser } from '../domain/user';
 import type { MemberAccess, MemberAccessInput, MemberGroupRestriction } from '../generated/graphql';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
+import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { findById as findOrganization } from '../modules/organization/organization-domain';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
+import type { BasicStoreSettings } from '../types/settings';
+import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
+import type { AuthContext, AuthUser } from '../types/user';
 import {
+  AccessOperation,
   type AuthorizedMember,
   isUserHasCapabilities,
   isValidMemberAccessRight,
@@ -11,26 +30,9 @@ import {
   MEMBER_ACCESS_CREATOR,
   MEMBER_ACCESS_RIGHT_ADMIN,
   SYSTEM_USER,
-  validateUserAccessOperation
+  validateUserAccessOperation,
 } from './access';
-import { findAllMembers, findById as findUser } from '../domain/user';
-import { findById as findGroup } from '../domain/group';
-import { findById as findOrganization } from '../modules/organization/organization-domain';
-import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
-import { FunctionalError, UnsupportedError } from '../config/errors';
-import { patchAttribute } from '../database/middleware';
-import { notify } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
-import { getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
-import type { BasicStoreSettings } from '../types/settings';
 import { getDraftContext } from './draftContext';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
-import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
-import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 
 export const AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES = [
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -51,12 +53,14 @@ export const AUTHORIZED_MEMBERS_TYPES = [
 export const getAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
-  entity: BasicStoreEntity
+  entity: BasicStoreEntity,
 ): Promise<MemberAccess[]> => {
   if (isEmptyField(entity.restricted_members)) {
     return [];
   }
-  if (!validateUserAccessOperation(user, entity, 'manage-access')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, entity, AccessOperation.MANAGE_ACCESS, draft)) {
     return []; // return empty if user doesn't have the right access_right
   }
   const entityRestrictedMembers = entity.restricted_members ?? [];
@@ -86,7 +90,7 @@ export const getAuthorizedMembers = async (
       name: member?.name ?? '',
       entity_type: member?.entity_type ?? '',
       access_right: currentAuthMember.access_right,
-      groups_restriction
+      groups_restriction,
     };
   });
 };
@@ -94,7 +98,7 @@ export const getAuthorizedMembers = async (
 export const containsValidAdmin = async (
   context: AuthContext,
   authorized_members: Array<AuthorizedMember>,
-  requiredCapabilities: string[] = []
+  requiredCapabilities: string[] = [],
 ) => {
   const adminIds = authorized_members
     .filter((n) => n.access_right === MEMBER_ACCESS_RIGHT_ADMIN)
@@ -142,16 +146,20 @@ export const editAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
   args: {
-    entityId: string,
-    input: MemberAccessInput[] | undefined | null,
-    requiredCapabilities: string[],
-    entityType: string,
-    busTopicKey?: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
+    entityId: string;
+    input: MemberAccessInput[] | undefined | null;
+    requiredCapabilities: string[];
+    entityType: string;
+    busTopicKey?: keyof typeof BUS_TOPICS; // TODO improve busTopicKey types
   },
 ) => {
-  if (getDraftContext(context, user)) throw UnsupportedError('Cannot edit authorized members in draft');
   const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
-  let restricted_members: { id: string, access_right: string, groups_restriction_ids: string[] | null | undefined }[] | null = null;
+
+  // Allow authorized members edition only on draft type but not for other entity types in draft
+  const draftId = getDraftContext(context, user);
+  if (draftId && draftId !== entityId) throw UnsupportedError('Cannot edit authorized members in draft');
+
+  let restricted_members: { id: string; access_right: string; groups_restriction_ids: string[] | null | undefined }[] | null = null;
 
   if (input) {
     // validate input (validate access right) remove duplicate

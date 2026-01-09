@@ -23,10 +23,10 @@ export const groupingKnowledgeGraphQuery = graphql`
 `;
 
 interface GroupingKnowledgeGraphProps {
-  data: NonNullable<GroupingKnowledgeGraphQuery$data['grouping']>
-  id: string
-  mode: string
-  enableReferences: boolean
+  data: NonNullable<GroupingKnowledgeGraphQuery$data['grouping']>;
+  id: string;
+  mode: string;
+  enableReferences: boolean;
 }
 
 const GroupingKnowledgeGraph = ({
@@ -92,7 +92,7 @@ const GroupingKnowledgeGraph = ({
         queryObjectsRef={queryObjectsRef}
         pageSize={PAGE_SIZE}
         containerId={id}
-        containerType='grouping'
+        containerType="grouping"
         enableReferences={enableReferences}
         dataContainer={data}
         dataHeader={data}

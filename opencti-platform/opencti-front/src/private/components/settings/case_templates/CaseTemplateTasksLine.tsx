@@ -52,7 +52,7 @@ interface CaseTemplateTasksLineProps {
 }
 
 export const CaseTemplateTasksLine: FunctionComponent<
-CaseTemplateTasksLineProps
+  CaseTemplateTasksLineProps
 > = ({ node, dataColumns, paginationOptions }) => {
   const classes = useStyles();
   const task = useFragment(CaseTemplateTasksLineFragment, node);
@@ -61,18 +61,18 @@ CaseTemplateTasksLineProps
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <CaseTemplateTasksPopover
           paginationOptions={paginationOptions}
           task={task}
         />
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Task" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -84,7 +84,7 @@ CaseTemplateTasksLineProps
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -95,7 +95,7 @@ interface CaseTemplateLineDummyProps {
 }
 
 export const CaseTemplateTasksLineDummy: FunctionComponent<
-CaseTemplateLineDummyProps
+  CaseTemplateLineDummyProps
 > = ({ dataColumns }) => {
   const classes = useStyles();
 
@@ -111,7 +111,7 @@ CaseTemplateLineDummyProps
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map(({ label, width }) => (
               <div key={label} className={classes.bodyItem} style={{ width }}>
@@ -124,7 +124,7 @@ CaseTemplateLineDummyProps
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

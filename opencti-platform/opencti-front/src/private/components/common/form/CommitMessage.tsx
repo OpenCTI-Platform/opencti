@@ -33,7 +33,7 @@ interface CommitMessageProps {
   setFieldValue: (
     field: string,
     value: ExternalReferencesValues,
-    shouldValidate?: boolean | undefined
+    shouldValidate?: boolean | undefined,
   ) => void;
   values: ExternalReferencesValues | undefined;
   noStoreUpdate?: boolean;

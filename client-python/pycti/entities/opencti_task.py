@@ -315,7 +315,7 @@ class Task:
             final_data = final_data + data
             while result["data"]["tasks"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["tasks"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info("Listing Tasks", {"after": after})
+                self.opencti.app_logger.debug("Listing Tasks", {"after": after})
                 result = self.opencti.query(
                     query,
                     {
@@ -464,6 +464,7 @@ class Task:
         object_participant = kwargs.get("objectParticipant", None)
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
+        x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -494,6 +495,7 @@ class Task:
                         "objectAssignee": object_assignee,
                         "objectParticipant": object_participant,
                         "x_opencti_workflow_id": x_opencti_workflow_id,
+                        "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
                     }
                 },
@@ -649,6 +651,10 @@ class Task:
                         "participant_ids", stix_object
                     )
                 )
+            if "x_opencti_modified_at" not in stix_object:
+                stix_object["x_opencti_modified_at"] = (
+                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
+                )
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
@@ -689,6 +695,11 @@ class Task:
                 x_opencti_workflow_id=(
                     stix_object["x_opencti_workflow_id"]
                     if "x_opencti_workflow_id" in stix_object
+                    else None
+                ),
+                x_opencti_modified_at=(
+                    stix_object["x_opencti_modified_at"]
+                    if "x_opencti_modified_at" in stix_object
                     else None
                 ),
                 update=update,

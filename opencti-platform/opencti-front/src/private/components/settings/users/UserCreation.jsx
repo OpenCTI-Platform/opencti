@@ -75,7 +75,7 @@ const userValidation = (t) => Yup.object().shape({
 
 const CreateUserControlledDial = (props) => (
   <CreateEntityControlledDial
-    entityType='User'
+    entityType="User"
     {...props}
   />
 );
@@ -97,9 +97,9 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
       email_template_id: email_template_id?.value?.id ?? null,
       user_confidence_level: user_confidence_level
         ? {
-          max_confidence: parseInt(user_confidence_level, 10),
-          overrides: [],
-        }
+            max_confidence: parseInt(user_confidence_level, 10),
+            overrides: [],
+          }
         : null,
     };
     // remove technical fields
@@ -159,7 +159,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
           </Alert>
           <br />
           <Formik
-            initialValues={ initialValues }
+            initialValues={initialValues}
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
             onReset={onClose}
@@ -196,7 +196,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   label={t_i18n('Email address')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
-                  data-testid='user-creation-email-address-input'
+                  data-testid="user-creation-email-address-input"
                 />
                 <Field
                   component={TextField}
@@ -232,7 +232,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   type="password"
                   style={{ marginTop: 20 }}
                   fullWidth={true}
-                  data-testid='user-creation-password-input'
+                  data-testid="user-creation-password-input"
                 />
                 <Field
                   component={TextField}
@@ -259,14 +259,16 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   component={SwitchField}
                   type="checkbox"
                   name="prevent_default_groups"
-                  label={<div style={{ display: 'flex' }}>
-                    <>{t_i18n('Don\'t add the user to the default groups')}</>
-                    <Tooltip
-                      title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
-                    >
-                      <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
-                    </Tooltip>
-                  </div>}
+                  label={(
+                    <div style={{ display: 'flex' }}>
+                      <>{t_i18n('Don\'t add the user to the default groups')}</>
+                      <Tooltip
+                        title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
+                      >
+                        <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
+                      </Tooltip>
+                    </div>
+                  )}
                   containerstyle={{ marginTop: 20 }}
                 />
                 <Field

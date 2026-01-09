@@ -38,7 +38,7 @@ interface EntityNode {
   entity_type: string;
   representative?: { main?: string };
   createdBy?: { name?: string };
-  objectLabel?: Array<{ value: string; color: string; id: string; }>;
+  objectLabel?: Array<{ value: string; color: string; id: string }>;
   objectMarking?: Array<{ id: string; definition_type: string; definition: string }>;
 }
 
@@ -73,7 +73,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
         <ItemIcon type={entity.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -114,7 +114,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItemButton>
   );

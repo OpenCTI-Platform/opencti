@@ -203,14 +203,14 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           resolvePath={(data: CaseRftsLinesCases_data$data) => data.caseRfts?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={caseFragment}
           exportContext={{ entity_type: 'Case-Rft' }}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Case-Rft' />
+                <StixCoreObjectForms entityType="Case-Rft" />
                 <CaseRftCreation paginationOptions={queryPaginationOptions} />
               </div>
             </Security>

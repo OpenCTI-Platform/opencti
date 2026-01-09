@@ -88,14 +88,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface StixCoreObjectQuickSubscriptionContentProps {
-  triggerData: stixCoreObjectTriggersUtilsPaginationQuery$data
+  triggerData: stixCoreObjectTriggersUtilsPaginationQuery$data;
   paginationOptions: stixCoreObjectTriggersUtilsPaginationQuery$variables;
   instanceId: string;
   instanceName: string;
 }
 
 const StixCoreObjectQuickSubscription: FunctionComponent<
-StixCoreObjectQuickSubscriptionContentProps
+  StixCoreObjectQuickSubscriptionContentProps
 > = ({ triggerData, instanceId, paginationOptions, instanceName }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
@@ -243,27 +243,27 @@ StixCoreObjectQuickSubscriptionContentProps
     )?.values?.filter((id) => id !== instanceId) ?? [];
     const newInstanceFilters = filterGroup && newInstanceValues.length > 0
       ? {
-        ...filterGroup,
-        filters: [
-          ...filterGroup.filters.filter(
-            (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
-          ),
-          {
-            key: 'connectedToId',
-            values: newInstanceValues,
-            operator: 'eq',
-            mode: 'or',
-          },
-        ],
-      }
+          ...filterGroup,
+          filters: [
+            ...filterGroup.filters.filter(
+              (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
+            ),
+            {
+              key: 'connectedToId',
+              values: newInstanceValues,
+              operator: 'eq',
+              mode: 'or',
+            },
+          ],
+        }
       : {
-        mode: filterGroup?.mode ?? 'and',
-        filters:
+          mode: filterGroup?.mode ?? 'and',
+          filters:
               filterGroup?.filters.filter(
                 (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
               ) ?? [],
-        filterGroups: filterGroup?.filterGroups ?? [],
-      };
+          filterGroups: filterGroup?.filterGroups ?? [],
+        };
     commitFieldPatch({
       variables: {
         id: triggerIdToUpdate,
@@ -443,7 +443,7 @@ StixCoreObjectQuickSubscriptionContentProps
               <ListItem
                 divider={true}
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     onClick={handleToggleLine}
                     aria-haspopup="true"
@@ -451,7 +451,7 @@ StixCoreObjectQuickSubscriptionContentProps
                   >
                     {expandedLines ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>
-              }
+                )}
               >
                 <ListItemButton
                   classes={{ root: classes.nested }}
@@ -489,7 +489,7 @@ StixCoreObjectQuickSubscriptionContentProps
     <>
       <Tooltip
         title={title}
-        placement={'bottom-start'}
+        placement="bottom-start"
       >
         <ToggleButton
           onClick={() => !disabledInDraft && (triggerUpdate ? handleOpen() : createInstanceTrigger())}

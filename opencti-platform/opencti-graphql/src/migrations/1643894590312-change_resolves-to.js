@@ -55,7 +55,7 @@ export const up = async (next) => {
   await elUpdateByQueryForMigration(
     '[MIGRATION] Migrating relationships connections',
     READ_RELATIONSHIPS_INDICES,
-    updateQuery
+    updateQuery,
   );
   logApp.info(`[MIGRATION] Migrating all relationships connections done in ${new Date() - startMigrateRelationships} ms`);
   next();

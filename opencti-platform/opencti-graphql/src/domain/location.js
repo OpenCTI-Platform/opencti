@@ -31,7 +31,7 @@ export const addLocation = async (context, user, location) => {
   }
   const locationToCreate = R.pipe(
     R.assoc('x_opencti_location_type', location.type),
-    R.dissoc('type')
+    R.dissoc('type'),
   )(location);
   const created = await createEntity(context, user, locationToCreate, type);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

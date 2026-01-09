@@ -18,7 +18,7 @@ const Tick = ({ tick, count, format = (d) => d }) => {
         style={{ left: `${tick.percent}%` }}
       />
       {isFullHour && (
-        <div className='react_time_range__tick_label' style={tickLabelStyle}>
+        <div className="react_time_range__tick_label" style={tickLabelStyle}>
           {format(tick.value)}
         </div>
       )}

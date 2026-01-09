@@ -11,7 +11,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 export interface ConnectorsStatusFilterState {
   search: string;
   slug: string;
-  isManaged: boolean | null
+  isManaged: boolean | null;
 }
 
 interface ConnectorsStatusFiltersProps {
@@ -80,7 +80,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
       {
         isEnterpriseEdition && showManagedFilters && (
           <>
-            <Tooltip title={t_i18n('Apply filter to managed deployments only')} placement={'top'} >
+            <Tooltip title={t_i18n('Apply filter to managed deployments only')} placement="top">
               <Autocomplete
                 size="small"
                 sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}

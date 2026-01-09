@@ -65,7 +65,7 @@ const EmailTemplateAttributesSidebar = () => {
           }}
         >
           <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
-            <Tooltip title={'attribute'}>
+            <Tooltip title="attribute">
               {renderWidgetIcon('attribute', 'small')}
             </Tooltip>
 
@@ -73,7 +73,7 @@ const EmailTemplateAttributesSidebar = () => {
               {attributesOfTheUserTitle}
             </Typography>
 
-            <div style={{ height: 36 }} ></div>
+            <div style={{ height: 36 }}></div>
 
           </div>
 
@@ -112,7 +112,7 @@ const EmailTemplateAttributesSidebar = () => {
           }}
         >
           <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
-            <Tooltip title={'attribute'}>
+            <Tooltip title="attribute">
               {renderWidgetIcon('attribute', 'small')}
             </Tooltip>
 

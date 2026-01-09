@@ -43,7 +43,7 @@ export interface StixWorkspace extends StixDomainObject {
   object_refs: Array<string>;
   aliases: Array<string>;
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }
 // endregion
@@ -70,7 +70,7 @@ export interface WidgetConfiguration {
     },
   ];
   parameters: {
-    title: string
+    title: string;
   };
   layout: {
     w: number;

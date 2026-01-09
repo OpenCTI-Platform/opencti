@@ -4,7 +4,7 @@ import { EntitySettingSettings_entitySetting$key } from '@components/settings/su
 import { entitySettingFragment } from '@components/settings/sub_types/entity_setting/EntitySettingSettings';
 import useAuth from './useAuth';
 
-type OverviewWidgetLayout = { key: string, width: number, label: string };
+type OverviewWidgetLayout = { key: string; width: number; label: string };
 
 const useOverviewLayoutCustomization: (entityType: string) => OverviewWidgetLayout[] = (entityType) => {
   const { entitySettings } = useAuth();

@@ -78,7 +78,7 @@ export const DecayRulesLine: FunctionComponent<DecayRulesLineProps> = ({
         <ItemIcon type="DecayRule" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -90,7 +90,7 @@ export const DecayRulesLine: FunctionComponent<DecayRulesLineProps> = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -111,7 +111,7 @@ export const DecayRulesLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -128,7 +128,7 @@ export const DecayRulesLineDummy = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined color="disabled" />

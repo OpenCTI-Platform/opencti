@@ -15,9 +15,9 @@ import Security from '../../../../utils/Security';
 import ItemBoolean from '../../../../components/ItemBoolean';
 
 type IngestionCatalogConnectorHeaderProps = {
-  connector: IngestionConnector,
-  isEnterpriseEdition: boolean,
-  onClickDeploy: () => void
+  connector: IngestionConnector;
+  isEnterpriseEdition: boolean;
+  onClickDeploy: () => void;
 };
 
 const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onClickDeploy }: IngestionCatalogConnectorHeaderProps) => {
@@ -61,12 +61,12 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
               connector.verified && (
                 <ItemBoolean
                   status
-                  label={
+                  label={(
                     <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
                       <VerifiedOutlined color="success" fontSize="small" />
                       {t_i18n('Verified')}
                     </Stack>
-                  }
+                  )}
                 />
               )
             }

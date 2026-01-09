@@ -33,6 +33,21 @@ const getYupValidationForField = (
     case 'createdBy':
       validation = Yup.object().nullable();
       break;
+    case 'openvocab':
+      // OpenVocab fields return objects with value/label or arrays of such objects
+      if (field.multiple) {
+        validation = Yup.array();
+      } else {
+        // Single selection can be string or object - accept both
+        validation = Yup.mixed().transform((value) => {
+          // Transform object to string value for validation if needed
+          if (typeof value === 'object' && value !== null) {
+            return (value as Record<string, unknown>).value || value;
+          }
+          return value;
+        });
+      }
+      break;
     default:
       validation = Yup.string();
   }
@@ -40,7 +55,7 @@ const getYupValidationForField = (
   // Add required validation if field is mandatory
   if (field.isMandatory) {
     if (field.type === 'multiselect' || field.type === 'objectMarking'
-        || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+      || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
       validation = (validation as Yup.ArraySchema<unknown[], Yup.AnyObject>).min(1, t_i18n('This field is required'));
     } else if (field.type === 'checkbox' || field.type === 'toggle') {
       // For boolean fields, we might want to ensure they're checked
@@ -219,6 +234,14 @@ export const convertFormSchemaToYupSchema = (
               case 'createdBy':
                 fieldValidation = Yup.object().nullable();
                 break;
+              case 'openvocab':
+                // OpenVocab fields return objects or arrays - accept both
+                if (field.multiple) {
+                  fieldValidation = Yup.array().nullable();
+                } else {
+                  fieldValidation = Yup.mixed().nullable();
+                }
+                break;
               default:
                 fieldValidation = Yup.string().nullable();
                 break;
@@ -240,8 +263,8 @@ export const convertFormSchemaToYupSchema = (
 
                 // Check for meaningful content based on field type
                 if (field.type === 'multiselect' || field.type === 'objectMarking'
-                    || field.type === 'objectLabel' || field.type === 'externalReferences'
-                    || field.type === 'files') {
+                  || field.type === 'objectLabel' || field.type === 'externalReferences'
+                  || field.type === 'files') {
                   return Array.isArray(fieldValue) && fieldValue.length > 0;
                 }
 
@@ -259,12 +282,12 @@ export const convertFormSchemaToYupSchema = (
 
                 if (field.type === 'createdBy') {
                   return fieldValue !== null && fieldValue !== undefined
-                         && typeof fieldValue === 'object' && Object.keys(fieldValue).length > 0;
+                    && typeof fieldValue === 'object' && Object.keys(fieldValue).length > 0;
                 }
 
                 // For text fields
                 return fieldValue !== null && fieldValue !== undefined
-                       && fieldValue !== '' && typeof fieldValue === 'string' && fieldValue.trim() !== '';
+                  && fieldValue !== '' && typeof fieldValue === 'string' && fieldValue.trim() !== '';
               });
 
               // If no field has meaningful content, the entity is completely optional - skip all validation
@@ -281,8 +304,8 @@ export const convertFormSchemaToYupSchema = (
 
                 // Check if mandatory field is empty
                 if (field.type === 'multiselect' || field.type === 'objectMarking'
-                    || field.type === 'objectLabel' || field.type === 'externalReferences'
-                    || field.type === 'files') {
+                  || field.type === 'objectLabel' || field.type === 'externalReferences'
+                  || field.type === 'files') {
                   if (!Array.isArray(fieldValue) || fieldValue.length === 0) {
                     errors.push(field.label || field.name);
                   }
@@ -293,7 +316,7 @@ export const convertFormSchemaToYupSchema = (
                 } else if (field.type !== 'checkbox' && field.type !== 'toggle') {
                   // For non-boolean fields
                   if (fieldValue === null || fieldValue === undefined || fieldValue === ''
-                      || (typeof fieldValue === 'string' && fieldValue.trim() === '')) {
+                    || (typeof fieldValue === 'string' && fieldValue.trim() === '')) {
                     errors.push(field.label || field.name);
                   }
                 }
@@ -391,6 +414,28 @@ export const formatFormDataForSubmission = (
     if (field.type === 'externalReferences') {
       if (Array.isArray(value)) {
         return value.map((l: Record<string, unknown>) => l?.id || l?.value || l).filter((label: unknown) => label);
+      }
+      return value;
+    }
+
+    // Handle open vocabulary fields (single or multiple)
+    if (field.type === 'openvocab') {
+      if (field.multiple) {
+        // Multiple selection - array of objects
+        if (Array.isArray(value)) {
+          return value.map((v: Record<string, unknown> | string) => {
+            if (typeof v === 'object' && v !== null) {
+              return v.value || v.id || v;
+            }
+            return v;
+          }).filter((v: unknown) => v);
+        }
+        return value;
+      }
+      // Single selection - object with value property
+      if (typeof value === 'object' && value !== null) {
+        const obj = value as Record<string, unknown>;
+        return obj.value || obj.id || value;
       }
       return value;
     }
@@ -533,10 +578,11 @@ export const formatFormDataForSubmission = (
 
             // Check for meaningful content based on field type
             if (field.type === 'multiselect' || field.type === 'objectMarking'
-                || field.type === 'objectLabel' || field.type === 'externalReferences'
-                || field.type === 'files') {
+              || field.type === 'objectLabel' || field.type === 'externalReferences'
+              || field.type === 'files') {
               return Array.isArray(value) && value.length > 0;
-            } if (field.type === 'checkbox' || field.type === 'toggle') {
+            }
+            if (field.type === 'checkbox' || field.type === 'toggle') {
               // For boolean fields, only consider it filled if it's true
               // or if it has a default value that differs from the current value
               if (field.defaultValue !== undefined && field.defaultValue !== null) {
@@ -545,9 +591,11 @@ export const formatFormDataForSubmission = (
               }
               // Otherwise, only consider true as meaningful
               return value === true || value === 'true' || value === '1';
-            } if (field.type === 'createdBy') {
+            }
+            if (field.type === 'createdBy') {
               return value && typeof value === 'object' && Object.keys(value).length > 0;
-            } if (field.type === 'number') {
+            }
+            if (field.type === 'number') {
               // Check if it's a meaningful number (not empty string or NaN)
               const numValue = typeof value === 'number' ? value : parseFloat(value as string);
               return !Number.isNaN(numValue) && value !== '';

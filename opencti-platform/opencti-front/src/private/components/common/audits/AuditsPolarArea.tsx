@@ -81,10 +81,10 @@ const auditsPolarAreaDistributionQuery = graphql`
 `;
 
 interface AuditsPolarAreaComponentProps {
-  dataSelection: WidgetDataSelection[]
-  queryRef: PreloadedQuery<AuditsPolarAreaDistributionQuery>
-  withExportPopover: boolean
-  isReadOnly: boolean
+  dataSelection: WidgetDataSelection[];
+  queryRef: PreloadedQuery<AuditsPolarAreaDistributionQuery>;
+  withExportPopover: boolean;
+  isReadOnly: boolean;
 }
 
 const AuditsPolarAreaComponent = ({
@@ -116,14 +116,14 @@ const AuditsPolarAreaComponent = ({
 };
 
 interface AuditsPolarAreaProps {
-  startDate?: string | null
-  endDate?: string | null
-  dataSelection: WidgetDataSelection[]
-  parameters: WidgetParameters
-  variant: string
-  height?: CSSProperties['height']
-  withExportPopover?: boolean
-  isReadOnly?: boolean
+  startDate?: string | null;
+  endDate?: string | null;
+  dataSelection: WidgetDataSelection[];
+  parameters: WidgetParameters;
+  variant: string;
+  height?: CSSProperties['height'];
+  withExportPopover?: boolean;
+  isReadOnly?: boolean;
 }
 
 const AuditsPolarAreaQueyRef = ({

@@ -327,7 +327,7 @@ const IndicatorEditionOverviewComponent = ({
             type="platforms_ov"
             name="x_mitre_platforms"
             required={(mandatoryAttributes.includes('x_mitre_platforms'))}
-            variant={'edit'}
+            variant="edit"
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
@@ -345,12 +345,12 @@ const IndicatorEditionOverviewComponent = ({
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
+            helperText={(
               <SubscriptionFocus
                 context={context}
                 fieldName="x_opencti_score"
               />
-            }
+            )}
           />
           <Field
             component={MarkdownField}
@@ -385,12 +385,12 @@ const IndicatorEditionOverviewComponent = ({
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField
@@ -421,12 +421,12 @@ const IndicatorEditionOverviewComponent = ({
             required={(mandatoryAttributes.includes('x_opencti_detection'))}
             containerstyle={{ marginTop: 20 }}
             onChange={handleSubmitField}
-            helperText={
+            helperText={(
               <SubscriptionFocus
                 context={context}
                 fieldName="x_opencti_detection"
               />
-            }
+            )}
           />
           {enableReferences && (
             <CommitMessage

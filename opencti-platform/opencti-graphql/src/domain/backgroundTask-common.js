@@ -12,7 +12,7 @@ import {
   MEMBER_ACCESS_RIGHT_ADMIN,
   SETTINGS_SET_ACCESSES,
   SETTINGS_SETLABELS,
-  SYSTEM_USER
+  SYSTEM_USER,
 } from '../utils/access';
 import { isKnowledge, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
@@ -138,8 +138,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     // and the user has the right to modify them (= notifications are the ones of the user OR the user has SET_ACCESS capability)
     if (taskType === TASK_TYPE_QUERY) {
       const isNotifications = entityTypeFilters.length === 1
-          && entityTypeFilters[0].values.length === 1
-          && entityTypeFilters[0].values[0] === 'Notification';
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === 'Notification';
       if (!isNotifications) {
         throw ForbiddenAccess('The targeted ids are not notifications.');
       }
@@ -164,7 +164,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess();
       }
     } else {
-      throw UnsupportedError('A background task should be of type query or list.');
+      throw UnsupportedError('A background task should be of type query or list.', { taskType });
     }
   } else if (scope === BackgroundTaskScope.User) { // 04. Background task of scope User
     // 2.1. The user should have the capability SETTINGS_SET_ACCESSES
@@ -175,8 +175,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     // Check the targeted entities are User
     if (taskType === TASK_TYPE_QUERY) {
       const isUsers = entityTypeFilters.length === 1
-          && entityTypeFilters[0].values.length === 1
-          && entityTypeFilters[0].values[0] === 'User';
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === 'User';
       if (!isUsers) {
         throw ForbiddenAccess('The targeted ids are not users.');
       }
@@ -187,7 +187,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess('The targeted ids are not users.');
       }
     } else {
-      throw UnsupportedError('A background task should be of type query or list.');
+      throw UnsupportedError('A background task should be of type query or list.', { taskType });
     }
   } else if (scope === BackgroundTaskScope.Import) { // 05. Background task of scope Import (i.e. on files and workbenches in Data/import)
     // The user should have the capability KNOWLEDGE_KNASKIMPORT
@@ -210,8 +210,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     if (taskType === TASK_TYPE_QUERY) {
       const isWorkspaces = entityTypeFilters.length === 1
-          && entityTypeFilters[0].values.length === 1
-          && entityTypeFilters[0].values[0] === ENTITY_TYPE_WORKSPACE;
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === ENTITY_TYPE_WORKSPACE;
       const typeValues = extractFilterGroupValues(baseFilterObject, 'type');
       const isDashboards = typeValues.length === 1 && typeValues[0] === 'dashboard';
       if (!isWorkspaces || !isDashboards) {
@@ -233,8 +233,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     if (taskType === TASK_TYPE_QUERY) {
       const isWorkspaces = entityTypeFilters.length === 1
-          && entityTypeFilters[0].values.length === 1
-          && entityTypeFilters[0].values[0] === ENTITY_TYPE_WORKSPACE;
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === ENTITY_TYPE_WORKSPACE;
       const typeValues = extractFilterGroupValues(baseFilterObject, 'type');
       const isInvestigations = typeValues.length === 1 && typeValues[0] === 'investigation';
       if (!isWorkspaces || !isInvestigations) {
@@ -256,8 +256,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     if (taskType === TASK_TYPE_QUERY) {
       const isPublicDashboards = entityTypeFilters.length === 1
-          && entityTypeFilters[0].values.length === 1
-          && entityTypeFilters[0].values[0] === ENTITY_TYPE_PUBLIC_DASHBOARD;
+        && entityTypeFilters[0].values.length === 1
+        && entityTypeFilters[0].values[0] === ENTITY_TYPE_PUBLIC_DASHBOARD;
       if (!isPublicDashboards) {
         throw ForbiddenAccess('The targeted ids are not public dashboards.');
       }
@@ -269,9 +269,9 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
           filters: {
             mode: FilterMode.And,
             filters: [{ key: ['type'], values: ['dashboard'] }],
-            filterGroups: []
-          }
-        }
+            filterGroups: [],
+          },
+        },
       );
       // This check is because we base our control on authorized members of the
       // associated custom dashboards and not the public dashboard entity itself.
@@ -308,7 +308,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       }
     }
   } else { // Background task with an invalid scope
-    throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT, DASHBOARD, PUBLIC_DASHBOARD.');
+    throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT, DASHBOARD, PUBLIC_DASHBOARD.', { scope });
   }
 };
 
@@ -415,7 +415,7 @@ export const createListTask = async (context, user, input) => {
     event_scope: 'create',
     event_access: 'extended',
     message: 'creates `background task`',
-    context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: listTask }
+    context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: listTask },
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);
   return listTask;

@@ -459,8 +459,8 @@ const StixCoreObjectsList = ({
           render={({ props }) => {
             if (
               props
-            && props.stixCoreObjects
-            && props.stixCoreObjects.edges.length > 0
+              && props.stixCoreObjects
+              && props.stixCoreObjects.edges.length > 0
             ) {
               const data = props.stixCoreObjects.edges;
               return (

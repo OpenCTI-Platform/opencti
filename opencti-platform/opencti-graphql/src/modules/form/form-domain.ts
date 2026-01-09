@@ -25,11 +25,13 @@ import { ENTITY_TYPE_MALWARE, isStixDomainObject, isStixDomainObjectContainer } 
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { detectObservableType } from '../../utils/observable';
+import { detectObservableType, refangValues } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
+import { checkObservableSyntax } from '../../utils/syntax';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -37,7 +39,7 @@ const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
 export const addForm = async (
   context: AuthContext,
   user: AuthUser,
-  input: any
+  input: any,
 ): Promise<BasicStoreEntityForm> => {
   let parsedSchema: FormSchemaDefinition;
   try {
@@ -80,7 +82,7 @@ export const addForm = async (
     user,
     formToCreate,
     ENTITY_TYPE_FORM,
-    { complete: true }
+    { complete: true },
   );
 
   if (isCreation) {
@@ -112,7 +114,7 @@ export const addForm = async (
 export const findById = async (
   context: AuthContext,
   user: AuthUser,
-  formId: string
+  formId: string,
 ): Promise<BasicStoreEntityForm> => {
   return storeLoadById<BasicStoreEntityForm>(context, user, formId, ENTITY_TYPE_FORM);
 };
@@ -120,7 +122,7 @@ export const findById = async (
 export const findFormPaginated = async (
   context: AuthContext,
   user: AuthUser,
-  opts = {}
+  opts = {},
 ) => {
   return pageEntitiesConnection<BasicStoreEntityForm>(context, user, [ENTITY_TYPE_FORM], opts);
 };
@@ -128,7 +130,7 @@ export const findFormPaginated = async (
 export const findAllForms = async (
   context: AuthContext,
   user: AuthUser,
-  opts = {}
+  opts = {},
 ) => {
   return fullEntitiesList<BasicStoreEntityForm>(context, user, [ENTITY_TYPE_FORM], opts);
 };
@@ -137,7 +139,7 @@ export const patchForm = async (
   context: AuthContext,
   user: AuthUser,
   id: string,
-  patch: object
+  patch: object,
 ) => {
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_FORM, patch);
   return patched.element;
@@ -147,7 +149,7 @@ export const formEditField = async (
   context: AuthContext,
   user: AuthUser,
   formId: string,
-  input: { key: string; value: string | string[] | null }[]
+  input: { key: string; value: string | string[] | null }[],
 ): Promise<StoreEntityForm> => {
   const updates = input.map(({ key, value }) => {
     // If updating the form_schema, validate it first
@@ -177,7 +179,7 @@ export const formEditField = async (
       type: 'FORM',
       name: element.name,
       is_running: isActive,
-      connector_user_id: user.id
+      connector_user_id: user.id,
     });
   }
 
@@ -187,7 +189,7 @@ export const formEditField = async (
     event_scope: 'update',
     event_access: 'administration',
     message: `updates form intake \`${element.name}\``,
-    context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input: { name: element.name } }
+    context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input: { name: element.name } },
   });
 
   // Add telemetry
@@ -199,7 +201,7 @@ export const formEditField = async (
 export const formDelete = async (
   context: AuthContext,
   user: AuthUser,
-  formId: string
+  formId: string,
 ) => {
   // Get form details before deletion for the user action message
   const form = await findById(context, user, formId);
@@ -218,7 +220,7 @@ export const formDelete = async (
       event_scope: 'delete',
       event_access: 'administration',
       message: `deletes form intake \`${form.name}\``,
-      context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input: { name: form.name } }
+      context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input: { name: form.name } },
     });
 
     // Add telemetry
@@ -266,7 +268,7 @@ const transformSpecialFields = async (
   user: AuthUser,
   data: any,
   fields: FormFieldDefinition[],
-  isRelationship: boolean = false
+  isRelationship: boolean = false,
 ): Promise<any> => {
   const transformed = { ...data };
 
@@ -274,13 +276,12 @@ const transformSpecialFields = async (
   const fieldsSource = isRelationship && data.fields ? data.fields : data;
 
   // Find special fields that need transformation
-  // eslint-disable-next-line no-restricted-syntax
+
   for (const field of fields) {
     const attrName = field.attributeMapping.attributeName;
     const value = (fieldsSource as any)[attrName];
 
     if (!value) {
-      // eslint-disable-next-line no-continue
       continue;
     }
 
@@ -295,14 +296,14 @@ const transformSpecialFields = async (
           // For entities, use object format
           (transformed as any).createdBy = {
             internal_id: createdByEntity.internal_id,
-            standard_id: createdByEntity.standard_id
+            standard_id: createdByEntity.standard_id,
           };
         }
       }
     } else if (field.type === 'objectMarking' && Array.isArray(value)) {
       // Transform objectMarking from array of internal_ids
       const markings = [];
-      // eslint-disable-next-line no-restricted-syntax
+
       for (const markingId of value) {
         if (typeof markingId === 'string') {
           const markingEntity = await internalLoadById(context, user, markingId);
@@ -314,7 +315,7 @@ const transformSpecialFields = async (
               // For entities, use object format
               markings.push({
                 internal_id: markingEntity.internal_id,
-                standard_id: markingEntity.standard_id
+                standard_id: markingEntity.standard_id,
               });
             }
           }
@@ -346,7 +347,7 @@ const transformSpecialFields = async (
     } else if (field.type === 'externalReferences' && Array.isArray(value)) {
       // Transform external references
       const references = [];
-      // eslint-disable-next-line no-restricted-syntax
+
       for (const refId of value) {
         if (typeof refId === 'string') {
           const refEntity = await internalLoadById(context, user, refId);
@@ -391,11 +392,11 @@ export const formSubmit = async (
   context: AuthContext,
   user: AuthUser,
   input: FormSubmissionInput,
-  isDraft: boolean = false
+  isDraft: boolean = false,
 ): Promise<any> => {
   const form = await findById(context, user, input.formId);
   if (!form) {
-    throw FunctionalError('Form not found');
+    throw FunctionalError('Form not found', { id: input.formId });
   }
 
   let values = {} as Record<string, any>;
@@ -404,7 +405,6 @@ export const formSubmit = async (
   } catch (error) {
     throw FunctionalError('Cannot read values', { error });
   }
-
   const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
   const errors: string[] = [];
 
@@ -540,7 +540,7 @@ export const formSubmit = async (
     type: 'bundle',
     id: `bundle--${uuidv4()}`,
     spec_version: '2.1',
-    objects: []
+    objects: [],
   };
 
   // Create main entity
@@ -571,16 +571,27 @@ export const formSubmit = async (
           mainEntity[field.attributeMapping.attributeName] = convertedValue;
         }
         mainEntity = completeEntity(mainEntityType, mainEntity);
+        if (isStixCyberObservable(mainEntity.entity_type)) {
+          if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
+            throw FunctionalError('Main entity observable is not correctly formatted', {
+              type: mainEntity.entity_type,
+              input: mainEntity,
+              doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+            });
+          }
+        }
         mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
       }
     } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
-      for (let index = 0; index < values.mainEntityParsed.length; index += 1) {
+      // Refang (de-sanitize) parsed values to handle defanged IOCs
+      const refangedMainEntityParsed = refangValues(values.mainEntityParsed);
+      for (let index = 0; index < refangedMainEntityParsed.length; index += 1) {
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
         if (schema.mainEntityParseFieldMapping === 'pattern' && schema.mainEntityAutoConvertToStixPattern) {
-          // Auto convert the value
-          const observableType = detectObservableType(values.mainEntityParsed[index]);
-          const observableValue = values.mainEntityParsed[index];
+          // Auto convert the value (using refanged value)
+          const observableValue = refangedMainEntityParsed[index];
+          const observableType = detectObservableType(observableValue);
           const pattern = await createStixPattern(context, user, observableType, observableValue);
           mainEntity[schema.mainEntityParseFieldMapping] = pattern;
           mainEntity.pattern_type = 'stix';
@@ -589,7 +600,7 @@ export const formSubmit = async (
         } else {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
-          mainEntity[schema.mainEntityParseFieldMapping] = values.mainEntityParsed[index];
+          mainEntity[schema.mainEntityParseFieldMapping] = refangedMainEntityParsed[index];
         }
 
         // Apply additional fields to all parsed entities
@@ -617,6 +628,15 @@ export const formSubmit = async (
           mainEntity.context = 'form';
         }
         mainEntity = completeEntity(mainEntityType, mainEntity);
+        if (isStixCyberObservable(mainEntity.entity_type)) {
+          if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
+            throw FunctionalError('Main entity observable is not correctly formatted', {
+              type: mainEntity.entity_type,
+              input: mainEntity,
+              doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+            });
+          }
+        }
         mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
       }
@@ -634,6 +654,15 @@ export const formSubmit = async (
       // Transform special fields after applying all field values
       mainEntity = await transformSpecialFields(context, user, mainEntity, mainEntityFields, false);
       mainEntity = completeEntity(mainEntityType, mainEntity);
+      if (isStixCyberObservable(mainEntity.entity_type)) {
+        if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
+          throw FunctionalError('Main entity observable is not correctly formatted', {
+            type: mainEntity.entity_type,
+            input: mainEntity,
+            doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+          });
+        }
+      }
       mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
       mainEntityStixId = mainEntity.standard_id;
     }
@@ -677,6 +706,15 @@ export const formSubmit = async (
                 newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
               }
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
+              if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
+                if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
+                  throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
+                    type: newAdditionalEntity.entity_type,
+                    input: newAdditionalEntity,
+                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  });
+                }
+              }
               const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
               bundle.objects.push(stixAdditionalEntity);
               if (additionalEntitiesMap[additionalEntity.id]) {
@@ -688,12 +726,14 @@ export const formSubmit = async (
           }
         } else if (additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
           if (isNotEmptyField(values[`additional_${additionalEntity.id}_parsed`])) {
-            for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_parsed`].length; index2 += 1) {
+            // Refang (de-sanitize) parsed values to handle defanged IOCs
+            const refangedAdditionalParsed = refangValues(values[`additional_${additionalEntity.id}_parsed`]);
+            for (let index2 = 0; index2 < refangedAdditionalParsed.length; index2 += 1) {
               let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
               if (additionalEntity.parseFieldMapping === 'pattern' && additionalEntity.autoConvertToStixPattern) {
-                // Auto convert the value
-                const observableType = detectObservableType(values[`additional_${additionalEntity.id}_parsed`][index2]);
-                const observableValue = values[`additional_${additionalEntity.id}_parsed`][index2];
+                // Auto convert the value (using refanged value)
+                const observableValue = refangedAdditionalParsed[index2];
+                const observableType = detectObservableType(observableValue);
                 const pattern = await createStixPattern(context, user, observableType, observableValue);
                 newAdditionalEntity[additionalEntity.parseFieldMapping] = pattern;
                 newAdditionalEntity.pattern_type = 'stix';
@@ -702,7 +742,7 @@ export const formSubmit = async (
               } else {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error
-                newAdditionalEntity[additionalEntity.parseFieldMapping] = values[`additional_${additionalEntity.id}_parsed`][index2];
+                newAdditionalEntity[additionalEntity.parseFieldMapping] = refangedAdditionalParsed[index2];
               }
 
               // Apply additional fields to all parsed entities
@@ -729,6 +769,15 @@ export const formSubmit = async (
                 newAdditionalEntity.context = 'form';
               }
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
+              if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
+                if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
+                  throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
+                    type: newAdditionalEntity.entity_type,
+                    input: newAdditionalEntity,
+                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  });
+                }
+              }
               const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
               bundle.objects.push(stixAdditionalEntity);
               if (additionalEntitiesMap[additionalEntity.id]) {
@@ -777,6 +826,15 @@ export const formSubmit = async (
               }
 
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
+              if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
+                if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
+                  throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
+                    type: newAdditionalEntity.entity_type,
+                    input: newAdditionalEntity,
+                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  });
+                }
+              }
               const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
               bundle.objects.push(stixAdditionalEntity);
               if (additionalEntitiesMap[additionalEntity.id]) {
@@ -808,7 +866,7 @@ export const formSubmit = async (
               modified: new Date().toISOString(),
               relationship_type: rel.relationshipType,
               source_ref: mainStixEntities[j].id,
-              target_ref: additionalEntitiesMap[rel.toEntity][k]
+              target_ref: additionalEntitiesMap[rel.toEntity][k],
             };
             // Apply additional fields from submitted data
             if (submittedRel?.fields && rel.fields) {
@@ -829,7 +887,7 @@ export const formSubmit = async (
               modified: new Date().toISOString(),
               relationship_type: rel.relationshipType,
               source_ref: additionalEntitiesMap[rel.fromEntity][k],
-              target_ref: mainStixEntities[j].id
+              target_ref: mainStixEntities[j].id,
             };
             // Apply additional fields from submitted data
             if (submittedRel?.fields && rel.fields) {
@@ -850,7 +908,7 @@ export const formSubmit = async (
               modified: new Date().toISOString(),
               relationship_type: rel.relationshipType,
               source_ref: additionalEntitiesMap[rel.fromEntity][j],
-              target_ref: additionalEntitiesMap[rel.toEntity][k]
+              target_ref: additionalEntitiesMap[rel.toEntity][k],
             };
             // Apply additional fields from submitted data
             if (submittedRel?.fields && rel.fields) {
@@ -904,7 +962,7 @@ export const formSubmit = async (
       content,
       work_id: work.id,
       draft_id: draftId,
-      update: true
+      update: true,
     });
 
     logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });
@@ -916,7 +974,7 @@ export const formSubmit = async (
       success: true,
       bundleId: bundle.id,
       message: 'Form submitted successfully and sent for processing',
-      entityId: finalIsDraft ? draftId : mainEntityStixId
+      entityId: finalIsDraft ? draftId : mainEntityStixId,
     };
   } catch (error) {
     logApp.error('[FORM] Error sending bundle to connector queue', { error });
@@ -946,7 +1004,7 @@ export const generateFormExportConfiguration = async (
 export const importFormConfiguration = async (
   context: AuthContext,
   user: AuthUser,
-  file: Promise<FileHandle>
+  file: Promise<FileHandle>,
 ) => {
   const parsedData = await extractContentFrom(file);
   if (parsedData.type !== 'form') {
@@ -967,7 +1025,7 @@ export const importFormConfiguration = async (
     event_scope: 'create',
     event_access: 'administration',
     message: `imports form \`${createdForm.name}\``,
-    context_data: { id: createdForm.id, entity_type: ENTITY_TYPE_FORM, input: formToCreate }
+    context_data: { id: createdForm.id, entity_type: ENTITY_TYPE_FORM, input: formToCreate },
   });
   return createdForm;
 };

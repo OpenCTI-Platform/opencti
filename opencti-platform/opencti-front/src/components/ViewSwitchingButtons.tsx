@@ -10,13 +10,13 @@ import { useFormatter } from './i18n';
 
 interface ViewSwitchingButtonsProps {
   handleChangeView?: (value: string) => void;
-  disableCards?: boolean,
-  enableEntitiesView?: boolean,
-  currentView?: string,
-  enableSubEntityLines?: boolean,
-  enableGraph?: boolean,
-  enableNestedView?: boolean,
-  enableContextualView?: boolean,
+  disableCards?: boolean;
+  enableEntitiesView?: boolean;
+  currentView?: string;
+  enableSubEntityLines?: boolean;
+  enableGraph?: boolean;
+  enableNestedView?: boolean;
+  enableContextualView?: boolean;
 }
 
 const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
@@ -39,10 +39,10 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
       style={{ margin: '0 0 0 5px' }}
     >
       {typeof handleChangeView === 'function' && !disableCards && (
-      <Tooltip title={t_i18n('Cards view')}>
-        <ToggleButton value="cards" aria-label="cards">
-          <ViewModuleOutlined fontSize="small" color="primary" />
-        </ToggleButton>
+        <Tooltip title={t_i18n('Cards view')}>
+          <ToggleButton value="cards" aria-label="cards">
+            <ViewModuleOutlined fontSize="small" color="primary" />
+          </ToggleButton>
         </Tooltip>
       )}
       {typeof handleChangeView === 'function'
@@ -55,55 +55,55 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
                 currentView === 'entities'
                   ? 'secondary'
                   : 'primary'
-                }
+              }
             />
           </ToggleButton>
         </Tooltip>
       )}
       {enableEntitiesView && (
-      <Tooltip title={t_i18n('Relationships view')}>
-        <ToggleButton
-          value="relationships"
-          aria-label="relationships"
-        >
-          <RelationManyToMany
-            fontSize="small"
-            color={
-              currentView === 'relationships' || !currentView
-                ? 'secondary'
-                : 'primary'
+        <Tooltip title={t_i18n('Relationships view')}>
+          <ToggleButton
+            value="relationships"
+            aria-label="relationships"
+          >
+            <RelationManyToMany
+              fontSize="small"
+              color={
+                currentView === 'relationships' || !currentView
+                  ? 'secondary'
+                  : 'primary'
               }
-          />
-        </ToggleButton>
-      </Tooltip>
+            />
+          </ToggleButton>
+        </Tooltip>
       )}
       {typeof handleChangeView === 'function' && !enableEntitiesView && (
-      <Tooltip title={t_i18n('Lines view')}>
-        <ToggleButton
-          value="lines"
-          onClick={() => handleChangeView('lines')}
-          aria-label="lines"
-        >
-          <FiligranIcon icon={ListViewIcon} color="primary" size="small" />
-        </ToggleButton>
-      </Tooltip>
+        <Tooltip title={t_i18n('Lines view')}>
+          <ToggleButton
+            value="lines"
+            onClick={() => handleChangeView('lines')}
+            aria-label="lines"
+          >
+            <FiligranIcon icon={ListViewIcon} color="primary" size="small" />
+          </ToggleButton>
+        </Tooltip>
       )}
       {typeof handleChangeView === 'function' && enableSubEntityLines && (
-      <Tooltip title={t_i18n('Sub entity lines view')}>
-        <ToggleButton
-          value="subEntityLines"
-          aria-label="subEntityLines"
-        >
-          <FiligranIcon icon={SublistViewIcon} color="secondary" size="small" />
-        </ToggleButton>
-      </Tooltip>
+        <Tooltip title={t_i18n('Sub entity lines view')}>
+          <ToggleButton
+            value="subEntityLines"
+            aria-label="subEntityLines"
+          >
+            <FiligranIcon icon={SublistViewIcon} color="secondary" size="small" />
+          </ToggleButton>
+        </Tooltip>
       )}
       {typeof handleChangeView === 'function' && enableGraph && (
-      <Tooltip title={t_i18n('Graph view')}>
-        <ToggleButton value="graph" aria-label="graph">
-          <VectorPolygon fontSize="small" color="primary" />
-        </ToggleButton>
-      </Tooltip>
+        <Tooltip title={t_i18n('Graph view')}>
+          <ToggleButton value="graph" aria-label="graph">
+            <VectorPolygon fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>
       )}
       {typeof handleChangeView === 'function'
         && enableNestedView && (
@@ -125,7 +125,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
                 currentView === 'contextual' || !currentView
                   ? 'secondary'
                   : 'primary'
-                }
+              }
             />
           </ToggleButton>
         </Tooltip>

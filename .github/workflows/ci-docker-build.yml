@@ -6,7 +6,26 @@ on:
       image_tag:
         description: "Image Tag"
         type: string
-        required: true
+        default: ${{ github.sha }}
+      checkout_ref:
+        description: "Reference of the branch or commit sha"
+        type: string
+        default: ${{ github.sha }}
+      client_python_local:
+        description: "Use client python from the same commit"
+        type: boolean
+        required: false
+        default: false
+      dockerfile_target:
+        description: "Target to build in the multi stage docker file - testing or app"
+        type: string
+        required: false
+        default: app
+      publish_to_registry:
+        description: "Publish image to registry. If false, will save the image as github artifact"
+        type: string
+        required: false
+        default: false
     outputs:
       image-tag-version-cleaned:
         description: "Image tag after formatting"
@@ -22,6 +41,7 @@ jobs:
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
+
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v4
@@ -30,7 +50,9 @@ jobs:
       uses: docker/setup-buildx-action@v3
       with:
         name: gha-builder-platform
+
     - name: Login to DockerHub
+      if: inputs.publish_to_registry == 'true'
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -42,17 +64,25 @@ jobs:
       with:
         images: filigran/platform
         tags: type=raw,value=${{ inputs.image_tag }}
+
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         context: opencti-platform
-        # Using Dockerfile_featurebranch waiting for the merge of all dockerfile
         file: opencti-platform/Dockerfile_featurebranch
-        push: true
+        target: ${{ inputs.dockerfile_target }}
+        push: ${{ inputs.publish_to_registry == 'true' }}
+        outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=registry,ref=filigran/platform:buildcache
-        cache-to: type=registry,ref=filigran/platform:buildcache,mode=max
+
+    - name: Upload opencti docker image artifact
+      if: ${{ inputs.publish_to_registry == 'false' }}
+      uses: actions/upload-artifact@v6
+      with:
+        name: docker-image-opencti-platform
+        path: /tmp/opencti-platform.tar
+        retention-days: 7
 
   build-opencti-worker:
     name: Build OpenCTI Worker image
@@ -60,6 +90,7 @@ jobs:
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
+
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v4
@@ -68,7 +99,9 @@ jobs:
       uses: docker/setup-buildx-action@v3
       with:
         name: gha-builder-worker
+
     - name: Login to DockerHub
+      if: inputs.publish_to_registry == 'true'
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -80,13 +113,20 @@ jobs:
       with:
         images: filigran/worker
         tags: type=raw,value=${{ inputs.image_tag }}
+
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         context: opencti-worker
         file: opencti-worker/Dockerfile
-        push: true
+        push: ${{ inputs.publish_to_registry == 'true' }}
+        outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-worker.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=registry,ref=filigran/worker:buildcache
-        cache-to: type=registry,ref=filigran/worker:buildcache,mode=max
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: docker-image-opencti-worker
+        path: /tmp/opencti-worker.tar
+        retention-days: 7

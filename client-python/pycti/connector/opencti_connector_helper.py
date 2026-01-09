@@ -5,6 +5,7 @@ import datetime
 import json
 import os
 import queue
+import re
 import sched
 import signal
 import ssl
@@ -101,6 +102,51 @@ def get_config_variable(
         return default
 
     return result
+
+
+def normalize_email_prefix(email: str) -> str:
+    """
+    Normalize the prefix (local part) of an email address by replacing
+    invalid characters with hyphens.
+
+    Valid characters in email prefix: a-z, A-Z, 0-9, and special chars: . _ + -
+    All other characters are replaced with '-'
+
+    Args:
+        email: Email address to normalize
+
+    Returns:
+        Normalized email address
+
+    Examples:
+        >>> normalize_email_prefix("john.doe@example.com")
+        'john.doe@example.com'
+        >>> normalize_email_prefix("john@doe@example.com")
+        'john-doe@example.com'
+        >>> normalize_email_prefix("user!name#test@example.com")
+        'user-name-test@example.com'
+    """
+    if "@" not in email:
+        raise ValueError("Invalid email: missing '@' symbol")
+
+    # Split email into prefix and domain
+    parts = email.split("@")
+    if len(parts) != 2:
+        # Multiple @ signs - treat first @ as the separator
+        prefix = parts[0]
+        domain = "@".join(parts[1:])
+    else:
+        prefix, domain = parts
+
+    # Replace invalid characters with hyphen
+    # Valid chars: alphanumeric, dot, underscore, plus, hyphen
+    normalized_prefix = re.sub(r"[^a-zA-Z0-9._+-]", "-", prefix)
+
+    # Optional: Remove consecutive hyphens and leading/trailing hyphens
+    normalized_prefix = re.sub(r"-+", "-", normalized_prefix)
+    normalized_prefix = normalized_prefix.strip("-")
+
+    return f"{normalized_prefix}@{domain}"
 
 
 def is_memory_certificate(certificate):
@@ -1038,6 +1084,19 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.connect_id = get_config_variable(
             "CONNECTOR_ID", ["connector", "id"], config
         )
+        self.connect_auto_create_service_account = get_config_variable(
+            "CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT",
+            ["connector", "auto_create_service_account"],
+            config,
+            default=False,
+        )
+        self.connect_auto_create_service_account_confidence_level = get_config_variable(
+            "CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL",
+            ["connector", "auto_create_service_account_confidence_level"],
+            config,
+            default=50,
+            isNumber=True,
+        )
         self.listen_protocol = get_config_variable(
             "CONNECTOR_LISTEN_PROTOCOL",
             ["connector", "listen_protocol"],
@@ -1213,6 +1272,54 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # Initialize ConnectorInfo instance
         self.connector_info = ConnectorInfo()
         # Initialize configuration
+
+        # If auto create service account
+        if self.connect_auto_create_service_account:
+            temp_api = OpenCTIApiClient(
+                self.opencti_url,
+                self.opencti_token,
+                self.log_level,
+                self.opencti_ssl_verify,
+                json_logging=self.opencti_json_logging,
+                custom_headers=self.opencti_custom_headers,
+                bundle_send_to_queue=self.bundle_send_to_queue,
+            )
+            # Resolve connectors group
+            groups = temp_api.group.list(
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "name", "values": ["Connectors"]}],
+                    "filterGroups": [],
+                }
+            )
+            if len(groups) > 0:
+                user_email = normalize_email_prefix(
+                    self.connect_name.lower() + "@connector.octi.filigran.io"
+                )
+                # Resolve user
+                user = temp_api.user.read(
+                    filters={
+                        "mode": "and",
+                        "filters": [{"key": "user_email", "values": [user_email]}],
+                        "filterGroups": [],
+                    },
+                    include_token=True,
+                )
+                if user is None:
+                    user = temp_api.user.create(
+                        name="[C] " + self.connect_name,
+                        user_email=user_email,
+                        user_confidence_level={
+                            "max_confidence": self.connect_auto_create_service_account_confidence_level,
+                            "overrides": [],
+                        },
+                        groups=[groups[0]["id"]],
+                        include_token=True,
+                        user_service_account=True,
+                    )
+                if user is not None:
+                    self.opencti_token = user["api_token"]
+
         # - Classic API that will be directly attached to the connector rights
         self.api = OpenCTIApiClient(
             self.opencti_url,
@@ -2251,100 +2358,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.metric.inc("error_count")
             time.sleep(10)
             self._send_bundle(channel, bundle, **kwargs)
-
-    def stix2_get_embedded_objects(self, item) -> Dict:
-        """gets created and marking refs for a stix2 item
-
-        :param item: valid stix2 item
-        :type item:
-        :return: returns a dict of created_by of object_marking_refs
-        :rtype: Dict
-        """
-        # Marking definitions
-        object_marking_refs = []
-        if "object_marking_refs" in item:
-            for object_marking_ref in item["object_marking_refs"]:
-                if object_marking_ref in self.cache_index:
-                    object_marking_refs.append(self.cache_index[object_marking_ref])
-        # Created by ref
-        created_by_ref = None
-        if "created_by_ref" in item and item["created_by_ref"] in self.cache_index:
-            created_by_ref = self.cache_index[item["created_by_ref"]]
-
-        return {
-            "object_marking_refs": object_marking_refs,
-            "created_by_ref": created_by_ref,
-        }
-
-    def stix2_get_entity_objects(self, entity) -> list:
-        """process a stix2 entity
-
-        :param entity: valid stix2 entity
-        :type entity:
-        :return: entity objects as list
-        :rtype: list
-        """
-
-        items = [entity]
-        # Get embedded objects
-        embedded_objects = self.stix2_get_embedded_objects(entity)
-        # Add created by ref
-        if embedded_objects["created_by_ref"] is not None:
-            items.append(embedded_objects["created_by_ref"])
-        # Add marking definitions
-        if len(embedded_objects["object_marking_refs"]) > 0:
-            items = items + embedded_objects["object_marking_refs"]
-
-        return items
-
-    def stix2_get_relationship_objects(self, relationship) -> list:
-        """get a list of relations for a stix2 relationship object
-
-        :param relationship: valid stix2 relationship
-        :type relationship:
-        :return: list of relations objects
-        :rtype: list
-        """
-
-        items = [relationship]
-        # Get source ref
-        if relationship["source_ref"] in self.cache_index:
-            items.append(self.cache_index[relationship["source_ref"]])
-
-        # Get target ref
-        if relationship["target_ref"] in self.cache_index:
-            items.append(self.cache_index[relationship["target_ref"]])
-
-        # Get embedded objects
-        embedded_objects = self.stix2_get_embedded_objects(relationship)
-        # Add created by ref
-        if embedded_objects["created_by"] is not None:
-            items.append(embedded_objects["created_by"])
-        # Add marking definitions
-        if len(embedded_objects["object_marking_refs"]) > 0:
-            items = items + embedded_objects["object_marking_refs"]
-
-        return items
-
-    def stix2_get_report_objects(self, report) -> list:
-        """get a list of items for a stix2 report object
-
-        :param report: valid stix2 report object
-        :type report:
-        :return: list of items for a stix2 report object
-        :rtype: list
-        """
-
-        items = [report]
-        # Add all object refs
-        for object_ref in report["object_refs"]:
-            items.append(self.cache_index[object_ref])
-        for item in items:
-            if item["type"] == "relationship":
-                items = items + self.stix2_get_relationship_objects(item)
-            else:
-                items = items + self.stix2_get_entity_objects(item)
-        return items
 
     @staticmethod
     def stix2_deduplicate_objects(items) -> list:

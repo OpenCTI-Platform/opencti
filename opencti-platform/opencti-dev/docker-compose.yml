@@ -14,7 +14,7 @@ services:
       - 5540:5540
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: elasticsearch:8.19.7
+    image: elasticsearch:8.19.9
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - essnapshots:/usr/share/elasticsearch/snapshots
@@ -36,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: kibana:8.19.7
+    image: kibana:8.19.9
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped
@@ -62,7 +62,7 @@ services:
   opencti-dev-opensearch:
     profiles: [ opensearch ]
     container_name: opencti-dev-opensearch
-    image: opensearchproject/opensearch:3.3.2
+    image: opensearchproject/opensearch:3.4.0
     volumes:
       - osdata:/usr/share/opensearch/data
       - ossnapshots:/usr/share/opensearch/snapshots
@@ -84,7 +84,7 @@ services:
       - 9600:9600
   opencti-dev-opensearch-dashboards:
     profiles: [ opensearch ]
-    image: opensearchproject/opensearch-dashboards:3.3.0
+    image: opensearchproject/opensearch-dashboards:3.4.0
     container_name: opencti-dev-opensearch-dashboards
     ports:
       - 5602:5601 # Map host port 5601 to container port 5601
@@ -113,7 +113,7 @@ services:
     restart: unless-stopped
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:4.2.1-management
+    image: rabbitmq:4.2.2-management
     restart: unless-stopped
     volumes:
       - ./rabbitmq.config:/etc/rabbitmq/conf.d/90-userdefined.conf
@@ -143,7 +143,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.140.1
+    image: otel/opentelemetry-collector-contrib:0.142.0
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
@@ -162,11 +162,14 @@ services:
       image: quay.io/keycloak/keycloak:26.4.5
       volumes:
         - keycloakdata:/opt/keycloak/data
+        - ./keycloak-configuration:/opt/keycloak/data/import
       container_name: opencti-dev-keycloak
-      command: start-dev
+      command: start-dev --import-realm --verbose
+      # use below command to export a configuration. Remember to remove admin user.
+      #command: export --dir /opt/keycloak/data/import/export --users same_file
       environment:
-        KEYCLOAK_ADMIN: "admin"
-        KEYCLOAK_ADMIN_PASSWORD: "admin"
+        KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
+        KC_BOOTSTRAP_ADMIN_PASSWORD: "admin"
       ports:
         - "9999:8080"
 

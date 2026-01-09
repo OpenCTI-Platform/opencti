@@ -137,17 +137,17 @@ interface FeedbackEditionOverviewProps {
 }
 
 interface FeedbackEditionFormValues {
-  message?: string
-  references?: FieldOption[]
-  createdBy?: FieldOption
-  x_opencti_workflow_id: FieldOption
-  objectMarking?: FieldOption[]
+  message?: string;
+  references?: FieldOption[];
+  createdBy?: FieldOption;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
 }
 
 const FEEDBACK_TYPE = 'Feedback';
 
 const FeedbackEditionOverviewComponent: FunctionComponent<
-FeedbackEditionOverviewProps
+  FeedbackEditionOverviewProps
 > = ({ feedbackRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const feedbackData = useFragment(feedbackEditionOverviewFragment, feedbackRef);
@@ -320,12 +320,12 @@ FeedbackEditionOverviewProps
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

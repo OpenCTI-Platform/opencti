@@ -26,7 +26,7 @@ const me = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const UserContextValue: any = { me, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {}, about: {} };
+const UserContextValue: any = { me, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {}, about: {}, themes: {} };
 
 describe('App', () => {
   afterEach(cleanup);
@@ -55,7 +55,7 @@ describe('App', () => {
           <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
             <ThemeProvider theme={createTheme()}>
               <UserContext.Provider value={UserContextValue}>
-                <Profile/>
+                <Profile />
               </UserContext.Provider>
             </ThemeProvider>
           </AppIntlProvider>

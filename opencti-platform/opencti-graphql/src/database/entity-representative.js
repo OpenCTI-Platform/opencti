@@ -32,7 +32,7 @@ const extractRelationshipRepresentativeName = (relationshipData) => {
 const extractRelationshipRepresentative = (relationshipData) => {
   return {
     main: extractRelationshipRepresentativeName(relationshipData),
-    secondary: extractRepresentativeDescription(relationshipData)
+    secondary: extractRepresentativeDescription(relationshipData),
   };
 };
 
@@ -98,7 +98,7 @@ export const extractEntityRepresentativeName = (entityData) => {
 const extractEntityRepresentative = (entityData) => {
   return {
     main: extractEntityRepresentativeName(entityData),
-    secondary: extractRepresentativeDescription(entityData)
+    secondary: extractRepresentativeDescription(entityData),
   };
 };
 

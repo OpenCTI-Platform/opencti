@@ -9,11 +9,11 @@ const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRul
     id: 'decayRule',
     name: ENTITY_TYPE_DECAY_RULE,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_DECAY_RULE]: () => uuidv4()
+      [ENTITY_TYPE_DECAY_RULE]: () => uuidv4(),
     },
   },
   attributes: [
@@ -32,7 +32,7 @@ const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRul
   representative: (stix: StixDecayRule) => {
     return stix.name;
   },
-  converter_2_1: convertDecayRuleToStix
+  converter_2_1: convertDecayRuleToStix,
 };
 
 registerDefinition(DECAY_RULE_DEFINITION);

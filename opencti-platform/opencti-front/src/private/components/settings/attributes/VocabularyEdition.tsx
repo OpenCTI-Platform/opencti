@@ -167,7 +167,7 @@ const VocabularyEdition = ({
             component={SwitchField}
             type="checkbox"
             name="is_hidden"
-            label={t_i18n('Hidden?')}
+            label={t_i18n('Hidden')}
             containerstyle={fieldSpacingContainerStyle}
           />
           <div className={classes.buttons}>

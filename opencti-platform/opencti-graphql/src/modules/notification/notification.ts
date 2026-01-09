@@ -6,7 +6,7 @@ import {
   type StixNotification,
   type StixTrigger,
   type StoreEntityNotification,
-  type StoreEntityTrigger
+  type StoreEntityTrigger,
 } from './notification-types';
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
@@ -25,7 +25,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
   type: {
     id: 'triggers',
     name: ENTITY_TYPE_TRIGGER,
-    category: ABSTRACT_INTERNAL_OBJECT
+    category: ABSTRACT_INTERNAL_OBJECT,
   },
   identifier: {
     definition: {
@@ -55,7 +55,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
   representative: (stix: StixTrigger) => {
     return stix.name;
   },
-  converter_2_1: convertTriggerToStix
+  converter_2_1: convertTriggerToStix,
 };
 registerDefinition(TRIGGER_DEFINITION);
 
@@ -64,7 +64,7 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
   type: {
     id: 'notifications',
     name: ENTITY_TYPE_NOTIFICATION,
-    category: ABSTRACT_INTERNAL_OBJECT
+    category: ABSTRACT_INTERNAL_OBJECT,
   },
   identifier: {
     definition: {
@@ -101,9 +101,9 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
             { name: 'message', label: 'Notification message', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
             { name: 'instance_id', label: 'Notification related instance', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
             { name: 'operation', label: 'Notification operation', type: 'string', format: 'enum', values: TRIGGER_EVENT_TYPES_VALUES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-          ]
+          ],
         },
-      ]
+      ],
     },
     { name: 'is_read', label: 'Is read', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     {
@@ -116,7 +116,7 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: false
+      isFilterable: false,
     },
     authorizedMembers,
     authorizedAuthorities,
@@ -125,6 +125,6 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
   representative: (stix: StixNotification) => {
     return stix.messages.join(', ');
   },
-  converter_2_1: convertNotificationToStix
+  converter_2_1: convertNotificationToStix,
 };
 registerDefinition(NOTIFICATION_DEFINITION);

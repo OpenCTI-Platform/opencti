@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
-import { createEntity, deleteElementById, updateAttribute, } from '../database/middleware';
+import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -21,7 +21,7 @@ export const createStreamCollection = async (context, user, input) => {
   // Insert the collection
   const data = {
     authorized_authorities: [TAXIIAPI_SETCOLLECTIONS],
-    ...input
+    ...input,
   };
   const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_STREAM_COLLECTION, { complete: true });
   if (isCreation) {
@@ -31,7 +31,7 @@ export const createStreamCollection = async (context, user, input) => {
       event_scope: 'create',
       event_access: 'administration',
       message: `creates live stream \`${data.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input },
     });
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].ADDED_TOPIC, element, user);
@@ -72,7 +72,7 @@ export const streamCollectionEditField = async (context, user, collectionId, inp
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for live stream \`${element.name}\``,
-    context_data: { id: collectionId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
+    context_data: { id: collectionId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, element, user);
 };
@@ -84,7 +84,7 @@ export const streamCollectionDelete = async (context, user, collectionId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes live stream \`${deleted.name}\``,
-    context_data: { id: collectionId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input: deleted }
+    context_data: { id: collectionId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input: deleted },
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].DELETE_TOPIC, deleted, user);
   return collectionId;

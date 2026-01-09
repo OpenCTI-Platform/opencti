@@ -226,7 +226,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               })}
             </Select>
           </FormControl>
-          <ScaleBar scale={tickDefinition}/>
+          <ScaleBar scale={tickDefinition} />
           <Typography variant="h4">{t_i18n('Customize scale')}</Typography>
           <Typography variant="h3" gutterBottom={true}>
             {t_i18n('Limits')}
@@ -276,7 +276,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               size="large"
               classes={{ root: classes.createButton }}
             >
-              <Add fontSize="small"/>
+              <Add fontSize="small" />
             </IconButton>
           </div>
           {tickDefinition.ticks.map((tick, index) => (

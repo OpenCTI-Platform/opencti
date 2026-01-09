@@ -100,35 +100,35 @@ export const ingestionJsonEditionFragment = graphql`
 interface IngestionJsonEditionProps {
   ingestionJson: IngestionJsonEditionFragment_ingestionJson$key;
   handleClose: () => void;
-  enableReferences?: boolean
+  enableReferences?: boolean;
 }
 
 export interface IngestionJsonEditionForm {
-  message?: string | null
-  references?: ExternalReferencesValues
-  name: string,
-  description?: string | null,
-  scheduling_period?: string | null,
-  uri: string,
-  verb: string
-  body: string | null | undefined
-  pagination_with_sub_page: boolean
-  pagination_with_sub_page_query_verb: string | null | undefined
-  pagination_with_sub_page_attribute_path: string | null | undefined
-  headers: IngestionJsonHeader[]
-  query_attributes: IngestionJsonAttributes[]
-  authentication_type: string,
-  authentication_value?: string | null,
-  ingestion_running?: boolean | null,
-  json_mapper_id: string | FieldOption,
-  user_id: string | FieldOption,
-  username?: string
-  password?: string
-  token?: string
-  cert?: string
-  key?: string
-  ca?: string
-  markings: FieldOption[],
+  message?: string | null;
+  references?: ExternalReferencesValues;
+  name: string;
+  description?: string | null;
+  scheduling_period?: string | null;
+  uri: string;
+  verb: string;
+  body: string | null | undefined;
+  pagination_with_sub_page: boolean;
+  pagination_with_sub_page_query_verb: string | null | undefined;
+  pagination_with_sub_page_attribute_path: string | null | undefined;
+  headers: IngestionJsonHeader[];
+  query_attributes: IngestionJsonAttributes[];
+  authentication_type: string;
+  authentication_value?: string | null;
+  ingestion_running?: boolean | null;
+  json_mapper_id: string | FieldOption;
+  user_id: string | FieldOption;
+  username?: string;
+  password?: string;
+  token?: string;
+  cert?: string;
+  key?: string;
+  ca?: string;
+  markings: FieldOption[];
 }
 
 const resolveHasUserChoiceJsonMapper = (option: JsonMapperFieldOption) => {
@@ -248,31 +248,31 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
     })) ?? [],
     ...(ingestionJsonData.authentication_type === BEARER_AUTH
       ? {
-        token: extractToken(ingestionJsonData.authentication_value),
-      }
+          token: extractToken(ingestionJsonData.authentication_value),
+        }
       : {
-        token: '',
-      }),
+          token: '',
+        }),
     ...(ingestionJsonData.authentication_type === BASIC_AUTH
       ? {
-        username: extractUsername(ingestionJsonData.authentication_value),
-        password: extractPassword(ingestionJsonData.authentication_value),
-      }
+          username: extractUsername(ingestionJsonData.authentication_value),
+          password: extractPassword(ingestionJsonData.authentication_value),
+        }
       : {
-        username: '',
-        password: '',
-      }),
+          username: '',
+          password: '',
+        }),
     ...(ingestionJsonData.authentication_type === CERT_AUTH
       ? {
-        cert: extractCert(ingestionJsonData.authentication_value),
-        key: extractKey(ingestionJsonData.authentication_value),
-        ca: extractCA(ingestionJsonData.authentication_value),
-      }
+          cert: extractCert(ingestionJsonData.authentication_value),
+          key: extractKey(ingestionJsonData.authentication_value),
+          ca: extractCA(ingestionJsonData.authentication_value),
+        }
       : {
-        cert: '',
-        key: '',
-        ca: '',
-      }),
+          cert: '',
+          key: '',
+          ca: '',
+        }),
   };
 
   const queryRef = useQueryLoading<JsonMapperFieldSearchQuery>(jsonMapperQuery);
@@ -326,7 +326,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
-          <IngestionSchedulingField/>
+          <IngestionSchedulingField />
           <Field
             component={TextField}
             variant="standard"
@@ -348,19 +348,19 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
           </Field>
 
           {values.verb === 'POST' && (
-          <>
-            <Field
-              component={TextField}
-              name="body"
-              label={t_i18n('HTTP BODY POST')}
-              required={values.verb === 'POST'}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={fieldSpacingContainerStyle}
-              askAi={false}
-            />
-          </>
+            <>
+              <Field
+                component={TextField}
+                name="body"
+                label={t_i18n('HTTP BODY POST')}
+                required={values.verb === 'POST'}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={fieldSpacingContainerStyle}
+                askAi={false}
+              />
+            </>
           )}
 
           <QueryAttributeFieldAdd
@@ -385,7 +385,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             </div>
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
               <FormControlLabel
-                control={<Switch defaultChecked={!!values.pagination_with_sub_page}/>}
+                control={<Switch defaultChecked={!!values.pagination_with_sub_page} />}
                 style={{ marginLeft: 1 }}
                 name="pagination_with_sub_page"
                 onChange={(_, checked) => setFieldValue('pagination_with_sub_page', checked)}
@@ -393,31 +393,31 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               />
             </Box>
             {!!values.pagination_with_sub_page && (
-            <>
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="pagination_with_sub_page_query_verb"
-                label={t_i18n('Sub pagination verb')}
-                fullWidth={true}
-                containerstyle={{
-                  width: '100%',
-                  marginTop: 20,
-                }}
-              >
-                <MenuItem value="GET">GET</MenuItem>
-                <MenuItem value="POST">POST</MenuItem>
-              </Field>
+              <>
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="pagination_with_sub_page_query_verb"
+                  label={t_i18n('Sub pagination verb')}
+                  fullWidth={true}
+                  containerstyle={{
+                    width: '100%',
+                    marginTop: 20,
+                  }}
+                >
+                  <MenuItem value="GET">GET</MenuItem>
+                  <MenuItem value="POST">POST</MenuItem>
+                </Field>
 
-              <Field
-                component={TextField}
-                variant="standard"
-                name="pagination_with_sub_page_attribute_path"
-                label={t_i18n('Attribute path to get next uri')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-            </>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="pagination_with_sub_page_attribute_path"
+                  label={t_i18n('Attribute path to get next uri')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+              </>
             )}
           </Alert>
 
@@ -436,14 +436,14 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                     variant="outlined"
                     style={{ padding: '0px 10px 0px 10px' }}
                   >
-                    {t_i18n('Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
-                    <br/>
-                    {t_i18n('If the JSON mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br/>
+                    {t_i18n('Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
+                    <br />
+                    {t_i18n('If the JSON mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
                   </Alert>
                 </Box>
                 <JsonMapperField
                   name="json_mapper_id"
-                  isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value }
+                  isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value}
                   onChange={async (_, option) => {
                     await updateJsonMapper(setFieldValue, option);
                     const hasUserChoiceJsonMapperRepresentations = resolveHasUserChoiceJsonMapper(option as JsonMapperFieldOption);
@@ -538,7 +538,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               variant="outlined"
               style={{ padding: '0px 10px 0px 10px' }}
             >
-              {t_i18n('Please, verify the validity of the selected JSON mapper for the given URL.')}<br/>
+              {t_i18n('Please, verify the validity of the selected JSON mapper for the given URL.')}<br />
               {t_i18n('Only successful tests allow the ingestion edition.')}
             </Alert>
           </Box>

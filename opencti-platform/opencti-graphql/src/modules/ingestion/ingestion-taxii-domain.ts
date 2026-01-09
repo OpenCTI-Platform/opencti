@@ -1,14 +1,20 @@
 import { type BasicStoreEntityIngestionTaxii, ENTITY_TYPE_INGESTION_TAXII } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EditInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
+import { type EditInput, type IngestionTaxiiAddAutoUserInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
 import { addAuthenticationCredentials, removeAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
+import { createOnTheFlyUser } from '../user/user-domain';
+import type { FileHandle } from 'fs/promises';
+import { extractContentFrom } from '../../utils/fileToContent';
+import { isCompatibleVersionWithMinimal } from '../../utils/version';
+import { FunctionalError } from '../../config/errors';
+const MINIMAL_TAXII_FEED_COMPATIBLE_VERSION = '6.9.4';
 
 export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string, removeCredentials = false) => {
   const taxiiIngestion = await storeLoadById<BasicStoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
@@ -27,17 +33,27 @@ export const findAllTaxiiIngestion = async (context: AuthContext, user: AuthUser
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {
+  if (input.automatic_user) {
+    const onTheFlyCreatedUser = await createOnTheFlyUser(
+      context,
+      user,
+      { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level },
+    );
+    input = { ...input, user_id: onTheFlyCreatedUser.id };
+  }
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
-  const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_TAXII, { complete: true });
+
+  const { automatic_user: _automatic_user, confidence_level: _confidence_level, ...taxiiFeedToCreate } = input;
+  const { element, isCreation } = await createEntity(context, user, taxiiFeedToCreate, ENTITY_TYPE_INGESTION_TAXII, { complete: true });
   if (isCreation) {
     await registerConnectorForIngestion(context, {
       id: element.id,
       type: 'TAXII',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: input.user_id
+      connector_user_id: input.user_id,
     });
     await publishUserAction({
       user,
@@ -45,16 +61,16 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
       event_scope: 'create',
       event_access: 'administration',
       message: `creates taxii ingestion \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_TAXII, input }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_TAXII, input },
     });
   }
   return element;
 };
 
 export interface TaxiiIngestionPatch {
-  current_state_cursor?: string | undefined,
-  last_execution_date?: string,
-  added_after_start?: string,
+  current_state_cursor?: string | undefined;
+  last_execution_date?: string;
+  added_after_start?: string;
 }
 
 export const patchTaxiiIngestion = async (context: AuthContext, user: AuthUser, id: string, patch: TaxiiIngestionPatch) => {
@@ -78,7 +94,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     const updatedAuthenticationValue = addAuthenticationCredentials(
       authentication_value,
       authenticationValueField?.value[0],
-      authentication_type
+      authentication_type,
     );
 
     const updatedInput = patchInput.map((editInput) => {
@@ -117,7 +133,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     type: 'TAXII',
     name: element.name,
     is_running: element.ingestion_running ?? false,
-    connector_user_id: element.user_id
+    connector_user_id: element.user_id,
   });
 
   await publishUserAction({
@@ -126,13 +142,13 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for taxii ingestion \`${element.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input },
   });
 
   const notif = await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return {
     ...notif,
-    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value)
+    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value),
   };
 };
 
@@ -145,7 +161,7 @@ export const ingestionDelete = async (context: AuthContext, user: AuthUser, inge
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes taxii ingestion \`${deleted.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: deleted }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: deleted },
   });
   return ingestionId;
 };
@@ -160,7 +176,53 @@ export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthU
     event_scope: 'update',
     event_access: 'administration',
     message: `reset state of taxii ingestion \`${ingestionUpdated.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: ingestionUpdated }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input: ingestionUpdated },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestionUpdated, user);
+};
+
+export const ingestionTaxiiAddAutoUser = async (context: AuthContext, user: AuthUser, ingestionId: string, input: IngestionTaxiiAddAutoUserInput) => {
+  const onTheFlyCreatedUser = await createOnTheFlyUser(context, user,
+    { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
+
+  return ingestionEditField(context, user, ingestionId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
+};
+
+export const taxiiFeedAddInputFromImport = async (file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file);
+
+  // check platform version compatibility
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_TAXII_FEED_COMPATIBLE_VERSION)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_TAXII_FEED_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
+
+  return parsedData.configuration;
+};
+
+export const taxiiFeedExport = async (ingestionTaxii: BasicStoreEntityIngestionTaxii) => {
+  const {
+    name,
+    description,
+    uri,
+    version,
+    collection,
+    authentication_type,
+    added_after_start,
+  } = ingestionTaxii;
+  return JSON.stringify({
+    openCTI_version: PLATFORM_VERSION,
+    type: 'taxiiFeeds',
+    configuration: {
+      name,
+      description,
+      uri,
+      version,
+      collection,
+      authentication_type,
+      added_after_start,
+    },
+  });
 };

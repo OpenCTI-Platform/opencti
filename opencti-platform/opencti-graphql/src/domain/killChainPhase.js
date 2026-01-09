@@ -29,7 +29,7 @@ export const killChainPhaseDelete = async (context, user, killChainPhaseId) => {
 export const killChainPhaseAddRelation = (context, user, killChainPhaseId, input) => {
   const finalInput = pipe(
     assoc('toId', killChainPhaseId),
-    assoc('relationship_type', RELATION_KILL_CHAIN_PHASE)
+    assoc('relationship_type', RELATION_KILL_CHAIN_PHASE),
   )(input);
   return createRelation(context, user, finalInput).then((relationData) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, relationData, user);

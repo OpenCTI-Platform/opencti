@@ -565,12 +565,12 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = graph
 `;
 
 interface SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineProps {
-  dataColumns: DataColumns,
-  node: NonNullable<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$data['stixCoreRelationships']>['edges'][0]['node'],
-  paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables,
-  entityId: string,
-  entityLink: string,
-  connectionKey: string,
+  dataColumns: DataColumns;
+  node: NonNullable<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$data['stixCoreRelationships']>['edges'][0]['node'];
+  paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables;
+  entityId: string;
+  entityLink: string;
+  connectionKey: string;
 }
 
 const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
@@ -605,9 +605,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
       secondaryAction={data.is_inferred ? (
         <Tooltip
           title={
-              t_i18n('Inferred knowledge based on the rule ')
-              + (data.x_opencti_inferences?.[0]?.rule.name ?? '')
-            }
+            t_i18n('Inferred knowledge based on the rule ')
+            + (data.x_opencti_inferences?.[0]?.rule.name ?? '')
+          }
         >
           <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
         </Tooltip>
@@ -630,7 +630,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
           <ItemIcon type={data.entity_type} isReversed={isReversed} color={data.draftVersion ? draftColor : null} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div
                 className={classes.bodyItem}
@@ -646,7 +646,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
               >
                 <ItemEntityType
                   entityType={element.entity_type ?? ''}
-                  size='large'
+                  size="large"
                   showIcon
                   isRestricted={!row}
                 />
@@ -656,7 +656,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 style={{ width: dataColumns.name.width }}
               >
                 {element.representative?.main}
-                {element.draftVersion && (<DraftChip/>)}
+                {element.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -685,7 +685,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 />
               </div>
             </>
-          }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -700,11 +700,11 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined/>
+          <MoreVertOutlined />
         </Box>
-        }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton
@@ -715,7 +715,7 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -773,7 +773,7 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
               />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );

@@ -18,7 +18,7 @@ interface AttackPatternsMatrixColumnsElementProps {
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
   isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number; }>>;
+  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
   entityId?: string;
 }
 

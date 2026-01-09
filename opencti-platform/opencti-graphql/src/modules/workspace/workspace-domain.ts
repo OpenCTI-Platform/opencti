@@ -18,7 +18,7 @@ import type {
   QueryWorkspacesArgs,
   WorkspaceAddInput,
   WorkspaceDuplicateInput,
-  WorkspaceObjectsArgs
+  WorkspaceObjectsArgs,
 } from '../../generated/graphql';
 import { getUserAccessRight, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -49,7 +49,7 @@ export const findById = (
 ) => {
   if (workspaceId === PLATFORM_DASHBOARD) {
     return {
-      id: PLATFORM_DASHBOARD
+      id: PLATFORM_DASHBOARD,
     } as BasicStoreEntityWorkspace;
   }
   return storeLoadById<BasicStoreEntityWorkspace>(
@@ -197,7 +197,7 @@ export const workspaceDelete = async (
   const publicDashboards = await getEntitiesListFromCache<PublicDashboardCached>(
     context,
     SYSTEM_USER,
-    ENTITY_TYPE_PUBLIC_DASHBOARD
+    ENTITY_TYPE_PUBLIC_DASHBOARD,
   );
   const publicDashboardsToDelete = publicDashboards
     .filter((dashboard) => dashboard.dashboard_id === workspaceId)
@@ -211,15 +211,15 @@ export const workspaceDelete = async (
           bool: {
             must: [
               { term: { 'entity_type.keyword': { value: 'PublicDashboard' } } },
-              { terms: { 'internal_id.keyword': publicDashboardsToDelete } }
-            ]
-          }
-        }
-      }
+              { terms: { 'internal_id.keyword': publicDashboardsToDelete } },
+            ],
+          },
+        },
+      },
     }).catch((err: Error) => {
       throw DatabaseError(
         '[DELETE] Error deleting public dashboard for workspace ',
-        { cause: err, workspace_id: workspaceId, }
+        { cause: err, workspace_id: workspaceId },
       );
     });
   }
@@ -293,10 +293,14 @@ configurationImportTypeValidation.set(
   'widget',
   'Invalid type. Please import OpenCTI widget-type only',
 );
+configurationImportTypeValidation.set(
+  'theme',
+  'Invalid type. Please import OpenCTI theme-type only',
+);
 
 interface ConfigImportData {
-  type: string
-  openCTI_version: string
+  type: string;
+  openCTI_version: string;
 }
 
 export const checkConfigurationImport = (type: string, parsedData: ConfigImportData) => {
@@ -340,7 +344,7 @@ export const generateWorkspaceExportConfiguration = async (context: AuthContext,
     type: 'dashboard',
     configuration: {
       name: workspace.name,
-      manifest: generatedManifest
+      manifest: generatedManifest,
     },
   };
   return JSON.stringify(exportConfigration);
@@ -358,7 +362,7 @@ export const generateWidgetExportConfiguration = async (context: AuthContext, us
     const exportConfigration = {
       openCTI_version: pjson.version,
       type: 'widget',
-      configuration: toB64(widgetDefinition) as string
+      configuration: toB64(widgetDefinition) as string,
     };
     return JSON.stringify(exportConfigration);
   }
@@ -414,7 +418,7 @@ export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, i
 };
 
 interface WidgetConfigImportData extends ConfigImportData {
-  configuration?: string // widget definition in base64.
+  configuration?: string; // widget definition in base64.
 }
 
 export const workspaceImportWidgetConfiguration = async (
@@ -451,7 +455,7 @@ export const workspaceImportWidgetConfiguration = async (
           ...widgetDefinition.layout,
           x: 0,
           y: nextRow,
-        }
+        },
       },
     },
   };
@@ -484,7 +488,7 @@ export const isDashboardShared = async (context: AuthContext, workspace: BasicSt
   const publicDashboards = await getEntitiesListFromCache<PublicDashboardCached>(
     context,
     SYSTEM_USER,
-    ENTITY_TYPE_PUBLIC_DASHBOARD
+    ENTITY_TYPE_PUBLIC_DASHBOARD,
   );
   return publicDashboards.some((publicDashboard) => (
     publicDashboard.dashboard_id === workspace.id && publicDashboard.enabled

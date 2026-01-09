@@ -14,7 +14,7 @@ const savedFilterResolver: Resolvers = {
     },
     savedFilterFieldPatch: (_, args, context) => {
       return fieldPatchSavedFilter(context, context.user, args);
-    }
+    },
   },
 };
 

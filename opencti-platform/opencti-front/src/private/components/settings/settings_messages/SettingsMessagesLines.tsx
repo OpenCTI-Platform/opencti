@@ -11,9 +11,9 @@ const SettingsMessagesLines = ({
   dataColumns,
   containerRef,
 }: {
-  settingsId: string,
-  datas: { node: SettingsMessagesLine_settingsMessage$key }[]
-  dataColumns: DataColumns,
+  settingsId: string;
+  datas: { node: SettingsMessagesLine_settingsMessage$key }[];
+  dataColumns: DataColumns;
   containerRef: MutableRefObject<GridTypeMap | null>;
 }) => {
   return (

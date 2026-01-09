@@ -13,11 +13,11 @@ import {
   getOrganizationIdByName,
   type OrganizationTestData,
   queryAsAdmin,
-  testContext
+  testContext,
 } from './testQuery';
 import { downloadFile } from '../../src/database/raw-file-storage';
 import { streamConverter } from '../../src/database/file-storage';
-import conf, { logApp } from '../../src/config/conf';
+import { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { getSettings, settingsEditField } from '../../src/domain/settings';
 import { fileToReadStream } from '../../src/database/file-storage';
@@ -32,7 +32,7 @@ import { ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
  * Execute the query and verify that there is no error before returning result.
  * @param request
  */
-export const queryAsAdminWithSuccess = async (request: { query: any, variables: any }) => {
+export const queryAsAdminWithSuccess = async (request: { query: any; variables: any }) => {
   const requestResult = await queryAsAdmin({
     query: request.query,
     variables: request.variables,
@@ -45,7 +45,7 @@ export const queryAsAdminWithSuccess = async (request: { query: any, variables: 
   return requestResult;
 };
 
-export const adminQueryWithSuccess = async (request: { query: any, variables: any }) => {
+export const adminQueryWithSuccess = async (request: { query: any; variables: any }) => {
   const requestResult = await adminQuery({
     query: request.query,
     variables: request.variables,
@@ -59,9 +59,9 @@ export const adminQueryWithSuccess = async (request: { query: any, variables: an
 };
 
 export const adminQueryWithError = async (
-  request: { query: any, variables: any },
+  request: { query: any; variables: any },
   errorMessage?: string,
-  errorName?: string
+  errorName?: string,
 ) => {
   const requestResult = await adminQuery({
     query: request.query,
@@ -83,7 +83,7 @@ export const adminQueryWithError = async (
  * @param client
  * @param request
  */
-export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { query: any, variables: any }) => {
+export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { query: any; variables: any }) => {
   const requestResult = await executeInternalQuery(client, print(request.query), request.variables);
   expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
   if (requestResult.errors) {
@@ -98,7 +98,7 @@ export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { q
  * @param client
  * @param request
  */
-export const queryAsUser = async (client: AxiosInstance, request: { query: any, variables: any }) => {
+export const queryAsUser = async (client: AxiosInstance, request: { query: any; variables: any }) => {
   const result = await executeInternalQuery(client, print(request.query), request.variables);
   return result;
 };
@@ -162,39 +162,11 @@ export const readCsvFromFileStream = async (filePath: string, fileName: string) 
 
   const csvLines: string[] = [];
   // Need an async interator to prevent blocking
-  // eslint-disable-next-line no-restricted-syntax
+
   for await (const line of rl) {
     csvLines.push(line);
   }
   return csvLines;
-};
-
-/**
- * Enable Enterprise edition for test
- * @deprecated This function is useless: api-test are always run under EE with an env variable that take priority over settings
- */
-export const enableEE = async () => {
-  const platformSettings: any = await getSettings(testContext);
-  const input = [
-    { key: 'enterprise_license', value: [conf.get('app:enterprise_edition_license')] },
-  ];
-  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
-  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
-  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-};
-
-/**
- * Go back to community edition
- * @deprecated This function is useless: api-test are always run under EE with an env variable that take priority over settings
- */
-export const disableEE = async () => {
-  const platformSettings: any = await getSettings(testContext);
-  const input = [
-    { key: 'enterprise_license', value: [] },
-  ];
-  const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
-  // EE cant be disabled as setup by configuration
-  expect(settingsResult.platform_enterprise_edition.license_validated).toBeTruthy();
 };
 
 export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {
@@ -217,17 +189,15 @@ export const createUploadFromTestDataFile = async (filePathRelativeFromData: str
 };
 
 /**
- * Enable Enterprise edition and set the platform organisation.
+ * Set the platform organisation.
  * @param organization organization to use as platform organisation.
  */
-export const enableEEAndSetOrganization = async (organization: OrganizationTestData) => {
+export const setOrganization = async (organization: OrganizationTestData) => {
   const platformOrganizationId = await getOrganizationIdByName(organization.name);
   const platformSettings: any = await getSettings(testContext);
 
-  await enableEE();
-
   const input = [
-    { key: 'platform_organization', value: [platformOrganizationId] }
+    { key: 'platform_organization', value: [platformOrganizationId] },
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
 
@@ -236,15 +206,39 @@ export const enableEEAndSetOrganization = async (organization: OrganizationTestD
 };
 
 /**
- * Remove any platform organization and go back to community edition.
+ * Remove any platform organization
  */
-export const enableCEAndUnSetOrganization = async () => {
-  await disableEE();
-
+export const unSetOrganization = async () => {
   const platformSettings: any = await getSettings(testContext);
   const input = [
-    { key: 'platform_organization', value: [] }
+    { key: 'platform_organization', value: [] },
   ];
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
   expect(settingsResult.platform_organization).toBeUndefined();
+};
+
+/**
+ * @param conditionPromise A function checking if the condition is verified.
+ * @param sleepTimeBetweenLoop Time to wait between each loop in ms.
+ * @param loopCount Max loop to do.
+ * @param expectToBeTrue The expecting result of the condition.
+ */
+export const awaitUntilCondition = async (
+  conditionPromise: () => Promise<boolean>,
+  sleepTimeBetweenLoop = 1000,
+  loopCount = 10,
+  expectToBeTrue = true,
+) => {
+  let isConditionOk = await conditionPromise();
+  let loopCurrent = 0;
+
+  while (!isConditionOk === expectToBeTrue && loopCurrent < loopCount) {
+    await new Promise((resolve) => setTimeout(resolve, sleepTimeBetweenLoop));
+    isConditionOk = await conditionPromise();
+    loopCurrent += 1;
+  }
+
+  if (!isConditionOk === expectToBeTrue) {
+    throw new Error(`Condition not met after ${loopCount} attempts`);
+  }
 };

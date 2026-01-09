@@ -8,6 +8,8 @@ import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import ToolEdition from '@components/arsenal/tools/ToolEdition';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Tool from './Tool';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -55,6 +57,7 @@ const toolQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Tool_tool
       ...ToolKnowledge_tool
@@ -101,13 +104,13 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
   const paddingRight = getPaddingRight(location.pathname, toolId, '/dashboard/arsenal/tools');
   const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {tool ? (
         <>
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -125,7 +128,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   ]}
                   data={tool}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -143,7 +146,14 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   <ToolEdition toolId={tool.id} />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={tool}
+                  />
+                </Security>
+              )}
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ToolDeletion id={tool.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -203,34 +213,34 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
             <Routes>
               <Route
                 path="/"
-                element={ (
+                element={(
                   <Tool toolData={tool} />
                 )}
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <ToolKnowledge toolData={tool} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={tool}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses/*"
@@ -253,7 +263,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={toolId}
                   />
@@ -265,12 +275,12 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
 const Root = () => {
-  const { toolId } = useParams() as { toolId: string; };
+  const { toolId } = useParams() as { toolId: string };
   const queryRef = useQueryLoading<RootToolQuery>(toolQuery, {
     id: toolId,
   });

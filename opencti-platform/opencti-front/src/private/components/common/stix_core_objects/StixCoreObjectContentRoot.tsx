@@ -5,6 +5,7 @@ import StixCoreObjectContent from '@components/common/stix_core_objects/StixCore
 import { StixCoreObjectContent_stixCoreObject$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import ContainerMappingContent, { containerContentQuery } from '@components/common/containers/ContainerMappingContent';
 import { ContainerMappingContentQuery$data } from '@components/common/containers/__generated__/ContainerMappingContentQuery.graphql';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
@@ -16,6 +17,8 @@ interface StixCoreObjectContentRootProps {
 const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProps> = ({
   stixCoreObject, isContainer = false,
 }) => {
+  useInitCreateRelationshipContext();
+
   const [isMappingHeaderDisabled, setMappingHeaderDisabled] = useState<boolean>(false);
   const [isEditorHeaderDisabled, setEditorHeaderDisabled] = useState<boolean>(false);
   const { pathname } = useLocation();
@@ -39,13 +42,13 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
       <Routes>
         <Route
           path="/mapping"
-          element={
+          element={(
             <QueryRenderer
               query={containerContentQuery}
               variables={{ id: stixCoreObject.id }}
-              render={({ props } : { props: ContainerMappingContentQuery$data }) => {
+              render={({ props }: { props: ContainerMappingContentQuery$data }) => {
                 if (props && props.container) {
-                  return <ContainerMappingContent currentMode={currentMode} containerFragment={props.container}/>;
+                  return <ContainerMappingContent currentMode={currentMode} containerFragment={props.container} />;
                 }
                 return (
                   <Loader
@@ -55,27 +58,29 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
                 );
               }}
             />
-          }
+          )}
         />
         <Route
           path="/editor"
-          element={
+          element={(
             <StixCoreObjectContent
               currentMode={currentMode}
               stixCoreObject={stixCoreObject}
               setMappingHeaderDisabled={setMappingHeaderDisabled}
               setEditorHeaderDisabled={setEditorHeaderDisabled}
-            />}
+            />
+          )}
         />
         <Route
           path="/"
-          element={
+          element={(
             <StixCoreObjectContent
               currentMode={currentMode}
               stixCoreObject={stixCoreObject}
               setMappingHeaderDisabled={setMappingHeaderDisabled}
               setEditorHeaderDisabled={setEditorHeaderDisabled}
-            />}
+            />
+          )}
         />
       </Routes>
     </>

@@ -71,7 +71,7 @@ const AdministrativeAreaFragment = graphql`
 `;
 
 export const AdministrativeAreaLine: FunctionComponent<
-AdministrativeAreaLineComponentProps
+  AdministrativeAreaLineComponentProps
 > = ({ dataColumns, node }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
@@ -87,14 +87,14 @@ AdministrativeAreaLineComponentProps
         <ItemIcon type="Administrative-Area" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-              {data.draftVersion && (<DraftChip/>)}
+              {data.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}
@@ -109,7 +109,7 @@ AdministrativeAreaLineComponentProps
               {fd(data.modified)}
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -130,7 +130,7 @@ export const AdministrativeAreaLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
@@ -166,7 +166,7 @@ export const AdministrativeAreaLineDummy = ({
               />
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined color="disabled" />

@@ -13,11 +13,11 @@ const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft> = {
     id: 'case-rft',
     name: ENTITY_TYPE_CONTAINER_CASE_RFT,
     category: ENTITY_TYPE_CONTAINER_CASE,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CONTAINER_CASE_RFT]: [{ src: NAME_FIELD }, { src: 'created' }]
+      [ENTITY_TYPE_CONTAINER_CASE_RFT]: [{ src: NAME_FIELD }, { src: 'created' }],
     },
     resolvers: {
       name(data: object) {
@@ -50,7 +50,7 @@ const CASE_RFT_DEFINITION: ModuleDefinition<StoreEntityCaseRft, StixCaseRft> = {
   representative: (stix: StixCaseRft) => {
     return stix.name;
   },
-  converter_2_1: convertCaseRftToStix_2_1
+  converter_2_1: convertCaseRftToStix_2_1,
 };
 
 registerDefinition(CASE_RFT_DEFINITION);

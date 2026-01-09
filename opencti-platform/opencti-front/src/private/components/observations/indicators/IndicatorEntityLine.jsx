@@ -63,11 +63,23 @@ class IndicatorEntityLineComponent extends Component {
     const element = node.to?.id === entityId ? node.from : node.to;
     const restricted = isEmptyField(element);
     const link = `${entityLink}/relations/${node.id}`;
+
+    const isRelationship = t(`relationship_${element.entity_type}`) !== `relationship_${element.entity_type}`;
+
+    const displayName = !restricted
+      ? isRelationship
+        ? element.representative?.main
+        ?? `${element.from?.name ?? element.from?.observable_value ?? '-'}
+         ${String.fromCharCode(8594)}
+         ${element.to?.name ?? element.to?.observable_value ?? '-'}`
+        : element.name || element.observable_value
+      : t('Restricted');
+
     return (
       <ListItem
         divider={true}
         disablePadding
-        secondaryAction={
+        secondaryAction={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCoreRelationshipPopover
               stixCoreRelationshipId={node.id}
@@ -75,7 +87,7 @@ class IndicatorEntityLineComponent extends Component {
               disabled={restricted}
             />
           </Security>
-        }
+        )}
       >
         <ListItemButton
           classes={{ root: classes.item }}
@@ -87,17 +99,17 @@ class IndicatorEntityLineComponent extends Component {
             <ItemIcon type={node.entity_type} />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <div>
                 {displayRelation && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.relationship_type.width }}
-                >
-                  <ItemEntityType
-                    entityType={node.relationship_type}
-                  />
-                </div>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.relationship_type.width }}
+                  >
+                    <ItemEntityType
+                      entityType={node.relationship_type}
+                    />
+                  </div>
                 )}
                 <div
                   className={classes.bodyItem}
@@ -105,11 +117,11 @@ class IndicatorEntityLineComponent extends Component {
                 >
                   <ItemEntityType
                     entityType={element.entity_type === 'stix_relation'
-                    || element.entity_type === 'stix-relation'
+                      || element.entity_type === 'stix-relation'
                       ? element.parent_types[0]
                       : element.entity_type}
                     isRestricted={restricted}
-                    size='large'
+                    size="large"
                     showIcon
                   />
                 </div>
@@ -117,15 +129,7 @@ class IndicatorEntityLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.name.width }}
                 >
-                  {/* eslint-disable-next-line no-nested-ternary */}
-                  {!restricted
-                    ? element.entity_type === 'stix_relation'
-                    || element.entity_type === 'stix-relation'
-                      ? `${element.from.name} ${String.fromCharCode(8594)} ${
-                        element.to.name || element.to.observable_value
-                      }`
-                      : element.name || element.observable_value
-                    : t('Restricted')}
+                  {displayName}
                 </div>
                 <div
                   className={classes.bodyItem}
@@ -155,10 +159,10 @@ class IndicatorEntityLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.confidence.width }}
                 >
-                  <ItemConfidence confidence={node.confidence} entityType='stix-core-relationship' variant="inList" />
+                  <ItemConfidence confidence={node.confidence} entityType="stix-core-relationship" variant="inList" />
                 </div>
               </div>
-          }
+            )}
           />
         </ListItemButton>
       </ListItem>
@@ -230,6 +234,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
           ... on StixCoreRelationship {
             created_at
             updated_at
+            representative {
+              main
+            }
           }
           ... on AttackPattern {
             name
@@ -465,6 +472,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
           ... on StixCoreRelationship {
             created_at
             updated_at
+            representative {
+              main
+            }
           }
           ... on AttackPattern {
             name
@@ -699,11 +709,11 @@ class IndicatorEntityLineDummyComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={
+        secondaryAction={(
           <Box sx={{ root: classes.itemIconDisabled }}>
             <MoreVert />
           </Box>
-        }
+        )}
       >
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Skeleton
@@ -714,7 +724,7 @@ class IndicatorEntityLineDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               {displayRelation && (
                 <div
@@ -785,7 +795,7 @@ class IndicatorEntityLineDummyComponent extends Component {
                 />
               </div>
             </div>
-          }
+          )}
         />
       </ListItem>
     );

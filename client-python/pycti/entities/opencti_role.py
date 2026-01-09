@@ -28,6 +28,11 @@ class Role:
                 name
                 description
             }
+            capabilitiesInDraft {
+                id
+                name
+                description
+            }
             can_manage_sensitive_config
         """
 

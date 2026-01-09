@@ -5,7 +5,7 @@ import useSchema from './hooks/useSchema';
 export interface Connector {
   name: string;
   active: boolean;
-  auto: boolean ;
+  auto: boolean;
   only_contextual: boolean;
   connector_trigger_filters: string;
   connector_type: string;

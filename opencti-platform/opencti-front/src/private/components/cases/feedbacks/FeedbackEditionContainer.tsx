@@ -9,10 +9,10 @@ import { FeedbackEditionContainerQuery } from './__generated__/FeedbackEditionCo
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 interface FeedbackEditionContainerProps {
-  queryRef: PreloadedQuery<FeedbackEditionContainerQuery>
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  queryRef: PreloadedQuery<FeedbackEditionContainerQuery>;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 export const feedbackEditionQuery = graphql`

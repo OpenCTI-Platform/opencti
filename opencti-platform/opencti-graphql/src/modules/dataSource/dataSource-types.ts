@@ -14,7 +14,7 @@ export interface StoreEntityDataSource extends StoreEntity {
   name: string;
   description: string;
   collection_layers: Array<string>;
-  [INPUT_DATA_COMPONENT]: DataComponent
+  [INPUT_DATA_COMPONENT]: DataComponent;
 }
 
 export interface StixDataSource extends StixDomainObject {
@@ -24,9 +24,9 @@ export interface StixDataSource extends StixDomainObject {
   collection_layers: string[];
   aliases: Array<string>;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
     [STIX_EXT_MITRE]: {
-      'extension_type': 'new-sdo'
-    }
+      extension_type: 'new-sdo';
+    };
   };
 }

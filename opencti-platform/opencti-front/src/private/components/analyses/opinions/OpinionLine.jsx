@@ -91,7 +91,7 @@ class OpinionLineComponent extends Component {
           <ItemIcon type="Opinion" />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -148,7 +148,7 @@ class OpinionLineComponent extends Component {
                 />
               </div>
             </div>
-          }
+          )}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRightOutlined />
@@ -236,7 +236,7 @@ class OpinionLineDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -316,7 +316,7 @@ class OpinionLineDummyComponent extends Component {
                 />
               </div>
             </div>
-          }
+          )}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRightOutlined />

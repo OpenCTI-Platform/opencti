@@ -8,7 +8,7 @@ import {
   type FintelTemplateWidget,
   type FintelTemplateWidgetAddInput,
   type Widget,
-  type WidgetDataSelection
+  type WidgetDataSelection,
 } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from './fintelTemplate-types';
@@ -101,14 +101,14 @@ export const addFintelTemplate = async (
           columns: [{
             label: 'Representative',
             attribute: 'representative.main',
-            variableName: 'containerRepresentative'
+            variableName: 'containerRepresentative',
           }],
           instance_id: SELF_ID,
         }],
         parameters: {
           title: 'Attributes of the instance',
           description: 'Multi attributes widget for the instance which the template is applied to.',
-        }
+        },
       },
     });
     // - list widgets of observables
@@ -241,7 +241,7 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
     fintelTemplateIncidentResponse,
     generateFintelTemplateExecutiveSummary('Case-Incident'),
     generateFintelTemplateExecutiveSummary('Case-Rfi'),
-    generateFintelTemplateExecutiveSummary('Case-Rft')
+    generateFintelTemplateExecutiveSummary('Case-Rft'),
   ];
   // add id to fintel template widgets
   const finalInputs: FintelTemplateAddInput[] = builtInTemplatesInputs.map((input) => ({
@@ -275,13 +275,13 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
       ...selection,
       filters: JSON.parse(selection.filters ?? '{}'),
       dynamicFrom: JSON.parse(selection.dynamicFrom ?? '{}'),
-      dynamicTo: JSON.parse(selection.dynamicTo ?? '{}')
-    }))
+      dynamicTo: JSON.parse(selection.dynamicTo ?? '{}'),
+    })),
   }));
   await convertWidgetsIds(context, user, widgets, 'internal');
   const exportWidgets = fintel_template_widgets.map(({ variable_name }, i) => ({
     variable_name,
-    widget: widgets[i]
+    widget: widgets[i],
   }));
 
   return JSON.stringify({
@@ -294,20 +294,20 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
       instance_filters,
       template_content,
       start_date,
-      fintel_template_widgets: exportWidgets
-    }
+      fintel_template_widgets: exportWidgets,
+    },
   });
 };
 
 type FintelTemplateWidgetFromImport = {
-  variable_name: string,
+  variable_name: string;
   widget: Widget & {
     dataSelection: WidgetDataSelection & {
-      filters: FilterGroup,
-      dynamicFrom: FilterGroup,
-      dynamicTo: FilterGroup,
-    }
-  }
+      filters: FilterGroup;
+      dynamicFrom: FilterGroup;
+      dynamicTo: FilterGroup;
+    };
+  };
 };
 
 export const fintelTemplateConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
@@ -331,14 +331,14 @@ export const fintelTemplateConfigurationImport = async (context: AuthContext, us
         ...selection,
         filters: JSON.stringify(selection.filters),
         dynamicFrom: JSON.stringify(selection.dynamicFrom),
-        dynamicTo: JSON.stringify(selection.dynamicTo)
+        dynamicTo: JSON.stringify(selection.dynamicTo),
       })),
     },
   }));
 
   const fintelInput = {
     ...parsedData.configuration,
-    fintel_template_widgets: exportWidgets
+    fintel_template_widgets: exportWidgets,
   };
 
   return addFintelTemplate(context, user, fintelInput, true);

@@ -36,6 +36,6 @@ export interface StixDisseminationList extends StixObject {
   emails: string[];
   description: string;
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }

@@ -22,7 +22,7 @@ export const importCsvConnectorRuntime = async (context: AuthContext, user: Auth
     configurations: configurationsFiltered.map((c) => ({
       id: c.id,
       name: c.name,
-      configuration: JSON.stringify(c)
+      configuration: JSON.stringify(c),
     })),
   });
 };

@@ -23,9 +23,9 @@ const globalWorkflowSettingsFragment = graphql`
 `;
 
 interface GlobalWorkflowSettingsProps {
-  subTypeId: string,
-  workflowEnabled: boolean,
-  data: GlobalWorkflowSettings_global$key
+  subTypeId: string;
+  workflowEnabled: boolean;
+  data: GlobalWorkflowSettings_global$key;
 }
 
 const GlobalWorkflowSettings = ({ subTypeId, data, workflowEnabled }: GlobalWorkflowSettingsProps) => {

@@ -19,19 +19,19 @@ export const up = async (next) => {
   const statusClosed = await createStatusTemplate(context, SYSTEM_USER, { name: 'CLOSED', color: '#607d8b' });
   const workflowStatusNew = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, {
     template_id: statusNew.id,
-    order: 1
+    order: 1,
   });
   const workflowStatusInProgress = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, {
     template_id: statusInProgress.id,
-    order: 2
+    order: 2,
   });
   const workflowStatusAnalyzed = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, {
     template_id: statusAnalyzed.id,
-    order: 3
+    order: 3,
   });
   const workflowStatusClosed = await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, {
     template_id: statusClosed.id,
-    order: 4
+    order: 4,
   });
   logApp.info('[MIGRATION] Migrate and clean current reports');
   const bulkOperations = [];

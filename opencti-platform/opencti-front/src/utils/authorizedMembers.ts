@@ -5,8 +5,8 @@ export const INPUT_AUTHORIZED_MEMBERS = 'restricted_members';
 export type AccessRight = 'none' | 'view' | 'use' | 'edit' | 'admin';
 
 export interface AuthorizedMemberOption extends FieldOption {
-  accessRight: AccessRight
-  groupsRestriction: FieldOption[]
+  accessRight: AccessRight;
+  groupsRestriction: FieldOption[];
 }
 
 export const CAN_USE_ENTITY_TYPES = ['Organization'];

@@ -1,4 +1,4 @@
-import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
+import { createEntity, patchAttribute } from '../../database/middleware';
 import {
   type EntityOptions,
   internalFindByIds,
@@ -6,7 +6,7 @@ import {
   fullEntitiesThroughRelationsFromList,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
-  storeLoadById
+  storeLoadById,
 } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { notify } from '../../database/redis';
@@ -24,6 +24,7 @@ import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreEntity } from '../../types/store';
 import { checkScore } from '../../utils/format';
+import { stixDomainObjectDelete } from '../../domain/stixDomainObject';
 
 // region CRUD
 export const findById = (context: AuthContext, user: AuthUser, organizationId: string) => {
@@ -56,13 +57,13 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
   // Get organization and members
   const organization = await findById(context, user, organizationId);
   if (!organization) {
-    throw FunctionalError('Organization not found');
+    throw FunctionalError('Organization not found', { organizationId });
   }
   const members: BasicStoreEntity[] = await fullEntitiesThroughRelationsFromList(context, user, organization.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga. If not, throw exception
   if (!updatedUser) {
-    throw FunctionalError('User is not part of the organization');
+    throw FunctionalError('User is not part of the organization', { user: user.id, org: organization.id });
   }
   // Add user to organization admins list
   const updated = await editAuthorizedAuthorities(context, user, organization.id, [...(organization.authorized_authorities ?? []), memberId]);
@@ -72,7 +73,7 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
     event_scope: 'update',
     event_access: 'administration',
     message: `Promoting \`${updatedUser.name}\` as admin organization of \`${organization.name}\``,
-    context_data: { id: updated.id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } }
+    context_data: { id: updated.id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } },
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, updatedUser, user);
   return updated;
@@ -82,13 +83,13 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
   // Get organization and members
   const organization = await findById(context, user, organizationId);
   if (!organization) {
-    throw FunctionalError('Organization not found');
+    throw FunctionalError('Organization not found', { organizationId });
   }
   const members: BasicStoreEntity[] = await fullEntitiesThroughRelationsFromList(context, user, organization.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga and is orga_admin. If not, throw exception
   if (!updatedUser) {
-    throw FunctionalError('User is not part of the organization');
+    throw FunctionalError('User is not part of the organization', { user: user.id, org: organization.id });
   }
   // Remove user from organization admins list
   const indexOfMember = (organization.authorized_authorities ?? []).indexOf(memberId);
@@ -100,7 +101,7 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
     event_scope: 'update',
     event_access: 'administration',
     message: `Demoting \`${updatedUser.name}\` as admin orga of \`${organization.name}\``,
-    context_data: { id: updated.id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } }
+    context_data: { id: updated.id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, input: { organizationId, memberId } },
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, updatedUser, user);
   return updated;
@@ -148,7 +149,7 @@ export const organizationDelete = async (context: AuthContext, user: AuthUser, o
     throw AlreadyDeletedError({ organizationId });
   }
   await verifyCanDeleteOrganization(context, user, organization);
-  await deleteElementById(context, user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  await stixDomainObjectDelete(context, user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, organizationId, user);
   return organizationId;
 };

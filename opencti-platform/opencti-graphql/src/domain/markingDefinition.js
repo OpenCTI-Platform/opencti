@@ -124,7 +124,7 @@ export const markingDefinitionDeleteAndUpdateGroups = async (context, user, mark
       mode: 'and',
       filters: [{ key: 'max_shareable_markings.value', values: [markingDefinitionId], operator: 'eq', mode: 'or' }],
       filterGroups: [],
-    }
+    },
   });
   if (groupsWithMarkingInShareableMarkings.length > 0) {
     const markingDefinition = await findById(context, user, markingDefinitionId);

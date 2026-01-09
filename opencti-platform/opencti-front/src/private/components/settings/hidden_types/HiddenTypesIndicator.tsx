@@ -40,8 +40,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface HiddenTypesIndicatorComponentProps {
-  platformHiddenTargetType: string
-  queryRef: PreloadedQuery<HiddenTypesIndicatorQuery>
+  platformHiddenTargetType: string;
+  queryRef: PreloadedQuery<HiddenTypesIndicatorQuery>;
 }
 
 const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorComponentProps> = ({
@@ -78,21 +78,23 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
   return (
     <span>
       {(groupsName.length > 0 || orgsName.length > 0)
-        && (<span className={classes.indication}>
+        && (
+          <span className={classes.indication}>
               &emsp;
-          {`(${t_i18n('Hidden in ')}`}
-          {groupsName.length > 0 && `${t_i18n('Groups')} : ${groupsName}`}
-          {(groupsName.length > 0 && orgsName.length > 0) && `${t_i18n(' & ')}`}
-          {orgsName.length > 0 && `${t_i18n('Organizations')} : ${orgsName}`}
-          {')'}
-        </span>)
+            {`(${t_i18n('Hidden in ')}`}
+            {groupsName.length > 0 && `${t_i18n('Groups')} : ${groupsName}`}
+            {(groupsName.length > 0 && orgsName.length > 0) && `${t_i18n(' & ')}`}
+            {orgsName.length > 0 && `${t_i18n('Organizations')} : ${orgsName}`}
+            )
+          </span>
+        )
       }
     </span>
   );
 };
 
 interface HiddenTypesIndicatorProps {
-  platformHiddenTargetType: string,
+  platformHiddenTargetType: string;
 }
 
 const HiddenTypesIndicator: FunctionComponent<HiddenTypesIndicatorProps> = ({
@@ -110,8 +112,9 @@ const HiddenTypesIndicator: FunctionComponent<HiddenTypesIndicatorProps> = ({
             queryRef={queryRef}
             platformHiddenTargetType={platformHiddenTargetType}
           />
-        </React.Suspense>)
-        }
+        </React.Suspense>
+      )
+      }
     </>
   );
 };

@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
-import { makeStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
@@ -42,20 +42,7 @@ import Transition from '../../../components/Transition';
 import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { FieldOption } from '../../../utils/field';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: 20,
-    borderRadius: 4,
-  },
-}));
+import useHelper from '../../../utils/hooks/useHelper';
 
 const PoliciesFragment = graphql`
   fragment Policies on Settings {
@@ -81,6 +68,8 @@ const PoliciesFragment = graphql`
       name
     }
     otp_mandatory
+    view_all_users
+    platform_session_max_concurrent
   }
 `;
 
@@ -105,6 +94,7 @@ export const policiesFieldPatch = graphql`
 const policiesValidation = () => Yup.object().shape({
   platform_organization: Yup.object().nullable(),
   otp_mandatory: Yup.boolean(),
+  view_all_users: Yup.boolean(),
   password_policy_min_length: Yup.number(),
   password_policy_max_length: Yup.number(),
   password_policy_min_symbols: Yup.number(),
@@ -117,6 +107,7 @@ const policiesValidation = () => Yup.object().shape({
   platform_consent_confirm_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
+  platform_session_max_concurrent: Yup.number().nullable(),
 });
 
 interface PoliciesComponentProps {
@@ -135,20 +126,28 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   const [platformOrganization, setPlatformOrganization] = useState(
     settings.platform_organization
       ? {
-        label: settings.platform_organization?.name,
-        value: settings.platform_organization?.id,
-      }
+          label: settings.platform_organization?.name,
+          value: settings.platform_organization?.id,
+        }
       : null,
   );
 
   const [commitField] = useApiMutation(policiesFieldPatch);
 
-  const classes = useStyles();
   const theme = useTheme<Theme>();
+  const paperStyle = {
+    marginTop: theme.spacing(1),
+    padding: 20,
+    borderRadius: 4,
+  };
 
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Policies | Security | Settings'));
+
+  const { isFeatureEnable } = useHelper();
+  const isUsersVisibilityFeatureEnable = isFeatureEnable('USERS_VISIBILITY');
+
   const handleSubmitField = (name: string, value: string | string[] | FieldOption | null) => {
     policiesValidation()
       .validateAt(name, { [name]: value })
@@ -180,12 +179,19 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     platform_banner_level: settings.platform_banner_level,
     platform_banner_text: settings.platform_banner_text,
     otp_mandatory: settings.otp_mandatory,
+    platform_session_max_concurrent: settings.platform_session_max_concurrent,
     default_group_for_ingestion_users: null,
-
+    view_all_users: settings.view_all_users ?? false,
   };
   const authProviders = settings.platform_providers;
   return (
-    <div className={classes.container} data-testid="policies-settings-page">
+    <div
+      style={{
+        margin: 0,
+        padding: '0 200px 50px 0',
+      }}
+      data-testid="policies-settings-page"
+    >
       <AccessesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
@@ -202,26 +208,30 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                 <Grid container={true} spacing={3}>
                   <Grid item xs={6}>
                     <DangerZoneBlock
-                      type={'platform_organization'}
+                      type="platform_organization"
                       title={(
                         <>
                           {t_i18n('Platform main organization')} <EEChip />
                         </>
                       )}
                       component={({ disabled, style }) => (
-                        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined" style={style}>
+                        <Paper
+                          className="paper-for-grid"
+                          variant="outlined"
+                          style={{ ...paperStyle, ...style }}
+                        >
                           <Alert severity="info" variant="outlined">
                             {t_i18n('When you set a platform organization you enable the organization sharing and segregation feature.')}
-                            <br/>
+                            <br />
                             {t_i18n('Therefore all pieces of knowledge which are not explicitly shared with any organization won\'t be accessible to user(s) not member of the platform organization.')}
-                            <br/>
+                            <br />
                             {t_i18n('Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation')}
                           </Alert>
                           <EETooltip>
                             <ObjectOrganizationField
                               name="platform_organization"
                               disabled={disabled || !isEnterpriseEdition}
-                              label={'Platform organization'}
+                              label="Platform organization"
                               onChange={() => setOpenPlatformOrganizationChanges(true)}
                               style={{ width: '100%', marginTop: 20 }}
                               multiple={false}
@@ -277,142 +287,316 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       )}
                     />
                   </Grid>
-                  <GroupSetDefaultGroupForIngestionUsers/>
 
-                  <Grid item xs={6}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      {t_i18n('Local password policies')}
-                    </Typography>
-                    <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
-                      <Field
-                        component={TextField}
-                        type="number"
-                        variant="standard"
-                        name="password_policy_min_length"
-                        label={t_i18n(
-                          'Number of chars must be greater or equals to',
-                        )}
-                        fullWidth={true}
-                        onSubmit={(name: string, value: string) => {
-                          return handleSubmitField(
-                            name,
-                            value !== '' ? value : '0',
-                          );
-                        }}
-                      />
-                      <Field
-                        component={TextField}
-                        type="number"
-                        variant="standard"
-                        style={{ marginTop: 20 }}
-                        name="password_policy_max_length"
-                        label={`${t_i18n(
-                          'Number of chars must be lower or equals to',
-                        )} (${t_i18n('0 equals no maximum')})`}
-                        fullWidth={true}
-                        onSubmit={(name: string, value: string) => {
-                          return handleSubmitField(
-                            name,
-                            value !== '' ? value : '0',
-                          );
-                        }}
-                      />
-                      <Field
-                        component={TextField}
-                        type="number"
-                        variant="standard"
-                        style={{ marginTop: 20 }}
-                        name="password_policy_min_symbols"
-                        label={t_i18n(
-                          'Number of symbols must be greater or equals to',
-                        )}
-                        fullWidth={true}
-                        onSubmit={(name: string, value: string) => {
-                          return handleSubmitField(
-                            name,
-                            value !== '' ? value : '0',
-                          );
-                        }}
-                      />
-                      <Field
-                        component={TextField}
-                        type="number"
-                        variant="standard"
-                        style={{ marginTop: 20 }}
-                        name="password_policy_min_numbers"
-                        label={t_i18n(
-                          'Number of digits must be greater or equals to',
-                        )}
-                        fullWidth={true}
-                        onSubmit={(name: string, value: string) => {
-                          return handleSubmitField(
-                            name,
-                            value !== '' ? value : '0',
-                          );
-                        }}
-                      />
-                      <Field
-                        component={TextField}
-                        type="number"
-                        variant="standard"
-                        style={{ marginTop: 20 }}
-                        name="password_policy_min_words"
-                        label={t_i18n(
-                          'Number of words (split on hyphen, space) must be greater or equals to',
-                        )}
-                        fullWidth={true}
-                        onSubmit={(name: string, value: string) => {
-                          return handleSubmitField(
-                            name,
-                            value !== '' ? value : '0',
-                          );
-                        }}
-                      />
-                      <Field
-                        component={TextField}
-                        type="number"
-                        variant="standard"
-                        style={{ marginTop: 20 }}
-                        name="password_policy_min_lowercase"
-                        label={t_i18n(
-                          'Number of lowercase chars must be greater or equals to',
-                        )}
-                        fullWidth={true}
-                        onSubmit={(name: string, value: string) => {
-                          return handleSubmitField(
-                            name,
-                            value !== '' ? value : '0',
-                          );
-                        }}
-                      />
-                      <Field
-                        component={TextField}
-                        type="number"
-                        variant="standard"
-                        style={{ marginTop: 20 }}
-                        name="password_policy_min_uppercase"
-                        label={t_i18n(
-                          'Number of uppercase chars must be greater or equals to',
-                        )}
-                        fullWidth={true}
-                        onSubmit={(name: string, value: string) => {
-                          return handleSubmitField(
-                            name,
-                            value !== '' ? value : '0',
-                          );
-                        }}
-                      />
-                    </Paper>
-                  </Grid>
+                  <GroupSetDefaultGroupForIngestionUsers />
+
+                  {isUsersVisibilityFeatureEnable && (
+                    <Grid item xs={6}>
+                      <Grid item xs={12} style={{ marginTop: 2 }}>
+                        <Typography variant="h4" gutterBottom={true}>
+                          {t_i18n('Users visibility')}
+                        </Typography>
+                        <Paper style={paperStyle} variant="outlined">
+                          <Field
+                            component={SwitchField}
+                            type="checkbox"
+                            name="view_all_users"
+                            label={t_i18n('Allow users to view users of other organizations')}
+                            onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                          />
+                        </Paper>
+                      </Grid>
+
+                      <Grid item xs={12}>
+                        <Typography variant="h4" gutterBottom={true} style={{ marginTop: 20 }}>
+                          {t_i18n('Local password policies')}
+                        </Typography>
+                        <Paper style={paperStyle} className="paper-for-grid" variant="outlined">
+                          <Field
+                            component={TextField}
+                            type="number"
+                            variant="standard"
+                            name="password_policy_min_length"
+                            label={t_i18n(
+                              'Number of chars must be greater or equals to',
+                            )}
+                            fullWidth={true}
+                            onSubmit={(name: string, value: string) => {
+                              return handleSubmitField(
+                                name,
+                                value !== '' ? value : '0',
+                              );
+                            }}
+                          />
+                          <Field
+                            component={TextField}
+                            type="number"
+                            variant="standard"
+                            style={{ marginTop: 20 }}
+                            name="password_policy_max_length"
+                            label={`${t_i18n(
+                              'Number of chars must be lower or equals to',
+                            )} (${t_i18n('0 equals no maximum')})`}
+                            fullWidth={true}
+                            onSubmit={(name: string, value: string) => {
+                              return handleSubmitField(
+                                name,
+                                value !== '' ? value : '0',
+                              );
+                            }}
+                          />
+                          <Field
+                            component={TextField}
+                            type="number"
+                            variant="standard"
+                            style={{ marginTop: 20 }}
+                            name="password_policy_min_symbols"
+                            label={t_i18n(
+                              'Number of symbols must be greater or equals to',
+                            )}
+                            fullWidth={true}
+                            onSubmit={(name: string, value: string) => {
+                              return handleSubmitField(
+                                name,
+                                value !== '' ? value : '0',
+                              );
+                            }}
+                          />
+                          <Field
+                            component={TextField}
+                            type="number"
+                            variant="standard"
+                            style={{ marginTop: 20 }}
+                            name="password_policy_min_numbers"
+                            label={t_i18n(
+                              'Number of digits must be greater or equals to',
+                            )}
+                            fullWidth={true}
+                            onSubmit={(name: string, value: string) => {
+                              return handleSubmitField(
+                                name,
+                                value !== '' ? value : '0',
+                              );
+                            }}
+                          />
+                          <Field
+                            component={TextField}
+                            type="number"
+                            variant="standard"
+                            style={{ marginTop: 20 }}
+                            name="password_policy_min_words"
+                            label={t_i18n(
+                              'Number of words (split on hyphen, space) must be greater or equals to',
+                            )}
+                            fullWidth={true}
+                            onSubmit={(name: string, value: string) => {
+                              return handleSubmitField(
+                                name,
+                                value !== '' ? value : '0',
+                              );
+                            }}
+                          />
+                          <Field
+                            component={TextField}
+                            type="number"
+                            variant="standard"
+                            style={{ marginTop: 20 }}
+                            name="password_policy_min_lowercase"
+                            label={t_i18n(
+                              'Number of lowercase chars must be greater or equals to',
+                            )}
+                            fullWidth={true}
+                            onSubmit={(name: string, value: string) => {
+                              return handleSubmitField(
+                                name,
+                                value !== '' ? value : '0',
+                              );
+                            }}
+                          />
+                          <Field
+                            component={TextField}
+                            type="number"
+                            variant="standard"
+                            style={{ marginTop: 20 }}
+                            name="password_policy_min_uppercase"
+                            label={t_i18n(
+                              'Number of uppercase chars must be greater or equals to',
+                            )}
+                            fullWidth={true}
+                            onSubmit={(name: string, value: string) => {
+                              return handleSubmitField(
+                                name,
+                                value !== '' ? value : '0',
+                              );
+                            }}
+                          />
+                        </Paper>
+                      </Grid>
+                    </Grid>
+                  )}
+
+                  {!isUsersVisibilityFeatureEnable && (
+                    <Grid item xs={6}>
+                      <Typography variant="h4" gutterBottom={true} style={{ marginTop: 2 }}>
+                        {t_i18n('Local password policies')}
+                      </Typography>
+                      <Paper style={paperStyle} className="paper-for-grid" variant="outlined">
+                        <Field
+                          component={TextField}
+                          type="number"
+                          variant="standard"
+                          name="password_policy_min_length"
+                          label={t_i18n(
+                            'Number of chars must be greater or equals to',
+                          )}
+                          fullWidth={true}
+                          onSubmit={(name: string, value: string) => {
+                            return handleSubmitField(
+                              name,
+                              value !== '' ? value : '0',
+                            );
+                          }}
+                        />
+                        <Field
+                          component={TextField}
+                          type="number"
+                          variant="standard"
+                          style={{ marginTop: 20 }}
+                          name="password_policy_max_length"
+                          label={`${t_i18n(
+                            'Number of chars must be lower or equals to',
+                          )} (${t_i18n('0 equals no maximum')})`}
+                          fullWidth={true}
+                          onSubmit={(name: string, value: string) => {
+                            return handleSubmitField(
+                              name,
+                              value !== '' ? value : '0',
+                            );
+                          }}
+                        />
+                        <Field
+                          component={TextField}
+                          type="number"
+                          variant="standard"
+                          style={{ marginTop: 20 }}
+                          name="password_policy_min_symbols"
+                          label={t_i18n(
+                            'Number of symbols must be greater or equals to',
+                          )}
+                          fullWidth={true}
+                          onSubmit={(name: string, value: string) => {
+                            return handleSubmitField(
+                              name,
+                              value !== '' ? value : '0',
+                            );
+                          }}
+                        />
+                        <Field
+                          component={TextField}
+                          type="number"
+                          variant="standard"
+                          style={{ marginTop: 20 }}
+                          name="password_policy_min_numbers"
+                          label={t_i18n(
+                            'Number of digits must be greater or equals to',
+                          )}
+                          fullWidth={true}
+                          onSubmit={(name: string, value: string) => {
+                            return handleSubmitField(
+                              name,
+                              value !== '' ? value : '0',
+                            );
+                          }}
+                        />
+                        <Field
+                          component={TextField}
+                          type="number"
+                          variant="standard"
+                          style={{ marginTop: 20 }}
+                          name="password_policy_min_words"
+                          label={t_i18n(
+                            'Number of words (split on hyphen, space) must be greater or equals to',
+                          )}
+                          fullWidth={true}
+                          onSubmit={(name: string, value: string) => {
+                            return handleSubmitField(
+                              name,
+                              value !== '' ? value : '0',
+                            );
+                          }}
+                        />
+                        <Field
+                          component={TextField}
+                          type="number"
+                          variant="standard"
+                          style={{ marginTop: 20 }}
+                          name="password_policy_min_lowercase"
+                          label={t_i18n(
+                            'Number of lowercase chars must be greater or equals to',
+                          )}
+                          fullWidth={true}
+                          onSubmit={(name: string, value: string) => {
+                            return handleSubmitField(
+                              name,
+                              value !== '' ? value : '0',
+                            );
+                          }}
+                        />
+                        <Field
+                          component={TextField}
+                          type="number"
+                          variant="standard"
+                          style={{ marginTop: 20 }}
+                          name="password_policy_min_uppercase"
+                          label={t_i18n(
+                            'Number of uppercase chars must be greater or equals to',
+                          )}
+                          fullWidth={true}
+                          onSubmit={(name: string, value: string) => {
+                            return handleSubmitField(
+                              name,
+                              value !== '' ? value : '0',
+                            );
+                          }}
+                        />
+                      </Paper>
+                    </Grid>
+                  )}
+
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Authentication strategies')}
                     </Typography>
-                    <Paper style={{
-                      marginTop: 10,
-                    }} classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined"
+                    <Paper
+                      style={{
+                        ...paperStyle,
+                        marginTop: 10,
+                      }}
+                      className="paper-for-grid"
+                      variant="outlined"
                     >
-                      <List style={{ marginTop: -20 }}>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="otp_mandatory"
+                        label={t_i18n('Enforce two-factor authentication')}
+                        onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                        tooltip={t_i18n(
+                          'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
+                        )}
+                      />
+                      <Field
+                        component={TextField}
+                        type="number"
+                        variant="standard"
+                        inputProps={{ min: 0 }}
+                        name="platform_session_max_concurrent"
+                        label={t_i18n('Max concurrent sessions (0 equals no maximum)')}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
+                        onSubmit={(name: string, value: string) => handleSubmitField(name, value !== '' ? value : '0')}
+                      />
+                      <List style={{ marginTop: 20 }}>
                         {authProviders.map((provider) => (
                           <ListItem key={provider.strategy} divider={true}>
                             <ListItemIcon>
@@ -430,25 +614,13 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                           </ListItem>
                         ))}
                       </List>
-                      <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name="otp_mandatory"
-                        label={t_i18n('Enforce two-factor authentication')}
-                        containerstyle={{ marginTop: 20 }}
-                        onChange={(name: string, value: string) => handleSubmitField(name, value)
-                        }
-                        tooltip={t_i18n(
-                          'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
-                        )}
-                      />
                     </Paper>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Login messages')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <Paper style={paperStyle} variant="outlined">
                       <Field
                         component={MarkdownField}
                         name="platform_login_message"
@@ -484,7 +656,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Platform Banner Configuration')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <Paper style={paperStyle} variant="outlined">
                       <Field
                         component={SelectField}
                         variant="standard"

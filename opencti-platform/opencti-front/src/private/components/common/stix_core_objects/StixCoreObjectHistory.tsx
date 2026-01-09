@@ -6,12 +6,14 @@ import {
   StixCoreObjectHistoryLinesQuery,
   StixCoreObjectHistoryLinesQuery$variables,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { Theme } from '../../../../components/Theme';
+import { Box } from '@mui/material';
 
 type StixCoreObjectHistoryProps = {
   stixCoreObjectId: string;
@@ -19,6 +21,8 @@ type StixCoreObjectHistoryProps = {
 };
 
 const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreObjectHistoryProps) => {
+  useInitCreateRelationshipContext();
+
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -103,7 +107,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
   );
 
   return (
-    <div style={{ height: '100%' }} data-testid='sco-history-content'>
+    <div style={{ height: '100%' }} data-testid="sco-history-content">
       <Grid
         container
         spacing={3}
@@ -122,25 +126,31 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           >
             {t_i18n('Entity')}
           </Typography>
-          <div style={{ float: 'right', marginTop: -15 }}>
+          <Box sx={{
+            marginTop: '-10px',
+            float: 'right',
+          }}
+          >
             <SearchInput
               variant="thin"
               onSubmit={handleSearchEntity}
               keyword={entitySearchTerm}
             />
-          </div>
+          </Box>
           <div className="clearfix" />
           {objectsQueryRef
-            && <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-               >
-              <StixCoreObjectHistoryLines
-                queryRef={objectsQueryRef}
-                isRelationLog={false}
-                paginationOptions={objectsPaginationOptions}
-              />
-            </React.Suspense>
-            }
+            && (
+              <React.Suspense
+                fallback={<Loader variant={LoaderVariant.inElement} />}
+              >
+                <StixCoreObjectHistoryLines
+                  queryRef={objectsQueryRef}
+                  isRelationLog={false}
+                  paginationOptions={objectsPaginationOptions}
+                />
+              </React.Suspense>
+            )
+          }
         </Grid>
         {!withoutRelations && (
           <Grid item xs={6}>
@@ -151,24 +161,30 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
             >
               {t_i18n('Relations of the entity')}
             </Typography>
-            <div style={{ float: 'right', marginTop: -15 }}>
+            <Box sx={{
+              marginTop: '-10px',
+              float: 'right',
+            }}
+            >
               <SearchInput
                 variant="thin"
                 onSubmit={handleSearchRelations}
                 keyword={relationsSearchTerm}
               />
-            </div>
+            </Box>
             <div className="clearfix" />
             {relationsQueryRef
-              && <React.Suspense
-                fallback={<Loader variant={LoaderVariant.inElement} />}
-                 >
-                <StixCoreObjectHistoryLines
-                  queryRef={relationsQueryRef}
-                  isRelationLog={true}
-                  paginationOptions={relationsPaginationOptions}
-                />
-              </React.Suspense>
+              && (
+                <React.Suspense
+                  fallback={<Loader variant={LoaderVariant.inElement} />}
+                >
+                  <StixCoreObjectHistoryLines
+                    queryRef={relationsQueryRef}
+                    isRelationLog={true}
+                    paginationOptions={relationsPaginationOptions}
+                  />
+                </React.Suspense>
+              )
             }
           </Grid>
         )}

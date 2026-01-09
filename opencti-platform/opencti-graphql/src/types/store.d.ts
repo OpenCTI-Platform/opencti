@@ -35,7 +35,7 @@ import {
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  RELATION_OBJECT_PARTICIPANT
+  RELATION_OBJECT_PARTICIPANT,
 } from '../schema/stixRefRelationship';
 import {
   INPUT_ASSIGNEE,
@@ -49,7 +49,7 @@ import {
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_OBJECTS,
-  INPUT_PARTICIPANT
+  INPUT_PARTICIPANT,
 } from '../schema/general';
 import type { StixId } from './stix-2-1-common';
 import { type EditOperation, type PageInfo, StatusScope } from '../generated/graphql';
@@ -57,10 +57,11 @@ import type { windows_integrity_level_enum, ssh_key_type_enum, windows_service_s
 import { RELATION_MEMBER_OF, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { AuthorizedMember } from '../utils/access';
 import type { Metric } from '../modules/metrics/metrics';
+import type { PirInformation } from '../modules/pir/pir-types';
 
 interface Representative {
-  main: string
-  secondary: string
+  main: string;
+  secondary: string;
 }
 
 interface InternalEditInput {
@@ -127,9 +128,10 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   draft_change?: DraftChange;
   sort?: SortResults;
   // representative
-  representative: Representative
+  representative: Representative;
   restricted_members?: Array<AuthorizedMember>;
   metrics?: Array<Metric>;
+  pir_information?: Array<PirInformation>;
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {
@@ -172,14 +174,14 @@ interface StoreConnection {
 }
 
 interface StoreRawRule {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   inferred: any;
   explanation: string[];
 }
 
 interface StoreRule {
   rule: string;
-  attributes: Array<{ field: string, value: string }>;
+  attributes: Array<{ field: string; value: string }>;
   explanation: string[];
 }
 
@@ -200,9 +202,9 @@ interface BasicStoreCommon extends BasicStoreBase {
 }
 
 interface StoreCommon {
-  internal_id: string
+  internal_id: string;
   standard_id: StixId;
-  entity_type: string
+  entity_type: string;
   parent_types: string[];
   // inputs
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
@@ -231,6 +233,8 @@ interface StoreRawRelation extends StoreProxyRelation {
   stop_time: Date;
   created: Date;
   modified: Date;
+  // custom:
+  x_opencti_modified_at: Date;
   // boolean
   revoked: boolean;
   x_opencti_negative: boolean;
@@ -251,12 +255,12 @@ interface BasicStoreRelation extends StoreRawRelation {
   toRole: string;
   toType: string;
   toName: string;
-  coverage: Array<{ name: string, score: number }>;
+  coverage: Array<{ name: string; score: number }>;
 }
 
 interface StoreRelation extends BasicStoreRelation, StoreCommon {
-  from: BasicStoreBase | undefined | null,
-  to: BasicStoreBase | undefined | null,
+  from: BasicStoreBase | undefined | null;
+  to: BasicStoreBase | undefined | null;
   [INPUT_CREATED_BY]: BasicStoreEntity;
   [INPUT_DOMAIN_FROM]: BasicStoreObject;
   [INPUT_DOMAIN_TO]: BasicStoreObject;
@@ -265,8 +269,8 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
 }
 
 interface BasicNodeEdge<T> {
-  cursor: string
-  types?: (string | null | undefined)[]
+  cursor: string;
+  types?: (string | null | undefined)[];
   node: T;
 }
 
@@ -413,6 +417,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   last_observed: Date;
   // custom
   x_opencti_first_seen_active: Date;
+  x_opencti_modified_at: Date;
   // boolean
   revoked: boolean;
   is_family: boolean;
@@ -442,7 +447,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   // CVSS4
   x_opencti_cvss_v4_base_score: number;
   // PIR
-  pir_information: Array<{ pir_id: string, pir_score: number, last_pir_score_date: Date }>;
+  pir_information?: Array<PirInformation>;
 }
 
 interface StoreEntity extends BasicStoreEntity, StoreCommon {
@@ -456,9 +461,9 @@ interface StoreEntity extends BasicStoreEntity, StoreCommon {
 }
 
 interface StoreEntityReport extends StoreCommon {
-  name: string
-  published: Date
-  [INPUT_OBJECTS]: Array<StoreEntity>
+  name: string;
+  published: Date;
+  [INPUT_OBJECTS]: Array<StoreEntity>;
 }
 
 interface BasicStoreEntityFeed extends BasicStoreEntity {
@@ -578,6 +583,8 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   expiration_date: Date;
   publication_date: Date;
   created: Date;
+  // custom
+  x_opencti_modified_at: Date;
   // boolean
   defanged: boolean;
   is_multipart: boolean;
@@ -700,12 +707,12 @@ interface BasicWorkflowStatusEntity extends BasicStoreEntity {
 }
 
 interface BasicIdentityEntity extends BasicStoreEntity {
-  name: string
-  description: string
-  roles: string[]
-  identity_class: string
-  contact_information: string
-  x_opencti_aliases?: string[]
+  name: string;
+  description: string;
+  roles: string[];
+  identity_class: string;
+  contact_information: string;
+  x_opencti_aliases?: string[];
 }
 
 interface StoreEntityIdentity extends StoreEntity, BasicIdentityEntity {}

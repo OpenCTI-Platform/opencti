@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { append, filter, map, pathOr, pipe, union } from 'ramda';
+import { filter, map, pipe } from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -90,23 +90,23 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const handleOpenLabels = () => setOpenLabels(true);
   const handleCloseLabels = () => setOpenLabels(false);
 
-  const searchLabels = (event) => {
+  const searchLabels = async (event) => {
     setLabelInput(event && event.target.value !== 0 ? event.target.value : '');
-    fetchQuery(labelsSearchQuery, {
+
+    const data = await fetchQuery(labelsSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const transformLabels = pipe(
-          pathOr([], ['labels', 'edges']),
-          map((n) => ({
-            label: n.node.value,
-            value: n.node.id,
-            color: n.node.color,
-          })),
-        )(data);
-        setStateLabels(union(stateLabels, transformLabels));
-      });
+      orderBy: 'value',
+      orderMode: 'asc',
+    }).toPromise();
+
+    const edges = data?.labels?.edges ?? [];
+    const labelOptions = edges.map((n) => ({
+      label: n.node.value,
+      value: n.node.id,
+      color: n.node.color,
+    }));
+
+    setStateLabels(labelOptions);
   };
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
@@ -160,17 +160,19 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
 
   return (
     <>
-      <CardLabel style={{ marginTop: 20 }} action={(
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IconButton
-            color="primary"
-            aria-label={t_i18n('Add new labels')}
-            title={t_i18n('Add new labels')}
-            onClick={handleOpenAdd}
-          >
-            <Add fontSize="small" />
-          </IconButton>
-        </Security>
+      <CardLabel
+        style={{ marginTop: 20 }}
+        action={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IconButton
+              color="primary"
+              aria-label={t_i18n('Add new labels')}
+              title={t_i18n('Add new labels')}
+              onClick={handleOpenAdd}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          </Security>
         )}
       >
         {t_i18n('Labels')}
@@ -192,71 +194,71 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                   onDelete={canUpdateKnowledge ? () => (enableReferences
                     ? handleOpenCommitDelete(label)
                     : handleRemoveLabel(label.id)) : undefined}
-                  deleteIcon={
+                  deleteIcon={(
                     <CancelOutlined
                       className={classes.deleteIcon}
                       style={{ color: label.color }}
                     />
-                  }
+                  )}
                 />
               </Tooltip>
             ),
             (labels ? R.take(12, labels) : []),
           )}
           {labels && labels.length > 12 && (
-          <Tooltip title={t_i18n('See more')}>
-            <Chip
-              variant="outlined"
-              classes={{ root: classes.labelMore }}
-              label='...'
-              onClick={handleOpenLabels}
-            />
-          </Tooltip>
+            <Tooltip title={t_i18n('See more')}>
+              <Chip
+                variant="outlined"
+                classes={{ root: classes.labelMore }}
+                label="..."
+                onClick={handleOpenLabels}
+              />
+            </Tooltip>
           )}
           {labels && labels.length > 12 && (
-          <Dialog
-            slotProps={{ paper: { elevation: 1 } }}
-            open={openLabels}
-            slots={{ transition: Transition }}
-            onClose={handleCloseLabels}
-            fullWidth={true}
-            maxWidth="md"
-          >
-            <DialogTitle>{t_i18n('All labels')}</DialogTitle>
-            <DialogContent>
-              {map(
-                (label) => (
-                  <Tooltip key={label.id} title={label.value}>
-                    <Chip
-                      variant="outlined"
-                      classes={{ root: classes.label }}
-                      label={truncate(label.value, 25)}
-                      style={{
-                        color: label.color,
-                        borderColor: label.color,
-                        backgroundColor: hexToRGB(label.color),
-                      }}
-                      onDelete={canUpdateKnowledge ? () => (enableReferences
-                        ? handleOpenCommitDelete(label)
-                        : handleRemoveLabel(label.id)) : undefined}
-                      deleteIcon={
-                        <CancelOutlined
-                          className={classes.deleteIcon}
-                          style={{ color: label.color }}
-                        />
-                    }
-                    />
-                  </Tooltip>
-                ),
-                labels,
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseLabels}>
-                {t_i18n('Close')}
-              </Button>
-            </DialogActions>
-          </Dialog>
+            <Dialog
+              slotProps={{ paper: { elevation: 1 } }}
+              open={openLabels}
+              slots={{ transition: Transition }}
+              onClose={handleCloseLabels}
+              fullWidth={true}
+              maxWidth="md"
+            >
+              <DialogTitle>{t_i18n('All labels')}</DialogTitle>
+              <DialogContent>
+                {map(
+                  (label) => (
+                    <Tooltip key={label.id} title={label.value}>
+                      <Chip
+                        variant="outlined"
+                        classes={{ root: classes.label }}
+                        label={truncate(label.value, 25)}
+                        style={{
+                          color: label.color,
+                          borderColor: label.color,
+                          backgroundColor: hexToRGB(label.color),
+                        }}
+                        onDelete={canUpdateKnowledge ? () => (enableReferences
+                          ? handleOpenCommitDelete(label)
+                          : handleRemoveLabel(label.id)) : undefined}
+                        deleteIcon={(
+                          <CancelOutlined
+                            className={classes.deleteIcon}
+                            style={{ color: label.color }}
+                          />
+                        )}
+                      />
+                    </Tooltip>
+                  ),
+                  labels,
+                )}
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseLabels}>
+                  {t_i18n('Close')}
+                </Button>
+              </DialogActions>
+            </Dialog>
           )}
         </FieldOrEmpty>
         {enableReferences && (
@@ -351,16 +353,11 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
               inputValue={labelInput}
               handleClose={handleCloseCreate}
               creationCallback={(data) => {
-                setFieldValue(
-                  'new_labels',
-                  append(
-                    {
-                      label: data.labelAdd.value,
-                      value: data.labelAdd.id,
-                    },
-                    values.new_labels,
-                  ),
-                );
+                const newLabel = {
+                  label: data.labelAdd.value,
+                  value: data.labelAdd.id,
+                };
+                setFieldValue('new_labels', [...values.new_labels, newLabel]);
               }}
             />
           </Dialog>

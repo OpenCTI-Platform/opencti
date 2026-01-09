@@ -18,18 +18,18 @@ import { useFormatter } from '../../../../components/i18n';
 
 interface ContainerStixCoreObjectsMappingHeaderProps {
   suggestedMappingData: ContainerStixCoreObjectsSuggestedMappingQuery$data;
-  validateDisabled: boolean,
-  openValidate: boolean,
-  setOpenValidate: (openValidate: boolean) => void,
+  validateDisabled: boolean;
+  openValidate: boolean;
+  setOpenValidate: (openValidate: boolean) => void;
   handleValidateMapping: () => void;
   validating: boolean;
-  openClearMapping: boolean,
-  setOpenClearMapping: (openClearMapping: boolean) => void,
+  openClearMapping: boolean;
+  setOpenClearMapping: (openClearMapping: boolean) => void;
   handleClearMapping: () => void;
   clearing: boolean;
-  inSuggestedMode: boolean,
+  inSuggestedMode: boolean;
   setInSuggestedMode: (inSuggestedMode: boolean) => void;
-  askingSuggestion: boolean,
+  askingSuggestion: boolean;
   handleAskNewSuggestion: () => void;
 }
 
@@ -53,37 +53,38 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
   const hasConnectorsAvailable = suggestedMappingData.connectorsForAnalysis?.length ? suggestedMappingData.connectorsForAnalysis.length > 0 : false;
 
   return (
-    <><Dialog
-      slotProps={{ paper: { elevation: 1 } }}
-      open={openValidate}
-      keepMounted
-      slots={{ transition: Transition }}
-      onClose={() => setOpenValidate(false)}
+    <>
+      <Dialog
+        slotProps={{ paper: { elevation: 1 } }}
+        open={openValidate}
+        keepMounted
+        slots={{ transition: Transition }}
+        onClose={() => setOpenValidate(false)}
       >
-      <DialogTitle>
-        {t_i18n('Are you sure?')}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {t_i18n('You are about to validate this mapping, it will add suggested entities to your container.')}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => setOpenValidate(false)}
-          disabled={validating}
-        >
-          {t_i18n('Cancel')}
-        </Button>
-        <Button
-          color="secondary"
-          onClick={handleValidateMapping}
-          disabled={validating}
-        >
-          {t_i18n('Validate')}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n('You are about to validate this mapping, it will add suggested entities to your container.')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setOpenValidate(false)}
+            disabled={validating}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            color="secondary"
+            onClick={handleValidateMapping}
+            disabled={validating}
+          >
+            {t_i18n('Validate')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={openClearMapping}
@@ -115,30 +116,32 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <FormGroup>
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 checked={inSuggestedMode}
-                onChange={() => { setInSuggestedMode(!inSuggestedMode); }}
-                disabled={askingSuggestion || validating || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus !== 'complete' }
+                onChange={() => {
+                  setInSuggestedMode(!inSuggestedMode);
+                }}
+                disabled={askingSuggestion || validating || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus !== 'complete'}
               />
-              }
+            )}
             label={t_i18n('Show suggested mapping')}
           />
         </FormGroup>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginLeft: 'auto' }}>
           {!hasConnectorsAvailable && (
-          <Tooltip
-            title={t_i18n('An analysis connector needs to be available to ask for a mapping suggestion.')}
-          >
-            <InformationOutline fontSize="small" color="primary" />
-          </Tooltip>
+            <Tooltip
+              title={t_i18n('An analysis connector needs to be available to ask for a mapping suggestion.')}
+            >
+              <InformationOutline fontSize="small" color="primary" />
+            </Tooltip>
           )}
           {askingSuggestion && (
-          <Tooltip
-            title={t_i18n('An analysis is ongoing, waiting for results.')}
-          >
-            <InformationOutline fontSize="small" color="primary" />
-          </Tooltip>
+            <Tooltip
+              title={t_i18n('An analysis is ongoing, waiting for results.')}
+            >
+              <InformationOutline fontSize="small" color="primary" />
+            </Tooltip>
           )}
           <Tooltip title={t_i18n('Ask new mapping')}>
             <Button
@@ -151,29 +154,29 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
             </Button>
           </Tooltip>
           {!inSuggestedMode && (
-          <Tooltip title={t_i18n('Clear mappings')}>
-            <Button
-              variant="contained"
-              onClick={() => setOpenClearMapping(true)}
-              size="small"
-            >
-              {t_i18n('Clear mappings')}
-            </Button>
-          </Tooltip>
+            <Tooltip title={t_i18n('Clear mappings')}>
+              <Button
+                variant="contained"
+                onClick={() => setOpenClearMapping(true)}
+                size="small"
+              >
+                {t_i18n('Clear mappings')}
+              </Button>
+            </Tooltip>
           )}
           {inSuggestedMode && (
-          <Tooltip title={t_i18n('Validate suggested mapping')}>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => setOpenValidate(true)}
-              startIcon={<CheckCircleOutlined />}
-              size="small"
-              disabled={validateDisabled}
-            >
-              {t_i18n('Validate')}
-            </Button>
-          </Tooltip>
+            <Tooltip title={t_i18n('Validate suggested mapping')}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => setOpenValidate(true)}
+                startIcon={<CheckCircleOutlined />}
+                size="small"
+                disabled={validateDisabled}
+              >
+                {t_i18n('Validate')}
+              </Button>
+            </Tooltip>
           )}
         </Box>
       </Box>

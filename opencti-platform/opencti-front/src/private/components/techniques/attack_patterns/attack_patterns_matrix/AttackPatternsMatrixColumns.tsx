@@ -208,10 +208,10 @@ const AttackPatternsMatrixColumns = ({
       ...a,
       attackPatterns: a.attackPatterns
         ?.filter((ap) => !searchTerm
-        || ap.name.toLowerCase().includes(searchTerm.toLowerCase())
-        || ap.description?.toLowerCase().includes(searchTerm.toLowerCase())
-        || ap.x_mitre_id?.toLowerCase().includes(searchTerm.toLowerCase())
-        || ap.subAttackPatternsSearchText?.toLowerCase().includes(searchTerm.toLowerCase()))
+          || ap.name.toLowerCase().includes(searchTerm.toLowerCase())
+          || ap.description?.toLowerCase().includes(searchTerm.toLowerCase())
+          || ap.x_mitre_id?.toLowerCase().includes(searchTerm.toLowerCase())
+          || ap.subAttackPatternsSearchText?.toLowerCase().includes(searchTerm.toLowerCase()))
         .map((ap) => ({
           ...ap,
           level: getAttackPatternLevel(ap),
@@ -343,11 +343,11 @@ const AttackPatternsMatrixColumns = ({
                     to={`/dashboard/techniques/attack_patterns/${selectedAttackPattern?.attack_pattern_id}`}
                     target="_blank"
                   >
-                    <ListItemIcon><InfoOutlined fontSize="small"/></ListItemIcon>
+                    <ListItemIcon><InfoOutlined fontSize="small" /></ListItemIcon>
                     <ListItemText>View</ListItemText>
                   </MenuItem>
                   <MenuItem onClick={() => handleAddAttackPattern(selectedAttackPattern)}>
-                    <ListItemIcon><AddCircleOutlineOutlined fontSize="small"/></ListItemIcon>
+                    <ListItemIcon><AddCircleOutlineOutlined fontSize="small" /></ListItemIcon>
                     <ListItemText>Add</ListItemText>
                   </MenuItem>
                 </>

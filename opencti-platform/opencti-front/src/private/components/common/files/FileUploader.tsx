@@ -78,8 +78,8 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
       },
       onCompleted: (
         result:
-        | FileUploaderEntityMutation$data
-        | FileUploaderGlobalMutation$data,
+          | FileUploaderEntityMutation$data
+          | FileUploaderGlobalMutation$data,
       ) => {
         if (uploadRef.current?.value) {
           uploadRef.current.value = ''; // Reset the upload input
@@ -88,7 +88,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
         MESSAGING$.notifySuccess(t_i18n('File successfully uploaded'));
         const fileId = associatedEntityId
           ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit
-            ?.importPush?.id
+              ?.importPush?.id
           : (result as FileUploaderGlobalMutation$data).uploadImport?.id;
         if (nameInCallback) {
           onUploadSuccess(fileId);

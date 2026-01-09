@@ -148,7 +148,7 @@ class AddGroupingsLinesContainer extends Component {
                 primary={`${grouping.source_name} ${groupingId}`}
                 secondary={truncate(
                   grouping.description !== null
-                    && grouping.description.length > 0
+                  && grouping.description.length > 0
                     ? grouping.description
                     : grouping.url,
                   120,

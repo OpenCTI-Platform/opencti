@@ -178,7 +178,7 @@ const Pirs = () => {
       percentWidth: 33,
       render: ({ pir_criteria }: Pirs_PirFragment$data) => {
         const criteria: FilterGroup[] = pir_criteria.map((c) => JSON.parse(c.filters));
-        return <PirCriteriaDisplay criteria={criteria} size='small' />;
+        return <PirCriteriaDisplay criteria={criteria} size="small" />;
       },
     },
     creator: {
@@ -201,7 +201,7 @@ const Pirs = () => {
           resolvePath={(data: Pirs_PirsFragment$data) => data.pirs?.edges?.map((e) => e?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={{
             linesQuery: pirsListQuery,
             linesFragment: pirsFragment,
@@ -213,7 +213,7 @@ const Pirs = () => {
           entityTypes={['Pir']}
           searchContextFinal={{ entityTypes: ['Pir'] }}
           createButton={(
-            <Security needs={[PIRAPI_PIRUPDATE]} >
+            <Security needs={[PIRAPI_PIRUPDATE]}>
               <PirCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}

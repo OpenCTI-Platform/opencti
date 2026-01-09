@@ -94,20 +94,21 @@ const Sync = () => {
         <Breadcrumbs
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]}
         />
-        <Alert content={
-          <>
-            {t_i18n('You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the')}{' '}
-            <a
-              href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
-              target="_blank"
-              style={{ color: theme.palette.secondary.main }}
-              rel="noreferrer"
-            >
-              {t_i18n('OpenCTI ecosystem space')}
-            </a>
-            .
-          </>
-        }
+        <Alert
+          content={(
+            <>
+              {t_i18n('You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the')}{' '}
+              <a
+                href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
+                target="_blank"
+                style={{ color: theme.palette.secondary.main }}
+                rel="noreferrer"
+              >
+                {t_i18n('OpenCTI ecosystem space')}
+              </a>
+              .
+            </>
+          )}
           style={{ marginBottom: theme.spacing(2) }}
         />
         <ListLines
@@ -119,11 +120,11 @@ const Sync = () => {
           displayImport={false}
           secondaryAction={true}
           keyword={viewStorage.searchTerm}
-          createButton={
+          createButton={(
             <Security needs={[INGESTION_SETINGESTIONS]}>
               <SyncCreation paginationOptions={paginationOptions} />
             </Security>
-          }
+          )}
         >
           <QueryRenderer
             query={SyncLinesQuery}

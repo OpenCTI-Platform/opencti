@@ -6,10 +6,10 @@ import NoteEditionOverview from './NoteEditionOverview';
 import { NoteEditionContainer_note$data } from './__generated__/NoteEditionContainer_note.graphql';
 
 interface NoteEditionContainerProps {
-  note: NoteEditionContainer_note$data
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  note: NoteEditionContainer_note$data;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({

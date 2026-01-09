@@ -42,6 +42,7 @@ generates:
         MalwareAnalysis: ../modules/malwareAnalysis/malwareAnalysis-types#BasicStoreEntityMalwareAnalysis
         ManagerConfiguration: ../modules/managerConfiguration/managerConfiguration-types#BasicStoreEntityManagerConfiguration
         Notifier: ../modules/notifier/notifier-types#BasicStoreEntityNotifier
+        Theme: ../modules/theme/theme-types#BasicStoreEntityTheme
         ThreatActorIndividual: ../modules/threatActorIndividual/threatActorIndividual-types#BasicStoreEntityThreatActorIndividual
         IngestionRss: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionRss
         IngestionTaxii: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionTaxii
@@ -50,6 +51,7 @@ generates:
         IngestionCsv: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionCsv
         IngestionJson: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionJson
         DecayRule: ../modules/decayRule/decayRule-types#BasicStoreEntityDecayRule
+        DecayExclusionRule: ../modules/decayRule/exclusions/decayExclusionRule-types#BasicStoreEntityDecayExclusionRule
         Organization: ../modules/organization/organization-types#BasicStoreEntityOrganization
         CsvMapper: ../modules/internal/csvMapper/csvMapper-types#BasicStoreEntityCsvMapper
         JsonMapper: ../modules/internal/jsonMapper/jsonMapper-types#BasicStoreEntityJsonMapper

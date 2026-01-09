@@ -60,7 +60,7 @@ const ingestionTaxiiCollectionLineFragment = graphql`
     }
 `;
 
-export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<IngestionTaxiiCollectionLineProps> = ({
+export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<IngestionTaxiiCollectionLineProps> = ({
   dataColumns,
   node,
   paginationOptions,
@@ -73,7 +73,7 @@ export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<Inges
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionTaxiiCollectionPopover
             ingestionTaxiiId={data.id}
@@ -81,13 +81,13 @@ export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<Inges
             running={data.ingestion_running}
           />
         </Security>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <AccessPoint />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -99,7 +99,7 @@ export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<Inges
               className={classes.bodyItem}
               style={{ width: dataColumns.id.width, paddingRight: 10 }}
             >
-              <ItemCopy content={`${window.location.origin}${APP_BASE_PATH}/taxii2/root/collections/${data.id}/objects/`} variant="inLine"/>
+              <ItemCopy content={`${window.location.origin}${APP_BASE_PATH}/taxii2/root/collections/${data.id}/objects/`} variant="inLine" />
             </div>
             <div
               className={classes.bodyItem}
@@ -112,7 +112,7 @@ export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<Inges
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -135,7 +135,7 @@ export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               <Skeleton
@@ -157,7 +157,7 @@ export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns
               />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );

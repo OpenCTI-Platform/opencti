@@ -54,8 +54,8 @@ const publicStixRelationshipsDistributionListQuery = graphql`
 `;
 
 interface PublicStixRelationshipsDistributionListComponentProps {
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsDistributionListQuery>
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsDistributionListQuery>;
 }
 
 const PublicStixRelationshipsDistributionListComponent = ({

@@ -144,16 +144,16 @@ const PlaybookHeaderComponent = ({
               badgeContent={(playbook.last_executions ?? []).length}
               color="secondary"
             >
-              <ManageHistoryOutlined fontSize='small' color="primary" />
+              <ManageHistoryOutlined fontSize="small" color="primary" />
             </Badge>
           </Tooltip>
         </ToggleButton>
       </ToggleButtonGroup>
       <PlaybookPopover
         playbookId={playbook.id}
-        running={playbook.playbook_running}
+        running={!!playbook.playbook_running}
       />
-      <PlaybookEdition id={playbook.id}/>
+      <PlaybookEdition id={playbook.id} />
       <Drawer
         open={openLastExecutions}
         onClose={() => setOpenLastExecutions(false)}
@@ -170,7 +170,7 @@ const PlaybookHeaderComponent = ({
                   }
                 >
                   <ListItemIcon style={{ marginLeft: 10 }}>
-                    <ItemIcon type="Playbook" color={theme.palette.primary.main}/>
+                    <ItemIcon type="Playbook" color={theme.palette.primary.main} />
                   </ListItemIcon>
                   <ListItemText
                     primary={`${t_i18n('Execution at')} ${nsdt(
@@ -181,9 +181,9 @@ const PlaybookHeaderComponent = ({
                     )}`}
                   />
                   {openExecution === lastExecution.id ? (
-                    <ExpandLessOutlined/>
+                    <ExpandLessOutlined />
                   ) : (
-                    <ExpandMoreOutlined/>
+                    <ExpandMoreOutlined />
                   )}
                 </ListItemButton>
                 <Collapse
@@ -207,7 +207,7 @@ const PlaybookHeaderComponent = ({
                                 color="success"
                               />
                             ) : (
-                              <ErrorOutlined fontSize="small" color="error"/>
+                              <ErrorOutlined fontSize="small" color="error" />
                             )}
                           </Tooltip>
                         </ListItemIcon>

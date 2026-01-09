@@ -150,7 +150,7 @@ const EmailTemplates = () => {
 
   return (
     <div data-testid="email-templates-page">
-      <AccessesMenu/>
+      <AccessesMenu />
       <PageContainer withRightMenu>
         <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Email templates'), current: true }]} />
         {!isEnterpriseEdition ? (
@@ -162,18 +162,18 @@ const EmailTemplates = () => {
               content={t_i18n('These template emails are only used for one time email, not for notifications or dissemination.')}
             />
             {queryRef && (
-            <DataTable
-              dataColumns={dataColumns}
-              resolvePath={(data) => data.emailTemplates?.edges?.map(({ node }: { node: EmailTemplatesLine_node$data }) => node)}
-              storageKey={LOCAL_STORAGE_KEY}
-              initialValues={initialValues}
-              toolbarFilters={contextFilters}
-              lineFragment={emailTemplatesLineFragment}
-              disableLineSelection
-              preloadedPaginationProps={preloadedPaginationProps}
-              createButton={<EmailTemplateCreation paginationOptions={queryPaginationOptions} />}
-              icon={() => <ItemIcon color={'#afb505'} type="EmailTemplate" />}
-            />
+              <DataTable
+                dataColumns={dataColumns}
+                resolvePath={(data) => data.emailTemplates?.edges?.map(({ node }: { node: EmailTemplatesLine_node$data }) => node)}
+                storageKey={LOCAL_STORAGE_KEY}
+                initialValues={initialValues}
+                contextFilters={contextFilters}
+                lineFragment={emailTemplatesLineFragment}
+                disableLineSelection
+                preloadedPaginationProps={preloadedPaginationProps}
+                createButton={<EmailTemplateCreation paginationOptions={queryPaginationOptions} />}
+                icon={() => <ItemIcon color="#afb505" type="EmailTemplate" />}
+              />
             )}
           </>
         )}

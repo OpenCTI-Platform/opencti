@@ -330,9 +330,9 @@ const graphContainerCorrelationObjectsFragment = graphql`
 // endregion
 
 interface GraphContainerCorrelationComponentProps {
-  totalData: number
-  currentData: number
-  onPositionsChanged: (positions: OctiGraphPositions) => void
+  totalData: number;
+  currentData: number;
+  onPositionsChanged: (positions: OctiGraphPositions) => void;
 }
 
 const GraphContainerCorrelationComponent = ({
@@ -383,11 +383,11 @@ const REFETCH_DEBOUNCE_MS = 50;
 
 interface GraphContainerCorrelationProps
   extends Omit<GraphContainerCorrelationComponentProps, 'currentData' | 'totalData'> {
-  containerId: string
-  containerType: string
-  dataPositions: GraphContainerCorrelationPositions_fragment$key
-  queryObjectsRef: PreloadedQuery<GraphContainerCorrelationObjectsQuery>
-  pageSize: number
+  containerId: string;
+  containerType: string;
+  dataPositions: GraphContainerCorrelationPositions_fragment$key;
+  queryObjectsRef: PreloadedQuery<GraphContainerCorrelationObjectsQuery>;
+  pageSize: number;
 }
 
 const GraphContainerCorrelation = ({
@@ -407,8 +407,8 @@ const GraphContainerCorrelation = ({
     loadMore,
     isLoadingMore,
   } = usePreloadedPaginationFragment<
-  GraphContainerCorrelationObjectsQuery,
-  GraphContainerCorrelationObjects_fragment$key
+    GraphContainerCorrelationObjectsQuery,
+    GraphContainerCorrelationObjects_fragment$key
   >({
     linesQuery: graphContainerCorrelationObjectsQuery,
     linesFragment: graphContainerCorrelationObjectsFragment,
@@ -417,7 +417,9 @@ const GraphContainerCorrelation = ({
 
   // Use debounce to avoid spamming too quickly the backend.
   const debounceFetchMore = useDebounceCallback(
-    () => { loadMore(pageSize); },
+    () => {
+      loadMore(pageSize);
+    },
     REFETCH_DEBOUNCE_MS,
   );
   // When finishing fetching a page, get the next if any.
@@ -444,7 +446,7 @@ const GraphContainerCorrelation = ({
       localStorageKey={localStorageKey}
       objects={objects}
       positions={positions}
-      context='correlation'
+      context="correlation"
     >
       <GraphContainerCorrelationComponent
         currentData={dataLoaded}

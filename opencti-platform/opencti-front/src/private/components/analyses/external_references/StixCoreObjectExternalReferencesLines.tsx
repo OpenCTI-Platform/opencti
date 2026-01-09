@@ -113,7 +113,7 @@ interface Connector {
 }
 
 const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
-StixCoreObjectExternalReferencesLinesContainerProps
+  StixCoreObjectExternalReferencesLinesContainerProps
 > = ({ stixCoreObjectId, data, relay }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -126,7 +126,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
     setSelectedConnector(data.connectorsForImport?.find((c) => c?.id === value) ?? null);
   };
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
-      && selectedConnector?.configurations?.length === 0;
+    && selectedConnector?.configurations?.length === 0;
   const [externalReferenceToRemove, setExternalReferenceToRemove] = useState<externalReferenceEdge_type | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [fileToImport, setFileToImport] = useState<FileLine_file$data | null>(null);
@@ -214,7 +214,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const handleCloseImport = () => {
     setFileToImport(null);
   };
-  const onSubmitImport: FormikConfig<{ connector_id: string, configuration: string }>['onSubmit'] = (
+  const onSubmitImport: FormikConfig<{ connector_id: string; configuration: string }>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
   ) => {
@@ -269,207 +269,207 @@ StixCoreObjectExternalReferencesLinesContainerProps
         />
       </Security>
       <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         {(
           externalReferencesEdges ? externalReferencesEdges.length > 0 : false
         ) ? (
-          <List style={{ marginBottom: 0 }}>
-            {externalReferencesEdges
-              ?.slice(0, expanded ? 200 : 7)
-              .map((externalReferenceEdge) => {
-                const externalReference = externalReferenceEdge.node;
-                const isFileAttached = isNotEmptyField(
-                  externalReference.fileId,
-                );
-                const externalReferenceId = externalReference.external_id
-                  ? `(${externalReference.external_id})`
-                  : '';
-                let externalReferenceSecondary = '';
-                if (externalReference.url && externalReference.url.length > 0) {
-                  externalReferenceSecondary = externalReference.url;
-                } else if (
-                  externalReference.description
-                  && externalReference.description.length > 0
-                ) {
-                  externalReferenceSecondary = externalReference.description;
-                } else {
-                  externalReferenceSecondary = t_i18n('No description');
-                }
-                if (externalReference.url && !isFileAttached) {
-                  return (
-                    <React.Fragment key={externalReference.id}>
-                      <ListItem
-                        dense={true}
-                        divider={true}
-                        disablePadding
-                        secondaryAction={
-                          <>
-                            <Tooltip title={t_i18n('Browse the link')}>
-                              <IconButton
-                                onClick={() => handleOpenExternalLink(
-                                  externalReference.url ?? '',
-                                )
-                                }
-                                size="large"
-                                color="primary"
-                              >
-                                <OpenInBrowserOutlined />
-                              </IconButton>
-                            </Tooltip>
-                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                              <FileUploader
-                                entityId={externalReference.id}
-                                onUploadSuccess={() => relay.refetchConnection(200)
-                                }
-                                size={undefined}
-                              />
-                            </Security>
-                            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                              <ExternalReferenceEnrichment
-                                externalReferenceId={externalReference.id}
-                              />
-                            </Security>
-                            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                              <ExternalReferencePopover
-                                id={externalReference.id}
-                                handleRemove={() => handleOpenDialog(externalReferenceEdge)
-                                }
-                                objectId={stixCoreObjectId}
-                                variant="inLine"
-                              />
-                            </Security>
-                          </>
-                        }
-                      >
-                        <ListItemButton
-                          component={Link}
-                          to={`/dashboard/analyses/external_references/${externalReference.id}`}
-                        >
-                          <ListItemIcon>
-                            <ItemIcon type="External-Reference" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={truncate(
-                              `${externalReference.source_name} ${externalReferenceId}`,
-                              70,
-                            )}
-                            secondary={truncate(externalReferenceSecondary, 70)}
-                          />
-                        </ListItemButton>
-                      </ListItem>
-                      {externalReference.importFiles?.edges
-                        && externalReference.importFiles?.edges.length > 0 && (
-                          <List>
-                            {externalReference.importFiles.edges.map(
-                              (file) => file?.node && (
-                              <FileLine
-                                key={file.node.id}
-                                dense={true}
-                                file={file.node}
-                                nested={true}
-                                workNested={true}
-                                onDelete={() => relay.refetchConnection(200)
+              <List style={{ marginBottom: 0 }}>
+                {externalReferencesEdges
+                  ?.slice(0, expanded ? 200 : 7)
+                  .map((externalReferenceEdge) => {
+                    const externalReference = externalReferenceEdge.node;
+                    const isFileAttached = isNotEmptyField(
+                      externalReference.fileId,
+                    );
+                    const externalReferenceId = externalReference.external_id
+                      ? `(${externalReference.external_id})`
+                      : '';
+                    let externalReferenceSecondary = '';
+                    if (externalReference.url && externalReference.url.length > 0) {
+                      externalReferenceSecondary = externalReference.url;
+                    } else if (
+                      externalReference.description
+                      && externalReference.description.length > 0
+                    ) {
+                      externalReferenceSecondary = externalReference.description;
+                    } else {
+                      externalReferenceSecondary = t_i18n('No description');
+                    }
+                    if (externalReference.url && !isFileAttached) {
+                      return (
+                        <React.Fragment key={externalReference.id}>
+                          <ListItem
+                            dense={true}
+                            divider={true}
+                            disablePadding
+                            secondaryAction={(
+                              <>
+                                <Tooltip title={t_i18n('Browse the link')}>
+                                  <IconButton
+                                    onClick={() => handleOpenExternalLink(
+                                      externalReference.url ?? '',
+                                    )
                                     }
-                                connectors={
+                                    size="large"
+                                    color="primary"
+                                  >
+                                    <OpenInBrowserOutlined />
+                                  </IconButton>
+                                </Tooltip>
+                                <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                                  <FileUploader
+                                    entityId={externalReference.id}
+                                    onUploadSuccess={() => relay.refetchConnection(200)
+                                    }
+                                    size={undefined}
+                                  />
+                                </Security>
+                                <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                                  <ExternalReferenceEnrichment
+                                    externalReferenceId={externalReference.id}
+                                  />
+                                </Security>
+                                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                                  <ExternalReferencePopover
+                                    id={externalReference.id}
+                                    handleRemove={() => handleOpenDialog(externalReferenceEdge)
+                                    }
+                                    objectId={stixCoreObjectId}
+                                    variant="inLine"
+                                  />
+                                </Security>
+                              </>
+                            )}
+                          >
+                            <ListItemButton
+                              component={Link}
+                              to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                            >
+                              <ListItemIcon>
+                                <ItemIcon type="External-Reference" />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={truncate(
+                                  `${externalReference.source_name} ${externalReferenceId}`,
+                                  70,
+                                )}
+                                secondary={truncate(externalReferenceSecondary, 70)}
+                              />
+                            </ListItemButton>
+                          </ListItem>
+                          {externalReference.importFiles?.edges
+                            && externalReference.importFiles?.edges.length > 0 && (
+                            <List>
+                              {externalReference.importFiles.edges.map(
+                                (file) => file?.node && (
+                                  <FileLine
+                                    key={file.node.id}
+                                    dense={true}
+                                    file={file.node}
+                                    nested={true}
+                                    workNested={true}
+                                    onDelete={() => relay.refetchConnection(200)
+                                    }
+                                    connectors={
                                       importConnsPerFormat[
                                         file.node.metaData?.mimetype ?? 0
                                       ]
                                     }
-                                handleOpenImport={handleOpenImport}
-                              />
+                                    handleOpenImport={handleOpenImport}
+                                  />
+                                ),
+                              )}
+                            </List>
+                          )}
+                        </React.Fragment>
+                      );
+                    }
+                    return (
+                      <React.Fragment key={externalReference.id}>
+                        <ListItem
+                          dense={true}
+                          divider={true}
+                          disablePadding
+                          secondaryAction={(
+                            <>
+                              {!isFileAttached && (
+                                <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                                  <FileUploader
+                                    entityId={externalReference.id}
+                                    onUploadSuccess={() => relay.refetchConnection(200)
+                                    }
+                                    size={undefined}
+                                  />
+                                </Security>
+                              )}
+                              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                                <ExternalReferencePopover
+                                  id={externalReference.id}
+                                  isExternalReferenceAttachment={isFileAttached}
+                                  handleRemove={() => handleOpenDialog(externalReferenceEdge)
+                                  }
+                                  objectId={stixCoreObjectId}
+                                  variant="inLine"
+                                />
+                              </Security>
+                            </>
+                          )}
+                        >
+                          <ListItemButton
+                            component={Link}
+                            to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                          >
+                            <ListItemIcon>
+                              <ItemIcon type="External-Reference" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={`${externalReference.source_name} ${externalReferenceId}`}
+                              secondary={truncate(externalReference.description, 120)}
+                            />
+                          </ListItemButton>
+                        </ListItem>
+                        {externalReference.importFiles?.edges
+                          && externalReference.importFiles?.edges.length > 0 && (
+                          <List>
+                            {externalReference.importFiles?.edges?.map(
+                              (file) => file?.node && (
+                                <FileLine
+                                  key={file.node.id}
+                                  dense={true}
+                                  disableImport={true}
+                                  file={file.node}
+                                  nested={true}
+                                  isExternalReferenceAttachment={isFileAttached}
+                                />
                               ),
                             )}
                           </List>
-                      )}
-                    </React.Fragment>
-                  );
-                }
-                return (
-                  <React.Fragment key={externalReference.id}>
-                    <ListItem
-                      dense={true}
-                      divider={true}
-                      disablePadding
-                      secondaryAction={
-                        <>
-                          {!isFileAttached && (
-                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                              <FileUploader
-                                entityId={externalReference.id}
-                                onUploadSuccess={() => relay.refetchConnection(200)
-                                }
-                                size={undefined}
-                              />
-                            </Security>
-                          )}
-                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                            <ExternalReferencePopover
-                              id={externalReference.id}
-                              isExternalReferenceAttachment={isFileAttached}
-                              handleRemove={() => handleOpenDialog(externalReferenceEdge)
-                              }
-                              objectId={stixCoreObjectId}
-                              variant="inLine"
-                            />
-                          </Security>
-                        </>
-                      }
-                    >
-                      <ListItemButton
-                        component={Link}
-                        to={`/dashboard/analyses/external_references/${externalReference.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="External-Reference" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`${externalReference.source_name} ${externalReferenceId}`}
-                          secondary={truncate(externalReference.description, 120)}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                    {externalReference.importFiles?.edges
-                      && externalReference.importFiles?.edges.length > 0 && (
-                        <List>
-                          {externalReference.importFiles?.edges?.map(
-                            (file) => file?.node && (
-                            <FileLine
-                              key={file.node.id}
-                              dense={true}
-                              disableImport={true}
-                              file={file.node}
-                              nested={true}
-                              isExternalReferenceAttachment={isFileAttached}
-                            />
-                            ),
-                          )}
-                        </List>
-                    )}
-                  </React.Fragment>
-                );
-              })}
-          </List>
-          ) : (
-            <div
-              style={{
-                display: 'table',
-                height: '100%',
-                width: '100%',
-                paddingTop: 15,
-                paddingBottom: 15,
-              }}
-            >
-              <span
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+              </List>
+            ) : (
+              <div
                 style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
+                  display: 'table',
+                  height: '100%',
+                  width: '100%',
+                  paddingTop: 15,
+                  paddingBottom: 15,
                 }}
               >
-                {t_i18n(NO_DATA_WIDGET_MESSAGE)}
-              </span>
-            </div>
-          )}
+                <span
+                  style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t_i18n(NO_DATA_WIDGET_MESSAGE)}
+                </span>
+              </div>
+            )}
         {expandable && (
           <Button
             variant="contained"
@@ -560,36 +560,38 @@ StixCoreObjectExternalReferencesLinesContainerProps
                   })}
                 </Field>
                 {(selectedConnector?.configurations?.length ?? 0) > 0
-                  ? <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="configuration"
-                      label={t_i18n('Configuration')}
-                      fullWidth={true}
-                      containerstyle={{ marginTop: 20, width: '100%' }}
-                      onChange={(_: string, option: CsvMapperFieldOption) => onCsvMapperSelection(option)}
-                    >
-                    {(selectedConnector?.configurations ?? []).map((config) => {
-                      return (
-                        <MenuItem
-                          key={config.id}
-                          value={config.configuration}
-                        >
-                          {config.name}
-                        </MenuItem>
-                      );
-                    })}
-                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name }/>
+                  ? (
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="configuration"
+                        label={t_i18n('Configuration')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                        onChange={(_: string, option: CsvMapperFieldOption) => onCsvMapperSelection(option)}
+                      >
+                        {(selectedConnector?.configurations ?? []).map((config) => {
+                          return (
+                            <MenuItem
+                              key={config.id}
+                              value={config.configuration}
+                            >
+                              {config.name}
+                            </MenuItem>
+                          );
+                        })}
+                      </Field>
+                    ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
                 }
                 {selectedConnector?.name === 'ImportCsv'
-                    && hasUserChoiceCsvMapper
-                    && (
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                      />
-                    )
+                  && hasUserChoiceCsvMapper
+                  && (
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
+                    />
+                  )
                 }
               </DialogContent>
               <DialogActions>

@@ -33,9 +33,9 @@ const publicStixRelationshipsMultiAreaChartQuery = graphql`
 `;
 
 interface PublicStixRelationshipsMultiAreaChartComponentProps {
-  parameters: Widget['parameters']
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsMultiAreaChartQuery>
+  parameters: Widget['parameters'];
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsMultiAreaChartQuery>;
 }
 
 const PublicStixRelationshipsMultiAreaChartComponent = ({

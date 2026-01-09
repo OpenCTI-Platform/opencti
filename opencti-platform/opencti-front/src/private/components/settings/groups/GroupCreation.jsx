@@ -56,7 +56,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 
 const CreateGroupControlledDial = (props) => (
   <CreateEntityControlledDial
-    entityType='Group'
+    entityType="Group"
     {...props}
   />
 );

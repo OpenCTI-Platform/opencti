@@ -56,7 +56,7 @@ const externalReferenceValidation = (t: (value: string) => string) => Yup.object
   url: Yup.string()
     .nullable()
     .matches(
-      /^https?:\/\/[^\s/$.?#].[^\s]*[^/]$/,
+      /^https?:\/\/[^\s/$.?#].[^\s]*$/,
       t('The value must be an URL'),
     ),
   description: Yup.string().nullable(),
@@ -70,7 +70,7 @@ interface ExternalReferenceCreationProps {
   inputValue?: string;
   onCreate?: (
     externalReference: ExternalReferenceAddInput | null | undefined,
-    onlyCreate: boolean
+    onlyCreate: boolean,
   ) => void;
   openContextual: boolean;
   handleCloseContextual?: () => void;
@@ -195,7 +195,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
 
   const isEmbeddedInExternalReferenceCreation = true;
   const CreateExternalReferenceControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='External-Reference' {...props} />
+    <CreateEntityControlledDial entityType="External-Reference" {...props} />
   );
   const renderClassic = () => {
     return (
@@ -232,7 +232,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                 <Field
                   component={TextField}
                   name="external_id"
-                  id={'external_id'}
+                  id="external_id"
                   label={t_i18n('External ID')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
@@ -322,7 +322,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   <Field
                     component={TextField}
                     name="external_id"
-                    id={'external_id'}
+                    id="external_id"
                     label={t_i18n('External ID')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}

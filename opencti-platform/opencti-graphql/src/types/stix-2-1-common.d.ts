@@ -3,6 +3,7 @@ import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-2-1-extensions';
 import type { StixRelation, StixSighting } from './stix-2-1-sro';
 import type { StixInternalExternalReference } from './stix-2-1-smo';
 import { AuthorizedMember } from '../utils/access';
+import type { PirInformation } from '../modules/pir/pir-types';
 
 export type StixDate = string | undefined;
 export type StixId = `${string}--${v4 | v5}`;
@@ -19,13 +20,13 @@ export type StixCoverage = {
 
 export type StixBundle = {
   id: string;
-  spec_version: string,
-  type: 'bundle'
+  spec_version: string;
+  type: 'bundle';
   objects: StixObject[];
 };
 
 interface StixMitreExtension {
-  'extension_type': 'property-extension' | 'new-sdo',
+  extension_type: 'property-extension' | 'new-sdo';
   id: string;
   detection: string;
   permissions_required: Array<string>;
@@ -43,37 +44,39 @@ interface StixFileExtension {
 }
 
 interface StixMetric {
-  name: string
-  value: float
+  name: string;
+  value: float;
 }
 
 interface StixOpenctiExtension {
-  extension_type : 'property-extension' | 'new-sdo' | 'new-sro'
-  id: v4 | undefined
-  files: Array<StixFileExtension>
-  aliases: Array<string>
-  granted_refs: Array<StixId>
-  granted_refs_ids: string[]
-  pir_refs_ids: string[]
-  stix_ids: Array<StixId>
-  type: string
-  created_at: StixDate
-  updated_at: StixDate
-  is_inferred: boolean
-  workflow_id: string | undefined
-  assignee_ids: string[]
-  participant_ids: string[]
-  creator_ids: string[]
-  authorized_members: Array<AuthorizedMember> | undefined
-  labels_ids: string[]
-  created_by_ref_id: string
-  converter_csv?: string | undefined
-  opencti_operation?: string
-  metrics: Array<StixMetric>
+  extension_type: 'property-extension' | 'new-sdo' | 'new-sro';
+  id: v4 | undefined;
+  files: Array<StixFileExtension>;
+  aliases: Array<string>;
+  granted_refs: Array<StixId>;
+  granted_refs_ids: string[];
+  pir_information: Array<PirInformation>;
+  stix_ids: Array<StixId>;
+  type: string;
+  created_at: StixDate;
+  updated_at: StixDate;
+  modified_at: StixDate;
+  is_inferred: boolean;
+  workflow_id: string | undefined;
+  assignee_ids: string[];
+  participant_ids: string[];
+  creator_ids: string[];
+  authorized_members: Array<AuthorizedMember> | undefined;
+  labels_ids: string[];
+  created_by_ref_id: string;
+  created_by_ref_type: string;
+  converter_csv?: string | undefined;
+  opencti_operation?: string;
+  metrics: Array<StixMetric>;
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {
-  extension_type : 'new-sdo';
+  extension_type: 'new-sdo';
 }
 
 interface StixObject {
@@ -83,7 +86,7 @@ interface StixObject {
   object_marking_refs?: Array<StixId>; // optional
   // TODO Implement granular_markings
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtension;
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
   };
 }
 
@@ -120,7 +123,7 @@ interface StixRelationshipObject extends StixObject {
 
 // SCO
 interface CyberObjectExtension {
-  extension_type? : 'property-extension';
+  extension_type?: 'property-extension';
   labels?: Array<string>;
   description?: string;
   score?: number;
@@ -134,7 +137,7 @@ interface StixCyberObject extends StixObject {
   x_opencti_score?: number; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
-    [STIX_EXT_OCTI_SCO]?: CyberObjectExtension
+    [STIX_EXT_OCTI_SCO]?: CyberObjectExtension;
   };
 }
 

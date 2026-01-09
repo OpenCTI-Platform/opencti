@@ -185,14 +185,14 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
 
   return (
     <span data-testid="feedback-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]}/>
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
           resolvePath={(data: FeedbacksLines_data$data) => data.feedbacks?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY_FEEDBACK}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={feedbackFragment}
           exportContext={{ entity_type: 'Feedback' }}

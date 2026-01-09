@@ -139,10 +139,10 @@ const InvestigationExpandFormContent = ({
   // // Used to compute the difference between total count returned by
   // the query and what is already displayed.
   const [existingTargets, setExistingTargets] = useState<
-  Map<string, Map<string, number>>
+    Map<string, Map<string, number>>
   >(new Map());
   const [existingRels, setExistingRels] = useState<
-  Map<string, Map<string, string[]>>
+    Map<string, Map<string, string[]>>
   >(new Map());
 
   // How many entity types and rel types we already have in the graph.
@@ -258,19 +258,19 @@ const InvestigationExpandFormContent = ({
       // Use of flatMap() to do both filter() and map() in one step.
       .flatMap((rel) => (rel
         ? [
-          {
-            label: rel.label.toLowerCase(),
-            // Decrease from the count of already displayed elements.
-            // toLowerCase() because relationship names are pascalized
-            // in elAggregationRelationsCount().
-            value:
+            {
+              label: rel.label.toLowerCase(),
+              // Decrease from the count of already displayed elements.
+              // toLowerCase() because relationship names are pascalized
+              // in elAggregationRelationsCount().
+              value:
                   (rel.value ?? 0)
                   - (
                     existingRelsSelected.get(rel.label.toLowerCase())
                     ?? new Set()
                   ).size,
-          },
-        ]
+            },
+          ]
         : []))
       // Remove from the list relations with nothing to add and relations ref involving the user
       .filter(({ label, value }) => value > 0 && !relationRefsWithUser?.has(label.replace('-', '')))
@@ -455,17 +455,17 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
   return distributionRelQueryRef
     && distributionFromQueryRef
     && distributionToQueryRef ? (
-      <Suspense fallback={Fallback}>
-        <InvestigationExpandFormContent
-          {...props}
-          distributionRelQueryRef={distributionRelQueryRef}
-          distributionFromQueryRef={distributionFromQueryRef}
-          distributionToQueryRef={distributionToQueryRef}
-        />
-      </Suspense>
-    ) : (
-      Fallback
-    );
+        <Suspense fallback={Fallback}>
+          <InvestigationExpandFormContent
+            {...props}
+            distributionRelQueryRef={distributionRelQueryRef}
+            distributionFromQueryRef={distributionFromQueryRef}
+            distributionToQueryRef={distributionToQueryRef}
+          />
+        </Suspense>
+      ) : (
+        Fallback
+      );
 };
 
 export default InvestigationExpandForm;

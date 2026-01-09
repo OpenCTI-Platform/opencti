@@ -2,9 +2,10 @@ import { getHttpClient } from '../../../utils/http-client';
 import conf, { logApp, PLATFORM_VERSION } from '../../../config/conf';
 import type { Success } from '../../../generated/graphql';
 
-type RegistrationStatus = 'active' | 'inactive';
+type RegistrationStatus = 'active' | 'inactive' | 'not_found';
 
 const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
+const HUB_OPENCTI_IDENTIFIER = 'opencti';
 
 export const xtmHubClient = {
   isBackendReachable: async (): Promise<{ isReachable: boolean }> => {
@@ -21,9 +22,9 @@ export const xtmHubClient = {
     }
   },
   refreshRegistrationStatus: async ({ platformId, token, platformVersion }: {
-    platformId: string,
-    token: string,
-    platformVersion: string
+    platformId: string;
+    token: string;
+    platformVersion: string;
   }): Promise<RegistrationStatus> => {
     const query = `
       mutation RefreshPlatformRegistrationConnectivityStatus($input: RefreshPlatformRegistrationConnectivityStatusInput!) {
@@ -37,12 +38,13 @@ export const xtmHubClient = {
       input: {
         platformId,
         token,
-        platformVersion
-      }
+        platformVersion,
+        platformIdentifier: HUB_OPENCTI_IDENTIFIER,
+      },
     };
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
-      responseType: 'json'
+      responseType: 'json',
     });
 
     try {
@@ -53,7 +55,7 @@ export const xtmHubClient = {
       return 'inactive';
     }
   },
-  autoRegister: async (platform: { platformId: string, platformToken: string, platformUrl: string, platformTitle: string }, enterpriseLicense: string): Promise<Success> => {
+  autoRegister: async (platform: { platformId: string; platformToken: string; platformUrl: string; platformTitle: string }, enterpriseLicense: string): Promise<Success> => {
     const query = `
        mutation AutoRegisterPlatform($platform: PlatformInput!) {
         autoRegisterPlatform(platform: $platform) {
@@ -68,8 +70,8 @@ export const xtmHubClient = {
         url: platform.platformUrl,
         title: platform.platformTitle,
         contract: enterpriseLicense,
-        version: PLATFORM_VERSION
-      }
+        version: PLATFORM_VERSION,
+      },
     };
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
@@ -77,7 +79,7 @@ export const xtmHubClient = {
       headers: {
         'Content-Type': 'application/json',
         'XTM-Hub-Platform-Token': platform.platformToken,
-        'XTM-Hub-Platform-Id': platform.platformId
+        'XTM-Hub-Platform-Id': platform.platformId,
       },
     });
 
@@ -93,5 +95,37 @@ export const xtmHubClient = {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return { success: false };
     }
-  }
+  },
+  contactUs: async (platform: { platformId: string; platformToken: string }): Promise<Success> => {
+    const query = `
+      mutation ContactUs {
+        contactUs {
+          success
+        }
+      }
+    `;
+
+    const httpClient = getHttpClient({
+      baseURL: HUB_BACKEND_URL,
+      responseType: 'json',
+      headers: {
+        'Content-Type': 'application/json',
+        'XTM-Hub-Platform-Token': platform.platformToken,
+        'XTM-Hub-Platform-Id': platform.platformId,
+      },
+    });
+
+    try {
+      const response = await httpClient.post('/graphql-api', { query });
+      const { data, errors } = response.data;
+      if ((errors?.length ?? 0) > 0 || !data?.contactUs?.success) {
+        logApp.warn('XTM Hub contactUs failed', { reason: errors?.[0] });
+        return { success: false };
+      }
+      return data?.contactUs;
+    } catch (error) {
+      logApp.warn('XTM Hub is unreachable', { reason: error });
+      return { success: false };
+    }
+  },
 };

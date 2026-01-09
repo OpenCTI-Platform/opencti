@@ -29,17 +29,17 @@ import type { Theme } from '../../Theme';
 import { isGraphNode } from '../graph.types';
 
 interface ReferenceFormData {
-  message: string,
-  references: FieldOption[]
+  message: string;
+  references: FieldOption[];
 }
 
 export interface GraphToolbarDeleteConfirmProps {
-  open: boolean
-  onClose: () => void
-  enableReferences?: boolean
-  entityId: string
-  onDeleteRelation?: (relId: string, onCompleted: () => void, message?: string, references?: string[]) => void
-  onRemove?: (ids: string[], onCompleted: () => void) => void
+  open: boolean;
+  onClose: () => void;
+  enableReferences?: boolean;
+  entityId: string;
+  onDeleteRelation?: (relId: string, onCompleted: () => void, message?: string, references?: string[]) => void;
+  onRemove?: (ids: string[], onCompleted: () => void) => void;
 }
 
 const GraphToolbarRemoveConfirm = ({
@@ -256,10 +256,11 @@ const GraphToolbarRemoveConfirm = ({
                       checked={andDelete}
                       onChange={() => setAndDelete((d) => !d)}
                     />
-                )}
+                  )}
                 />
               </FormGroup>
-            </Alert>)
+            </Alert>
+          )
           }
 
           {totalToDelete > 0 && (
@@ -273,7 +274,7 @@ const GraphToolbarRemoveConfirm = ({
             >
               <LinearProgress
                 style={{ flex: 1 }}
-                variant='determinate'
+                variant="determinate"
                 value={(currentDeleted / totalToDelete) * 100}
               />
               <Typography style={{ flexShrink: 0 }}>

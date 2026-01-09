@@ -6,6 +6,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, ViewListOutlined } from '@mui/icons-material';
 import { VectorPolygon } from 'mdi-material-ui';
+import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import StixCoreObjectOrStixCoreRelationshipContainersLines, {
@@ -44,6 +45,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   onChangeOpenExports,
   reportType,
 }) => {
+  useInitCreateRelationshipContext();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const {
@@ -223,10 +225,10 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {numberOfElements && (
-            <div>
-              <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
-              {t_i18n('entitie(s)')}
-            </div>
+              <div>
+                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
+                {t_i18n('entitie(s)')}
+              </div>
             )}
             <ToggleButtonGroup
               size="small"

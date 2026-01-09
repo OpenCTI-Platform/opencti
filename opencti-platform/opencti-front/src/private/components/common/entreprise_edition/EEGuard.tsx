@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 interface EEGuardProps {
-  redirect?: string
-  children: ReactNode
+  redirect?: string;
+  children: ReactNode;
 }
 
 const EEGuard = ({ redirect, children }: EEGuardProps) => {

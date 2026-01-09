@@ -25,7 +25,7 @@ class AddSubNarrativesLinesContainer extends Component {
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={narrative}
-        relationshipType={'subnarrative-of'}
+        relationshipType="subnarrative-of"
         availableDatas={data?.narratives}
         existingDatas={narrativeSubNarratives}
         updaterOptions={{ path: 'subNarratives' }}

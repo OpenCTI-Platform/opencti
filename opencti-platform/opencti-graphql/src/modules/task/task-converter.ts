@@ -19,8 +19,8 @@ export const convertCaseTaskToStix_2_1 = (instance: StoreEntityTask): StixTask =
         ...task.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
         object_refs_inferred: convertObjectReferences(instance, true),
-      })
-    }
+      }),
+    },
   };
 };
 
@@ -33,6 +33,6 @@ export const convertTaskToStix_2_0 = (instance: StoreEntityTask): Stix2Task => {
     description: instance.description,
     due_date: convertToStixDate(instance.due_date),
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
-    object_refs: convertObjectReferences(instance)
+    object_refs: convertObjectReferences(instance),
   };
 };

@@ -76,18 +76,18 @@ const narrativeMutation = graphql`
 const NARRATIVE_TYPE = 'Narrative';
 
 interface NarrativeAddInput {
-  name: string
-  description: string
-  confidence: number | null
-  createdBy: FieldOption | null
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | null
+  name: string;
+  description: string;
+  confidence: number | null;
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | null;
 }
 
 interface NarrativeFormProps {
-  updater?: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater?: (store: RecordSourceSelectorProxy, key: string, response: NarrativeCreationMutation['response']['narrativeAdd']) => void;
   onReset?: () => void;
   inputValue?: string;
   onCompleted?: () => void;
@@ -135,9 +135,9 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     resetBulk,
   } = useBulkCommit<NarrativeCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'narrativeAdd');
+        updater(store, 'narrativeAdd', response?.narrativeAdd);
       }
     },
   });
@@ -346,7 +346,7 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   );
 
   const CreateNarrativeControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Narrative' {...props} />
+    <CreateEntityControlledDial entityType="Narrative" {...props} />
   );
   const CreateNarrativeControlledDialContextual = CreateNarrativeControlledDial({
     onOpen: handleOpen,

@@ -84,7 +84,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Entity details')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h3" gutterBottom={true}>
@@ -105,13 +105,13 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             {isNotEmptyField(data.external_uri) && (
               <Button
                 color="primary"
-                startIcon={
+                startIcon={(
                   <img
                     style={{ width: 20 }}
                     src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
                     alt="OBAS"
                   />
-                }
+                )}
                 variant="outlined"
                 onClick={() => setDisplayExternalLink(true)}
                 title={data.external_uri} // tooltip on hover

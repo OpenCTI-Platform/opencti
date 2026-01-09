@@ -624,6 +624,7 @@ class StixCoreRelationship:
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         coverage_information = kwargs.get("coverage_information", None)
         update = kwargs.get("update", False)
 
@@ -669,6 +670,7 @@ class StixCoreRelationship:
                     "killChainPhases": kill_chain_phases,
                     "x_opencti_workflow_id": x_opencti_workflow_id,
                     "x_opencti_stix_ids": x_opencti_stix_ids,
+                    "x_opencti_modified_at": x_opencti_modified_at,
                     "coverage_information": coverage_information,
                     "update": update,
                 }
@@ -895,6 +897,55 @@ class StixCoreRelationship:
                         "toId": label_id,
                         "relationship_type": "object-label",
                     },
+                },
+            )
+            return True
+        else:
+            self.opencti.app_logger.error("Missing parameters: id and label_id")
+            return False
+
+    """
+        Remove a Label object to stix_core_relationship
+
+        :param id: the id of the stix_core_relationship
+        :param label_id: the id of the Label
+        :return Boolean
+    """
+
+    def remove_label(self, **kwargs):
+        id = kwargs.get("id", None)
+        label_id = kwargs.get("label_id", None)
+        label_name = kwargs.get("label_name", None)
+        if label_name is not None:
+            label = self.opencti.label.read(
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "value", "values": [label_name]}],
+                    "filterGroups": [],
+                }
+            )
+            if label:
+                label_id = label["id"]
+        if id is not None and label_id is not None:
+            self.opencti.app_logger.info(
+                "Removing label from stix_core_relationship",
+                {"label_id": label_id, "id": id},
+            )
+            query = """
+               mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: StixRef!, $relationship_type: String!) {
+                   stixCoreRelationshipEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": label_id,
+                    "relationship_type": "object-label",
                 },
             )
             return True
@@ -1176,6 +1227,12 @@ class StixCoreRelationship:
                         "workflow_id", stix_relation
                     )
                 )
+            if "x_opencti_modified_at" not in stix_relation:
+                stix_relation["x_opencti_modified_at"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "modified_at", stix_relation
+                    )
+                )
 
             raw_coverages = (
                 stix_relation["coverage"] if "coverage" in stix_relation else []
@@ -1262,6 +1319,11 @@ class StixCoreRelationship:
                 x_opencti_stix_ids=(
                     stix_relation["x_opencti_stix_ids"]
                     if "x_opencti_stix_ids" in stix_relation
+                    else None
+                ),
+                x_opencti_modified_at=(
+                    stix_relation["x_opencti_modified_at"]
+                    if "x_opencti_modified_at" in stix_relation
                     else None
                 ),
                 update=update,

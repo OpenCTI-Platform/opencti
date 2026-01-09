@@ -7,7 +7,7 @@ import {
   distributionEntities,
   stixBundleByIdStringify,
   storeLoadByIdWithRefs,
-  timeSeriesEntities
+  timeSeriesEntities,
 } from '../database/middleware';
 import {
   fullEntitiesList,
@@ -16,10 +16,11 @@ import {
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById,
-  storeLoadByIds
+  storeLoadByIds,
 } from '../database/middleware-loader';
 import { findStixCoreRelationshipsPaginated } from './stixCoreRelationship';
-import { delEditContext, notify, setEditContext, storeUpdateEvent } from '../database/redis';
+import { delEditContext, notify, setEditContext } from '../database/redis';
+import { storeUpdateEvent } from '../database/stream/stream-handler';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
@@ -50,7 +51,7 @@ import {
   ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  isStixDomainObjectContainer
+  isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { createWork, worksForSource, workToExportFile } from './work';
@@ -70,17 +71,17 @@ import {
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INTERNAL_OBJECTS,
   UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE
+  UPDATE_OPERATION_REMOVE,
 } from '../database/utils';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
-import { extractEntityRepresentativeName } from '../database/entity-representative';
+import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
 import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
-import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
+import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator } from '../generated/graphql';
@@ -92,7 +93,7 @@ import {
   getTopThreats,
   getTopVictims,
   getVictimologyStats,
-  systemPrompt
+  systemPrompt,
 } from '../utils/ai/dataResolutionHelpers';
 import { queryAi } from '../database/ai-llm';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
@@ -110,6 +111,7 @@ import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
+import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -123,7 +125,7 @@ const victims = [
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_EVENT
+  ENTITY_TYPE_EVENT,
 ];
 
 const extractStixCoreObjectTypesFromArgs = (args) => {
@@ -162,6 +164,56 @@ export const globalSearchPaginated = async (context, user, args) => {
   const context_data = { input: args, search: args.search };
   await publishUserAction({ user, event_type: 'command', event_scope: 'search', event_access: 'extended', context_data });
   return findStixCoreObjectPaginated(context, user, args);
+};
+
+export const findUnknownStixCoreObjects = async (context, user, args) => {
+  const { values: inputValues, orderBy, orderMode } = args;
+  if (inputValues.length === 0) {
+    return [];
+  }
+  const values = [...new Set(inputValues)]; // uniq values only
+  const filters = {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', values: [ABSTRACT_STIX_CORE_OBJECT] },
+      { key: BULK_SEARCH_KEYWORDS_FILTER, values },
+    ],
+    filterGroups: [],
+  };
+  const knownScos = await globalSearchPaginated(context, user, { filters, first: 5000 });
+  const knownNodes = knownScos.edges.map((n) => n.node) ?? [];
+
+  const isStixObjectMatchWithSearchValue = (stixObject, value) => {
+    const representativeMatch = value.toLowerCase() === extractRepresentative(stixObject).main.toLowerCase();
+    if (!representativeMatch) {
+      // try to find in hashes
+      if (stixObject.hashes) {
+        const hashMatch = Object.values(stixObject.hashes).filter((h) => !!h).some((h) => h === value);
+        if (hashMatch) return hashMatch;
+      }
+      // try to find in attributes of bulk search filter
+      return BULK_SEARCH_KEYWORDS_FILTER_KEYS.some((key) => {
+        const stixObjectValue = stixObject[key];
+        if (!stixObjectValue) return false;
+        return Array.isArray(stixObjectValue)
+          ? stixObjectValue.includes(value)
+          : stixObjectValue === value;
+      });
+    }
+    return representativeMatch;
+  };
+
+  // post filtering
+  const unknownValues = values.filter((value) => {
+    const resolvedScos = knownNodes.filter((o) => isStixObjectMatchWithSearchValue(o, value)) ?? [];
+    return resolvedScos.length === 0;
+  });
+  // order unknown values
+  if (orderBy && orderBy === 'value') {
+    const orderFactor = orderMode === 'desc' ? -1 : 1;
+    return unknownValues.sort((a, b) => orderFactor * a.localeCompare(b));
+  }
+  return unknownValues;
 };
 
 export const findStixCoreObjectRestrictedPaginated = async (context, user, args) => {
@@ -302,7 +354,7 @@ export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObject
 export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
   const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
-    throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
+    throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.', { stixCoreObjectId });
   }
   await deleteElementById(context, user, stixCoreObjectId, stixCoreObject.entity_type);
   return stixCoreObjectId;
@@ -311,7 +363,7 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
 export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjectId) => {
   const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT, { includeDeletedInDraft: true });
   if (!stixCoreObject) {
-    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Object cannot be found.');
+    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Object cannot be found.', { stixCoreObjectId });
   }
   // TODO currently not locked, but might need to be
   await elRemoveElementFromDraft(context, user, stixCoreObject);
@@ -322,7 +374,7 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
   const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
   const element = await storeLoadByIdWithRefs(context, user, enrichedId);
   if (!element) {
-    throw FunctionalError('Cannot enrich the object, element cannot be found.');
+    throw FunctionalError('Cannot enrich the object, element cannot be found.', { enrichedId });
   }
   // If we are in a draft, specify it in work message and send draft_id in message
   const draftContext = getDraftContext(context, user);
@@ -344,14 +396,14 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
         applicant_id: null, // No specific user asking for the import
         draft_id: draftContext ?? null,
         mode: 'manual',
-        trigger: 'update'
+        trigger: 'update',
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ENRICHMENT,
         entity_id: element.standard_id,
         entity_type: element.entity_type,
         stix_entity,
-        stix_objects: stixResolutionMode === 'stix_bundle' ? stix_objects : null
+        stix_objects: stixResolutionMode === 'stix_bundle' ? stix_objects : null,
       },
     };
     await pushToConnector(connector.internal_id, message);
@@ -360,7 +412,7 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
       connector_id: connector.internal_id,
       connector_name: connector.name,
       entity_name: extractEntityRepresentativeName(element),
-      entity_type: element.entity_type
+      entity_type: element.entity_type,
     };
     const contextData = completeContextDataForEntity(baseData, element);
     await publishUserAction({
@@ -414,7 +466,7 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
       count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES
         : READ_ENTITIES_INDICES, { ...args, ...numberParameter, types }),
       total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES
-        : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...numberParameter, types }))
+        : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...numberParameter, types })),
     };
   }));
 };
@@ -446,15 +498,15 @@ export const stixCoreObjectsDistributionByEntity = async (context, user, args) =
         ...n,
         values: [
           ...n.values.filter((i) => i.key !== 'id'),
-          { key: 'id', values: [objectId] }
-        ]
-      } : n))
+          { key: 'id', values: [objectId] },
+        ],
+      } : n)),
     };
   // If not present, adding it
   } else {
     finalFilters = addFilter(filters, INSTANCE_REGARDING_OF, [
       { key: 'id', values: [objectId] },
-      { key: 'type', values: [ABSTRACT_STIX_CORE_RELATIONSHIP] }
+      { key: 'type', values: [ABSTRACT_STIX_CORE_RELATIONSHIP] },
     ]);
   }
   return distributionEntities(context, user, types ?? [ABSTRACT_STIX_CORE_OBJECT], { ...args, filters: finalFilters });
@@ -512,7 +564,7 @@ export const stixCoreObjectExportPush = async (context, user, entityId, args) =>
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'create',
-    context_data: contextData
+    context_data: contextData,
   });
   return true;
 };
@@ -556,7 +608,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
         work_id: work.id, // Related action for history
         applicant_id: null, // No specific user asking for the analysis
         mode: 'manual',
-        trigger: 'update'
+        trigger: 'update',
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ANALYSIS,
@@ -593,7 +645,7 @@ const askFileAnalysisForConnector = async (context, user, analyzedId, contentSou
         work_id: work.id, // Related action for history
         applicant_id: null, // No specific user asking for the analysis
         mode: 'manual',
-        trigger: 'update'
+        trigger: 'update',
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ANALYSIS,
@@ -625,7 +677,7 @@ const publishAnalysisAction = async (user, analyzedId, connector, element) => {
     connector_id: connector.id,
     connector_name: connector.name,
     entity_name: extractEntityRepresentativeName(element),
-    entity_type: element.entity_type
+    entity_type: element.entity_type,
   };
   const contextData = completeContextDataForEntity(baseData, element);
   await publishUserAction({
@@ -652,7 +704,7 @@ export const stixCoreObjectAnalysisPush = async (context, user, entityId, args) 
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'create',
-    context_data: contextData
+    context_data: contextData,
   });
   return up;
 };
@@ -675,7 +727,7 @@ export const analysisClear = async (context, user, entityId, contentSource, cont
         event_type: 'file',
         event_access: 'extended',
         event_scope: 'delete',
-        context_data: contextData
+        context_data: contextData,
       });
     }
   }
@@ -734,7 +786,7 @@ export const executeRemoveAuthMembers = async (context, user, element) => {
     entityId: element.id,
     entityType: element.entity_type,
     requiredCapabilities: [BYPASS],
-    input: null
+    input: null,
   });
 };
 
@@ -759,7 +811,7 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
     version,
     fileMarkings,
     importContextEntities,
-    noTriggerImport
+    noTriggerImport,
   });
 
   if (connectors && isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'])) {
@@ -769,7 +821,7 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
         connectorId,
         configuration,
         validationMode,
-        forceValidation: true
+        forceValidation: true,
       })
     )));
   }
@@ -785,7 +837,9 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     throw UnsupportedError('Cant upload a file an none existing element', { id });
   }
   // check entity access
-  if (!validateUserAccessOperation(user, previous, 'edit')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, previous, AccessOperation.EDIT, draft)) {
     throw ForbiddenAccess();
   }
   const participantIds = getInstanceIds(previous);
@@ -840,7 +894,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       internal_id: internalId,
       entity_type: previous.entity_type, // required for schema validation
       updated_at: now(),
-      x_opencti_files: nonResolvedFiles
+      x_opencti_files: nonResolvedFiles,
     };
     if (getDraftContext(context, user)) {
       elementWithUpdatedFiles._id = previous._id;
@@ -879,13 +933,13 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const message = is_upsert
         ? `adds a new version of \`${up.name}\` in \`files\` and \`external_references\``
         : `adds \`${up.name}\` in \`files\` and \`external_references\``;
-      await storeUpdateEvent(context, user, previous, instance, message, { noHistory: embedded ?? false });
+      await storeUpdateEvent(context, user, previous, instance, message, [], { noHistory: embedded ?? false });
     } else {
       const instance = { ...previous, x_opencti_files: resolvedFiles };
       const message = is_upsert
         ? `adds a new version of \`${up.name}\` in \`files\``
         : `adds \`${up.name}\` in \`files\``;
-      await storeUpdateEvent(context, user, previous, instance, message, { noHistory: embedded ?? false });
+      await storeUpdateEvent(context, user, previous, instance, message, [], { noHistory: embedded ?? false });
     }
     // Add in activity only for notifications
     const contextData = buildContextDataForFile(previous, filePath, up.name, up.metaData.file_markings, { is_upsert });
@@ -895,7 +949,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       event_access: 'extended',
       event_scope: 'create',
       prevent_indexing: true,
-      context_data: contextData
+      context_data: contextData,
     });
     return up;
   } catch (err) {
@@ -928,7 +982,9 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     throw UnsupportedError('Cant delete a file of none existing element', { entityId });
   }
   // check entity access
-  if (!validateUserAccessOperation(user, previous, 'edit')) {
+  const draftId = getDraftContext(context, user);
+  const draft = draftId ? await findDraftById(context, user, draftId) : null;
+  if (!validateUserAccessOperation(user, previous, AccessOperation.EDIT, draft)) {
     throw ForbiddenAccess();
   }
   let lock;
@@ -973,7 +1029,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(context, user, previous, instance, `removes \`${baseDocument.name}\` in \`files\``);
+    await storeUpdateEvent(context, user, previous, instance, `removes \`${baseDocument.name}\` in \`files\``, []);
     // Add in activity only for notifications
     const contextData = buildContextDataForFile(previous, fileId, baseDocument.name);
     await publishUserAction({
@@ -982,7 +1038,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
       event_access: 'extended',
       event_scope: 'delete',
       prevent_indexing: true,
-      context_data: contextData
+      context_data: contextData,
     });
     await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, instance, user);
   } catch (err) {
@@ -1046,7 +1102,7 @@ export const aiActivity = async (context, user, args) => {
   const activity = {
     result: finalResult,
     trend,
-    updated_at: now()
+    updated_at: now(),
   };
   aiResponseCache[identifier] = activity;
   return activity;
@@ -1077,7 +1133,7 @@ export const aiForecast = async (context, user, args) => {
 
   const activity = {
     result: finalResult,
-    updated_at: now()
+    updated_at: now(),
   };
   aiResponseCache[identifier] = activity;
   return activity;
@@ -1133,17 +1189,17 @@ export const aiActivityForThreats = async (context, user, stixCoreObject, langua
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topCountries = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topRegions = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
@@ -1249,17 +1305,17 @@ export const aiForecastForThreats = async (context, user, stixCoreObject, langua
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topSectors[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_IDENTITY_SECTOR], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topCountries = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topCountries[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_COUNTRY], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topRegions = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topRegions[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopVictims(context, user, stixCoreObject.id, [ENTITY_TYPE_LOCATION_REGION], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
@@ -1322,12 +1378,12 @@ export const aiActivityForVictims = async (context, user, stixCoreObject, langua
   const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topIntrusionSets = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topMalwares = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
@@ -1429,12 +1485,12 @@ export const aiForecastForVictims = async (context, user, stixCoreObject, langua
   const targetingStats = await getTargetingStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const containersStats = await getContainersStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topIntrusionSets = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topIntrusionSets[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_INTRUSION_SET], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }
   const topMalwares = {};
-  // eslint-disable-next-line no-plusplus
+
   for (let i = 0; i < 8; i++) {
     topMalwares[`From ${monthsAgo(i * 3 + 3)} to ${monthsAgo(i * 3)}`] = await getTopThreats(context, user, stixCoreObject.id, [ENTITY_TYPE_MALWARE], monthsAgo(i * 3 + 3), monthsAgo(i * 3));
   }

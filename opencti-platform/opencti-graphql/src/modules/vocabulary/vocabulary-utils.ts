@@ -9,7 +9,7 @@ export const builtInOv = [
   'pattern_type_ov',
 ];
 
-export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string, aliases?: string[], order?: number }>> = {
+export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; description?: string; aliases?: string[]; order?: number }>> = {
   // A
   account_type_ov: [
     { key: 'facebook', description: 'Specifies a Facebook account' },
@@ -872,32 +872,32 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     {
       key: 'A - Completely reliable',
       description: 'No doubt of authenticity, trustworthiness, or competency; has a history of complete reliability',
-      order: 1
+      order: 1,
     },
     {
       key: 'B - Usually reliable',
       description: 'Minor doubt about authenticity, trustworthiness, or competency; has a history of valid information most of the time',
-      order: 2
+      order: 2,
     },
     {
       key: 'C - Fairly reliable',
       description: 'Doubt of authenticity, trustworthiness, or competency but has provided valid information in the past',
-      order: 3
+      order: 3,
     },
     {
       key: 'D - Not usually reliable',
       description: 'Significant doubt about authenticity, trustworthiness, or competency but has provided valid information in the past',
-      order: 4
+      order: 4,
     },
     {
       key: 'E - Unreliable',
       description: 'Lacking in authenticity, trustworthiness, and competency; history of invalid information',
-      order: 5
+      order: 5,
     },
     {
       key: 'F - Reliability cannot be judged',
       description: 'No basis exists for evaluating the reliability of the source',
-      order: 6
+      order: 6,
     },
   ],
   report_types_ov: [
@@ -1154,19 +1154,19 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
   tool_types_ov: [
     {
       key: 'denial-of-service',
-      description: 'Tools used to perform denial of service attacks or DDoS attacks, such as Low Orbit Ion Cannon (LOIC) and DHCPig'
+      description: 'Tools used to perform denial of service attacks or DDoS attacks, such as Low Orbit Ion Cannon (LOIC) and DHCPig',
     },
     { key: 'exploitation', description: 'Tools used to exploit software and systems, such as sqlmap and Metasploit' },
     { key: 'information-gathering', description: 'Tools used to enumerate system and network information, e.g., NMAP' },
     { key: 'network-capture', description: 'Tools used to capture network traffic, such as Wireshark and Kismet' },
     {
       key: 'credential-exploitation',
-      description: 'Tools used to crack password databases or otherwise exploit/discover credentials, either locally or remotely, such as John the Ripper and NCrack'
+      description: 'Tools used to crack password databases or otherwise exploit/discover credentials, either locally or remotely, such as John the Ripper and NCrack',
     },
     { key: 'remote-access', description: 'Tools used to access machines remotely, such as VNC and Remote Desktop' },
     {
       key: 'vulnerability-scanning',
-      description: 'Tools used to scan systems and networks for vulnerabilities, e.g., Nessus'
+      description: 'Tools used to scan systems and networks for vulnerabilities, e.g., Nessus',
     },
     { key: 'unknown', description: 'There is not enough information available to determine the type of tool' },
   ],
@@ -1213,7 +1213,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'ecdsa' },
     { key: 'ed25519' },
     { key: 'dsa' },
-  ]
+  ],
 };
 
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {
@@ -1241,7 +1241,7 @@ export const getVocabularyCategoryForField = (fieldName: string, entityType: str
   }
   throw UnsupportedError('You can\'t have multiple category on the same field for the same entity type', {
     fieldName,
-    entityType
+    entityType,
   });
 };
 
@@ -1264,11 +1264,11 @@ export const updateElasticVocabularyValue = async (oldNames: string[], name: str
                   ...category.fields.map((f) => ({
                     terms: {
                       [`${f.key}.keyword`]: oldNames,
-                    }
+                    },
                   })),
                 ],
-                minimum_should_match: 1
-              }
+                minimum_should_match: 1,
+              },
             },
             {
               bool: {
@@ -1276,15 +1276,15 @@ export const updateElasticVocabularyValue = async (oldNames: string[], name: str
                   ...category.fields.map((f) => ({
                     exists: {
                       field: f.key,
-                    }
+                    },
                   })),
                 ],
-                minimum_should_match: 1
-              }
-            }
+                minimum_should_match: 1,
+              },
+            },
           ],
         },
-      }
+      },
     },
   });
 };

@@ -4,5 +4,5 @@ import savedFilterResolver from './savedFilter-resolver';
 
 registerGraphqlSchema({
   schema: savedFilterTypeDefs,
-  resolver: savedFilterResolver
+  resolver: savedFilterResolver,
 });

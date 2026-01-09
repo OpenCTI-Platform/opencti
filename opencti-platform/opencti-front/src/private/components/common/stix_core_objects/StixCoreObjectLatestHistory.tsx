@@ -52,56 +52,60 @@ const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestH
         {t_i18n('Most recent history')}
       </Typography>
       {queryRef
-        && <React.Suspense
-          fallback={<Paper
-            sx={{
-              marginTop: theme.spacing(1),
-              padding: 0,
-              borderRadius: 4,
-            }}
-            variant="outlined"
-            className={'paper-for-grid'}
+        && (
+          <React.Suspense
+            fallback={(
+              <Paper
+                sx={{
+                  marginTop: theme.spacing(1),
+                  padding: 0,
+                  borderRadius: 4,
+                }}
+                variant="outlined"
+                className="paper-for-grid"
+              >
+                <List>
+                  {Array.from(Array(5), (e, i) => (
+                    <ListItem
+                      key={`latest_history_skel_${i}`}
+                      dense
+                      divider
                     >
-            <List>
-              {Array.from(Array(5), (e, i) => (
-                <ListItem
-                  key={`latest_history_skel_${i}`}
-                  dense
-                  divider
-                >
-                  <ListItemIcon>
-                    <Avatar>{i}</Avatar>
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Skeleton
-                        animation="wave"
-                        variant="rectangular"
-                        width="90%"
-                        height={15}
-                        style={{ marginBottom: 10 }}
+                      <ListItemIcon>
+                        <Avatar>{i}</Avatar>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={(
+                          <Skeleton
+                            animation="wave"
+                            variant="rectangular"
+                            width="90%"
+                            height={15}
+                            style={{ marginBottom: 10 }}
+                          />
+                        )}
+                        secondary={(
+                          <Skeleton
+                            animation="wave"
+                            variant="rectangular"
+                            width="90%"
+                            height={15}
+                          />
+                        )}
                       />
-                    }
-                    secondary={
-                      <Skeleton
-                        animation="wave"
-                        variant="rectangular"
-                        width="90%"
-                        height={15}
-                      />
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Paper>}
-           >
-          <StixCoreObjectHistoryLines
-            queryRef={queryRef}
-            isRelationLog={false}
-            paginationOptions={paginationOptions}
-          />
-        </React.Suspense>
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            )}
+          >
+            <StixCoreObjectHistoryLines
+              queryRef={queryRef}
+              isRelationLog={false}
+              paginationOptions={paginationOptions}
+            />
+          </React.Suspense>
+        )
       }
     </>
   );

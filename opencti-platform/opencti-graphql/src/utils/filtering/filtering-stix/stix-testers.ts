@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-2-1-extensions';
 import { generateInternalType, getParentTypes } from '../../../schema/schemaUtils';
-import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
 import { stixRefsExtractor } from '../../../schema/stixEmbeddedRelationship';
 import type { TesterFunction } from '../boolean-logic-engine';
 import { testBooleanFilter, testNumericFilter, testStringFilter, toValidArray } from '../boolean-logic-engine';
@@ -43,7 +43,11 @@ import {
   SCORE_FILTER,
   SEVERITY_FILTER,
   TYPE_FILTER,
-  WORKFLOW_FILTER
+  WORKFLOW_FILTER,
+  PATTERN_TYPE_FILTER,
+  PIR_SCORE_FILTER,
+  PIR_SCORE_SUBFILTER,
+  PIR_IDS_SUBFILTER,
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -51,8 +55,9 @@ import { extractStixRepresentative } from '../../../database/stix-representative
 import { type AuthorizedMember, isUserInAuthorizedMember } from '../../access';
 import type { AuthUser } from '../../../types/user';
 import { UnsupportedError } from '../../../config/errors';
+import type { PirInformation } from '../../../modules/pir/pir-types';
 
-//-----------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------
 // Testers for each possible filter.
 // The stix object format is sometimes very different from what we store internally
 // and in our filters, so we need extra, specific steps.
@@ -203,7 +208,7 @@ export const testParticipant = (stix: any, filter: Filter) => {
 export const testAuthorize = (stix: any, filter: Filter) => {
   const restricted_members: AuthorizedMember[] = stix.extensions?.[STIX_EXT_OCTI]?.authorized_members ?? [];
   if (filter.values.length !== 1) {
-    throw UnsupportedError('Filter only support one user in parameter');
+    throw UnsupportedError('Filter only support one user in parameter', { filter });
   }
   const user = filter.values[0] as AuthUser;
   // TODO Need refactor to really get the right result as BYPASS for now will be always notify
@@ -261,10 +266,18 @@ export const testConfidence = (stix: any, filter: Filter) => {
 };
 
 /**
+ * PATTERN TYPE
+ */
+export const testPatternType = (stix: any, filter: Filter) => {
+  const stixValues: string[] = toValidArray(stix.pattern_type);
+  return testStringFilter(filter, stixValues);
+};
+
+/**
  * PATTERN
  */
 export const testPattern = (stix: any, filter: Filter) => {
-  const stixValues: string[] = toValidArray(stix.pattern_type);
+  const stixValues: string[] = toValidArray(stix.pattern);
   return testStringFilter(filter, stixValues);
 };
 
@@ -323,7 +336,7 @@ export const testRelationFrom = (stix: any, filter: Filter) => {
  * - depending on stix type (relation or sighting), we might search in target_ref or where_sighted_refs (plurals!)
  */
 export const testRelationTo = (stix: any, filter: Filter) => {
-  if (stix.type === STIX_TYPE_RELATION) {
+  if (stix.type === STIX_TYPE_RELATION || stix.type === ABSTRACT_INTERNAL_RELATIONSHIP) {
     const stixValues: string[] = toValidArray(stix.target_ref);
     return testStringFilter(filter, stixValues);
   }
@@ -447,6 +460,21 @@ export const testCvssSeverity = (stix: any, filter: Filter) => {
   return testStringFilter(filter, value);
 };
 
+export const testPirScore = (stix: any, filter: Filter) => {
+  // Retrieve data from the filter.
+  const pirIds = filter.values.find((v) => v.key === PIR_IDS_SUBFILTER)?.values ?? [];
+  const pirScoreFilter = filter.values.find((v) => v.key === PIR_SCORE_SUBFILTER);
+  // Determine which PIR of the stix entity is of interest.
+  // If no PIR IDs set in the filter, then we want to check on all PIR of the stix entity.
+  const pirInformation: PirInformation[] | undefined = pirIds.length === 0
+    ? stix.extensions[STIX_EXT_OCTI].pir_information
+    : stix.extensions[STIX_EXT_OCTI].pir_information?.filter((pir: PirInformation) => pirIds.includes(pir.pir_id));
+
+  // If at least one of the PIR matches the score filter then it's True.
+  const stixValues: number[] = pirInformation?.map((pir: PirInformation) => pir.pir_score) ?? [];
+  return stixValues.some((stixValue) => testNumericFilter(pirScoreFilter, stixValue));
+};
+
 /**
  * TODO: This mapping could be given by the schema, like we do with stix converters
  */
@@ -471,6 +499,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [MAIN_OBSERVABLE_TYPE_FILTER]: testMainObservableType,
   [MARKING_FILTER]: testMarkingFilter,
   [OBJECT_CONTAINS_FILTER]: testObjectContains,
+  [PATTERN_TYPE_FILTER]: testPatternType,
   [PATTERN_FILTER]: testPattern,
   [PRIORITY_FILTER]: testPriority,
   [REVOKED_FILTER]: testRevoked,
@@ -483,6 +512,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [EPSS_SCORE_FILTER]: testEpssScore,
   [CVSS_BASE_SCORE_FILTER]: testCvssScore,
   [CVSS_BASE_SEVERITY_FILTER]: testCvssSeverity,
+  [PIR_SCORE_FILTER]: testPirScore,
 
   // special keys (more complex behavior)
   [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo, // instance trigger, direct events

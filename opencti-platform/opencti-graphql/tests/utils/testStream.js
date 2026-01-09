@@ -31,7 +31,7 @@ export const fetchStreamEvents = (uri, { from } = {}) => {
         if (currentEventNumber === eventNumber) {
           closeEventSource();
         }
-      }, 5000);
+      }, 30000);
     };
     es.addEventListener('create', (event) => handleEvent(event));
     es.addEventListener('update', (event) => handleEvent(event));

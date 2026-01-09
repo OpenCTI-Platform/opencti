@@ -2,6 +2,11 @@ name: Verify licenses
 
 on:
   workflow_call:
+    inputs:
+      checkout_ref:
+        description: "Reference of the branch or commit sha"
+        type: string
+        default: ${{ github.sha }}
 
 jobs:
   license-check:

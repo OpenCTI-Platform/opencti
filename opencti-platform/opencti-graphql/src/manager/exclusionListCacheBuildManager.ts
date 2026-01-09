@@ -38,7 +38,7 @@ const EXCLUSION_LIST_CACHE_BUILD_MANAGER_DEFINITION: ManagerDefinition = {
   },
   enabled(): boolean {
     return this.enabledByConfig;
-  }
+  },
 };
 
 registerManager(EXCLUSION_LIST_CACHE_BUILD_MANAGER_DEFINITION);

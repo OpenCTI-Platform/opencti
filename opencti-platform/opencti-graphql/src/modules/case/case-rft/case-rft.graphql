@@ -2,7 +2,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics:[Metric]
   # StixObject
   representative: Representative!
@@ -11,6 +11,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  x_opencti_modified_at: DateTime
   refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
@@ -241,6 +242,7 @@ input CaseRftAddInput {
   modified: DateTime
   file: Upload
   clientMutationId: String
+  x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   update: Boolean
   takedown_types: [String!]

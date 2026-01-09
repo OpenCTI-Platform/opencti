@@ -71,9 +71,9 @@ const publicStixRelationshipsHorizontalBarsQuery = graphql`
 `;
 
 interface PublicStixRelationshipsHorizontalBarsComponentProps {
-  parameters: Widget['parameters']
-  dataSelection: Widget['dataSelection']
-  queryRef: PreloadedQuery<PublicStixRelationshipsHorizontalBarsQuery>
+  parameters: Widget['parameters'];
+  dataSelection: Widget['dataSelection'];
+  queryRef: PreloadedQuery<PublicStixRelationshipsHorizontalBarsQuery>;
 }
 
 const PublicStixRelationshipsHorizontalBarsComponent = ({

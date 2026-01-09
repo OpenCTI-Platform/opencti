@@ -78,7 +78,7 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
         <ItemIcon type="Organization" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -90,7 +90,7 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -109,17 +109,17 @@ export const SettingsOrganizationLineDummy = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined/>
+          <MoreVertOutlined />
         </Box>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -136,7 +136,7 @@ export const SettingsOrganizationLineDummy = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

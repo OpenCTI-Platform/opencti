@@ -47,7 +47,7 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
         {t_i18n('Details')}
       </Typography>
       <Paper
-        className={'paper-for-grid'}
+        className="paper-for-grid"
         variant="outlined"
         style={{
           marginTop: '8px',
@@ -83,12 +83,12 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
                 {tool.tool_types.map((tool_type) => (
                   <ListItem key={tool_type} dense={true} divider={true}>
                     <ListItemText
-                      primary={
+                      primary={(
                         <ItemOpenVocab
                           type="tool_types_ov"
                           value={tool_type}
                         />
-                        }
+                      )}
                     />
                   </ListItem>
                 ))}

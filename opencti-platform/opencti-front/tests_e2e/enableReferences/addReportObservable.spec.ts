@@ -28,7 +28,7 @@ const noBypassUserName = `NoBypassReferencesUser ${nowTime}`;
 const noBypassRoleName = `NoBypassReferencesRole ${nowTime}`;
 const noBypassGroupName = `NoBypassReferencesTestGroup ${nowTime}`;
 
-test.describe('Create user with no references bypass capabilities', () => {
+test.describe('Create user with no references bypass capabilities', { tag: ['@ce'] }, () => {
   test('Create basic user role', async ({ page }) => {
     const rolesSettingsPage = new RolesSettingsPage(page);
     const rolePage = new RolePage(page);
@@ -93,7 +93,7 @@ test.describe('Create user with no references bypass capabilities', () => {
   });
 });
 
-test.describe('Authenticate no bypass user', () => {
+test.describe('Authenticate no bypass user', { tag: ['@ce'] }, () => {
   test.use({ storageState: { cookies: [], origins: [] } });
   test('Authenticate basic user', async ({ page }) => {
     const dashboardPage = new DashboardPage(page);
@@ -107,7 +107,7 @@ test.describe('Authenticate no bypass user', () => {
   });
 });
 
-test('Add and remove observable from Observables tab of a Report as Admin user', async ({ page }) => {
+test('Add and remove observable from Observables tab of a Report as Admin user', { tag: ['@ce'] }, async ({ page }) => {
   const reportPage = new ReportPage(page);
   const reportDetailsPage = new ReportDetailsPage(page);
   const reportForm = new ReportFormPage(page);
@@ -158,7 +158,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   await page.locator('span').filter({ hasText: 'Enforce references' }).click();
 });
 
-test.describe('Add and remove observable from Observables tab of a Report as noBypass user', () => {
+test.describe('Add and remove observable from Observables tab of a Report as noBypass user', { tag: ['@ce'] }, () => {
   test.use({ storageState: noBypassUserAuthFile });
   test('Run test as noBypass user', async ({ page }) => {
     const reportPage = new ReportPage(page);

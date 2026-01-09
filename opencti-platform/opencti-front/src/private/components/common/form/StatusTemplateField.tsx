@@ -64,11 +64,11 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   const [statusTemplateCreation, setStatusTemplateCreation] = useState<boolean>(false);
   const [statusTemplateInput, setStatusTemplateInput] = useState<string>('');
   const [statusTemplates, setStatusTemplates] = useState<
-  {
-    label: string | undefined;
-    value: string | undefined;
-    color: string | undefined;
-  }[]
+    {
+      label: string | undefined;
+      value: string | undefined;
+      color: string | undefined;
+    }[]
   >([]);
 
   const handleOpenStatusTemplateCreation = () => setStatusTemplateCreation(true);

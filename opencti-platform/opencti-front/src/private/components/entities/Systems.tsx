@@ -92,7 +92,7 @@ const Systems = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -103,7 +103,7 @@ const Systems = () => {
                     />
                   ))}
               </>
-            }
+            )}
           >
             <SystemsLines
               queryRef={queryRef}

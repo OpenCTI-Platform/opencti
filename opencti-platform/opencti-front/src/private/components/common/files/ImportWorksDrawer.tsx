@@ -247,15 +247,17 @@ const FileWorksComponent = ({
           return theme.palette.success.main;
         }, [isError, status]);
         return (
-          <Tooltip title={messageToDisplay} slotProps={{
-            tooltip: {
-              sx: {
-                maxWidth: 'none',
-                minWidth: '400px',
-                overflow: 'auto',
+          <Tooltip
+            title={messageToDisplay}
+            slotProps={{
+              tooltip: {
+                sx: {
+                  maxWidth: 'none',
+                  minWidth: '400px',
+                  overflow: 'auto',
+                },
               },
-            },
-          }}
+            }}
           >
             <Chip
               variant="outlined"
@@ -275,8 +277,7 @@ const FileWorksComponent = ({
             />
           </Tooltip>
         );
-      }
-      ,
+      },
     },
   };
 
@@ -290,7 +291,7 @@ const FileWorksComponent = ({
           isLocalStorageEnabled={false}
           globalCount={works.length}
           variant={DataTableVariant.inline}
-          actions={(work: { id: string; draft_context?: string; status: string; }) => (
+          actions={(work: { id: string; draft_context?: string; status: string }) => (
             <div style={{ marginLeft: work?.draft_context && !draftContext ? -45 : 0 }}>
               {work?.draft_context && !draftContext && (
                 <Tooltip title={t_i18n('Navigate to draft')}>
@@ -299,7 +300,7 @@ const FileWorksComponent = ({
                     onClick={() => work.draft_context && navigateToDraft(work.draft_context)}
                     size="large"
                   >
-                    <ArchitectureOutlined fontSize="small"/>
+                    <ArchitectureOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>
               )}
@@ -307,11 +308,11 @@ const FileWorksComponent = ({
               <Tooltip title={t_i18n('Delete this work')}>
                 <IconButton
                   disabled={work?.status === 'deleting'}
-                  color={'primary'}
+                  color="primary"
                   onClick={() => setDisplayDelete(work?.id)}
                   size="large"
                 >
-                  <DeleteOutlined fontSize="small"/>
+                  <DeleteOutlined fontSize="small" />
                 </IconButton>
               </Tooltip>
             </div>
@@ -328,30 +329,32 @@ const FileWorksComponent = ({
         </div>
 
       )}
-      {!!displayDelete && (<Dialog
-        open={!!displayDelete}
-        slotProps={{ paper: { elevation: 1 } }}
-        slots={{ transition: Transition }}
-        onClose={() => setDisplayDelete(undefined)}
-                           >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to remove this job?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDisplayDelete(undefined)}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={() => deleteWork(displayDelete)}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>)}
+      {!!displayDelete && (
+        <Dialog
+          open={!!displayDelete}
+          slotProps={{ paper: { elevation: 1 } }}
+          slots={{ transition: Transition }}
+          onClose={() => setDisplayDelete(undefined)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t_i18n('Do you want to remove this job?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDisplayDelete(undefined)}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={() => deleteWork(displayDelete)}
+              disabled={deleting}
+            >
+              {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </div>
   );
 };
@@ -419,7 +422,7 @@ const ImportWorksDrawer = ({
     <>
       <Drawer
         title={t_i18n('File imports')}
-        header={
+        header={(
           <>
             {!isWorkbench && (
               <Button
@@ -435,14 +438,14 @@ const ImportWorksDrawer = ({
               </Button>
             )}
           </>
-        }
+        )}
         open={open}
         onClose={onClose}
       >
         <>
           <Alert severity="info">{t_i18n('This page lists the most recent works.')}</Alert>
           {queryRef && (
-            <Suspense fallback={<Loader variant={LoaderVariant.container}/>}>
+            <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
               <FileWorksComponent
                 isWorkbench={isWorkbench}
                 queryRef={queryRef}

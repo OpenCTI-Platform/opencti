@@ -2,6 +2,14 @@ name: Run OpenCTI api tests
 
 on:
   workflow_call:
+    inputs:
+      checkout_ref:
+        description: "Reference of the branch or commit sha"
+        type: string
+        default: ${{ github.sha }}
+      run-id:
+        required: true
+        type: string
 
 jobs:
   run-opencti-integration-test:
@@ -16,14 +24,25 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
+    - name: Download image platform
+      continue-on-error: true
+      uses: actions/download-artifact@v7
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        name: docker-image-opencti-platform
+        path: /tmp
 
-    - name: Collect Workflow Telemetry
-      uses: catchpoint/workflow-telemetry-action@v2
+    - name: Download image worker
+      uses: actions/download-artifact@v7
+      with:
+        name: docker-image-opencti-worker
+        path: /tmp
+
+    - name: Load image
+      run: |
+          set -eux
+          docker load --input /tmp/opencti-platform.tar   
+          docker load --input /tmp/opencti-worker.tar   
+          docker images
 
     - name: Set up Docker Compose for backends and sync instances
       run: |
@@ -31,23 +50,23 @@ jobs:
          cd scripts/ci
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
-         docker compose --profile "*" up -d
+         docker compose  --profile "backend" --profile "ci-test-api-sync" up -d
 
     - name: Wait for OpenCTI sync instances to start
       run: |
-          set -ex
-          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
-          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
-          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
-          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
+          set -eux
+          ./scripts/ci/wait-for-url-200.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
+          ./scripts/ci/wait-for-url-200.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
+          ./scripts/ci/wait-for-url-200.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
+          ./scripts/ci/wait-for-url-200.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
 
 
-    - name: Start api test
+    - name: Start api test (aka yarn test:ci-integration-sync)
       run: |
         docker run --network runner-docker-network \
           --name api-tests \
           -p 4010:4100 \
-          -v ${{ github.workspace }}:/home/workspace \
+          -v ${{ github.workspace }}/test-results:/opt/opencti/test-results \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
@@ -56,30 +75,27 @@ jobs:
           -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4100/graphql \
           -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4100/graphql \
           -e PYTHONUNBUFFERED=1  \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex
-            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-            apk add build-base git libffi-dev cargo
-            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
-            cd /home/workspace/opencti-platform/opencti-graphql
-            npm install -g corepack
-            cp /home/workspace/opencti-platform/.yarnrc.yml .
-            yarn install
-            yarn build
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration
+          filigran/platform:${{ github.sha }} \
+          sh -c 'set -eux
+            mkdir -p ../../opencti-connectors/stream/backup-files/src
+            wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
+            mkdir -p ../../opencti-connectors/external-import/restore-files/src
+            wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
         '
 
     - name: Upload backend test result
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: always()
       continue-on-error: true
       with:
         name: backend-test-results-integration
-        path: ${{ github.workspace }}/opencti-platform/opencti-graphql/test-results
+        path: ${{ github.workspace }}/test-results
         retention-days: 15
 
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      if: always()
       continue-on-error: true
       run: |
           echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
@@ -130,14 +146,25 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
+    - name: Download image platform
+      continue-on-error: true
+      uses: actions/download-artifact@v7
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        name: docker-image-opencti-platform
+        path: /tmp
 
-    - name: Collect Workflow Telemetry
-      uses: catchpoint/workflow-telemetry-action@v2
+    - name: Download image worker
+      uses: actions/download-artifact@v7
+      with:
+        name: docker-image-opencti-worker
+        path: /tmp
+
+    - name: Load image
+      run: |
+          set -eux
+          docker load --input /tmp/opencti-platform.tar   
+          docker load --input /tmp/opencti-worker.tar   
+          docker images
 
     - name: Set up Docker Compose for backends and sync instances
       run: |
@@ -145,33 +172,26 @@ jobs:
          cd scripts/ci
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
-         docker compose --profile "backend" --profile ci-test-api up -d
+         docker compose --profile "backend" --profile "ci-test-rules" up -d
+         ./wait-for-url-200.sh http://localhost:9200/_cluster/health?wait_for_status=yellow  120 2
 
-    - name: Start rules test
+    - name: Start rules test and others (aka yarn test:ci-rules-and-others)
       run: |
         docker run --network runner-docker-network \
           --name api-tests \
           -p 4010:4100 \
-          -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex;
-            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
-            apk add build-base git libffi-dev cargo;
-            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
-            cd /home/workspace/opencti-platform/opencti-graphql
-            npm install -g corepack
-            cp /home/workspace/opencti-platform/.yarnrc.yml .
-            yarn install
-            yarn build
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules
+          filigran/platform:${{ github.sha }} \
+          sh -c 'set -eux
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
         '
 
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      if: always()
       continue-on-error: true
       run: |
           echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
@@ -189,8 +209,8 @@ jobs:
       continue-on-error: true
       run: cat runner_resource_stat.log
 
-  run-opencti-api-non-integration-test:
-    name: Unit and others tests
+  run-opencti-api-unit-test:
+    name: Api unit tests
     runs-on: ubuntu-latest
 
     steps:
@@ -201,47 +221,30 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Set up Docker Compose for backends
-      run: |
-         set -ex
-         cd scripts/ci
-         docker network create runner-docker-network
-         docker compose --profile "backend" up -d
+    - name: Download image platform
+      continue-on-error: true
+      uses: actions/download-artifact@v7
+      with:
+        name: docker-image-opencti-platform
+        path: /tmp
 
-    - name: Start unit and other tests
+    - name: Load image
       run: |
-        docker run --network runner-docker-network \
-          --name unit-and-other-tests \
-          -p 4010:4100 \
-          -v ${{ github.workspace }}:/home/workspace \
+          set -eux
+          docker load --input /tmp/opencti-platform.tar   
+          docker images
+
+    - name: Start unit and linter (aka yarn test:ci-unit)
+      run: |
+        docker run --name unit-and-other-tests \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
-          -e APP__BASE_URL=http://unit-and-other-tests:4010/ \
-          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex;
-            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
-            apk add build-base git libffi-dev cargo;
-            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
-            cd /home/workspace/opencti-platform/opencti-graphql
-            npm install -g corepack
-            cp /home/workspace/opencti-platform/.yarnrc.yml .
-            yarn install
-            yarn build
+          filigran/platform:${{ github.sha }} \
+          sh -c 'set -eux
             yarn check-ts
             yarn lint
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit-and-others
+            NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '
-
-    # Output all logs used during the job
-    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
-      continue-on-error: true
-      run: |
-          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
-          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
-          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
-          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
-
     - name: Print resources stats
       if: always()
       continue-on-error: true

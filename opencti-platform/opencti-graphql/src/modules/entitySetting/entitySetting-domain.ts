@@ -39,7 +39,7 @@ export const findByType = async (context: AuthContext, user: AuthUser, targetTyp
         mode: 'and',
         filters: [{ key: 'target_type', values: [targetType] }],
         filterGroups: [],
-      }
+      },
     });
   };
   return telemetry(context, user, 'QUERY entitySetting', {
@@ -55,7 +55,7 @@ export const batchEntitySettingsByType = async (context: AuthContext, user: Auth
         mode: FilterMode.And,
         filters: [{ key: ['target_type'], values: targetTypes }],
         filterGroups: [],
-      }
+      },
     });
     return targetTypes.map((targetType) => entitySettings.find((entitySetting) => entitySetting.target_type === targetType));
   };
@@ -79,7 +79,7 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
     const hasValidAdmin = await containsValidAdmin(
       context,
       authorizedMembersEdit.default_values.map(JSON.parse),
-      ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS']
+      ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
     );
     if (!hasValidAdmin) {
       throw FunctionalError('It should have at least one member with admin access');
@@ -92,7 +92,7 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for entity setting \`${element.target_type}\``,
-    context_data: { id: entitySettingId, entity_type: element.target_type, input }
+    context_data: { id: entitySettingId, entity_type: element.target_type, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };
@@ -138,7 +138,7 @@ export const initCreateEntitySettings = async (context: AuthContext, user: AuthU
     if (!currentEntityTypes.includes(entityType)) {
       const availableSettings = getAvailableSettings(entityType);
       const entitySetting: Record<string, typeAvailableSetting> = {
-        target_type: entityType
+        target_type: entityType,
       };
       availableSettings.forEach((key) => {
         if (defaultEntitySetting[key] !== undefined) {
@@ -157,7 +157,7 @@ export const initCreateEntitySettings = async (context: AuthContext, user: AuthU
 export const queryEntitySettingSchemaAttributes = async (
   context: AuthContext,
   user: AuthUser,
-  entitySetting: BasicStoreEntityEntitySetting
+  entitySetting: BasicStoreEntityEntitySetting,
 ): Promise<EntitySettingSchemaAttribute[]> => {
   return getEntitySettingSchemaAttributes(context, user, entitySetting);
 };
@@ -165,7 +165,7 @@ export const queryEntitySettingSchemaAttributes = async (
 export const queryScaleAttributesForSetting = async (
   context: AuthContext,
   user: AuthUser,
-  entitySetting: BasicStoreEntityEntitySetting
+  entitySetting: BasicStoreEntityEntitySetting,
 ) => {
   const attributes = await getEntitySettingSchemaAttributes(context, user, entitySetting);
   return attributes.filter((a) => a.scale).map((a) => ({ name: a.name, scale: a.scale ?? '' }));
@@ -174,7 +174,7 @@ export const queryScaleAttributesForSetting = async (
 export const queryMandatoryAttributesForSetting = async (
   context: AuthContext,
   user: AuthUser,
-  entitySetting: BasicStoreEntityEntitySetting
+  entitySetting: BasicStoreEntityEntitySetting,
 ) => {
   return getMandatoryAttributesForSetting(context, user, entitySetting);
 };
@@ -182,7 +182,7 @@ export const queryMandatoryAttributesForSetting = async (
 export const queryDefaultValuesAttributesForSetting = async (
   context: AuthContext,
   user: AuthUser,
-  entitySetting: BasicStoreEntityEntitySetting
+  entitySetting: BasicStoreEntityEntitySetting,
 ) => {
   const attributes = await getEntitySettingSchemaAttributes(context, user, entitySetting);
   const defaultValuesAttributes = await Promise.all(attributes.filter((a) => a.defaultValues).map(async (a) => {

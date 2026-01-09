@@ -96,9 +96,9 @@ const JsonMapperTestDialog: FunctionComponent<JsonMapperTestDialogProps> = ({
         >
           <CustomFileUploader
             setFieldValue={(field, v) => onChange(field, v)}
-            label={'Your testing file limited to 50 lines (JSON only, max 1MB)'}
+            label="Your testing file limited to 50 lines (JSON only, max 1MB)"
             // we also accept application/vnd.ms-excel type because that's how json's seem to be seen as under WindowsOS + Firefox browser
-            acceptMimeTypes={'text/json,application/json'}
+            acceptMimeTypes="text/json,application/json"
             // we limit the file size so the upload does not take too long for a simple test
             sizeLimit={1000000}
           />
@@ -127,29 +127,31 @@ const JsonMapperTestDialog: FunctionComponent<JsonMapperTestDialogProps> = ({
           </Button>
           {loading && (
             <Box sx={{ marginLeft: '8px' }}>
-              <Loader variant={LoaderVariant.inElement}/>
+              <Loader variant={LoaderVariant.inElement} />
             </Box>
           )}
         </Box>
         {result
-          && <Box
-            sx={{
-              paddingTop: '8px',
-              fontSize: '1rem',
-              gap: '8px',
-              justifyContent: 'center',
-              display: 'flex',
-            }}
-             >
-            <span>{t_i18n('Objects found')} : </span>
-            <span><strong>{result?.jsonMapperTest?.nbEntities} </strong> {t_i18n('Entities')}</span>
-            <span><strong>{result?.jsonMapperTest?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
-          </Box>
+          && (
+            <Box
+              sx={{
+                paddingTop: '8px',
+                fontSize: '1rem',
+                gap: '8px',
+                justifyContent: 'center',
+                display: 'flex',
+              }}
+            >
+              <span>{t_i18n('Objects found')} : </span>
+              <span><strong>{result?.jsonMapperTest?.nbEntities} </strong> {t_i18n('Entities')}</span>
+              <span><strong>{result?.jsonMapperTest?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
+            </Box>
+          )
         }
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
             code={result?.jsonMapperTest?.objects || t_i18n('You will find here the result in JSON format.')}
-            language={'json'}
+            language="json"
           />
         </Box>
       </DialogContent>

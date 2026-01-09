@@ -155,7 +155,7 @@ const DisseminationLists = () => {
 
   return (
     <div data-testid="dissemination-settings-page">
-      <AccessesMenu/>
+      <AccessesMenu />
       <PageContainer withRightMenu>
         <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination lists'), current: true }]} />
         {!isEnterpriseEdition ? (
@@ -172,7 +172,7 @@ const DisseminationLists = () => {
                 resolvePath={(data) => data.disseminationLists?.edges?.map(({ node }: { node: DisseminationListsLine_node$data }) => node)}
                 storageKey={LOCAL_STORAGE_KEY}
                 initialValues={initialValues}
-                toolbarFilters={contextFilters}
+                contextFilters={contextFilters}
                 lineFragment={disseminationListsLineFragment}
                 disableLineSelection
                 disableNavigation

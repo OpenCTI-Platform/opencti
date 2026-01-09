@@ -83,18 +83,18 @@ class IntrusionSetLocationsComponent extends Component {
               const location = locationEdge.node;
               const link = resolveLink(location.entity_type);
               const flag = location.entity_type === 'Country'
-              && R.head(
-                (location.x_opencti_aliases ?? []).filter(
-                  (n) => n?.length === 2,
-                ),
-              );
+                && R.head(
+                  (location.x_opencti_aliases ?? []).filter(
+                    (n) => n?.length === 2,
+                  ),
+                );
               return (
                 <ListItem
                   key={location.id}
                   dense={true}
                   divider={true}
                   disablePadding
-                  secondaryAction={
+                  secondaryAction={(
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
                         aria-label="Remove"
@@ -104,7 +104,7 @@ class IntrusionSetLocationsComponent extends Component {
                         <LinkOff />
                       </IconButton>
                     </Security>
-                  }
+                  )}
                 >
                   <ListItemButton
                     component={Link}
