@@ -57,7 +57,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
   opts: StreamProcessorOption = {},
 ): StreamProcessor => {
   let isRabbitStreamProcessorActive = false;
-  let redisLastEvendId: string;
+  let redisLastEventId: string;
   // eslint-disable-next-line prefer-const
   let redisStreamProcessor: StreamProcessor;
   // eslint-disable-next-line prefer-const
@@ -65,7 +65,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
   // We proxy the callback to handle the switch from using redis to using rabbit stream processor when we arrive at the end of the redis stream
   const proxyCallback = async (events: Array<SseEvent<T>>, lastEventId: string) => {
     await callback(events, lastEventId);
-    if (!isRabbitStreamProcessorActive && lastEventId === redisLastEvendId) {
+    if (!isRabbitStreamProcessorActive && lastEventId === redisLastEventId) {
       // We can't call redisStreamProcessor shutdown in await:
       // doing so will be blocking indefinitely, since shutdown can't be processed because we are in current redis events process step
       redisStreamProcessor.shutdown().catch((e) => logApp.debug('Error during redis stream processor successful shutdown during rabbit switch', { e }));
@@ -95,7 +95,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
         const startOffsetTime = start.split('-')[0];
         const redisStreamInfo = await redisStreamClient.rawFetchStreamInfo(streamName);
         const redisLastOffsetTime = redisStreamInfo.lastEventId.split('-')[0];
-        redisLastEvendId = redisStreamInfo.lastEventId;
+        redisLastEventId = redisStreamInfo.lastEventId;
         if (startOffsetTime < redisLastOffsetTime) {
           isRabbitStreamProcessorActive = false;
           await redisStreamProcessor.start(start);
@@ -145,7 +145,7 @@ const rawFetchRangeNotifications = async <T extends StreamNotifEvent> (start: Da
   if (await isRedisStreamFullyDeprecated(NOTIFICATION_STREAM_NAME)) {
     return rabbitStreamClient.rawFetchRangeNotifications<T>(start, end);
   }
-  // If reds stream is still not deprecated, we have to concatenate redis & rabbit stream data
+  // If redis stream is still not deprecated, we have to concatenate redis & rabbit stream data
   const redisRangeNotifications = await redisStreamClient.rawFetchRangeNotifications<T>(start, end);
   const rabbitRangeNotifications = await rabbitStreamClient.rawFetchRangeNotifications<T>(start, end);
   return [...redisRangeNotifications, ...rabbitRangeNotifications];
