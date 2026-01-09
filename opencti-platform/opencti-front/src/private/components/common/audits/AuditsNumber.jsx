@@ -63,7 +63,7 @@ const AuditsNumber = ({
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const title = parameters.title ?? t_i18n('Entities number');
-  const translatedTitle = translateEntityType(parameters.title);
+  const translatedTitle = translateEntityType(title);
 
   if (!isGrantedToSettings || !isEnterpriseEdition) {
     return <WidgetAccessDenied />;
