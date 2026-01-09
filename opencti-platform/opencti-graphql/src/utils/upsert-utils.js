@@ -202,12 +202,15 @@ export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchIn
     if (upsertOperation.operation === 'remove') {
       // filter values to remove from current values in DB
       finalPatchValue = finalPatchValue.filter((e) => !upsertOperation.value?.includes(e) && !upsertOperation.value?.some((u) => u?.id === e?.id));
+      finalPatchInput.operation = 'replace';
     } else if (upsertOperation.operation === 'replace') {
       // replace current values in DB with upsert values
       finalPatchValue = [...(upsertOperation?.value ?? [])];
+      finalPatchInput.operation = 'replace';
     } else if (upsertOperation.operation === 'add') {
-      // add upsert operation values to current values in DB
-      finalPatchValue.push(...(upsertOperation.value ?? []));
+      // add upsert operation values to final patch values first
+      finalPatchValue = [...(upsertOperation.value ?? [])];
+      finalPatchInput.operation = 'add';
     }
     // add updatePatchInput values coming from upsert
     if (updatePatchInput.value?.length > 0) {
@@ -216,7 +219,6 @@ export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchIn
     finalPatchValue = Array.from(new Set(finalPatchValue)); // keep only unique values
     // we replace current values
     finalPatchInput.value = finalPatchValue;
-    finalPatchInput.operation = 'replace';
   }
   return finalPatchInput;
 };
