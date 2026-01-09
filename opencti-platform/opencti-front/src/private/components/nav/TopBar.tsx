@@ -200,7 +200,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // draft
   const draftModeColor = getDraftModeColor(theme);
 
-  const getAppBarGradient = () => {
+  const getAppBarGradient = (): string => {
     const defaultGradientDark = `${alpha('#070d19', 0.9)} 0%, ${alpha('#0C1524', 0.9)}`;
     const defaultGradientLight = `${alpha('#ECECF2', 0.9)} 0%, ${alpha('#F7F7F7', 0.9)}`;
 
@@ -211,6 +211,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     } else if (theme.palette.background.default) {
       const endGradientColor = lighten(theme.palette.background.default, 0.07);
       return `${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(endGradientColor, 0.9)}`;
+    } else {
+      return defaultGradientDark;
     }
   };
 
