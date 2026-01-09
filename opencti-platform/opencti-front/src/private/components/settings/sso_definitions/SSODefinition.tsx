@@ -6,32 +6,13 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SSODefinitionQuery } from './__generated__/SSODefinitionQuery.graphql';
 import SSODefinitionOverview from '@components/settings/sso_definitions/SSODefinitionOverview';
+import SSODefinitionHeader from '@components/settings/sso_definitions/SSODefinitionHeader';
 
 export const ssoDefinitionQuery = graphql`
   query SSODefinitionQuery($id: String!) {
     singleSignOn(id: $id) {
-      id
-      name
-      identifier
-      label
-      description
-      enabled
-      strategy
-      organizations_management {
-        organizations_path
-        organizations_mapping
-      }
-      groups_management {
-        group_attributes
-        groups_path
-        groups_mapping
-        read_userinfo
-      }
-      configuration {
-        key
-        value
-        type
-      }
+      ...SSODefinitionHeaderFragment
+      ...SSODefinitionEditionFragment
     }
   }
 `;
@@ -41,12 +22,16 @@ interface SSODefinitionComponentProps {
 }
 
 const SSODefinitionComponent = ({ queryRef }: SSODefinitionComponentProps) => {
-  const data = usePreloadedQuery<SSODefinitionQuery>(ssoDefinitionQuery, queryRef);
-  const sso = data.singleSignOn;
+  const { singleSignOn } = usePreloadedQuery<SSODefinitionQuery>(ssoDefinitionQuery, queryRef);
+  if (!singleSignOn) return <ErrorNotFound />;
 
-  if (!sso) return <ErrorNotFound />;
+  return (
+    <>
+      <SSODefinitionHeader data={singleSignOn} editionData={singleSignOn} />
+      <SSODefinitionOverview sso={singleSignOn} />
+    </>
 
-  return <SSODefinitionOverview sso={sso} />;
+  );
 };
 
 const SSODefinition = () => {
