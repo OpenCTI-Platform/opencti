@@ -10,10 +10,11 @@ const EE_COLOR = '#00f18d';
 
 export const THEME_DARK_DEFAULT_BACKGROUND = '#070d19';
 export const THEME_DARK_DEFAULT_BODY_END_GRADIENT = '#0C1524';
-const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
-const THEME_DARK_DEFAULT_SECONDARY = '#00f18d';
-const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
-const THEME_DARK_DEFAULT_PAPER = '#09101e';
+export const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
+export const THEME_DARK_DEFAULT_SECONDARY = '#00f18d';
+export const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
+export const THEME_DARK_DEFAULT_PAPER = '#09101e';
+export const THEME_DARK_DEFAULT_TEXT = '#F2F2F3'
 const THEME_DARK_DEFAULT_NAV = '#070d19';
 
 const getAppBodyGradientEndColor = (background: string | null): string => {
@@ -32,7 +33,7 @@ const ThemeDark = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
-  text_color = 'rgba(255, 255, 255, 0.7)',
+  text_color = THEME_DARK_DEFAULT_TEXT,
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
@@ -75,7 +76,7 @@ const ThemeDark = (
     },
     ee: {
       main: EE_COLOR,
-      contrastText: '#ffffff',
+      contrastText: THEME_DARK_DEFAULT_TEXT,
       background: hexToRGB(EE_COLOR, 0.2),
       lightBackground: hexToRGB(EE_COLOR, 0.08),
     },
