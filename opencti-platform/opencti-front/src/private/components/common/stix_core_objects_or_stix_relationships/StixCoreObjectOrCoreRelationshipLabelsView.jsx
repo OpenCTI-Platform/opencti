@@ -1,45 +1,33 @@
-import React, { useState } from 'react';
+import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import CardTitle from '@common/card/CardTitle';
+import Tag from '@common/tag/Tag';
+import { Add } from '@mui/icons-material';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { Label } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { filter, map, pipe } from 'ramda';
-import { Field, Form, Formik } from 'formik';
-import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@common/button/Button';
-import IconButton from '@common/button/IconButton';
-import { Add, CancelOutlined } from '@mui/icons-material';
-import { Label } from 'mdi-material-ui';
-import makeStyles from '@mui/styles/makeStyles';
-import CardTitle from '@common/card/CardTitle';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
-import { useFormatter } from '../../../../components/i18n';
-import { labelsSearchQuery } from '../../settings/LabelsQuery';
+import { useState } from 'react';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import LabelCreation from '../../settings/labels/LabelCreation';
-import Security from '../../../../utils/Security';
-import { hexToRGB } from '../../../../utils/Colors';
-import { truncate } from '../../../../utils/String';
-import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
-import CommitMessage from '../form/CommitMessage';
-import Transition from '../../../../components/Transition';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import Transition from '../../../../components/Transition';
+import { useFormatter } from '../../../../components/i18n';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import Security from '../../../../utils/Security';
+import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
+import { labelsSearchQuery } from '../../settings/LabelsQuery';
+import LabelCreation from '../../settings/labels/LabelCreation';
+import CommitMessage from '../form/CommitMessage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
-  label: {
-    margin: '0 7px 7px 0',
-    borderRadius: 4,
-  },
-  labelMore: {
-    margin: '0 7px 7px 0',
-    borderRadius: 4,
-    cursor: 'pointer',
-  },
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -178,43 +166,30 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
       >
         {t_i18n('Labels')}
       </CardTitle>
-      <div className={classes.objectLabel}>
+      <div className={classes.objectLabel} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
         <FieldOrEmpty source={labels}>
           {map(
             (label) => (
-              <Tooltip key={label.id} title={label.value}>
-                <Chip
-                  variant="outlined"
-                  classes={{ root: classes.label }}
-                  label={truncate(label.value, 25)}
-                  style={{
-                    color: label.color,
-                    borderColor: label.color,
-                    backgroundColor: hexToRGB(label.color),
-                  }}
-                  onDelete={canUpdateKnowledge ? () => (enableReferences
+              <Tag
+                key={label.id}
+                label={label.value}
+                color={label.color}
+                onDelete={canUpdateKnowledge ? () => (
+                  enableReferences
                     ? handleOpenCommitDelete(label)
-                    : handleRemoveLabel(label.id)) : undefined}
-                  deleteIcon={(
-                    <CancelOutlined
-                      className={classes.deleteIcon}
-                      style={{ color: label.color }}
-                    />
-                  )}
-                />
-              </Tooltip>
+                    : handleRemoveLabel(label.id)
+                ) : undefined
+                }
+              />
             ),
             (labels ? R.take(12, labels) : []),
           )}
           {labels && labels.length > 12 && (
-            <Tooltip title={t_i18n('See more')}>
-              <Chip
-                variant="outlined"
-                classes={{ root: classes.labelMore }}
-                label="..."
-                onClick={handleOpenLabels}
-              />
-            </Tooltip>
+            <Tag
+              tooltipTitle={t_i18n('See more')}
+              label="..."
+              onClick={handleOpenLabels}
+            />
           )}
           {labels && labels.length > 12 && (
             <Dialog
@@ -226,30 +201,20 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
               maxWidth="md"
             >
               <DialogTitle>{t_i18n('All labels')}</DialogTitle>
-              <DialogContent>
+              <DialogContent sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {map(
                   (label) => (
-                    <Tooltip key={label.id} title={label.value}>
-                      <Chip
-                        variant="outlined"
-                        classes={{ root: classes.label }}
-                        label={truncate(label.value, 25)}
-                        style={{
-                          color: label.color,
-                          borderColor: label.color,
-                          backgroundColor: hexToRGB(label.color),
-                        }}
-                        onDelete={canUpdateKnowledge ? () => (enableReferences
+                    <Tag
+                      key={label.id}
+                      label={label.value}
+                      color={label.color}
+                      onDelete={canUpdateKnowledge ? () => (
+                        enableReferences
                           ? handleOpenCommitDelete(label)
-                          : handleRemoveLabel(label.id)) : undefined}
-                        deleteIcon={(
-                          <CancelOutlined
-                            className={classes.deleteIcon}
-                            style={{ color: label.color }}
-                          />
-                        )}
-                      />
-                    </Tooltip>
+                          : handleRemoveLabel(label.id)
+                      ) : undefined
+                      }
+                    />
                   ),
                   labels,
                 )}

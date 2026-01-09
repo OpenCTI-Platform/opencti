@@ -11,6 +11,7 @@ import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEdi
 import { Role_role$data } from './__generated__/Role_role.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import { Stack } from '@mui/material';
 
 interface CapabilitiesListProps {
   queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
@@ -52,10 +53,10 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
           </ListItemIcon>
           <ListItemText
             primary={(
-              <>
+              <Stack alignItems="center" direction="row" gap={1}>
                 {t_i18n('Allow modification of sensitive configuration')}
-                <DangerZoneChip style={{ marginTop: 0 }} />
-              </>
+                <DangerZoneChip />
+              </Stack>
             )}
           />
         </ListItem>

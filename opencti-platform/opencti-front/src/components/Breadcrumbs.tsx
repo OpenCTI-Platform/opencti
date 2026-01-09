@@ -45,7 +45,7 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin =
       {elements.map((element, index) => {
         if (element.current) {
           return (
-            <span key={element.label} style={{ display: 'flex', alignItems: 'center' }}>
+            <span key={element.label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Typography
                 sx={{ fontSize: 12, fontWeight: 700 }}
                 color="text.primary"

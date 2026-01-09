@@ -64,9 +64,15 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
           <>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.name.width, display: 'flex', alignItems: 'center' }}
+              style={{
+                width: dataColumns.name.width,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
             >
-              {node.name}{isSensitive && <DangerZoneChip />}
+              <span>{node.name}</span>
+              { isSensitive && <DangerZoneChip /> }
             </div>
             <QueryRenderer
               query={groupsSearchQuery}

@@ -1,9 +1,9 @@
 import React from 'react';
-import Button from '@common/button/Button';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Security from '../utils/Security';
 import { SETTINGS_SETACCESSES } from '../utils/hooks/useGranted';
 import { Stack } from '@mui/material';
+import Tag from '@common/tag/Tag';
 
 const systemUsers = [
   '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505', // SYSTEM
@@ -13,8 +13,16 @@ const systemUsers = [
   '31afac4e-6b99-44a0-b91b-e04738d31461', // REDACTED USER
 ];
 
-const ItemCreators = (props) => {
-  const { creators } = props;
+interface ItemCreatorsProps {
+  creators: readonly {
+    readonly id: string;
+    readonly name: string;
+  }[];
+}
+
+const ItemCreators = ({ creators }: ItemCreatorsProps) => {
+  const navigate = useNavigate();
+
   return (
     <Stack direction="row" gap={1} flexWrap="wrap">
       {creators.map((creator) => {
@@ -23,30 +31,17 @@ const ItemCreators = (props) => {
             key={creator.id}
             needs={[SETTINGS_SETACCESSES]}
             placeholder={(
-              <Button
-                variant="outlined"
-                size="small"
-              >
-                {creator.name}
-              </Button>
+              <Tag label={creator.name} />
             )}
           >
             {systemUsers.includes(creator.id) ? (
-              <Button
-                variant="secondary"
-                size="small"
-              >
-                {creator.name}
-              </Button>
+              <Tag label={creator.name} />
             ) : (
-              <Button
-                variant="secondary"
-                size="small"
-                component={Link}
-                to={`/dashboard/settings/accesses/users/${creator.id}`}
-              >
-                {creator.name}
-              </Button>
+              <Tag
+                key={creator.id}
+                label={creator.name}
+                onClick={() => navigate(`/dashboard/settings/accesses/users/${creator.id}`)}
+              />
             )}
           </Security>
         );

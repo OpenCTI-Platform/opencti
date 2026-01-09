@@ -6,6 +6,7 @@ import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
 import useSensitiveModifications, { SensitiveConfigType } from '../../../../utils/hooks/useSensitiveModifications';
+import { Stack } from '@mui/material';
 
 interface ChildProps {
   disabled?: boolean;
@@ -41,9 +42,10 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
   let currentTitle = title;
   if (isSensitive) {
     currentTitle = (
-      <>
-        {title}<DangerZoneChip style={{ marginTop: 0, marginLeft: 8 }} />
-      </>
+      <Stack direction="row" alignItems="center" gap={1}>
+        <span>{title}</span>
+        <DangerZoneChip />
+      </Stack>
     );
   }
 

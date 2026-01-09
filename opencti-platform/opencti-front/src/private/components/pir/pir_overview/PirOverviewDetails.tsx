@@ -31,6 +31,7 @@ import PirCriteriaDisplay from '../PirCriteriaDisplay';
 import type { Theme } from '../../../../components/Theme';
 import CardAccordion from '../../../../components/common/card/CardAccordion';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import Tag from '@common/tag/Tag';
 
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {
@@ -123,19 +124,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
                   />
                 </Tooltip>
               </Typography>
-              <div>
-                <Chip
-                  style={{
-                    fontSize: 12,
-                    lineHeight: '12px',
-                    height: 25,
-                    textTransform: 'uppercase',
-                    borderRadius: 4,
-                    marginRight: 5,
-                  }}
-                  label={`${n(pir.queue_messages)} ${t_i18n('messages in queue')}`}
-                />
-              </div>
+              <Tag label={`${n(pir.queue_messages)} ${t_i18n('messages in queue')}`} />
             </div>
             <div>
               <Typography variant="h3" gutterBottom>
