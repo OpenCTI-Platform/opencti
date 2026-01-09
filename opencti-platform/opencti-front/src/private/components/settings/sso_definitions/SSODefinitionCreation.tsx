@@ -9,7 +9,7 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import CreateSplitControlledDial from '../../../../components/CreateSplitControlledDial';
 
 import useFormikToSSOConfig from './useFormikToSSOConfig';
-import SSODefinitionForm from '@components/settings/sso_definitions/SSODefinitionForm';
+import SSODefinitionForm, { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 
 const ssoDefinitionMutation = graphql`
   mutation SSODefinitionCreationMutation(
@@ -25,34 +25,6 @@ interface SSODefinitionCreationProps {
   paginationOptions: PaginationOptions;
 }
 
-export interface SSODefinitionFormValues {
-  name: string;
-  label: string;
-  enabled: boolean;
-  private_key: string;
-  issuer: string;
-  idp_cert: string;
-  saml_callback_url: string;
-  want_assertions_signed: boolean;
-  want_auth_response_signed: boolean;
-  login_idp_directly: boolean;
-  logout_remote: boolean;
-  provider_method: string;
-  idp_signing_certificate: string;
-  sso_binding_type: string;
-  force_reauthentication: boolean;
-  enable_debug_mode: boolean;
-  advancedConfigurations: {
-    key: string;
-    value: string;
-    type: string;
-  }[];
-  groups_path: string[];
-  groups_mapping: string[];
-  organizations_path: string[];
-  organizations_mapping: string[];
-  read_userinfo: boolean;
-}
 const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   paginationOptions,
 }) => {
@@ -99,7 +71,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   ) => {
     const configuration = formikToSamlConfig(values);
 
-    values.advancedConfigurations.forEach((conf) => {
+    values.advanced_configurations.forEach((conf) => {
       if (conf.key && conf.value && conf.type) {
         configuration.push({
           key: conf.key,
