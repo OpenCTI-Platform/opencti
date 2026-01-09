@@ -15842,7 +15842,6 @@ export type MutationCityEditArgs = {
 
 
 export type MutationConnectorMigrateToManagedArgs = {
-  dryRun?: InputMaybe<Scalars['Boolean']['input']>;
   input: MigrateConnectorToManagedInput;
 };
 
