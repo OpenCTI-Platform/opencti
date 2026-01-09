@@ -9725,7 +9725,7 @@ type Mutation {
   updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
-  connectorMigrateToManaged(input: MigrateConnectorToManagedInput!, dryRun: Boolean): ManagedConnector!
+  connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!
   feedEdit(id: ID!, input: FeedAddInput!): Feed!
