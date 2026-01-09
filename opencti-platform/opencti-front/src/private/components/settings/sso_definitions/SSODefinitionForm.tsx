@@ -15,16 +15,20 @@ import Button from '@mui/material/Button';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
+import { SSOEditionFormInputKeys } from '@components/settings/sso_definitions/SSODefinitionEdition';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
-  onSubmit: (
+  onSubmit?: (
     values: SSODefinitionFormValues,
     formikHelpers: { setSubmitting: (b: boolean) => void; resetForm: () => void },
   ) => void;
   selectedStrategy: string | null;
+  onSubmitField?: (field: SSOEditionFormInputKeys, value: unknown) => void;
+  data?: SSODefinitionFormValues | null;
+  isOpen?: boolean;
 }
-const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy }: SSODefinitionFormProps) => {
+const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy, onSubmitField }: SSODefinitionFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [currentTab, setCurrentTab] = useState(0);
@@ -298,30 +302,32 @@ const SSODefinitionForm = ({ onCancel, onSubmit, selectedStrategy }: SSODefiniti
               </FieldArray>
             </Form>
           )}
-          <div
-            style={{
-              marginTop: 20,
-              textAlign: 'right',
-            }}
-          >
-            <Button
-              variant="contained"
-              onClick={handleReset}
-              disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(2) }}
+          {!onSubmitField && (
+            <div
+              style={{
+                marginTop: 20,
+                textAlign: 'right',
+              }}
             >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(2) }}
-            >
-              {t_i18n('Create')}
-            </Button>
-          </div>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                style={{ marginLeft: theme.spacing(2) }}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                style={{ marginLeft: theme.spacing(2) }}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </div>
+          )}
         </Form>
       )}
     </Formik>
