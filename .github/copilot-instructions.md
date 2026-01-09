@@ -109,24 +109,13 @@ python3 src/worker.py           # Start worker
 
 ## CI/CD Workflows
 
-**Main CI** (`.github/workflows/ci-main.yml`) runs on all PRs:
-1. **Docker Build**: Builds platform & worker images (~10 min)
-2. **API Tests**: Integration, rules, and unit tests (~20 min) - requires Docker backend services
-3. **Frontend Tests**: Unit tests (~5 min), E2E tests (~15 min), translation validation
-4. **Client Python**: Matrix tests for Python 3.9-3.12 (~10 min each)
-5. **License Check**: Verifies allowed licenses (~5 min)
+**Main CI**: Docker build (~10 min), API tests (~20 min), Frontend tests (~5-15 min), Client Python matrix (3.9-3.12), License check. **All commits MUST be GPG signed**.
 
-**All commits MUST be GPG signed** (`check-verified-commit.yml` enforces this).
-
-## Local Development Setup
+## Local Development
 
 **Prerequisites**: Node.js ≥20, Python 3.9-3.12, Docker, `corepack enable`, `sudo sysctl -w vm.max_map_count=262144`
 
-**Start Infrastructure**:
-```bash
-cd opencti-platform/opencti-dev
-docker compose up -d  # Elasticsearch (9200), Redis (6379), RabbitMQ, MinIO, Kibana
-```
+**Start**: `cd opencti-platform/opencti-dev && docker compose up -d` (Elasticsearch, Redis, RabbitMQ, MinIO, Kibana)
 
 **Backend**: `cd opencti-platform/opencti-graphql`, copy `.yarnrc.yml`, edit `config/development.json`, run `yarn install && yarn install:python && yarn start`
 
@@ -137,41 +126,16 @@ docker compose up -d  # Elasticsearch (9200), Redis (6379), RabbitMQ, MinIO, Kib
 ```
 opencti/
 ├── opencti-platform/
-│   ├── .yarnrc.yml             # Yarn config - MUST copy to subdirs
-│   ├── opencti-graphql/        # Backend API
-│   │   ├── src/                # TypeScript source
-│   │   ├── config/             # JSON configs (default.json, test.json)
-│   │   ├── tests/              # Vitest test suites
-│   │   ├── vitest.config.*.ts  # Test configs (ci-unit, ci-integration, dev)
-│   │   ├── eslint.config.mjs   # ESLint v9 flat config
-│   │   └── tsconfig.json
-│   ├── opencti-front/          # Frontend SPA
-│   │   ├── src/                # React/TypeScript source
-│   │   ├── tests_e2e/          # Playwright E2E tests
-│   │   ├── lang/               # i18n translation files
-│   │   ├── relay.config.json   # Relay compiler config
-│   │   └── playwright.config.ts
-│   └── opencti-dev/
-│       └── docker-compose.yml  # Dev infrastructure
-├── client-python/
-│   ├── pycti/                  # Main library code
-│   ├── tests/                  # Pytest tests
-│   ├── pyproject.toml          # Python package config
-│   └── .flake8, .isort.cfg     # Linting configs
-├── opencti-worker/
-│   └── src/
-│       ├── worker.py
-│       └── requirements.txt
-├── scripts/ci/
-│   ├── docker-compose.yml      # CI test infrastructure
-│   └── ci-common.env           # CI environment variables
-└── .pre-commit-config.yaml     # Pre-commit hooks (isort, black, eslint)
+│   ├── .yarnrc.yml             # MUST copy to subdirs
+│   ├── opencti-graphql/        # Backend: src/, config/, tests/, vitest.config.*.ts, eslint.config.mjs
+│   ├── opencti-front/          # Frontend: src/, tests_e2e/, lang/, relay.config.json
+│   └── opencti-dev/docker-compose.yml
+├── client-python/              # pycti/, tests/, pyproject.toml, .flake8, .isort.cfg
+├── opencti-worker/src/
+└── scripts/ci/                 # docker-compose.yml, ci-common.env
 ```
 
-## Key Configuration Files
-
-- **ESLint**: `eslint.config.mjs` (v9 flat config), **TypeScript**: `tsconfig.json` (strict mode)
-- **Vitest**: Multiple configs (ci-unit, ci-integration, dev), **Python**: `.flake8`, `.isort.cfg`, `pyproject.toml`
+**Key Configs**: `eslint.config.mjs` (v9), `tsconfig.json` (strict), `vitest.config.*`, `.flake8`, `.isort.cfg`, `pyproject.toml`
 
 ## Common Pitfalls & Solutions
 
@@ -184,13 +148,33 @@ opencti/
 
 ## Code Review & Security
 
-**Pre-commit checks**:
-- Lint: `yarn lint` (JS/TS), `black . && isort . && flake8 .` (Python)
-- Types: `yarn check-ts` (TypeScript)
-- Tests: `yarn test:ci-unit`, `yarn test`, `pytest`
-- **CodeQL**: Auto-runs on PRs (JS/Python security scan)
+**Pre-commit checks**: Lint (`yarn lint`, `black . && isort . && flake8 .`), types (`yarn check-ts`), tests (`yarn test:ci-unit`, `pytest`). **CodeQL** auto-runs on PRs.
 
-**Checklist**: Build passes, tests pass, no lint/type errors, follows patterns, proper commit format, GPG signed
+**Review Focus**:
+
+**Security Critical**: Check for hardcoded secrets/credentials, SQL injection/XSS vulnerabilities, input validation/sanitization, auth logic.
+
+**Performance**: Identify N+1 queries, inefficient loops, memory leaks, missing resource cleanup, caching opportunities.
+
+**Code Quality**: Functions should be focused and appropriately sized, use clear naming, ensure proper error handling.
+
+**Review Style**: Be specific and actionable, explain the "why", acknowledge good patterns, ask clarifying questions.
+
+Always prioritize security vulnerabilities and performance issues. Suggest changes for readability:
+```js
+// Instead of:
+if (user.email && user.email.includes('@') && user.email.length > 5) {
+  submitButton.enabled = true;
+} else {
+  submitButton.enabled = false;
+}
+
+// Consider:
+function isValidEmail(email) {
+  return email && email.includes('@') && email.length > 5;
+}
+submitButton.enabled = isValidEmail(user.email);
+```
 
 ## Commit Message Format
 
