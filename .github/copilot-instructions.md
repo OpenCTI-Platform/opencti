@@ -120,52 +120,27 @@ python3 src/worker.py           # Start worker
 ## CI/CD Workflows
 
 **Main CI** (`.github/workflows/ci-main.yml`) runs on all PRs:
-1. **Docker Build** (`ci-docker-build.yml`): Builds platform & worker images (~10 min)
-2. **API Tests** (`ci-test-api.yml`): Integration, rules, and unit tests in parallel (~20 min total)
-   - Downloads Docker artifacts, spins up backend services (Elasticsearch, Redis, RabbitMQ, MinIO)
-   - Runs 3 test jobs: integration-sync, rules-and-others, api-unit-tests
-3. **Frontend Tests** (`ci-test-frontend.yml`): Unit tests (~5 min), E2E tests (~15 min), translation validation
-4. **Client Python Tests** (`ci-test-client-python.yml`): Matrix tests for Python 3.9-3.12 (~10 min each)
-5. **License Check** (`ci-license-check.yml`): Verifies allowed licenses (~5 min)
+1. **Docker Build**: Builds platform & worker images (~10 min)
+2. **API Tests**: Integration, rules, and unit tests (~20 min) - requires Docker backend services
+3. **Frontend Tests**: Unit tests (~5 min), E2E tests (~15 min), translation validation
+4. **Client Python**: Matrix tests for Python 3.9-3.12 (~10 min each)
+5. **License Check**: Verifies allowed licenses (~5 min)
 
-**Signed Commits Required**: All commits MUST be GPG signed (`check-verified-commit.yml` enforces this).
+**All commits MUST be GPG signed** (`check-verified-commit.yml` enforces this).
 
 ## Local Development Setup
 
-**Prerequisites**:
-```bash
-# Enable corepack for Yarn 4.12.0:
-corepack enable                 # REQUIRED: Downloads correct Yarn version
-
-# Install Docker/Podman:
-sudo sysctl -w vm.max_map_count=262144  # Required for Elasticsearch
-
-# Ensure Node.js ≥20, Python 3.9-3.12 are installed
-```
+**Prerequisites**: Node.js ≥20, Python 3.9-3.12, Docker, `corepack enable`, `sudo sysctl -w vm.max_map_count=262144`
 
 **Start Infrastructure**:
 ```bash
 cd opencti-platform/opencti-dev
-docker compose up -d
-# Services: Elasticsearch (9200), Redis (6379), RabbitMQ (5672), MinIO (9000), Kibana (5601)
+docker compose up -d  # Elasticsearch (9200), Redis (6379), RabbitMQ, MinIO, Kibana
 ```
 
-**Run Backend**:
-```bash
-cd opencti-platform/opencti-graphql
-cp config/default.json config/development.json  # Edit admin password & token
-cp ../.yarnrc.yml .yarnrc.yml
-yarn install && yarn install:python
-yarn start                      # API on http://localhost:4000
-```
+**Backend**: `cd opencti-platform/opencti-graphql`, copy `.yarnrc.yml`, edit `config/development.json`, run `yarn install && yarn install:python && yarn start`
 
-**Run Frontend** (separate terminal):
-```bash
-cd opencti-platform/opencti-front
-cp ../.yarnrc.yml .yarnrc.yml
-yarn install
-yarn start                      # Frontend on http://localhost:3000
-```
+**Frontend**: `cd opencti-platform/opencti-front`, copy `.yarnrc.yml`, run `yarn install && yarn start` → http://localhost:3000
 
 ## Project Structure
 
@@ -205,10 +180,8 @@ opencti/
 
 ## Key Configuration Files
 
-- **ESLint**: `eslint.config.mjs` (v9 flat config) in both graphql & front
-- **TypeScript**: `tsconfig.json` in each TS project, strict mode enabled
-- **Vitest**: Multiple configs for different test suites (ci-unit, ci-integration, dev)
-- **Python**: `.flake8`, `.isort.cfg`, `pyproject.toml` (black, mypy configs)
+- **ESLint**: `eslint.config.mjs` (v9 flat config), **TypeScript**: `tsconfig.json` (strict mode)
+- **Vitest**: Multiple configs (ci-unit, ci-integration, dev), **Python**: `.flake8`, `.isort.cfg`, `pyproject.toml`
 
 ## Common Pitfalls & Solutions
 
