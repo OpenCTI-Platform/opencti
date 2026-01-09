@@ -201,7 +201,7 @@ export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchIn
     let finalPatchValue = [...currentValueArray];
     if (upsertOperation.operation === 'remove') {
       // filter values to remove from current values in DB
-      finalPatchValue = finalPatchValue.filter((e) => !upsertOperation.value?.includes(e));
+      finalPatchValue = finalPatchValue.filter((e) => !upsertOperation.value?.includes(e) && !upsertOperation.value?.some((u) => u?.id === e?.id));
     } else if (upsertOperation.operation === 'replace') {
       // replace current values in DB with upsert values
       finalPatchValue = [...(upsertOperation?.value ?? [])];
