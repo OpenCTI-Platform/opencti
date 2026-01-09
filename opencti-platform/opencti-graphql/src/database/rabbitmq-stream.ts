@@ -118,7 +118,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
   const rabbitQueueName = getRabbitMQStreamQueueName(streamName);
   let lastTimestamp: number;
   let currentTimestampCount = 0;
-  let stertStreamOffsetTime: number;
+  let startStreamOffsetTime: number;
 
   let rabbitMqConnection: { close: () => void };
   const connectionSetterCallback = (conn: any) => {
@@ -137,7 +137,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
   const queueConsumeCallback = async (message: string, ackCallback: () => void) => {
     const messageParsed = JSON.parse(message);
     const messageTimestamp = messageParsed[0];
-    if (messageTimestamp < stertStreamOffsetTime) {
+    if (messageTimestamp < startStreamOffsetTime) {
       ackCallback();
       return;
     }
@@ -154,7 +154,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
     if (startEventId !== 'live') {
       let streamOffsetTime = '';
       [streamOffsetTime] = startEventId.split('-');
-      stertStreamOffsetTime = Number(streamOffsetTime);
+      startStreamOffsetTime = Number(streamOffsetTime);
       const offsetInSeconds = streamOffsetTime.slice(0, -3);
       streamOffsetArg = { '!': 'timestamp', value: Number(offsetInSeconds) };
     }
@@ -240,7 +240,7 @@ const rawFetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
     ackCallback();
   };
   const offsetInSeconds = startEpochTimeString.slice(0, -3);
-  const streamOffsetArg = { '!': 'timestamp', value: offsetInSeconds };
+  const streamOffsetArg = { '!': 'timestamp', value: Number(offsetInSeconds) };
   streamConsumeQueue(rabbitQueueName, connectionSetterCallback, queueConsumeCallback, { 'x-stream-offset': streamOffsetArg }).catch((e) => logApp.error('Could not retrieve stream event range data', { error: e, streamOffsetArg }));
 
   // TODO improve end of stream detection? currently 100 is very arbitrary
