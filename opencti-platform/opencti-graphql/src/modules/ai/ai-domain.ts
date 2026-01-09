@@ -60,10 +60,11 @@ const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence an
 
 const checkPlatformAiEnabled = async (context: AuthContext) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  setAiEnabled(settings.platform_ai_enabled !== false);
-  if (settings.platform_ai_enabled === false) {
+  const aiEnabled = settings.platform_ai_enabled !== false;
+  if (!aiEnabled) {
     throw FunctionalError('AI is disabled in platform settings');
   }
+  setAiEnabled(aiEnabled);
 };
 
 export const fixSpelling = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
