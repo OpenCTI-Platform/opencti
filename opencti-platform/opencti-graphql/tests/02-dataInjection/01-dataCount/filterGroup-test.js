@@ -2606,7 +2606,7 @@ describe('Complex filters regarding of for elastic queries', () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, true, 'eq') } });
     expect(queryResult.data.globalSearch.edges.length).toEqual(0); // 0 instead of 1 because of the reverse that implies a post filtering
     const queryResultOr = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, true, 'eq', 'or') } });
-    expect(queryResultOr.data.globalSearch.edges.length).toEqual(3); // 0 instead of 1 because of the reverse that implies a post filtering
+    expect(queryResultOr.data.globalSearch.edges.length).toEqual(3);
     const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, true, 'not_eq') } });
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(2); // 2 here as post filtering is not applied on not_eq
     expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');

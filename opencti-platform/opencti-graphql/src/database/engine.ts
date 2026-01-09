@@ -3001,30 +3001,24 @@ const applyTagToFilters = (
   if (!filters || postFiltersTagsMaps.filterToTagMap.size <= 0) {
     return filters;
   }
-  let newFilterGroups: TaggedFilterGroup[] = filters.filterGroups;
-  if (newFilterGroups.length > 0) {
-    newFilterGroups = [];
-    for (let i = 0; i < filters.filterGroups.length; i++) {
-      const filterGroupToTag = filters.filterGroups[i];
-      const taggedFilterGroup = applyTagToFilters(filterGroupToTag, postFiltersTagsMaps);
-      if (taggedFilterGroup) {
-        newFilterGroups.push(taggedFilterGroup);
-      }
+  const newFilterGroups: TaggedFilterGroup[] = [];
+  for (let i = 0; i < filters.filterGroups.length; i++) {
+    const filterGroupToTag = filters.filterGroups[i];
+    const taggedFilterGroup = applyTagToFilters(filterGroupToTag, postFiltersTagsMaps);
+    if (taggedFilterGroup) {
+      newFilterGroups.push(taggedFilterGroup);
     }
   }
 
-  let newFilters: TaggedFilter[] = filters.filters;
-  if (newFilters.length > 0) {
-    newFilters = [];
-    for (let j = 0; j < filters.filters.length; j++) {
-      const currentFilter = filters.filters[j];
-      if (postFiltersTagsMaps.filterToTagMap.has(currentFilter)) {
-        const filterTag = postFiltersTagsMaps.filterToTagMap.get(currentFilter) as string;
-        const taggedFilter = { ...currentFilter, postFilteringTag: filterTag };
-        newFilters.push(taggedFilter);
-      } else {
-        newFilters.push(currentFilter);
-      }
+  const newFilters: TaggedFilter[] = [];
+  for (let j = 0; j < filters.filters.length; j++) {
+    const currentFilter = filters.filters[j];
+    if (postFiltersTagsMaps.filterToTagMap.has(currentFilter)) {
+      const filterTag = postFiltersTagsMaps.filterToTagMap.get(currentFilter) as string;
+      const taggedFilter = { ...currentFilter, postFilteringTag: filterTag };
+      newFilters.push(taggedFilter);
+    } else {
+      newFilters.push(currentFilter);
     }
   }
 
