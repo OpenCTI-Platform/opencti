@@ -33,7 +33,11 @@ const toEnv = (newStrategyType: StrategyType) => {
   }
 };
 
-export const checkAllowed = async (context: AuthContext) => {
+export const isSSOAllowed = async (context: AuthContext) => {
+  return isSingleSignOnInGuiEnabled && await isEnterpriseEdition(context);
+};
+
+export const checkSSOAllowed = async (context: AuthContext) => {
   if (!isSingleSignOnInGuiEnabled) throw UnsupportedError('Feature not yet available');
   if (!await isEnterpriseEdition(context)) throw UnsupportedError('Enterprise licence is required');
 };
@@ -44,7 +48,7 @@ export const logAuthInfo = (message: string, strategyType: EnvStrategyType, meta
 };
 
 export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
-  await checkAllowed(context);
+  await checkSSOAllowed(context);
   return storeLoadById<BasicStoreEntitySingleSignOn>(context, user, id, ENTITY_TYPE_SINGLE_SIGN_ON);
 };
 
@@ -82,14 +86,14 @@ export const internalAddSingleSignOn = async (context: AuthContext, user: AuthUs
 };
 
 export const addSingleSignOn = async (context: AuthContext, user: AuthUser, input: SingleSignOnAddInput) => {
-  await checkAllowed(context);
+  await checkSSOAllowed(context);
   // Call here the function to check that all mandatory field are in the input
   const created = await internalAddSingleSignOn(context, user, input, false);
   return created;
 };
 
 export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
-  await checkAllowed(context);
+  await checkSSOAllowed(context);
   const singleSignOnEntityBeforeUpdate = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOnEntityBeforeUpdate) {
@@ -119,7 +123,7 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
 };
 
 export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, id: string) => {
-  await checkAllowed(context);
+  await checkSSOAllowed(context);
   const singleSignOn = await findSingleSignOnById(context, user, id);
 
   if (!singleSignOn) {
@@ -145,13 +149,13 @@ export const deleteSingleSignOn = async (context: AuthContext, user: AuthUser, i
 };
 
 export const runSingleSignOnRunMigration = async (context: AuthContext, user: AuthUser, input: SingleSignMigrationInput) => {
-  await checkAllowed(context);
+  await checkSSOAllowed(context);
   logApp.info(`[SSO MIGRATION] Migration requested with dry_run = ${input.dry_run}`);
   const ssoConfigurationEnv = nconf.get('providers');
   return parseSingleSignOnRunConfiguration(context, user, ssoConfigurationEnv, input.dry_run);
 };
 
 export const findAllSingleSignOn = async (context: AuthContext, user: AuthUser): Promise<BasicStoreEntitySingleSignOn[]> => {
-  await checkAllowed(context);
+  await checkSSOAllowed(context);
   return fullEntitiesList(context, user, [ENTITY_TYPE_SINGLE_SIGN_ON]);
 };

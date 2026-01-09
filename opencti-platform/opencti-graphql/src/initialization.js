@@ -25,7 +25,7 @@ import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initAuthenticationProviders } from './modules/singleSignOn/singleSignOn-providers';
-import { isSingleSignOnInGuiEnabled } from './modules/singleSignOn/singleSignOn';
+import { isSSOAllowed } from './modules/singleSignOn/singleSignOn-domain';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -139,7 +139,7 @@ const platformInit = async (withMarkings = true) => {
     // Authentication
     // Env authorization will be deprecated but for now both env and database works together.
     await initializeEnvAuthenticationProviders(context, SYSTEM_USER);
-    if (isSingleSignOnInGuiEnabled) {
+    if (await isSSOAllowed(context)) {
       await initAuthenticationProviders(context, SYSTEM_USER);
     }
 
