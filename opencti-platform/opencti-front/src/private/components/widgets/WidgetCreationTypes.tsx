@@ -29,7 +29,7 @@ const WidgetCreationTypes = () => {
       {visualizationTypes.map((visualizationType) => (
         <Grid key={visualizationType.key} item xs={4}>
           <Card
-            noPadding
+            padding="none"
             aria-label={t_i18n(visualizationType.name)}
             onClick={() => changeType(visualizationType.key)}
             variant="outlined"

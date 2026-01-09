@@ -317,7 +317,13 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
     filterGroups: [],
   };
   return (
-    <Card title={authorId ? t_i18n('Latest containers authored by this entity') : t_i18n('Latest containers about the object')}>
+    <Card
+      padding="horizontal"
+      title={authorId
+        ? t_i18n('Latest containers authored by this entity')
+        : t_i18n('Latest containers about the object')
+      }
+    >
       <QueryRenderer
         query={stixCoreObjectOrStixRelationshipLastContainersQuery}
         variables={{

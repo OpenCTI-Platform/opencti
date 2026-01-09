@@ -3,8 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
 import { DescriptionOutlined, DeviceHubOutlined } from '@mui/icons-material';
@@ -13,9 +11,10 @@ import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreO
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
-import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import EntityStixCoreRelationshipsHorizontalBars from '../stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import EntityStixSightingRelationshipsDonut from '../../events/stix_sighting_relationships/EntityStixSightingRelationshipsDonut';
+import CardNumber from '../../../../components/common/card/CardNumber';
+import { withTheme } from '@mui/styles';
 
 const styles = (theme) => ({
   card: {
@@ -93,134 +92,116 @@ const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
 
 class StixDomainObjectKnowledge extends Component {
   render() {
-    const { t, n, classes, stixDomainObjectId } = this.props;
+    const { t, n, stixDomainObjectId, theme } = this.props;
     return (
       <>
-        <Grid container={true} spacing={3}>
+        <Grid container={true} spacing={3} mb={3}>
           <Grid item xs={4}>
-            <Card
-              variant="outlined"
-              classes={{ root: classes.card }}
-              style={{ height: 120 }}
-            >
-              <QueryRenderer
-                query={stixDomainObjectKnowledgeReportsNumberQuery}
-                variables={{
-                  objectId: stixDomainObjectId,
-                  endDate: monthsAgo(1),
-                }}
-                render={({ props }) => {
-                  if (props && props.reportsNumber) {
-                    const { total } = props.reportsNumber;
-                    const difference = total - props.reportsNumber.count;
-                    return (
-                      <CardContent>
-                        <div className={classes.title}>
-                          {t('Total reports')}
-                        </div>
-                        <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference difference={difference} />
-                        <div className={classes.icon}>
-                          <DescriptionOutlined
-                            color="inherit"
-                            fontSize="large"
-                          />
-                        </div>
-                      </CardContent>
-                    );
-                  }
+            <QueryRenderer
+              query={stixDomainObjectKnowledgeReportsNumberQuery}
+              variables={{
+                objectId: stixDomainObjectId,
+                endDate: monthsAgo(1),
+              }}
+              render={({ props }) => {
+                if (props && props.reportsNumber) {
+                  const { total } = props.reportsNumber;
+                  const difference = total - props.reportsNumber.count;
                   return (
-                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
+                    <CardNumber
+                      label={t('Total reports')}
+                      value={n(total)}
+                      diffLabel={t('30 days')}
+                      diffValue={difference}
+                      icon={(
+                        <DescriptionOutlined
+                          style={{ color: theme.palette.text.secondary }}
+                          fontSize="large"
+                        />
+                      )}
+                    />
                   );
-                }}
-              />
-            </Card>
+                }
+                return (
+                  <div style={{ textAlign: 'center', paddingTop: 35 }}>
+                    <CircularProgress size={40} thickness={2} />
+                  </div>
+                );
+              }}
+            />
           </Grid>
           <Grid item xs={4}>
-            <Card
-              variant="outlined"
-              classes={{ root: classes.card }}
-              style={{ height: 120 }}
-            >
-              <QueryRenderer
-                query={
-                  stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
-                }
-                variables={{
-                  fromOrToId: stixDomainObjectId,
-                  elementWithTargetTypes: ['Stix-Cyber-Observable'],
-                  endDate: monthsAgo(1),
-                }}
-                render={({ props }) => {
-                  if (props && props.stixCoreRelationshipsNumber) {
-                    const { total } = props.stixCoreRelationshipsNumber;
-                    const difference = total - props.stixCoreRelationshipsNumber.count;
-                    return (
-                      <CardContent>
-                        <div className={classes.title}>
-                          {t('Total observables')}
-                        </div>
-                        <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference difference={difference} />
-                        <div className={classes.icon}>
-                          <HexagonMultipleOutline
-                            color="inherit"
-                            fontSize="large"
-                          />
-                        </div>
-                      </CardContent>
-                    );
-                  }
+            <QueryRenderer
+              query={
+                stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
+              }
+              variables={{
+                fromOrToId: stixDomainObjectId,
+                elementWithTargetTypes: ['Stix-Cyber-Observable'],
+                endDate: monthsAgo(1),
+              }}
+              render={({ props }) => {
+                if (props && props.stixCoreRelationshipsNumber) {
+                  const { total } = props.stixCoreRelationshipsNumber;
+                  const difference = total - props.stixCoreRelationshipsNumber.count;
                   return (
-                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
+                    <CardNumber
+                      label={t('Total observables')}
+                      value={n(total)}
+                      diffLabel={t('30 days')}
+                      diffValue={difference}
+                      icon={(
+                        <HexagonMultipleOutline
+                          style={{ color: theme.palette.text.secondary }}
+                          fontSize="large"
+                        />
+                      )}
+                    />
                   );
-                }}
-              />
-            </Card>
+                }
+                return (
+                  <div style={{ textAlign: 'center', paddingTop: 35 }}>
+                    <CircularProgress size={40} thickness={2} />
+                  </div>
+                );
+              }}
+            />
           </Grid>
           <Grid item xs={4}>
-            <Card
-              variant="outlined"
-              classes={{ root: classes.card }}
-              style={{ height: 120 }}
-            >
-              <QueryRenderer
-                query={
-                  stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
-                }
-                variables={{
-                  fromOrToId: stixDomainObjectId,
-                  endDate: monthsAgo(1),
-                }}
-                render={({ props }) => {
-                  if (props && props.stixCoreRelationshipsNumber) {
-                    const { total } = props.stixCoreRelationshipsNumber;
-                    const difference = total - props.stixCoreRelationshipsNumber.count;
-                    return (
-                      <CardContent>
-                        <div className={classes.title}>
-                          {t('Total relations')}
-                        </div>
-                        <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference difference={difference} />
-                        <div className={classes.icon}>
-                          <DeviceHubOutlined color="inherit" fontSize="large" />
-                        </div>
-                      </CardContent>
-                    );
-                  }
+            <QueryRenderer
+              query={
+                stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
+              }
+              variables={{
+                fromOrToId: stixDomainObjectId,
+                endDate: monthsAgo(1),
+              }}
+              render={({ props }) => {
+                if (props && props.stixCoreRelationshipsNumber) {
+                  const { total } = props.stixCoreRelationshipsNumber;
+                  const difference = total - props.stixCoreRelationshipsNumber.count;
                   return (
-                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
+                    <CardNumber
+                      label={t('Total relations')}
+                      value={n(total)}
+                      diffLabel={t('30 days')}
+                      diffValue={difference}
+                      icon={(
+                        <DeviceHubOutlined
+                          style={{ color: theme.palette.text.secondary }}
+                          fontSize="large"
+                        />
+                      )}
+                    />
                   );
-                }}
-              />
-            </Card>
+                }
+                return (
+                  <div style={{ textAlign: 'center', paddingTop: 35 }}>
+                    <CircularProgress size={40} thickness={2} />
+                  </div>
+                );
+              }}
+            />
           </Grid>
         </Grid>
         <StixCoreObjectReportsHorizontalBar
@@ -262,9 +243,11 @@ StixDomainObjectKnowledge.propTypes = {
   stixDomainObjectType: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
+  theme: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixDomainObjectKnowledge);

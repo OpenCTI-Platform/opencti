@@ -55,6 +55,7 @@ const AuditsNumber = ({
   endDate,
   dataSelection,
   parameters = {},
+  entityType,
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
@@ -62,8 +63,7 @@ const AuditsNumber = ({
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const title = parameters.title ?? t_i18n('Entities number');
-  const translatedTitle = translateEntityType(parameters.title);
-  const isTitleEntityType = title !== translatedTitle;
+  const translatedTitle = translateEntityType(title);
 
   if (!isGrantedToSettings || !isEnterpriseEdition) {
     return <WidgetAccessDenied />;
@@ -88,7 +88,7 @@ const AuditsNumber = ({
           const { total, count } = props.auditsNumber;
           return (
             <CardNumber
-              entityType={isTitleEntityType ? title : undefined}
+              entityType={entityType}
               label={translatedTitle}
               value={total}
               diffLabel={t_i18n('24 hours')}

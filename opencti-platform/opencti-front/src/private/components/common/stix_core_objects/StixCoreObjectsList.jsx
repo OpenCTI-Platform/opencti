@@ -442,6 +442,7 @@ const StixCoreObjectsList = ({
 
   return (
     <WidgetContainer
+      padding="horizontal"
       height={height}
       title={parameters.title ?? title ?? t_i18n('Entities list')}
       variant={variant}

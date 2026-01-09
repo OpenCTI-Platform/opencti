@@ -163,6 +163,7 @@ const StixRelationshipsPolarArea = ({
   };
   return (
     <WidgetContainer
+      padding="small"
       height={height}
       title={parameters.title ?? title ?? t_i18n('Relationships distribution')}
       variant={variant}

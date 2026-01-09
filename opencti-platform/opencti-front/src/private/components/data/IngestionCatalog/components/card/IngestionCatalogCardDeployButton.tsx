@@ -15,6 +15,7 @@ const IngestionCatalogCardDeployButton = ({ deploymentCount, onClick }: Ingestio
     <Tooltip title={deploymentCount ? `${deploymentCount} deployments` : ''}>
       <Badge badgeContent={deploymentCount} color="warning">
         <Button
+          size="small"
           onClick={onClick}
         >
           {t_i18n('Deploy')}
