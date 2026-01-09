@@ -64,7 +64,7 @@ const LocationMiniMapTargets = ({ center, zoom, cities, countries, title = undef
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <Card noPadding title={title}>
+      <Card padding="none" title={title}>
         <MapContainer
         // introducing uniqueness in component rendering
         // it is a bug workaround that prevents the component from rendering

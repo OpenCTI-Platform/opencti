@@ -132,6 +132,7 @@ const AuditsMultiAreaChart = ({
   };
   return (
     <WidgetContainer
+      padding="small"
       height={height}
       title={parameters.title ?? t_i18n('Activity and history')}
       variant={variant}

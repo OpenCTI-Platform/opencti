@@ -67,7 +67,7 @@ const LocationMiniMap = (props) => {
   return (
     <div style={{ height: '100%' }}>
       <Card
-        noPadding
+        padding="none"
         title={`${t('Mini map')} (lat. ${validatedCenter[0]}, long. ${validatedCenter[1]})`}
       >
         <MapContainer

@@ -126,6 +126,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
 
   return (
     <WidgetContainer
+      padding="horizontal"
       height={height}
       title={parameters?.title ?? t_i18n('Audits list')}
       variant={variant}

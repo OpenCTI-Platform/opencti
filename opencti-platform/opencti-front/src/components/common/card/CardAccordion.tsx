@@ -51,7 +51,7 @@ const CardAccordion = ({
   };
 
   return (
-    <Card title={title} action={action} noPadding>
+    <Card title={title} action={action} padding="none">
       <Accordion
         expanded={expanded}
         onChange={(_, val) => {

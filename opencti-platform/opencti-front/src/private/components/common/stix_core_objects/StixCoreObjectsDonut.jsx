@@ -145,6 +145,7 @@ const StixCoreObjectsDonut = ({
   };
   return (
     <WidgetContainer
+      padding="small"
       height={height}
       title={parameters.title ?? defaultTitle}
       variant={variant}
