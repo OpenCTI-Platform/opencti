@@ -38,8 +38,8 @@ import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import { THEME_LIGHT_DEFAULT_BACKGROUND } from 'src/components/ThemeLight';
-import { THEME_DARK_DEFAULT_BACKGROUND } from 'src/components/ThemeDark';
+import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_BODY_END_GRADIENT } from 'src/components/ThemeLight';
+import { THEME_DARK_DEFAULT_BACKGROUND, THEME_DARK_DEFAULT_BODY_END_GRADIENT } from 'src/components/ThemeDark';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -200,23 +200,23 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // draft
   const draftModeColor = getDraftModeColor(theme);
 
-  const getAppBarGradient = (): string => {
-    const defaultGradientDark = `${alpha('#070d19', 0.9)} 0%, ${alpha('#0C1524', 0.9)}`;
-    const defaultGradientLight = `${alpha('#ECECF2', 0.9)} 0%, ${alpha('#F7F7F7', 0.9)}`;
+  const getAppTopBarGradient = (): string => {
+    const defaultBackground = theme.palette.background.default;
+    const defaultGradientDark = `${alpha(THEME_DARK_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(THEME_DARK_DEFAULT_BODY_END_GRADIENT, 0.9)}`;
+    const defaultGradientLight = `${alpha(THEME_LIGHT_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(THEME_LIGHT_DEFAULT_BODY_END_GRADIENT, 0.9)}`;
 
-    if (theme.palette.background.default === THEME_DARK_DEFAULT_BACKGROUND) {
+    if (defaultBackground === THEME_DARK_DEFAULT_BACKGROUND) {
       return defaultGradientDark;
-    } else if (theme.palette.background.default === THEME_LIGHT_DEFAULT_BACKGROUND) {
+    } else if (defaultBackground === THEME_LIGHT_DEFAULT_BACKGROUND) {
       return defaultGradientLight;
-    } else if (theme.palette.background.default) {
-      const endGradientColor = lighten(theme.palette.background.default, 0.07);
-      return `${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(endGradientColor, 0.9)}`;
-    } else {
-      return defaultGradientDark;
+    } else if (defaultBackground) {
+      const endGradientColor = lighten(defaultBackground, 0.04);
+      return `${alpha(defaultBackground, 0.9)} 0%, ${alpha(endGradientColor, 0.9)}`;
     }
+    return defaultGradientDark;
   };
 
-  const appBarGradient = getAppBarGradient();
+  const appBarGradient = getAppTopBarGradient();
 
   return (
     <AppBar
