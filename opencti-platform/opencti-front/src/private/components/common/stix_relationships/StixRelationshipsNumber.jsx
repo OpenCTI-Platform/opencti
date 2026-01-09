@@ -67,7 +67,7 @@ const StixRelationshipsNumber = ({
   const { translateEntityType } = useEntityTranslation();
 
   const title = parameters.title ?? t_i18n('Entities number');
-  const translatedTitle = translateEntityType(parameters.title);
+  const translatedTitle = translateEntityType(title);
 
   const selection = dataSelection[0];
   const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
