@@ -121,7 +121,7 @@ declare module '@mui/material/styles' {
       };
     };
     tag: {
-      overflow: string;
+      overflowColor: string;
     };
   }
 
@@ -136,7 +136,7 @@ declare module '@mui/material/styles' {
       };
     };
     tag?: {
-      overflow?: string;
+      overflowColor?: string;
     };
   }
 }

@@ -110,26 +110,6 @@ const ItemMarkings = ({
     );
   }
 
-  if (!limit || markings.length <= 1) {
-    return (
-      <span>
-        {markings.length === 0
-          ? (
-              <ChipMarking
-                markingDefinition={{ definition: 'NONE', id: 'NONE' }}
-              />
-            )
-          : markings.map((markingDefinition) => (
-              <ChipMarking
-                key={markingDefinition.id}
-                markingDefinition={markingDefinition}
-                onClick={onClick}
-              />
-            ))}
-      </span>
-    );
-  }
-
   return (
     <EnrichedTooltip
       placement="bottom"

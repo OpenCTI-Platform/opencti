@@ -101,7 +101,7 @@ const ThemeDark = (
     },
   },
   tag: {
-    overflow: primary || THEME_DARK_DEFAULT_PRIMARY,
+    overflowColor: primary || THEME_DARK_DEFAULT_PRIMARY,
   },
   typography: {
     fontFamily: '"IBM Plex Sans", sans-serif',

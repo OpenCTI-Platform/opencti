@@ -102,7 +102,7 @@ const ThemeLight = (
     },
   },
   tag: {
-    overflow: primary || THEME_LIGHT_DEFAULT_PRIMARY,
+    overflowColor: primary || THEME_LIGHT_DEFAULT_PRIMARY,
   },
   typography: {
     fontFamily: '"IBM Plex Sans", sans-serif',

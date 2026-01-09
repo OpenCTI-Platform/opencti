@@ -100,7 +100,7 @@ const StixCoreObjectLabels = ({
         {shouldTruncate && hiddenCount > 0 && (
           <Tag
             label={`+${hiddenCount}`}
-            color={theme.tag.overflow}
+            color={theme.tag.overflowColor}
             tooltipTitle={labels.slice(visibleCount).map((l) => l.value).join(', ')}
           />
         )}
