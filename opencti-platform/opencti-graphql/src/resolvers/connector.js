@@ -66,6 +66,7 @@ import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
 import { ConnectorPriorityGroup } from '../generated/graphql';
+import { assessConnectorMigration, migrateConnectorToManaged } from '../domain/connector-migration';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -88,6 +89,9 @@ const connectorResolvers = {
     // region new managed connectors
     connectorManager: (_, { managerId }, context) => connectorManager(context, context.user, managerId),
     connectorManagers: (_, __, context) => connectorManagers(context, context.user),
+    connectorMigrationAssessment: async (_, { connectorId, containerImage, configuration }, context) => {
+      return assessConnectorMigration(context, context.user, connectorId, containerImage, configuration);
+    },
     // endregion
   },
   Connector: {
@@ -186,6 +190,19 @@ const connectorResolvers = {
     synchronizerStart: (_, { id }, context) => patchSync(context, context.user, id, { running: true }),
     synchronizerStop: (_, { id }, context) => patchSync(context, context.user, id, { running: false }),
     synchronizerTest: (_, { input }, context) => testSync(context, context.user, input),
+
+    connectorMigrateToManaged: (_, { input }, context) => {
+      const { connectorId, containerImage, configuration, resetConnectorState, convertUserToServiceAccount } = input;
+      return migrateConnectorToManaged(
+        context,
+        context.user,
+        connectorId,
+        containerImage,
+        configuration,
+        convertUserToServiceAccount,
+        resetConnectorState,
+      );
+    },
   },
 };
 
