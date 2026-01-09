@@ -1,5 +1,4 @@
 // Providers definition
-import type { StrategyType } from '../generated/graphql';
 import type { BasicStoreSettings } from '../types/settings';
 
 export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__';
