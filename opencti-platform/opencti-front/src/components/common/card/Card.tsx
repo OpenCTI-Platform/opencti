@@ -36,7 +36,7 @@ const Card = ({
   // If no link and no onClick callback then we put the padding on the
   // card container directly, otherwise we put the padding on the
   // CardActionArea component.
-  const hasContainerPadding = !onClick && !to;
+  const applyStyleToContainer = !onClick && !to;
 
   let paddingStyle: SxProps = {
     padding: theme.spacing(3),
@@ -61,13 +61,14 @@ const Card = ({
     flexGrow: fullHeight ? 1 : 0,
     borderRadius: theme.spacing(0.5),
     background: theme.palette.background.secondary,
-    ...(hasContainerPadding ? paddingStyle : {}),
-    ...sx,
+    ...(applyStyleToContainer ? paddingStyle : {}),
+    ...(applyStyleToContainer ? sx : {}),
   };
 
   const actionAreaSx: SxProps = {
-    ...paddingStyle,
     height: '100%',
+    ...paddingStyle,
+    ...sx,
   };
 
   let content = children;
