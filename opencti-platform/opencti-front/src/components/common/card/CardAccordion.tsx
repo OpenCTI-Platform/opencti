@@ -38,8 +38,9 @@ const CardAccordion = ({
     '.MuiAccordionSummary-content': {
       margin: 0,
     },
-    '.MuiAccordionSummary-content.Mui-expanded': {
+    '&.MuiAccordionSummary-root.Mui-expanded': {
       margin: 0,
+      minHeight: 0,
     },
   };
 

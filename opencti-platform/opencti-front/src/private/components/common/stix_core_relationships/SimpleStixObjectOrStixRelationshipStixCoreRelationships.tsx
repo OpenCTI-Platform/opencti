@@ -89,7 +89,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
     paginationOptions,
   );
   return (
-    <Card title={t_i18n('Latest created relationships')}>
+    <Card
+      padding="horizontal"
+      title={t_i18n('Latest created relationships')}
+    >
       {queryRef && (
         <React.Suspense fallback={(
           <List>

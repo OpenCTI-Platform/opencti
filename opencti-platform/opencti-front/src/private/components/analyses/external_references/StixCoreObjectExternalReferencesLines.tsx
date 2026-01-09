@@ -246,6 +246,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
   return (
     <div style={{ height: '100%' }}>
       <Card
+        padding="horizontal"
         title={t_i18n('External references')}
         action={(
           <Security
