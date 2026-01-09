@@ -78,10 +78,6 @@ const ThemeLight = (
       accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
       shadow: 'rgba(0, 0, 0, .15)',
       secondary: '#FFFFFF',
-      gradient: {
-        start: '#ECECF2',
-        end: '#F7F7F7',
-      },
     },
     text: {
       light: '#494A50',
