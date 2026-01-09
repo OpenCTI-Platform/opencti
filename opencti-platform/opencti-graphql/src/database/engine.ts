@@ -2570,9 +2570,9 @@ const buildSubQueryForTaggedFilterGroup = (
     if (isValidFilter) {
       const localMustFilter = buildLocalMustFilter(filter);
       if (filter?.postFilteringTag) {
-        const associatedTag = filter?.postFilteringTag as string;
+        const associatedTag = filter.postFilteringTag;
         localPostFilterTags.add(associatedTag);
-        const associatedTags = new Set(associatedTag);
+        const associatedTags = new Set<string>([associatedTag]);
         localSubQueries.push({ subQuery: localMustFilter, associatedTags });
       } else {
         localSubQueries.push({ subQuery: localMustFilter, associatedTags: new Set<string>() });
@@ -3148,7 +3148,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
         }
         elementsWithTags.push({ element, tagsToIgnoreSet });
       }
-      // Since filters contains filters requiring post filterting (regardingOf, dynamicRegardingOf), a post-security filtering is needed
+      // Since filters contains filters requiring post filtering (regardingOf, dynamicRegardingOf), a post-security filtering is needed
       finalElements = await applyPostFilteringToElements(context, user, elementsWithTags, postFiltersMaps);
     }
     const filterCount = elements.length - finalElements.length;
