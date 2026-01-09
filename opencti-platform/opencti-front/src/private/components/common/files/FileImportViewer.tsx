@@ -51,6 +51,7 @@ const FileImportViewerComponent: FunctionComponent<
   return (
     <Grid item xs={6}>
       <Card
+        padding="horizontal"
         title={t_i18n('Uploaded files')}
         action={(
           <Security needs={[KNOWLEDGE_KNUPLOAD]}>

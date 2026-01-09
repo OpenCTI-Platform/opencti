@@ -58,6 +58,7 @@ const WorkbenchFileViewerBase = ({
     <Grid item xs={6}>
       <div style={{ height: '100%' }}>
         <Card
+          padding="horizontal"
           title={t('Analyst workbenches')}
           action={(
             <Security needs={[KNOWLEDGE_KNASKIMPORT]} hasAccess={!draftContext}>

@@ -21,6 +21,7 @@ const DraftWorkspaceViewer = ({ entityId }: DraftWorkspaceViewerProps) => {
   return (
     <Grid item xs={6}>
       <Card
+        padding="horizontal"
         title={t_i18n('Drafts')}
         action={draftContext ? undefined : (
           <Security needs={[KNOWLEDGE_KNASKIMPORT]}>

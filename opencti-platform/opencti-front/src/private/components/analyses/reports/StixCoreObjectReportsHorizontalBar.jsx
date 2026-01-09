@@ -122,7 +122,10 @@ class StixCoreObjectReportsHorizontalBar extends Component {
     const { t, title, height } = this.props;
     return (
       <div style={{ height: height || '100%', marginBottom: 24 }}>
-        <Card title={title || t('Reports distribution')}>
+        <Card
+          padding="small"
+          title={title || t('Reports distribution')}
+        >
           {this.renderContent()}
         </Card>
       </div>

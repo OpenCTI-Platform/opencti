@@ -45,6 +45,7 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
   return (
     <Grid item xs={6}>
       <Card
+        padding="horizontal"
         title={t_i18n('Exported files')}
         action={(
           <Tooltip
