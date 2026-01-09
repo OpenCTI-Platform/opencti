@@ -2342,22 +2342,24 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             message["work_id"] = work_id
 
         # Send the message
-        try:
-            channel.basic_publish(
-                exchange=self.connector_config["push_exchange"],
-                routing_key=self.connector_config["push_routing"],
-                body=json.dumps(message),
-                properties=pika.BasicProperties(
-                    delivery_mode=2, content_encoding="utf-8"  # make message persistent
-                ),
-            )
-            self.connector_logger.debug("Bundle has been sent")
-            self.metric.inc("bundle_send")
-        except (UnroutableError, NackError):
-            self.connector_logger.error("Unable to send bundle, retry...")
-            self.metric.inc("error_count")
-            time.sleep(10)
-            self._send_bundle(channel, bundle, **kwargs)
+        while True:
+            try:
+                channel.basic_publish(
+                    exchange=self.connector_config["push_exchange"],
+                    routing_key=self.connector_config["push_routing"],
+                    body=json.dumps(message),
+                    properties=pika.BasicProperties(
+                        delivery_mode=2,
+                        content_encoding="utf-8",  # make message persistent
+                    ),
+                )
+                self.connector_logger.debug("Bundle has been sent")
+                self.metric.inc("bundle_send")
+                return
+            except (UnroutableError, NackError):
+                self.connector_logger.error("Unable to send bundle, retry...")
+                self.metric.inc("error_count")
+                time.sleep(10)
 
     @staticmethod
     def stix2_deduplicate_objects(items) -> list:
