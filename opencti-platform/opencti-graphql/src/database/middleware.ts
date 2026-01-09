@@ -3277,13 +3277,13 @@ const upsertElement = async (
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validEnterpriseEdition = settings.valid_enterprise_edition;
   // All inputs impacted by modifications (+inner)
-  const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
+  const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) as EditInput[];
 
   // -- If modifications need to be done, add updated_at and modified
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    return await updateAttributeMetaResolved(context, user, resolvedElement, inputs as any[], updateOpts);
+    return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
   }
   // -- No modification applied
   return { element: resolvedElement, event: null, isCreation: false };
