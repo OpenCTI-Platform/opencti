@@ -14,7 +14,7 @@ export const DARK_DEFAULTS = {
 
 // Default values for Light theme
 export const LIGHT_DEFAULTS = {
-  theme_background: '#f8f8f8',
+  theme_background: '#ececf2',
   theme_paper: '#ffffff',
   theme_nav: '#ffffff',
   theme_primary: '#001bda',
