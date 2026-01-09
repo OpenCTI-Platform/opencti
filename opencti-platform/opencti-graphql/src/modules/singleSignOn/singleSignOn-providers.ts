@@ -2,14 +2,12 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { StrategyType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { login, loginFromProvider } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { findAllSingleSignOn, logAuth } from './singleSignOn-domain';
-import { AuthType } from '../../config/providers-configuration';
+import { findAllSingleSignOn, logAuthInfo } from './singleSignOn-domain';
+import { AuthType, EnvStrategyType, isAuthenticationActivatedByIdentifier, isStrategyActivated, type ProviderConfiguration } from '../../config/providers-configuration';
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
-import { ConfigurationError } from '../../config/errors';
+import { ConfigurationError, UnsupportedError } from '../../config/errors';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy';
 import type { PassportSamlConfig, VerifyWithoutRequest } from '@node-saml/passport-saml/lib/types';
 import { isNotEmptyField } from '../../database/utils';
@@ -99,9 +97,9 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
   }
 };
 
-export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
+export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
   const providerRef = ssoEntity.identifier || 'saml';
-  logAuth('Configuring SAML', StrategyType.SamlStrategy, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
+  logAuthInfo('Configuring SAML', EnvStrategyType.STRATEGY_SAML, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
 
   const providerName = ssoEntity?.label || ssoEntity?.identifier || ssoEntity.id;
   const ssoConfiguration: any = await buildAllConfiguration(ssoEntity);
@@ -114,7 +112,7 @@ export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) =
       throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
     }
 
-    logAuth('Successfully logged', StrategyType.SamlStrategy, { profile, done });
+    logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_SAML, { profile, done });
     addUserLoginCount();
     const nameID = profile['nameID'];
     const nameIDFormat = profile['nameIDFormat'];
@@ -123,13 +121,13 @@ export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) =
     const groupAttributes = groupsManagement?.group_attributes || ['groups'];
 
     if (ssoConfiguration.mail_attribute && !samlAttributes[ssoConfiguration.mail_attribute]) {
-      logAuth(`Custom mail_attribute "${ssoConfiguration.mail_attribute}" in configuration but the custom field is not present SAML server response.`, StrategyType.SamlStrategy);
+      logAuthInfo(`Custom mail_attribute "${ssoConfiguration.mail_attribute}" in configuration but the custom field is not present SAML server response.`, EnvStrategyType.STRATEGY_SAML);
     }
     const userName = samlAttributes[ssoConfiguration.account_attribute] || '';
     const firstname = samlAttributes[ssoConfiguration.firstname_attribute] || '';
     const lastname = samlAttributes[ssoConfiguration.lastname_attribute] || '';
     const isGroupBaseAccess = (isNotEmptyField(groupsManagement) && isNotEmptyField(groupsManagement?.groups_mapping));
-    logAuth('Groups management configuration', StrategyType.SamlStrategy, { groupsManagement: groupsManagement });
+    logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_SAML, { groupsManagement: groupsManagement });
     // region groups mapping
     const computeGroupsMapping = () => {
       const attrGroups: any[][] = groupAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
@@ -153,7 +151,7 @@ export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) =
     };
     const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
     // endregion
-    logAuth('Login handler', StrategyType.SamlStrategy, { isGroupBaseAccess, groupsToAssociate });
+    logAuthInfo('Login handler', EnvStrategyType.STRATEGY_SAML, { isGroupBaseAccess, groupsToAssociate });
     if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
       const opts = {
         providerGroups: groupsToAssociate,
@@ -169,23 +167,23 @@ export const addSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) =
 
   const samlLogoutCallback: VerifyWithoutRequest = (profile) => {
     // SAML Logout function
-    logAuth(`Logout done for ${profile}`, StrategyType.SamlStrategy);
+    logAuthInfo(`Logout done for ${profile}`, EnvStrategyType.STRATEGY_SAML);
   };
   samlOptions.name = ssoEntity.identifier || 'saml';
   const samlStrategy = new SamlStrategy(samlOptions, samlLoginCallback, samlLogoutCallback);
   // TODO samlStrategy.logout_remote = samlOptions.logout_remote;
-  const providerConfig = { name: providerName, type: AuthType.AUTH_SSO, strategy: StrategyType.SamlStrategy, provider: providerRef };
+  const providerConfig: ProviderConfiguration = { name: providerName, type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_SAML, provider: providerRef };
   registerAuthenticationProvider(providerRef, samlStrategy, providerConfig);
-  logAuth('Passport SAML configured', StrategyType.SamlStrategy, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
+  logAuthInfo('Passport SAML configured', EnvStrategyType.STRATEGY_SAML, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
 };
 
-export const addLocalStrategy = async (providerName: string) => {
+export const registerLocalStrategy = async (providerName: string) => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore as per document new LocalStrategy is the right way, not sure what to do.
   const localStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
     return login(username, password)
       .then((info) => {
-        logAuth('Successfully logged', StrategyType.LocalStrategy, { username });
+        logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_SAML, { username });
         addUserLoginCount();
         return done(null, info);
       })
@@ -195,9 +193,49 @@ export const addLocalStrategy = async (providerName: string) => {
   });
 
   // Only one local, remove existing.
-  const providerConfig = { name: providerName, type: AuthType.AUTH_FORM, strategy: StrategyType.LocalStrategy, provider: 'local' };
-  unregisterAuthenticationProvider('local');
+  const providerConfig: ProviderConfiguration = { name: providerName, type: AuthType.AUTH_FORM, strategy: EnvStrategyType.STRATEGY_LOCAL, provider: 'local' };
+  if (isAuthenticationActivatedByIdentifier('local')) {
+    unregisterAuthenticationProvider('local');
+  }
   registerAuthenticationProvider('local', localStrategy, providerConfig);
+};
+
+export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
+  if (authenticationStrategy.strategy === StrategyType.LocalStrategy) {
+    throw UnsupportedError('Disabling local strategy not implemented yet');
+  } else {
+    unregisterAuthenticationProvider(authenticationStrategy.identifier);
+  }
+};
+
+export const registerStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
+  if (authenticationStrategy.strategy) {
+    switch (authenticationStrategy.strategy) {
+      case StrategyType.LocalStrategy:
+        logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LOCAL);
+        await registerLocalStrategy(authenticationStrategy.name);
+        break;
+      case StrategyType.SamlStrategy:
+        logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
+        await registerSAMLStrategy(authenticationStrategy);
+        break;
+      case StrategyType.OpenIdConnectStrategy:
+      case StrategyType.LdapStrategy:
+      case StrategyType.HeaderStrategy:
+      case StrategyType.ClientCertStrategy:
+        logApp.warn(`[SSO] ${authenticationStrategy.strategy} not implemented in UI yet`);
+        break;
+
+      default:
+        logApp.error('[SSO] unknown strategy should not be possible, skipping', {
+          name: authenticationStrategy?.name,
+          strategy: authenticationStrategy.strategy,
+        });
+        break;
+    }
+  } else {
+    logApp.error('[SSO INIT] configuration without strategy should not be possible, skipping', { id: authenticationStrategy?.id });
+  }
 };
 
 /**
@@ -211,44 +249,11 @@ export const initAuthenticationProviders = async (context: AuthContext, user: Au
 
   if (providersFromDatabase.length === 0) {
     // No configuration in database, fallback to default local strategy
-    logAuth('configuring default local strategy', StrategyType.LocalStrategy);
-    await addLocalStrategy('local');
+    logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
+    await registerLocalStrategy('local');
   } else {
     for (let i = 0; i < providersFromDatabase.length; i++) {
-      const currentSSOconfig = providersFromDatabase[i];
-      if (currentSSOconfig.strategy) {
-        switch (currentSSOconfig.strategy) {
-          case StrategyType.LocalStrategy:
-            logAuth(`[INIT] configuring ${currentSSOconfig?.name} - ${currentSSOconfig?.identifier}`, StrategyType.LocalStrategy);
-            await addLocalStrategy(currentSSOconfig.name);
-            break;
-          case StrategyType.SamlStrategy:
-            logAuth(`[INIT] configuring ${currentSSOconfig?.name} - ${currentSSOconfig?.identifier}`, StrategyType.SamlStrategy);
-            await addSAMLStrategy(currentSSOconfig);
-            break;
-          case StrategyType.OpenIdConnectStrategy:
-            logApp.debug(`[SSO] ${currentSSOconfig.strategy} not implemented yet`);
-            break;
-          case StrategyType.LdapStrategy:
-            logApp.debug(`[SSO] ${currentSSOconfig.strategy} not implemented yet`);
-            break;
-          case StrategyType.HeaderStrategy:
-            logApp.debug(`[SSO] ${currentSSOconfig.strategy} not implemented yet`);
-            break;
-          case StrategyType.ClientCertStrategy:
-            logApp.debug(`[SSO] ${currentSSOconfig.strategy} not implemented yet`);
-            break;
-
-          default:
-            logApp.error('[SSO INIT] unknown strategy should not be possible, skipping', {
-              name: currentSSOconfig?.name,
-              strategy: currentSSOconfig.strategy,
-            });
-            break;
-        }
-      } else {
-        logApp.error('[SSO INIT] configuration without strategy should not be possible, skipping', { id: currentSSOconfig?.id });
-      }
+      await registerStrategy(providersFromDatabase[i]);
     }
   }
 };

@@ -156,25 +156,14 @@ const computeEnabled = (envConfiguration: any) => {
   return !(envConfiguration?.disabled === true);
 };
 
-const computeAuthenticationName = (ssoKey: string, envConfiguration: any) => {
-  const providerName = envConfiguration?.config?.label || ssoKey;
-  return `${providerName}-${nowTime()}`;
+const computeAuthenticationName = (ssoKey: string, envConfiguration: any, identifier: string) => {
+  const providerLabel = envConfiguration?.config?.label || ssoKey;
+  return `${providerLabel} ${identifier} migrated on ${nowTime()}`;
 };
 
 const computeAuthenticationLabel = (ssoKey: string, envConfiguration: any) => {
   const providerName = envConfiguration?.config?.label || ssoKey;
   return `${providerName}`;
-};
-
-const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const authEntity: SingleSignOnAddInput = {
-    strategy: StrategyType.LdapStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration),
-    label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.LdapStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
-    enabled: computeEnabled(envConfiguration),
-  };
-  return authEntity;
 };
 
 const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
@@ -183,7 +172,7 @@ const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
 
   const authEntity: SingleSignOnAddInput = {
     strategy: StrategyType.SamlStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration),
+    name: computeAuthenticationName(ssoKey, envConfiguration, identifier),
     identifier,
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
     description: `${StrategyType.SamlStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
@@ -195,10 +184,11 @@ const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
   return authEntity;
 };
 
+/*
 const parseOpenIdStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
   const authEntity: SingleSignOnAddInput = {
     strategy: StrategyType.OpenIdConnectStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration),
+    name: computeAuthenticationName(ssoKey, envConfiguration, 'TODO'),
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
     description: `${StrategyType.OpenIdConnectStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
@@ -206,36 +196,16 @@ const parseOpenIdStrategyConfiguration = (ssoKey: string, envConfiguration: any,
   return authEntity;
 };
 
+ */
+
 const parseLocalStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
   const authEntity: SingleSignOnAddInput = {
     strategy: StrategyType.LocalStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration),
+    name: computeAuthenticationName(ssoKey, envConfiguration, LOCAL_STRATEGY_IDENTIFIER),
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
     description: `${StrategyType.LocalStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
     identifier: LOCAL_STRATEGY_IDENTIFIER,
-  };
-  return authEntity;
-};
-
-const parseHeaderStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const authEntity: SingleSignOnAddInput = {
-    strategy: StrategyType.HeaderStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration),
-    label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.HeaderStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
-    enabled: computeEnabled(envConfiguration),
-  };
-  return authEntity;
-};
-
-const parseCertStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
-  const authEntity: SingleSignOnAddInput = {
-    strategy: StrategyType.ClientCertStrategy,
-    name: computeAuthenticationName(ssoKey, envConfiguration),
-    label: computeAuthenticationLabel(ssoKey, envConfiguration),
-    description: `${StrategyType.ClientCertStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
-    enabled: computeEnabled(envConfiguration),
   };
   return authEntity;
 };
@@ -253,26 +223,25 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
       } else {
         switch (currentSSOconfig.strategy) {
           case EnvStrategyType.STRATEGY_LOCAL:
-            logApp.info('[SSO MIGRATION] starting LocalStrategy migration');
+            logApp.info('[SSO MIGRATION] Looking at LocalStrategy migration');
             authenticationStrategiesInput.push(parseLocalStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_OPENID:
-            logApp.info('[SSO MIGRATION] starting OpenID migration');
-            authenticationStrategiesInput.push(parseOpenIdStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
+            // authenticationStrategiesInput.push(parseOpenIdStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_SAML:
-            logApp.info('[SSO MIGRATION] starting SAML migration');
+            logApp.info('[SSO MIGRATION] Looking at SAML migration');
             authenticationStrategiesInput.push(parseSAMLStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_LDAP:
-            logApp.info('[SSO MIGRATION] starting LDAP migration');
-            authenticationStrategiesInput.push(parseLDAPStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
             break;
           case EnvStrategyType.STRATEGY_CERT:
-            authenticationStrategiesInput.push(parseCertStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
             break;
           case EnvStrategyType.STRATEGY_HEADER:
-            authenticationStrategiesInput.push(parseHeaderStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
             break;
           case EnvStrategyType.STRATEGY_FACEBOOK:
             logApp.warn(`[SSO MIGRATION] DEPRECATED ${currentSSOconfig.strategy} detected.`);
@@ -316,6 +285,7 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
         configuration: authenticationStrategiesInput[i].configuration,
         groups_management: authenticationStrategiesInput[i].groups_management as GroupsManagement,
         organizations_management: authenticationStrategiesInput[i].organizations_management as OrganizationsManagement,
+        identifier: authenticationStrategiesInput[i].identifier,
       };
       authenticationStrategies.push(queryResult);
     }

@@ -27,7 +27,8 @@ export enum EnvStrategyType {
 export interface ProviderConfiguration {
   name: string;
   type: AuthType;
-  strategy: EnvStrategyType | StrategyType;
+  strategy: EnvStrategyType;
+  // provider is also named 'identifier' or 'providerRef' in code.
   provider: string;
   reqLoginHandler?: () => void;
   logout_uri?: string;
@@ -36,7 +37,11 @@ export interface ProviderConfiguration {
 export const PROVIDERS: ProviderConfiguration[] = [];
 
 export const isStrategyActivated = (strategy: EnvStrategyType) => PROVIDERS.map((p) => p.strategy).includes(strategy);
+export const isAuthenticationActivatedByIdentifier = (identifier: string) => PROVIDERS.some((p) => p.provider === identifier);
 
 export const isAuthenticationProviderMigrated = (settings: BasicStoreSettings, authIdentifier: string) => {
-  return settings && settings.auth_strategy_migrated && settings.auth_strategy_migrated.some((strategyIdentifier) => strategyIdentifier === authIdentifier);
+  if (!settings || !settings?.auth_strategy_migrated) {
+    return false;
+  }
+  return settings.auth_strategy_migrated.some((strategyIdentifier) => strategyIdentifier === authIdentifier);
 };
