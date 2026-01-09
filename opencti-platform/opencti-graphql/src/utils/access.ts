@@ -1020,7 +1020,7 @@ export const applyOrganizationRestriction = async (
   if (!userInPlatformOrg) {
     const userOrgIds = (user.organizations || []).map((org) => org.id);
     const membersFilters = {
-      key: ['rel_participate-to.internal_id'],
+      key: ['participate-to'],
       values: userOrgIds,
       operator: 'eq',
     };
