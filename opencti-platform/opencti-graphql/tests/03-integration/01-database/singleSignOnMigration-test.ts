@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseSingleSignOnRunConfiguration } from '../../../src/modules/singleSignOn/singleSignOn-migration';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { deleteSingleSignOn, findAllSingleSignOn, findSingleSignOnById, findSingleSignOnPaginated } from '../../../src/modules/singleSignOn/singleSignOn-domain';
+import { deleteSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
 
 describe('Migration of SSO environment test coverage', () => {
   describe('Dry run of migrations', () => {
@@ -387,11 +387,11 @@ describe('Migration of SSO environment test coverage', () => {
     });
   });
 
-  describe.only('Actual run of migrations', () => {
+  describe('Actual run of migrations', () => {
     it('should SAML configuration works', async () => {
       const configuration = {
-        saml_default: {
-          identifier: 'saml_default',
+        samltestmigration: {
+          identifier: 'samltestmigration',
           strategy: 'SamlStrategy',
           config: {
             disabled: true,
@@ -406,18 +406,22 @@ describe('Migration of SSO environment test coverage', () => {
       };
 
       const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, false);
-      console.log('RESULT', result);
-      expect(result[0].strategy).toBe('SamlStrategy');
-      expect(result[0].name).toMatch(/Login with SAML*/);
-      expect(result[0].enabled).toBeFalsy();
-      expect(result.length).toBe(1);
-
-      const entity = await findSingleSignOnById(testContext, ADMIN_USER, result[0].id);
-      expect(entity.strategy).toBe('LocalStrategy');
-      expect(entity.name).toMatch(/local-*/);
-      expect(entity.enabled).toBeTruthy();
-
-      await deleteSingleSignOn(testContext, ADMIN_USER, result[0].id);
+      const samlStrategy = result.find((sso) => sso.identifier === 'samltestmigration');
+      expect(samlStrategy).toBeDefined();
+      expect(samlStrategy?.strategy).toBe('SamlStrategy');
+      expect(samlStrategy?.enabled).toBe(false);
+      expect(samlStrategy?.name).toMatch(/Login with SAML*/);
+      expect(samlStrategy?.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+        { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+        { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+        { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+        { key: 'organizations_default', type: 'array', value: '["OpenCTI"]' },
+      ]);
+      expect(samlStrategy?.enabled).toBeFalsy();
+      if (samlStrategy) {
+        await deleteSingleSignOn(testContext, ADMIN_USER, samlStrategy?.id);
+      }
     });
   });
 });

@@ -11,7 +11,7 @@ import {
 import { logApp } from '../../config/conf';
 import { now } from 'moment';
 import { nowTime } from '../../utils/format';
-import { addSingleSignOn, internalAddSingleSignOn } from './singleSignOn-domain';
+import { internalAddSingleSignOn } from './singleSignOn-domain';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { v4 as uuid } from 'uuid';
 import { EnvStrategyType, isAuthenticationProviderMigrated, LOCAL_STRATEGY_IDENTIFIER } from '../../config/providers-configuration';
@@ -27,7 +27,7 @@ import { AuthRequired } from '../../config/errors';
 const DEPRECATED_KEYS = ['roles_management'];
 
 // Key that have dedicated usage in OpenCTI and must not be in the configuration array
-const NO_CONFIGURATION_KEY = ['label'];
+const NO_CONFIGURATION_KEY = ['label', 'disabled'];
 
 const GROUP_MANAGEMENT_KEY = 'groups_management';
 const ORG_MANAGEMENT_KEY = 'organizations_management';
