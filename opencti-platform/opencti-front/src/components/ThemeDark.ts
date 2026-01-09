@@ -77,10 +77,6 @@ const ThemeDark = (
       accent: accent || THEME_DARK_DEFAULT_ACCENT,
       shadow: 'rgba(200, 200, 200, 0.15)',
       secondary: '#0D182A',
-      gradient: {
-        start: '#070d19',
-        end: '#0C1524',
-      },
       drawer: '#0f1d34',
     },
     text: {
