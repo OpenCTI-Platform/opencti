@@ -9706,7 +9706,9 @@ export type GroupsManagement = {
   group_attributes?: Maybe<Array<Scalars['String']['output']>>;
   groups_mapping?: Maybe<Array<Scalars['String']['output']>>;
   groups_path?: Maybe<Array<Scalars['String']['output']>>;
+  groups_scope?: Maybe<Scalars['String']['output']>;
   read_userinfo?: Maybe<Scalars['Boolean']['output']>;
+  token_reference?: Maybe<Scalars['String']['output']>;
 };
 
 export type GroupsManagementInput = {
@@ -9714,6 +9716,7 @@ export type GroupsManagementInput = {
   groups_mapping?: InputMaybe<Array<Scalars['String']['input']>>;
   groups_path?: InputMaybe<Array<Scalars['String']['input']>>;
   read_userinfo?: InputMaybe<Scalars['Boolean']['input']>;
+  token_reference?: InputMaybe<Scalars['String']['input']>;
 };
 
 export enum GroupsOrdering {
@@ -20456,6 +20459,7 @@ export type OrganizationsManagement = {
   __typename?: 'OrganizationsManagement';
   organizations_mapping: Array<Scalars['String']['output']>;
   organizations_path?: Maybe<Array<Scalars['String']['output']>>;
+  organizations_scope?: Maybe<Scalars['String']['output']>;
 };
 
 export type OrganizationsManagementInput = {
@@ -41710,7 +41714,9 @@ export type GroupsManagementResolvers<ContextType = any, ParentType extends Reso
   group_attributes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   groups_mapping?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   groups_path?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  groups_scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   read_userinfo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  token_reference?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type HashResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hash'] = ResolversParentTypes['Hash']> = ResolversObject<{
@@ -44776,6 +44782,7 @@ export type OrganizationOrIndividualResolvers<ContextType = any, ParentType exte
 export type OrganizationsManagementResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationsManagement'] = ResolversParentTypes['OrganizationsManagement']> = ResolversObject<{
   organizations_mapping?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   organizations_path?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  organizations_scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type OtpElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['OtpElement'] = ResolversParentTypes['OtpElement']> = ResolversObject<{

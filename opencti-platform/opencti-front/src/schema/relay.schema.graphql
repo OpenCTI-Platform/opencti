@@ -15294,6 +15294,7 @@ type SingleSignOn implements InternalObject & BasicObject {
 type OrganizationsManagement {
   organizations_path: [String!]
   organizations_mapping: [String!]!
+  organizations_scope: String
 }
 
 type GroupsManagement {
@@ -15301,6 +15302,8 @@ type GroupsManagement {
   groups_path: [String!]
   groups_mapping: [String!]
   read_userinfo: Boolean
+  token_reference: String
+  groups_scope: String
 }
 
 type ConfigurationType {
@@ -15346,6 +15349,7 @@ input GroupsManagementInput {
   groups_path: [String!]
   groups_mapping: [String!]
   read_userinfo: Boolean
+  token_reference: String
 }
 
 input ConfigurationTypeInput {

@@ -63,7 +63,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         const currentValue = mappedConfig[configKey];
         logApp.info('[SSO MIGRATION] groups management configured', currentValue);
 
-        const { group_attributes, groups_mapping, groups_path, read_userinfo } = currentValue;
+        const { group_attributes, groups_mapping, groups_path, read_userinfo, token_reference } = currentValue;
         groups_management = {};
 
         // SAML, OpenId and LDAP
@@ -91,6 +91,12 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
           groups_management['read_userinfo'] = read_userinfo;
         } else if (strategy === StrategyType.OpenIdConnectStrategy) {
           groups_management['read_userinfo'] = false;
+        }
+        // OpenId only
+        if (token_reference) {
+          groups_management['token_reference'] = token_reference;
+        } else if (strategy === StrategyType.OpenIdConnectStrategy) {
+          groups_management['token_reference'] = 'access_token';
         }
       } else if (configKey === ORG_MANAGEMENT_KEY) {
       // 3. Extract organization management
@@ -186,12 +192,19 @@ const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
 
 /*
 const parseOpenIdStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
+  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.OpenIdConnectStrategy);
+  const identifier = envConfiguration?.identifier || 'oic';
+
   const authEntity: SingleSignOnAddInput = {
+    identifier,
     strategy: StrategyType.OpenIdConnectStrategy,
     name: computeAuthenticationName(ssoKey, envConfiguration, 'TODO'),
     label: computeAuthenticationLabel(ssoKey, envConfiguration),
     description: `${StrategyType.OpenIdConnectStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
     enabled: computeEnabled(envConfiguration),
+    configuration,
+    groups_management,
+    organizations_management,
   };
   return authEntity;
 };

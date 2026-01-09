@@ -4,7 +4,7 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { deleteSingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-domain';
 
 describe('Migration of SSO environment test coverage', () => {
-  describe('Dry run of migrations', () => {
+  describe('Dry run of SAML migrations', () => {
     it('should default configuration with only local works', async () => {
       const configuration = {
         local: {
@@ -312,6 +312,234 @@ describe('Migration of SSO environment test coverage', () => {
         organizations_path: ['organizations'],
       });
     });
+  });
+  describe.only('Dry run of OpenId migrations', () => {
+    it('should OpenId minimal configuration works', async () => {
+      const configuration = {
+        oic_minimal: {
+          identifier: 'oic_minimal',
+          strategy: 'OpenIDConnectStrategy',
+          config: {
+            issuer: 'http://localhost:9999/realms/master',
+            client_id: 'openctioid',
+            client_secret: 'youShallNotPass',
+            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const minimalOpenIdConfiguration = result[0];
+
+      expect(minimalOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
+      expect(minimalOpenIdConfiguration.name).toMatch(/oic_minimal-*/);
+      expect(minimalOpenIdConfiguration.label).toBe('oic_minimal');
+      expect(minimalOpenIdConfiguration.enabled).toBeTruthy();
+      expect(minimalOpenIdConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
+        { key: 'clientID', type: 'string', value: 'openctioid' },
+        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+      ]);
+    });
+
+    it('should OpenId with all types in configuration works', async () => {
+      const configuration = {
+        oic_all_types: {
+          identifier: 'oic_all_types',
+          strategy: 'OpenIDConnectStrategy',
+          config: {
+            issuer: 'http://localhost:9999/realms/master',
+            client_id: 'openctioid',
+            client_secret: 'youShallNotPass',
+            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
+            label: 'My test oic with Types',
+            entry_point: 'http://localhost:7777/realms/master/protocol/oic',
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const allTypesOpenIdConfiguration = result[0];
+
+      expect(allTypesOpenIdConfiguration.strategy).toBe('OpenIdStrategy');
+      expect(allTypesOpenIdConfiguration.name).toMatch(/My test OpenId with Types-*/);
+      expect(allTypesOpenIdConfiguration.label).toBe('My test OpenId with Types');
+      expect(allTypesOpenIdConfiguration.enabled).toBeTruthy();
+      expect(allTypesOpenIdConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
+        { key: 'clientID', type: 'string', value: 'openctioid' },
+        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+      ]);
+    });
+
+    it('should OpenId with groups mapping in configuration works', async () => {
+      const configuration = {
+        oic_groups: {
+          identifier: 'oic_groups',
+          strategy: 'OpenIDConnectStrategy',
+          config: {
+            issuer: 'http://localhost:9999/realms/master',
+            client_id: 'openctioid',
+            client_secret: 'youShallNotPass',
+            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
+            logout_remote: true,
+            prevent_default_groups: false,
+            groups_management: {
+              groups_attributes: ['roles'],
+              groups_path: ['realm_access.roles'],
+              groups_mapping: ['default-roles-master:Connectors'],
+              read_userinfo: false,
+              token_reference: 'token',
+              groups_scope: 'groupsScope',
+            },
+          },
+        },
+        oic_groups2: {
+          identifier: 'oic_groups_default',
+          strategy: 'OpenIDConnectStrategy',
+          config: {
+            label: 'My test OpenId with Groups Mapping empty',
+            issuer: 'http://localhost:9999/realms/master',
+            client_id: 'openctioid',
+            client_secret: 'youShallNotPass',
+            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
+            groups_management: {
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      const groupManagementOpenIdConfiguration = result[0];
+      expect(groupManagementOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
+      expect(groupManagementOpenIdConfiguration.name).toMatch(/My test OpenId with Groups-*/);
+      expect(groupManagementOpenIdConfiguration.label).toBe('My test OpenId with Groups');
+      expect(groupManagementOpenIdConfiguration.enabled).toBeTruthy();
+      expect(groupManagementOpenIdConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
+        { key: 'clientID', type: 'string', value: 'openctioid' },
+        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+      ]);
+
+      expect(groupManagementOpenIdConfiguration.groups_management).toStrictEqual({
+        group_attributes: ['oicgroup1', 'oicgroup2'],
+        groups_path: ['groups'],
+        groups_mapping: ['group1:Administrators', 'group2:Connectors'],
+      });
+
+      const groupManagementEmptyConfiguration = result[1];
+      expect(groupManagementEmptyConfiguration.strategy).toBe('OpenIDConnectStrategy');
+      expect(groupManagementEmptyConfiguration.name).toMatch(/My test OpenId with Groups Mapping empty-*/);
+      expect(groupManagementEmptyConfiguration.label).toBe('My test OpenId with Groups Mapping empty');
+      expect(groupManagementEmptyConfiguration.enabled).toBeTruthy();
+      expect(groupManagementEmptyConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
+        { key: 'clientID', type: 'string', value: 'openctioid' },
+        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+      ]);
+
+      expect(groupManagementEmptyConfiguration.groups_management).toStrictEqual({
+        group_attributes: ['groups'],
+        groups_mapping: [],
+      });
+    });
+
+    it('should OpenId with several OpenId config works', async () => {
+      const configuration = {
+        oic_1: {
+          identifier: 'oic_1',
+          strategy: 'OpenIDConnectStrategy',
+          config: {
+            issuer: 'http://localhost:9999/realms/master',
+            client_id: 'openctioid',
+            client_secret: 'youShallNotPass',
+            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
+          },
+        },
+        oic_2: {
+          identifier: 'oic_2',
+          strategy: 'OpenIDConnectStrategy',
+          config: {
+            issuer: 'http://localhost:9999/realms/master',
+            client_id: 'openctioid',
+            client_secret: 'youShallNotPass',
+            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
+          },
+        },
+      };
+
+      const multiOicConfigurations = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+
+      expect(multiOicConfigurations[0].strategy).toBe('OpenIDConnectStrategy');
+      expect(multiOicConfigurations[0].name).toMatch(/oic_1-*/);
+      expect(multiOicConfigurations[0].label).toBe('oic_1');
+      expect(multiOicConfigurations[0].enabled).toBeTruthy();
+      expect(multiOicConfigurations[0].configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
+        { key: 'clientID', type: 'string', value: 'openctioid' },
+        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+      ]);
+      expect(multiOicConfigurations[1].strategy).toBe('OpenIDConnectStrategy');
+      expect(multiOicConfigurations[1].name).toMatch(/oic_2-*/);
+      expect(multiOicConfigurations[1].label).toBe('oic_2');
+      expect(multiOicConfigurations[1].enabled).toBeTruthy();
+      expect(multiOicConfigurations[1].configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
+        { key: 'clientID', type: 'string', value: 'openctioid' },
+        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+      ]);
+    });
+
+    it('should OpenId with default values works', async () => {
+      const configuration = {
+        oic_default: {
+          identifier: 'oic_default',
+          strategy: 'OpenIDConnectStrategy',
+          config: {
+            label: 'My test OpenId with default values',
+            issuer: 'http://localhost:9999/realms/master',
+            client_id: 'openctioid',
+            client_secret: 'youShallNotPass',
+            redirect_uris: ['http://localhost:4000/auth/oic/callback'],
+            groups_management: {
+            },
+            organizations_management: {
+            },
+          },
+        },
+      };
+
+      const result = await parseSingleSignOnRunConfiguration(testContext, ADMIN_USER, configuration, true);
+      const defaultValuesConfiguration = result[0];
+      expect(defaultValuesConfiguration.strategy).toBe('OpenIDConnectStrategy');
+      expect(defaultValuesConfiguration.name).toMatch(/My test OpenId with default values*/);
+      expect(defaultValuesConfiguration.label).toBe('My test OpenId with default values');
+      expect(defaultValuesConfiguration.enabled).toBeTruthy();
+      expect(defaultValuesConfiguration.configuration).toStrictEqual([
+        { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
+        { key: 'clientID', type: 'string', value: 'openctioid' },
+        { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
+        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+      ]);
+
+      expect(defaultValuesConfiguration.groups_management).toStrictEqual({
+        group_attributes: ['groups'],
+        groups_mapping: [],
+      });
+      expect(defaultValuesConfiguration.organizations_management).toStrictEqual({
+        organizations_mapping: [],
+        organizations_path: ['organizations'],
+      });
+    });
 
     it.todo('should OpenID configuration works', async () => {
       const configuration = {
@@ -343,6 +571,7 @@ describe('Migration of SSO environment test coverage', () => {
               groups_path: ['realm_access.roles'],
               groups_mapping: ['default-roles-master:Connectors'],
               read_userinfo: false,
+              token_reference: 'token',
             },
           },
         },
@@ -378,6 +607,7 @@ describe('Migration of SSO environment test coverage', () => {
       expect(groupManagementOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
       expect(groupManagementOpenIdConfiguration.name).toMatch(/OpenID for migration test with groups-*/);
       expect(groupManagementOpenIdConfiguration.enabled).toBeTruthy();
+      expect(groupManagementOpenIdConfiguration.groups_management?.token_reference).toBe('token');
 
       expect(orgManagementOpenIdConfiguration.strategy).toBe('OpenIDConnectStrategy');
       expect(orgManagementOpenIdConfiguration.name).toMatch(/OpenID for migration test with organizations-*/);
