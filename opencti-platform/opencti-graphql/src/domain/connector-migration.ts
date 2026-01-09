@@ -14,7 +14,7 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_USER 
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isServiceAccountUser } from '../utils/access';
-import { userEditField } from './user';
+import { resolveUserByIdFromCache, userEditField } from './user';
 
 type ConfigInput = {
   key: string;
@@ -207,10 +207,6 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
   };
 };
 
-const hasServiceAccountProperty = (user: any): user is AuthUser & { service_account?: boolean } => {
-  return user && typeof user === 'object' && 'user_service_account' in user;
-};
-
 export const migrateConnectorToManaged = async (
   context: AuthContext,
   user: AuthUser,
@@ -312,17 +308,11 @@ export const migrateConnectorToManaged = async (
     (config) => !RUNTIME_PROVIDED_FIELDS.includes(config.key),
   );
 
-  const existingUser = await storeLoadById(
-    context,
-    user,
-    existingConnector.connector_user_id,
-    ENTITY_TYPE_USER,
-  );
+  const existingUser = await resolveUserByIdFromCache(existingConnector.connector_user_id) as AuthUser;
 
   // If existing user is not a service account, transform it to service account
   if (
-    hasServiceAccountProperty(existingUser)
-    && !isServiceAccountUser(existingUser)
+    !isServiceAccountUser(existingUser)
     && convertUserToServiceAccount
   ) {
     await userEditField(
