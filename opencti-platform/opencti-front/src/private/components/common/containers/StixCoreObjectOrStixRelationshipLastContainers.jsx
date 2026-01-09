@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme) => ({
     paddingRight: 0,
   },
   bodyItem: {
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',

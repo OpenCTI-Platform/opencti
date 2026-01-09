@@ -1,72 +1,82 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import useDebounceCallback from '../../../../../../../utils/hooks/useDebounceCallback';
 
-const GAP_WIDTH = 8;
-const PLUS_CHIP_WIDTH = 70;
+const GAP = 8;
+const MIN_CHIP_WIDTH = 60;
 
-const useChipOverflow = (useCases: string[]) => {
+const useChipOverflow = (items: string[]) => {
+  const [visibleCount, setVisibleCount] = useState(items.length);
   const containerRef = useRef<HTMLDivElement>(null);
-  const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [visibleCount, setVisibleCount] = useState(useCases.length);
-  const [shouldTruncate, setShouldTruncate] = useState(false);
+  const chipRefs = useRef<(HTMLElement | null)[]>([]);
+  const overflowChipRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
-    chipRefs.current = chipRefs.current.slice(0, useCases.length);
-  }, [useCases.length]);
+  const calculateVisibleCount = useCallback(() => {
+    if (!containerRef.current) return;
 
-  useEffect(() => {
-    let resizeTimeout: ReturnType<typeof setTimeout>;
+    const containerWidth = containerRef.current.offsetWidth;
 
-    const calculateVisibleChips = () => {
-      const container = containerRef.current;
-      if (!container) return;
+    let usedWidth = 0;
+    let visibleChips = 0;
 
-      const containerWidth = container.offsetWidth;
-      const chips = chipRefs.current.filter(Boolean) as HTMLDivElement[];
+    for (let i = 0; i < chipRefs.current.length; i++) {
+      const chip = chipRefs.current[i];
+      if (!chip) continue;
 
-      if (chips.length === 0) return;
+      const chipWidth = chip.offsetWidth;
+      const gapBeforeChip = i > 0 ? GAP : 0;
+      const widthNeeded = usedWidth + gapBeforeChip + chipWidth;
 
-      let accumulatedWidth = 0;
-      let count = 0;
-      let truncationNeeded = false;
-
-      for (let i = 0; i < chips.length; i += 1) {
-        const chipWidth = chips[i].offsetWidth;
-        const hasMore = i < chips.length - 1;
-        const gap = count > 0 ? GAP_WIDTH : 0;
-        const widthWithChip = accumulatedWidth + chipWidth + gap;
-
-        // If we can still fit the chip and possibly the +N indicator
-        const remainingSpace = containerWidth - widthWithChip;
-        const spaceNeededForRest = hasMore ? PLUS_CHIP_WIDTH + GAP_WIDTH : 0;
-
-        if (remainingSpace >= spaceNeededForRest) {
-          accumulatedWidth = widthWithChip;
-          count += 1;
-        } else {
-          truncationNeeded = true;
-          break;
-        }
+      // Does this chip fit completely?
+      if (widthNeeded <= containerWidth) {
+        usedWidth = widthNeeded;
+        visibleChips++;
+        continue;
       }
 
-      setVisibleCount(Math.max(1, count));
-      setShouldTruncate(truncationNeeded);
-    };
+      // Chip doesn't fit completely
+      const spaceLeft = containerWidth - usedWidth - gapBeforeChip;
+      const isLastChip = (i === items.length - 1);
+      const chipsStillHidden = items.length - visibleChips;
 
-    const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(calculateVisibleChips, 100);
-    };
+      // Show with ellipsis if: last chip OR only 1 would be hidden
+      const shouldShowWithEllipsis
+        = (isLastChip || chipsStillHidden === 1) && spaceLeft >= MIN_CHIP_WIDTH;
 
-    calculateVisibleChips();
-    window.addEventListener('resize', handleResize);
+      if (shouldShowWithEllipsis) {
+        visibleChips++;
+      }
+
+      break;
+    }
+
+    setVisibleCount(Math.max(1, visibleChips));
+  }, [items.length]);
+
+  const debouncedCalculate = useDebounceCallback(calculateVisibleCount, 150);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver(() => {
+      debouncedCalculate();
+    });
+
+    observer.observe(container);
+    calculateVisibleCount();
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      clearTimeout(resizeTimeout);
+      observer.disconnect();
     };
-  }, [useCases]);
+  }, [calculateVisibleCount, debouncedCalculate]);
 
-  return { containerRef, chipRefs, visibleCount, shouldTruncate };
+  return {
+    containerRef,
+    chipRefs,
+    overflowChipRef,
+    visibleCount,
+    shouldTruncate: visibleCount < items.length,
+  };
 };
 
 export default useChipOverflow;

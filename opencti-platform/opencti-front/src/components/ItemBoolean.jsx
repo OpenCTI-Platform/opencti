@@ -1,13 +1,13 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
-import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import { compose } from 'ramda';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from '@mui/styles';
 import inject18n from './i18n';
 import { chipInListBasicStyle } from '../utils/chipStyle';
+import Tag from '@common/tag/Tag';
 
 const styles = () => ({
   chip: {
@@ -54,80 +54,43 @@ const styles = () => ({
   },
 });
 
-const computeInlineStyles = (theme) => ({
-  green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-  },
-  red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-  },
-  blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
-  },
-  ee: {
-    backgroundColor: theme.palette.ee.lightBackground,
-    color: theme.palette.ee.main,
-  },
-});
-
 const renderChip = (props) => {
-  const { classes, label, neutralLabel, status, variant, t, reverse } = props;
+  const { label, neutralLabel, status, t, reverse } = props;
   const theme = useTheme();
-  let style = classes.chip;
-  if (variant === 'inList') {
-    style = classes.chipInList;
-  } else if (variant === 'large') {
-    style = classes.chipLarge;
-  } else if (variant === 'xlarge') {
-    style = classes.chipxLarge;
-  } else if (variant === 'high') {
-    style = classes.chipHigh;
-  }
-  const inlineStyles = computeInlineStyles(theme);
+
   if (status === true) {
     return (
-      <Chip
-        classes={{ root: style }}
-        style={reverse ? inlineStyles.red : inlineStyles.green}
-        label={label}
-      />
+      <Tag label={label} color={reverse ? '#f44336' : '#4caf50'} />
     );
   }
+
   if (status === null) {
     return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.blue}
-        label={neutralLabel || t('Not applicable')}
-      />
+      <Tag label={neutralLabel || t('Not applicable')} />
     );
   }
+
   if (status === 'ee') {
     return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.ee}
+      <Tag
         label={neutralLabel || t('EE')}
+        color={theme.palette.ee.lightBackground}
       />
     );
   }
+
   if (status === undefined) {
     return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.blue}
+      <Tag
         label={<CircularProgress size={10} color="primary" />}
       />
     );
   }
+
   return (
-    <Chip
-      classes={{ root: style }}
-      style={reverse ? inlineStyles.green : inlineStyles.red}
+    <Tag
       label={label}
+      color={reverse ? '#4caf50' : '#f44336'}
     />
   );
 };

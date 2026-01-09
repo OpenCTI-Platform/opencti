@@ -37,7 +37,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary?.main,
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
@@ -319,7 +319,6 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                variant="inList"
                 markingDefinitions={stixCoreObject.objectMarking ?? []}
                 limit={1}
               />

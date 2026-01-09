@@ -1,6 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Button from '@common/button/Button';
+import Tag from '@common/tag/Tag';
+import { useNavigate } from 'react-router-dom';
 import { resolveLink } from '../utils/Entity';
 
 interface ItemAuthorProps {
@@ -12,19 +11,16 @@ interface ItemAuthorProps {
 }
 
 const ItemAuthor = ({ createdBy }: ItemAuthorProps) => {
+  const navigate = useNavigate();
+
+  const URL = createdBy ? `${resolveLink(createdBy.entity_type)}/${createdBy.id}?viewAs=author` : null;
   return (
     <>
       {createdBy ? (
-        <Button
-          variant="secondary"
-          size="small"
-          component={Link}
-          to={`${resolveLink(createdBy.entity_type)}/${
-            createdBy.id
-          }?viewAs=author`}
-        >
-          {createdBy.name}
-        </Button>
+        <Tag
+          label={createdBy.name}
+          {...!!URL && { onClick: () => navigate(URL) }}
+        />
       ) : (
         '-'
       )}

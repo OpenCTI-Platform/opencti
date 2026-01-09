@@ -25,7 +25,7 @@ import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 
 const styles = {
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left' as 'left' | 'right' | 'none' | undefined,
     whiteSpace: 'nowrap',

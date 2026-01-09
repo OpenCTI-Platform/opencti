@@ -17,6 +17,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import type { Theme } from '../../../../components/Theme';
+import { Stack } from '@mui/material';
 
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
@@ -174,10 +175,10 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             </ListItemIcon>
             <ListItemText
               primary={(
-                <>
+                <Stack alignItems="center" direction="row" gap={1}>
                   {t_i18n('Allow modification of sensitive configuration')}
                   <DangerZoneChip />
-                </>
+                </Stack>
               )}
             />
           </ListItem>

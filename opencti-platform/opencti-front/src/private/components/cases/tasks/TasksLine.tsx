@@ -31,7 +31,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
@@ -125,7 +125,6 @@ export const tasksDataColumns: DataColumns = {
     render: (task: TasksLine_node$data) => (
       <ItemStatus
         status={task.status}
-        variant="inList"
         disabled={!task.workflowEnabled}
       />
     ),

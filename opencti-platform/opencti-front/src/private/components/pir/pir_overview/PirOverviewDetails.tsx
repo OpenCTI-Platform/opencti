@@ -20,7 +20,6 @@ import { useTheme } from '@mui/material/styles';
 import { PirOverviewDetailsRedisFragment$key } from '@components/pir/pir_overview/__generated__/PirOverviewDetailsRedisFragment.graphql';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import Chip from '@mui/material/Chip';
 import { PirOverviewDetailsFragment$key } from './__generated__/PirOverviewDetailsFragment.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
@@ -31,6 +30,7 @@ import PirCriteriaDisplay from '../PirCriteriaDisplay';
 import type { Theme } from '../../../../components/Theme';
 import CardAccordion from '../../../../components/common/card/CardAccordion';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import Tag from '@common/tag/Tag';
 
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {
@@ -123,19 +123,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
                   />
                 </Tooltip>
               </Typography>
-              <div>
-                <Chip
-                  style={{
-                    fontSize: 12,
-                    lineHeight: '12px',
-                    height: 25,
-                    textTransform: 'uppercase',
-                    borderRadius: 4,
-                    marginRight: 5,
-                  }}
-                  label={`${n(pir.queue_messages)} ${t_i18n('messages in queue')}`}
-                />
-              </div>
+              <Tag label={`${n(pir.queue_messages)} ${t_i18n('messages in queue')}`} />
             </div>
             <div>
               <Typography variant="h3" gutterBottom>

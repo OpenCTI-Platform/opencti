@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { PropsWithChildren } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Chip, { ChipProps } from '@mui/material/Chip';
+import { ChipProps } from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/material/styles';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
@@ -25,6 +25,7 @@ import { filterValuesContentQuery } from '../../../components/FilterValuesConten
 import { GqlFilterGroup, removeIdFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
+import Tag from '@common/tag/Tag';
 
 interface PirFiltersDisplayComponentProps extends PropsWithChildren {
   size?: ChipProps['size'];
@@ -37,7 +38,6 @@ const PirCriteriaDisplayComponent = ({
   queryRef,
   criteria,
   full = false,
-  size = 'medium',
   children,
 }: PirFiltersDisplayComponentProps) => {
   const theme = useTheme<Theme>();
@@ -78,9 +78,7 @@ const PirCriteriaDisplayComponent = ({
             }}
           >
             {children ? <div>{children}</div> : (
-              <Chip
-                size={size}
-                sx={{ textTransform: 'capitalize', borderRadius: 1, whiteSpace: 'wrap' }}
+              <Tag
                 label={full ? fullTargetsStr : shortTargetsStr}
               />
             )}

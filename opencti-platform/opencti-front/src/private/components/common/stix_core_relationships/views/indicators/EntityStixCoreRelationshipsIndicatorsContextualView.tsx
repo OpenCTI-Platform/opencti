@@ -141,7 +141,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       isSortable: true,
       render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => {
         if (stixCoreObject.pattern_type) {
-          return <ItemPatternType variant="inList" label={stixCoreObject.pattern_type} />;
+          return <ItemPatternType label={stixCoreObject.pattern_type} />;
         }
         return <></>;
       },
@@ -182,7 +182,6 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       isSortable: isRuntimeSort ?? false,
       render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => (
         <ItemMarkings
-          variant="inList"
           markingDefinitions={stixCoreObject.objectMarking ?? []}
           limit={1}
         />

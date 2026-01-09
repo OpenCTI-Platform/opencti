@@ -66,6 +66,15 @@ declare module '@mui/material/styles' {
       nav: string;
       popoverItem: string;
     };
+    severity?: {
+      critical: string;
+      high: string;
+      medium: string;
+      low: string;
+      info: string;
+      none: string;
+      default: string;
+    };
   }
 
   interface PaletteOptions {
@@ -91,6 +100,14 @@ declare module '@mui/material/styles' {
       nav?: string;
       popoverItem?: string;
     };
+    severity?: {
+      critical?: string;
+      high?: string;
+      medium?: string;
+      low?: string;
+      info?: string;
+      clear?: string;
+    };
   }
 
   interface Theme {
@@ -102,6 +119,9 @@ declare module '@mui/material/styles' {
         default: SizeConfig;
         small: SizeConfig;
       };
+    };
+    tag: {
+      overflowColor: string;
     };
   }
 
@@ -115,7 +135,9 @@ declare module '@mui/material/styles' {
         small?: SizeConfig;
       };
     };
-
+    tag?: {
+      overflowColor?: string;
+    };
   }
 }
 
@@ -187,6 +209,15 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   secondary: Partial<ExtendedColor>;
   mode: PaletteMode;
   text: Partial<ExtendedText>;
+  severity: {
+    critical: string;
+    high: string;
+    medium: string;
+    low: string;
+    info: string;
+    none: string;
+    default: string;
+  };
 }
 
 interface ExtendedThemeOptions extends ThemeOptions {

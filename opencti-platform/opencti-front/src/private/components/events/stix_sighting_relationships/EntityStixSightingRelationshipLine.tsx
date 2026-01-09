@@ -55,7 +55,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
@@ -348,7 +348,10 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <ItemConfidence confidence={data.confidence} entityType={data.entity_type} variant="inList" />
+                <ItemConfidence
+                  confidence={data.confidence}
+                  entityType={data.entity_type}
+                />
               </div>
             </div>
           )}

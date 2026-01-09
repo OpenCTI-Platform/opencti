@@ -19,7 +19,7 @@ const useStyles = makeStyles<Theme>({
     height: 50,
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',

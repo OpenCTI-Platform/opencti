@@ -62,7 +62,7 @@ const RectangleSelection = ({
   return (
     <RectangleSelectionLib
       style={{
-        backgroundColor: hexToRGB(theme.palette.background.accent, 0.3),
+        backgroundColor: theme.palette.background?.accent ? hexToRGB(theme.palette.background.accent, 0.3) : theme.palette.warn.main,
         borderColor: theme.palette.warn.main,
       }}
       disabled={disabled}

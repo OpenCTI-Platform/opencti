@@ -26,7 +26,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 50,
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
@@ -70,9 +70,10 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
           <>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.name.width, display: 'flex', alignItems: 'center' }}
+              style={{ width: dataColumns.name.width, display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              {node.name}{isSensitive && <DangerZoneChip />}
+              <span>{node.name}</span>
+              {isSensitive && <DangerZoneChip />}
             </div>
             <div
               className={classes.bodyItem}

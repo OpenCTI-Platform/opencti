@@ -33,7 +33,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
@@ -126,7 +126,6 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
             >
               <ItemStatus
                 status={node.status}
-                variant="inList"
                 disabled={!node.workflowEnabled}
               />
             </div>
@@ -135,7 +134,6 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                variant="inList"
                 markingDefinitions={node.objectMarking ?? []}
                 limit={1}
               />

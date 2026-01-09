@@ -8,7 +8,7 @@ import { MoreVertOutlined } from '@mui/icons-material';
 import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
@@ -38,11 +38,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   bodyItem: {
     fontSize: 13,
-    float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
+    display: 'flex',
+    alignItems: 'center',
+    minWidth: 0,
+    width: '100%',
+  },
+  bodyItemText: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    minWidth: 0,
+
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
@@ -631,7 +641,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
         </ListItemIcon>
         <ListItemText
           primary={(
-            <>
+            <Stack direction="row">
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.relationship_type.width }}
@@ -646,7 +656,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
               >
                 <ItemEntityType
                   entityType={element.entity_type ?? ''}
-                  size="large"
                   showIcon
                   isRestricted={!row}
                 />
@@ -655,14 +664,18 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {element.representative?.main}
-                {element.draftVersion && (<DraftChip />)}
+                <span className={classes.bodyItemText}>
+                  {element.representative?.main}
+                  {element.draftVersion && (<DraftChip />)}
+                </span>
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
-                {fsd(data.created_at)}
+                <span className={classes.bodyItemText}>
+                  {fsd(data.created_at)}
+                </span>
               </div>
               <div
                 className={classes.bodyItem}
@@ -671,7 +684,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 <ItemConfidence
                   confidence={data.confidence}
                   entityType={data.entity_type}
-                  variant="inList"
                 />
               </div>
               <div
@@ -679,12 +691,11 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 style={{ width: dataColumns.markings.width }}
               >
                 <ItemMarkings
-                  variant="inList"
                   markingDefinitions={data.objectMarking ?? []}
                   limit={1}
                 />
               </div>
-            </>
+            </Stack>
           )}
         />
       </ListItemButton>

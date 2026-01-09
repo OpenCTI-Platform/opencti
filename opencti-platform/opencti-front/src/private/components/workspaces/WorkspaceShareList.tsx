@@ -146,7 +146,6 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
             >
               <div>
                 <ItemMarkings
-                  variant="inList"
                   markingDefinitions={dashboard.allowed_markings ?? []}
                 />
                 {maxMarkings.length > 0 && (
@@ -156,7 +155,6 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
                         <div>{t_i18n('Max marking definitions override...')}</div>
                         <div>
                           <ItemMarkings
-                            variant="inList"
                             markingDefinitions={maxMarkings}
                           />
                         </div>

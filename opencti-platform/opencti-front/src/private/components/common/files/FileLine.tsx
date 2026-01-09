@@ -272,7 +272,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           <div style={{ display: 'flex', alignItems: 'center' }}>
             {!isProgress && !isFail && !isOutdated && (
               <ItemMarkings
-                variant="inList"
                 markingDefinitions={fileMarkings}
                 limit={1}
               />

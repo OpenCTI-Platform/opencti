@@ -1,35 +1,19 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
 import { InformationOutline } from 'mdi-material-ui';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
 import ItemSeverity from './ItemSeverity';
 import ItemPriority from './ItemPriority';
+import Tag from '@common/tag/Tag';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
     padding: 0,
     display: 'flex',
-  },
-  chip: {
-    fontSize: 12,
-    marginRight: 7,
-    borderRadius: 4,
-    width: 120,
-    color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-    borderColor: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
-    '& .MuiChip-label': {
-      whiteSpace: 'nowrap',
-      padding: '4px 6px',
-    },
   },
   icon: {
     margin: '15px 0 0 10px',
@@ -68,7 +52,7 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
 
   if (displayMode === 'chip') {
     let chip = (
-      <Chip classes={{ root: classes.chip }} label={value || t_i18n('Unknown')} />
+      <Tag label={value || t_i18n('Unknown')} />
     );
     if (type === 'case_severity_ov' || type === 'incident_severity_ov') {
       chip = <ItemSeverity label={value || t_i18n('Unknown')} severity={value} />;

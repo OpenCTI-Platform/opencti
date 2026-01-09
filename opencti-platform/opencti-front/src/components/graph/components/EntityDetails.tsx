@@ -56,7 +56,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   bodyItem: {
     width: '100%',
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
@@ -370,7 +370,7 @@ const EntityDetailsComponent: FunctionComponent<
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Type')}
       </Typography>
-      <ItemEntityType entityType={stixCoreObject.entity_type} inList={false} />
+      <ItemEntityType entityType={stixCoreObject.entity_type} />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Platform creation date')}
       </Typography>

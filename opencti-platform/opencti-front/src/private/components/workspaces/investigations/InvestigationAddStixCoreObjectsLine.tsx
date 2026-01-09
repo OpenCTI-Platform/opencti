@@ -28,7 +28,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
@@ -117,7 +117,6 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
-                variant="inList"
                 markingDefinitions={(node.objectMarking ?? [])}
                 limit={1}
               />

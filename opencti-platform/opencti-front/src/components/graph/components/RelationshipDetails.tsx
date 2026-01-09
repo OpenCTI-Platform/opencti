@@ -54,7 +54,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   bodyItem: {
     width: '100%',
-    height: 20,
+    height: 25,
     fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
@@ -528,7 +528,6 @@ const RelationshipDetailsComponent: FunctionComponent<
       </Typography>
       <ItemEntityType
         entityType={stixRelationship.relationship_type ?? 'unknown'}
-        inList={false}
       />
       {!stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (

@@ -11,7 +11,7 @@ import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFra
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
-import { DataTableProps, DataTableVariant } from './dataTableTypes';
+import { DataTableProps } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
 import ItemStatus from '../ItemStatus';
 import { emptyFilled } from '../../utils/String';
@@ -33,6 +33,7 @@ import { APP_BASE_PATH } from '../../relay/environment';
 import FieldOrEmpty from '../FieldOrEmpty';
 import ItemHistory from '../ItemHistory';
 import { useFormatter } from '../i18n';
+import Tag from '../common/tag/Tag';
 
 const chipStyle: CSSProperties = {
   fontSize: '12px',
@@ -71,24 +72,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 20,
     textTransform: 'uppercase',
     borderRadius: 4,
-  },
-  positive: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-    textTransform: 'uppercase',
-    borderRadius: '0',
-  },
-  negative: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-    textTransform: 'uppercase',
-    borderRadius: '0',
   },
 }));
 
@@ -135,7 +118,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ allowed_markings }) => (
       <ItemMarkings
-        variant="inList"
         markingDefinitions={allowed_markings ?? []}
         limit={2}
       />
@@ -238,7 +220,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ confidence, entity_type }) => (
-      <ItemConfidence confidence={confidence} entityType={entity_type} variant="inList" />
+      <ItemConfidence
+        confidence={confidence}
+        entityType={entity_type}
+      />
     ),
   },
   context: {
@@ -247,14 +232,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ context }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={context}
-        />
+        <Tag label={context} />
       );
     },
   },
@@ -370,7 +349,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 10,
     isSortable: false,
-    render: (data) => <ItemEntityType showIcon entityType={data.entity_type} inList />,
+    render: (data) => <ItemEntityType showIcon entityType={data.entity_type} />,
   },
   entity_types: {
     id: 'entity_types',
@@ -506,7 +485,11 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: (node) => (
-      <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
+      <ItemEntityType
+        showIcon
+        entityType={node.from?.entity_type}
+        isRestricted={!node.from}
+      />
     ),
   },
   from_created_at: {
@@ -533,7 +516,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'from_entity_type',
     label: 'Source type',
     percentWidth: 10,
-    render: ({ from }) => (<ItemEntityType showIcon entityType={from?.entity_type} inList />),
+    render: ({ from }) => (<ItemEntityType showIcon entityType={from?.entity_type} />),
   },
   from_objectLabel: {
     id: 'from_objectLabel',
@@ -561,7 +544,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const { objectMarking } = from;
       return (
         <ItemMarkings
-          variant="inList"
           markingDefinitions={objectMarking ?? []}
           limit={1}
           onClick={(m) => handleAddFilter('objectMarking', m.id, 'eq')}
@@ -584,12 +566,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 9,
     isSortable: true,
     render: ({ incident_type }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
+        <Tag
           label={incident_type || t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
@@ -606,12 +584,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 9,
     isSortable: true,
     render: ({ information_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
+        <Tag
           label={information_types?.at(0) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
@@ -628,12 +602,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: true,
     render: ({ infrastructure_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
+        <Tag
           label={infrastructure_types?.at(0) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
@@ -741,12 +711,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ note_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
+        <Tag
           label={note_types?.at(0) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
@@ -799,7 +765,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ objectMarking }, { storageHelpers: { handleAddFilter } }) => (
       <ItemMarkings
-        variant="inList"
         markingDefinitions={objectMarking ?? []}
         limit={1}
         onClick={(m) => handleAddFilter('objectMarking', m.id, 'eq')}
@@ -906,7 +871,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Pattern type',
     percentWidth: 10,
     isSortable: true,
-    render: ({ pattern_type }) => (<ItemPatternType variant="inList" label={pattern_type} />),
+    render: ({ pattern_type }) => (<ItemPatternType label={pattern_type} />),
   },
   phase_name: {
     id: 'phase_name',
@@ -922,12 +887,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ pir_type }: Pirs_PirFragment$data) => {
       const { t_i18n } = useFormatter();
       return (
-        <Chip
-          style={chipStyle}
-          color="primary"
-          variant="outlined"
-          label={t_i18n(pir_type)}
-        />
+        <Tag label={t_i18n(pir_type)} />
       );
     },
   },
@@ -990,21 +950,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 7,
     isSortable: true,
     render: ({ relationship_type }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Tooltip title={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}>
-          <Chip
-            classes={{ root: classes.chipInList }}
-            color="primary"
-            variant="outlined"
-            label={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleAddFilter('relationship_type', relationship_type ?? null, 'eq');
-            }}
-          />
-        </Tooltip>
+        <Tag
+          label={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('relationship_type', relationship_type ?? null, 'eq');
+          }}
+        />
       );
     },
   },
@@ -1014,12 +968,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ report_types }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
       return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
+        <Tag
           label={report_types?.at(0) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
@@ -1254,14 +1204,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: (node) => (
-      <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
+      <ItemEntityType
+        showIcon
+        entityType={node.to?.entity_type}
+        isRestricted={!node.to}
+      />
     ),
   },
   to_entity_type: {
     id: 'to_entity_type',
     label: 'Target type',
     percentWidth: 10,
-    render: ({ to }) => (<ItemEntityType showIcon entityType={to?.entity_type} inList />),
+    render: ({ to }) => (<ItemEntityType showIcon entityType={to?.entity_type} />),
   },
   to_relationship_type: {
     id: 'to_relationship_type',
@@ -1371,19 +1325,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: true,
     render: ({ x_opencti_negative }, { t_i18n }) => {
-      const classes = useStyles();
+      const theme = useTheme<Theme>();
       return (
-        <Chip
-          classes={{
-            root: x_opencti_negative
-              ? classes.negative
-              : classes.positive,
-          }}
+        <Tag
           label={
             x_opencti_negative
               ? t_i18n('False positive')
               : t_i18n('True positive')
           }
+          color={x_opencti_negative ? theme.palette.severity.low : theme.palette.severity.critical}
         />
       );
     },
@@ -1486,10 +1436,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Status',
     percentWidth: 8,
     isSortable: true,
-    render: ({ status, workflowEnabled }, { variant, storageHelpers: { handleAddFilter } }) => (
+    render: ({ status, workflowEnabled }, { storageHelpers: { handleAddFilter } }) => (
       <ItemStatus
         status={status}
-        variant={variant === DataTableVariant.default ? 'inList' : 'inLine'}
         disabled={!workflowEnabled}
         onClick={handleAddFilter}
       />

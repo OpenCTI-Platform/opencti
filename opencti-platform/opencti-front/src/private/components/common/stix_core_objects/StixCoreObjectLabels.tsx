@@ -1,11 +1,10 @@
-import React, { CSSProperties, SyntheticEvent } from 'react';
-import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
+import Tag from '@common/tag/Tag';
+import { Box, Chip, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import React, { CSSProperties, SyntheticEvent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
-import { hexToRGB } from '../../../../utils/Colors';
-import { truncate } from '../../../../utils/String';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import useChipOverflow from '../../data/IngestionCatalog/components/card/usecases/useChipOverflow';
 
 interface StixCoreObjectLabelsProps {
   labels: readonly {
@@ -26,18 +25,19 @@ const StixCoreObjectLabels = ({
 }: StixCoreObjectLabelsProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+
+  const labelValues = labels?.map((l) => l.value || l.id) ?? [];
+  const { containerRef, chipRefs, visibleCount, shouldTruncate } = useChipOverflow(labelValues);
+
   let variantStyle: CSSProperties = {
     height: 25,
     fontSize: 12,
-    margin: '0 7px 7px 0',
     borderRadius: 4,
   };
   if (variant === 'inList') {
     variantStyle = {
       fontSize: 12,
       height: 20,
-      float: 'left',
-      margin: '0 7px 0 0',
       borderRadius: 4,
     };
   }
@@ -45,39 +45,66 @@ const StixCoreObjectLabels = ({
     variantStyle = {
       height: 25,
       fontSize: 12,
-      margin: '0 7px 0 0',
       borderRadius: 4,
     };
   }
 
   if (!revoked && labels && labels.length > 0) {
+    const hiddenCount = labels.length - visibleCount;
+
     return (
-      <>
-        {
-          labels.slice(0, 3).map(
-            (label) => (
-              <Tooltip key={label.id} title={label.value}>
-                <Chip
-                  variant="outlined"
-                  label={truncate(label.value, 25)}
-                  style={{
-                    ...variantStyle,
-                    color: label.color ?? undefined,
-                    borderColor: label.color ?? undefined,
-                    backgroundColor: hexToRGB(label.color),
-                    cursor: onClick ? 'pointer' : 'inherit',
-                  }}
-                  onClick={(e: SyntheticEvent) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onClick?.('objectLabel', label.id, 'eq');
-                  }}
-                />
-              </Tooltip>
-            ),
-          )
-        }
-      </>
+      <div
+        ref={containerRef}
+        style={{
+          display: 'flex',
+          flexWrap: 'nowrap',
+          alignItems: 'center',
+          overflow: 'hidden',
+          width: '100%',
+          position: 'relative',
+          gap: '8px',
+        }}
+      >
+        {/* Render the chips, but keep it hidden so we can useChipOverflow calculate
+            the width remaining by chip to know if it should truncate or not */}
+        <Stack direction="row" position="absolute" visibility="hidden" gap={1}>
+          {labels.map((label, index) => (
+            <div
+              key={label.id}
+              ref={(el) => {
+                chipRefs.current[index] = el;
+              }}
+            >
+              <Tag label={label.value || '-'} />
+            </div>
+          ))}
+        </Stack>
+
+        {/* Visible chips */}
+        <Stack direction="row" gap={1} overflow="hidden" flex={1}>
+          {labels.slice(0, visibleCount).map((label) => (
+            <Box key={label.id} sx={{ minWidth: 0 }}>
+              <Tag
+                label={label.value || ''}
+                color={label.color || ''}
+                onClick={(e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClick?.('objectLabel', label.id, 'eq');
+                }}
+              />
+            </Box>
+          ))}
+        </Stack>
+
+        {shouldTruncate && hiddenCount > 0 && (
+          <Tag
+            label={`+${hiddenCount}`}
+            color={theme.tag.overflowColor}
+            tooltipTitle={labels.slice(visibleCount).map((l) => l.value).join(', ')}
+          />
+        )}
+      </div>
     );
   }
 
@@ -89,6 +116,7 @@ const StixCoreObjectLabels = ({
           label={t_i18n('Revoked')}
           style={{
             ...variantStyle,
+            margin: '0 7px 7px 0',
             color: '#d32f2f',
             borderColor: '#d32f2f',
             backgroundColor: 'rgba(211, 47, 47, .1)',
@@ -100,23 +128,14 @@ const StixCoreObjectLabels = ({
           }}
         />
       ) : (
-        <Chip
-          variant="outlined"
+        <Tag
           label={t_i18n('No label')}
-          style={{
-            ...variantStyle,
-            color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-            borderColor:
-            theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-            backgroundColor: hexToRGB(
-              theme.palette.mode === 'dark' ? '#ffffff' : 'transparent',
-            ),
-          }}
           onClick={(e: SyntheticEvent) => {
             e.preventDefault();
             e.stopPropagation();
             onClick?.('objectLabel', null, 'eq');
           }}
+          color="#1C2F49"
         />
       )}
     </>
