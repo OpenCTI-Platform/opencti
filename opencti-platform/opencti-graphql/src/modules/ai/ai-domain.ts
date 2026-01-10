@@ -38,7 +38,8 @@ import type {
 } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../../schema/stixMetaObject';
@@ -58,13 +59,17 @@ import { NLQPromptTemplate } from './ai-nlq-utils';
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
 let lastPlatformAiEnabled: boolean | null = null;
+let platformAiEnabledUpdate: Promise<void> = Promise.resolve();
 const checkPlatformAiEnabled = async (context: AuthContext) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const aiEnabled = settings.platform_ai_enabled !== false;
-  if (lastPlatformAiEnabled === null || lastPlatformAiEnabled !== aiEnabled) {
-    setAiEnabled(aiEnabled);
-    lastPlatformAiEnabled = aiEnabled;
-  }
+  platformAiEnabledUpdate = platformAiEnabledUpdate.then(() => {
+    if (lastPlatformAiEnabled === null || lastPlatformAiEnabled !== aiEnabled) {
+      setAiEnabled(aiEnabled);
+      lastPlatformAiEnabled = aiEnabled;
+    }
+  });
+  await platformAiEnabledUpdate;
   if (!aiEnabled) {
     throw FunctionalError('AI is disabled in platform settings');
   }
