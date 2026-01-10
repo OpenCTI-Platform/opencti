@@ -140,7 +140,7 @@ if (AI_TOKEN) {
 // Query MistralAI (Streaming)
 export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
   if (!AI_ENABLED) {
-    throw UnsupportedError('AI is disabled due to platform AI configuration');
+    throw UnsupportedError('AI is disabled in platform settings');
   }
   initClients();
   if (!client) {
