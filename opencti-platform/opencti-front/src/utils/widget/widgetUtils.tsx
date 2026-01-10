@@ -185,7 +185,7 @@ const widgetVisualizationTypes = [
     key: 'bookmark',
     name: 'Bookmark',
     dataSelectionLimit: 1,
-    category: 'timeseries',
+    category: 'list',
     availableParameters: [],
     isRelationships: false,
     isEntities: true,
