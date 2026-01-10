@@ -4,7 +4,7 @@ import { fullEntitiesList, storeLoadById } from '../../database/middleware-loade
 import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../../database/middleware';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { telemetry } from '../../config/tracing';
-import { type BasicStoreEntityManagerConfiguration, ENTITY_TYPE_MANAGER_CONFIGURATION } from './managerConfiguration-types';
+import { type BasicStoreEntityManagerConfiguration, ENTITY_TYPE_MANAGER_CONFIGURATION, type StoreEntityManagerConfiguration } from './managerConfiguration-types';
 import { getAllDefaultManagerConfigurations, getDefaultManagerConfiguration } from './managerConfiguration-utils';
 import type { EditInput, FilterGroup } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -34,7 +34,7 @@ export const findByManagerId = async (context: AuthContext, user: AuthUser, mana
 };
 
 export const managerConfigurationEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_MANAGER_CONFIGURATION, input);
+  const { element } = await updateAttribute<StoreEntityManagerConfiguration>(context, user, id, ENTITY_TYPE_MANAGER_CONFIGURATION, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
