@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { CSSProperties, useState } from 'react';
 import ReactMde from 'react-mde';
 import { useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
@@ -9,27 +9,46 @@ import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI'
 import { useFormatter } from '../i18n';
 import MarkdownDisplay from '../MarkdownDisplay';
 
-const MarkdownField = (props) => {
-  const {
-    form: { setFieldValue, setFieldTouched, submitCount },
-    field: { name },
-    required = false,
-    onFocus,
-    onSubmit,
-    onSelect,
-    label,
-    style,
-    disabled,
-    controlledSelectedTab,
-    controlledSetSelectTab,
-    height,
-    askAi,
-  } = props;
+interface MarkdownFieldProps {
+  form: {
+    setFieldValue: (field: string, value: string, shouldValidate?: boolean) => void;
+    setFieldTouched: (field: string, isTouched?: boolean, shouldValidate?: boolean) => void;
+    submitCount: number;
+  };
+  field: { name: string };
+  required: boolean;
+  onFocus: (name: string) => void;
+  onSubmit: (name: string, value: string) => void;
+  onSelect: (selection: string) => void;
+  label: string;
+  style: CSSProperties;
+  disabled: boolean;
+  controlledSelectedTab?: 'write' | 'preview';
+  controlledSetSelectTab: (value: 'write' | 'preview') => void;
+  height?: number;
+  askAi: boolean;
+}
+
+const MarkdownField = ({
+  form: { setFieldValue, setFieldTouched, submitCount },
+  field: { name },
+  required = false,
+  onFocus,
+  onSubmit,
+  onSelect,
+  label,
+  style,
+  disabled,
+  controlledSelectedTab,
+  controlledSetSelectTab,
+  height,
+  askAi,
+}: MarkdownFieldProps) => {
   const { t_i18n } = useFormatter();
-  const [selectedTab, setSelectedTab] = useState('write');
+  const [selectedTab, setSelectedTab] = useState<'write' | 'preview'>('write');
   const [field, meta] = useField(name);
   const { fullyActive } = useAI();
-  const internalOnFocus = (event) => {
+  const internalOnFocus = (event: React.FocusEvent<HTMLDivElement>) => {
     const { nodeName } = event.relatedTarget || {};
     if (nodeName === 'INPUT' || nodeName === undefined) {
       if (typeof onFocus === 'function') {
@@ -37,7 +56,7 @@ const MarkdownField = (props) => {
       }
     }
   };
-  const internalOnBlur = (event) => {
+  const internalOnBlur = (event: React.FocusEvent<HTMLDivElement>) => {
     const isClickOutsideCurrentField = !event.currentTarget.contains(event.relatedTarget);
     if (isClickOutsideCurrentField) {
       setFieldTouched(name, true);
@@ -47,8 +66,8 @@ const MarkdownField = (props) => {
     }
   };
   const internalOnSelect = () => {
-    const selection = window.getSelection().toString();
-    if (typeof onSelect === 'function' && selection.length > 2 && disabled) {
+    const selection = window.getSelection()?.toString();
+    if (typeof onSelect === 'function' && selection && selection.length > 2 && disabled) {
       onSelect(selection.trim());
     }
   };
@@ -115,7 +134,7 @@ const MarkdownField = (props) => {
           }}
           format="markdown"
           variant="markdown"
-          disabled={props.disabled}
+          disabled={disabled}
         />
       )}
     </div>
