@@ -7,8 +7,8 @@
  */
 const removeUnnecessaryHtml = (content: string) => {
   let cleanedContent = content
-    .replaceAll('id="undefined" ', '') // Remove undefined IDs
-    .replaceAll(/<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi, ''); // Remove GIFs from content
+    .replace(/id="undefined" /g, '') // Remove undefined IDs
+    .replace(/<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi, ''); // Remove GIFs from content
 
   // Remove script tags and their content
   cleanedContent = cleanedContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
