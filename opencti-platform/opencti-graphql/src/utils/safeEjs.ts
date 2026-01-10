@@ -69,6 +69,7 @@ const authorizeGlobals = new Map<string, string | true>([
   ['encodeURIComponent', true],
   ['decodeURI', true],
   ['decodeURIComponent', true],
+  ['escape', true],
 ]);
 
 const forbiddenGlobals = [
