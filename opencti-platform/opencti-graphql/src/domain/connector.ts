@@ -42,6 +42,7 @@ import {
   type RegisterConnectorInput,
   type RegisterConnectorsManagerInput,
   type RequestConnectorStatusInput,
+  type SynchronizerAddAutoUserInput,
   type SynchronizerAddInput,
   type SynchronizerFetchInput,
   type UpdateConnectorManagerStatusInput,
@@ -573,24 +574,80 @@ export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, i
     throw ValidationError('Error getting the streams from remote OpenCTI', 'uri', { cause: errorMessage });
   }
 };
-export const registerSync = async (context: AuthContext, user: AuthUser, syncData: SynchronizerAddInput) => {
-  const data = { ...syncData, running: false };
-  await testSyncUtils(context, user, data);
-  const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_SYNC, { complete: true });
+export const registerSync = async (
+  context: AuthContext,
+  user: AuthUser,
+  syncData: SynchronizerAddInput,
+) => {
+  let finalSyncData = { ...syncData, running: false };
+
+  if (finalSyncData.automatic_user) {
+    const onTheFlyCreatedUser = await createOnTheFlyUser(
+      context,
+      user,
+      {
+        userName: finalSyncData.user_id,
+        serviceAccount: true,
+        confidenceLevel: finalSyncData.confidence_level,
+      },
+    );
+
+    finalSyncData = {
+      ...finalSyncData,
+      user_id: onTheFlyCreatedUser.id,
+    };
+  }
+
+  const {
+    automatic_user: _automatic_user,
+    confidence_level: _confidence_level,
+    ...synchronizerToCreate
+  } = finalSyncData;
+
+  await testSyncUtils(context, user, synchronizerToCreate);
+
+  const { element, isCreation } = await createEntity(
+    context,
+    user,
+    synchronizerToCreate,
+    ENTITY_TYPE_SYNC,
+    { complete: true },
+  );
+
   if (isCreation) {
     const syncId = element.internal_id;
-    await registerConnectorQueues(syncId, `Sync ${syncId} queue`, 'internal', 'sync');
+
+    await registerConnectorQueues(
+      syncId,
+      `Sync ${syncId} queue`,
+      'internal',
+      'sync',
+    );
+
     await publishUserAction({
       user,
       event_type: 'mutation',
       event_scope: 'create',
       event_access: 'administration',
-      message: `creates synchronizer \`${syncData.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_SYNC, input: data },
+      message: `creates synchronizer \`${finalSyncData.name}\``,
+      context_data: {
+        id: element.id,
+        entity_type: ENTITY_TYPE_SYNC,
+        input: synchronizerToCreate,
+      },
     });
   }
+
   return element;
 };
+
+export const synchronizerAddAutoUser = async (context: AuthContext, user: AuthUser, synchronizerId: string, input: SynchronizerAddAutoUserInput) => {
+  const onTheFlyCreatedUser = await createOnTheFlyUser(context, user,
+    { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
+
+  return syncEditField(context, user, synchronizerId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
+};
+
 export const syncEditField = async (context: AuthContext, user: AuthUser, syncId: string, input: EditInput[]) => {
   const { element } = await updateAttribute(context, user, syncId, ENTITY_TYPE_SYNC, input);
   await publishUserAction({

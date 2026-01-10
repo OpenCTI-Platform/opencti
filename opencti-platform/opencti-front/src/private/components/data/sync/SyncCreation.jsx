@@ -22,7 +22,6 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { dayStartDate } from '../../../../utils/Time';
 import SelectField from '../../../../components/fields/SelectField';
 import { insertNode } from '../../../../utils/store';
-import CreatorField from '../../common/form/CreatorField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -30,6 +29,7 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import IngestionCreationUserHandling from '../../../../private/components/data/IngestionCreationUserHandling';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -112,7 +112,10 @@ const SyncCreation = ({ paginationOptions }) => {
   const [streams, setStreams] = useState([]);
 
   const handleVerify = (values, setErrors) => {
-    const input = { ...values, user_id: values.user_id?.value };
+    const input = { ...values, user_id: values.user_id?.value,
+      automatic_user: values.automatic_user ?? true,
+      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
+    };
     commitMutation({
       mutation: syncCheckMutation,
       variables: { input },
@@ -130,7 +133,10 @@ const SyncCreation = ({ paginationOptions }) => {
   };
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const input = { ...values, user_id: values.user_id?.value };
+    const input = { ...values, user_id: values.user_id?.value,
+      automatic_user: values.automatic_user ?? true,
+      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
+    };
     commitMutation({
       mutation: syncCreationMutation,
       variables: { input },
@@ -208,6 +214,8 @@ const SyncCreation = ({ paginationOptions }) => {
             listen_deletion: true,
             ssl_verify: false,
             synchronized: false,
+            user_id: '',
+            automatic_user: true,
           }}
           validationSchema={syncCreationValidation(t_i18n)}
           onSubmit={onSubmit}
@@ -345,11 +353,9 @@ const SyncCreation = ({ paginationOptions }) => {
                     )}
                   </div>
                 </Alert>
-                <CreatorField
-                  name="user_id"
-                  label={t_i18n('User responsible for data creation (empty = System)')}
-                  containerStyle={fieldSpacingContainerStyle}
-                  showConfidence
+                <IngestionCreationUserHandling
+                  default_confidence_level={50}
+                  labelTag="S"
                 />
                 <Field
                   component={DateTimePickerField}
