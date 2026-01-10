@@ -28,7 +28,7 @@ import { internalFindByIds } from '../../../database/middleware-loader';
 import type { BasicStoreEntity } from '../../../types/store';
 import { extractRepresentative } from '../../../database/entity-representative';
 import { FunctionalError } from '../../../config/errors';
-import { fillDefaultValues, getEntitySettingFromCache } from '../../entitySetting/entitySetting-utils';
+import { fillDefaultValues, getEntitySettingFromCache } from '../../../utils/entitySetting-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { isEmptyField, isNotEmptyField } from '../../../database/utils';
 import { representationLabel } from '../mapper-utils';
@@ -139,7 +139,7 @@ export const validateJsonMapper = async (context: AuthContext, user: AuthUser, m
 
     // Validate required attributes
     const entitySetting = await getEntitySettingFromCache(context, representation.target.entity_type);
-    const defaultValues = fillDefaultValues(user, {}, entitySetting);
+    const defaultValues = fillDefaultValues(context, user, {}, entitySetting);
     const attributesDefs = [
       ...schemaAttributesDefinition.getAttributes(representation.target.entity_type).values(),
     ].map((def) => ({
