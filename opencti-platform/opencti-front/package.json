@@ -116,7 +116,7 @@
     "react-virtualized": "9.22.6",
     "react-wordcloud": "1.2.7",
     "reactflow": "11.11.4",
-    "recharts": "3.2.0",
+    "recharts": "3.6.0",
     "relay-runtime": "20.1.1",
     "remark-flexible-markers": "1.3.2",
     "remark-gfm": "4.0.1",
