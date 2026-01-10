@@ -12685,6 +12685,8 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 input PersonaAddInput {
   persona_name: String! @constraint(minLength: 2, format: "not-blank")
   persona_type: String!
+  file: Upload
+  fileMarkings: [String]
 }
 
 type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -12826,6 +12828,8 @@ input SSHKeyAddInput {
   comment: String
   created: DateTime
   expiration_date: DateTime
+  file: Upload
+  fileMarkings: [String]
 }
 ###### RELATIONSHIPS
 

@@ -20663,6 +20663,8 @@ export type PersonaToStixArgs = {
 };
 
 export type PersonaAddInput = {
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   persona_name: Scalars['String']['input'];
   persona_type: Scalars['String']['input'];
 };
@@ -26485,6 +26487,8 @@ export type SshKeyAddInput = {
   comment?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   expiration_date?: InputMaybe<Scalars['DateTime']['input']>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   fingerprint_md5?: InputMaybe<Scalars['String']['input']>;
   fingerprint_sha256: Scalars['String']['input'];
   key_length?: InputMaybe<Scalars['String']['input']>;
