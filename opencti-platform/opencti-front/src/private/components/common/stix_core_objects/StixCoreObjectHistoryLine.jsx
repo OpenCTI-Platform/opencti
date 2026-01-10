@@ -28,7 +28,20 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 
 export const StixCoreObjectHistoryFragment = graphql`
-  fragment StixCoreObjectHistoryLine_node on Log {
+  fragment StixCoreObjectHistoryLine_node on Log @argumentDefinitions(
+    tz: {
+      type: "String",
+      defaultValue: null
+    }
+    locale: {
+      type: "String",
+      defaultValue: null
+    }
+    unit_system: {
+      type: "String",
+      defaultValue: null
+    }
+  ) {
     id
     event_type
     event_scope
@@ -36,7 +49,7 @@ export const StixCoreObjectHistoryFragment = graphql`
     user {
       name
     }
-    context_data {
+    context_data(tz: $tz, locale: $locale, unit_system: $unit_system) {
       message
       commit
       to_id
@@ -47,13 +60,6 @@ export const StixCoreObjectHistoryFragment = graphql`
         external_id
         url
         description
-      }
-      changes{
-        field
-        previous
-        new
-        added
-        removed
       }
     }
   }
@@ -143,7 +149,8 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
   return (
     <ListItem style={{
       height: 40,
-      padding: 0 }}
+      padding: 0,
+    }}
     >
       <div style={{
         float: 'left',
@@ -171,10 +178,10 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
           width: 'auto',
           overflow: 'hidden',
           height:
-          data.context_data.external_references
-          && data.context_data.external_references.length > 0
-            ? 'auto'
-            : 40,
+            data.context_data.external_references
+            && data.context_data.external_references.length > 0
+              ? 'auto'
+              : 40,
         }}
       >
         <Paper sx={{
