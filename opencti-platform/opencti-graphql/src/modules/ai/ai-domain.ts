@@ -58,13 +58,17 @@ import { NLQPromptTemplate } from './ai-nlq-utils';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
+let lastPlatformAiEnabled: boolean | null = null;
 const checkPlatformAiEnabled = async (context: AuthContext) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const aiEnabled = settings.platform_ai_enabled !== false;
+  if (lastPlatformAiEnabled === null || lastPlatformAiEnabled !== aiEnabled) {
+    setAiEnabled(aiEnabled);
+    lastPlatformAiEnabled = aiEnabled;
+  }
   if (!aiEnabled) {
     throw FunctionalError('AI is disabled in platform settings');
   }
-  setAiEnabled(aiEnabled);
 };
 
 export const fixSpelling = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
