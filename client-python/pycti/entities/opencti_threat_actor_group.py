@@ -147,6 +147,13 @@ class ThreatActorGroup:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for a Threat Actor Group.
+
+        :param name: The name of the threat actor group
+        :type name: str
+        :return: STIX ID for the threat actor group
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name, "opencti_type": "Threat-Actor-Group"}
         data = canonicalize(data, utf8=False)
@@ -155,6 +162,13 @@ class ThreatActorGroup:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from threat actor group data.
+
+        :param data: Dictionary containing 'name' key
+        :type data: dict
+        :return: STIX ID for the threat actor group
+        :rtype: str
+        """
         return ThreatActorGroup.generate_id(data["name"])
 
     def list(self, **kwargs) -> dict:
@@ -417,14 +431,15 @@ class ThreatActorGroup:
                 "[opencti_threat_actor_group] Missing parameters: name and description"
             )
 
-    """
-        Import an Threat-Actor-Group object from a STIX2 object
-
-        :param stixObject: the Stix-Object Intrusion-Set
-        :return Intrusion-Set object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import a Threat Actor Group object from a STIX2 object.
+
+        :param stixObject: the STIX2 Threat Actor object
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :param update: whether to update if the entity already exists
+        :return: Threat Actor Group object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)

@@ -12,12 +12,10 @@ class StixDomainObject:
     Manages STIX Domain Objects in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :param file: file handling configuration
     """
 
-    def __init__(self, opencti, file):
+    def __init__(self, opencti):
         self.opencti = opencti
-        self.file = file
         self.properties = """
             id
             standard_id
@@ -1403,7 +1401,7 @@ class StixDomainObject:
                 query,
                 {
                     "id": id,
-                    "file": (self.file(final_file_name, data, mime_type)),
+                    "file": (self.opencti.file(final_file_name, data, mime_type)),
                     "fileMarkings": file_markings,
                     "version": version,
                     "noTriggerImport": (
@@ -1436,9 +1434,9 @@ class StixDomainObject:
             }
         """
         if mime_type is None:
-            file = self.file(file_name, data)
+            file = self.opencti.file(file_name, data)
         else:
-            file = self.file(file_name, data, mime_type)
+            file = self.opencti.file(file_name, data, mime_type)
         self.opencti.query(
             query,
             {
@@ -1469,9 +1467,9 @@ class StixDomainObject:
             }
         """
         if mime_type is None:
-            file = self.file(file_name, data)
+            file = self.opencti.file(file_name, data)
         else:
-            file = self.file(file_name, data, mime_type)
+            file = self.opencti.file(file_name, data, mime_type)
         self.opencti.query(
             query, {"id": entity_id, "file": file, "file_markings": file_markings}
         )

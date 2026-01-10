@@ -8,12 +8,10 @@ class StixCoreObject:
     Base class for managing STIX core objects in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :param file: file handling configuration
     """
 
-    def __init__(self, opencti, file):
+    def __init__(self, opencti):
         self.opencti = opencti
-        self.file = file
         self.properties = """
             id
             standard_id
@@ -1625,9 +1623,9 @@ class StixCoreObject:
         """
 
         if mime_type is None:
-            file = self.file(file_name, data)
+            file = self.opencti.file(file_name, data)
         else:
-            file = self.file(file_name, data, mime_type)
+            file = self.opencti.file(file_name, data, mime_type)
         self.opencti.query(
             query,
             {
@@ -1661,7 +1659,7 @@ class StixCoreObject:
             }
         """
 
-        file = self.file(file_name, data)
+        file = self.opencti.file(file_name, data)
         self.opencti.query(
             query,
             {

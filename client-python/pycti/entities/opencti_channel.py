@@ -358,7 +358,26 @@ class Channel:
     """
         Create a Channel object
 
-        :param name: the name of the Channel
+        :param stix_id: (optional) the STIX ID
+        :param createdBy: (optional) the author ID
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the channel is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param name: the name of the Channel (required)
+        :param description: (optional) description
+        :param aliases: (optional) list of aliases
+        :param channel_types: (optional) list of channel types
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
         :return Channel object
     """
 
@@ -381,6 +400,8 @@ class Channel:
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Channel", {"name": name})
@@ -394,31 +415,29 @@ class Channel:
                     }
                 }
             """
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "stix_id": stix_id,
-                        "createdBy": created_by,
-                        "objectMarking": object_marking,
-                        "objectLabel": object_label,
-                        "objectOrganization": granted_refs,
-                        "externalReferences": external_references,
-                        "revoked": revoked,
-                        "confidence": confidence,
-                        "lang": lang,
-                        "created": created,
-                        "modified": modified,
-                        "name": name,
-                        "description": description,
-                        "aliases": aliases,
-                        "channel_types": channel_types,
-                        "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "x_opencti_modified_at": x_opencti_modified_at,
-                        "update": update,
-                    }
-                },
-            )
+            input_variables = {
+                "stix_id": stix_id,
+                "createdBy": created_by,
+                "objectMarking": object_marking,
+                "objectLabel": object_label,
+                "objectOrganization": granted_refs,
+                "externalReferences": external_references,
+                "revoked": revoked,
+                "confidence": confidence,
+                "lang": lang,
+                "created": created,
+                "modified": modified,
+                "name": name,
+                "description": description,
+                "aliases": aliases,
+                "channel_types": channel_types,
+                "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_modified_at": x_opencti_modified_at,
+                "update": update,
+                "file": file,
+                "fileMarkings": file_markings,
+            }
+            result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["channelAdd"])
         else:
             self.opencti.app_logger.error(
@@ -451,7 +470,7 @@ class Channel:
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
 
-            return self.opencti.channel.create(
+            return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None
@@ -504,6 +523,8 @@ class Channel:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(

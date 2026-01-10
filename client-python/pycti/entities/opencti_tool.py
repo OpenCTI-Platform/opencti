@@ -311,6 +311,8 @@ class Tool:
         :param objectLabel: labels
         :param externalReferences: external references
         :param update: whether to update existing tool
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
         :return: Tool object
         :rtype: dict or None
         """
@@ -335,6 +337,8 @@ class Tool:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Tool", {"name": name})
@@ -373,6 +377,8 @@ class Tool:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "file": file,
+                        "fileMarkings": file_markings,
                     }
                 },
             )
@@ -382,14 +388,15 @@ class Tool:
                 "[opencti_tool] Missing parameters: name and description"
             )
 
-    """
-        Import an Tool object from a STIX2 object
-
-        :param stixObject: the Stix-Object Tool
-        :return Tool object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import a Tool object from a STIX2 object.
+
+        :param stixObject: the STIX2 Tool object
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :param update: whether to update if the entity already exists
+        :return: Tool object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -412,7 +419,7 @@ class Tool:
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
 
-            return self.opencti.tool.create(
+            return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None
@@ -478,6 +485,8 @@ class Tool:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(

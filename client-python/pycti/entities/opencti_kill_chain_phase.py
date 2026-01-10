@@ -31,24 +31,50 @@ class KillChainPhase:
 
     @staticmethod
     def generate_id(phase_name, kill_chain_name):
+        """Generate a STIX ID for a Kill Chain Phase.
+
+        :param phase_name: The phase name
+        :type phase_name: str
+        :param kill_chain_name: The kill chain name
+        :type kill_chain_name: str
+        :return: STIX ID for the kill chain phase
+        :rtype: str
+        """
         return kill_chain_phase_generate_id(
             phase_name=phase_name, kill_chain_name=kill_chain_name
         )
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from kill chain phase data.
+
+        :param data: Dictionary containing 'phase_name' and 'kill_chain_name' keys
+        :type data: dict
+        :return: STIX ID for the kill chain phase
+        :rtype: str
+        """
         return KillChainPhase.generate_id(data["phase_name"], data["kill_chain_name"])
 
-    """
-        List Kill-Chain-Phase objects
+    def list(self, **kwargs):
+        """List Kill-Chain-Phase objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Kill-Chain-Phase objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: list
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :return: List of Kill-Chain-Phase objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         first = kwargs.get("first", 500)
         after = kwargs.get("after", None)
@@ -96,15 +122,16 @@ class KillChainPhase:
             result["data"]["killChainPhases"], with_pagination
         )
 
-    """
-        Read a Kill-Chain-Phase object
+    def read(self, **kwargs):
+        """Read a Kill-Chain-Phase object.
 
         :param id: the id of the Kill-Chain-Phase
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Kill-Chain-Phase object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :return: Kill-Chain-Phase object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         if id is not None:
@@ -136,14 +163,26 @@ class KillChainPhase:
             )
             return None
 
-    """
-        Create a Kill-Chain-Phase object
-
-        :param name: the name of the Kill-Chain-Phase
-        :return Kill-Chain-Phase object
-    """
-
     def create(self, **kwargs):
+        """Create a Kill-Chain-Phase object.
+
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param created: (optional) creation date
+        :type created: datetime
+        :param modified: (optional) modification date
+        :type modified: datetime
+        :param kill_chain_name: the kill chain name (required)
+        :type kill_chain_name: str
+        :param phase_name: the phase name (required)
+        :type phase_name: str
+        :param x_opencti_order: (optional) order (default: 0)
+        :type x_opencti_order: int
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :return: Kill-Chain-Phase object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
@@ -189,15 +228,16 @@ class KillChainPhase:
                 "[opencti_kill_chain_phase] Missing parameters: kill_chain_name and phase_name",
             )
 
-    """
-        Update a Kill chain object field
-
-        :param id: the Kill chain id
-        :param input: the input of the field
-        :return The updated Kill chain object
-    """
-
     def update_field(self, **kwargs):
+        """Update a Kill Chain Phase object field.
+
+        :param id: the Kill Chain Phase id
+        :type id: str
+        :param input: the input of the field
+        :type input: list
+        :return: The updated Kill Chain Phase object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:

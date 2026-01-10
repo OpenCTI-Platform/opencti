@@ -233,6 +233,19 @@ class Location:
 
     @staticmethod
     def generate_id(name, x_opencti_location_type, latitude=None, longitude=None):
+        """Generate a STIX ID for a Location.
+
+        :param name: The name of the location
+        :type name: str
+        :param x_opencti_location_type: The type of location (Country, City, Region, Position)
+        :type x_opencti_location_type: str
+        :param latitude: Optional latitude coordinate
+        :type latitude: float or None
+        :param longitude: Optional longitude coordinate
+        :type longitude: float or None
+        :return: STIX ID for the location
+        :rtype: str
+        """
         if x_opencti_location_type == "Position":
             if latitude is not None and longitude is None:
                 data = {"latitude": latitude}
@@ -253,6 +266,13 @@ class Location:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from location data.
+
+        :param data: Dictionary containing 'name', 'x_opencti_location_type', and optionally 'latitude'/'longitude'
+        :type data: dict
+        :return: STIX ID for the location
+        :rtype: str
+        """
         return Location.generate_id(
             data.get("name"),
             data.get("x_opencti_location_type"),
@@ -260,18 +280,32 @@ class Location:
             data.get("longitude"),
         )
 
-    """
-        List Location objects
-
-        :param types: the list of types
-        :param filters: the filters to apply
-        :param search: the search keyword
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :param after: ID of the first row for pagination
-        :return List of Location objects
-    """
-
     def list(self, **kwargs):
+        """List Location objects.
+
+        :param types: the list of location types to filter by
+        :type types: list
+        :param filters: the filters to apply
+        :type filters: dict
+        :param search: the search keyword
+        :type search: str
+        :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
+        :param after: ID of the first row for pagination
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: list
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: List of Location objects
+        :rtype: list
+        """
         types = kwargs.get("types", None)
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
@@ -328,15 +362,20 @@ class Location:
             result["data"]["locations"], with_pagination
         )
 
-    """
-        Read a Location object
+    def read(self, **kwargs):
+        """Read a Location object.
 
         :param id: the id of the Location
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Location object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: list
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Location object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -372,14 +411,54 @@ class Location:
             )
             return None
 
-    """
-        Create a Location object
-
-        :param name: the name of the Location
-        :return Location object
-    """
-
     def create(self, **kwargs):
+        """Create a Location object.
+
+        :param type: the type of location (Country, City, Region, Position)
+        :type type: str
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param revoked: (optional) whether the location is revoked
+        :type revoked: bool
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param lang: (optional) language
+        :type lang: str
+        :param created: (optional) creation date
+        :type created: datetime
+        :param modified: (optional) modification date
+        :type modified: datetime
+        :param name: the name of the Location (required)
+        :type name: str
+        :param description: (optional) description
+        :type description: str
+        :param latitude: (optional) latitude coordinate
+        :type latitude: float
+        :param longitude: (optional) longitude coordinate
+        :type longitude: float
+        :param precision: (optional) precision in meters
+        :type precision: float
+        :param x_opencti_aliases: (optional) list of aliases
+        :type x_opencti_aliases: list
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: datetime
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :return: Location object
+        :rtype: dict or None
+        """
         type = kwargs.get("type", None)
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
@@ -446,14 +525,18 @@ class Location:
         else:
             self.opencti.app_logger.error("Missing parameters: name")
 
-    """
-        Import an Location object from a STIX2 object
+    def import_from_stix2(self, **kwargs):
+        """Import a Location object from a STIX2 object.
 
         :param stixObject: the Stix-Object Location
-        :return Location object
-    """
-
-    def import_from_stix2(self, **kwargs):
+        :type stixObject: dict
+        :param extras: extra dict
+        :type extras: dict
+        :param update: set the update flag on import
+        :type update: bool
+        :return: Location object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)

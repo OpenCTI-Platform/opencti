@@ -35,7 +35,7 @@ class Stix:
 
     """
             Merge a Stix-Object object field
-    
+
             :param id: the Stix-Object id
             :param key: the key of the field
             :param value: the value of the field

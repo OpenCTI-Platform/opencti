@@ -264,7 +264,7 @@ class OpenCTIStix2Update:
 
     def process_update(self, data):
         try:
-            # Build the inputs fo update api
+            # Build the inputs for update api
             inputs = []
             if "add" in data["x_opencti_patch"]:
                 for key in data["x_opencti_patch"]["add"].keys():

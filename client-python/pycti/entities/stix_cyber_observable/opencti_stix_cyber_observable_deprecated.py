@@ -2,12 +2,9 @@ import deprecation
 
 
 class StixCyberObservableDeprecatedMixin:
-    """
-    deprecated [>=6.2 & <6.8]`
-    Promote a Stix-Observable to an Indicator
+    """Deprecated mixin for Stix-Cyber-Observable promotion [>=6.2 & <6.8].
 
-    :param id: the Stix-Observable id
-    :return the observable
+    Contains deprecated method to promote a Stix-Observable to an Indicator.
     """
 
     @deprecation.deprecated(

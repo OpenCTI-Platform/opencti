@@ -608,9 +608,29 @@ class ObservedData:
             )
 
     """
-        Create a ObservedData object
+        Create an ObservedData object
 
-        :param name: the name of the ObservedData
+        :param stix_id: (optional) the STIX ID
+        :param createdBy: (optional) the author ID
+        :param objects: list of STIX object IDs (required)
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the observed data is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param first_observed: the first observed datetime (required)
+        :param last_observed: the last observed datetime (required)
+        :param number_observed: (optional) number of times observed
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
         :return ObservedData object
     """
 
@@ -634,6 +654,8 @@ class ObservedData:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if (
             first_observed is not None
@@ -641,6 +663,7 @@ class ObservedData:
             and objects is not None
         ):
             self.opencti.app_logger.info("Creating ObservedData")
+
             query = """
                 mutation ObservedDataAdd($input: ObservedDataAddInput!) {
                     observedDataAdd(input: $input) {
@@ -651,32 +674,30 @@ class ObservedData:
                     }
                 }
             """
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "stix_id": stix_id,
-                        "createdBy": created_by,
-                        "objectMarking": object_marking,
-                        "objectLabel": object_label,
-                        "objectOrganization": granted_refs,
-                        "objects": objects,
-                        "externalReferences": external_references,
-                        "revoked": revoked,
-                        "confidence": confidence,
-                        "lang": lang,
-                        "created": created,
-                        "modified": modified,
-                        "first_observed": first_observed,
-                        "last_observed": last_observed,
-                        "number_observed": number_observed,
-                        "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "x_opencti_workflow_id": x_opencti_workflow_id,
-                        "x_opencti_modified_at": x_opencti_modified_at,
-                        "update": update,
-                    }
-                },
-            )
+            input_variables = {
+                "stix_id": stix_id,
+                "createdBy": created_by,
+                "objectMarking": object_marking,
+                "objectLabel": object_label,
+                "objectOrganization": granted_refs,
+                "objects": objects,
+                "externalReferences": external_references,
+                "revoked": revoked,
+                "confidence": confidence,
+                "lang": lang,
+                "created": created,
+                "modified": modified,
+                "first_observed": first_observed,
+                "last_observed": last_observed,
+                "number_observed": number_observed,
+                "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_workflow_id": x_opencti_workflow_id,
+                "x_opencti_modified_at": x_opencti_modified_at,
+                "update": update,
+                "file": file,
+                "fileMarkings": file_markings,
+            }
+            result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(
                 result["data"]["observedDataAdd"]
             )
@@ -909,6 +930,8 @@ class ObservedData:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
 
             return observed_data_result

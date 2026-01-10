@@ -12,19 +12,17 @@ class OpenCTIMetricHandler:
         subsystem: str = "",
         port: int = 9095,
     ):
-        """
-        Init of OpenCTIMetricHandler class.
+        """Initialize OpenCTIMetricHandler class.
 
-        Parameters
-        ----------
-        activated : bool, default False
-            If True use metrics in client and connectors.
-        namespace: str, default empty
-            Namespace for the prometheus metrics.
-        subsystem: str, default empty
-            Subsystem for the prometheus metrics.
-        port : int, default 9095
-            Port for prometheus server.
+        :param connector_logger: Logger instance for the connector
+        :param activated: If True, use metrics in client and connectors
+        :type activated: bool
+        :param namespace: Namespace for the prometheus metrics
+        :type namespace: str
+        :param subsystem: Subsystem for the prometheus metrics
+        :type subsystem: str
+        :param port: Port for prometheus server
+        :type port: int
         """
         self.activated = activated
         self.connector_logger = connector_logger
@@ -86,22 +84,16 @@ class OpenCTIMetricHandler:
     def _metric_exists(
         self, name: str, expected_type: Union[Type[Counter], Type[Enum]]
     ) -> bool:
-        """
-        Check if a metric exists and has the correct type.
+        """Check if a metric exists and has the correct type.
 
         If it does not, log an error and return False.
 
-        Parameters
-        ----------
-        name : str
-            Name of the metric to check.
-        expected_type : Counter or Enum
-            Expected type of the metric.
-
-        Returns
-        -------
-        bool
-            True if the metric exists and is of the correct type else False.
+        :param name: Name of the metric to check
+        :type name: str
+        :param expected_type: Expected type of the metric (Counter or Enum)
+        :type expected_type: Counter or Enum
+        :return: True if the metric exists and is of the correct type, else False
+        :rtype: bool
         """
         if name not in self._metrics:
             self.connector_logger.error("Metric does not exist.", {"name": name})
@@ -115,30 +107,24 @@ class OpenCTIMetricHandler:
         return True
 
     def inc(self, name: str, n: int = 1):
-        """
-        Increment the metric (counter) `name` by `n`.
+        """Increment the metric (counter) `name` by `n`.
 
-        Parameters
-        ----------
-        name : str
-            Name of the metric to increment.
-        n : int, default 1
-            Increment the counter by `n`.
+        :param name: Name of the metric to increment
+        :type name: str
+        :param n: Increment the counter by `n`
+        :type n: int
         """
         if self.activated:
             if self._metric_exists(name, Counter):
                 self._metrics[name].inc(n)
 
     def state(self, state: str, name: str = "state"):
-        """
-        Set the state `state` for metric `name`.
+        """Set the state `state` for metric `name`.
 
-        Parameters
-        ----------
-        state : str
-            State to set.
-        name : str, default = "state"
-            Name of the metric to set.
+        :param state: State to set
+        :type state: str
+        :param name: Name of the metric to set
+        :type name: str
         """
         if self.activated:
             if self._metric_exists(name, Enum):

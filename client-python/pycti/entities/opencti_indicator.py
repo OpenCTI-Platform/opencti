@@ -204,13 +204,39 @@ class Indicator:
             return None
 
     def create(self, **kwargs):
-        """
-        Create an Indicator object
+        """Create an Indicator object.
 
-        :param str name: the name of the Indicator
-        :param str pattern: stix indicator pattern
-        :param str x_opencti_main_observable_type: type of the observable
-
+        :param stix_id: (optional) the STIX ID
+        :param createdBy: (optional) the author ID
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the indicator is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param pattern_type: the pattern type (required)
+        :param pattern_version: (optional) the pattern version
+        :param pattern: the indicator pattern (required)
+        :param name: the name of the Indicator (defaults to pattern)
+        :param description: (optional) description
+        :param indicator_types: (optional) list of indicator types
+        :param valid_from: (optional) valid from date
+        :param valid_until: (optional) valid until date
+        :param x_opencti_score: (optional) score (default: 50)
+        :param x_opencti_detection: (optional) detection flag (default: False)
+        :param x_opencti_main_observable_type: the main observable type (required)
+        :param x_mitre_platforms: (optional) list of MITRE platforms
+        :param killChainPhases: (optional) list of kill chain phase IDs
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param x_opencti_create_observables: (optional) create observables (default: False)
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
         :return: Indicator object
         :rtype: Indicator
         """
@@ -245,6 +271,8 @@ class Indicator:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if (
             name is not None
@@ -307,6 +335,8 @@ class Indicator:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "file": file,
+                        "fileMarkings": file_markings,
                     }
                 },
             )
@@ -355,14 +385,13 @@ class Indicator:
             return None
 
     def add_stix_cyber_observable(self, **kwargs):
-        """
-        Add a Stix-Cyber-Observable object to Indicator object (based-on)
+        """Add a Stix-Cyber-Observable object to Indicator object (based-on).
 
         :param id: the id of the Indicator
         :param indicator: Indicator object
         :param stix_cyber_observable_id: the id of the Stix-Observable
-
-        :return: Boolean True if there has been no import error
+        :return: True if there has been no import error
+        :rtype: bool
         """
         id = kwargs.get("id", None)
         indicator = kwargs.get("indicator", None)
@@ -408,13 +437,12 @@ class Indicator:
             return False
 
     def import_from_stix2(self, **kwargs):
-        """
-        Import an Indicator object from a STIX2 object
+        """Import an Indicator object from a STIX2 object.
 
         :param stixObject: the Stix-Object Indicator
         :param extras: extra dict
-        :param bool update: set the update flag on import
-
+        :param update: set the update flag on import
+        :type update: bool
         :return: Indicator object
         :rtype: Indicator
         """
@@ -580,6 +608,8 @@ class Indicator:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(

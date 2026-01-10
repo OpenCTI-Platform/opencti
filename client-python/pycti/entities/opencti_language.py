@@ -471,7 +471,7 @@ class Language:
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
 
-            return self.opencti.language.create(
+            return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None

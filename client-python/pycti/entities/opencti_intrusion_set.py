@@ -418,6 +418,8 @@ class IntrusionSet:
         :param objectLabel: labels
         :param externalReferences: external references
         :param update: whether to update existing intrusion set
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
         :return: Intrusion Set object
         :rtype: dict or None
         """
@@ -445,6 +447,8 @@ class IntrusionSet:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Intrusion-Set", {"name": name})
@@ -486,6 +490,8 @@ class IntrusionSet:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "file": file,
+                        "fileMarkings": file_markings,
                     }
                 },
             )
@@ -497,14 +503,15 @@ class IntrusionSet:
                 "[opencti_intrusion_set] Missing parameters: name and description"
             )
 
-    """
-        Import an Intrusion-Set object from a STIX2 object
-
-        :param stixObject: the Stix-Object Intrusion-Set
-        :return Intrusion-Set object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import an Intrusion Set object from a STIX2 object.
+
+        :param stixObject: the STIX2 Intrusion Set object
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :param update: whether to update if the entity already exists
+        :return: Intrusion Set object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -602,6 +609,8 @@ class IntrusionSet:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(

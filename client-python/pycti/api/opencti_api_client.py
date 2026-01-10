@@ -218,20 +218,21 @@ class OpenCTIApiClient:
         self.stix2 = OpenCTIStix2(self)
         self.pir = OpenCTIApiPir(self)
         self.internal_file = OpenCTIApiInternalFile(self)
+        self.file = File  # File class for creating upload objects
 
         # Define the entities
         self.vocabulary = Vocabulary(self)
         self.label = Label(self)
         self.marking_definition = MarkingDefinition(self)
-        self.external_reference = ExternalReference(self, File)
+        self.external_reference = ExternalReference(self)
         self.kill_chain_phase = KillChainPhase(self)
         self.opencti_stix_object_or_stix_relationship = StixObjectOrStixRelationship(
             self
         )
         self.stix = Stix(self)
-        self.stix_domain_object = StixDomainObject(self, File)
-        self.stix_core_object = StixCoreObject(self, File)
-        self.stix_cyber_observable = StixCyberObservable(self, File)
+        self.stix_domain_object = StixDomainObject(self)
+        self.stix_core_object = StixCoreObject(self)
+        self.stix_cyber_observable = StixCyberObservable(self)
         self.stix_core_relationship = StixCoreRelationship(self)
         self.stix_sighting_relationship = StixSightingRelationship(self)
         self.stix_nested_ref_relationship = StixNestedRefRelationship(self)

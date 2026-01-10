@@ -254,7 +254,7 @@ class Task:
 
     """
         List Task objects
-        
+
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
@@ -596,7 +596,7 @@ class Task:
             )
             query = """
                mutation taskEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-                   taskRelationAdd(id: $id, toId: $toId, relationship_type: $relationship_type) {
+                   taskRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
                         id
                    }
                }

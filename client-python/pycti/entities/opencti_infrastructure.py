@@ -249,6 +249,13 @@ class Infrastructure:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for an Infrastructure.
+
+        :param name: The name of the infrastructure
+        :type name: str
+        :return: STIX ID for the infrastructure
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)
@@ -257,6 +264,13 @@ class Infrastructure:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from infrastructure data.
+
+        :param data: Dictionary containing 'name' key
+        :type data: dict
+        :return: STIX ID for the infrastructure
+        :rtype: str
+        """
         return Infrastructure.generate_id(data["name"])
 
     def list(self, **kwargs):
@@ -369,7 +383,6 @@ class Infrastructure:
         :param str id: the id of the Threat-Actor-Group
         :param list filters: the filters to apply if no id provided
         """
-
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -407,14 +420,36 @@ class Infrastructure:
             )
             return None
 
-    """
-        Create a Infrastructure object
-
-        :param name: the name of the Infrastructure
-        :return Infrastructure object
-    """
-
     def create(self, **kwargs):
+        """Create an Infrastructure object.
+
+        :param name: the name of the Infrastructure (required)
+        :param stix_id: (optional) the STIX ID
+        :param createdBy: (optional) the author ID
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the infrastructure is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param description: (optional) description
+        :param aliases: (optional) list of aliases
+        :param infrastructure_types: (optional) list of infrastructure types
+        :param first_seen: (optional) first seen date
+        :param last_seen: (optional) last seen date
+        :param killChainPhases: (optional) list of kill chain phase IDs
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
+        :return: Infrastructure object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -437,6 +472,8 @@ class Infrastructure:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Infrastructure", {"name": name})
@@ -476,6 +513,8 @@ class Infrastructure:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "file": file,
+                        "fileMarkings": file_markings,
                     }
                 },
             )
@@ -488,14 +527,15 @@ class Infrastructure:
                 "name and infrastructure_pattern and main_observable_type"
             )
 
-    """
-        Import an Infrastructure object from a STIX2 object
-
-        :param stixObject: the Stix-Object Infrastructure
-        :return Infrastructure object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import an Infrastructure object from a STIX2 object.
+
+        :param stixObject: the STIX2 Infrastructure object
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :param update: whether to update if the entity already exists
+        :return: Infrastructure object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -587,6 +627,8 @@ class Infrastructure:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(

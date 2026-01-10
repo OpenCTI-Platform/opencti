@@ -210,7 +210,7 @@ class Report:
                         }
                         ... on StixCyberObservable {
                             observable_value
-                        }                        
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -432,7 +432,7 @@ class Report:
                         }
                         ... on StixCyberObservable {
                             observable_value
-                        }                        
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -466,6 +466,15 @@ class Report:
 
     @staticmethod
     def generate_id(name, published):
+        """Generate a STIX ID for a Report.
+
+        :param name: The name of the report
+        :type name: str
+        :param published: The published date of the report
+        :type published: str or datetime.datetime
+        :return: STIX ID for the report
+        :rtype: str
+        """
         name = name.lower().strip()
         if isinstance(published, datetime.datetime):
             published = published.isoformat()
@@ -476,6 +485,15 @@ class Report:
 
     @staticmethod
     def generate_fixed_fake_id(name, published=None):
+        """Generate a fixed fake STIX ID for a Report (used for testing).
+
+        :param name: The name of the report
+        :type name: str
+        :param published: (optional) The published date of the report
+        :type published: str or datetime.datetime or None
+        :return: STIX ID for the report
+        :rtype: str
+        """
         name = name.lower().strip()
         if isinstance(published, datetime.datetime):
             published = published.isoformat()
@@ -489,19 +507,31 @@ class Report:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from report data.
+
+        :param data: Dictionary containing 'name' and 'published' keys
+        :type data: dict
+        :return: STIX ID for the report
+        :rtype: str
+        """
         return Report.generate_id(data["name"], data["published"])
 
-    """
-        List Report objects
+    def list(self, **kwargs):
+        """List Report objects.
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Report objects
-    """
-
-    def list(self, **kwargs):
+        :param orderBy: field to order results by
+        :param orderMode: ordering mode (asc/desc)
+        :param customAttributes: custom attributes to return
+        :param getAll: whether to retrieve all results
+        :param withPagination: whether to include pagination info
+        :param withFiles: whether to include files
+        :return: List of Report objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
@@ -580,15 +610,16 @@ class Report:
                 result["data"]["reports"], with_pagination
             )
 
-    """
-        Read a Report object
+    def read(self, **kwargs):
+        """Read a Report object.
 
         :param id: the id of the Report
         :param filters: the filters to apply if no id provided
-        :return Report object
-    """
-
-    def read(self, **kwargs):
+        :param customAttributes: custom attributes to return
+        :param withFiles: whether to include files
+        :return: Report object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -621,16 +652,16 @@ class Report:
             else:
                 return None
 
-    """
-        Read a Report object by stix_id or name
-
-        :param type: the Stix-Domain-Entity type
-        :param stix_id: the STIX ID of the Stix-Domain-Entity
-        :param name: the name of the Stix-Domain-Entity
-        :return Stix-Domain-Entity object
-    """
-
     def get_by_stix_id_or_name(self, **kwargs):
+        """Read a Report object by stix_id or name.
+
+        :param stix_id: the STIX ID of the Report
+        :param name: the name of the Report
+        :param published: the published date of the Report
+        :param customAttributes: custom attributes to return
+        :return: Report object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
         published = kwargs.get("published", None)
@@ -653,15 +684,14 @@ class Report:
             )
         return object_result
 
-    """
-        Check if a report already contains a thing (Stix Object or Stix Relationship)
+    def contains_stix_object_or_stix_relationship(self, **kwargs):
+        """Check if a report already contains a STIX object or relationship.
 
         :param id: the id of the Report
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def contains_stix_object_or_stix_relationship(self, **kwargs):
+        :param stixObjectOrStixRelationshipId: the id of the STIX object or relationship
+        :return: True if the report contains the entity, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -692,14 +722,38 @@ class Report:
                 "[opencti_report] Missing parameters: id or stixObjectOrStixRelationshipId",
             )
 
-    """
-        Create a Report object
-
-        :param name: the name of the Report
-        :return Report object
-    """
-
     def create(self, **kwargs):
+        """Create a Report object.
+
+        :param stix_id: (optional) the STIX ID of the Report
+        :param createdBy: (optional) the author ID
+        :param objects: (optional) list of STIX object IDs contained in the report
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectAssignee: (optional) list of assignee IDs
+        :param objectParticipant: (optional) list of participant IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the report is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language of the report
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param name: the name of the Report (required)
+        :param description: (optional) description of the report
+        :param content: (optional) content of the report
+        :param report_types: (optional) list of report types
+        :param published: the publication date (required)
+        :param x_opencti_reliability: (optional) reliability level
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
+        :return: Report object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
@@ -724,6 +778,8 @@ class Report:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None and published is not None:
             self.opencti.app_logger.info("Creating Report", {"name": name})
@@ -737,37 +793,35 @@ class Report:
                     }
                 }
             """
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "stix_id": stix_id,
-                        "createdBy": created_by,
-                        "objectMarking": object_marking,
-                        "objectLabel": object_label,
-                        "objectOrganization": granted_refs,
-                        "objectAssignee": object_assignee,
-                        "objectParticipant": object_participant,
-                        "objects": objects,
-                        "externalReferences": external_references,
-                        "revoked": revoked,
-                        "confidence": confidence,
-                        "lang": lang,
-                        "created": created,
-                        "modified": modified,
-                        "name": name,
-                        "description": description,
-                        "content": content,
-                        "report_types": report_types,
-                        "published": published,
-                        "x_opencti_reliability": x_opencti_reliability,
-                        "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "x_opencti_workflow_id": x_opencti_workflow_id,
-                        "x_opencti_modified_at": x_opencti_modified_at,
-                        "update": update,
-                    }
-                },
-            )
+            input_variables = {
+                "stix_id": stix_id,
+                "createdBy": created_by,
+                "objectMarking": object_marking,
+                "objectLabel": object_label,
+                "objectOrganization": granted_refs,
+                "objectAssignee": object_assignee,
+                "objectParticipant": object_participant,
+                "objects": objects,
+                "externalReferences": external_references,
+                "revoked": revoked,
+                "confidence": confidence,
+                "lang": lang,
+                "created": created,
+                "modified": modified,
+                "name": name,
+                "description": description,
+                "content": content,
+                "report_types": report_types,
+                "published": published,
+                "x_opencti_reliability": x_opencti_reliability,
+                "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_workflow_id": x_opencti_workflow_id,
+                "x_opencti_modified_at": x_opencti_modified_at,
+                "update": update,
+                "file": file,
+                "fileMarkings": file_markings,
+            }
+            result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["reportAdd"])
         else:
             self.opencti.app_logger.error(
@@ -775,15 +829,14 @@ class Report:
                 "Missing parameters: name and description and published and report_class"
             )
 
-    """
-        Add a Stix-Entity object to Report object (object_refs)
+    def add_stix_object_or_stix_relationship(self, **kwargs):
+        """Add a STIX object or relationship to Report object (object_refs).
 
         :param id: the id of the Report
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def add_stix_object_or_stix_relationship(self, **kwargs):
+        :param stixObjectOrStixRelationshipId: the id of the STIX object or relationship
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -822,15 +875,14 @@ class Report:
             )
             return False
 
-    """
-        Remove a Stix-Entity object to Report object (object_refs)
+    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        """Remove a STIX object or relationship from Report object (object_refs).
 
         :param id: the id of the Report
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        :param stixObjectOrStixRelationshipId: the id of the STIX object or relationship
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -867,14 +919,15 @@ class Report:
             )
             return False
 
-    """
-        Import a Report object from a STIX2 object
-
-        :param stixObject: the Stix-Object Report
-        :return Report object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import a Report object from a STIX2 object.
+
+        :param stixObject: the STIX2 Report object
+        :param extras: extra parameters including created_by_id, object_marking_ids, object_ids, etc.
+        :param update: whether to update if the entity already exists
+        :return: Report object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -997,6 +1050,8 @@ class Report:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(

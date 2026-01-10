@@ -65,13 +65,21 @@ def get_config_variable(
     default=None,
     required=False,
 ) -> Union[bool, int, None, str]:
-    """[summary]
+    """Get a configuration variable from environment or YAML config.
 
-    :param env_var: environment variable name
-    :param yaml_path: path to yaml config
-    :param config: client config dict, defaults to {}
-    :param isNumber: specify if the variable is a number, defaults to False
-    :param default: default value
+    :param env_var: Environment variable name
+    :type env_var: str
+    :param yaml_path: Path to yaml config
+    :type yaml_path: List
+    :param config: Client config dict, defaults to {}
+    :type config: Dict
+    :param isNumber: Specify if the variable is a number, defaults to False
+    :type isNumber: bool
+    :param default: Default value
+    :param required: Whether the variable is required
+    :type required: bool
+    :return: The configuration value
+    :rtype: Union[bool, int, None, str]
     """
 
     if os.getenv(env_var) is not None:
@@ -105,26 +113,21 @@ def get_config_variable(
 
 
 def normalize_email_prefix(email: str) -> str:
-    """
-    Normalize the prefix (local part) of an email address by replacing
-    invalid characters with hyphens.
+    """Normalize the prefix (local part) of an email address by replacing invalid characters with hyphens.
 
     Valid characters in email prefix: a-z, A-Z, 0-9, and special chars: . _ + -
     All other characters are replaced with '-'
 
-    Args:
-        email: Email address to normalize
+    :param email: Email address to normalize
+    :type email: str
+    :return: Normalized email address
+    :rtype: str
 
-    Returns:
-        Normalized email address
-
-    Examples:
+    Example:
         >>> normalize_email_prefix("john.doe@example.com")
         'john.doe@example.com'
         >>> normalize_email_prefix("john@doe@example.com")
         'john-doe@example.com'
-        >>> normalize_email_prefix("user!name#test@example.com")
-        'user-name-test@example.com'
     """
     if "@" not in email:
         raise ValueError("Invalid email: missing '@' symbol")
@@ -1622,11 +1625,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connector_logger.error("Error pinging the API", {"reason": str(e)})
 
     def next_run_datetime(self, duration_period_in_seconds: Union[int, float]) -> None:
-        """
-        Lets you know what the next run of the scheduler will be in iso datetime format
+        """Calculate and set the next scheduled run datetime in ISO format.
 
-        :param duration_period_in_seconds: Duration in seconds
-        :return: None
+        :param duration_period_in_seconds: Duration in seconds until next run
+        :type duration_period_in_seconds: Union[int, float]
         """
         try:
             duration_timedelta = datetime.timedelta(seconds=duration_period_in_seconds)
@@ -1649,11 +1651,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def last_run_datetime(self) -> None:
-        """
-        Lets you know what the last run of the connector the scheduler processed, will be in iso datetime format
-
-        :return: None
-        """
+        """Set the last run datetime to the current UTC time in ISO format."""
         try:
             current_datetime = datetime.datetime.utcnow()
             # Set last_run_datetime
@@ -1670,9 +1668,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def check_connector_buffering(self) -> bool:
-        """
-        Lets you know if the RabbitMQ queue has exceeded the allowed threshold defined by the connector or not
-        :return: boolean
+        """Check if the RabbitMQ queue has exceeded the allowed threshold.
+
+        :return: True if queue size exceeds threshold, False otherwise
+        :rtype: bool
         """
         try:
             connector_details = self.api.connector.read(connector_id=self.connector_id)
@@ -1733,17 +1732,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         duration_period: Union[int, float, str],
         time_unit: TimeUnit,
     ) -> None:
-        """
-        This (deprecated) method is there to manage backward compatibility of intervals on connectors,
-        allows you to calculate the duration period of connectors in seconds with time_unit and will be
-        replaced by the "schedule_iso" method. It uses a TimeUnit enum.
+        """Schedule connector execution with a time unit (deprecated).
 
-        :param message_callback: Corresponds to the connector process
-        :param duration_period: Corresponds to the connector interval, it can vary depending on the connector
-        configuration.
-        :param time_unit: The unit of time for the duration_period.
-        Enum TimeUnit Valid (YEARS, WEEKS, DAYS, HOURS, MINUTES, SECONDS)
-        :return: None
+        This method manages backward compatibility of intervals on connectors.
+        Use schedule_iso method instead.
+
+        :param message_callback: The connector process callback function
+        :type message_callback: Callable[[], None]
+        :param duration_period: The connector interval value
+        :type duration_period: Union[int, float, str]
+        :param time_unit: The unit of time (YEARS, WEEKS, DAYS, HOURS, MINUTES, SECONDS)
+        :type time_unit: TimeUnit
         """
         try:
             # Calculates the duration period in seconds
@@ -1764,13 +1763,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     def schedule_iso(
         self, message_callback: Callable[[], None], duration_period: str
     ) -> None:
-        """
-        This method allows you to calculate the duration period of connectors in seconds from ISO 8601 format
-        and start the scheduler process.
+        """Schedule connector execution using ISO 8601 duration format.
 
-        :param message_callback: Corresponds to the connector process
-        :param duration_period: Corresponds to a string in ISO 8601 format "P18Y9W4DT11H9M8S"
-        :return: None
+        :param message_callback: The connector process callback function
+        :type message_callback: Callable[[], None]
+        :param duration_period: Duration in ISO 8601 format (e.g., "P18Y9W4DT11H9M8S")
+        :type duration_period: str
         """
         try:
             if duration_period == "0":
@@ -1798,15 +1796,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         message_callback: Callable[[], None],
         duration_period: Union[int, float],
     ) -> None:
-        """
-        When scheduling, the function retrieves the details of the connector queue,
-        and the connector process starts only if the size of the queue messages is less than or
-        equal to the queue_threshold variable.
+        """Execute scheduled connector process if queue is not buffering.
 
-        :param scheduler: Scheduler contains a list of all tasks to be started
-        :param message_callback: Corresponds to the connector process
-        :param duration_period: Corresponds to the connector's interval
-        :return: None
+        The connector process starts only if the queue messages size is less than
+        or equal to the queue_threshold variable.
+
+        :param scheduler: Scheduler containing tasks to be started
+        :type scheduler: sched.scheduler
+        :param message_callback: The connector process callback function
+        :type message_callback: Callable[[], None]
+        :param duration_period: The connector's interval in seconds
+        :type duration_period: Union[int, float]
         """
         try:
             self.connector_logger.info("[INFO] Starting schedule")
@@ -1840,14 +1840,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     def schedule_process(
         self, message_callback: Callable[[], None], duration_period: Union[int, float]
     ) -> None:
-        """
-        This method schedules the execution of a connector process.
-        If `duration_period' is zero or `self.connect_run_and_terminate' is True, the process will run and terminate.
-        Otherwise, it schedules the next run based on the interval.
+        """Schedule the execution of a connector process.
 
-        :param message_callback: Corresponds to the connector process
-        :param duration_period: Corresponds to the connector's interval in seconds
-        :return: None
+        If duration_period is zero or connect_run_and_terminate is True,
+        the process will run once and terminate. Otherwise, it schedules
+        the next run based on the interval.
+
+        :param message_callback: The connector process callback function
+        :type message_callback: Callable[[], None]
+        :param duration_period: The connector's interval in seconds
+        :type duration_period: Union[int, float]
         """
         try:
             # In the case where the duration_period_converted is zero, we consider it to be a run and terminate

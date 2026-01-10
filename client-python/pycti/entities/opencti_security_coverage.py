@@ -7,6 +7,11 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class SecurityCoverage:
+    """Main SecurityCoverage class for OpenCTI
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -48,17 +53,16 @@ class SecurityCoverage:
     def generate_id_from_data(data):
         return SecurityCoverage.generate_id(data["covered_ref"])
 
-    """
-        List securityCoverage objects
+    def list(self, **kwargs):
+        """List SecurityCoverage objects.
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of SecurityCoverage objects
-    """
-
-    def list(self, **kwargs):
+        :return: List of SecurityCoverage objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
@@ -136,15 +140,14 @@ class SecurityCoverage:
                 result["data"]["securityCoverages"], with_pagination
             )
 
-    """
-        Read a SecurityCoverage object
+    def read(self, **kwargs):
+        """Read a SecurityCoverage object.
 
         :param id: the id of the SecurityCoverage
         :param filters: the filters to apply if no id provided
-        :return SecurityCoverage object
-    """
-
-    def read(self, **kwargs):
+        :return: SecurityCoverage object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -181,13 +184,32 @@ class SecurityCoverage:
             )
             return None
 
-    """
-        Create a Security coverage object
-
-        :return Security Coverage object
-    """
-
     def create(self, **kwargs):
+        """Create a Security coverage object.
+
+        :param name: the name of the Security Coverage (required)
+        :param objectCovered: the covered object ID (required)
+        :param stix_id: (optional) the STIX ID
+        :param description: (optional) description
+        :param createdBy: (optional) the author ID
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param external_uri: (optional) external URI
+        :param coverage_last_result: (optional) last result date
+        :param coverage_valid_from: (optional) valid from date
+        :param coverage_valid_to: (optional) valid to date
+        :param coverage_information: (optional) coverage information
+        :param auto_enrichment_disable: (optional) disable auto enrichment
+        :param periodicity: (optional) periodicity
+        :param duration: (optional) duration
+        :param type_affinity: (optional) type affinity
+        :param platforms_affinity: (optional) platforms affinity
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
+        :return: Security Coverage object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
@@ -206,6 +228,8 @@ class SecurityCoverage:
         duration = kwargs.get("duration", None)
         type_affinity = kwargs.get("type_affinity", None)
         platforms_affinity = kwargs.get("platforms_affinity", None)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None and object_covered is not None:
             self.opencti.app_logger.info("Creating Security Coverage", {"name": name})
@@ -241,6 +265,8 @@ class SecurityCoverage:
                         "duration": duration,
                         "type_affinity": type_affinity,
                         "platforms_affinity": platforms_affinity,
+                        "file": file,
+                        "fileMarkings": file_markings,
                     }
                 },
             )
@@ -253,14 +279,15 @@ class SecurityCoverage:
                 "Missing parameters: name or object_covered"
             )
 
-    """
-        Import a Security coverage from a STIX2 object
-
-        :param stixObject: the Stix-Object Security coverage
-        :return Security coverage object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import a Security coverage from a STIX2 object.
+
+        :param stixObject: the STIX2 Security coverage object
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :param update: whether to update if the entity already exists
+        :return: Security coverage object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         if stix_object is not None:
@@ -353,6 +380,8 @@ class SecurityCoverage:
                     if "x_opencti_stix_ids" in stix_object
                     else None
                 ),
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(

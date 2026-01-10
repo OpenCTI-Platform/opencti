@@ -367,15 +367,16 @@ class AttackPattern:
                 result["data"]["attackPatterns"], with_pagination
             )
 
-    """
-        Read a Attack-Pattern object
-
-        :param id: the id of the Attack-Pattern
-        :param filters: the filters to apply if no id provided
-        :return Attack-Pattern object
-    """
-
     def read(self, **kwargs):
+        """Read an Attack Pattern object.
+
+        :param id: the id of the Attack Pattern
+        :param filters: the filters to apply if no id provided
+        :param customAttributes: custom attributes to return
+        :param withFiles: whether to include files
+        :return: Attack Pattern object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -411,14 +412,37 @@ class AttackPattern:
             )
             return None
 
-    """
-        Create a Attack-Pattern object
-
-        :param name: the name of the Attack Pattern
-        :return Attack-Pattern object
-    """
-
     def create(self, **kwargs):
+        """Create an Attack Pattern object.
+
+        :param stix_id: (optional) the STIX ID
+        :param createdBy: (optional) the author ID
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the attack pattern is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param name: the name of the Attack Pattern (required)
+        :param description: (optional) description
+        :param aliases: (optional) list of aliases
+        :param x_mitre_platforms: (optional) list of MITRE platforms
+        :param x_mitre_permissions_required: (optional) list of required permissions
+        :param x_mitre_detection: (optional) detection guidance
+        :param x_mitre_id: (optional) MITRE ATT&CK ID
+        :param killChainPhases: (optional) list of kill chain phase IDs
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
+        :return: Attack Pattern object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -442,6 +466,8 @@ class AttackPattern:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Attack-Pattern", {"name": name})
@@ -455,36 +481,34 @@ class AttackPattern:
                     }
                 }
             """
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "stix_id": stix_id,
-                        "createdBy": created_by,
-                        "objectMarking": object_marking,
-                        "objectLabel": object_label,
-                        "objectOrganization": granted_refs,
-                        "externalReferences": external_references,
-                        "revoked": revoked,
-                        "confidence": confidence,
-                        "lang": lang,
-                        "created": created,
-                        "modified": modified,
-                        "name": name,
-                        "description": description,
-                        "aliases": aliases,
-                        "x_mitre_platforms": x_mitre_platforms,
-                        "x_mitre_permissions_required": x_mitre_permissions_required,
-                        "x_mitre_detection": x_mitre_detection,
-                        "x_mitre_id": x_mitre_id,
-                        "killChainPhases": kill_chain_phases,
-                        "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "x_opencti_workflow_id": x_opencti_workflow_id,
-                        "x_opencti_modified_at": x_opencti_modified_at,
-                        "update": update,
-                    }
-                },
-            )
+            input_variables = {
+                "stix_id": stix_id,
+                "createdBy": created_by,
+                "objectMarking": object_marking,
+                "objectLabel": object_label,
+                "objectOrganization": granted_refs,
+                "externalReferences": external_references,
+                "revoked": revoked,
+                "confidence": confidence,
+                "lang": lang,
+                "created": created,
+                "modified": modified,
+                "name": name,
+                "description": description,
+                "aliases": aliases,
+                "x_mitre_platforms": x_mitre_platforms,
+                "x_mitre_permissions_required": x_mitre_permissions_required,
+                "x_mitre_detection": x_mitre_detection,
+                "x_mitre_id": x_mitre_id,
+                "killChainPhases": kill_chain_phases,
+                "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_workflow_id": x_opencti_workflow_id,
+                "x_opencti_modified_at": x_opencti_modified_at,
+                "update": update,
+                "file": file,
+                "fileMarkings": file_markings,
+            }
+            result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(
                 result["data"]["attackPatternAdd"]
             )
@@ -493,14 +517,15 @@ class AttackPattern:
                 "[opencti_attack_pattern] Missing parameters: name and description"
             )
 
-    """
-        Import an Attack-Pattern object from a STIX2 object
-
-        :param stixObject: the Stix-Object Attack-Pattern
-        :return Attack-Pattern object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import an Attack Pattern object from a STIX2 object.
+
+        :param stixObject: the STIX2 Attack Pattern object
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :param update: whether to update if the entity already exists
+        :return: Attack Pattern object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -646,6 +671,8 @@ class AttackPattern:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(
@@ -653,6 +680,11 @@ class AttackPattern:
             )
 
     def delete(self, **kwargs):
+        """Delete an Attack Pattern object.
+
+        :param id: the id of the Attack Pattern to delete
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Attack Pattern", {"id": id})

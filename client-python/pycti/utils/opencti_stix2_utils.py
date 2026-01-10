@@ -132,7 +132,7 @@ PATTERN_MAPPING = {
     "Process": ["pid"],
     "Software": ["name"],
     "Url": ["value"],
-    "User-Account": ["acount_login"],
+    "User-Account": ["account_login"],
     "Windows-Registry-Key": ["key"],
     "Windows-Registry-Value-Type": ["name"],
     "Hostname": ["value"],

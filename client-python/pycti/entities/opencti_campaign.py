@@ -348,15 +348,16 @@ class Campaign:
                 result["data"]["campaigns"], with_pagination
             )
 
-    """
-        Read a Campaign object
+    def read(self, **kwargs):
+        """Read a Campaign object.
 
         :param id: the id of the Campaign
         :param filters: the filters to apply if no id provided
-        :return Campaign object
-    """
-
-    def read(self, **kwargs):
+        :param customAttributes: custom attributes to return
+        :param withFiles: whether to include files
+        :return: Campaign object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -392,14 +393,35 @@ class Campaign:
             )
             return None
 
-    """
-        Create a Campaign object
-
-        :param name: the name of the Campaign
-        :return Campaign object
-    """
-
     def create(self, **kwargs):
+        """Create a Campaign object.
+
+        :param stix_id: (optional) the STIX ID
+        :param createdBy: (optional) the author ID
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the campaign is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param name: the name of the Campaign (required)
+        :param description: (optional) description
+        :param aliases: (optional) list of aliases
+        :param first_seen: (optional) first seen date
+        :param last_seen: (optional) last seen date
+        :param objective: (optional) objective of the campaign
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
+        :return: Campaign object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -421,6 +443,8 @@ class Campaign:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Campaign", {"name": name})
@@ -459,6 +483,8 @@ class Campaign:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
+                        "file": file,
+                        "fileMarkings": file_markings,
                     }
                 },
             )
@@ -468,14 +494,15 @@ class Campaign:
                 "[opencti_campaign] Missing parameters: name and description"
             )
 
-    """
-        Import a Campaign object from a STIX2 object
-
-        :param stixObject: the Stix-Object Campaign
-        :return Campaign object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import a Campaign object from a STIX2 object.
+
+        :param stixObject: the STIX2 Campaign object
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :param update: whether to update if the entity already exists
+        :return: Campaign object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -560,6 +587,8 @@ class Campaign:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(

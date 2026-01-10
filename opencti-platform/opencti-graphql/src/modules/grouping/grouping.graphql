@@ -270,6 +270,7 @@ input GroupingAddInput {
     x_opencti_modified_at: DateTime
     update: Boolean
     file: Upload
+    fileMarkings: [String]
     authorized_members: [MemberAccessInput!]
 }
 

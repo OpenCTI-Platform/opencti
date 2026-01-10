@@ -386,15 +386,16 @@ class Identity:
                 result["data"]["identities"], with_pagination
             )
 
-    """
-        Read a Identity object
+    def read(self, **kwargs):
+        """Read an Identity object.
 
         :param id: the id of the Identity
         :param filters: the filters to apply if no id provided
-        :return Identity object
-    """
-
-    def read(self, **kwargs):
+        :param customAttributes: custom attributes to return
+        :param withFiles: whether to include files
+        :return: Identity object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -430,14 +431,39 @@ class Identity:
             )
             return None
 
-    """
-        Create a Identity object
-
-        :param name: the name of the Identity
-        :return Identity object
-    """
-
     def create(self, **kwargs):
+        """Create an Identity object.
+
+        :param type: the type of identity (Organization, Individual, System, etc.) (required)
+        :param stix_id: (optional) the STIX ID
+        :param createdBy: (optional) the author ID
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the identity is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param name: the name of the Identity (required)
+        :param description: (optional) description
+        :param contact_information: (optional) contact information
+        :param roles: (optional) list of roles
+        :param x_opencti_aliases: (optional) list of aliases
+        :param security_platform_type: (optional) type of security platform
+        :param x_opencti_organization_type: (optional) organization type
+        :param x_opencti_reliability: (optional) reliability level
+        :param x_opencti_score: (optional) score
+        :param x_opencti_firstname: (optional) first name for individuals
+        :param x_opencti_lastname: (optional) last name for individuals
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :return: Identity object
+        :rtype: dict or None
+        """
         type = kwargs.get("type", None)
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
@@ -583,14 +609,15 @@ class Identity:
                 "Missing parameters: type, name and description"
             )
 
-    """
-        Import an Identity object from a STIX2 object
-
-        :param stixObject: the Stix-Object Identity
-        :return Identity object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import an Identity object from a STIX2 object.
+
+        :param stixObject: the STIX2 Identity object
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :param update: whether to update if the entity already exists
+        :return: Identity object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)

@@ -842,7 +842,7 @@ class StixSightingRelationship:
 
     """
         Unshare element from multiple organizations
-    
+
         :param entity_id: the stix_sighting id
         :param organization_id:s the organization to share with
         :return void

@@ -240,6 +240,15 @@ class Incident:
 
     @staticmethod
     def generate_id(name, created):
+        """Generate a STIX ID for an Incident.
+
+        :param name: The name of the incident
+        :type name: str
+        :param created: The creation date of the incident
+        :type created: str or datetime.datetime
+        :return: STIX ID for the incident
+        :rtype: str
+        """
         name = name.lower().strip()
         if isinstance(created, datetime.datetime):
             created = created.isoformat()
@@ -250,19 +259,31 @@ class Incident:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from incident data.
+
+        :param data: Dictionary containing 'name' and 'created' keys
+        :type data: dict
+        :return: STIX ID for the incident
+        :rtype: str
+        """
         return Incident.generate_id(data["name"], data["created"])
 
-    """
-        List Incident objects
+    def list(self, **kwargs):
+        """List Incident objects.
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Incident objects
-    """
-
-    def list(self, **kwargs):
+        :param orderBy: field to order results by
+        :param orderMode: ordering mode (asc/desc)
+        :param customAttributes: custom attributes to return
+        :param getAll: whether to retrieve all results
+        :param withPagination: whether to include pagination info
+        :param withFiles: whether to include files
+        :return: List of Incident objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -340,15 +361,16 @@ class Incident:
                 result["data"]["incidents"], with_pagination
             )
 
-    """
-        Read a Incident object
+    def read(self, **kwargs):
+        """Read an Incident object.
 
         :param id: the id of the Incident
         :param filters: the filters to apply if no id provided
-        :return Incident object
-    """
-
-    def read(self, **kwargs):
+        :param customAttributes: custom attributes to return
+        :param withFiles: whether to include files
+        :return: Incident object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -384,14 +406,38 @@ class Incident:
             )
             return None
 
-    """
-        Create a Incident object
-
-        :param name: the name of the Incident
-        :return Incident object
-    """
-
     def create(self, **kwargs):
+        """Create an Incident object.
+
+        :param name: the name of the Incident (required)
+        :param stix_id: (optional) the STIX ID
+        :param createdBy: (optional) the author ID
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the incident is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param description: (optional) description
+        :param aliases: (optional) list of aliases
+        :param first_seen: (optional) first seen date
+        :param last_seen: (optional) last seen date
+        :param objective: (optional) objective of the incident
+        :param incident_type: (optional) type of incident
+        :param severity: (optional) severity level
+        :param source: (optional) source of the incident
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
+        :return: Incident object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -416,6 +462,8 @@ class Incident:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Incident", {"name": name})
@@ -457,6 +505,8 @@ class Incident:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "file": file,
+                        "fileMarkings": file_markings,
                     }
                 },
             )
@@ -464,14 +514,15 @@ class Incident:
         else:
             self.opencti.app_logger.error("Missing parameters: name and description")
 
-    """
-        Import a Incident object from a STIX2 object
-
-        :param stixObject: the Stix-Object Incident
-        :return Incident object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import an Incident object from a STIX2 object.
+
+        :param stixObject: the STIX2 Incident object
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :param update: whether to update if the entity already exists
+        :return: Incident object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -563,6 +614,8 @@ class Incident:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(

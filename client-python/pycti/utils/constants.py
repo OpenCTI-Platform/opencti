@@ -189,7 +189,7 @@ class CustomObjectCaseIncident:
         ),
     ],
 )
-class CustomObjectCaseRfit:
+class CustomObjectCaseRfi:
     """Case-Rfi object."""
 
     pass

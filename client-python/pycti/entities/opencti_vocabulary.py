@@ -179,7 +179,7 @@ class Vocabulary:
             self.opencti.app_logger.info("Updating Vocabulary", {"id": id})
             query = """
                         mutation VocabularyEdit($id: ID!, $input: [EditInput!]!) {
-                            vocabularyFieldPatch(id: $id, input: $input) { 
+                            vocabularyFieldPatch(id: $id, input: $input) {
                                 id
                                 standard_id
                                 entity_type

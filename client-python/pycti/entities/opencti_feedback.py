@@ -448,7 +448,7 @@ class Feedback:
 
     """
         List Feedback objects
-        
+
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
@@ -649,7 +649,27 @@ class Feedback:
     """
         Create a Feedback object
 
-        :param name: the name of the Feedback
+        :param stix_id: (optional) the STIX ID
+        :param createdBy: (optional) the author ID
+        :param objects: (optional) list of STIX object IDs
+        :param objectMarking: (optional) list of marking definition IDs
+        :param objectLabel: (optional) list of label IDs
+        :param externalReferences: (optional) list of external reference IDs
+        :param revoked: (optional) whether the feedback is revoked
+        :param confidence: (optional) confidence level (0-100)
+        :param lang: (optional) language
+        :param created: (optional) creation date
+        :param modified: (optional) modification date
+        :param name: the name of the Feedback (required)
+        :param description: (optional) description
+        :param rating: (optional) rating value
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :param objectOrganization: (optional) list of organization IDs
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :param x_opencti_modified_at: (optional) custom modification date
+        :param update: (optional) whether to update if exists (default: False)
+        :param file: (optional) File object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
         :return Feedback object
     """
 
@@ -673,6 +693,8 @@ class Feedback:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Feedback", {"name": name})
@@ -686,32 +708,30 @@ class Feedback:
                     }
                 }
             """
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "stix_id": stix_id,
-                        "createdBy": created_by,
-                        "objectMarking": object_marking,
-                        "objectLabel": object_label,
-                        "objectOrganization": granted_refs,
-                        "objects": objects,
-                        "externalReferences": external_references,
-                        "revoked": revoked,
-                        "confidence": confidence,
-                        "lang": lang,
-                        "created": created,
-                        "modified": modified,
-                        "name": name,
-                        "description": description,
-                        "rating": rating,
-                        "x_opencti_stix_ids": x_opencti_stix_ids,
-                        "x_opencti_workflow_id": x_opencti_workflow_id,
-                        "x_opencti_modified_at": x_opencti_modified_at,
-                        "update": update,
-                    }
-                },
-            )
+            input_variables = {
+                "stix_id": stix_id,
+                "createdBy": created_by,
+                "objectMarking": object_marking,
+                "objectLabel": object_label,
+                "objectOrganization": granted_refs,
+                "objects": objects,
+                "externalReferences": external_references,
+                "revoked": revoked,
+                "confidence": confidence,
+                "lang": lang,
+                "created": created,
+                "modified": modified,
+                "name": name,
+                "description": description,
+                "rating": rating,
+                "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_workflow_id": x_opencti_workflow_id,
+                "x_opencti_modified_at": x_opencti_modified_at,
+                "update": update,
+                "file": file,
+                "fileMarkings": file_markings,
+            }
+            result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["feedbackAdd"])
         else:
             self.opencti.app_logger.error("[opencti_feedback] Missing parameters: name")
@@ -728,7 +748,7 @@ class Feedback:
                                     id
                                     ... on Feedback {
                                         name
-                                        description 
+                                        description
                                     }
                                }
                            }
@@ -920,6 +940,8 @@ class Feedback:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(
