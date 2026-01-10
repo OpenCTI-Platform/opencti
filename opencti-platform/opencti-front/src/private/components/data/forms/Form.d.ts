@@ -12,6 +12,7 @@ export interface FormFieldAttribute {
   required: boolean;
   isMandatory?: boolean; // Whether this field is for a mandatory attribute
   width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
+  multiple?: boolean; // For openvocab, select/multiselect, and files fields
   entityType?: string; // The entity type this field belongs to (for field type filtering)
   attributeMapping: {
     entity: string; // Entity ID this field maps to (main_entity or additional entity ID)
@@ -116,7 +117,7 @@ export interface FormFieldDefinition {
   required: boolean;
   isMandatory?: boolean;
   width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
-  multiple?: boolean; // For openvocab and select/multiselect fields
+  multiple?: boolean; // For openvocab, select/multiselect, and files fields
   relationship?: {
     type: string;
     target: string;

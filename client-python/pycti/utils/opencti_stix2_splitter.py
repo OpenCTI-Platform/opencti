@@ -225,8 +225,7 @@ class OpenCTIStix2Splitter:
             elif item["type"] == "sighting":
                 is_compatible = (
                     item.get("sighting_of_ref") is not None
-                    and item.get("where_sighted_refs") is not None
-                    and len(item["where_sighted_refs"]) > 0
+                    and len(item.get("where_sighted_refs", [])) > 0
                 )
             else:
                 is_compatible = is_id_supported(item_id)
