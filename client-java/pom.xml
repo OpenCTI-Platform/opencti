@@ -64,6 +64,7 @@
         <logback.version>1.4.14</logback.version>
         <lombok.version>1.18.30</lombok.version>
         <jackson.version>2.16.1</jackson.version>
+        <kotlin.version>1.9.10</kotlin.version>
         
         <!-- Test dependency versions -->
         <junit.version>5.10.1</junit.version>
@@ -81,6 +82,32 @@
         <checkstyle.failOnViolation>false</checkstyle.failOnViolation>
         <spotbugs.failOnError>false</spotbugs.failOnError>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Force consistent Kotlin stdlib version across all transitive dependencies -->
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>${kotlin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-jdk8</artifactId>
+                <version>${kotlin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-jdk7</artifactId>
+                <version>${kotlin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-common</artifactId>
+                <version>${kotlin.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- HTTP Client -->
