@@ -30,6 +30,8 @@ type Playbook implements InternalObject & BasicObject {
     last_executions: [PlayBookExecution!]
     queue_messages: Int!
     toConfigurationExport: String!
+    created_at: DateTime
+    updated_at: DateTime
 }
 
 type PlaybookComponentPort {
@@ -55,6 +57,8 @@ type PlaybookInsertResult {
 enum PlaybooksOrdering {
     name
     playbook_running
+    created_at
+    updated_at
     _score
 }
 

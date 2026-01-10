@@ -50,6 +50,8 @@ const READ_PLAYBOOK = gql`
       description
       playbook_running
       playbook_definition
+      created_at
+      updated_at
     }
   }
 `;
@@ -119,10 +121,41 @@ describe('Playbook resolver standard behavior', () => {
     const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
     expect(queryResult.data?.playbooks.edges.length).toEqual(1);
   });
+  it('should filter playbooks by created_at', async () => {
+    // Test filtering by created_at > 1 year ago (should find the playbook)
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    const filters = {
+      mode: 'and',
+      filters: [
+        { key: ['created_at'], values: [oneYearAgo.toISOString()], operator: 'gt' },
+      ],
+      filterGroups: [],
+    };
+    const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10, filters } });
+    expect(queryResult.data?.playbooks.edges.length).toEqual(1);
+  });
+  it('should filter playbooks by updated_at', async () => {
+    // Test filtering by updated_at > 1 year ago (should find the playbook)
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    const filters = {
+      mode: 'and',
+      filters: [
+        { key: ['updated_at'], values: [oneYearAgo.toISOString()], operator: 'gt' },
+      ],
+      filterGroups: [],
+    };
+    const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10, filters } });
+    expect(queryResult.data?.playbooks.edges.length).toEqual(1);
+  });
   it('should read playbook', async () => {
     const queryResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
     expect(queryResult.data?.playbook.name).toEqual(playbookName);
     expect(queryResult.data?.playbook.playbook_running).toEqual(false);
+    // Verify that created_at and updated_at are set
+    expect(queryResult.data?.playbook.created_at).toBeDefined();
+    expect(queryResult.data?.playbook.updated_at).toBeDefined();
   });
   it('should not update playbook if no Manage Playbooks capability', async () => {
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
