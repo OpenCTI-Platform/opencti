@@ -68,22 +68,36 @@ class StixNestedRefRelationship:
             }
         """
 
-    """
-        List stix_observable_relationship objects
-
-        :param fromId: the id of the source entity of the relation
-        :param toId: the id of the target entity of the relation
-        :param relationship_type: the relation type
-        :param startTimeStart: the first_seen date start filter
-        :param startTimeStop: the first_seen date stop filter
-        :param stopTimeStart: the last_seen date start filter
-        :param stopTimeStop: the last_seen date stop filter
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :param after: ID of the first row for pagination
-        :return List of stix_observable_relationship objects
-    """
-
     def list(self, **kwargs):
+        """List stix nested ref relationship objects.
+
+        :param fromOrToId: the id of either the source or target entity
+        :type fromOrToId: str
+        :param fromId: the id of the source entity of the relation
+        :type fromId: str
+        :param fromTypes: the types of the source entities
+        :type fromTypes: list
+        :param toId: the id of the target entity of the relation
+        :type toId: str
+        :param toTypes: the types of the target entities
+        :type toTypes: list
+        :param relationship_type: the relation type
+        :type relationship_type: str
+        :param startTimeStart: the first_seen date start filter
+        :type startTimeStart: str
+        :param startTimeStop: the first_seen date stop filter
+        :type startTimeStop: str
+        :param stopTimeStart: the last_seen date start filter
+        :type stopTimeStart: str
+        :param stopTimeStop: the last_seen date stop filter
+        :type stopTimeStop: str
+        :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
+        :param after: ID of the first row for pagination
+        :type after: str
+        :return: List of stix nested ref relationship objects
+        :rtype: list
+        """
         from_or_to_id = kwargs.get("fromOrToId", None)
         from_id = kwargs.get("fromId", None)
         from_types = kwargs.get("fromTypes", None)
@@ -157,22 +171,34 @@ class StixNestedRefRelationship:
             result["data"]["stixNestedRefRelationships"], with_pagination
         )
 
-    """
-        Read a stix_observable_relationship object
-
-        :param id: the id of the stix_observable_relationship
-        :param stix_id: the STIX id of the stix_observable_relationship
-        :param fromId: the id of the source entity of the relation
-        :param toId: the id of the target entity of the relation
-        :param relationship_type: the relation type
-        :param startTimeStart: the first_seen date start filter
-        :param startTimeStop: the first_seen date stop filter
-        :param stopTimeStart: the last_seen date start filter
-        :param stopTimeStop: the last_seen date stop filter
-        :return stix_observable_relationship object
-    """
-
     def read(self, **kwargs):
+        """Read a stix nested ref relationship object.
+
+        :param id: the id of the stix nested ref relationship
+        :type id: str
+        :param fromOrToId: the id of either the source or target entity
+        :type fromOrToId: str
+        :param fromId: the id of the source entity of the relation
+        :type fromId: str
+        :param toId: the id of the target entity of the relation
+        :type toId: str
+        :param relationship_type: the relation type
+        :type relationship_type: str
+        :param startTimeStart: the first_seen date start filter
+        :type startTimeStart: str
+        :param startTimeStop: the first_seen date stop filter
+        :type startTimeStop: str
+        :param stopTimeStart: the last_seen date start filter
+        :type stopTimeStart: str
+        :param stopTimeStop: the last_seen date stop filter
+        :type stopTimeStop: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param filters: the filters to apply
+        :type filters: dict
+        :return: stix nested ref relationship object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         from_or_to_id = kwargs.get("fromOrToId", None)
         from_id = kwargs.get("fromId", None)
@@ -229,14 +255,36 @@ class StixNestedRefRelationship:
             else:
                 return None
 
-    """
-        Create a stix_observable_relationship object
-
-        :param from_id: id of the source entity
-        :return stix_observable_relationship object
-    """
-
     def create(self, **kwargs):
+        """Create a stix nested ref relationship object.
+
+        :param fromId: the id of the source entity
+        :type fromId: str
+        :param toId: the id of the target entity
+        :type toId: str
+        :param relationship_type: the type of the relationship
+        :type relationship_type: str
+        :param start_time: (optional) the start time of the relationship
+        :type start_time: str
+        :param stop_time: (optional) the stop time of the relationship
+        :type stop_time: str
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param created: (optional) creation date
+        :type created: str
+        :param modified: (optional) modification date
+        :type modified: str
+        :param createdBy: (optional) the creator ID
+        :type createdBy: str
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param update: (optional) whether to update if exists
+        :type update: bool
+        :return: stix nested ref relationship object
+        :rtype: dict
+        """
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
         relationship_type = kwargs.get("relationship_type", None)
@@ -298,15 +346,16 @@ class StixNestedRefRelationship:
             result["data"]["stixRefRelationshipAdd"]
         )
 
-    """
-        Update a stix_observable_relationship object field
-
-        :param id: the stix_observable_relationship id
-        :param input: the input of the field
-        :return The updated stix_observable_relationship object
-    """
-
     def update_field(self, **kwargs):
+        """Update a stix nested ref relationship object field.
+
+        :param id: the stix nested ref relationship id
+        :type id: str
+        :param input: the input of the field to update
+        :type input: list
+        :return: The updated stix nested ref relationship object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:

@@ -230,6 +230,13 @@ class Narrative:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for a Narrative.
+
+        :param name: the name of the Narrative
+        :type name: str
+        :return: STIX ID for the Narrative
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)
@@ -238,19 +245,29 @@ class Narrative:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from Narrative data.
+
+        :param data: Dictionary containing a 'name' key
+        :type data: dict
+        :return: STIX ID for the Narrative
+        :rtype: str
+        """
         return Narrative.generate_id(data["name"])
 
-    """
-        List Narrative objects
+    def list(self, **kwargs):
+        """List Narrative objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Narrative objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :return: List of Narrative objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 100)
@@ -328,15 +345,20 @@ class Narrative:
                 result["data"]["narratives"], with_pagination
             )
 
-    """
-        Read a Narrative object
+    def read(self, **kwargs):
+        """Read a Narrative object.
 
         :param id: the id of the Narrative
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Narrative object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Narrative object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -372,34 +394,54 @@ class Narrative:
             )
             return None
 
-    """
-        Create a Narrative object
+    def create(self, **kwargs):
+        """Create a Narrative object.
 
         :param stix_id: (optional) the STIX ID
+        :type stix_id: str
         :param createdBy: (optional) the author ID
+        :type createdBy: str
         :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
         :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
         :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
         :param revoked: (optional) whether the narrative is revoked
+        :type revoked: bool
         :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
         :param lang: (optional) language
+        :type lang: str
         :param created: (optional) creation date
+        :type created: str
         :param modified: (optional) modification date
+        :type modified: str
         :param name: the name of the Narrative (required)
+        :type name: str
         :param description: (optional) description
+        :type description: str
         :param aliases: (optional) list of aliases
+        :type aliases: list
         :param narrative_types: (optional) list of narrative types
+        :type narrative_types: list
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
         :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
         :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
         :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
         :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
         :param file: (optional) File object to attach
+        :type file: dict
         :param fileMarkings: (optional) list of marking definition IDs for the file
-        :return Narrative object
-    """
-
-    def create(self, **kwargs):
+        :type fileMarkings: list
+        :return: Narrative object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -465,14 +507,18 @@ class Narrative:
             )
             return None
 
-    """
-        Import an Narrative object from a STIX2 object
-
-        :param stixObject: the Stix-Object Narrative
-        :return Narrative object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import a Narrative object from a STIX2 object.
+
+        :param stixObject: the STIX2 Narrative object
+        :type stixObject: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :return: Narrative object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)

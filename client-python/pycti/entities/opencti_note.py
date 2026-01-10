@@ -644,6 +644,11 @@ class Note:
                 return result[0]
             else:
                 return None
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_note] Missing parameters: id or filters"
+            )
+            return None
 
     def contains_stix_object_or_stix_relationship(self, **kwargs):
         """Check if a note already contains a STIX entity.
@@ -684,6 +689,7 @@ class Note:
             self.opencti.app_logger.error(
                 "[opencti_note] Missing parameters: id or entity_id"
             )
+            return None
 
     def create(self, **kwargs):
         """Create a Note object.
@@ -1008,3 +1014,4 @@ class Note:
             self.opencti.app_logger.error(
                 "[opencti_note] Missing parameters: stixObject"
             )
+            return None

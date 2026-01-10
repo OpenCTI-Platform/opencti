@@ -19,6 +19,9 @@ class Group:
 
     See the properties attribute to understand what properties are fetched by
     default from GraphQL queries.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -716,6 +719,13 @@ class Group:
         )
 
     def process_multiple_fields(self, data):
+        """Process and normalize fields in group data.
+
+        :param data: the group data dictionary to process
+        :type data: dict
+        :return: the processed group data with normalized fields
+        :rtype: dict
+        """
         if "roles" in data:
             data["roles"] = self.opencti.process_multiple(data["roles"])
             data["rolesIds"] = self.opencti.process_multiple_ids(data["roles"])

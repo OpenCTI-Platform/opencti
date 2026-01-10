@@ -471,6 +471,7 @@ class ThreatActorGroup:
             self.opencti.app_logger.error(
                 "[opencti_threat_actor_group] Missing parameters: name"
             )
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import a Threat Actor Group object from a STIX2 object.
@@ -601,3 +602,4 @@ class ThreatActorGroup:
             self.opencti.app_logger.error(
                 "[opencti_threat_actor_group] Missing parameters: stixObject"
             )
+            return None

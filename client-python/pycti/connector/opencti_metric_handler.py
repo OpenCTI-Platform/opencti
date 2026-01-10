@@ -1,9 +1,46 @@
+"""OpenCTI Metric Handler module.
+
+This module provides Prometheus metrics support for OpenCTI connectors,
+allowing monitoring of connector performance and health.
+"""
+
 from typing import Type, Union
 
 from prometheus_client import Counter, Enum, start_http_server
 
 
 class OpenCTIMetricHandler:
+    """Handler for Prometheus metrics in OpenCTI connectors.
+
+    This class manages Prometheus metrics for monitoring connector behavior,
+    including bundle sends, records processed, run counts, API pings, and errors.
+
+    When activated, it starts an HTTP server to expose metrics for scraping
+    by Prometheus or compatible monitoring systems.
+
+    :param connector_logger: Logger instance for the connector
+    :type connector_logger: logging.Logger
+    :param activated: Whether to enable metrics collection and exposure
+    :type activated: bool
+    :param namespace: Prometheus metrics namespace prefix
+    :type namespace: str
+    :param subsystem: Prometheus metrics subsystem prefix
+    :type subsystem: str
+    :param port: Port number for the Prometheus HTTP server
+    :type port: int
+
+    Example:
+        >>> handler = OpenCTIMetricHandler(
+        ...     connector_logger=logger,
+        ...     activated=True,
+        ...     namespace="opencti",
+        ...     subsystem="connector",
+        ...     port=9095
+        ... )
+        >>> handler.inc("bundle_send")
+        >>> handler.state("running")
+    """
+
     def __init__(
         self,
         connector_logger,
@@ -12,16 +49,17 @@ class OpenCTIMetricHandler:
         subsystem: str = "",
         port: int = 9095,
     ):
-        """Initialize OpenCTIMetricHandler class.
+        """Initialize the OpenCTIMetricHandler instance.
 
         :param connector_logger: Logger instance for the connector
-        :param activated: If True, use metrics in client and connectors
+        :type connector_logger: logging.Logger
+        :param activated: Whether to enable metrics (default: False)
         :type activated: bool
-        :param namespace: Namespace for the prometheus metrics
+        :param namespace: Prometheus metrics namespace prefix (default: "")
         :type namespace: str
-        :param subsystem: Subsystem for the prometheus metrics
+        :param subsystem: Prometheus metrics subsystem prefix (default: "")
         :type subsystem: str
-        :param port: Port for prometheus server
+        :param port: Port for Prometheus HTTP server (default: 9095)
         :type port: int
         """
         self.activated = activated
@@ -84,15 +122,17 @@ class OpenCTIMetricHandler:
     def _metric_exists(
         self, name: str, expected_type: Union[Type[Counter], Type[Enum]]
     ) -> bool:
-        """Check if a metric exists and has the correct type.
+        """Check if a metric exists and has the expected type.
 
-        If it does not, log an error and return False.
+        Validates that the named metric is registered and matches the expected
+        Prometheus metric type. Logs an error if validation fails.
 
-        :param name: Name of the metric to check
+        :param name: Name of the metric to validate
         :type name: str
-        :param expected_type: Expected type of the metric (Counter or Enum)
-        :type expected_type: Counter or Enum
-        :return: True if the metric exists and is of the correct type, else False
+        :param expected_type: Expected Prometheus metric type (Counter or Enum)
+        :type expected_type: Union[Type[Counter], Type[Enum]]
+
+        :return: True if metric exists and has correct type, False otherwise
         :rtype: bool
         """
         if name not in self._metrics:
@@ -106,25 +146,54 @@ class OpenCTIMetricHandler:
             return False
         return True
 
-    def inc(self, name: str, n: int = 1):
-        """Increment the metric (counter) `name` by `n`.
+    def inc(self, name: str, n: int = 1) -> None:
+        """Increment a counter metric by a specified amount.
 
-        :param name: Name of the metric to increment
+        Increments the named counter metric. If metrics are not activated
+        or the metric does not exist, this method does nothing.
+
+        Available counter metrics:
+            - bundle_send: Number of bundles sent
+            - record_send: Number of records sent
+            - run_count: Number of connector runs
+            - ping_api_count: Number of API pings
+            - ping_api_error: Number of API ping errors
+            - error_count: Total number of errors
+            - client_error_count: Number of client errors
+
+        :param name: Name of the counter metric to increment
         :type name: str
-        :param n: Increment the counter by `n`
+        :param n: Amount to increment the counter by (default: 1)
         :type n: int
+
+        Example:
+            >>> handler.inc("bundle_send")
+            >>> handler.inc("record_send", 10)
         """
         if self.activated:
             if self._metric_exists(name, Counter):
                 self._metrics[name].inc(n)
 
-    def state(self, state: str, name: str = "state"):
-        """Set the state `state` for metric `name`.
+    def state(self, state: str, name: str = "state") -> None:
+        """Set the state of an Enum metric.
 
-        :param state: State to set
+        Updates the named Enum metric to the specified state value.
+        If metrics are not activated or the metric does not exist,
+        this method does nothing.
+
+        Available states for the default "state" metric:
+            - idle: Connector is idle
+            - running: Connector is running
+            - stopped: Connector is stopped
+
+        :param state: State value to set (must be a valid state for the metric)
         :type state: str
-        :param name: Name of the metric to set
+        :param name: Name of the Enum metric to update (default: "state")
         :type name: str
+
+        Example:
+            >>> handler.state("running")
+            >>> handler.state("idle", "state")
         """
         if self.activated:
             if self._metric_exists(name, Enum):

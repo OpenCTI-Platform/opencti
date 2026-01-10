@@ -437,6 +437,13 @@ class Feedback:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for a Feedback object.
+
+        :param name: the name of the Feedback
+        :type name: str
+        :return: STIX ID for the Feedback
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)
@@ -445,19 +452,29 @@ class Feedback:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from Feedback data.
+
+        :param data: Dictionary containing a 'name' key
+        :type data: dict
+        :return: STIX ID for the Feedback
+        :rtype: str
+        """
         return Feedback.generate_id(data["name"])
 
-    """
-        List Feedback objects
+    def list(self, **kwargs):
+        """List Feedback objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Feedback objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :return: List of Feedback objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -535,15 +552,16 @@ class Feedback:
                 result["data"]["feedbacks"], with_pagination
             )
 
-    """
-        Read a Feedback object
+    def read(self, **kwargs):
+        """Read a Feedback object.
 
         :param id: the id of the Feedback
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Feedback object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :return: Feedback object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -574,18 +592,18 @@ class Feedback:
             else:
                 return None
 
-    # TODO: read by stix id or name ?
-
-    """
-        Read a Feedback object by stix_id or name
-
-        :param type: the Stix-Domain-Entity type
-        :param stix_id: the STIX ID of the Stix-Domain-Entity
-        :param name: the name of the Stix-Domain-Entity
-        :return Stix-Domain-Entity object
-    """
-
     def get_by_stix_id_or_name(self, **kwargs):
+        """Read a Feedback object by stix_id or name.
+
+        :param stix_id: the STIX ID of the Feedback
+        :type stix_id: str
+        :param name: the name of the Feedback
+        :type name: str
+        :param created: the creation date of the Feedback
+        :type created: str
+        :return: Feedback object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
         created = kwargs.get("created", None)
@@ -608,15 +626,16 @@ class Feedback:
             )
         return object_result
 
-    """
-        Check if a feedback already contains a thing (Stix Object or Stix Relationship)
+    def contains_stix_object_or_stix_relationship(self, **kwargs):
+        """Check if a feedback already contains a thing (Stix Object or Stix Relationship).
 
         :param id: the id of the Feedback
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def contains_stix_object_or_stix_relationship(self, **kwargs):
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if contained, False otherwise
+        :rtype: bool or None
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -648,34 +667,54 @@ class Feedback:
             )
             return None
 
-    """
-        Create a Feedback object
-
-        :param stix_id: (optional) the STIX ID
-        :param createdBy: (optional) the author ID
-        :param objects: (optional) list of STIX object IDs
-        :param objectMarking: (optional) list of marking definition IDs
-        :param objectLabel: (optional) list of label IDs
-        :param externalReferences: (optional) list of external reference IDs
-        :param revoked: (optional) whether the feedback is revoked
-        :param confidence: (optional) confidence level (0-100)
-        :param lang: (optional) language
-        :param created: (optional) creation date
-        :param modified: (optional) modification date
-        :param name: the name of the Feedback (required)
-        :param description: (optional) description
-        :param rating: (optional) rating value
-        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
-        :param objectOrganization: (optional) list of organization IDs
-        :param x_opencti_workflow_id: (optional) workflow ID
-        :param x_opencti_modified_at: (optional) custom modification date
-        :param update: (optional) whether to update if exists (default: False)
-        :param file: (optional) File object to attach
-        :param fileMarkings: (optional) list of marking definition IDs for the file
-        :return Feedback object
-    """
-
     def create(self, **kwargs):
+        """Create a Feedback object.
+
+        :param stix_id: the STIX ID (optional)
+        :type stix_id: str
+        :param createdBy: the author ID (optional)
+        :type createdBy: str
+        :param objects: list of STIX object IDs (optional)
+        :type objects: list
+        :param objectMarking: list of marking definition IDs (optional)
+        :type objectMarking: list
+        :param objectLabel: list of label IDs (optional)
+        :type objectLabel: list
+        :param externalReferences: list of external reference IDs (optional)
+        :type externalReferences: list
+        :param revoked: whether the feedback is revoked (optional)
+        :type revoked: bool
+        :param confidence: confidence level 0-100 (optional)
+        :type confidence: int
+        :param lang: language (optional)
+        :type lang: str
+        :param created: creation date (optional)
+        :type created: str
+        :param modified: modification date (optional)
+        :type modified: str
+        :param name: the name of the Feedback (required)
+        :type name: str
+        :param description: description (optional)
+        :type description: str
+        :param rating: rating value (optional)
+        :type rating: int
+        :param x_opencti_stix_ids: list of additional STIX IDs (optional)
+        :type x_opencti_stix_ids: list
+        :param objectOrganization: list of organization IDs (optional)
+        :type objectOrganization: list
+        :param x_opencti_workflow_id: workflow ID (optional)
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: custom modification date (optional)
+        :type x_opencti_modified_at: str
+        :param update: whether to update if exists (default: False)
+        :type update: bool
+        :param file: File object to attach (optional)
+        :type file: File
+        :param fileMarkings: list of marking definition IDs for the file (optional)
+        :type fileMarkings: list
+        :return: Feedback object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
@@ -740,6 +779,15 @@ class Feedback:
             return None
 
     def update_field(self, **kwargs):
+        """Update a field of a Feedback object.
+
+        :param id: the id of the Feedback
+        :type id: str
+        :param input: the input containing field(s) to update
+        :type input: list
+        :return: Feedback object
+        :rtype: dict or None
+        """
         self.opencti.app_logger.info("Updating Feedback", {"data": json.dumps(kwargs)})
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
@@ -767,15 +815,16 @@ class Feedback:
             )
             return None
 
-        """
-        Add a Stix-Entity object to Feedback object (object_refs)
+    def add_stix_object_or_stix_relationship(self, **kwargs):
+        """Add a Stix-Entity object to Feedback object (object_refs).
 
         :param id: the id of the Feedback
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def add_stix_object_or_stix_relationship(self, **kwargs):
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -814,15 +863,16 @@ class Feedback:
             )
             return False
 
-        """
-        Remove a Stix-Entity object to Case object (object_refs)
-
-        :param id: the id of the Case
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
     def remove_stix_object_or_stix_relationship(self, **kwargs):
+        """Remove a Stix-Entity object from Feedback object (object_refs).
+
+        :param id: the id of the Feedback
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -859,14 +909,18 @@ class Feedback:
             )
             return False
 
-        """
-        Import a Feedback object from a STIX2 object
-
-        :param stixObject: the Stix-Object Feedback
-        :return Feedback object
-        """
-
     def import_from_stix2(self, **kwargs):
+        """Import a Feedback object from a STIX2 object.
+
+        :param stixObject: the STIX2 Feedback object
+        :type stixObject: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :return: Feedback object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -950,8 +1004,15 @@ class Feedback:
             self.opencti.app_logger.error(
                 "[opencti_feedback] Missing parameters: stixObject"
             )
+            return None
 
     def delete(self, **kwargs):
+        """Delete a Feedback object.
+
+        :param id: the id of the Feedback to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Feedback", {"id": id})

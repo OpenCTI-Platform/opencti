@@ -568,6 +568,7 @@ class AttackPattern:
             self.opencti.app_logger.error(
                 "[opencti_attack_pattern] Missing parameters: name"
             )
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import an Attack Pattern object from a STIX2 object.
@@ -733,6 +734,7 @@ class AttackPattern:
             self.opencti.app_logger.error(
                 "[opencti_attack_pattern] Missing parameters: stixObject"
             )
+            return None
 
     def delete(self, **kwargs):
         """Delete an Attack Pattern object.
@@ -753,5 +755,5 @@ class AttackPattern:
              """
             self.opencti.query(query, {"id": id})
         else:
-            self.opencti.app_logger.error("[attack_pattern] Missing parameters: id")
+            self.opencti.app_logger.error("[opencti_attack_pattern] Missing parameters: id")
             return None

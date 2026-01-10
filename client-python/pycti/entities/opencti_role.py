@@ -10,6 +10,9 @@ class Role:
 
     Check the properties attribute of the class to understand what default
     properties are fetched.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -317,7 +320,7 @@ class Role:
         capability_id = kwargs.get("capability_id", None)
 
         if id is None or capability_id is None:
-            self.opencti.admin_logger(
+            self.opencti.admin_logger.error(
                 "[opencti_role] Missing parameters: id and capability_id"
             )
             return None
@@ -405,6 +408,13 @@ class Role:
         )
 
     def process_multiple_fields(self, data):
+        """Process and normalize fields in role data.
+
+        :param data: the role data dictionary to process
+        :type data: dict
+        :return: the processed role data with normalized fields
+        :rtype: dict
+        """
         if "capabilities" in data:
             data["capabilities"] = self.opencti.process_multiple(data["capabilities"])
             data["capabilitiesIds"] = self.opencti.process_multiple_ids(

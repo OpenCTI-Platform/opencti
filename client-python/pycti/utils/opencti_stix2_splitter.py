@@ -26,6 +26,13 @@ supported_types = (
 
 
 def is_id_supported(key):
+    """Check if a STIX ID type is supported for processing.
+
+    :param key: STIX ID or identifier to check
+    :type key: str
+    :return: True if the ID type is supported, False otherwise
+    :rtype: bool
+    """
     if "--" in key:
         id_type = key.split("--")[0]
         return id_type in supported_types
@@ -34,12 +41,18 @@ def is_id_supported(key):
 
 
 class OpenCTIStix2Splitter:
-    """STIX2 bundle splitter for OpenCTI
+    """STIX2 bundle splitter for OpenCTI.
 
-    Splits large STIX2 bundles into smaller chunks for processing.
+    Splits large STIX2 bundles into smaller chunks for processing,
+    handling dependencies between objects and deduplicating references.
     """
 
     def __init__(self):
+        """Initialize the STIX2 bundle splitter.
+
+        Sets up internal caches for tracking processed elements,
+        references, and incompatible items.
+        """
         self.cache_index = {}
         self.cache_refs = {}
         self.elements = []
@@ -211,7 +224,8 @@ class OpenCTIStix2Splitter:
                 )
             elif item["type"] == "sighting":
                 is_compatible = (
-                    item["sighting_of_ref"] is not None
+                    item.get("sighting_of_ref") is not None
+                    and item.get("where_sighted_refs") is not None
                     and len(item["where_sighted_refs"]) > 0
                 )
             else:
@@ -303,6 +317,20 @@ class OpenCTIStix2Splitter:
 
     @deprecated("Use split_bundle_with_expectations instead")
     def split_bundle(self, bundle, use_json=True, event_version=None) -> list:
+        """Split a valid STIX2 bundle into a list of bundles.
+
+        .. deprecated::
+            Use :meth:`split_bundle_with_expectations` instead.
+
+        :param bundle: the STIX2 bundle to split
+        :type bundle: str or dict
+        :param use_json: whether the bundle is JSON string (True) or dict (False)
+        :type use_json: bool
+        :param event_version: (optional) event version to include in bundles
+        :type event_version: str or None
+        :return: list of STIX2 bundles
+        :rtype: list
+        """
         _, _, bundles = self.split_bundle_with_expectations(
             bundle, use_json, event_version
         )

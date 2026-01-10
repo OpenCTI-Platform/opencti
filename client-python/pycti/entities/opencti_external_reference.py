@@ -318,6 +318,7 @@ class ExternalReference:
             self.opencti.app_logger.error(
                 "[opencti_external_reference] Missing parameters: source_name and url"
             )
+            return None
 
     def add_file(self, **kwargs):
         """Upload a file in this External-Reference.

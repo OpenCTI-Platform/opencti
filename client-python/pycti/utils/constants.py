@@ -12,7 +12,25 @@ from stix2.properties import (
 from stix2.utils import NOW
 
 
-class StixCyberObservableTypes(Enum):
+class CaseInsensitiveEnum(Enum):
+    """Base Enum class with case-insensitive value lookup."""
+
+    @classmethod
+    def has_value(cls, value: str) -> bool:
+        """Check if the enum contains the given value (case-insensitive).
+
+        :param value: Value to check
+        :type value: str
+        :return: True if value exists in enum, False otherwise
+        :rtype: bool
+        """
+        lower_values = [v.lower() for v in cls._value2member_map_]
+        return value.lower() in lower_values
+
+
+class StixCyberObservableTypes(CaseInsensitiveEnum):
+    """Enumeration of STIX Cyber Observable types supported by OpenCTI."""
+
     AUTONOMOUS_SYSTEM = "Autonomous-System"
     DIRECTORY = "Directory"
     DOMAIN_NAME = "Domain-Name"
@@ -48,49 +66,37 @@ class StixCyberObservableTypes(Enum):
     PERSONA = "Persona"
     SSH_KEY = "SSH-Key"
 
-    @classmethod
-    def has_value(cls, value: str) -> bool:
-        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value.lower() in lower_attr
 
+class IdentityTypes(CaseInsensitiveEnum):
+    """Enumeration of Identity types supported by OpenCTI."""
 
-class IdentityTypes(Enum):
     SECTOR = "Sector"
     ORGANIZATION = "Organization"
     INDIVIDUAL = "Individual"
     SYSTEM = "System"
     SECURITYPLATFORM = "SecurityPlatform"
 
-    @classmethod
-    def has_value(cls, value):
-        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value.lower() in lower_attr
 
+class ThreatActorTypes(CaseInsensitiveEnum):
+    """Enumeration of Threat Actor types supported by OpenCTI."""
 
-class ThreatActorTypes(Enum):
     THREAT_ACTOR_GROUP = "Threat-Actor-Group"
     THREAT_ACTOR_INDIVIDUAL = "Threat-Actor-Individual"
 
-    @classmethod
-    def has_value(cls, value):
-        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value.lower() in lower_attr
 
+class LocationTypes(CaseInsensitiveEnum):
+    """Enumeration of Location types supported by OpenCTI."""
 
-class LocationTypes(Enum):
     REGION = "Region"
     COUNTRY = "Country"
     ADMINISTRATIVE_AREA = "Administrative-Area"
     CITY = "City"
     POSITION = "Position"
 
-    @classmethod
-    def has_value(cls, value):
-        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value.lower() in lower_attr
 
+class ContainerTypes(CaseInsensitiveEnum):
+    """Enumeration of Container types supported by OpenCTI."""
 
-class ContainerTypes(Enum):
     NOTE = "Note"
     OBSERVED_DATA = "Observed-Data"
     OPINION = "Opinion"
@@ -98,25 +104,19 @@ class ContainerTypes(Enum):
     GROUPING = "Grouping"
     CASE = "Case"
 
-    @classmethod
-    def has_value(cls, value):
-        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value.lower() in lower_attr
 
+class StixMetaTypes(CaseInsensitiveEnum):
+    """Enumeration of STIX Meta Object types supported by OpenCTI."""
 
-class StixMetaTypes(Enum):
     MARKING_DEFINITION = "Marking-Definition"
     LABEL = "Label"
     EXTERNAL_REFERENCE = "External-Reference"
     KILL_CHAIN_PHASE = "Kill-Chain-Phase"
 
-    @classmethod
-    def has_value(cls, value):
-        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value.lower() in lower_attr
 
+class MultipleRefRelationship(CaseInsensitiveEnum):
+    """Enumeration of relationship types that can have multiple references."""
 
-class MultipleRefRelationship(Enum):
     OPERATING_SYSTEM = "operating-system"
     SAMPLE = "sample"
     CONTAINS = "contains"
@@ -133,11 +133,6 @@ class MultipleRefRelationship(Enum):
     SERVICE_DLL = "service-dll"
     INSTALLED_SOFTWARE = "installed-software"
     RELATION_ANALYSIS_SCO = "analysis-sco"
-
-    @classmethod
-    def has_value(cls, value):
-        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value.lower() in lower_attr
 
 
 # Custom objects
@@ -164,7 +159,32 @@ class MultipleRefRelationship(Enum):
     ],
 )
 class CustomObjectCaseIncident:
-    """Case-Incident object."""
+    """Custom STIX2 Case-Incident object for OpenCTI.
+
+    Represents a case-incident container with associated metadata including
+    name, description, severity, priority, and response types.
+
+    :param name: Name of the case incident (required)
+    :type name: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param description: Description of the case incident
+    :type description: str
+    :param severity: Severity level of the incident
+    :type severity: str
+    :param priority: Priority level of the incident
+    :type priority: str
+    :param response_types: List of response types
+    :type response_types: list
+    :param x_opencti_workflow_id: OpenCTI workflow identifier
+    :type x_opencti_workflow_id: str
+    :param x_opencti_assignee_ids: List of assignee identifiers
+    :type x_opencti_assignee_ids: list
+    :param external_references: List of external references
+    :type external_references: list
+    :param object_refs: List of referenced STIX objects
+    :type object_refs: list
+    """
 
     pass
 
@@ -190,7 +210,32 @@ class CustomObjectCaseIncident:
     ],
 )
 class CustomObjectCaseRfi:
-    """Case-Rfi object."""
+    """Custom STIX2 Case-RFI (Request For Information) object for OpenCTI.
+
+    Represents a request for information container with associated metadata
+    including name, description, severity, priority, and information types.
+
+    :param name: Name of the RFI case (required)
+    :type name: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param description: Description of the RFI case
+    :type description: str
+    :param severity: Severity level of the RFI
+    :type severity: str
+    :param priority: Priority level of the RFI
+    :type priority: str
+    :param information_types: List of information types requested
+    :type information_types: list
+    :param x_opencti_workflow_id: OpenCTI workflow identifier
+    :type x_opencti_workflow_id: str
+    :param x_opencti_assignee_ids: List of assignee identifiers
+    :type x_opencti_assignee_ids: list
+    :param external_references: List of external references
+    :type external_references: list
+    :param object_refs: List of referenced STIX objects
+    :type object_refs: list
+    """
 
     pass
 
@@ -218,7 +263,26 @@ class CustomObjectCaseRfi:
     ],
 )
 class CustomObjectTask:
-    """Task object."""
+    """Custom STIX2 Task object for OpenCTI.
+
+    Represents a task with associated metadata including name, description,
+    due date, and assignees.
+
+    :param name: Name of the task (required)
+    :type name: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param description: Description of the task
+    :type description: str
+    :param due_date: Due date timestamp for the task
+    :type due_date: datetime
+    :param x_opencti_workflow_id: OpenCTI workflow identifier
+    :type x_opencti_workflow_id: str
+    :param x_opencti_assignee_ids: List of assignee identifiers
+    :type x_opencti_assignee_ids: list
+    :param object_refs: List of referenced STIX objects
+    :type object_refs: list
+    """
 
     pass
 
@@ -237,7 +301,28 @@ class CustomObjectTask:
     ],
 )
 class CustomObjectChannel:
-    """Channel object."""
+    """Custom STIX2 Channel object for OpenCTI.
+
+    Represents a communication channel with associated metadata including
+    name, description, aliases, and channel types.
+
+    :param name: Name of the channel (required)
+    :type name: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param description: Description of the channel
+    :type description: str
+    :param aliases: List of alternative names for the channel
+    :type aliases: list
+    :param channel_types: List of channel types
+    :type channel_types: list
+    :param x_opencti_workflow_id: OpenCTI workflow identifier
+    :type x_opencti_workflow_id: str
+    :param x_opencti_assignee_ids: List of assignee identifiers
+    :type x_opencti_assignee_ids: list
+    :param external_references: List of external references
+    :type external_references: list
+    """
 
     pass
 
@@ -260,7 +345,17 @@ class CustomObjectChannel:
     ["value"],
 )
 class CustomObservableHostname:
-    """Hostname observable."""
+    """Custom STIX2 Hostname observable for OpenCTI.
+
+    Represents a hostname cyber observable with its associated value.
+
+    :param value: The hostname value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -280,7 +375,17 @@ class CustomObservableHostname:
     ["value"],
 )
 class CustomObservableText:
-    """Text observable."""
+    """Custom STIX2 Text observable for OpenCTI.
+
+    Represents a generic text cyber observable with its associated value.
+
+    :param value: The text value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -304,7 +409,25 @@ class CustomObservableText:
     ["card_number"],
 )
 class CustomObservablePaymentCard:
-    """Payment card observable."""
+    """Custom STIX2 Payment Card observable for OpenCTI.
+
+    Represents a payment card cyber observable with card details.
+
+    :param value: Display value for the payment card (required)
+    :type value: str
+    :param card_number: The payment card number (required)
+    :type card_number: str
+    :param expiration_date: Card expiration date
+    :type expiration_date: str
+    :param cvv: Card verification value
+    :type cvv: str
+    :param holder_name: Name of the card holder
+    :type holder_name: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -327,7 +450,23 @@ class CustomObservablePaymentCard:
     ["iban"],
 )
 class CustomObservableBankAccount:
-    """Bank Account observable."""
+    """Custom STIX2 Bank Account observable for OpenCTI.
+
+    Represents a bank account cyber observable with account details.
+
+    :param value: Display value for the bank account (required)
+    :type value: str
+    :param iban: International Bank Account Number (required)
+    :type iban: str
+    :param bic: Bank Identifier Code
+    :type bic: str
+    :param account_number: Bank account number
+    :type account_number: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -347,7 +486,17 @@ class CustomObservableBankAccount:
     ["value"],
 )
 class CustomObservableCredential:
-    """Credential observable."""
+    """Custom STIX2 Credential observable for OpenCTI.
+
+    Represents a credential cyber observable such as a password or access token.
+
+    :param value: The credential value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -367,7 +516,17 @@ class CustomObservableCredential:
     ["value"],
 )
 class CustomObservableCryptocurrencyWallet:
-    """Cryptocurrency wallet observable."""
+    """Custom STIX2 Cryptocurrency Wallet observable for OpenCTI.
+
+    Represents a cryptocurrency wallet address cyber observable.
+
+    :param value: The wallet address value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -387,7 +546,17 @@ class CustomObservableCryptocurrencyWallet:
     ["value"],
 )
 class CustomObservablePhoneNumber:
-    """Phone number observable."""
+    """Custom STIX2 Phone Number observable for OpenCTI.
+
+    Represents a phone number cyber observable.
+
+    :param value: The phone number value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -407,7 +576,17 @@ class CustomObservablePhoneNumber:
     ["value"],
 )
 class CustomObservableTrackingNumber:
-    """Tracking number observable."""
+    """Custom STIX2 Tracking Number observable for OpenCTI.
+
+    Represents a tracking number cyber observable (e.g., package tracking).
+
+    :param value: The tracking number value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -427,7 +606,17 @@ class CustomObservableTrackingNumber:
     ["value"],
 )
 class CustomObservableUserAgent:
-    """User-Agent observable."""
+    """Custom STIX2 User-Agent observable for OpenCTI.
+
+    Represents a User-Agent string cyber observable from HTTP headers.
+
+    :param value: The User-Agent string value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -452,7 +641,27 @@ class CustomObservableUserAgent:
     ["url"],
 )
 class CustomObservableMediaContent:
-    """Media-Content observable."""
+    """Custom STIX2 Media-Content observable for OpenCTI.
+
+    Represents a media content cyber observable such as articles or posts.
+
+    :param title: Title of the media content
+    :type title: str
+    :param description: Description of the media content
+    :type description: str
+    :param content: The actual content body
+    :type content: str
+    :param media_category: Category of the media
+    :type media_category: str
+    :param url: URL of the media content (required)
+    :type url: str
+    :param publication_date: Publication date timestamp
+    :type publication_date: datetime
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -473,7 +682,19 @@ class CustomObservableMediaContent:
     ["persona_name", "persona_type"],
 )
 class CustomObservablePersona:
-    """Persona observable."""
+    """Custom STIX2 Persona observable for OpenCTI.
+
+    Represents a persona or online identity cyber observable.
+
+    :param persona_name: Name of the persona (required)
+    :type persona_name: str
+    :param persona_type: Type of the persona (required)
+    :type persona_type: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass
 
@@ -493,6 +714,36 @@ class CustomObservablePersona:
     ["value"],
 )
 class CustomObservableCryptographicKey:
-    """Cryptographic-Key observable."""
+    """Custom STIX2 Cryptographic-Key observable for OpenCTI.
+
+    Represents a cryptographic key cyber observable such as API keys or encryption keys.
+
+    :param value: The cryptographic key value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
+
+    pass
+
+
+@CustomObservable(
+    "ssh-key",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableSshKey:
+    """SSH-Key observable."""
 
     pass

@@ -16,6 +16,7 @@ class OpenCTIApiNotification:
         :param id: the notification id
         :type id: str
         :return: None
+        :rtype: None
         """
         notification_id = kwargs.get("id", None)
         self.api.app_logger.info(
@@ -33,13 +34,16 @@ class OpenCTIApiNotification:
 
         :param id: the notification id
         :type id: str
-        :param input: the input fields to update
+        :param input: the input fields to update (list of key/value dicts)
         :type input: list
         :return: None
+        :rtype: None
         """
         notification_id = kwargs.get("id", None)
-        input = kwargs.get("input", None)
-        for input_value in input:
+        field_input = kwargs.get("input", None)
+        if field_input is None:
+            return None
+        for input_value in field_input:
             if input_value["key"] == "is_read":
                 is_read_value = bool(input_value["value"][0])
                 self.mark_as_read(notification_id, is_read_value)
@@ -52,6 +56,7 @@ class OpenCTIApiNotification:
         :param read: whether to mark as read (True) or unread (False)
         :type read: bool
         :return: None
+        :rtype: None
         """
         self.api.app_logger.info(
             "Marking notification as read",

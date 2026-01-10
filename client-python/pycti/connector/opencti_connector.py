@@ -1,49 +1,81 @@
-from enum import Enum
+"""OpenCTI Connector module.
 
-# Scope definition
-# EXTERNAL_IMPORT = None
-# INTERNAL_IMPORT_FILE = Files mime types to support (application/json, ...)
-# INTERNAL_ENRICHMENT = Entity types to support (Report, Hash, ...)
-# INTERNAL_EXPORT_FILE = Files mime types to generate (application/pdf, ...)
+This module defines the connector types and the main OpenCTIConnector class
+used to register and configure connectors with the OpenCTI platform.
+"""
+
+from enum import Enum
 
 
 class ConnectorType(Enum):
-    EXTERNAL_IMPORT = "EXTERNAL_IMPORT"  # From remote sources to OpenCTI stix2
-    INTERNAL_IMPORT_FILE = (
-        "INTERNAL_IMPORT_FILE"  # From OpenCTI file system to OpenCTI stix2
-    )
-    INTERNAL_ENRICHMENT = "INTERNAL_ENRICHMENT"  # From OpenCTI stix2 to OpenCTI stix2
-    INTERNAL_ANALYSIS = "INTERNAL_ANALYSIS"  # From OpenCTI file system or OpenCTI stix2 to OpenCTI file system
-    INTERNAL_EXPORT_FILE = (
-        "INTERNAL_EXPORT_FILE"  # From OpenCTI stix2 to OpenCTI file system
-    )
-    STREAM = "STREAM"  # Read the stream and do something
+    """Enumeration of OpenCTI connector types.
+
+    Each connector type defines a specific data flow pattern:
+
+    - EXTERNAL_IMPORT: Imports data from remote sources into OpenCTI as STIX2
+    - INTERNAL_IMPORT_FILE: Converts files from OpenCTI file system to STIX2
+    - INTERNAL_ENRICHMENT: Enriches existing STIX2 data with additional information
+    - INTERNAL_ANALYSIS: Analyzes files or STIX2 data and produces file output
+    - INTERNAL_EXPORT_FILE: Exports STIX2 data to files in OpenCTI file system
+    - STREAM: Reads the event stream and performs custom actions
+
+    Scope definition varies by type:
+        - EXTERNAL_IMPORT: None (imports everything)
+        - INTERNAL_IMPORT_FILE: MIME types to support (e.g., application/json)
+        - INTERNAL_ENRICHMENT: Entity types to support (e.g., Report, Hash)
+        - INTERNAL_EXPORT_FILE: MIME types to generate (e.g., application/pdf)
+    """
+
+    EXTERNAL_IMPORT = "EXTERNAL_IMPORT"
+    INTERNAL_IMPORT_FILE = "INTERNAL_IMPORT_FILE"
+    INTERNAL_ENRICHMENT = "INTERNAL_ENRICHMENT"
+    INTERNAL_ANALYSIS = "INTERNAL_ANALYSIS"
+    INTERNAL_EXPORT_FILE = "INTERNAL_EXPORT_FILE"
+    STREAM = "STREAM"
 
 
 class OpenCTIConnector:
-    """Main class for OpenCTI connector
+    """Main class for OpenCTI connector registration and configuration.
 
-    :param connector_id: id for the connector (valid uuid4)
+    This class represents a connector instance that can be registered with
+    the OpenCTI platform. It holds all configuration parameters needed for
+    the connector to operate.
+
+    :param connector_id: Unique identifier for the connector (valid UUID4)
     :type connector_id: str
-    :param connector_name: name for the connector
+    :param connector_name: Human-readable name for the connector
     :type connector_name: str
-    :param connector_type: valid OpenCTI connector type (see `ConnectorType`)
+    :param connector_type: Type of connector (see :class:`ConnectorType`)
     :type connector_type: str
-    :param scope: connector scope (comma-separated string)
+    :param scope: Connector scope as a comma-separated string (e.g., "Report,Indicator")
     :type scope: str
-    :param auto: whether the connector runs automatically
+    :param auto: Whether the connector runs automatically on matching entities
     :type auto: bool
-    :param only_contextual: whether the connector only processes contextual data
+    :param only_contextual: Whether the connector only processes contextual data
     :type only_contextual: bool
-    :param playbook_compatible: whether the connector is playbook compatible
+    :param playbook_compatible: Whether the connector can be used in playbooks
     :type playbook_compatible: bool
-    :param auto_update: whether to auto-update existing entities
+    :param auto_update: Whether to automatically update existing entities
     :type auto_update: bool
-    :param enrichment_resolution: enrichment resolution strategy
+    :param enrichment_resolution: Strategy for resolving enrichment conflicts
     :type enrichment_resolution: str
-    :param listen_callback_uri: (optional) callback URI for listening
+    :param listen_callback_uri: Optional callback URI for API-based listening
     :type listen_callback_uri: str or None
-    :raises ValueError: if the connector type is not valid
+
+    :raises ValueError: If the connector type is not a valid ConnectorType value
+
+    Example:
+        >>> connector = OpenCTIConnector(
+        ...     connector_id="550e8400-e29b-41d4-a716-446655440000",
+        ...     connector_name="My Connector",
+        ...     connector_type="EXTERNAL_IMPORT",
+        ...     scope="Report,Indicator",
+        ...     auto=False,
+        ...     only_contextual=False,
+        ...     playbook_compatible=True,
+        ...     auto_update=False,
+        ...     enrichment_resolution="none"
+        ... )
     """
 
     def __init__(
@@ -59,12 +91,35 @@ class OpenCTIConnector:
         enrichment_resolution: str,
         listen_callback_uri=None,
     ):
+        """Initialize the OpenCTIConnector instance.
+
+        :param connector_id: Unique identifier for the connector (valid UUID4)
+        :type connector_id: str
+        :param connector_name: Human-readable name for the connector
+        :type connector_name: str
+        :param connector_type: Type of connector (see :class:`ConnectorType`)
+        :type connector_type: str
+        :param scope: Connector scope as a comma-separated string
+        :type scope: str
+        :param auto: Whether the connector runs automatically
+        :type auto: bool
+        :param only_contextual: Whether to process only contextual data
+        :type only_contextual: bool
+        :param playbook_compatible: Whether the connector works with playbooks
+        :type playbook_compatible: bool
+        :param auto_update: Whether to auto-update existing entities
+        :type auto_update: bool
+        :param enrichment_resolution: Enrichment conflict resolution strategy
+        :type enrichment_resolution: str
+        :param listen_callback_uri: Optional callback URI for API listening
+        :type listen_callback_uri: str or None
+
+        :raises ValueError: If connector_type is not a valid ConnectorType
+        """
         self.id = connector_id
         self.name = connector_name
         self.type = ConnectorType(connector_type)
-        if self.type is None:
-            raise ValueError("Invalid connector type: " + connector_type)
-        if scope and len(scope) > 0:
+        if scope:
             self.scope = scope.split(",")
         else:
             self.scope = []
@@ -76,10 +131,17 @@ class OpenCTIConnector:
         self.listen_callback_uri = listen_callback_uri
 
     def to_input(self) -> dict:
-        """connector input to use in API query
+        """Convert connector configuration to API input format.
 
-        :return: dict with connector data
+        Generates a dictionary structure suitable for use in GraphQL API
+        queries to register or update the connector.
+
+        :return: Dictionary containing connector data wrapped in an "input" key
         :rtype: dict
+
+        Example:
+            >>> connector.to_input()
+            {'input': {'id': '...', 'name': 'My Connector', ...}}
         """
         return {
             "input": {

@@ -16,9 +16,10 @@ class OpenCTIApiPublicDashboard:
         :param id: the public dashboard id
         :type id: str
         :return: None
+        :rtype: None
         """
-        id = kwargs.get("id", None)
-        if id is not None:
+        dashboard_id = kwargs.get("id", None)
+        if dashboard_id is not None:
             query = """
                 mutation PublicDashboardDelete($id: ID!) {
                     publicDashboardDelete(id: $id)
@@ -27,11 +28,11 @@ class OpenCTIApiPublicDashboard:
             self.api.query(
                 query,
                 {
-                    "id": id,
+                    "id": dashboard_id,
                 },
             )
         else:
             self.api.app_logger.error(
-                "[opencti_public_dashboard] Cannot delete public dashboard, missing parameters: id"
+                "[opencti_public_dashboard] Cannot delete public dashboard, missing parameter: id"
             )
             return None

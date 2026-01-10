@@ -319,6 +319,7 @@ class SecurityCoverage:
                 "[opencti_security_coverage] "
                 "Missing parameters: name or object_covered"
             )
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import a Security coverage from a STIX2 object.
@@ -431,3 +432,4 @@ class SecurityCoverage:
             self.opencti.app_logger.error(
                 "[opencti_security_coverage] Missing parameters: stixObject"
             )
+            return None

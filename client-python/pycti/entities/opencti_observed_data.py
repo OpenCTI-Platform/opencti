@@ -458,6 +458,13 @@ class ObservedData:
 
     @staticmethod
     def generate_id(object_ids):
+        """Generate a STIX ID for an Observed Data object.
+
+        :param object_ids: list of object IDs contained in the observed data
+        :type object_ids: list
+        :return: STIX ID for the Observed Data
+        :rtype: str
+        """
         data = {"objects": object_ids}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
@@ -465,6 +472,13 @@ class ObservedData:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from Observed Data data.
+
+        :param data: Dictionary containing an 'object_refs' key
+        :type data: dict
+        :return: STIX ID for the Observed Data
+        :rtype: str
+        """
         return ObservedData.generate_id(data["object_refs"])
 
     def list(self, **kwargs):

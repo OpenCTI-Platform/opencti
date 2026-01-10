@@ -448,7 +448,7 @@ class Opinion:
             return result["data"]["opinionContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.app_logger.error(
-                "[opencti_opinion] Missing parameters: id or entity_id"
+                "[opencti_opinion] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
             return None
 

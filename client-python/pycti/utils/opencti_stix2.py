@@ -87,15 +87,21 @@ bundles_success_counter = meter.create_counter(
 
 
 class OpenCTIStix2:
-    """Python API for Stix2 in OpenCTI
+    """Python API for Stix2 in OpenCTI.
 
-    Handles conversion between STIX2 format and OpenCTI internal format.
+    Handles conversion between STIX2 format and OpenCTI internal format,
+    including import/export operations and bundle processing.
 
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :param opencti: OpenCTI API client instance
     :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the OpenCTIStix2 helper.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
@@ -1237,6 +1243,15 @@ class OpenCTIStix2:
     def import_observable(
         self, stix_object: Dict, update: bool = False, types: List = None
     ) -> None:
+        """Import a STIX cyber observable into OpenCTI.
+
+        :param stix_object: Valid STIX2 cyber observable object
+        :type stix_object: Dict
+        :param update: Whether to update existing data in the database, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: list, optional
+        """
         # Extract
         embedded_relationships = self.extract_embedded_relationships(stix_object, types)
         created_by_id = embedded_relationships["created_by"]
@@ -1454,6 +1469,15 @@ class OpenCTIStix2:
     def import_relationship(
         self, stix_relation: Dict, update: bool = False, types: List = None
     ) -> None:
+        """Import a STIX core relationship into OpenCTI.
+
+        :param stix_relation: Valid STIX2 relationship object
+        :type stix_relation: Dict
+        :param update: Whether to update existing data in the database, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: list, optional
+        """
         # Extract
         embedded_relationships = self.extract_embedded_relationships(
             stix_relation, types
@@ -1554,6 +1578,19 @@ class OpenCTIStix2:
         update: bool = False,
         types: List = None,
     ) -> None:
+        """Import a STIX sighting relationship into OpenCTI.
+
+        :param stix_sighting: Valid STIX2 sighting object
+        :type stix_sighting: Dict
+        :param from_id: ID of the source entity (sighting_of_ref)
+        :type from_id: str
+        :param to_id: ID of the target entity (where_sighted_ref)
+        :type to_id: str
+        :param update: Whether to update existing data in the database, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: list, optional
+        """
         # Extract
         embedded_relationships = self.extract_embedded_relationships(
             stix_sighting, types
@@ -1670,6 +1707,15 @@ class OpenCTIStix2:
 
     # region export
     def generate_export(self, entity: Dict, no_custom_attributes: bool = False) -> Dict:
+        """Generate a STIX2 export from an OpenCTI entity.
+
+        :param entity: OpenCTI entity dictionary to export
+        :type entity: Dict
+        :param no_custom_attributes: Whether to exclude custom x_opencti attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :return: STIX2 formatted entity dictionary
+        :rtype: Dict
+        """
         # Handle model deviation
         original_entity_type = entity["entity_type"]
 
@@ -1878,8 +1924,17 @@ class OpenCTIStix2:
 
     @staticmethod
     def prepare_id_filters_export(
-        id: Union[str, List[str]], access_filter: Dict = None
+        entity_id: Union[str, List[str]], access_filter: Dict = None
     ) -> Dict:
+        """Prepare filter configuration for entity ID-based export queries.
+
+        :param entity_id: Single entity ID or list of entity IDs to filter
+        :type entity_id: Union[str, List[str]]
+        :param access_filter: Additional access filter to combine, defaults to None
+        :type access_filter: Dict, optional
+        :return: Filter configuration dictionary for API queries
+        :rtype: Dict
+        """
         if access_filter is not None:
             return {
                 "mode": "and",
@@ -1889,7 +1944,7 @@ class OpenCTIStix2:
                         "filters": [
                             {
                                 "key": "ids",
-                                "values": id if isinstance(id, list) else [id],
+                                "values": entity_id if isinstance(entity_id, list) else [entity_id],
                             }
                         ],
                         "filterGroups": [],
@@ -1906,7 +1961,7 @@ class OpenCTIStix2:
                     {
                         "key": "ids",
                         "mode": "or",
-                        "values": id if isinstance(id, list) else [id],
+                        "values": entity_id if isinstance(entity_id, list) else [entity_id],
                     }
                 ],
             }
@@ -1918,9 +1973,21 @@ class OpenCTIStix2:
         access_filter: Dict = None,
         no_custom_attributes: bool = False,
     ) -> List:
+        """Prepare an entity for STIX2 export with related objects.
+
+        :param entity: Entity dictionary to prepare for export
+        :type entity: Dict
+        :param mode: Export mode - 'simple' for entity only, 'full' for entity with relations
+        :type mode: str
+        :param access_filter: Access filter for the export, defaults to None
+        :type access_filter: Dict, optional
+        :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :return: List of STIX2 objects ready for export
+        :rtype: List
+        """
         result = []
         objects_to_get = []
-        relations_to_get = []
 
         # CreatedByRef
         if (
@@ -2107,7 +2174,7 @@ class OpenCTIStix2:
             del entity["attribute_count"]
             from_to_check = entity["from"]["id"]
             relationships_from_filter = self.prepare_id_filters_export(
-                id=from_to_check, access_filter=access_filter
+                entity_id=from_to_check, access_filter=access_filter
             )
             x = self.opencti.opencti_stix_object_or_stix_relationship.list(
                 filters=relationships_from_filter
@@ -2121,7 +2188,7 @@ class OpenCTIStix2:
 
             to_to_check = [entity["to"]["id"]]
             relationships_to_filter = self.prepare_id_filters_export(
-                id=to_to_check, access_filter=access_filter
+                entity_id=to_to_check, access_filter=access_filter
             )
             y = self.opencti.opencti_stix_object_or_stix_relationship.list(
                 filters=relationships_to_filter
@@ -2138,7 +2205,7 @@ class OpenCTIStix2:
         if "from" in entity:
             from_to_check = entity["from"]["id"]
             relationships_from_filter = self.prepare_id_filters_export(
-                id=from_to_check, access_filter=access_filter
+                entity_id=from_to_check, access_filter=access_filter
             )
             x = self.opencti.opencti_stix_object_or_stix_relationship.list(
                 filters=relationships_from_filter
@@ -2153,7 +2220,7 @@ class OpenCTIStix2:
         if "to" in entity:
             to_to_check = [entity["to"]["id"]]
             relationships_to_filter = self.prepare_id_filters_export(
-                id=to_to_check, access_filter=access_filter
+                entity_id=to_to_check, access_filter=access_filter
             )
             y = self.opencti.opencti_stix_object_or_stix_relationship.list(
                 filters=relationships_to_filter
@@ -2360,25 +2427,6 @@ class OpenCTIStix2:
                     )
                     uuids = uuids + [x["id"] for x in entity_object_bundle]
                     result = result + entity_object_bundle
-            for (
-                relation_object
-            ) in relations_to_get:  # never appended after initialization
-
-                def find_relation_object_data(current_relation_object):
-                    return current_relation_object.id == relation_object["id"]
-
-                relation_object_data = self.prepare_export(
-                    entity=filter(
-                        find_relation_object_data,
-                        self.opencti.stix_core_relationship.list(filters=access_filter),
-                    )
-                )
-                relation_object_bundle = self.filter_objects(
-                    uuids, relation_object_data
-                )
-                uuids = uuids + [x["id"] for x in relation_object_bundle]
-                result = result + relation_object_bundle
-
             # Get extra reports
             """
             for uuid in uuids:
@@ -2443,6 +2491,23 @@ class OpenCTIStix2:
         no_custom_attributes: bool = False,
         only_entity: bool = False,
     ) -> Dict:
+        """Get a STIX2 bundle or single object from an entity ID.
+
+        :param entity_type: Type of the entity to export
+        :type entity_type: str
+        :param entity_id: ID of the entity to export
+        :type entity_id: str
+        :param mode: Export mode - 'simple' or 'full', defaults to 'simple'
+        :type mode: str
+        :param access_filter: Access filter for the export, defaults to None
+        :type access_filter: Dict, optional
+        :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :param only_entity: If True, return only the entity object instead of a bundle
+        :type only_entity: bool, optional
+        :return: STIX2 bundle dictionary or single STIX2 object if only_entity is True
+        :rtype: Dict
+        """
         bundle = {
             "type": "bundle",
             "id": "bundle--" + str(uuid.uuid4()),
@@ -2481,6 +2546,26 @@ class OpenCTIStix2:
         no_custom_attributes: bool = False,
         only_entity: bool = False,
     ) -> Dict:
+        """Export an entity as a STIX2 bundle.
+
+        .. deprecated::
+            Use :meth:`get_stix_bundle_or_object_from_entity_id` instead.
+
+        :param entity_type: Type of the entity to export
+        :type entity_type: str
+        :param entity_id: ID of the entity to export
+        :type entity_id: str
+        :param mode: Export mode - 'simple' or 'full', defaults to 'simple'
+        :type mode: str
+        :param access_filter: Access filter for the export, defaults to None
+        :type access_filter: Dict, optional
+        :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :param only_entity: If True, return only the entity object instead of a bundle
+        :type only_entity: bool, optional
+        :return: STIX2 bundle dictionary or single STIX2 object
+        :rtype: Dict
+        """
         return self.get_stix_bundle_or_object_from_entity_id(
             entity_type=entity_type,
             entity_id=entity_id,
@@ -2500,6 +2585,25 @@ class OpenCTIStix2:
         getAll: bool = True,
         withFiles: bool = False,
     ) -> List[Dict]:
+        """List entities for export based on type and filters.
+
+        :param entity_type: Type of entities to list
+        :type entity_type: str
+        :param search: Search parameters, defaults to None
+        :type search: Dict, optional
+        :param filters: Filter parameters, defaults to None
+        :type filters: Dict, optional
+        :param orderBy: Field to order results by, defaults to None
+        :type orderBy: str, optional
+        :param orderMode: Order direction ('asc' or 'desc'), defaults to None
+        :type orderMode: str, optional
+        :param getAll: Whether to get all results, defaults to True
+        :type getAll: bool, optional
+        :param withFiles: Whether to include files in the export, defaults to False
+        :type withFiles: bool, optional
+        :return: List of entity dictionaries
+        :rtype: List[Dict]
+        """
         if IdentityTypes.has_value(entity_type):
             entity_type = "Identity"
 
@@ -2581,6 +2685,25 @@ class OpenCTIStix2:
         mode: str = "simple",
         access_filter: Dict = None,
     ) -> Dict:
+        """Export a list of entities as a STIX2 bundle.
+
+        :param entity_type: Type of entities to export
+        :type entity_type: str
+        :param search: Search parameters, defaults to None
+        :type search: Dict, optional
+        :param filters: Filter parameters, defaults to None
+        :type filters: Dict, optional
+        :param order_by: Field to order results by, defaults to None
+        :type order_by: str, optional
+        :param order_mode: Order direction ('asc' or 'desc'), defaults to None
+        :type order_mode: str, optional
+        :param mode: Export mode - 'simple' or 'full', defaults to 'simple'
+        :type mode: str
+        :param access_filter: Access filter for the export, defaults to None
+        :type access_filter: Dict, optional
+        :return: STIX2 bundle containing all exported entities
+        :rtype: Dict
+        """
         bundle = {
             "type": "bundle",
             "id": "bundle--" + str(uuid.uuid4()),
@@ -3015,13 +3138,13 @@ class OpenCTIStix2:
         elif operation == "patch":
             self.apply_patch(item=item)
         elif operation == "pir_flag_element":
-            id = item["id"]
-            input = item["input"]
-            self.opencti.pir.pir_flag_element(id=id, input=input)
+            element_id = item["id"]
+            pir_input = item["input"]
+            self.opencti.pir.pir_flag_element(id=element_id, input=pir_input)
         elif operation == "pir_unflag_element":
-            id = item["id"]
-            input = item["input"]
-            self.opencti.pir.pir_unflag_element(id=id, input=input)
+            element_id = item["id"]
+            pir_input = item["input"]
+            self.opencti.pir.pir_unflag_element(id=element_id, input=pir_input)
         elif operation == "rule_apply":
             self.rule_apply(item=item)
         elif operation == "rule_clear":
@@ -3068,6 +3191,19 @@ class OpenCTIStix2:
         types: List = None,
         work_id: str = None,
     ):
+        """Import a single STIX2 item into OpenCTI.
+
+        :param item: STIX2 item to import
+        :type item: dict
+        :param update: Whether to update existing data, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: List, optional
+        :param work_id: Work ID for tracking import progress, defaults to None
+        :type work_id: str, optional
+        :return: True on success
+        :rtype: bool
+        """
         opencti_operation = self.opencti.get_attribute_in_extension(
             "opencti_operation", item
         )
@@ -3196,6 +3332,22 @@ class OpenCTIStix2:
         types: List = None,
         work_id: str = None,
     ):
+        """Import a single STIX2 item with automatic retry on failures.
+
+        Handles various error types including timeouts, lock errors, missing references,
+        and bad gateway errors with appropriate retry strategies.
+
+        :param item: STIX2 item to import
+        :type item: dict
+        :param update: Whether to update existing data, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: List, optional
+        :param work_id: Work ID for tracking import progress, defaults to None
+        :type work_id: str, optional
+        :return: None on success, the failed item on permanent failure
+        :rtype: dict or None
+        """
         processing_count = 0
         worker_logger = self.opencti.logger_class("worker")
         while processing_count <= MAX_PROCESSING_COUNT:
@@ -3302,6 +3454,23 @@ class OpenCTIStix2:
         work_id: str = None,
         objects_max_refs: int = 0,
     ) -> Tuple[list, list]:
+        """Import a complete STIX2 bundle into OpenCTI.
+
+        :param stix_bundle: STIX2 bundle dictionary to import
+        :type stix_bundle: Dict
+        :param update: Whether to update existing data, defaults to False
+        :type update: bool, optional
+        :param types: List of STIX2 types to filter, defaults to None
+        :type types: List, optional
+        :param work_id: Work ID for tracking import progress, defaults to None
+        :type work_id: str, optional
+        :param objects_max_refs: Maximum number of object references allowed; objects exceeding
+            this limit will be rejected. Set to 0 to disable the limit.
+        :type objects_max_refs: int, optional
+        :return: Tuple of (list of successfully imported elements, list of failed/too-large elements)
+        :rtype: Tuple[list, list]
+        :raises ValueError: If the bundle is not properly formatted or empty
+        """
         # Check if the bundle is correctly formatted
         if "type" not in stix_bundle or stix_bundle["type"] != "bundle":
             raise ValueError("JSON data type is not a STIX2 bundle")
@@ -3366,24 +3535,39 @@ class OpenCTIStix2:
 
     @staticmethod
     def put_attribute_in_extension(
-        object, extension_id, key, value, multiple=False
+        stix_object, extension_id, key, value, multiple=False
     ) -> any:
-        if ("x_opencti_" + key) in object:
-            del object["x_opencti_" + key]
-        if ("x_mitre_" + key) in object:
-            del object["x_mitre_" + key]
-        if "extensions" not in object:
-            object["extensions"] = {}
-        if extension_id not in object["extensions"]:
-            object["extensions"][extension_id] = {}
-        if key in object["extensions"][extension_id]:
+        """Add or update an attribute in a STIX object's extension.
+
+        :param stix_object: STIX object to modify
+        :type stix_object: dict
+        :param extension_id: ID of the extension to add the attribute to
+        :type extension_id: str
+        :param key: Attribute key name
+        :type key: str
+        :param value: Attribute value to set
+        :type value: any
+        :param multiple: If True, append value to a list; if False, replace the value
+        :type multiple: bool
+        :return: Modified STIX object
+        :rtype: dict
+        """
+        if ("x_opencti_" + key) in stix_object:
+            del stix_object["x_opencti_" + key]
+        if ("x_mitre_" + key) in stix_object:
+            del stix_object["x_mitre_" + key]
+        if "extensions" not in stix_object:
+            stix_object["extensions"] = {}
+        if extension_id not in stix_object["extensions"]:
+            stix_object["extensions"][extension_id] = {}
+        if key in stix_object["extensions"][extension_id]:
             if multiple:
-                object["extensions"][extension_id][key].append(value)
+                stix_object["extensions"][extension_id][key].append(value)
             else:
-                object["extensions"][extension_id][key] = value
+                stix_object["extensions"][extension_id][key] = value
         else:
             if multiple:
-                object["extensions"][extension_id][key] = [value]
+                stix_object["extensions"][extension_id][key] = [value]
             else:
-                object["extensions"][extension_id][key] = value
-        return object
+                stix_object["extensions"][extension_id][key] = value
+        return stix_object

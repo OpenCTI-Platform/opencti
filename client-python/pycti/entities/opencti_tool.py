@@ -438,6 +438,7 @@ class Tool:
             self.opencti.app_logger.error(
                 "[opencti_tool] Missing parameters: name"
             )
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import a Tool object from a STIX2 object.
@@ -546,3 +547,4 @@ class Tool:
             self.opencti.app_logger.error(
                 "[opencti_tool] Missing parameters: stixObject"
             )
+            return None

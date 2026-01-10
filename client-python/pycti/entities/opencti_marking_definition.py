@@ -251,6 +251,7 @@ class MarkingDefinition:
             self.opencti.app_logger.error(
                 "[opencti_marking_definition] Missing parameters: definition and definition_type",
             )
+            return None
 
     def update_field(self, **kwargs):
         """Update a Marking Definition object field.
@@ -399,6 +400,7 @@ class MarkingDefinition:
             self.opencti.app_logger.error(
                 "[opencti_marking_definition] Missing parameters: stixObject"
             )
+            return None
 
     def delete(self, **kwargs):
         """Delete a Marking-Definition object.

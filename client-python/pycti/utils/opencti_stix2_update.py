@@ -4,11 +4,13 @@ from pycti.utils.constants import StixCyberObservableTypes
 
 
 class OpenCTIStix2Update:
-    """Python API for Stix2 Update in OpenCTI
+    """Python API for Stix2 Update in OpenCTI.
 
-    Provides methods to update STIX2 objects in OpenCTI.
+    Provides methods to update STIX2 objects in OpenCTI, including
+    adding/removing marking definitions, labels, external references,
+    kill chain phases, and object references.
 
-    :param opencti: OpenCTI instance
+    :param opencti: OpenCTI API client instance
     :type opencti: OpenCTIApiClient
     """
 
@@ -16,6 +18,7 @@ class OpenCTIStix2Update:
         """Initialize the OpenCTIStix2Update helper.
 
         :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
         """
         self.opencti = opencti
         self.mapping_cache = {}
@@ -250,6 +253,30 @@ class OpenCTIStix2Update:
                 self.opencti.opinion.add_stix_object_or_stix_relationship(
                     id=id, stixObjectOrStixRelationshipId=object_ref
                 )
+            elif entity_type == "grouping":
+                self.opencti.grouping.add_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "case-incident":
+                self.opencti.case_incident.add_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "case-rfi":
+                self.opencti.case_rfi.add_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "case-rft":
+                self.opencti.case_rft.add_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "feedback":
+                self.opencti.feedback.add_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "task":
+                self.opencti.task.add_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
 
     def remove_object_refs(self, entity_type, id, object_refs, version=2):
         """Remove object references from a container entity.
@@ -280,6 +307,30 @@ class OpenCTIStix2Update:
                 )
             elif entity_type == "opinion":
                 self.opencti.opinion.remove_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "grouping":
+                self.opencti.grouping.remove_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "case-incident":
+                self.opencti.case_incident.remove_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "case-rfi":
+                self.opencti.case_rfi.remove_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "case-rft":
+                self.opencti.case_rft.remove_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "feedback":
+                self.opencti.feedback.remove_stix_object_or_stix_relationship(
+                    id=id, stixObjectOrStixRelationshipId=object_ref
+                )
+            elif entity_type == "task":
+                self.opencti.task.remove_stix_object_or_stix_relationship(
                     id=id, stixObjectOrStixRelationshipId=object_ref
                 )
 
@@ -362,38 +413,38 @@ class OpenCTIStix2Update:
                 id=id, identity_id=created_by_ref
             )
 
-    def update_attribute(self, entity_type, id, input):
+    def update_attribute(self, entity_type, entity_id, field_input):
         """Update an attribute of an entity.
 
         :param entity_type: Type of the entity
         :type entity_type: str
-        :param id: ID of the entity
-        :type id: str
-        :param input: Input containing the attribute update
-        :type input: list
+        :param entity_id: ID of the entity
+        :type entity_id: str
+        :param field_input: Input containing the attribute update
+        :type field_input: list
         """
         # Relations
         if entity_type == "relationship":
-            self.opencti.stix_core_relationship.update_field(id=id, input=input)
+            self.opencti.stix_core_relationship.update_field(id=entity_id, input=field_input)
         elif entity_type == "sighting":
-            self.opencti.stix_sighting_relationship.update_field(id=id, input=input)
+            self.opencti.stix_sighting_relationship.update_field(id=entity_id, input=field_input)
         # Observables
         elif StixCyberObservableTypes.has_value(entity_type):
-            self.opencti.stix_cyber_observable.update_field(id=id, input=input)
+            self.opencti.stix_cyber_observable.update_field(id=entity_id, input=field_input)
         # Meta
         elif entity_type == "marking-definition":
-            self.opencti.marking_definition.update_field(id=id, input=input)
+            self.opencti.marking_definition.update_field(id=entity_id, input=field_input)
         elif entity_type == "label":
-            self.opencti.label.update_field(id=id, input=input)
+            self.opencti.label.update_field(id=entity_id, input=field_input)
         elif entity_type == "vocabulary":
-            self.opencti.vocabulary.update_field(id=id, input=input)
+            self.opencti.vocabulary.update_field(id=entity_id, input=field_input)
         elif entity_type == "kill-chain-phase":
-            self.opencti.kill_chain_phase.update_field(id=id, input=input)
+            self.opencti.kill_chain_phase.update_field(id=entity_id, input=field_input)
         elif entity_type == "external-reference":
-            self.opencti.external_reference.update_field(id=id, input=input)
+            self.opencti.external_reference.update_field(id=entity_id, input=field_input)
         # Remaining stix domain
         else:
-            self.opencti.stix_domain_object.update_field(id=id, input=input)
+            self.opencti.stix_domain_object.update_field(id=entity_id, input=field_input)
 
     def process_update(self, data):
         """Process a STIX2 patch/update operation.
@@ -421,12 +472,12 @@ class OpenCTIStix2Update:
                     ):  # ID replace is a side effect handled by the platform
                         val = data["x_opencti_patch"]["replace"][key]
                         current_val = val["current"]
-                        if type(current_val) is list:
+                        if isinstance(current_val, list):
                             values = list(
                                 map(
                                     lambda x: (
                                         x["value"]
-                                        if (type(x) is dict and "value" in x)
+                                        if (isinstance(x, dict) and "value" in x)
                                         else x
                                     ),
                                     current_val,
@@ -437,7 +488,7 @@ class OpenCTIStix2Update:
                             values = (
                                 current_val["value"]
                                 if (
-                                    type(current_val) is dict and "value" in current_val
+                                    isinstance(current_val, dict) and "value" in current_val
                                 )
                                 else str(current_val)
                             )

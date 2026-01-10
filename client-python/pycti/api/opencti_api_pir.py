@@ -15,12 +15,13 @@ class OpenCTIApiPir:
 
         :param id: the element id
         :type id: str
-        :param input: the PIR flag input
+        :param input: the PIR flag input (PirFlagElementInput format)
         :type input: dict
         :return: None
+        :rtype: None
         """
-        id = kwargs.get("id", None)
-        input = kwargs.get("input", None)
+        element_id = kwargs.get("id", None)
+        pir_input = kwargs.get("input", None)
         query = """
             mutation PirFlagElement($id: ID!, $input: PirFlagElementInput!) {
                 pirFlagElement(id: $id, input: $input)
@@ -29,8 +30,8 @@ class OpenCTIApiPir:
         self.api.query(
             query,
             {
-                "id": id,
-                "input": input,
+                "id": element_id,
+                "input": pir_input,
             },
         )
 
@@ -39,12 +40,13 @@ class OpenCTIApiPir:
 
         :param id: the element id
         :type id: str
-        :param input: the PIR unflag input
+        :param input: the PIR unflag input (PirUnflagElementInput format)
         :type input: dict
         :return: None
+        :rtype: None
         """
-        id = kwargs.get("id", None)
-        input = kwargs.get("input", None)
+        element_id = kwargs.get("id", None)
+        pir_input = kwargs.get("input", None)
         query = """
             mutation PirUnflagElement($id: ID!, $input: PirUnflagElementInput!) {
                 pirUnflagElement(id: $id, input: $input)
@@ -53,7 +55,7 @@ class OpenCTIApiPir:
         self.api.query(
             query,
             {
-                "id": id,
-                "input": input,
+                "id": element_id,
+                "input": pir_input,
             },
         )

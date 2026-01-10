@@ -13,9 +13,10 @@ class OpenCTIApiInternalFile:
     def delete(self, **kwargs):
         """Delete an internal file.
 
-        :param item: the item containing file information
+        :param item: the item containing file information with id in extensions
         :type item: dict
         :return: None
+        :rtype: None
         """
         item = kwargs.get("item", None)
         file_name = self.api.get_attribute_in_extension("id", item)

@@ -530,6 +530,7 @@ class Incident:
             self.opencti.app_logger.error(
                 "[opencti_incident] Missing parameters: name"
             )
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import an Incident object from a STIX2 object.
@@ -641,3 +642,4 @@ class Incident:
             self.opencti.app_logger.error(
                 "[opencti_incident] Missing parameters: stixObject"
             )
+            return None

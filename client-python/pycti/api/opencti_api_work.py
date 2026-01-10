@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 
 class OpenCTIApiWork:
@@ -22,6 +22,7 @@ class OpenCTIApiWork:
         :param message: the message to report
         :type message: str
         :return: None
+        :rtype: None
         """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info(
@@ -43,9 +44,10 @@ class OpenCTIApiWork:
         :type work_id: str
         :param message: the message to report
         :type message: str
-        :param in_error: whether the work completed with error
-        :type in_error: bool
+        :param in_error: whether the work completed with error, defaults to False
+        :type in_error: bool, optional
         :return: None
+        :rtype: None
         """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info(
@@ -68,6 +70,7 @@ class OpenCTIApiWork:
         :param work_id: the work id
         :type work_id: str
         :return: None
+        :rtype: None
         """
         self.api.app_logger.info("Ping work", {"work_id": work_id})
         query = """
@@ -84,9 +87,10 @@ class OpenCTIApiWork:
 
         :param work_id: the work id
         :type work_id: str
-        :param error: the error to report
+        :param error: the error to report (WorkErrorInput format)
         :type error: dict
         :return: None
+        :rtype: None
         """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info("Report expectation", {"work_id": work_id})
@@ -110,6 +114,7 @@ class OpenCTIApiWork:
         :param expectations: the number of expectations to add
         :type expectations: int
         :return: None
+        :rtype: None
         """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info(
@@ -138,6 +143,7 @@ class OpenCTIApiWork:
         :param draft_context: the draft context to add
         :type draft_context: str
         :return: None
+        :rtype: None
         """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info(
@@ -158,7 +164,7 @@ class OpenCTIApiWork:
             except Exception:
                 self.api.app_logger.error("Cannot add draft context")
 
-    def initiate_work(self, connector_id: str, friendly_name: str) -> str | None:
+    def initiate_work(self, connector_id: str, friendly_name: str) -> Optional[str]:
         """Initiate a new work for a connector.
 
         :param connector_id: the connector id
@@ -188,19 +194,15 @@ class OpenCTIApiWork:
     def delete_work(self, work_id: str):
         """Delete a work.
 
+        .. deprecated::
+            Use :meth:`delete` instead.
+
         :param work_id: the work id
         :type work_id: str
         :return: the response data
         :rtype: dict
         """
-        query = """
-        mutation ConnectorWorksMutation($workId: ID!) {
-            workEdit(id: $workId) {
-                delete
-            }
-        }"""
-        work = self.api.query(query, {"workId": work_id}, True)
-        return work["data"]
+        return self.delete(id=work_id)
 
     def delete(self, **kwargs):
         """Delete a work by id.
@@ -210,8 +212,8 @@ class OpenCTIApiWork:
         :return: the response data
         :rtype: dict or None
         """
-        id = kwargs.get("id", None)
-        if id is None:
+        work_id = kwargs.get("id", None)
+        if work_id is None:
             self.api.admin_logger.error(
                 "[opencti_work] Cannot delete work, missing parameter: id"
             )
@@ -224,7 +226,7 @@ class OpenCTIApiWork:
         }"""
         work = self.api.query(
             query,
-            {"workId": id},
+            {"workId": work_id},
         )
         return work["data"]
 
@@ -317,8 +319,8 @@ class OpenCTIApiWork:
 
         :param connector_id: the connector id
         :type connector_id: str
-        :return: list of works
-        :rtype: list
+        :return: list of work dictionaries sorted by timestamp
+        :rtype: list[dict]
         """
         query = """
         query ConnectorWorksQuery(

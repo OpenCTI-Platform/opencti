@@ -475,6 +475,15 @@ class CaseRft:
 
     @staticmethod
     def generate_id(name, created):
+        """Generate a STIX ID for a Case RFT object.
+
+        :param name: the name of the Case RFT
+        :type name: str
+        :param created: the creation date of the Case RFT
+        :type created: str or datetime.datetime
+        :return: STIX ID for the Case RFT
+        :rtype: str
+        """
         name = name.lower().strip()
         if isinstance(created, datetime.datetime):
             created = created.isoformat()
@@ -1077,6 +1086,12 @@ class CaseRft:
             return None
 
     def delete(self, **kwargs):
+        """Delete a Case RFT object.
+
+        :param id: the id of the Case RFT to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Case RFT", {"id": id})

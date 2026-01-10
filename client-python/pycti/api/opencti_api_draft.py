@@ -16,8 +16,14 @@ class OpenCTIApiDraft:
         :param id: the draft workspace id
         :type id: str
         :return: None
+        :rtype: None
         """
-        id = kwargs.get("id", None)
+        draft_id = kwargs.get("id", None)
+        if draft_id is None:
+            self.api.app_logger.error(
+                "[opencti_draft] Cannot delete draft workspace, missing parameter: id"
+            )
+            return None
         query = """
             mutation DraftWorkspaceDelete($id: ID!) {
                 draftWorkspaceDelete(id: $id)
@@ -26,6 +32,6 @@ class OpenCTIApiDraft:
         self.api.query(
             query,
             {
-                "id": id,
+                "id": draft_id,
             },
         )

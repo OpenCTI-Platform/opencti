@@ -477,6 +477,15 @@ class CaseIncident:
 
     @staticmethod
     def generate_id(name, created):
+        """Generate a STIX ID for a Case Incident object.
+
+        :param name: the name of the Case Incident
+        :type name: str
+        :param created: the creation date of the Case Incident
+        :type created: str or datetime.datetime
+        :return: STIX ID for the Case Incident
+        :rtype: str
+        """
         name = name.lower().strip()
         if isinstance(created, datetime.datetime):
             created = created.isoformat()
@@ -487,17 +496,28 @@ class CaseIncident:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from Case Incident data.
+
+        :param data: Dictionary containing 'name' and 'created' keys
+        :type data: dict
+        :return: STIX ID for the Case Incident
+        :rtype: str
+        """
         return CaseIncident.generate_id(data["name"], data["created"])
 
     def list(self, **kwargs):
-        """
-        List Case Incident objects
+        """List Case Incident objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Case Incident objects
+        :type after: str
+        :return: List of Case Incident objects
+        :rtype: list
         """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
@@ -579,12 +599,14 @@ class CaseIncident:
             )
 
     def read(self, **kwargs):
-        """
-        Read a Case Incident object
+        """Read a Case Incident object.
 
         :param id: the id of the Case Incident
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Case Incident object
+        :type filters: dict
+        :return: Case Incident object
+        :rtype: dict or None
         """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
@@ -617,13 +639,16 @@ class CaseIncident:
                 return None
 
     def get_by_stix_id_or_name(self, **kwargs):
-        """
-        Read a Case Incident object by stix_id or name
+        """Read a Case Incident object by stix_id or name.
 
-        :param type: the Stix-Domain-Entity type
-        :param stix_id: the STIX ID of the Stix-Domain-Entity
-        :param name: the name of the Stix-Domain-Entity
-        :return Stix-Domain-Entity object
+        :param stix_id: the STIX ID of the Case Incident
+        :type stix_id: str
+        :param name: the name of the Case Incident
+        :type name: str
+        :param created: the creation date of the Case Incident
+        :type created: str
+        :return: Case Incident object
+        :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
@@ -648,12 +673,14 @@ class CaseIncident:
         return object_result
 
     def contains_stix_object_or_stix_relationship(self, **kwargs):
-        """
-        Check if a case incident already contains a thing (Stix Object or Stix Relationship)
+        """Check if a case incident already contains a thing (Stix Object or Stix Relationship).
 
         :param id: the id of the Case Incident
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if contained, False otherwise
+        :rtype: bool or None
         """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
@@ -716,7 +743,8 @@ class CaseIncident:
         :param update: (optional) whether to update if exists (default: False)
         :param file: (optional) File object to attach
         :param fileMarkings: (optional) list of marking definition IDs for the file
-        :return Case Incident object
+        :return: Case Incident object
+        :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
@@ -796,12 +824,14 @@ class CaseIncident:
             return None
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
-        """
-        Add a Stix-Entity object to Case Incident object (object_refs)
+        """Add a Stix-Entity object to Case Incident object (object_refs).
 
         :param id: the id of the Case Incident
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if successful, False otherwise
+        :rtype: bool
         """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
@@ -843,12 +873,14 @@ class CaseIncident:
             return False
 
     def remove_stix_object_or_stix_relationship(self, **kwargs):
-        """
-        Remove a Stix-Entity object to Case Incident object (object_refs)
+        """Remove a Stix-Entity object from Case Incident object (object_refs).
 
         :param id: the id of the Case Incident
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if successful, False otherwise
+        :rtype: bool
         """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
@@ -887,11 +919,16 @@ class CaseIncident:
             return False
 
     def import_from_stix2(self, **kwargs):
-        """
-        Import a Case Incident object from a STIX2 object
+        """Import a Case Incident object from a STIX2 object.
 
         :param stixObject: the Stix-Object Case Incident
-        :return Case Incident object
+        :type stixObject: dict
+        :param extras: additional parameters like created_by_id, object_marking_ids
+        :type extras: dict
+        :param update: whether to update existing object
+        :type update: bool
+        :return: Case Incident object
+        :rtype: dict or None
         """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
@@ -1015,6 +1052,12 @@ class CaseIncident:
             return None
 
     def delete(self, **kwargs):
+        """Delete a Case Incident object.
+
+        :param id: the id of the Case Incident to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Case Incident", {"id": id})

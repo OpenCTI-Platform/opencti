@@ -266,7 +266,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_stix_cyber_observable Missing parameters: id or file_name"
+                "[opencti_stix_cyber_observable] Missing parameters: id or file_name"
             )
             return None
 

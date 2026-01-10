@@ -6,6 +6,9 @@ class Capability:
 
     See the properties attribute to understand which properties are fetched by
     default from the graphql queries.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):

@@ -1,3 +1,9 @@
+"""STIX2 utility functions and mappings for OpenCTI.
+
+This module provides utility classes and constants for working with STIX2 objects
+in OpenCTI, including type mappings, pattern generation, and object reference counting.
+"""
+
 from typing import Any, Dict
 
 from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression

@@ -542,7 +542,7 @@ class StixCoreRelationship:
             final_data = final_data + data
             while result["data"]["stixCoreRelationships"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCoreRelationships"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing StixCoreRelationships", {"after": after}
                 )
                 result = self.opencti.query(
@@ -1461,6 +1461,7 @@ class StixCoreRelationship:
             self.opencti.app_logger.error(
                 "[opencti_stix_core_relationship] Missing parameters: stixObject"
             )
+            return None
 
     def organization_share(self, entity_id, organization_ids, sharing_direct_container):
         """Share element to multiple organizations.

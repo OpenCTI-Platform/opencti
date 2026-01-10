@@ -300,6 +300,8 @@ class Location:
         :type orderMode: str
         :param customAttributes: custom attributes to return
         :type customAttributes: list
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
         :param withPagination: whether to include pagination info
         :type withPagination: bool
         :param withFiles: whether to include files
@@ -315,6 +317,7 @@ class Location:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         with_files = kwargs.get("withFiles", False)
 
@@ -359,9 +362,32 @@ class Location:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["locations"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["locations"])
+            final_data = final_data + data
+            while result["data"]["locations"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["locations"]["pageInfo"]["endCursor"]
+                self.opencti.app_logger.debug("Listing Locations", {"after": after})
+                result = self.opencti.query(
+                    query,
+                    {
+                        "types": types,
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["locations"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["locations"], with_pagination
+            )
 
     def read(self, **kwargs):
         """Read a Location object.

@@ -262,15 +262,25 @@ class Event:
         """List Event objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
+        :type after: str
         :param orderBy: field to order results by
+        :type orderBy: str
         :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param getAll: whether to retrieve all results
+        :type getAll: bool
         :param withPagination: whether to include pagination info
+        :type withPagination: bool
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: List of Event objects
         :rtype: list
         """
@@ -351,15 +361,16 @@ class Event:
                 result["data"]["events"], with_pagination
             )
 
-    """
-        Read a Event object
+    def read(self, **kwargs):
+        """Read an Event object.
 
         :param id: the id of the Event
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Event object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :return: Event object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -395,34 +406,54 @@ class Event:
             )
             return None
 
-    """
-        Create an Event object
-
-        :param stix_id: (optional) the STIX ID
-        :param createdBy: (optional) the author ID
-        :param objectMarking: (optional) list of marking definition IDs
-        :param objectLabel: (optional) list of label IDs
-        :param externalReferences: (optional) list of external reference IDs
-        :param revoked: (optional) whether the event is revoked
-        :param confidence: (optional) confidence level (0-100)
-        :param lang: (optional) language
-        :param created: (optional) creation date
-        :param modified: (optional) modification date
-        :param name: the name of the Event (required)
-        :param description: (optional) description
-        :param aliases: (optional) list of aliases
-        :param start_time: (optional) start time of the event
-        :param stop_time: (optional) stop time of the event
-        :param event_types: (optional) list of event types
-        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
-        :param x_opencti_modified_at: (optional) custom modification date
-        :param update: (optional) whether to update if exists (default: False)
-        :param file: (optional) File object to attach
-        :param fileMarkings: (optional) list of marking definition IDs for the file
-        :return Event object
-    """
-
     def create(self, **kwargs):
+        """Create an Event object.
+
+        :param stix_id: the STIX ID (optional)
+        :type stix_id: str
+        :param createdBy: the author ID (optional)
+        :type createdBy: str
+        :param objectMarking: list of marking definition IDs (optional)
+        :type objectMarking: list
+        :param objectLabel: list of label IDs (optional)
+        :type objectLabel: list
+        :param externalReferences: list of external reference IDs (optional)
+        :type externalReferences: list
+        :param revoked: whether the event is revoked (optional)
+        :type revoked: bool
+        :param confidence: confidence level 0-100 (optional)
+        :type confidence: int
+        :param lang: language (optional)
+        :type lang: str
+        :param created: creation date (optional)
+        :type created: str
+        :param modified: modification date (optional)
+        :type modified: str
+        :param name: the name of the Event (required)
+        :type name: str
+        :param description: description (optional)
+        :type description: str
+        :param aliases: list of aliases (optional)
+        :type aliases: list
+        :param start_time: start time of the event (optional)
+        :type start_time: str
+        :param stop_time: stop time of the event (optional)
+        :type stop_time: str
+        :param event_types: list of event types (optional)
+        :type event_types: list
+        :param x_opencti_stix_ids: list of additional STIX IDs (optional)
+        :type x_opencti_stix_ids: list
+        :param x_opencti_modified_at: custom modification date (optional)
+        :type x_opencti_modified_at: str
+        :param update: whether to update if exists (default: False)
+        :type update: bool
+        :param file: File object to attach (optional)
+        :type file: File
+        :param fileMarkings: list of marking definition IDs for the file (optional)
+        :type fileMarkings: list
+        :return: Event object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -486,15 +517,20 @@ class Event:
             self.opencti.app_logger.error(
                 "[opencti_event] Missing parameters: name"
             )
-
-    """
-        Import an Event object from a STIX2 object
-
-        :param stixObject: the Stix-Object Event
-        :return Event object
-    """
+            return None
 
     def import_from_stix2(self, **kwargs):
+        """Import an Event object from a STIX2 object.
+
+        :param stixObject: the Stix-Object Event
+        :type stixObject: dict
+        :param extras: additional parameters like created_by_id, object_marking_ids
+        :type extras: dict
+        :param update: whether to update existing object
+        :type update: bool
+        :return: Event object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -572,3 +608,4 @@ class Event:
             self.opencti.app_logger.error(
                 "[opencti_event] Missing parameters: stixObject"
             )
+            return None

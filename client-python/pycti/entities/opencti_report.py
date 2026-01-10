@@ -747,6 +747,7 @@ class Report:
             self.opencti.app_logger.error(
                 "[opencti_report] Missing parameters: id or stixObjectOrStixRelationshipId",
             )
+            return None
 
     def create(self, **kwargs):
         """Create a Report object.
@@ -853,6 +854,7 @@ class Report:
             self.opencti.app_logger.error(
                 "[opencti_report] Missing parameters: name and published"
             )
+            return None
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
         """Add a STIX object or relationship to Report object (object_refs).
@@ -1089,3 +1091,4 @@ class Report:
             self.opencti.app_logger.error(
                 "[opencti_report] Missing parameters: stixObject"
             )
+            return None

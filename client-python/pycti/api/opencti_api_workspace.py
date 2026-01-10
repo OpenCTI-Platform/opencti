@@ -16,9 +16,10 @@ class OpenCTIApiWorkspace:
         :param id: the workspace id
         :type id: str
         :return: None
+        :rtype: None
         """
-        id = kwargs.get("id", None)
-        if id is None:
+        workspace_id = kwargs.get("id", None)
+        if workspace_id is None:
             self.api.admin_logger.error(
                 "[opencti_workspace] Cannot delete workspace, missing parameter: id"
             )
@@ -31,6 +32,6 @@ class OpenCTIApiWorkspace:
         self.api.query(
             query,
             {
-                "id": id,
+                "id": workspace_id,
             },
         )

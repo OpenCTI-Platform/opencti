@@ -262,15 +262,25 @@ class CourseOfAction:
         """List Course of Action objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
+        :type after: str
         :param orderBy: field to order results by
+        :type orderBy: str
         :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param getAll: whether to retrieve all results
+        :type getAll: bool
         :param withPagination: whether to include pagination info
+        :type withPagination: bool
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: List of Course of Action objects
         :rtype: list
         """
@@ -357,9 +367,13 @@ class CourseOfAction:
         """Read a Course of Action object.
 
         :param id: the id of the Course of Action
+        :type id: str
         :param filters: the filters to apply if no id provided
+        :type filters: dict
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: Course of Action object
         :rtype: dict or None
         """
@@ -404,26 +418,47 @@ class CourseOfAction:
         """Create a Course of Action object.
 
         :param name: the name of the Course of Action (required)
+        :type name: str
         :param stix_id: (optional) the STIX ID
+        :type stix_id: str
         :param createdBy: (optional) the author ID
+        :type createdBy: str
         :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
         :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
         :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
         :param revoked: (optional) whether the course of action is revoked
+        :type revoked: bool
         :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
         :param lang: (optional) language
+        :type lang: str
         :param created: (optional) creation date
+        :type created: str
         :param modified: (optional) modification date
+        :type modified: str
         :param description: (optional) description
+        :type description: str
         :param x_opencti_aliases: (optional) list of aliases
+        :type x_opencti_aliases: list
         :param x_mitre_id: (optional) MITRE ATT&CK ID
+        :type x_mitre_id: str
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
         :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
         :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
         :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
         :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
         :param file: (optional) File object to attach
+        :type file: dict
         :param fileMarkings: (optional) list of marking definition IDs for the file
+        :type fileMarkings: list
         :return: Course of Action object
         :rtype: dict or None
         """
@@ -502,8 +537,11 @@ class CourseOfAction:
         """Import a Course of Action object from a STIX2 object.
 
         :param stixObject: the STIX2 Course of Action object
+        :type stixObject: dict
         :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
         :param update: whether to update if the entity already exists
+        :type update: bool
         :return: Course of Action object
         :rtype: dict or None
         """

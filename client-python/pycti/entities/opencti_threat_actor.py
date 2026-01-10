@@ -145,12 +145,28 @@ class ThreatActor:
 
     @staticmethod
     def generate_id(name, opencti_type):
+        """Generate a STIX ID for a Threat Actor.
+
+        :param name: the name of the Threat Actor
+        :type name: str
+        :param opencti_type: the type of the Threat Actor (e.g., 'Threat-Actor-Group')
+        :type opencti_type: str
+        :return: STIX ID for the Threat Actor
+        :rtype: str
+        """
         data = {"name": name.lower().strip(), "opencti_type": opencti_type}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "threat-actor--" + id
 
     def generate_id_from_data(self, data):
+        """Generate a STIX ID from Threat Actor data.
+
+        :param data: Dictionary containing 'name' and optionally 'x_opencti_type' keys
+        :type data: dict
+        :return: STIX ID for the Threat Actor
+        :rtype: str
+        """
         data_type = "Threat-Actor-Group"
         if "x_opencti_type" in data:
             data_type = data["x_opencti_type"]

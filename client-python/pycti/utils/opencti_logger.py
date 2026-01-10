@@ -35,10 +35,9 @@ def logger(level, json_logging=True):
     :return: AppLogger class
     :rtype: class
     """
-    # Exceptions
+    # Suppress verbose logging from third-party libraries
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("pika").setLevel(logging.ERROR)
-    # Exceptions
     if json_logging:
         log_handler = logging.StreamHandler()
         log_handler.setLevel(level)
@@ -49,7 +48,18 @@ def logger(level, json_logging=True):
         logging.basicConfig(level=level)
 
     class AppLogger:
+        """Application logger class with metadata support.
+
+        Provides debug, info, warning, and error logging methods with
+        optional metadata support for structured logging.
+        """
+
         def __init__(self, name):
+            """Initialize the application logger.
+
+            :param name: Name of the logger instance
+            :type name: str
+            """
             self.local_logger = logging.getLogger(name)
 
         @staticmethod

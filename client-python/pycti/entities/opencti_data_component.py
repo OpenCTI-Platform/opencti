@@ -264,6 +264,13 @@ class DataComponent:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for a Data Component.
+
+        :param name: the name of the Data Component
+        :type name: str
+        :return: STIX ID for the Data Component
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)
@@ -272,19 +279,41 @@ class DataComponent:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from Data Component data.
+
+        :param data: Dictionary containing a 'name' key
+        :type data: dict
+        :return: STIX ID for the Data Component
+        :rtype: str
+        """
         return DataComponent.generate_id(data["name"])
 
-    """
-        List Data-Component objects
+    def list(self, **kwargs):
+        """List Data Component objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Data-Component objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: List of Data Component objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -364,15 +393,20 @@ class DataComponent:
                 result["data"]["dataComponents"], with_pagination
             )
 
-    """
-        Read a Data-Component object
-
-        :param id: the id of the Data-Component
-        :param filters: the filters to apply if no id provided
-        :return Data-Component object
-    """
-
     def read(self, **kwargs):
+        """Read a Data Component object.
+
+        :param id: the id of the Data Component
+        :type id: str
+        :param filters: the filters to apply if no id provided
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Data Component object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -408,34 +442,54 @@ class DataComponent:
             )
             return None
 
-    """
-        Create a Data Component object
+    def create(self, **kwargs):
+        """Create a Data Component object.
 
         :param stix_id: (optional) the STIX ID
+        :type stix_id: str
         :param createdBy: (optional) the author ID
+        :type createdBy: str
         :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
         :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
         :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
         :param revoked: (optional) whether the data component is revoked
+        :type revoked: bool
         :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
         :param lang: (optional) language
+        :type lang: str
         :param created: (optional) creation date
+        :type created: str
         :param modified: (optional) modification date
+        :type modified: str
         :param name: the name of the Data Component (required)
+        :type name: str
         :param description: (optional) description
+        :type description: str
         :param dataSource: (optional) the data source ID
+        :type dataSource: str
         :param aliases: (optional) list of aliases
+        :type aliases: list
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
         :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
         :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
         :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
         :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
         :param file: (optional) File object to attach
+        :type file: dict
         :param fileMarkings: (optional) list of marking definition IDs for the file
-        :return Data Component object
-    """
-
-    def create(self, **kwargs):
+        :type fileMarkings: list
+        :return: Data Component object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -501,15 +555,20 @@ class DataComponent:
             self.opencti.app_logger.error(
                 "[opencti_data_component] Missing parameters: name"
             )
-
-    """
-        Import an Data-Component object from a STIX2 object
-
-        :param stixObject: the Stix-Object Data-Component
-        :return Data-Component object
-    """
+            return None
 
     def import_from_stix2(self, **kwargs):
+        """Import a Data Component object from a STIX2 object.
+
+        :param stixObject: the STIX2 Data Component object
+        :type stixObject: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :return: Data Component object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -608,6 +667,7 @@ class DataComponent:
             self.opencti.app_logger.error(
                 "[opencti_data_component] Missing parameters: stixObject"
             )
+            return None
 
     def process_multiple_fields(self, data):
         if "dataSource" in data and data["dataSource"] is not None:

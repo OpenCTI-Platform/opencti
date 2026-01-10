@@ -10,7 +10,7 @@ import shutil
 import signal
 import tempfile
 import threading
-from typing import Dict, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 
 import magic
 import requests
@@ -93,6 +93,19 @@ _PROXY_SIGNAL_HANDLERS_REGISTERED = False
 
 
 def build_request_headers(token: str, custom_headers: str, app_logger, provider: str):
+    """Build request headers for OpenCTI API requests.
+
+    :param token: the API authentication token
+    :type token: str
+    :param custom_headers: custom headers in format "header01:value;header02:value"
+    :type custom_headers: str
+    :param app_logger: the application logger instance
+    :type app_logger: logging.Logger
+    :param provider: the provider string for User-Agent header
+    :type provider: str
+    :return: dictionary of request headers
+    :rtype: dict
+    """
     pycti_user_agent = "pycti/" + __version__
     if provider is not None:
         pycti_user_agent += " " + provider
@@ -115,7 +128,20 @@ def build_request_headers(token: str, custom_headers: str, app_logger, provider:
 
 
 class File:
+    """File object for OpenCTI file uploads.
+
+    Represents a file to be uploaded via the OpenCTI API.
+
+    :param name: the filename
+    :type name: str
+    :param data: the file content (string or bytes)
+    :type data: str or bytes
+    :param mime: the MIME type of the file, defaults to "text/plain"
+    :type mime: str, optional
+    """
+
     def __init__(self, name, data, mime="text/plain"):
+        """Constructor method."""
         self.name = name
         self.data = data
         self.mime = mime
@@ -166,10 +192,10 @@ class OpenCTIApiClient:
         json_logging: bool = False,
         bundle_send_to_queue: bool = True,
         cert: Union[str, Tuple[str, str], None] = None,
-        custom_headers: str = None,
+        custom_headers: Optional[str] = None,
         perform_health_check: bool = True,
         requests_timeout: int = 300,
-        provider: str = None,
+        provider: Optional[str] = None,
     ):
         """Constructor method"""
 
@@ -512,7 +538,7 @@ class OpenCTIApiClient:
         )
 
     def query(self, query, variables=None, disable_impersonate=False):
-        """submit a query to the OpenCTI GraphQL API
+        """Submit a query to the OpenCTI GraphQL API.
 
         :param query: GraphQL query string
         :type query: str
@@ -520,8 +546,9 @@ class OpenCTIApiClient:
         :type variables: dict, optional
         :param disable_impersonate: removes impersonate header if set to True, defaults to False
         :type disable_impersonate: bool, optional
-        :return: returns the response json content
-        :rtype: Any
+        :return: returns the response JSON content
+        :rtype: dict
+        :raises ValueError: if the API returns an error or non-200 status code
         """
         variables = variables or {}
         query_var = {}
@@ -656,13 +683,15 @@ class OpenCTIApiClient:
             raise ValueError(r.text)
 
     def fetch_opencti_file(self, fetch_uri, binary=False, serialize=False):
-        """get file from the OpenCTI API
+        """Get file from the OpenCTI API.
 
         :param fetch_uri: download URI to use
         :type fetch_uri: str
-        :param binary: [description], defaults to False
+        :param binary: if True, returns raw bytes; if False, returns text, defaults to False
         :type binary: bool, optional
-        :return: returns either the file content as text or bytes based on `binary`
+        :param serialize: if True, returns base64-encoded content, defaults to False
+        :type serialize: bool, optional
+        :return: returns either the file content as text, bytes, or base64-encoded string
         :rtype: str or bytes
         """
 
@@ -679,13 +708,13 @@ class OpenCTIApiClient:
                 return base64.b64encode(r.content).decode("utf-8")
             return r.content
         if serialize:
-            return base64.b64encode(r.text).decode("utf-8")
+            return base64.b64encode(r.text.encode("utf-8")).decode("utf-8")
         return r.text
 
     def health_check(self):
-        """submit an example request to the OpenCTI API.
+        """Submit an example request to the OpenCTI API.
 
-        :return: returns `True` if the health check has been successful
+        :return: returns True if the health check has been successful
         :rtype: bool
         """
         try:
@@ -731,11 +760,11 @@ class OpenCTIApiClient:
         return result["data"]["logsWorkerConfig"]
 
     def not_empty(self, value):
-        """check if a value is empty for str, list and int
+        """Check if a value is empty for str, list and int.
 
         :param value: value to check
         :type value: str or list or int or float or bool or datetime.date
-        :return: returns `True` if the value is one of the supported types and not empty
+        :return: returns True if the value is one of the supported types and not empty
         :rtype: bool
         """
 
@@ -767,11 +796,14 @@ class OpenCTIApiClient:
             return False
 
     def process_multiple(self, data: dict, with_pagination=False) -> Union[dict, list]:
-        """processes data returned by the OpenCTI API with multiple entities
+        """Process data returned by the OpenCTI API with multiple entities.
 
         :param data: data to process
-        :param with_pagination: whether to use pagination with the API
-        :returns: returns either a dict or list with the processes entities
+        :type data: dict
+        :param with_pagination: whether to use pagination with the API, defaults to False
+        :type with_pagination: bool, optional
+        :return: returns either a dict or list with the processed entities
+        :rtype: dict or list
         """
 
         if with_pagination:
@@ -807,10 +839,12 @@ class OpenCTIApiClient:
         return result
 
     def process_multiple_ids(self, data) -> list:
-        """processes data returned by the OpenCTI API with multiple ids
+        """Process data returned by the OpenCTI API with multiple ids.
 
         :param data: data to process
+        :type data: list
         :return: returns a list of ids
+        :rtype: list
         """
 
         result = []
@@ -823,7 +857,7 @@ class OpenCTIApiClient:
         return result
 
     def process_multiple_fields(self, data):
-        """processes data returned by the OpenCTI API with multiple fields
+        """Process data returned by the OpenCTI API with multiple fields.
 
         :param data: data to process
         :type data: dict
@@ -954,10 +988,14 @@ class OpenCTIApiClient:
             return None
 
     def create_draft(self, **kwargs):
-        """create a draft in OpenCTI API
-        :param `**kwargs`: arguments for file name creating draft (required: `draft_name`)
-        :return: returns the query response for the draft creation
-        :rtype: id
+        """Create a draft in OpenCTI API.
+
+        :param draft_name: the name of the draft to create (required)
+        :type draft_name: str
+        :param entity_id: the entity ID to associate with the draft
+        :type entity_id: str, optional
+        :return: returns the draft workspace ID
+        :rtype: str
         """
 
         draft_name = kwargs.get("draft_name", None)
@@ -982,9 +1020,18 @@ class OpenCTIApiClient:
             return None
 
     def upload_pending_file(self, **kwargs):
-        """upload a file to OpenCTI API
+        """Upload a pending file to OpenCTI API.
 
-        :param `**kwargs`: arguments for file upload (required: `file_name` and `data`)
+        :param file_name: the name of the file to upload (required)
+        :type file_name: str
+        :param data: the file content, defaults to reading from file_name path
+        :type data: str or bytes, optional
+        :param mime_type: the MIME type of the file, defaults to "text/plain"
+        :type mime_type: str, optional
+        :param entity_id: the entity ID to associate with the file
+        :type entity_id: str, optional
+        :param file_markings: list of marking definition IDs to apply
+        :type file_markings: list, optional
         :return: returns the query response for the file upload
         :rtype: dict
         """
@@ -1024,9 +1071,14 @@ class OpenCTIApiClient:
             return None
 
     def send_bundle_to_api(self, **kwargs):
-        """Push a bundle to a queue through OpenCTI API
+        """Push a bundle to a queue through OpenCTI API.
 
-        :param `**kwargs`: arguments for bundle push (required: `connectorId` and `bundle`)
+        :param connector_id: the connector ID (required)
+        :type connector_id: str
+        :param bundle: the STIX bundle to push (required)
+        :type bundle: str
+        :param work_id: the work ID to associate with the bundle
+        :type work_id: str, optional
         :return: returns the query response for the bundle push
         :rtype: dict
         """

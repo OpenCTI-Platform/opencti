@@ -553,6 +553,7 @@ class IntrusionSet:
             self.opencti.app_logger.error(
                 "[opencti_intrusion_set] Missing parameters: name"
             )
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import an Intrusion Set object from a STIX2 object.
@@ -670,3 +671,4 @@ class IntrusionSet:
             self.opencti.app_logger.error(
                 "[opencti_intrusion_set] Missing parameters: stixObject"
             )
+            return None

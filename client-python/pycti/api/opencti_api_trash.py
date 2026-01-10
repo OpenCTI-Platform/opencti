@@ -16,6 +16,7 @@ class OpenCTIApiTrash:
         :param operation_id: the delete operation id
         :type operation_id: str
         :return: None
+        :rtype: None
         """
         query = """
             mutation DeleteOperationRestore($id: ID!) {
@@ -30,13 +31,15 @@ class OpenCTIApiTrash:
         )
 
     def delete(self, **kwargs):
-        """Delete a trash item given its ID
+        """Delete a trash item given its ID.
 
-        :param id: ID for the delete operation on the platform.
+        :param id: ID for the delete operation on the platform
         :type id: str
+        :return: None
+        :rtype: None
         """
-        id = kwargs.get("id", None)
-        if id is None:
+        delete_operation_id = kwargs.get("id", None)
+        if delete_operation_id is None:
             self.api.admin_logger.error(
                 "[opencti_trash] Cannot confirm delete, missing parameter: id"
             )
@@ -49,6 +52,6 @@ class OpenCTIApiTrash:
         self.api.query(
             query,
             {
-                "id": id,
+                "id": delete_operation_id,
             },
         )

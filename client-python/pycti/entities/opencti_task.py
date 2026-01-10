@@ -242,6 +242,15 @@ class Task:
 
     @staticmethod
     def generate_id(name, created):
+        """Generate a STIX ID for a Task object.
+
+        :param name: the name of the Task
+        :type name: str
+        :param created: the creation date of the Task
+        :type created: str or datetime.datetime
+        :return: STIX ID for the Task
+        :rtype: str
+        """
         if isinstance(created, datetime.datetime):
             created = created.isoformat()
         data = {"name": name.lower().strip(), "created": created}
@@ -251,6 +260,13 @@ class Task:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from Task data.
+
+        :param data: Dictionary containing 'name' and 'created' keys
+        :type data: dict
+        :return: STIX ID for the Task
+        :rtype: str
+        """
         return Task.generate_id(data["name"], data["created"])
 
     def list(self, **kwargs):
@@ -377,6 +393,11 @@ class Task:
                 return result[0]
             else:
                 return None
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_task] Missing parameters: id or filters"
+            )
+            return None
 
     def get_by_stix_id_or_name(self, **kwargs):
         """Read a Task object by stix_id or name.
@@ -521,6 +542,15 @@ class Task:
             return None
 
     def update_field(self, **kwargs):
+        """Update a field of a Task object.
+
+        :param id: the id of the Task
+        :type id: str
+        :param input: the input containing field(s) to update
+        :type input: list
+        :return: Task object
+        :rtype: dict or None
+        """
         self.opencti.app_logger.info("Updating Task", {"data": json.dumps(kwargs)})
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
@@ -590,15 +620,16 @@ class Task:
             )
             return False
 
-    """
-        Remove a Stix-Entity object to Task object (object_refs)
+    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        """Remove a Stix-Entity object from Task object (object_refs).
 
         :param id: the id of the Task
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :return Boolean
-    """
-
-    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -633,14 +664,18 @@ class Task:
             )
             return False
 
-    """
-        Import a Task object from a STIX2 object
+    def import_from_stix2(self, **kwargs):
+        """Import a Task object from a STIX2 object.
 
         :param stixObject: the Stix-Object Task
-        :return Task object
-    """
-
-    def import_from_stix2(self, **kwargs):
+        :type stixObject: dict
+        :param extras: additional parameters like created_by_id, object_marking_ids
+        :type extras: dict
+        :param update: whether to update existing object
+        :type update: bool
+        :return: Task object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -728,6 +763,12 @@ class Task:
             return None
 
     def delete(self, **kwargs):
+        """Delete a Task object.
+
+        :param id: the id of the Task to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Task", {"id": id})

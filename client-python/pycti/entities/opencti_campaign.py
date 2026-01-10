@@ -533,6 +533,7 @@ class Campaign:
             self.opencti.app_logger.error(
                 "[opencti_campaign] Missing parameters: name"
             )
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import a Campaign object from a STIX2 object.
@@ -637,3 +638,4 @@ class Campaign:
             self.opencti.app_logger.error(
                 "[opencti_campaign] Missing parameters: stixObject"
             )
+            return None

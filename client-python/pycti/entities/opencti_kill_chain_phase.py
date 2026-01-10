@@ -228,6 +228,7 @@ class KillChainPhase:
             self.opencti.app_logger.error(
                 "[opencti_kill_chain_phase] Missing parameters: kill_chain_name and phase_name",
             )
+            return None
 
     def update_field(self, **kwargs):
         """Update a Kill Chain Phase object field.

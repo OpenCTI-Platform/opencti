@@ -801,3 +801,4 @@ class Identity:
             self.opencti.app_logger.error(
                 "[opencti_identity] Missing parameters: stixObject"
             )
+            return None

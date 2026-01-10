@@ -13,11 +13,14 @@ class OpenCTIApiPlaybook:
     def playbook_step_execution(self, playbook: dict, bundle: str):
         """Execute a playbook step.
 
-        :param playbook: the playbook configuration dict
+        :param playbook: the playbook configuration dict containing execution_id, event_id,
+            execution_start, playbook_id, data_instance_id, step_id, previous_step_id,
+            and previous_bundle
         :type playbook: dict
         :param bundle: the STIX bundle to process
         :type bundle: str
         :return: None
+        :rtype: None
         """
         self.api.app_logger.info(
             "Executing playbook step",
@@ -53,9 +56,10 @@ class OpenCTIApiPlaybook:
         :param id: the playbook id
         :type id: str
         :return: None
+        :rtype: None
         """
-        id = kwargs.get("id", None)
-        if id is not None:
+        playbook_id = kwargs.get("id", None)
+        if playbook_id is not None:
             query = """
                 mutation PlaybookDelete($id: ID!) {
                     playbookDelete(id: $id)
@@ -64,11 +68,11 @@ class OpenCTIApiPlaybook:
             self.api.query(
                 query,
                 {
-                    "id": id,
+                    "id": playbook_id,
                 },
             )
         else:
             self.api.app_logger.error(
-                "[opencti_playbook] Cannot delete playbook, missing parameters: id"
+                "[opencti_playbook] Cannot delete playbook, missing parameter: id"
             )
             return None

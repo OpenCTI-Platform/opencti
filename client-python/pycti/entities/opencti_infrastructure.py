@@ -275,20 +275,30 @@ class Infrastructure:
         return Infrastructure.generate_id(data["name"])
 
     def list(self, **kwargs):
-        """List Infrastructure objects
+        """List Infrastructure objects.
 
-        The list method accepts the following kwargs:
-
-        :param list filters: (optional) the filters to apply
-        :param str search: (optional) a search keyword to apply for the listing
-        :param int first: (optional) return the first n rows from the `after` ID
-                            or the beginning if not set
-        :param str after: (optional) OpenCTI object ID of the first row for pagination
-        :param str orderBy: (optional) the field to order the response on
-        :param bool orderMode: (optional) either "`asc`" or "`desc`"
-        :param list customAttributes: (optional) list of attributes keys to return
-        :param bool getAll: (optional) switch to return all entries (be careful to use this without any other filters)
-        :param bool withPagination: (optional) switch to use pagination
+        :param filters: (optional) the filters to apply
+        :type filters: dict
+        :param search: (optional) a search keyword to apply for the listing
+        :type search: str
+        :param first: (optional) return the first n rows from the `after` ID or the beginning if not set
+        :type first: int
+        :param after: (optional) OpenCTI object ID of the first row for pagination
+        :type after: str
+        :param orderBy: (optional) the field to order the response on
+        :type orderBy: str
+        :param orderMode: (optional) either "asc" or "desc"
+        :type orderMode: str
+        :param customAttributes: (optional) list of attributes keys to return
+        :type customAttributes: str
+        :param getAll: (optional) switch to return all entries (be careful to use this without any other filters)
+        :type getAll: bool
+        :param withPagination: (optional) switch to use pagination
+        :type withPagination: bool
+        :param withFiles: (optional) include files in response
+        :type withFiles: bool
+        :return: List of Infrastructure objects
+        :rtype: list
         """
 
         filters = kwargs.get("filters", None)
@@ -372,17 +382,23 @@ class Infrastructure:
             )
 
     def read(self, **kwargs):
-        """Read an Infrastructure object
+        """Read an Infrastructure object.
 
-        read can be either used with a known OpenCTI entity `id` or by using a
+        Read can be either used with a known OpenCTI entity `id` or by using a
         valid filter to search and return a single Infrastructure entity or None.
-
-        The list method accepts the following kwargs.
 
         Note: either `id` or `filters` is required.
 
-        :param str id: the id of the Threat-Actor-Group
-        :param list filters: the filters to apply if no id provided
+        :param id: the id of the Infrastructure
+        :type id: str
+        :param filters: the filters to apply if no id provided
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Infrastructure object
+        :rtype: dict or None
         """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
@@ -526,13 +542,17 @@ class Infrastructure:
             self.opencti.app_logger.error(
                 "[opencti_infrastructure] Missing parameters: name"
             )
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import an Infrastructure object from a STIX2 object.
 
         :param stixObject: the STIX2 Infrastructure object
+        :type stixObject: dict
         :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
         :param update: whether to update if the entity already exists
+        :type update: bool
         :return: Infrastructure object
         :rtype: dict or None
         """
@@ -634,3 +654,4 @@ class Infrastructure:
             self.opencti.app_logger.error(
                 "[opencti_infrastructure] Missing parameters: stixObject"
             )
+            return None

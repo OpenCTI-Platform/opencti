@@ -601,6 +601,11 @@ class Grouping:
                 return result[0]
             else:
                 return None
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_grouping] Missing parameters: id or filters"
+            )
+            return None
 
     def get_by_stix_id_or_name(self, **kwargs):
         """Read a Grouping object by stix_id or name.
@@ -673,6 +678,7 @@ class Grouping:
             self.opencti.app_logger.error(
                 "[opencti_grouping] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
+            return None
 
     def create(self, **kwargs):
         """Create a Grouping object.
@@ -793,6 +799,7 @@ class Grouping:
             self.opencti.app_logger.error(
                 "[opencti_grouping] Missing parameters: name and context"
             )
+            return None
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
         """Add a Stix-Entity object to Grouping object (object_refs).
@@ -990,3 +997,4 @@ class Grouping:
             self.opencti.app_logger.error(
                 "[opencti_grouping] Missing parameters: stixObject"
             )
+            return None
