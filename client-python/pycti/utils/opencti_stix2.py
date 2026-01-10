@@ -850,7 +850,9 @@ class OpenCTIStix2:
                                 self.opencti.file(
                                     file_obj["name"],
                                     data,
-                                    file_obj.get("mime_type", "application/octet-stream"),
+                                    file_obj.get(
+                                        "mime_type", "application/octet-stream"
+                                    ),
                                 )
                             )
                             files_markings.append(
