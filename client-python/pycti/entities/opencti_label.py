@@ -12,9 +12,15 @@ class Label:
     Manages labels and tags in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Label instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -27,21 +33,42 @@ class Label:
 
     @staticmethod
     def generate_id(value):
+        """Generate a STIX ID for a Label.
+
+        :param value: The label value
+        :type value: str
+        :return: STIX ID for the label
+        :rtype: str
+        """
         data = {"value": value}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "label--" + id
 
-    """
-        List Label objects
+    def list(self, **kwargs):
+        """List Label objects.
 
         :param filters: the filters to apply
+        :type filters: dict
+        :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Label objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: list
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :return: List of Label objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -114,15 +141,16 @@ class Label:
                 result["data"]["labels"], with_pagination
             )
 
-    """
-        Read a Label object
+    def read(self, **kwargs):
+        """Read a Label object.
 
         :param id: the id of the Label
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Label object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :return: Label object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         if id is not None:
@@ -152,15 +180,22 @@ class Label:
             )
             return None
 
-    """
-        Create a Label object
-
-        :param value: the value
-        :param color: the color
-        :return label object
-    """
-
     def create(self, **kwargs):
+        """Create a Label object.
+
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param value: the label value (required)
+        :type value: str
+        :param color: (optional) the label color
+        :type color: str
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :return: Label object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         value = kwargs.get("value", None)
         color = kwargs.get("color", None)
@@ -195,14 +230,18 @@ class Label:
             return self.opencti.process_multiple_fields(result["data"]["labelAdd"])
         else:
             self.opencti.app_logger.error("[opencti_label] Missing parameters: value")
-
-    """
-        Read or create a Label
-        If the user has no rights to create the label, return None
-        :return The available or created Label object
-    """
+            return None
 
     def read_or_create_unchecked(self, **kwargs):
+        """Read or create a Label.
+
+        If the user has no rights to create the label, return None.
+
+        :param value: the label value
+        :type value: str
+        :return: The available or created Label object
+        :rtype: dict or None
+        """
         value = kwargs.get("value", None)
         label = self.read(
             filters={
@@ -218,15 +257,16 @@ class Label:
                 return None
         return label
 
-    """
-        Update a Label object field
+    def update_field(self, **kwargs):
+        """Update a Label object field.
 
         :param id: the Label id
+        :type id: str
         :param input: the input of the field
-        :return The updated Label object
-    """
-
-    def update_field(self, **kwargs):
+        :type input: list
+        :return: The updated Label object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
@@ -254,11 +294,17 @@ class Label:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_label] Missing parameters: id and key and value"
+                "[opencti_label] Missing parameters: id and input"
             )
             return None
 
     def delete(self, **kwargs):
+        """Delete a Label object.
+
+        :param id: the id of the Label to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Label", {"id": id})

@@ -222,6 +222,7 @@
   "All types of target": "あらゆる種類のターゲット",
   "All years": "すべての年",
   "Allow modification of sensitive configuration": "機密設定の変更を許可する",
+  "Allow multiple files": "複数のファイルを許可する",
   "Allow multiple instances": "複数のインスタンスを許可する",
   "Allow multiple instances of main entity": "主エンティティの複数インスタンスを許可する",
   "allow to deploy in one-click threat management resources such as feeds, dashboards, playbooks, etc.": "フィード、ダッシュボード、プレイブックなどの脅威管理リソースをワンクリックで展開できる。",

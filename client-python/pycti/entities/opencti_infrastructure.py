@@ -9,10 +9,18 @@ from stix2.canonicalization.Canonicalize import canonicalize
 class Infrastructure:
     """Main Infrastructure class for OpenCTI
 
+    Manages threat infrastructure (servers, domains, etc.) in the OpenCTI platform.
+
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Infrastructure instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -249,6 +257,13 @@ class Infrastructure:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for an Infrastructure.
+
+        :param name: The name of the infrastructure
+        :type name: str
+        :return: STIX ID for the infrastructure
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)
@@ -257,23 +272,40 @@ class Infrastructure:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from infrastructure data.
+
+        :param data: Dictionary containing 'name' key
+        :type data: dict
+        :return: STIX ID for the infrastructure
+        :rtype: str
+        """
         return Infrastructure.generate_id(data["name"])
 
     def list(self, **kwargs):
-        """List Infrastructure objects
+        """List Infrastructure objects.
 
-        The list method accepts the following kwargs:
-
-        :param list filters: (optional) the filters to apply
-        :param str search: (optional) a search keyword to apply for the listing
-        :param int first: (optional) return the first n rows from the `after` ID
-                            or the beginning if not set
-        :param str after: (optional) OpenCTI object ID of the first row for pagination
-        :param str orderBy: (optional) the field to order the response on
-        :param bool orderMode: (optional) either "`asc`" or "`desc`"
-        :param list customAttributes: (optional) list of attributes keys to return
-        :param bool getAll: (optional) switch to return all entries (be careful to use this without any other filters)
-        :param bool withPagination: (optional) switch to use pagination
+        :param filters: (optional) the filters to apply
+        :type filters: dict
+        :param search: (optional) a search keyword to apply for the listing
+        :type search: str
+        :param first: (optional) return the first n rows from the `after` ID or the beginning if not set
+        :type first: int
+        :param after: (optional) OpenCTI object ID of the first row for pagination
+        :type after: str
+        :param orderBy: (optional) the field to order the response on
+        :type orderBy: str
+        :param orderMode: (optional) either "asc" or "desc"
+        :type orderMode: str
+        :param customAttributes: (optional) list of attributes keys to return
+        :type customAttributes: str
+        :param getAll: (optional) switch to return all entries (be careful to use this without any other filters)
+        :type getAll: bool
+        :param withPagination: (optional) switch to use pagination
+        :type withPagination: bool
+        :param withFiles: (optional) include files in response
+        :type withFiles: bool
+        :return: List of Infrastructure objects
+        :rtype: list
         """
 
         filters = kwargs.get("filters", None)
@@ -334,7 +366,7 @@ class Infrastructure:
             final_data = final_data + data
             while result["data"]["infrastructures"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["infrastructures"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing Infrastructures", {"after": after}
                 )
                 result = self.opencti.query(
@@ -357,19 +389,24 @@ class Infrastructure:
             )
 
     def read(self, **kwargs):
-        """Read an Infrastructure object
+        """Read an Infrastructure object.
 
-        read can be either used with a known OpenCTI entity `id` or by using a
+        Read can be either used with a known OpenCTI entity `id` or by using a
         valid filter to search and return a single Infrastructure entity or None.
-
-        The list method accepts the following kwargs.
 
         Note: either `id` or `filters` is required.
 
-        :param str id: the id of the Threat-Actor-Group
-        :param list filters: the filters to apply if no id provided
+        :param id: the id of the Infrastructure
+        :type id: str
+        :param filters: the filters to apply if no id provided
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Infrastructure object
+        :rtype: dict or None
         """
-
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -407,14 +444,60 @@ class Infrastructure:
             )
             return None
 
-    """
-        Create a Infrastructure object
-
-        :param name: the name of the Infrastructure
-        :return Infrastructure object
-    """
-
     def create(self, **kwargs):
+        """Create an Infrastructure object.
+
+        :param name: the name of the Infrastructure (required)
+        :type name: str
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param revoked: (optional) whether the infrastructure is revoked
+        :type revoked: bool
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param lang: (optional) language
+        :type lang: str
+        :param created: (optional) creation date
+        :type created: str
+        :param modified: (optional) modification date
+        :type modified: str
+        :param description: (optional) description
+        :type description: str
+        :param aliases: (optional) list of aliases
+        :type aliases: list
+        :param infrastructure_types: (optional) list of infrastructure types
+        :type infrastructure_types: list
+        :param first_seen: (optional) first seen date
+        :type first_seen: str
+        :param last_seen: (optional) last seen date
+        :type last_seen: str
+        :param killChainPhases: (optional) list of kill chain phase IDs
+        :type killChainPhases: list
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param file: (optional) File object to attach
+        :type file: dict
+        :param fileMarkings: (optional) list of marking definition IDs for the file
+        :type fileMarkings: list
+        :return: Infrastructure object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -437,6 +520,8 @@ class Infrastructure:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Infrastructure", {"name": name})
@@ -476,6 +561,8 @@ class Infrastructure:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "file": file,
+                        "fileMarkings": file_markings,
                     }
                 },
             )
@@ -484,18 +571,22 @@ class Infrastructure:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_infrastructure] Missing parameters: "
-                "name and infrastructure_pattern and main_observable_type"
+                "[opencti_infrastructure] Missing parameters: name"
             )
-
-    """
-        Import an Infrastructure object from a STIX2 object
-
-        :param stixObject: the Stix-Object Infrastructure
-        :return Infrastructure object
-    """
+            return None
 
     def import_from_stix2(self, **kwargs):
+        """Import an Infrastructure object from a STIX2 object.
+
+        :param stixObject: the STIX2 Infrastructure object
+        :type stixObject: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :return: Infrastructure object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -587,8 +678,11 @@ class Infrastructure:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(
                 "[opencti_infrastructure] Missing parameters: stixObject"
             )
+            return None

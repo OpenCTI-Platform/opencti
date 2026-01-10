@@ -236,6 +236,7 @@ input FeedbackAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   file: Upload
+  fileMarkings: [String]
   clientMutationId: String
   update: Boolean
   rating: Int

@@ -1,3 +1,9 @@
+"""STIX2 utility functions and mappings for OpenCTI.
+
+This module provides utility classes and constants for working with STIX2 objects
+in OpenCTI, including type mappings, pattern generation, and object reference counting.
+"""
+
 from typing import Any, Dict
 
 from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
@@ -132,7 +138,7 @@ PATTERN_MAPPING = {
     "Process": ["pid"],
     "Software": ["name"],
     "Url": ["value"],
-    "User-Account": ["acount_login"],
+    "User-Account": ["account_login"],
     "Windows-Registry-Key": ["key"],
     "Windows-Registry-Value-Type": ["name"],
     "Hostname": ["value"],
@@ -152,9 +158,10 @@ OBSERVABLES_VALUE_INT = [
 
 
 class OpenCTIStix2Utils:
-    """Utility class for STIX2 operations in OpenCTI
+    """Utility class for STIX2 operations in OpenCTI.
 
-    Provides helper methods for STIX2 conversions and pattern generation.
+    Provides helper methods for STIX2 conversions and pattern generation,
+    including type mappings, observable pattern creation, and reference counting.
     """
 
     @staticmethod
@@ -213,12 +220,13 @@ class OpenCTIStix2Utils:
         )
 
     @staticmethod
-    def retrieveClassForMethod(
-        openCTIApiClient, entity: Dict, type_path: str, method: str
+    def retrieve_class_for_method(
+        opencti_api_client, entity: Dict, type_path: str, method: str
     ) -> Any:
         """Retrieve the appropriate API class for a given entity type and method.
 
-        :param openCTIApiClient: OpenCTI API client instance
+        :param opencti_api_client: OpenCTI API client instance
+        :type opencti_api_client: OpenCTIApiClient
         :param entity: Entity dictionary containing the type
         :type entity: Dict
         :param type_path: Path to the type field in the entity
@@ -229,15 +237,46 @@ class OpenCTIStix2Utils:
         :rtype: Any
         """
         if entity is not None and type_path in entity:
-            attributeName = entity[type_path].lower().replace("-", "_")
-            if hasattr(openCTIApiClient, attributeName):
-                attribute = getattr(openCTIApiClient, attributeName)
+            attribute_name = entity[type_path].lower().replace("-", "_")
+            if hasattr(opencti_api_client, attribute_name):
+                attribute = getattr(opencti_api_client, attribute_name)
                 if hasattr(attribute, method):
                     return attribute
         return None
 
     @staticmethod
+    def retrieveClassForMethod(
+        openCTIApiClient, entity: Dict, type_path: str, method: str
+    ) -> Any:
+        """Retrieve the appropriate API class for a given entity type and method.
+
+        .. deprecated::
+            Use :meth:`retrieve_class_for_method` instead.
+
+        :param openCTIApiClient: OpenCTI API client instance
+        :type openCTIApiClient: OpenCTIApiClient
+        :param entity: Entity dictionary containing the type
+        :type entity: Dict
+        :param type_path: Path to the type field in the entity
+        :type type_path: str
+        :param method: Name of the method to check for
+        :type method: str
+        :return: The API class that has the specified method, or None
+        :rtype: Any
+        """
+        return OpenCTIStix2Utils.retrieve_class_for_method(
+            openCTIApiClient, entity, type_path, method
+        )
+
+    @staticmethod
     def compute_object_refs_number(entity: Dict):
+        """Compute the number of object references in an entity.
+
+        :param entity: Entity dictionary to analyze
+        :type entity: Dict
+        :return: Total number of references
+        :rtype: int
+        """
         refs_number = 0
         for key in list(entity.keys()):
             if key.endswith("_refs") and entity[key] is not None:
