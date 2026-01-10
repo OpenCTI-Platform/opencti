@@ -1,0 +1,32 @@
+{
+  "name": "opencti-worker",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "opencti-worker",
+  "projectType": "application",
+  "types": ["python"],
+  "targets": {
+    "install": {
+      "executor": "nx:run-commands",
+      "dependsOn": [{ "projects": ["client-python"], "target": "install" }],
+      "options": {
+        "cwd": "opencti-worker/src",
+        "command": "pip install -r requirements.txt"
+      },
+      "metadata": {
+        "description": "Install the OpenCTI worker dependencies"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "dev" }],
+      "options": {
+        "cwd": "opencti-worker/src",
+        "command": "python worker.py"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI worker in development mode"
+      }
+    }
+  }
+}
