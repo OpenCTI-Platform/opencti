@@ -6,14 +6,14 @@ import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/co
 import { AuthenticationError, AzureOpenAI, OpenAI } from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { UnknownError, UnsupportedError } from '../config/errors';
-import { OutputSchema } from '../modules/ai/ai-nlq-schema';
 import type { Output } from '../modules/ai/ai-nlq-schema';
+import { OutputSchema } from '../modules/ai/ai-nlq-schema';
 import { AI_BUS } from '../modules/ai/ai-types';
 import type { AuthUser } from '../types/user';
 import { truncate } from '../utils/format';
 import { notify } from './redis';
 import { isEmptyField } from './utils';
-import { addNlqQueryCount } from '../manager/telemetryManager';
+import { addTelemetryCount, TELEMETRY_COUNT } from '../manager/telemetryManager';
 
 const AI_ENABLED = conf.get('ai:enabled');
 const AI_TYPE = conf.get('ai:type');
@@ -119,7 +119,6 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
     const response = await (client as Mistral)?.chat.stream(request);
     let content = '';
     if (response) {
-      // eslint-disable-next-line no-restricted-syntax
       for await (const chunk of response) {
         if (chunk.data.choices[0].delta.content !== undefined) {
           const streamText = chunk.data.choices[0].delta.content;
@@ -158,7 +157,6 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
     });
     let content = '';
     if (response) {
-      // eslint-disable-next-line no-restricted-syntax
       for await (const chunk of response) {
         if (chunk.choices[0]?.delta.content !== undefined) {
           const streamText = chunk.choices[0].delta.content;
@@ -206,7 +204,7 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
     throw badAiConfigError;
   }
 
-  await addNlqQueryCount();
+  await addTelemetryCount(TELEMETRY_COUNT.GAUGE_NLQ);
 
   logApp.info('[NLQ] Querying AI model for structured output');
   try {

@@ -54,7 +54,7 @@ import { defaultValidationMode, loadFile, uploadJobImport } from '../database/fi
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon } from '../types/store';
-import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
+import { addTelemetryCount, TELEMETRY_COUNT } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
@@ -287,7 +287,7 @@ export const managedConnectorAdd = async (
 
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
   // Increment telemetry for connector deployed via composer
-  await addConnectorDeployedCount();
+  await addTelemetryCount(TELEMETRY_COUNT.CONNECTOR_DEPLOYED);
   // Publish
   await publishUserAction({
     user,
@@ -710,9 +710,9 @@ export const askJobImport = async (
   const connectorsForFile = await uploadJobImport(context, user, file, entityId ?? undefined, opts);
   if (file.id.startsWith('import/pending')) {
     if (args.forceValidation && args.validationMode === 'draft') {
-      await addWorkbenchDraftConvertionCount();
+      await addTelemetryCount(TELEMETRY_COUNT.GAUGE_WORKBENCH_DRAFT_CONVERTION);
     } else if (args.bypassValidation) {
-      await addWorkbenchValidationCount();
+      await addTelemetryCount(TELEMETRY_COUNT.GAUGE_WORKBENCH_VALIDATION);
     }
   }
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
