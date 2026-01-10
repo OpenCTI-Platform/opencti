@@ -870,7 +870,9 @@ class OpenCTIStix2:
                             )
                         if data is not None:
                             file_to_upload = self.opencti.file(
-                                file["name"], data, file["mime_type"]
+                                file["name"],
+                                data,
+                                file.get("mime_type", "application/octet-stream"),
                             )
                             file_markings = file.get("object_marking_refs", None)
 
@@ -906,7 +908,7 @@ class OpenCTIStix2:
                                 version=file.get("version", None),
                                 data=data,
                                 fileMarkings=file.get("object_marking_refs", None),
-                                mime_type=file["mime_type"],
+                                mime_type=file.get("mime_type", "application/octet-stream"),
                                 no_trigger_import=file.get("no_trigger_import", False),
                                 embedded=file.get("embedded", False),
                             )
