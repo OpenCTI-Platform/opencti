@@ -183,6 +183,19 @@ describe('Background task validity check (checkActionValidity)', () => {
     it.skip('should throw an error if task LIST and targets are not knowledge', () => {
       // TODO
     });
+
+    it.skip('should throw an error if task LIST and some targets are inferred relationships', () => {
+      // TODO: requires creating an inferred relationship in test setup
+      // const user = userUpdate;
+      // const type = TASK_TYPE_LIST;
+      // const input = {
+      //   actions: [{ type: ACTION_TYPE_REPLACE }],
+      //   ids: ['<inferred-relationship-id>']
+      // };
+      // await expect(async () => {
+      //   await checkActionValidity(testContext, user, input, scope, type);
+      // }).rejects.toThrowError('Cannot modify inferred relationships');
+    });
   });
 
   describe('Scope USER_NOTIFICATION', () => {
