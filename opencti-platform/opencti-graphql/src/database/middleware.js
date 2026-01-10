@@ -242,6 +242,7 @@ import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
+import { isEnterpriseEditionFromSettings } from '../../src/enterprise-edition/ee';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2360,7 +2361,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       } else {
         // Special access check for RELATION_GRANTED_TO meta
         // If not supported, update must be rejected
-        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
+        const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && isEnterpriseEditionFromSettings(settings);
         if (relType === RELATION_GRANTED_TO && !isUserCanManipulateGrantedRefs) {
           throw ForbiddenAccess();
         }
@@ -2849,7 +2850,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   const updatePatch = buildUpdatePatchForUpsert(user, resolvedElement, type, basePatch, confidenceForUpsert);
 
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const validEnterpriseEdition = settings.valid_enterprise_edition;
+  const validEnterpriseEdition = isEnterpriseEditionFromSettings(settings);
   // All inputs impacted by modifications (+inner)
   const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
 
