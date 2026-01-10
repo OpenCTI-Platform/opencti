@@ -11,6 +11,7 @@ import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_FORM } from '../modules/form/form-types';
+import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -57,6 +58,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_PIR,
   ENTITY_TYPE_FORM,
   ENTITY_TYPE_THEME,
+  ENTITY_TYPE_PLAYBOOK,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
@@ -94,6 +96,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_THEME,
   ENTITY_TYPE_EMAIL_TEMPLATE,
   ENTITY_TYPE_FORM,
+  ENTITY_TYPE_PLAYBOOK,
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 
