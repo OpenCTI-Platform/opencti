@@ -239,6 +239,7 @@ input FeedbackAddInput {
   clientMutationId: String
   update: Boolean
   rating: Int
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {

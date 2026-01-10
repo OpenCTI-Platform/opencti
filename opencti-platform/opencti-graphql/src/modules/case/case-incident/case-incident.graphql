@@ -249,6 +249,7 @@ input CaseIncidentAddInput {
   clientMutationId: String
   update: Boolean
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {

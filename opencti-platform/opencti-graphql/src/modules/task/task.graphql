@@ -225,6 +225,7 @@ input TaskAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   update: Boolean
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {

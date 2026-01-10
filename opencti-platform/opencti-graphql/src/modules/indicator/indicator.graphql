@@ -252,6 +252,7 @@ input IndicatorAddInput {
   x_opencti_workflow_id: String
   file: Upload
   basedOn: [String!]
+  upsertOperations: [EditInput!]
 }
 
 type Query {

@@ -193,6 +193,7 @@ input SecurityPlatformAddInput {
   x_opencti_modified_at: DateTime
   externalReferences: [String]
   update: Boolean
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {
