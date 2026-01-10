@@ -24,52 +24,52 @@ Classes
 =======
 
 - :py:class:`AttackPattern`:
-  Undocumented.
+  Main AttackPattern class for OpenCTI
 
 - :py:class:`Campaign`:
-  Undocumented.
+  Main Campaign class for OpenCTI
 
 - :py:class:`CaseIncident`:
-  Undocumented.
+  Main CaseIncident class for OpenCTI
 
 - :py:class:`CaseRfi`:
-  Undocumented.
+  Main CaseRfi class for OpenCTI
 
 - :py:class:`CaseRft`:
-  Undocumented.
+  Main CaseRft class for OpenCTI
 
 - :py:class:`Channel`:
-  Undocumented.
+  Main Channel class for OpenCTI
 
 - :py:class:`Task`:
-  Undocumented.
+  Main Task class for OpenCTI
 
 - :py:class:`ConnectorType`:
   An enumeration.
 
 - :py:class:`CourseOfAction`:
-  Undocumented.
+  Main CourseOfAction class for OpenCTI
 
 - :py:class:`DataComponent`:
-  Undocumented.
+  Main DataComponent class for OpenCTI
 
 - :py:class:`DataSource`:
-  Undocumented.
+  Main DataSource class for OpenCTI
 
 - :py:class:`ExternalReference`:
-  Undocumented.
+  Main ExternalReference class for OpenCTI
 
 - :py:class:`Feedback`:
-  Undocumented.
+  Main Feedback class for OpenCTI
 
 - :py:class:`Grouping`:
-  Undocumented.
+  Main Grouping class for OpenCTI
 
 - :py:class:`Identity`:
-  Undocumented.
+  Main Identity class for OpenCTI
 
 - :py:class:`Incident`:
-  Undocumented.
+  Main Incident class for OpenCTI
 
 - :py:class:`Indicator`:
   Main Indicator class for OpenCTI
@@ -78,40 +78,40 @@ Classes
   Main Infrastructure class for OpenCTI
 
 - :py:class:`IntrusionSet`:
-  Undocumented.
+  Main IntrusionSet class for OpenCTI
 
 - :py:class:`KillChainPhase`:
-  Undocumented.
+  Main KillChainPhase class for OpenCTI
 
 - :py:class:`Label`:
-  Undocumented.
+  Main Label class for OpenCTI
 
 - :py:class:`Location`:
-  Undocumented.
+  Main Location class for OpenCTI
 
 - :py:class:`Malware`:
-  Undocumented.
+  Main Malware class for OpenCTI
 
 - :py:class:`MalwareAnalysis`:
-  Undocumented.
+  Main MalwareAnalysis class for OpenCTI
 
 - :py:class:`MarkingDefinition`:
-  Undocumented.
+  Main MarkingDefinition class for OpenCTI
 
 - :py:class:`Note`:
-  Undocumented.
+  Main Note class for OpenCTI
 
 - :py:class:`ObservedData`:
-  Undocumented.
+  Main ObservedData class for OpenCTI
 
 - :py:class:`OpenCTIApiClient`:
   Main API client for OpenCTI
 
 - :py:class:`OpenCTIApiConnector`:
-  OpenCTIApiConnector
+  OpenCTI API Connector client
 
 - :py:class:`OpenCTIApiWork`:
-  OpenCTIApiJob
+  OpenCTI API Work client
 
 - :py:class:`OpenCTIConnector`:
   Main class for OpenCTI connector
@@ -120,40 +120,40 @@ Classes
   Python API for OpenCTI connector
 
 - :py:class:`OpenCTIMetricHandler`:
-  Undocumented.
+  Main OpenCTI Metric Handler class
 
 - :py:class:`OpenCTIStix2`:
   Python API for Stix2 in OpenCTI
 
 - :py:class:`OpenCTIStix2Splitter`:
-  Undocumented.
+  Main OpenCTI Stix2 Splitter class
 
 - :py:class:`OpenCTIStix2Update`:
   Python API for Stix2 Update in OpenCTI
 
 - :py:class:`OpenCTIStix2Utils`:
-  Undocumented.
+  Main OpenCTI Stix2 Utils class
 
 - :py:class:`Opinion`:
-  Undocumented.
+  Main Opinion class for OpenCTI
 
 - :py:class:`Report`:
-  Undocumented.
+  Main Report class for OpenCTI
 
 - :py:class:`StixCoreRelationship`:
-  Undocumented.
+  Main StixCoreRelationship class for OpenCTI
 
 - :py:class:`StixCyberObservable`:
-  deprecated [>=6.2 & <6.5]`
+  Deprecated StixCyberObservable class [>=6.2 & <6.5]
 
 - :py:class:`StixNestedRefRelationship`:
-  Undocumented.
+  Main StixNestedRefRelationship class for OpenCTI
 
 - :py:class:`StixCyberObservableTypes`:
   An enumeration.
 
 - :py:class:`StixDomainObject`:
-  Undocumented.
+  Main StixDomainObject class for OpenCTI
 
 - :py:class:`StixMetaTypes`:
   An enumeration.
@@ -162,10 +162,10 @@ Classes
   An enumeration.
 
 - :py:class:`StixObjectOrStixRelationship`:
-  Undocumented.
+  Main StixObjectOrStixRelationship class for OpenCTI
 
 - :py:class:`StixSightingRelationship`:
-  Undocumented.
+  Main StixSightingRelationship class for OpenCTI
 
 - :py:class:`ThreatActor`:
   Main ThreatActor class for OpenCTI
@@ -177,10 +177,10 @@ Classes
   Main ThreatActorIndividual class for OpenCTI
 
 - :py:class:`Tool`:
-  Undocumented.
+  Main Tool class for OpenCTI
 
 - :py:class:`Vulnerability`:
-  Undocumented.
+  Main Vulnerability class for OpenCTI
 
 - :py:class:`CustomObjectCaseIncident`:
   Case-Incident object.
