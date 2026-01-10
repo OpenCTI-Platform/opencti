@@ -6,7 +6,7 @@ const message = '[MIGRATION] Add created_at and updated_at to existing playbooks
 
 export const up = async (next) => {
   logMigration.info(`${message} > started`);
-  
+
   // Add created_at and updated_at fields to playbooks that don't have them
   const now = new Date().getTime();
   const updateQuery = {
@@ -36,13 +36,13 @@ export const up = async (next) => {
       },
     },
   };
-  
+
   await elUpdateByQueryForMigration(
     message,
     READ_DATA_INDICES,
     updateQuery,
   );
-  
+
   logMigration.info(`${message} > done`);
   next();
 };
