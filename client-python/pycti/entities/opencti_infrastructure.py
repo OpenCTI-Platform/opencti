@@ -10,6 +10,7 @@ class Infrastructure:
     """Main Infrastructure class for OpenCTI
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -523,8 +524,7 @@ class Infrastructure:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_infrastructure] Missing parameters: "
-                "name and infrastructure_pattern and main_observable_type"
+                "[opencti_infrastructure] Missing parameters: name"
             )
 
     def import_from_stix2(self, **kwargs):

@@ -22,6 +22,7 @@ from .entities.opencti_channel import Channel
 from .entities.opencti_course_of_action import CourseOfAction
 from .entities.opencti_data_component import DataComponent
 from .entities.opencti_data_source import DataSource
+from .entities.opencti_event import Event
 from .entities.opencti_external_reference import ExternalReference
 from .entities.opencti_feedback import Feedback
 from .entities.opencti_group import Group
@@ -33,15 +34,18 @@ from .entities.opencti_infrastructure import Infrastructure
 from .entities.opencti_intrusion_set import IntrusionSet
 from .entities.opencti_kill_chain_phase import KillChainPhase
 from .entities.opencti_label import Label
+from .entities.opencti_language import Language
 from .entities.opencti_location import Location
 from .entities.opencti_malware import Malware
 from .entities.opencti_malware_analysis import MalwareAnalysis
 from .entities.opencti_marking_definition import MarkingDefinition
+from .entities.opencti_narrative import Narrative
 from .entities.opencti_note import Note
 from .entities.opencti_observed_data import ObservedData
 from .entities.opencti_opinion import Opinion
 from .entities.opencti_report import Report
 from .entities.opencti_role import Role
+from .entities.opencti_security_coverage import SecurityCoverage
 from .entities.opencti_settings import Settings
 from .entities.opencti_stix_core_relationship import StixCoreRelationship
 from .entities.opencti_stix_cyber_observable import StixCyberObservable
@@ -57,7 +61,10 @@ from .entities.opencti_threat_actor_group import ThreatActorGroup
 from .entities.opencti_threat_actor_individual import ThreatActorIndividual
 from .entities.opencti_tool import Tool
 from .entities.opencti_user import User
+from .entities.opencti_vocabulary import Vocabulary
 from .entities.opencti_vulnerability import Vulnerability
+from .entities.opencti_stix import Stix
+from .entities.opencti_stix_core_object import StixCoreObject
 from .utils.constants import (
     CustomObjectCaseIncident,
     CustomObjectChannel,
@@ -100,6 +107,7 @@ __all__ = [
     "CourseOfAction",
     "DataComponent",
     "DataSource",
+    "Event",
     "ExternalReference",
     "Feedback",
     "Grouping",
@@ -110,10 +118,12 @@ __all__ = [
     "IntrusionSet",
     "KillChainPhase",
     "Label",
+    "Language",
     "Location",
     "Malware",
     "MalwareAnalysis",
     "MarkingDefinition",
+    "Narrative",
     "Note",
     "ObservedData",
     "OpenCTIApiClient",
@@ -128,6 +138,9 @@ __all__ = [
     "OpenCTIStix2Utils",
     "Opinion",
     "Report",
+    "SecurityCoverage",
+    "Stix",
+    "StixCoreObject",
     "StixCoreRelationship",
     "StixCyberObservable",
     "StixNestedRefRelationship",
@@ -141,12 +154,12 @@ __all__ = [
     "ThreatActorGroup",
     "ThreatActorIndividual",
     "Tool",
+    "Vocabulary",
     "Vulnerability",
     "get_config_variable",
     "CustomObjectCaseIncident",
     "CustomObjectTask",
     "CustomObjectChannel",
-    "StixCyberObservableTypes",
     "CustomObservableCredential",
     "CustomObservableHostname",
     "CustomObservableUserAgent",

@@ -25,6 +25,8 @@ from pycti.utils.constants import (
     StixCyberObservableTypes,
     ThreatActorTypes,
 )
+from typing_extensions import deprecated
+
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
 from pycti.utils.opencti_stix2_utils import (
@@ -87,7 +89,10 @@ bundles_success_counter = meter.create_counter(
 class OpenCTIStix2:
     """Python API for Stix2 in OpenCTI
 
-    :param opencti: OpenCTI instance
+    Handles conversion between STIX2 format and OpenCTI internal format.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -97,12 +102,26 @@ class OpenCTIStix2:
         self.mapping_cache_permanent = {}
 
     def get_in_cache(self, data_id):
+        """Get an item from the cache.
+
+        :param data_id: ID of the data to retrieve
+        :type data_id: str
+        :return: Cached data or None if not found
+        :rtype: dict or None
+        """
         api_draft_id = self.opencti.get_draft_id()
         if data_id + api_draft_id in self.mapping_cache:
             return self.mapping_cache[data_id + api_draft_id]
         return None
 
     def set_in_cache(self, data_id, data):
+        """Store an item in the cache.
+
+        :param data_id: ID of the data to store
+        :type data_id: str
+        :param data: Data to cache
+        :type data: dict
+        """
         api_draft_id = self.opencti.get_draft_id()
         self.mapping_cache[data_id + api_draft_id] = data
 
@@ -179,7 +198,7 @@ class OpenCTIStix2:
         """check stix2 object for multiple aliases and return a list
 
         :param stix_object: valid stix2 object
-        :type stix_object:
+        :type stix_object: Dict
         :return: list of aliases
         :rtype: list
         """
@@ -205,7 +224,7 @@ class OpenCTIStix2:
 
         :param file_path: valid path to the file
         :type file_path: str
-        :param update: whether to updated data in the database, defaults to False
+        :param update: whether to update data in the database, defaults to False
         :type update: bool, optional
         :param types: list of stix2 types, defaults to None
         :type types: list, optional
@@ -213,7 +232,7 @@ class OpenCTIStix2:
         :rtype: List
         """
         if not os.path.isfile(file_path):
-            self.opencti.app_logger.error("The bundle file does not exists")
+            self.opencti.app_logger.error("The bundle file does not exist")
             return None
         with open(os.path.join(file_path), encoding="utf-8") as file:
             data = json.load(file)
@@ -230,12 +249,13 @@ class OpenCTIStix2:
         """import a stix2 bundle from JSON data
 
         :param json_data: JSON data
-        :type json_data:
-        :param update: whether to updated data in the database, defaults to False
+        :type json_data: str or bytes
+        :param update: whether to update data in the database, defaults to False
         :type update: bool, optional
         :param types: list of stix2 types, defaults to None
         :type types: list, optional
-        :param work_id work_id: str, optional
+        :param work_id: work ID for tracking
+        :type work_id: str, optional
         :param objects_max_refs: max deps amount of objects, reject object import if larger than configured amount
         :type objects_max_refs: int, optional
         :return: list of imported stix2 objects and a list of stix2 objects with too many deps
@@ -245,6 +265,13 @@ class OpenCTIStix2:
         return self.import_bundle(data, update, types, work_id, objects_max_refs)
 
     def resolve_author(self, title: str) -> Optional[Identity]:
+        """Resolve an author identity from a title string.
+
+        :param title: Title to search for known author names
+        :type title: str
+        :return: Identity object if author found, None otherwise
+        :rtype: Identity or None
+        """
         if "fireeye" in title.lower() or "mandiant" in title.lower():
             return self.get_author("FireEye")
         if "eset" in title.lower():
@@ -286,6 +313,13 @@ class OpenCTIStix2:
         return None
 
     def get_author(self, name: str) -> Identity:
+        """Get or create an author identity by name.
+
+        :param name: Name of the author organization
+        :type name: str
+        :return: Identity object for the author
+        :rtype: Identity
+        """
         name_in_cache = self.get_in_cache(name)
         if name_in_cache is not None:
             return name_in_cache
@@ -304,7 +338,7 @@ class OpenCTIStix2:
         """extracts embedded relationship objects from a stix2 entity
 
         :param stix_object: valid stix2 object
-        :type stix_object:
+        :type stix_object: Dict
         :param types: list of stix2 types, defaults to None
         :type types: list, optional
         :return: embedded relationships as dict
@@ -664,7 +698,7 @@ class OpenCTIStix2:
                                     source_name,
                                     base_date=datetime.datetime.fromtimestamp(0),
                                 )
-                        except:
+                        except (TypeError, OverflowError):
                             matches = None
                         published = None
                         yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
@@ -678,7 +712,7 @@ class OpenCTIStix2:
                                     ):
                                         published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                         break
-                            except:
+                            except (TypeError, OverflowError):
                                 pass
                         if published is None:
                             published = default_date.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -747,7 +781,7 @@ class OpenCTIStix2:
                             update=True,
                         )
                         reports[external_reference_id] = report
-                except:
+                except Exception:
                     self.opencti.app_logger.warning(
                         "Cannot generate external reference"
                     )
@@ -1055,8 +1089,8 @@ class OpenCTIStix2:
         """import a stix2 object
 
         :param stix_object: valid stix2 object
-        :type stix_object:
-        :param update: whether to updated data in the database, defaults to False
+        :type stix_object: Dict
+        :param update: whether to update data in the database, defaults to False
         :type update: bool, optional
         :param types: list of stix2 types, defaults to None
         :type types: list, optional
@@ -1466,7 +1500,7 @@ class OpenCTIStix2:
                             external_reference["source_name"],
                             base_date=datetime.datetime.fromtimestamp(0),
                         )
-                except:
+                except (TypeError, OverflowError):
                     matches = None
                 date = None
                 yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
@@ -1479,7 +1513,7 @@ class OpenCTIStix2:
                             ):
                                 date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                 break
-                    except:
+                    except (TypeError, OverflowError):
                         date = None
 
         stix_relation_result = self.opencti.stix_core_relationship.import_from_stix2(
@@ -2218,8 +2252,8 @@ class OpenCTIStix2:
             # Get extra refs
             for key in entity.keys():
                 if key.endswith("_ref"):
-                    type = entity[key].split("--")[0]
-                    if type in STIX_CYBER_OBSERVABLE_MAPPING:
+                    stix_type = entity[key].split("--")[0]
+                    if stix_type in STIX_CYBER_OBSERVABLE_MAPPING:
                         objects_to_get.append(
                             {
                                 "id": entity[key],
@@ -2237,8 +2271,8 @@ class OpenCTIStix2:
                         )
                 elif key.endswith("_refs"):
                     for value in entity[key]:
-                        type = value.split("--")[0]
-                        if type in STIX_CYBER_OBSERVABLE_MAPPING:
+                        stix_type = value.split("--")[0]
+                        if stix_type in STIX_CYBER_OBSERVABLE_MAPPING:
                             objects_to_get.append(
                                 {
                                     "id": value,
@@ -2437,7 +2471,7 @@ class OpenCTIStix2:
         return bundle
 
     # Please use get_stix_bundle_or_object_from_entity_id instead
-    @DeprecationWarning
+    @deprecated("Use get_stix_bundle_or_object_from_entity_id instead")
     def export_entity(
         self,
         entity_type: str,
@@ -2465,7 +2499,7 @@ class OpenCTIStix2:
         orderMode: str = None,
         getAll: bool = True,
         withFiles: bool = False,
-    ) -> [Dict]:
+    ) -> List[Dict]:
         if IdentityTypes.has_value(entity_type):
             entity_type = "Identity"
 
@@ -2588,11 +2622,21 @@ class OpenCTIStix2:
 
     def export_selected(
         self,
-        entities_list: [dict],
+        entities_list: List[dict],
         mode: str = "simple",
         access_filter: Dict = None,
     ) -> Dict:
+        """Export selected entities as a STIX2 bundle.
 
+        :param entities_list: List of entities to export
+        :type entities_list: List[dict]
+        :param mode: Export mode ('simple' or 'full'), defaults to 'simple'
+        :type mode: str
+        :param access_filter: Access filter for the export
+        :type access_filter: Dict
+        :return: STIX2 bundle containing exported entities
+        :rtype: Dict
+        """
         bundle = {
             "type": "bundle",
             "id": "bundle--" + str(uuid.uuid4()),
@@ -2617,6 +2661,11 @@ class OpenCTIStix2:
         return bundle
 
     def apply_patch_files(self, item):
+        """Apply file patches to an item.
+
+        :param item: Item containing file patch operations
+        :type item: dict
+        """
         field_patch = self.opencti.get_attribute_in_extension(
             "opencti_field_patch", item
         )
@@ -2648,6 +2697,11 @@ class OpenCTIStix2:
                     )
 
     def apply_patch(self, item):
+        """Apply field patches to an item.
+
+        :param item: Item containing field patch operations
+        :type item: dict
+        """
         field_patch = self.opencti.get_attribute_in_extension(
             "opencti_field_patch", item
         )
@@ -2695,21 +2749,41 @@ class OpenCTIStix2:
         self.apply_patch_files(item)
 
     def rule_apply(self, item):
+        """Apply a rule to an item.
+
+        :param item: Item to apply the rule to
+        :type item: dict
+        """
         rule_id = self.opencti.get_attribute_in_extension("opencti_rule", item)
         if rule_id is None:
             rule_id = item["opencti_rule"]
         self.opencti.stix_core_object.rule_apply(element_id=item["id"], rule_id=rule_id)
 
     def rule_clear(self, item):
+        """Clear a rule from an item.
+
+        :param item: Item to clear the rule from
+        :type item: dict
+        """
         rule_id = self.opencti.get_attribute_in_extension("opencti_rule", item)
         if rule_id is None:
             rule_id = item["opencti_rule"]
         self.opencti.stix_core_object.rule_clear(element_id=item["id"], rule_id=rule_id)
 
     def rules_rescan(self, item):
+        """Rescan rules for an item.
+
+        :param item: Item to rescan rules for
+        :type item: dict
+        """
         self.opencti.stix_core_object.rules_rescan(element_id=item["id"])
 
     def organization_share(self, item):
+        """Share an item with organizations.
+
+        :param item: Item to share
+        :type item: dict
+        """
         organization_ids = self.opencti.get_attribute_in_extension(
             "sharing_organization_ids", item
         )
@@ -2736,6 +2810,11 @@ class OpenCTIStix2:
             )
 
     def organization_unshare(self, item):
+        """Unshare an item from organizations.
+
+        :param item: Item to unshare
+        :type item: dict
+        """
         organization_ids = self.opencti.get_attribute_in_extension(
             "sharing_organization_ids", item
         )
@@ -2761,6 +2840,12 @@ class OpenCTIStix2:
             )
 
     def element_add_organizations(self, item):
+        """Add organizations to an element.
+
+        :param item: Item to add organizations to
+        :type item: dict
+        :raises ValueError: If the operation is not compatible with the item type
+        """
         organization_ids = self.opencti.get_attribute_in_extension(
             "organization_ids", item
         )
@@ -2778,6 +2863,12 @@ class OpenCTIStix2:
             )
 
     def element_remove_organizations(self, item):
+        """Remove organizations from an element.
+
+        :param item: Item to remove organizations from
+        :type item: dict
+        :raises ValueError: If the operation is not compatible with the item type
+        """
         organization_ids = self.opencti.get_attribute_in_extension(
             "organization_ids", item
         )
@@ -2795,6 +2886,12 @@ class OpenCTIStix2:
             )
 
     def element_add_groups(self, item):
+        """Add groups to an element.
+
+        :param item: Item to add groups to
+        :type item: dict
+        :raises ValueError: If the operation is not compatible with the item type
+        """
         group_ids = self.opencti.get_attribute_in_extension("group_ids", item)
         if group_ids is None:
             group_ids = item["group_ids"]
@@ -2807,6 +2904,12 @@ class OpenCTIStix2:
             )
 
     def element_remove_groups(self, item):
+        """Remove groups from an element.
+
+        :param item: Item to remove groups from
+        :type item: dict
+        :raises ValueError: If the operation is not compatible with the item type
+        """
         group_ids = self.opencti.get_attribute_in_extension("group_ids", item)
         if group_ids is None:
             group_ids = item["group_ids"]
@@ -2820,6 +2923,12 @@ class OpenCTIStix2:
             )
 
     def send_email(self, item):
+        """Send an email for an item.
+
+        :param item: Item to send email for
+        :type item: dict
+        :raises ValueError: If the operation is not supported for the item type
+        """
         template_id = self.opencti.get_attribute_in_extension("template_id", item)
         if template_id is None:
             template_id = item["template_id"]
@@ -2832,6 +2941,14 @@ class OpenCTIStix2:
             )
 
     def element_operation_delete(self, item, operation):
+        """Delete an element.
+
+        :param item: Item to delete
+        :type item: dict
+        :param operation: Delete operation type ('delete' or 'delete_force')
+        :type operation: str
+        :raises ValueError: If the delete operation fails or helper not found
+        """
         # If data is stix, just use the generic stix function for deletion
         force_delete = operation == "delete_force"
         if item["type"] == "relationship":
@@ -2857,6 +2974,11 @@ class OpenCTIStix2:
                 )
 
     def element_remove_from_draft(self, item):
+        """Remove an element from draft.
+
+        :param item: Item to remove from draft
+        :type item: dict
+        """
         if item["type"] == "relationship":
             self.opencti.stix_core_relationship.remove_from_draft(id=item["id"])
         elif item["type"] == "sighting":
@@ -2866,6 +2988,14 @@ class OpenCTIStix2:
             self.opencti.stix_core_object.remove_from_draft(id=item["id"])
 
     def apply_opencti_operation(self, item, operation):
+        """Apply an OpenCTI operation to an item.
+
+        :param item: Item to apply the operation to
+        :type item: dict
+        :param operation: Operation to apply (delete, restore, merge, patch, etc.)
+        :type operation: str
+        :raises ValueError: If the operation is not supported
+        """
         if operation == "delete" or operation == "delete_force":
             self.element_operation_delete(item=item, operation=operation)
         elif operation == "revert_draft":

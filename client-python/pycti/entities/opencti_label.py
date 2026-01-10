@@ -12,6 +12,7 @@ class Label:
     Manages labels and tags in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -224,6 +225,7 @@ class Label:
             return self.opencti.process_multiple_fields(result["data"]["labelAdd"])
         else:
             self.opencti.app_logger.error("[opencti_label] Missing parameters: value")
+            return None
 
     def read_or_create_unchecked(self, **kwargs):
         """Read or create a Label.
@@ -292,6 +294,12 @@ class Label:
             return None
 
     def delete(self, **kwargs):
+        """Delete a Label object.
+
+        :param id: the id of the Label to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Label", {"id": id})

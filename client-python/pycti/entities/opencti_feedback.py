@@ -11,6 +11,7 @@ class Feedback:
     Manages feedback and analyst assessments in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -645,6 +646,7 @@ class Feedback:
             self.opencti.app_logger.error(
                 "[opencti_feedback] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
+            return None
 
     """
         Create a Feedback object
@@ -735,6 +737,7 @@ class Feedback:
             return self.opencti.process_multiple_fields(result["data"]["feedbackAdd"])
         else:
             self.opencti.app_logger.error("[opencti_feedback] Missing parameters: name")
+            return None
 
     def update_field(self, **kwargs):
         self.opencti.app_logger.info("Updating Feedback", {"data": json.dumps(kwargs)})

@@ -1,10 +1,24 @@
 class OpenCTIApiPlaybook:
-    """OpenCTIApiPlaybook"""
+    """OpenCTI Playbook API class.
+
+    Manages playbook operations.
+
+    :param api: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type api: OpenCTIApiClient
+    """
 
     def __init__(self, api):
         self.api = api
 
     def playbook_step_execution(self, playbook: dict, bundle: str):
+        """Execute a playbook step.
+
+        :param playbook: the playbook configuration dict
+        :type playbook: dict
+        :param bundle: the STIX bundle to process
+        :type bundle: str
+        :return: None
+        """
         self.api.app_logger.info(
             "Executing playbook step",
             {
@@ -34,6 +48,12 @@ class OpenCTIApiPlaybook:
         )
 
     def delete(self, **kwargs):
+        """Delete a playbook.
+
+        :param id: the playbook id
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             query = """
@@ -49,6 +69,6 @@ class OpenCTIApiPlaybook:
             )
         else:
             self.api.app_logger.error(
-                "[stix_playbook] Cant delete playbook, missing parameters: id"
+                "[opencti_playbook] Cannot delete playbook, missing parameters: id"
             )
             return None

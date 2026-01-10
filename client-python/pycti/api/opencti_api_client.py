@@ -428,38 +428,85 @@ class OpenCTIApiClient:
         )
 
     def set_applicant_id_header(self, applicant_id):
+        """Set the applicant ID header for impersonation.
+
+        :param applicant_id: the ID of the user to impersonate
+        :type applicant_id: str
+        """
         self.request_headers["opencti-applicant-id"] = applicant_id
 
     def set_playbook_id_header(self, playbook_id):
+        """Set the playbook ID header for tracking playbook execution.
+
+        :param playbook_id: the ID of the playbook being executed
+        :type playbook_id: str
+        """
         self.request_headers["opencti-playbook-id"] = playbook_id
 
     def set_event_id(self, event_id):
+        """Set the event ID header for event tracking.
+
+        :param event_id: the ID of the event
+        :type event_id: str
+        """
         self.request_headers["opencti-event-id"] = event_id
 
     def get_draft_id(self):
+        """Get the current draft ID.
+
+        :return: the current draft ID or empty string if not set
+        :rtype: str
+        """
         if self.draft_id is None:
             return ""
         return self.draft_id
 
     def set_draft_id(self, draft_id):
+        """Set the draft ID header for draft mode operations.
+
+        :param draft_id: the ID of the draft workspace
+        :type draft_id: str
+        """
         self.draft_id = draft_id
         self.request_headers["opencti-draft-id"] = draft_id
 
     def set_synchronized_upsert_header(self, synchronized):
+        """Set the synchronized upsert header.
+
+        :param synchronized: whether upsert should be synchronized
+        :type synchronized: bool
+        """
         self.request_headers["synchronized-upsert"] = (
             "true" if synchronized is True else "false"
         )
 
     def set_previous_standard_header(self, previous_standard):
+        """Set the previous standard header for update operations.
+
+        :param previous_standard: the previous standard ID
+        :type previous_standard: str
+        """
         self.request_headers["previous-standard"] = previous_standard
 
     def get_request_headers(self, hide_token=True):
+        """Get a copy of current request headers.
+
+        :param hide_token: if True, masks the Authorization token with asterisks
+        :type hide_token: bool
+        :return: copy of request headers
+        :rtype: dict
+        """
         request_headers_copy = self.request_headers.copy()
         if hide_token and "Authorization" in request_headers_copy:
             request_headers_copy["Authorization"] = "*****"
         return request_headers_copy
 
     def set_retry_number(self, retry_number):
+        """Set the retry number header for tracking retries.
+
+        :param retry_number: the current retry attempt number, or None to clear
+        :type retry_number: int or None
+        """
         self.request_headers["opencti-retry-number"] = (
             "" if retry_number is None else str(retry_number)
         )
@@ -660,10 +707,10 @@ class OpenCTIApiClient:
         return False
 
     def get_logs_worker_config(self):
-        """get the logsWorkerConfig
+        """Get the logs worker configuration from the OpenCTI platform.
 
-        return: the logsWorkerConfig
-        rtype: dict
+        :return: the logs worker configuration including Elasticsearch settings
+        :rtype: dict
         """
 
         self.app_logger.info("Getting logs worker config...")
@@ -1008,10 +1055,12 @@ class OpenCTIApiClient:
             return None
 
     def get_stix_content(self, id):
-        """get the STIX content of any entity
+        """Get the STIX content of any entity.
 
-        return: the STIX content in JSON
-        rtype: dict
+        :param id: the ID of the entity
+        :type id: str
+        :return: the STIX content in JSON
+        :rtype: dict
         """
 
         self.app_logger.info("Entity in JSON", {"id": id})
@@ -1025,6 +1074,18 @@ class OpenCTIApiClient:
 
     @staticmethod
     def get_attribute_in_extension(key, object) -> any:
+        """Get an attribute value from OpenCTI STIX extensions.
+
+        Searches for the key in OpenCTI extension definitions, or falls back
+        to the object's top-level attributes.
+
+        :param key: the attribute key to retrieve
+        :type key: str
+        :param object: the STIX object containing extensions
+        :type object: dict
+        :return: the attribute value if found, None otherwise
+        :rtype: any
+        """
         if (
             "extensions" in object
             and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
@@ -1055,6 +1116,15 @@ class OpenCTIApiClient:
 
     @staticmethod
     def get_attribute_in_mitre_extension(key, object) -> any:
+        """Get an attribute value from MITRE ATT&CK STIX extension.
+
+        :param key: the attribute key to retrieve
+        :type key: str
+        :param object: the STIX object containing extensions
+        :type object: dict
+        :return: the attribute value if found, None otherwise
+        :rtype: any
+        """
         if (
             "extensions" in object
             and "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"

@@ -12,6 +12,7 @@ class MarkingDefinition:
     Manages marking definitions (TLP, statements) in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -400,6 +401,12 @@ class MarkingDefinition:
             )
 
     def delete(self, **kwargs):
+        """Delete a Marking-Definition object.
+
+        :param id: the id of the Marking-Definition to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Marking-Definition", {"id": id})

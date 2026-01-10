@@ -130,7 +130,7 @@ class MultipleRefRelationship(Enum):
     CHILD = "child"
     BODY_MULTIPART = "body-multipart"
     VALUES = "values"
-    SERVICE_DDL = "service-dll"
+    SERVICE_DLL = "service-dll"
     INSTALLED_SOFTWARE = "installed-software"
     RELATION_ANALYSIS_SCO = "analysis-sco"
 

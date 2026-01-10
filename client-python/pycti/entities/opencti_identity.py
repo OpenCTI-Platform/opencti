@@ -14,6 +14,7 @@ class Identity:
     Manages individual, organization, and system identities in OpenCTI.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -294,16 +295,27 @@ class Identity:
         """List Identity objects.
 
         :param types: the list of types
+        :type types: list
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
+        :type after: str
         :param orderBy: field to order results by
+        :type orderBy: str
         :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param getAll: whether to retrieve all results
+        :type getAll: bool
         :param withPagination: whether to include pagination info
+        :type withPagination: bool
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: List of Identity objects
         :rtype: list
         """
@@ -370,6 +382,7 @@ class Identity:
                 result = self.opencti.query(
                     query,
                     {
+                        "types": types,
                         "filters": filters,
                         "search": search,
                         "first": first,
@@ -390,9 +403,13 @@ class Identity:
         """Read an Identity object.
 
         :param id: the id of the Identity
+        :type id: str
         :param filters: the filters to apply if no id provided
+        :type filters: dict
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: Identity object
         :rtype: dict or None
         """
@@ -606,15 +623,19 @@ class Identity:
             )
         else:
             self.opencti.app_logger.error(
-                "Missing parameters: type, name and description"
+                "[opencti_identity] Missing parameters: type and name"
             )
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import an Identity object from a STIX2 object.
 
         :param stixObject: the STIX2 Identity object
+        :type stixObject: dict
         :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
         :param update: whether to update if the entity already exists
+        :type update: bool
         :return: Identity object
         :rtype: dict or None
         """
@@ -657,12 +678,6 @@ class Identity:
             if "x_opencti_score" not in stix_object:
                 stix_object["x_opencti_score"] = (
                     self.opencti.get_attribute_in_extension("score", stix_object)
-                )
-            if "x_opencti_organization_type" not in stix_object:
-                stix_object["x_opencti_organization_type"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "organization_type", stix_object
-                    )
                 )
             if "x_opencti_firstname" not in stix_object:
                 stix_object["x_opencti_firstname"] = (

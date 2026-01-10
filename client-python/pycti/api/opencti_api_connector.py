@@ -5,14 +5,22 @@ from pycti.connector.opencti_connector import OpenCTIConnector
 
 
 class OpenCTIApiConnector:
-    """OpenCTIApiConnector"""
+    """OpenCTI Connector API class.
+
+    Manages connector operations including registration, pinging, and listing.
+
+    :param api: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type api: OpenCTIApiClient
+    """
 
     def __init__(self, api):
         self.api = api
 
     def read(self, connector_id: str) -> Dict:
-        """Reading the connector and its details
+        """Read the connector and its details.
 
+        :param connector_id: the id of the connector
+        :type connector_id: str
         :return: return all the connector details
         :rtype: dict
         """

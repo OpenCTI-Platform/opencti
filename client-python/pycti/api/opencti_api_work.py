@@ -3,12 +3,26 @@ from typing import Dict, List
 
 
 class OpenCTIApiWork:
-    """OpenCTIApiJob"""
+    """OpenCTI Work API class.
+
+    Manages work/job operations for connectors.
+
+    :param api: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type api: OpenCTIApiClient
+    """
 
     def __init__(self, api):
         self.api = api
 
     def to_received(self, work_id: str, message: str):
+        """Mark work as received.
+
+        :param work_id: the work id
+        :type work_id: str
+        :param message: the message to report
+        :type message: str
+        :return: None
+        """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info(
                 "Reporting work update_received", {"work_id": work_id}
@@ -23,6 +37,16 @@ class OpenCTIApiWork:
             self.api.query(query, {"id": work_id, "message": message}, True)
 
     def to_processed(self, work_id: str, message: str, in_error: bool = False):
+        """Mark work as processed.
+
+        :param work_id: the work id
+        :type work_id: str
+        :param message: the message to report
+        :type message: str
+        :param in_error: whether the work completed with error
+        :type in_error: bool
+        :return: None
+        """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info(
                 "Reporting work update_processed", {"work_id": work_id}
@@ -39,6 +63,12 @@ class OpenCTIApiWork:
             )
 
     def ping(self, work_id: str):
+        """Ping a work to keep it alive.
+
+        :param work_id: the work id
+        :type work_id: str
+        :return: None
+        """
         self.api.app_logger.info("Ping work", {"work_id": work_id})
         query = """
             mutation pingWork($id: ID!) {
@@ -50,6 +80,14 @@ class OpenCTIApiWork:
         self.api.query(query, {"id": work_id})
 
     def report_expectation(self, work_id: str, error):
+        """Report a work expectation.
+
+        :param work_id: the work id
+        :type work_id: str
+        :param error: the error to report
+        :type error: dict
+        :return: None
+        """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info("Report expectation", {"work_id": work_id})
             query = """
@@ -61,10 +99,18 @@ class OpenCTIApiWork:
                """
             try:
                 self.api.query(query, {"id": work_id, "error": error}, True)
-            except:
+            except Exception:
                 self.api.app_logger.error("Cannot report expectation")
 
     def add_expectations(self, work_id: str, expectations: int):
+        """Add expectations to a work.
+
+        :param work_id: the work id
+        :type work_id: str
+        :param expectations: the number of expectations to add
+        :type expectations: int
+        :return: None
+        """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info(
                 "Update action expectations",
@@ -81,10 +127,18 @@ class OpenCTIApiWork:
                 self.api.query(
                     query, {"id": work_id, "expectations": expectations}, True
                 )
-            except:
-                self.api.app_logger.error("Cannot report expectation")
+            except Exception:
+                self.api.app_logger.error("Cannot add expectations")
 
     def add_draft_context(self, work_id: str, draft_context: str):
+        """Add draft context to a work.
+
+        :param work_id: the work id
+        :type work_id: str
+        :param draft_context: the draft context to add
+        :type draft_context: str
+        :return: None
+        """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info(
                 "Update draft context",
@@ -101,10 +155,19 @@ class OpenCTIApiWork:
                 self.api.query(
                     query, {"id": work_id, "draftContext": draft_context}, True
                 )
-            except:
-                self.api.app_logger.error("Cannot report draft context")
+            except Exception:
+                self.api.app_logger.error("Cannot add draft context")
 
-    def initiate_work(self, connector_id: str, friendly_name: str) -> str:
+    def initiate_work(self, connector_id: str, friendly_name: str) -> str | None:
+        """Initiate a new work for a connector.
+
+        :param connector_id: the connector id
+        :type connector_id: str
+        :param friendly_name: the friendly name for the work
+        :type friendly_name: str
+        :return: the work id or None if bundle_send_to_queue is False
+        :rtype: str or None
+        """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info("Initiate work", {"connector_id": connector_id})
             query = """
@@ -120,8 +183,16 @@ class OpenCTIApiWork:
                 True,
             )
             return work["data"]["workAdd"]["id"]
+        return None
 
     def delete_work(self, work_id: str):
+        """Delete a work.
+
+        :param work_id: the work id
+        :type work_id: str
+        :return: the response data
+        :rtype: dict
+        """
         query = """
         mutation ConnectorWorksMutation($workId: ID!) {
             workEdit(id: $workId) {
@@ -132,10 +203,17 @@ class OpenCTIApiWork:
         return work["data"]
 
     def delete(self, **kwargs):
+        """Delete a work by id.
+
+        :param id: the work id
+        :type id: str
+        :return: the response data
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         if id is None:
-            self.opencti.admin_logger.error(
-                "[opencti_work] Cant delete work, missing parameter: id"
+            self.api.admin_logger.error(
+                "[opencti_work] Cannot delete work, missing parameter: id"
             )
             return None
         query = """
@@ -151,6 +229,13 @@ class OpenCTIApiWork:
         return work["data"]
 
     def wait_for_work_to_finish(self, work_id: str):
+        """Wait for a work to finish.
+
+        :param work_id: the work id
+        :type work_id: str
+        :return: empty string if error, None otherwise
+        :rtype: str or None
+        """
         status = ""
         cnt = 0
         while status != "complete":
@@ -168,6 +253,13 @@ class OpenCTIApiWork:
             cnt += 1
 
     def get_work(self, work_id: str) -> Dict:
+        """Get a work by id.
+
+        :param work_id: the work id
+        :type work_id: str
+        :return: the work data
+        :rtype: dict
+        """
         query = """
         query WorkQuery($id: ID!) {
             work(id: $id) {
@@ -204,7 +296,14 @@ class OpenCTIApiWork:
         result = self.api.query(query, {"id": work_id}, True)
         return result["data"]["work"]
 
-    def get_is_work_alive(self, work_id: str) -> Dict:
+    def get_is_work_alive(self, work_id: str) -> bool:
+        """Check if a work is alive.
+
+        :param work_id: the work id
+        :type work_id: str
+        :return: whether the work is alive
+        :rtype: bool
+        """
         query = """
         query WorkAliveQuery($id: ID!) {
             isWorkAlive(id: $id)
@@ -214,6 +313,13 @@ class OpenCTIApiWork:
         return result["data"]["isWorkAlive"]
 
     def get_connector_works(self, connector_id: str) -> List[Dict]:
+        """Get all works for a connector.
+
+        :param connector_id: the connector id
+        :type connector_id: str
+        :return: list of works
+        :rtype: list
+        """
         query = """
         query ConnectorWorksQuery(
             $count: Int

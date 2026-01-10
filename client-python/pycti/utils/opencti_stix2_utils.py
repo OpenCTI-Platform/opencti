@@ -238,6 +238,13 @@ class OpenCTIStix2Utils:
 
     @staticmethod
     def compute_object_refs_number(entity: Dict):
+        """Compute the number of object references in an entity.
+
+        :param entity: Entity dictionary to analyze
+        :type entity: Dict
+        :return: Total number of references
+        :rtype: int
+        """
         refs_number = 0
         for key in list(entity.keys()):
             if key.endswith("_refs") and entity[key] is not None:

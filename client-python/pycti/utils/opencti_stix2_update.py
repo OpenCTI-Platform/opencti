@@ -6,14 +6,32 @@ from pycti.utils.constants import StixCyberObservableTypes
 class OpenCTIStix2Update:
     """Python API for Stix2 Update in OpenCTI
 
+    Provides methods to update STIX2 objects in OpenCTI.
+
     :param opencti: OpenCTI instance
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the OpenCTIStix2Update helper.
+
+        :param opencti: OpenCTI API client instance
+        """
         self.opencti = opencti
         self.mapping_cache = {}
 
     def add_object_marking_refs(self, entity_type, id, object_marking_refs, version=2):
+        """Add marking definition references to an entity.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :param id: ID of the entity
+        :type id: str
+        :param object_marking_refs: List of marking definition references
+        :type object_marking_refs: list
+        :param version: Version of the patch format (default: 2)
+        :type version: int
+        """
         for object_marking_ref in object_marking_refs:
             if version == 2:
                 object_marking_ref = object_marking_ref["value"]
@@ -37,6 +55,17 @@ class OpenCTIStix2Update:
     def remove_object_marking_refs(
         self, entity_type, id, object_marking_refs, version=2
     ):
+        """Remove marking definition references from an entity.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :param id: ID of the entity
+        :type id: str
+        :param object_marking_refs: List of marking definition references
+        :type object_marking_refs: list
+        :param version: Version of the patch format (default: 2)
+        :type version: int
+        """
         for object_marking_ref in object_marking_refs:
             if version == 2:
                 object_marking_ref = object_marking_ref["value"]
@@ -58,6 +87,17 @@ class OpenCTIStix2Update:
                 )
 
     def add_external_references(self, entity_type, id, external_references, version=2):
+        """Add external references to an entity.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :param id: ID of the entity
+        :type id: str
+        :param external_references: List of external references
+        :type external_references: list
+        :param version: Version of the patch format (default: 2)
+        :type version: int
+        """
         for external_reference in external_references:
             if version == 2:
                 external_reference = external_reference["value"]
@@ -94,6 +134,15 @@ class OpenCTIStix2Update:
                 )
 
     def remove_external_references(self, entity_type, id, external_references):
+        """Remove external references from an entity.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :param id: ID of the entity
+        :type id: str
+        :param external_references: List of external references
+        :type external_references: list
+        """
         for external_reference in external_references:
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.remove_external_reference(
@@ -109,6 +158,17 @@ class OpenCTIStix2Update:
                 )
 
     def add_kill_chain_phases(self, entity_type, id, kill_chain_phases, version=2):
+        """Add kill chain phases to an entity.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :param id: ID of the entity
+        :type id: str
+        :param kill_chain_phases: List of kill chain phases
+        :type kill_chain_phases: list
+        :param version: Version of the patch format (default: 2)
+        :type version: int
+        """
         for kill_chain_phase in kill_chain_phases:
             if version == 2:
                 kill_chain_phase = kill_chain_phase["value"]
@@ -136,6 +196,15 @@ class OpenCTIStix2Update:
                 )
 
     def remove_kill_chain_phases(self, entity_type, id, kill_chain_phases):
+        """Remove kill chain phases from an entity.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :param id: ID of the entity
+        :type id: str
+        :param kill_chain_phases: List of kill chain phases
+        :type kill_chain_phases: list
+        """
         for kill_chain_phase in kill_chain_phases:
             if entity_type == "relationship":
                 self.opencti.stix_core_relationship.remove_kill_chain_phase(
@@ -151,6 +220,17 @@ class OpenCTIStix2Update:
                 )
 
     def add_object_refs(self, entity_type, id, object_refs, version=2):
+        """Add object references to a container entity.
+
+        :param entity_type: Type of the container entity (report, note, etc.)
+        :type entity_type: str
+        :param id: ID of the container entity
+        :type id: str
+        :param object_refs: List of object references to add
+        :type object_refs: list
+        :param version: Version of the patch format (default: 2)
+        :type version: int
+        """
         for object_ref in object_refs:
             if version == 2:
                 object_ref = object_ref["value"]
@@ -172,6 +252,17 @@ class OpenCTIStix2Update:
                 )
 
     def remove_object_refs(self, entity_type, id, object_refs, version=2):
+        """Remove object references from a container entity.
+
+        :param entity_type: Type of the container entity (report, note, etc.)
+        :type entity_type: str
+        :param id: ID of the container entity
+        :type id: str
+        :param object_refs: List of object references to remove
+        :type object_refs: list
+        :param version: Version of the patch format (default: 2)
+        :type version: int
+        """
         for object_ref in object_refs:
             if version == 2:
                 object_ref = object_ref["value"]
@@ -193,6 +284,17 @@ class OpenCTIStix2Update:
                 )
 
     def add_labels(self, entity_type, id, labels, version=2):
+        """Add labels to an entity.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :param id: ID of the entity
+        :type id: str
+        :param labels: List of labels to add
+        :type labels: list
+        :param version: Version of the patch format (default: 2)
+        :type version: int
+        """
         for label in labels:
             if version == 2:
                 label = label["value"]
@@ -204,6 +306,17 @@ class OpenCTIStix2Update:
                 self.opencti.stix_domain_object.add_label(id=id, label_name=label)
 
     def remove_labels(self, entity_type, id, labels, version=2):
+        """Remove labels from an entity.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :param id: ID of the entity
+        :type id: str
+        :param labels: List of labels to remove
+        :type labels: list
+        :param version: Version of the patch format (default: 2)
+        :type version: int
+        """
         for label in labels:
             if version == 2:
                 label = label["value"]
@@ -217,6 +330,17 @@ class OpenCTIStix2Update:
                 self.opencti.stix_domain_object.remove_label(id=id, label_name=label)
 
     def replace_created_by_ref(self, entity_type, id, created_by_ref, version=2):
+        """Replace the created_by reference of an entity.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :param id: ID of the entity
+        :type id: str
+        :param created_by_ref: New created_by reference
+        :type created_by_ref: str or list
+        :param version: Version of the patch format (default: 2)
+        :type version: int
+        """
         if version == 2:
             created_by_ref = (
                 created_by_ref[0]["value"] if created_by_ref is not None else None
@@ -239,6 +363,15 @@ class OpenCTIStix2Update:
             )
 
     def update_attribute(self, entity_type, id, input):
+        """Update an attribute of an entity.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :param id: ID of the entity
+        :type id: str
+        :param input: Input containing the attribute update
+        :type input: list
+        """
         # Relations
         if entity_type == "relationship":
             self.opencti.stix_core_relationship.update_field(id=id, input=input)
@@ -263,6 +396,11 @@ class OpenCTIStix2Update:
             self.opencti.stix_domain_object.update_field(id=id, input=input)
 
     def process_update(self, data):
+        """Process a STIX2 patch/update operation.
+
+        :param data: Data containing x_opencti_patch operations
+        :type data: dict
+        """
         try:
             # Build the inputs for update api
             inputs = []
@@ -288,10 +426,10 @@ class OpenCTIStix2Update:
                                 map(
                                     lambda x: (
                                         x["value"]
-                                        if (type(current_val) is dict and "value" in x)
+                                        if (type(x) is dict and "value" in x)
                                         else x
                                     ),
-                                    str(current_val),
+                                    current_val,
                                 )
                             )
                             inputs.append({"key": key, "value": values})

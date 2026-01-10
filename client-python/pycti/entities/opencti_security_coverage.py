@@ -9,7 +9,10 @@ from stix2.canonicalization.Canonicalize import canonicalize
 class SecurityCoverage:
     """Main SecurityCoverage class for OpenCTI
 
+    Manages security coverage entities in the OpenCTI platform.
+
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -44,6 +47,13 @@ class SecurityCoverage:
 
     @staticmethod
     def generate_id(covered_ref):
+        """Generate a STIX ID for a Security Coverage.
+
+        :param covered_ref: The reference to the covered object
+        :type covered_ref: str
+        :return: STIX ID for the security coverage
+        :rtype: str
+        """
         data = {"covered_ref": covered_ref.lower().strip()}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
@@ -51,6 +61,13 @@ class SecurityCoverage:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from security coverage data.
+
+        :param data: Dictionary containing 'covered_ref' key
+        :type data: dict
+        :return: STIX ID for the security coverage
+        :rtype: str
+        """
         return SecurityCoverage.generate_id(data["covered_ref"])
 
     def list(self, **kwargs):
@@ -144,7 +161,11 @@ class SecurityCoverage:
         """Read a SecurityCoverage object.
 
         :param id: the id of the SecurityCoverage
+        :type id: str
         :param filters: the filters to apply if no id provided
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :return: SecurityCoverage object
         :rtype: dict or None
         """
@@ -188,25 +209,45 @@ class SecurityCoverage:
         """Create a Security coverage object.
 
         :param name: the name of the Security Coverage (required)
+        :type name: str
         :param objectCovered: the covered object ID (required)
+        :type objectCovered: str
         :param stix_id: (optional) the STIX ID
+        :type stix_id: str
         :param description: (optional) description
+        :type description: str
         :param createdBy: (optional) the author ID
+        :type createdBy: str
         :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
         :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
         :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
         :param external_uri: (optional) external URI
+        :type external_uri: str
         :param coverage_last_result: (optional) last result date
+        :type coverage_last_result: str
         :param coverage_valid_from: (optional) valid from date
+        :type coverage_valid_from: str
         :param coverage_valid_to: (optional) valid to date
+        :type coverage_valid_to: str
         :param coverage_information: (optional) coverage information
+        :type coverage_information: list
         :param auto_enrichment_disable: (optional) disable auto enrichment
+        :type auto_enrichment_disable: bool
         :param periodicity: (optional) periodicity
+        :type periodicity: str
         :param duration: (optional) duration
+        :type duration: str
         :param type_affinity: (optional) type affinity
+        :type type_affinity: str
         :param platforms_affinity: (optional) platforms affinity
+        :type platforms_affinity: list
         :param file: (optional) File object to attach
+        :type file: dict
         :param fileMarkings: (optional) list of marking definition IDs for the file
+        :type fileMarkings: list
         :return: Security Coverage object
         :rtype: dict or None
         """
@@ -283,8 +324,11 @@ class SecurityCoverage:
         """Import a Security coverage from a STIX2 object.
 
         :param stixObject: the STIX2 Security coverage object
+        :type stixObject: dict
         :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
         :param update: whether to update if the entity already exists
+        :type update: bool
         :return: Security coverage object
         :rtype: dict or None
         """

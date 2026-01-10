@@ -14,6 +14,7 @@ class Report:
     Manages threat intelligence reports in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -520,15 +521,25 @@ class Report:
         """List Report objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
+        :type after: str
         :param orderBy: field to order results by
+        :type orderBy: str
         :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param getAll: whether to retrieve all results
+        :type getAll: bool
         :param withPagination: whether to include pagination info
+        :type withPagination: bool
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: List of Report objects
         :rtype: list
         """
@@ -545,7 +556,7 @@ class Report:
 
         self.opencti.app_logger.info(
             "Listing Reports with filters",
-            {"filters": json.dumps(filters), "with_files:": with_files},
+            {"filters": json.dumps(filters), "with_files": with_files},
         )
         query = (
             """
@@ -614,9 +625,13 @@ class Report:
         """Read a Report object.
 
         :param id: the id of the Report
+        :type id: str
         :param filters: the filters to apply if no id provided
+        :type filters: dict
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: Report object
         :rtype: dict or None
         """
@@ -651,14 +666,23 @@ class Report:
                 return result[0]
             else:
                 return None
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_report] Missing parameters: id or filters"
+            )
+            return None
 
     def get_by_stix_id_or_name(self, **kwargs):
         """Read a Report object by stix_id or name.
 
         :param stix_id: the STIX ID of the Report
+        :type stix_id: str
         :param name: the name of the Report
+        :type name: str
         :param published: the published date of the Report
+        :type published: str
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :return: Report object
         :rtype: dict or None
         """
@@ -688,7 +712,9 @@ class Report:
         """Check if a report already contains a STIX object or relationship.
 
         :param id: the id of the Report
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the STIX object or relationship
+        :type stixObjectOrStixRelationshipId: str
         :return: True if the report contains the entity, False otherwise
         :rtype: bool
         """
@@ -825,15 +851,16 @@ class Report:
             return self.opencti.process_multiple_fields(result["data"]["reportAdd"])
         else:
             self.opencti.app_logger.error(
-                "[opencti_report] "
-                "Missing parameters: name and description and published and report_class"
+                "[opencti_report] Missing parameters: name and published"
             )
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
         """Add a STIX object or relationship to Report object (object_refs).
 
         :param id: the id of the Report
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the STIX object or relationship
+        :type stixObjectOrStixRelationshipId: str
         :return: True if successful, False otherwise
         :rtype: bool
         """
@@ -879,7 +906,9 @@ class Report:
         """Remove a STIX object or relationship from Report object (object_refs).
 
         :param id: the id of the Report
+        :type id: str
         :param stixObjectOrStixRelationshipId: the id of the STIX object or relationship
+        :type stixObjectOrStixRelationshipId: str
         :return: True if successful, False otherwise
         :rtype: bool
         """
@@ -889,7 +918,7 @@ class Report:
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
             self.opencti.app_logger.info(
-                "Removing StixObjectOrStixRelationship to Report",
+                "Removing StixObjectOrStixRelationship from Report",
                 {
                     "id": id,
                     "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
@@ -923,8 +952,11 @@ class Report:
         """Import a Report object from a STIX2 object.
 
         :param stixObject: the STIX2 Report object
+        :type stixObject: dict
         :param extras: extra parameters including created_by_id, object_marking_ids, object_ids, etc.
+        :type extras: dict
         :param update: whether to update if the entity already exists
+        :type update: bool
         :return: Report object
         :rtype: dict or None
         """

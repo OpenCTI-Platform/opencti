@@ -29,6 +29,7 @@ def logger(level, json_logging=True):
     """Create a logger with JSON or standard formatting.
 
     :param level: Logging level (e.g., logging.INFO, logging.DEBUG)
+    :type level: int
     :param json_logging: Whether to use JSON formatting for logs
     :type json_logging: bool
     :return: AppLogger class

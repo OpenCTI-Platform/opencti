@@ -13,6 +13,7 @@ class Incident:
     Manages security incidents in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -272,15 +273,25 @@ class Incident:
         """List Incident objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
+        :type after: str
         :param orderBy: field to order results by
+        :type orderBy: str
         :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param getAll: whether to retrieve all results
+        :type getAll: bool
         :param withPagination: whether to include pagination info
+        :type withPagination: bool
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: List of Incident objects
         :rtype: list
         """
@@ -365,9 +376,13 @@ class Incident:
         """Read an Incident object.
 
         :param id: the id of the Incident
+        :type id: str
         :param filters: the filters to apply if no id provided
+        :type filters: dict
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: Incident object
         :rtype: dict or None
         """
@@ -512,14 +527,19 @@ class Incident:
             )
             return self.opencti.process_multiple_fields(result["data"]["incidentAdd"])
         else:
-            self.opencti.app_logger.error("Missing parameters: name and description")
+            self.opencti.app_logger.error(
+                "[opencti_incident] Missing parameters: name"
+            )
 
     def import_from_stix2(self, **kwargs):
         """Import an Incident object from a STIX2 object.
 
         :param stixObject: the STIX2 Incident object
+        :type stixObject: dict
         :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
         :param update: whether to update if the entity already exists
+        :type update: bool
         :return: Incident object
         :rtype: dict or None
         """

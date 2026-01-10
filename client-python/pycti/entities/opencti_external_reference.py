@@ -14,6 +14,7 @@ class ExternalReference:
     Manages external references and citations in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -367,7 +368,7 @@ class ExternalReference:
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
             self.opencti.app_logger.info(
-                "Uploading a file in Stix-Domain-Object",
+                "Uploading a file in External-Reference",
                 {"file": final_file_name, "id": id},
             )
             return self.opencti.query(
@@ -387,7 +388,7 @@ class ExternalReference:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_stix_domain_object] Missing parameters: id or file_name"
+                "[opencti_external_reference] Missing parameters: id or file_name"
             )
             return None
 
@@ -425,6 +426,12 @@ class ExternalReference:
             return None
 
     def delete(self, id):
+        """Delete an External-Reference object.
+
+        :param id: the id of the External-Reference to delete
+        :type id: str
+        :return: None
+        """
         self.opencti.app_logger.info("Deleting External-Reference", {"id": id})
         query = """
              mutation ExternalReferenceEdit($id: ID!) {
@@ -436,6 +443,13 @@ class ExternalReference:
         self.opencti.query(query, {"id": id})
 
     def list_files(self, **kwargs):
+        """List files attached to an External-Reference.
+
+        :param id: the id of the External-Reference
+        :type id: str
+        :return: List of files
+        :rtype: list
+        """
         id = kwargs.get("id", None)
         self.opencti.app_logger.debug("Listing files of External-Reference", {"id": id})
         query = """

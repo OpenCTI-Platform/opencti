@@ -352,7 +352,7 @@ class User:
                 )
         else:
             self.opencti.admin_logger.error(
-                "[opencti_user] Missing paramters: id, search, or filters"
+                "[opencti_user] Missing parameters: id, search, or filters"
             )
             return None
 

@@ -12,6 +12,7 @@ class Channel:
     Manages communication channels used by threat actors in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -441,7 +442,7 @@ class Channel:
             return self.opencti.process_multiple_fields(result["data"]["channelAdd"])
         else:
             self.opencti.app_logger.error(
-                "[opencti_channel] Missing parameters: name and description"
+                "[opencti_channel] Missing parameters: name"
             )
 
     """

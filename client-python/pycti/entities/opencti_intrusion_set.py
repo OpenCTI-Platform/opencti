@@ -12,6 +12,7 @@ class IntrusionSet:
     Manages intrusion sets (APT groups) in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -267,15 +268,25 @@ class IntrusionSet:
         """List Intrusion Set objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
+        :type after: str
         :param orderBy: field to order results by
+        :type orderBy: str
         :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param getAll: whether to retrieve all results
+        :type getAll: bool
         :param withPagination: whether to include pagination info
+        :type withPagination: bool
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: List of Intrusion Set objects
         :rtype: list
         """
@@ -360,9 +371,13 @@ class IntrusionSet:
         """Read an Intrusion Set object.
 
         :param id: the id of the Intrusion Set
+        :type id: str
         :param filters: the filters to apply if no id provided
+        :type filters: dict
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: Intrusion Set object
         :rtype: dict or None
         """
@@ -404,22 +419,58 @@ class IntrusionSet:
     def create(self, **kwargs):
         """Create an Intrusion Set object.
 
-        :param name: the name of the Intrusion Set
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param name: the name of the Intrusion Set (required)
+        :type name: str
         :param description: description of the intrusion set
+        :type description: str
         :param aliases: list of aliases
+        :type aliases: list
         :param first_seen: first seen date
+        :type first_seen: str
         :param last_seen: last seen date
+        :type last_seen: str
         :param goals: goals of the intrusion set
+        :type goals: list
         :param resource_level: resource level
+        :type resource_level: str
         :param primary_motivation: primary motivation
+        :type primary_motivation: str
         :param secondary_motivations: secondary motivations
-        :param createdBy: creator identity
-        :param objectMarking: marking definitions
-        :param objectLabel: labels
-        :param externalReferences: external references
+        :type secondary_motivations: list
+        :param createdBy: creator identity ID
+        :type createdBy: str
+        :param objectMarking: marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: label IDs
+        :type objectLabel: list
+        :param externalReferences: external reference IDs
+        :type externalReferences: list
+        :param objectOrganization: organization IDs
+        :type objectOrganization: list
+        :param revoked: whether the intrusion set is revoked
+        :type revoked: bool
+        :param confidence: confidence level (0-100)
+        :type confidence: int
+        :param lang: language
+        :type lang: str
+        :param created: creation date
+        :type created: str
+        :param modified: modification date
+        :type modified: str
+        :param x_opencti_stix_ids: additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param x_opencti_workflow_id: workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: custom modification date
+        :type x_opencti_modified_at: str
         :param update: whether to update existing intrusion set
+        :type update: bool
         :param file: (optional) File object to attach
+        :type file: dict
         :param fileMarkings: (optional) list of marking definition IDs for the file
+        :type fileMarkings: list
         :return: Intrusion Set object
         :rtype: dict or None
         """
@@ -500,15 +551,18 @@ class IntrusionSet:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_intrusion_set] Missing parameters: name and description"
+                "[opencti_intrusion_set] Missing parameters: name"
             )
 
     def import_from_stix2(self, **kwargs):
         """Import an Intrusion Set object from a STIX2 object.
 
         :param stixObject: the STIX2 Intrusion Set object
+        :type stixObject: dict
         :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
         :param update: whether to update if the entity already exists
+        :type update: bool
         :return: Intrusion Set object
         :rtype: dict or None
         """

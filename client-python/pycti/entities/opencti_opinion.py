@@ -13,6 +13,7 @@ class Opinion:
     Manages analyst opinions and assessments in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -62,6 +63,11 @@ class Opinion:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -399,6 +405,11 @@ class Opinion:
                 return result[0]
             else:
                 return None
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_opinion] Missing parameters: id or filters"
+            )
+            return None
 
     def contains_stix_object_or_stix_relationship(self, **kwargs):
         """Check if an opinion already contains a STIX entity.
@@ -439,6 +450,7 @@ class Opinion:
             self.opencti.app_logger.error(
                 "[opencti_opinion] Missing parameters: id or entity_id"
             )
+            return None
 
     def create(self, **kwargs):
         """Create an Opinion object.
@@ -502,6 +514,7 @@ class Opinion:
         opinion = kwargs.get("opinion", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
+        x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
         file = kwargs.get("file", None)
@@ -536,6 +549,7 @@ class Opinion:
                 "authors": authors,
                 "opinion": opinion,
                 "x_opencti_stix_ids": x_opencti_stix_ids,
+                "x_opencti_workflow_id": x_opencti_workflow_id,
                 "x_opencti_modified_at": x_opencti_modified_at,
                 "update": update,
                 "file": file,
@@ -545,8 +559,9 @@ class Opinion:
             return self.opencti.process_multiple_fields(result["data"]["opinionAdd"])
         else:
             self.opencti.app_logger.error(
-                "[opencti_opinion] Missing parameters: content"
+                "[opencti_opinion] Missing parameters: opinion"
             )
+            return None
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
         """Add a Stix-Entity object to Opinion object (object_refs).
@@ -617,7 +632,7 @@ class Opinion:
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
             self.opencti.app_logger.info(
-                "Removing StixObjectOrStixRelationship to Opinion",
+                "Removing StixObjectOrStixRelationship from Opinion",
                 {
                     "id": id,
                     "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
@@ -676,6 +691,10 @@ class Opinion:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
                 )
+            if "x_opencti_workflow_id" not in stix_object:
+                stix_object["x_opencti_workflow_id"] = (
+                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -719,6 +738,11 @@ class Opinion:
                     if "x_opencti_modified_at" in stix_object
                     else None
                 ),
+                x_opencti_workflow_id=(
+                    stix_object["x_opencti_workflow_id"]
+                    if "x_opencti_workflow_id" in stix_object
+                    else None
+                ),
                 opinion=stix_object["opinion"] if "opinion" in stix_object else None,
                 objectOrganization=(
                     stix_object["x_opencti_granted_refs"]
@@ -733,3 +757,4 @@ class Opinion:
             self.opencti.app_logger.error(
                 "[opencti_opinion] Missing parameters: stixObject"
             )
+            return None

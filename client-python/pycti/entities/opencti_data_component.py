@@ -12,6 +12,7 @@ class DataComponent:
     Manages MITRE ATT&CK data components in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -498,7 +499,7 @@ class DataComponent:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_data_component] Missing parameters: name and description"
+                "[opencti_data_component] Missing parameters: name"
             )
 
     """

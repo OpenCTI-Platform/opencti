@@ -11,6 +11,7 @@ class KillChainPhase:
     Manages kill chain phases (ATT&CK tactics) in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -270,6 +271,12 @@ class KillChainPhase:
             return None
 
     def delete(self, **kwargs):
+        """Delete a Kill-Chain-Phase object.
+
+        :param id: the id of the Kill-Chain-Phase to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Kill-Chain-Phase", {"id": id})

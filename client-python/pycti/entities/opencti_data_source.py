@@ -12,6 +12,7 @@ class DataSource:
     Manages MITRE ATT&CK data sources in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -455,7 +456,7 @@ class DataSource:
             return self.opencti.process_multiple_fields(result["data"]["dataSourceAdd"])
         else:
             self.opencti.app_logger.error(
-                "[opencti_data_source] Missing parameters: name and description"
+                "[opencti_data_source] Missing parameters: name"
             )
 
     """

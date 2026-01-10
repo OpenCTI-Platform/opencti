@@ -7,6 +7,7 @@ class StixObjectOrStixRelationship:
     Manages generic STIX objects and relationships in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):

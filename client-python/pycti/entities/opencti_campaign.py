@@ -9,7 +9,10 @@ from stix2.canonicalization.Canonicalize import canonicalize
 class Campaign:
     """Main Campaign class for OpenCTI
 
+    Manages threat campaigns in the OpenCTI platform.
+
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -259,15 +262,25 @@ class Campaign:
         """List Campaign objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
+        :type after: str
         :param orderBy: field to order results by
+        :type orderBy: str
         :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param getAll: whether to retrieve all results
+        :type getAll: bool
         :param withPagination: whether to include pagination info
+        :type withPagination: bool
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: List of Campaign objects
         :rtype: list
         """
@@ -352,9 +365,13 @@ class Campaign:
         """Read a Campaign object.
 
         :param id: the id of the Campaign
+        :type id: str
         :param filters: the filters to apply if no id provided
+        :type filters: dict
         :param customAttributes: custom attributes to return
+        :type customAttributes: str
         :param withFiles: whether to include files
+        :type withFiles: bool
         :return: Campaign object
         :rtype: dict or None
         """
@@ -397,28 +414,51 @@ class Campaign:
         """Create a Campaign object.
 
         :param stix_id: (optional) the STIX ID
+        :type stix_id: str
         :param createdBy: (optional) the author ID
+        :type createdBy: str
         :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
         :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
         :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
         :param revoked: (optional) whether the campaign is revoked
+        :type revoked: bool
         :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
         :param lang: (optional) language
+        :type lang: str
         :param created: (optional) creation date
+        :type created: str
         :param modified: (optional) modification date
+        :type modified: str
         :param name: the name of the Campaign (required)
+        :type name: str
         :param description: (optional) description
+        :type description: str
         :param aliases: (optional) list of aliases
+        :type aliases: list
         :param first_seen: (optional) first seen date
+        :type first_seen: str
         :param last_seen: (optional) last seen date
+        :type last_seen: str
         :param objective: (optional) objective of the campaign
+        :type objective: str
         :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
         :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
         :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
         :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
         :param file: (optional) File object to attach
+        :type file: dict
         :param fileMarkings: (optional) list of marking definition IDs for the file
+        :type fileMarkings: list
         :return: Campaign object
         :rtype: dict or None
         """
@@ -491,15 +531,18 @@ class Campaign:
             return self.opencti.process_multiple_fields(result["data"]["campaignAdd"])
         else:
             self.opencti.app_logger.error(
-                "[opencti_campaign] Missing parameters: name and description"
+                "[opencti_campaign] Missing parameters: name"
             )
 
     def import_from_stix2(self, **kwargs):
         """Import a Campaign object from a STIX2 object.
 
         :param stixObject: the STIX2 Campaign object
+        :type stixObject: dict
         :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
         :param update: whether to update if the entity already exists
+        :type update: bool
         :return: Campaign object
         :rtype: dict or None
         """

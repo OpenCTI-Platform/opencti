@@ -14,7 +14,10 @@ from .indicator.opencti_indicator_properties import (
 class Indicator:
     """Main Indicator class for OpenCTI
 
+    Manages threat indicators and detection patterns in the OpenCTI platform.
+
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -48,22 +51,30 @@ class Indicator:
         return Indicator.generate_id(data["pattern"])
 
     def list(self, **kwargs):
-        """List Indicator objects
+        """List Indicator objects.
 
-        The list method accepts the following kwargs:
-
-        :param list filters: (optional) the filters to apply
-        :param str search: (optional) a search keyword to apply for the listing
-        :param int first: (optional) return the first n rows from the `after` ID
-                            or the beginning if not set
-        :param str after: (optional) OpenCTI object ID of the first row for pagination
-        :param str orderBy: (optional) the field to order the response on
-        :param bool orderMode: (optional) either "`asc`" or "`desc`"
-        :param list customAttributes: (optional) list of attributes keys to return
-        :param bool getAll: (optional) switch to return all entries (be careful to use this without any other filters)
-        :param bool withPagination: (optional) switch to use pagination
-        :param bool toStix: (optional) get in STIX
-
+        :param filters: (optional) the filters to apply
+        :type filters: dict
+        :param search: (optional) a search keyword to apply for the listing
+        :type search: str
+        :param first: (optional) return the first n rows from the `after` ID or the beginning if not set
+        :type first: int
+        :param after: (optional) OpenCTI object ID of the first row for pagination
+        :type after: str
+        :param orderBy: (optional) the field to order the response on
+        :type orderBy: str
+        :param orderMode: (optional) either "asc" or "desc"
+        :type orderMode: str
+        :param customAttributes: (optional) list of attributes keys to return
+        :type customAttributes: str
+        :param getAll: (optional) switch to return all entries (be careful to use this without any other filters)
+        :type getAll: bool
+        :param withPagination: (optional) switch to use pagination
+        :type withPagination: bool
+        :param withFiles: (optional) include files in response
+        :type withFiles: bool
+        :param toStix: (optional) get in STIX format
+        :type toStix: bool
         :return: List of Indicators
         :rtype: list
         """
@@ -152,20 +163,23 @@ class Indicator:
             )
 
     def read(self, **kwargs):
-        """Read an Indicator object
+        """Read an Indicator object.
 
-        read can be either used with a known OpenCTI entity `id` or by using a
+        Read can be either used with a known OpenCTI entity `id` or by using a
         valid filter to search and return a single Indicator entity or None.
-
-        The list method accepts the following kwargs.
 
         Note: either `id` or `filters` is required.
 
-        :param str id: the id of the Threat-Actor-Group
-        :param list filters: the filters to apply if no id provided
-
+        :param id: the id of the Indicator
+        :type id: str
+        :param filters: the filters to apply if no id provided
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
         :return: Indicator object
-        :rtype: Indicator
+        :rtype: dict or None
         """
 
         id = kwargs.get("id", None)
@@ -207,38 +221,69 @@ class Indicator:
         """Create an Indicator object.
 
         :param stix_id: (optional) the STIX ID
+        :type stix_id: str
         :param createdBy: (optional) the author ID
+        :type createdBy: str
         :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
         :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
         :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
         :param revoked: (optional) whether the indicator is revoked
+        :type revoked: bool
         :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
         :param lang: (optional) language
+        :type lang: str
         :param created: (optional) creation date
+        :type created: str
         :param modified: (optional) modification date
+        :type modified: str
         :param pattern_type: the pattern type (required)
+        :type pattern_type: str
         :param pattern_version: (optional) the pattern version
+        :type pattern_version: str
         :param pattern: the indicator pattern (required)
+        :type pattern: str
         :param name: the name of the Indicator (defaults to pattern)
+        :type name: str
         :param description: (optional) description
+        :type description: str
         :param indicator_types: (optional) list of indicator types
+        :type indicator_types: list
         :param valid_from: (optional) valid from date
+        :type valid_from: str
         :param valid_until: (optional) valid until date
+        :type valid_until: str
         :param x_opencti_score: (optional) score (default: 50)
+        :type x_opencti_score: int
         :param x_opencti_detection: (optional) detection flag (default: False)
+        :type x_opencti_detection: bool
         :param x_opencti_main_observable_type: the main observable type (required)
+        :type x_opencti_main_observable_type: str
         :param x_mitre_platforms: (optional) list of MITRE platforms
+        :type x_mitre_platforms: list
         :param killChainPhases: (optional) list of kill chain phase IDs
+        :type killChainPhases: list
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
         :param x_opencti_create_observables: (optional) create observables (default: False)
+        :type x_opencti_create_observables: bool
         :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
         :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
         :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
         :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
         :param file: (optional) File object to attach
+        :type file: dict
         :param fileMarkings: (optional) list of marking definition IDs for the file
+        :type fileMarkings: list
         :return: Indicator object
-        :rtype: Indicator
+        :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
@@ -346,12 +391,15 @@ class Indicator:
                 "[opencti_indicator] Missing parameters: "
                 "name or pattern or pattern_type or x_opencti_main_observable_type"
             )
+            return None
 
     def update_field(self, **kwargs):
         """Update an Indicator object field.
 
         :param id: the Indicator id
+        :type id: str
         :param input: the input of the field
+        :type input: list
         :return: Updated indicator object
         :rtype: dict or None
         """
@@ -380,7 +428,7 @@ class Indicator:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_stix_domain_object] Cant update indicator field, missing parameters: id and input"
+                "[opencti_indicator] Cannot update indicator field, missing parameters: id and input"
             )
             return None
 
@@ -388,8 +436,11 @@ class Indicator:
         """Add a Stix-Cyber-Observable object to Indicator object (based-on).
 
         :param id: the id of the Indicator
+        :type id: str
         :param indicator: Indicator object
+        :type indicator: dict
         :param stix_cyber_observable_id: the id of the Stix-Observable
+        :type stix_cyber_observable_id: str
         :return: True if there has been no import error
         :rtype: bool
         """
@@ -440,11 +491,13 @@ class Indicator:
         """Import an Indicator object from a STIX2 object.
 
         :param stixObject: the Stix-Object Indicator
+        :type stixObject: dict
         :param extras: extra dict
+        :type extras: dict
         :param update: set the update flag on import
         :type update: bool
         :return: Indicator object
-        :rtype: Indicator
+        :rtype: dict or None
         """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
@@ -615,3 +668,4 @@ class Indicator:
             self.opencti.app_logger.error(
                 "[opencti_indicator] Missing parameters: stixObject"
             )
+            return None

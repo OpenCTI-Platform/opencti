@@ -12,6 +12,7 @@ class CaseIncident:
     Manages incident response cases in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -488,7 +489,8 @@ class CaseIncident:
     def generate_id_from_data(data):
         return CaseIncident.generate_id(data["name"], data["created"])
 
-    """
+    def list(self, **kwargs):
+        """
         List Case Incident objects
 
         :param filters: the filters to apply
@@ -496,9 +498,7 @@ class CaseIncident:
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
         :return List of Case Incident objects
-    """
-
-    def list(self, **kwargs):
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -578,15 +578,14 @@ class CaseIncident:
                 result["data"]["caseIncidents"], with_pagination
             )
 
-    """
+    def read(self, **kwargs):
+        """
         Read a Case Incident object
 
         :param id: the id of the Case Incident
         :param filters: the filters to apply if no id provided
         :return Case Incident object
-    """
-
-    def read(self, **kwargs):
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -617,16 +616,15 @@ class CaseIncident:
             else:
                 return None
 
-    """
+    def get_by_stix_id_or_name(self, **kwargs):
+        """
         Read a Case Incident object by stix_id or name
 
         :param type: the Stix-Domain-Entity type
         :param stix_id: the STIX ID of the Stix-Domain-Entity
         :param name: the name of the Stix-Domain-Entity
         :return Stix-Domain-Entity object
-    """
-
-    def get_by_stix_id_or_name(self, **kwargs):
+        """
         stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
         created = kwargs.get("created", None)
@@ -649,15 +647,14 @@ class CaseIncident:
             )
         return object_result
 
-    """
+    def contains_stix_object_or_stix_relationship(self, **kwargs):
+        """
         Check if a case incident already contains a thing (Stix Object or Stix Relationship)
 
         :param id: the id of the Case Incident
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
-    """
-
-    def contains_stix_object_or_stix_relationship(self, **kwargs):
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -685,10 +682,12 @@ class CaseIncident:
             return result["data"]["caseIncidentContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.app_logger.error(
-                "[opencti_caseIncident] Missing parameters: id or stixObjectOrStixRelationshipId"
+                "[opencti_case_incident] Missing parameters: id or stixObjectOrStixRelationshipId"
             )
+            return None
 
-    """
+    def create(self, **kwargs):
+        """
         Create a Case Incident object
 
         :param stix_id: (optional) the STIX ID
@@ -718,9 +717,7 @@ class CaseIncident:
         :param file: (optional) File object to attach
         :param fileMarkings: (optional) list of marking definition IDs for the file
         :return Case Incident object
-    """
-
-    def create(self, **kwargs):
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
@@ -794,18 +791,18 @@ class CaseIncident:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_caseIncident] Missing parameters: name"
+                "[opencti_case_incident] Missing parameters: name"
             )
+            return None
 
+    def add_stix_object_or_stix_relationship(self, **kwargs):
         """
         Add a Stix-Entity object to Case Incident object (object_refs)
 
         :param id: the id of the Case Incident
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
-    """
-
-    def add_stix_object_or_stix_relationship(self, **kwargs):
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -841,26 +838,25 @@ class CaseIncident:
             return True
         else:
             self.opencti.app_logger.error(
-                "[opencti_caseIncident] Missing parameters: id and stixObjectOrStixRelationshipId"
+                "[opencti_case_incident] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 
-    """
+    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        """
         Remove a Stix-Entity object to Case Incident object (object_refs)
 
         :param id: the id of the Case Incident
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
-    """
-
-    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
             self.opencti.app_logger.info(
-                "Removing StixObjectOrStixRelationship to CaseIncident",
+                "Removing StixObjectOrStixRelationship from CaseIncident",
                 {
                     "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
                     "id": id,
@@ -886,18 +882,17 @@ class CaseIncident:
             return True
         else:
             self.opencti.app_logger.error(
-                "[opencti_caseIncident] Missing parameters: id and stixObjectOrStixRelationshipId"
+                "[opencti_case_incident] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 
-    """
+    def import_from_stix2(self, **kwargs):
+        """
         Import a Case Incident object from a STIX2 object
 
         :param stixObject: the Stix-Object Case Incident
         :return Case Incident object
-    """
-
-    def import_from_stix2(self, **kwargs):
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -1015,8 +1010,9 @@ class CaseIncident:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_caseIncident] Missing parameters: stixObject"
+                "[opencti_case_incident] Missing parameters: stixObject"
             )
+            return None
 
     def delete(self, **kwargs):
         id = kwargs.get("id", None)

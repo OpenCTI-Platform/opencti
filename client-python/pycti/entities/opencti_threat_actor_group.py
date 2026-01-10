@@ -10,11 +10,13 @@ from stix2.canonicalization.Canonicalize import canonicalize
 class ThreatActorGroup:
     """Main ThreatActorGroup class for OpenCTI
 
+    Manages threat actor group entities in the OpenCTI platform.
+
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
-        """Create an instance of ThreatActorGroup"""
 
         self.opencti = opencti
         self.properties = """
@@ -174,16 +176,23 @@ class ThreatActorGroup:
     def list(self, **kwargs) -> dict:
         """List Threat-Actor-Group objects
 
-        The list method accepts the following kwargs:
-
-        :param list filters: (optional) the filters to apply
-        :param str search: (optional) a search keyword to apply for the listing
-        :param int first: (optional) return the first n rows from the `after` ID
+        :param filters: (optional) the filters to apply
+        :type filters: list
+        :param search: (optional) a search keyword to apply for the listing
+        :type search: str
+        :param first: (optional) return the first n rows from the `after` ID
                             or the beginning if not set
-        :param str after: (optional) OpenCTI object ID of the first row for pagination
-        :param str orderBy: (optional) the field to order the response on
-        :param bool orderMode: (optional) either "`asc`" or "`desc`"
-        :param bool withPagination: (optional) switch to use pagination
+        :type first: int
+        :param after: (optional) OpenCTI object ID of the first row for pagination
+        :type after: str
+        :param orderBy: (optional) the field to order the response on
+        :type orderBy: str
+        :param orderMode: (optional) either "`asc`" or "`desc`"
+        :type orderMode: str
+        :param withPagination: (optional) switch to use pagination
+        :type withPagination: bool
+        :return: List of Threat-Actor-Group objects
+        :rtype: list
         """
 
         filters = kwargs.get("filters", None)
@@ -268,12 +277,14 @@ class ThreatActorGroup:
         read can be either used with a known OpenCTI entity `id` or by using a
         valid filter to search and return a single Threat-Actor-Group entity or None.
 
-        The list method accepts the following kwargs.
-
         Note: either `id` or `filters` is required.
 
-        :param str id: the id of the Threat-Actor-Group
-        :param list filters: the filters to apply if no id provided
+        :param id: the id of the Threat-Actor-Group
+        :type id: str
+        :param filters: the filters to apply if no id provided
+        :type filters: list
+        :return: Threat-Actor-Group object
+        :rtype: dict or None
         """
 
         id = kwargs.get("id", None)
@@ -319,34 +330,58 @@ class ThreatActorGroup:
         By setting `update` to `True` it acts like an upsert and updates
         fields of an existing Threat-Actor-Group entity.
 
-        The create method accepts the following kwargs.
-
         Note: `name` and `description` or `stix_id` is required.
 
-        :param str stix_id: stix2 id reference for the Threat-Actor-Group entity
-        :param str createdBy: (optional) id of the organization that created the knowledge
-        :param list objectMarking: (optional) list of OpenCTI markin definition ids
-        :param list objectLabel: (optional) list of OpenCTI label ids
-        :param list externalReferences: (optional) list of OpenCTI external references ids
-        :param bool revoked: is this entity revoked
-        :param int confidence: confidence level
-        :param str lang: language
-        :param str created: (optional) date in OpenCTI date format
-        :param str modified: (optional) date in OpenCTI date format
-        :param str name: name of the threat actor group
-        :param str description: description of the threat actor group
-        :param list aliases: (optional) list of alias names for the Threat-Actor-Group
-        :param list threat_actor_types: (optional) list of threat actor types
-        :param str first_seen: (optional) date in OpenCTI date format
-        :param str last_seen: (optional) date in OpenCTI date format
-        :param list roles: (optional) list of roles
-        :param list goals: (optional) list of goals
-        :param str sophistication: (optional) describe the actors sophistication in text
-        :param str resource_level: (optional) describe the actors resource_level in text
-        :param str primary_motivation: (optional) describe the actors primary_motivation in text
-        :param list secondary_motivations: (optional) describe the actors secondary_motivations in list of string
-        :param list personal_motivations: (optional) describe the actors personal_motivations in list of strings
-        :param bool update: (optional) choose to updated an existing Threat-Actor-Group entity, default `False`
+        :param stix_id: stix2 id reference for the Threat-Actor-Group entity
+        :type stix_id: str
+        :param createdBy: (optional) id of the organization that created the knowledge
+        :type createdBy: str
+        :param objectMarking: (optional) list of OpenCTI marking definition ids
+        :type objectMarking: list
+        :param objectLabel: (optional) list of OpenCTI label ids
+        :type objectLabel: list
+        :param externalReferences: (optional) list of OpenCTI external references ids
+        :type externalReferences: list
+        :param revoked: is this entity revoked
+        :type revoked: bool
+        :param confidence: confidence level
+        :type confidence: int
+        :param lang: language
+        :type lang: str
+        :param created: (optional) date in OpenCTI date format
+        :type created: str
+        :param modified: (optional) date in OpenCTI date format
+        :type modified: str
+        :param name: name of the threat actor group
+        :type name: str
+        :param description: description of the threat actor group
+        :type description: str
+        :param aliases: (optional) list of alias names for the Threat-Actor-Group
+        :type aliases: list
+        :param threat_actor_types: (optional) list of threat actor types
+        :type threat_actor_types: list
+        :param first_seen: (optional) date in OpenCTI date format
+        :type first_seen: str
+        :param last_seen: (optional) date in OpenCTI date format
+        :type last_seen: str
+        :param roles: (optional) list of roles
+        :type roles: list
+        :param goals: (optional) list of goals
+        :type goals: list
+        :param sophistication: (optional) describe the actors sophistication in text
+        :type sophistication: str
+        :param resource_level: (optional) describe the actors resource_level in text
+        :type resource_level: str
+        :param primary_motivation: (optional) describe the actors primary_motivation in text
+        :type primary_motivation: str
+        :param secondary_motivations: (optional) describe the actors secondary_motivations in list of string
+        :type secondary_motivations: list
+        :param personal_motivations: (optional) describe the actors personal_motivations in list of strings
+        :type personal_motivations: list
+        :param update: (optional) choose to updated an existing Threat-Actor-Group entity, default `False`
+        :type update: bool
+        :return: Threat-Actor-Group object
+        :rtype: dict or None
         """
 
         stix_id = kwargs.get("stix_id", None)
@@ -365,6 +400,7 @@ class ThreatActorGroup:
         threat_actor_types = kwargs.get("threat_actor_types", None)
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
+        roles = kwargs.get("roles", None)
         goals = kwargs.get("goals", None)
         sophistication = kwargs.get("sophistication", None)
         resource_level = kwargs.get("resource_level", None)
@@ -376,6 +412,8 @@ class ThreatActorGroup:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Threat-Actor-Group", {"name": name})
@@ -410,6 +448,7 @@ class ThreatActorGroup:
                         "threat_actor_types": threat_actor_types,
                         "first_seen": first_seen,
                         "last_seen": last_seen,
+                        "roles": roles,
                         "goals": goals,
                         "sophistication": sophistication,
                         "resource_level": resource_level,
@@ -420,6 +459,8 @@ class ThreatActorGroup:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "file": file,
+                        "fileMarkings": file_markings,
                     }
                 },
             )
@@ -428,7 +469,7 @@ class ThreatActorGroup:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_threat_actor_group] Missing parameters: name and description"
+                "[opencti_threat_actor_group] Missing parameters: name"
             )
 
     def import_from_stix2(self, **kwargs):
@@ -505,6 +546,7 @@ class ThreatActorGroup:
                 last_seen=(
                     stix_object["last_seen"] if "last_seen" in stix_object else None
                 ),
+                roles=stix_object["roles"] if "roles" in stix_object else None,
                 goals=stix_object["goals"] if "goals" in stix_object else None,
                 sophistication=(
                     stix_object["sophistication"]
@@ -552,6 +594,8 @@ class ThreatActorGroup:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(

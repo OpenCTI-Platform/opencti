@@ -12,6 +12,7 @@ class Narrative:
     Manages narratives and disinformation campaigns in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -61,6 +62,11 @@ class Narrative:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -148,6 +154,11 @@ class Narrative:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -450,8 +461,9 @@ class Narrative:
             return self.opencti.process_multiple_fields(result["data"]["narrativeAdd"])
         else:
             self.opencti.app_logger.error(
-                "[opencti_narrative] Missing parameters: name and description"
+                "[opencti_narrative] Missing parameters: name"
             )
+            return None
 
     """
         Import an Narrative object from a STIX2 object
@@ -548,3 +560,4 @@ class Narrative:
             self.opencti.app_logger.error(
                 "[opencti_narrative] Missing parameters: stixObject"
             )
+            return None

@@ -12,6 +12,7 @@ class Language:
     Manages language entities in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -61,6 +62,11 @@ class Language:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -172,6 +178,11 @@ class Language:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -444,6 +455,7 @@ class Language:
             return self.opencti.process_multiple_fields(result["data"]["languageAdd"])
         else:
             self.opencti.app_logger.error("[opencti_language] Missing parameters: name")
+            return None
 
     """
         Import an Language object from a STIX2 object

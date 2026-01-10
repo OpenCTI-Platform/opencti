@@ -13,6 +13,7 @@ class Note:
     Manages notes and annotations in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -801,6 +802,7 @@ class Note:
             return self.opencti.process_multiple_fields(result["data"]["noteAdd"])
         else:
             self.opencti.app_logger.error("[opencti_note] Missing parameters: content")
+            return None
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
         """Add a Stix-Entity object to Note object (object_refs).

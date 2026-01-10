@@ -2,6 +2,7 @@
 
 import json
 import uuid
+import warnings
 from typing import Union
 
 from stix2.canonicalization.Canonicalize import canonicalize
@@ -14,6 +15,7 @@ class ThreatActor:
     """Main ThreatActor class for OpenCTI
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -157,18 +159,28 @@ class ThreatActor:
         return ThreatActor.generate_id(data["name"], data_type)
 
     def list(self, **kwargs) -> dict:
-        """List Threat-Actor objects
+        """List Threat-Actor objects.
 
-        The list method accepts the following kwargs:
-
-        :param list filters: (optional) the filters to apply
-        :param str search: (optional) a search keyword to apply for the listing
-        :param int first: (optional) return the first n rows from the `after` ID
-                            or the beginning if not set
-        :param str after: (optional) OpenCTI object ID of the first row for pagination
-        :param str orderBy: (optional) the field to order the response on
-        :param bool orderMode: (optional) either "`asc`" or "`desc`"
-        :param bool withPagination: (optional) switch to use pagination
+        :param filters: the filters to apply
+        :type filters: dict
+        :param search: the search keyword
+        :type search: str
+        :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
+        :param after: ID of the first row for pagination
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :return: List of Threat-Actor objects
+        :rtype: list
         """
 
         filters = kwargs.get("filters", None)
@@ -244,17 +256,16 @@ class ThreatActor:
             )
 
     def read(self, **kwargs) -> Union[dict, None]:
-        """Read a Threat-Actor object
+        """Read a Threat-Actor object.
 
-        read can be either used with a known OpenCTI entity `id` or by using a
-        valid filter to search and return a single Threat-Actor entity or None.
-
-        The list method accepts the following kwargs.
-
-        Note: either `id` or `filters` is required.
-
-        :param str id: the id of the Threat-Actor
-        :param list filters: the filters to apply if no id provided
+        :param id: the id of the Threat-Actor
+        :type id: str
+        :param filters: the filters to apply if no id provided
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :return: Threat-Actor object
+        :rtype: dict or None
         """
 
         id = kwargs.get("id", None)
@@ -291,19 +302,28 @@ class ThreatActor:
             )
             return None
 
-    @DeprecationWarning
     def create(self, **kwargs):
-        # For backward compatibility, please use threat_actor_group or threat_actor_individual
+        """Create a Threat-Actor-Group object (deprecated).
+
+        .. deprecated::
+            Use :meth:`threat_actor_group.create` or :meth:`threat_actor_individual.create` instead.
+        """
+        warnings.warn(
+            "ThreatActor.create() is deprecated, use threat_actor_group.create() "
+            "or threat_actor_individual.create() instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.threat_actor_group.create(**kwargs)
 
-    """
-        Import an Threat-Actor object from a STIX2 object
-
-        :param stixObject: the Stix-Object Intrusion-Set
-        :return Intrusion-Set object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import a Threat-Actor object from a STIX2 object.
+
+        :param stixObject: the STIX2 Threat-Actor object
+        :type stixObject: dict
+        :return: Threat-Actor object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         if "x_opencti_type" in stix_object:
             type = stix_object["x_opencti_type"].lower()

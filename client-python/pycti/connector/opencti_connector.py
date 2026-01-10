@@ -29,8 +29,20 @@ class OpenCTIConnector:
     :type connector_name: str
     :param connector_type: valid OpenCTI connector type (see `ConnectorType`)
     :type connector_type: str
-    :param scope: connector scope
+    :param scope: connector scope (comma-separated string)
     :type scope: str
+    :param auto: whether the connector runs automatically
+    :type auto: bool
+    :param only_contextual: whether the connector only processes contextual data
+    :type only_contextual: bool
+    :param playbook_compatible: whether the connector is playbook compatible
+    :type playbook_compatible: bool
+    :param auto_update: whether to auto-update existing entities
+    :type auto_update: bool
+    :param enrichment_resolution: enrichment resolution strategy
+    :type enrichment_resolution: str
+    :param listen_callback_uri: (optional) callback URI for listening
+    :type listen_callback_uri: str or None
     :raises ValueError: if the connector type is not valid
     """
 

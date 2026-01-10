@@ -198,7 +198,6 @@ def data_to_temp_file(data):
     file_descriptor, file_path = tempfile.mkstemp()
     with os.fdopen(file_descriptor, "w") as open_file:
         open_file.write(data)
-        open_file.close()
     return file_path
 
 
@@ -2063,9 +2062,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """send a stix2 bundle to the API
 
         :param work_id: a valid work id
+        :type work_id: str
         :param draft_id: a draft context to send the bundle to
+        :type draft_id: str
         :param bundle: valid stix2 bundle
-        :type bundle:
+        :type bundle: str
         :param entities_types: list of entities, defaults to None
         :type entities_types: list, optional
         :param update: whether to updated data in the database, defaults to False
@@ -2304,13 +2305,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param channel: RabbitMQ channel
         :type channel: callable
         :param bundle: valid stix2 bundle
-        :type bundle:
+        :type bundle: str
         :param entities_types: list of entity types, defaults to None
         :type entities_types: list, optional
         :param update: whether to update data in the database, defaults to False
         :type update: bool, optional
         :param draft_id: if draft_id is set, bundle must be set in draft context
-        :type draft_id:
+        :type draft_id: str
         """
         work_id = kwargs.get("work_id", None)
         sequence = kwargs.get("sequence", 0)
@@ -2366,7 +2367,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """deduplicate stix2 items
 
         :param items: valid stix2 items
-        :type items:
+        :type items: list
         :return: de-duplicated list of items
         :rtype: list
         """
@@ -2384,9 +2385,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """create a stix2 bundle with items
 
         :param items: valid stix2 items
-        :type items:
+        :type items: list
         :return: JSON of the stix2 bundle
-        :rtype:
+        :rtype: str or None
         """
 
         # Check if item are native STIX 2 lib

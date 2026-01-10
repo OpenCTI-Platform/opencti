@@ -12,6 +12,7 @@ class Location:
     Manages geographic locations (countries, cities, regions) in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -523,7 +524,8 @@ class Location:
             )
             return self.opencti.process_multiple_fields(result["data"]["locationAdd"])
         else:
-            self.opencti.app_logger.error("Missing parameters: name")
+            self.opencti.app_logger.error("[opencti_location] Missing parameters: name")
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import a Location object from a STIX2 object.
@@ -550,7 +552,7 @@ class Location:
             name = stix_object["region"]
         else:
             self.opencti.app_logger.error("[opencti_location] Missing name")
-            return
+            return None
         if "x_opencti_location_type" in stix_object:
             type = stix_object["x_opencti_location_type"]
         elif self.opencti.get_attribute_in_extension("type", stix_object) is not None:
@@ -644,3 +646,4 @@ class Location:
             self.opencti.app_logger.error(
                 "[opencti_location] Missing parameters: stixObject"
             )
+            return None

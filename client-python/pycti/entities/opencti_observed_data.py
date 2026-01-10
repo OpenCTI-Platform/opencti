@@ -12,6 +12,7 @@ class ObservedData:
     Manages observed data and raw intelligence in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -466,17 +467,20 @@ class ObservedData:
     def generate_id_from_data(data):
         return ObservedData.generate_id(data["object_refs"])
 
-    """
-        List ObservedData objects
+    def list(self, **kwargs):
+        """List ObservedData objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of ObservedData objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :return: List of ObservedData objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -531,15 +535,16 @@ class ObservedData:
             result["data"]["observedDatas"], with_pagination
         )
 
-    """
-        Read a ObservedData object
+    def read(self, **kwargs):
+        """Read an ObservedData object.
 
         :param id: the id of the ObservedData
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return ObservedData object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :return: ObservedData object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -570,13 +575,16 @@ class ObservedData:
             else:
                 return None
 
-    """
-        Check if a observedData already contains a STIX entity
-
-        :return Boolean
-    """
-
     def contains_stix_object_or_stix_relationship(self, **kwargs):
+        """Check if an observedData already contains a STIX entity.
+
+        :param id: the id of the ObservedData
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the STIX entity
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if contained, False otherwise
+        :rtype: bool or None
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -604,37 +612,58 @@ class ObservedData:
             return result["data"]["observedDataContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.app_logger.error(
-                "[opencti_observedData] Missing parameters: id or entity_id"
+                "[opencti_observed_data] Missing parameters: id or entity_id"
             )
-
-    """
-        Create an ObservedData object
-
-        :param stix_id: (optional) the STIX ID
-        :param createdBy: (optional) the author ID
-        :param objects: list of STIX object IDs (required)
-        :param objectMarking: (optional) list of marking definition IDs
-        :param objectLabel: (optional) list of label IDs
-        :param externalReferences: (optional) list of external reference IDs
-        :param revoked: (optional) whether the observed data is revoked
-        :param confidence: (optional) confidence level (0-100)
-        :param lang: (optional) language
-        :param created: (optional) creation date
-        :param modified: (optional) modification date
-        :param first_observed: the first observed datetime (required)
-        :param last_observed: the last observed datetime (required)
-        :param number_observed: (optional) number of times observed
-        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
-        :param objectOrganization: (optional) list of organization IDs
-        :param x_opencti_workflow_id: (optional) workflow ID
-        :param x_opencti_modified_at: (optional) custom modification date
-        :param update: (optional) whether to update if exists (default: False)
-        :param file: (optional) File object to attach
-        :param fileMarkings: (optional) list of marking definition IDs for the file
-        :return ObservedData object
-    """
+            return None
 
     def create(self, **kwargs):
+        """Create an ObservedData object.
+
+        :param stix_id: the STIX ID (optional)
+        :type stix_id: str
+        :param createdBy: the author ID (optional)
+        :type createdBy: str
+        :param objects: list of STIX object IDs (required)
+        :type objects: list
+        :param objectMarking: list of marking definition IDs (optional)
+        :type objectMarking: list
+        :param objectLabel: list of label IDs (optional)
+        :type objectLabel: list
+        :param externalReferences: list of external reference IDs (optional)
+        :type externalReferences: list
+        :param revoked: whether the observed data is revoked (optional)
+        :type revoked: bool
+        :param confidence: confidence level 0-100 (optional)
+        :type confidence: int
+        :param lang: language (optional)
+        :type lang: str
+        :param created: creation date (optional)
+        :type created: str
+        :param modified: modification date (optional)
+        :type modified: str
+        :param first_observed: the first observed datetime (required)
+        :type first_observed: str
+        :param last_observed: the last observed datetime (required)
+        :type last_observed: str
+        :param number_observed: number of times observed (optional)
+        :type number_observed: int
+        :param x_opencti_stix_ids: list of additional STIX IDs (optional)
+        :type x_opencti_stix_ids: list
+        :param objectOrganization: list of organization IDs (optional)
+        :type objectOrganization: list
+        :param x_opencti_workflow_id: workflow ID (optional)
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: custom modification date (optional)
+        :type x_opencti_modified_at: str
+        :param update: whether to update if exists (default: False)
+        :type update: bool
+        :param file: File object to attach (optional)
+        :type file: File
+        :param fileMarkings: list of marking definition IDs for the file (optional)
+        :type fileMarkings: list
+        :return: ObservedData object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
@@ -703,19 +732,21 @@ class ObservedData:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_observedData] Missing parameters: "
+                "[opencti_observed_data] Missing parameters: "
                 "first_observed, last_observed or objects"
             )
-
-    """
-        Add a Stix-Core-Object or stix_relationship to ObservedData object (object)
-
-        :param id: the id of the ObservedData
-        :param entity_id: the id of the Stix-Core-Object or stix_relationship
-        :return Boolean
-    """
+            return None
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
+        """Add a Stix-Core-Object or stix_relationship to ObservedData object (object).
+
+        :param id: the id of the ObservedData
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Core-Object or stix_relationship
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
@@ -755,27 +786,28 @@ class ObservedData:
             return True
         else:
             self.opencti.app_logger.error(
-                "[opencti_observedData] Missing parameters: "
+                "[opencti_observed_data] Missing parameters: "
                 "id and stix_object_or_stix_relationship_id"
             )
             return False
 
-    """
-        Remove a Stix-Core-Object or stix_relationship to Observed-Data object (object_refs)
+    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        """Remove a Stix-Core-Object or stix_relationship from Observed-Data object.
 
         :param id: the id of the Observed-Data
-        :param entity_id: the id of the Stix-Core-Object or stix_relationship
-        :return Boolean
-    """
-
-    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        :type id: str
+        :param stixObjectOrStixRelationshipId: the id of the Stix-Core-Object or stix_relationship
+        :type stixObjectOrStixRelationshipId: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         stix_object_or_stix_relationship_id = kwargs.get(
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
             self.opencti.app_logger.info(
-                "Removing StixObjectOrStixRelationship to Observed-Data",
+                "Removing StixObjectOrStixRelationship from Observed-Data",
                 {
                     "id": id,
                     "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
@@ -805,14 +837,18 @@ class ObservedData:
             )
             return False
 
-    """
-        Import a ObservedData object from a STIX2 object
+    def import_from_stix2(self, **kwargs):
+        """Import an ObservedData object from a STIX2 object.
 
         :param stixObject: the Stix-Object ObservedData
-        :return ObservedData object
-    """
-
-    def import_from_stix2(self, **kwargs):
+        :type stixObject: dict
+        :param extras: additional parameters like created_by_id, object_marking_ids
+        :type extras: dict
+        :param update: whether to update existing object
+        :type update: bool
+        :return: ObservedData object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -939,3 +975,4 @@ class ObservedData:
             self.opencti.app_logger.error(
                 "[opencti_observed_data] Missing parameters: stixObject"
             )
+            return None

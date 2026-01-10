@@ -12,6 +12,7 @@ class CourseOfAction:
     Manages courses of action (mitigations) in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -61,6 +62,11 @@ class CourseOfAction:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -149,6 +155,11 @@ class CourseOfAction:
                     x_opencti_lastname
                 }
             }
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             objectMarking {
                 id
                 standard_id
@@ -229,7 +240,7 @@ class CourseOfAction:
         :rtype: str
         """
         if x_mitre_id is not None:
-            data = {"x_mitre_id": x_mitre_id}
+            data = {"x_mitre_id": x_mitre_id.strip()}
         else:
             data = {"name": name.lower().strip()}
         data = canonicalize(data, utf8=False)
@@ -483,8 +494,9 @@ class CourseOfAction:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_course_of_action] Missing parameters: name and description"
+                "[opencti_course_of_action] Missing parameters: name"
             )
+            return None
 
     def import_from_stix2(self, **kwargs):
         """Import a Course of Action object from a STIX2 object.
@@ -603,3 +615,4 @@ class CourseOfAction:
             self.opencti.app_logger.error(
                 "[opencti_course_of_action] Missing parameters: stixObject"
             )
+            return None

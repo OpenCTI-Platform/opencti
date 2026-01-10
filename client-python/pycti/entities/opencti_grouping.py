@@ -13,6 +13,7 @@ class Grouping:
     Manages STIX grouping objects in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -790,7 +791,7 @@ class Grouping:
             return self.opencti.process_multiple_fields(result["data"]["groupingAdd"])
         else:
             self.opencti.app_logger.error(
-                "[opencti_grouping] Missing parameters: name and description and context"
+                "[opencti_grouping] Missing parameters: name and context"
             )
 
     def add_stix_object_or_stix_relationship(self, **kwargs):
@@ -852,7 +853,7 @@ class Grouping:
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
             self.opencti.app_logger.info(
-                "Removing StixObjectOrStixRelationship to Grouping",
+                "Removing StixObjectOrStixRelationship from Grouping",
                 {"id": stix_object_or_stix_relationship_id, "grouping": id},
             )
             query = """

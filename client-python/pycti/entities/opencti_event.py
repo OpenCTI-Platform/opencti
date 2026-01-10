@@ -12,6 +12,7 @@ class Event:
     Manages security events in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
@@ -483,7 +484,7 @@ class Event:
             return self.opencti.process_multiple_fields(result["data"]["eventAdd"])
         else:
             self.opencti.app_logger.error(
-                "[opencti_event] Missing parameters: name and description"
+                "[opencti_event] Missing parameters: name"
             )
 
     """
