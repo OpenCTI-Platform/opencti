@@ -639,6 +639,33 @@ class OpenCTIStix2:
                                 )
                             )
 
+                        # Prepare first file for upload during creation
+                        file_to_upload = None
+                        file_markings = None
+                        if len(ext_ref_files) > 0:
+                            first_file = ext_ref_files[0]
+                            data = None
+                            if "data" in first_file:
+                                data = base64.b64decode(first_file["data"])
+                            elif "uri" in first_file:
+                                file_url = self.opencti.api_url.replace(
+                                    "/graphql", first_file["uri"]
+                                )
+                                data = self.opencti.fetch_opencti_file(
+                                    fetch_uri=file_url, binary=True, serialize=False
+                                )
+                            if data is not None:
+                                file_to_upload = self.opencti.file(
+                                    first_file["name"],
+                                    data,
+                                    first_file.get(
+                                        "mime_type", "application/octet-stream"
+                                    ),
+                                )
+                                file_markings = first_file.get(
+                                    "object_marking_refs", None
+                                )
+
                         # Create external reference with first file attached
                         external_reference_id = self.opencti.external_reference.create(
                             source_name=source_name,
@@ -649,7 +676,8 @@ class OpenCTIStix2:
                                 if "description" in external_reference
                                 else None
                             ),
-                            x_opencti_files=(ext_ref_files or None),
+                            file=file_to_upload,
+                            fileMarkings=file_markings,
                         )["id"]
 
                     # Upload additional files after creation (first file attached during creation)

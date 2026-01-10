@@ -13,17 +13,23 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(".."))
+# Add the client-python directory to the path for pycti module discovery
+# This works both when building from client-python/ locally and from repo root via ReadTheDocs
+docs_dir = os.path.dirname(os.path.abspath(__file__))
+client_python_dir = os.path.dirname(docs_dir)
+sys.path.insert(0, client_python_dir)
 
 
 # -- Project information -----------------------------------------------------
 
-project = "OpenCTI client for Python"
+project = "OpenCTI Python Client"
 copyright = "2025, Filigran"
 author = "OpenCTI Project"
 
 # The full version, including alpha/beta/rc tags
-release = "6.0.7"
+# Dynamically read from pycti to stay in sync
+from pycti import __version__
+release = __version__
 
 master_doc = "index"
 

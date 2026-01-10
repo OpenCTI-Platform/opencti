@@ -1,7 +1,7 @@
 # OpenCTI client for Python
 
 [![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://opencti.io)
-[![readthedocs](https://readthedocs.org/projects/opencti-client-for-python/badge/?style=flat)](https://opencti-client-for-python.readthedocs.io/en/latest/)
+[![readthedocs](https://readthedocs.org/projects/opencti-python-client/badge/?style=flat)](https://opencti-python-client.readthedocs.io/en/latest/)
 [![Number of PyPI downloads](https://img.shields.io/pypi/dm/pycti.svg)](https://pypi.python.org/pypi/pycti/)
 [![Slack Status](https://img.shields.io/badge/slack-3K%2B%20members-4A154B)](https://community.filigran.io)
 
@@ -53,11 +53,11 @@ $ pip install -e .
 
 ### Client usage
 
-To learn about how to use the OpenCTI Python client and read some examples and cases, refer to [the client documentation](https://opencti-client-for-python.readthedocs.io/en/latest/client_usage/getting_started.html).
+To learn about how to use the OpenCTI Python client and read some examples and cases, refer to [the client documentation](https://opencti-python-client.readthedocs.io/en/latest/client_usage/getting_started.html).
 
 ### API reference
 
-To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://opencti-client-for-python.readthedocs.io/en/latest/pycti/pycti.html).
+To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://opencti-python-client.readthedocs.io/en/latest/pycti/pycti.html).
 
 ## Tests
 
