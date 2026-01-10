@@ -56,9 +56,25 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
+    "sphinx.ext.graphviz",
+    "sphinx.ext.inheritance_diagram",
     "autoapi.extension",
     "sphinx_autodoc_typehints",
 ]
+
+# Graphviz configuration
+graphviz_output_format = "svg"
+inheritance_graph_attrs = {
+    "rankdir": "TB",
+    "size": '"6.0, 8.0"',
+}
+inheritance_node_attrs = {
+    "shape": "box",
+    "fontsize": 10,
+    "height": 0.25,
+    "style": '"setlinewidth(0.5),filled"',
+    "fillcolor": "white",
+}
 
 # Napoleon settings for Google/NumPy style docstrings
 napoleon_google_docstring = True
@@ -82,7 +98,7 @@ autoapi_options = [
     "undoc-members",
     "show-inheritance",
     "show-module-summary",
-    "imported-members",
+    "special-members",
 ]
 autoapi_python_class_content = (
     "both"  # Include both class docstring and __init__ docstring
@@ -90,6 +106,9 @@ autoapi_python_class_content = (
 autoapi_member_order = "bysource"
 autoapi_keep_files = False
 autoapi_add_toctree_entry = True
+# Ignore top-level __init__.py to prevent "Undocumented" for re-exported classes
+# Classes will be documented in their original modules with proper docstrings
+autoapi_ignore = ["*/pycti/__init__.py"]
 
 # Mock imports for modules that can't be installed on ReadTheDocs
 autodoc_mock_imports = [
