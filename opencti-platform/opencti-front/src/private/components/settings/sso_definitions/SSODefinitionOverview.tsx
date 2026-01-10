@@ -10,9 +10,7 @@ interface SSODefinitionOverviewProps {
   sso: SSO;
 }
 
-const SSODefinitionOverview: FunctionComponent<SSODefinitionOverviewProps> = ({
-  // sso,
-}) => {
+const SSODefinitionOverview: FunctionComponent<SSODefinitionOverviewProps> = () => {
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 12 }} container direction="column" spacing={3}>
