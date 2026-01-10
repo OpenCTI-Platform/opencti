@@ -231,6 +231,7 @@ input OrganizationAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  fileMarkings: [String]
 }
 
 type Mutation {

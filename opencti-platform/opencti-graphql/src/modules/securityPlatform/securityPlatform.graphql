@@ -193,6 +193,8 @@ input SecurityPlatformAddInput {
   x_opencti_modified_at: DateTime
   externalReferences: [String]
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
 }
 
 type Mutation {

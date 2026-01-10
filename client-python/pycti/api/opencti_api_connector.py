@@ -1,22 +1,35 @@
 import json
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from pycti.connector.opencti_connector import OpenCTIConnector
 
 
 class OpenCTIApiConnector:
-    """OpenCTIApiConnector"""
+    """OpenCTI Connector API class.
+
+    Manages connector operations including registration, pinging, and listing.
+
+    :param api: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type api: OpenCTIApiClient
+    """
 
     def __init__(self, api):
+        """Initialize the OpenCTIApiConnector instance.
+
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        """
         self.api = api
 
     def read(self, connector_id: str) -> Dict:
-        """Reading the connector and its details
+        """Read the connector and its details.
 
+        :param connector_id: the id of the connector
+        :type connector_id: str
         :return: return all the connector details
         :rtype: dict
         """
-        self.api.app_logger.info("[INFO] Getting connector details ...")
+        self.api.app_logger.info("Getting connector details ...")
         query = """
             query GetConnector($id: String!) {
                 connector(id: $id) {
@@ -32,27 +45,27 @@ class OpenCTIApiConnector:
                         messages_number
                         messages_size
                     }
-                updated_at
-                created_at
-                config {
-                    listen
-                    listen_exchange
-                    push
-                    push_exchange
-                    push_routing
-                  }
-                built_in
+                    updated_at
+                    created_at
+                    config {
+                        listen
+                        listen_exchange
+                        push
+                        push_exchange
+                        push_routing
+                    }
+                    built_in
                 }
               }
         """
         result = self.api.query(query, {"id": connector_id})
         return result["data"]["connector"]
 
-    def list(self) -> Dict:
-        """list available connectors
+    def list(self) -> List[Dict]:
+        """List available connectors.
 
-        :return: return dict with connectors
-        :rtype: dict
+        :return: list of connector dictionaries
+        :rtype: list[dict]
         """
 
         self.api.app_logger.info("Getting connectors ...")
@@ -91,14 +104,14 @@ class OpenCTIApiConnector:
     def ping(
         self, connector_id: str, connector_state: Any, connector_info: Dict
     ) -> Dict:
-        """pings a connector by id and state
+        """Ping a connector by ID and state.
 
-        :param connector_id: the connectors id
+        :param connector_id: the connector id
         :type connector_id: str
         :param connector_state: state for the connector
-        :type connector_state:
-        :param connector_info: all details connector
-        :type connector_info: Dict
+        :type connector_state: Any
+        :param connector_info: all details about the connector
+        :type connector_info: dict
         :return: the response pingConnector data dict
         :rtype: dict
         """
@@ -115,7 +128,7 @@ class OpenCTIApiConnector:
                         queue_messages_size
                         next_run_datetime
                         last_run_datetime
-                    }   
+                    }
                 }
             }
            """
@@ -130,9 +143,9 @@ class OpenCTIApiConnector:
         return result["data"]["pingConnector"]
 
     def register(self, connector: OpenCTIConnector) -> Dict:
-        """register a connector with OpenCTI
+        """Register a connector with OpenCTI.
 
-        :param connector: `OpenCTIConnector` connector object
+        :param connector: OpenCTIConnector connector object
         :type connector: OpenCTIConnector
         :return: the response registerConnector data dict
         :rtype: dict
@@ -167,11 +180,11 @@ class OpenCTIApiConnector:
         return result["data"]["registerConnector"]
 
     def unregister(self, _id: str) -> Dict:
-        """unregister a connector with OpenCTI
+        """Unregister a connector with OpenCTI.
 
-        :param _id: `OpenCTIConnector` connector id
-        :type _id: string
-        :return: the response registerConnector data dict
+        :param _id: the connector id to unregister
+        :type _id: str
+        :return: the response deleteConnector data dict
         :rtype: dict
         """
         query = """

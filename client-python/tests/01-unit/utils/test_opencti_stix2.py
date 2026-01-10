@@ -113,4 +113,4 @@ def test_import_bundle_from_file(opencti_stix2: OpenCTIStix2, caplog) -> None:
     opencti_stix2.import_bundle_from_file("foo.txt")
     for record in caplog.records:
         assert record.levelname == "ERROR"
-    assert "The bundle file does not exists" in caplog.text
+    assert "The bundle file does not exist" in caplog.text

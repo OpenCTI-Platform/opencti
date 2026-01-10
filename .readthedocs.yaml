@@ -1,6 +1,5 @@
----
-# .readthedocs.yml
-# Read the Docs configuration file
+# .readthedocs.yaml
+# Read the Docs configuration file for the Python client documentation
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 
 # Required
@@ -11,13 +10,9 @@ build:
   tools:
     python: "3.12"
 
-# Build documentation in the docs/ directory with Sphinx
+# Build documentation in the client-python/docs/ directory with Sphinx
 sphinx:
-  configuration: docs/conf.py
-
-# Build documentation with MkDocs
-#mkdocs:
-#  configuration: mkdocs.yml
+  configuration: client-python/docs/conf.py
 
 # Optionally build your docs in additional formats such as PDF and ePub
 formats: all
@@ -25,5 +20,6 @@ formats: all
 # Optionally set the version of Python and requirements required to build your docs
 python:
   install:
-    - requirements: requirements.txt
-    - requirements: docs/requirements.txt
+    - requirements: client-python/requirements.txt
+    - requirements: client-python/docs/requirements.txt
+

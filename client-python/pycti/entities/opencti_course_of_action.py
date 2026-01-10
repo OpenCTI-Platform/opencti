@@ -12,9 +12,15 @@ class CourseOfAction:
     Manages courses of action (mitigations) in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the CourseOfAction instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -61,6 +67,11 @@ class CourseOfAction:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+            }
+            objectOrganization {
+                id
+                standard_id
+                name
             }
             objectMarking {
                 id
@@ -149,6 +160,11 @@ class CourseOfAction:
                     x_opencti_lastname
                 }
             }
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             objectMarking {
                 id
                 standard_id
@@ -219,8 +235,17 @@ class CourseOfAction:
 
     @staticmethod
     def generate_id(name, x_mitre_id=None):
+        """Generate a STIX ID for a Course of Action.
+
+        :param name: The name of the course of action
+        :type name: str
+        :param x_mitre_id: Optional MITRE ATT&CK ID
+        :type x_mitre_id: str or None
+        :return: STIX ID for the course of action
+        :rtype: str
+        """
         if x_mitre_id is not None:
-            data = {"x_mitre_id": x_mitre_id}
+            data = {"x_mitre_id": x_mitre_id.strip()}
         else:
             data = {"name": name.lower().strip()}
         data = canonicalize(data, utf8=False)
@@ -229,19 +254,41 @@ class CourseOfAction:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from course of action data.
+
+        :param data: Dictionary containing 'name' and optionally 'x_mitre_id' keys
+        :type data: dict
+        :return: STIX ID for the course of action
+        :rtype: str
+        """
         return CourseOfAction.generate_id(data.get("name"), data.get("x_mitre_id"))
 
-    """
-        List Course-Of-Action objects
+    def list(self, **kwargs):
+        """List Course of Action objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Course-Of-Action objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: List of Course of Action objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -321,15 +368,20 @@ class CourseOfAction:
                 result["data"]["coursesOfAction"], with_pagination
             )
 
-    """
-        Read a Course-Of-Action object
-
-        :param id: the id of the Course-Of-Action
-        :param filters: the filters to apply if no id provided
-        :return Course-Of-Action object
-    """
-
     def read(self, **kwargs):
+        """Read a Course of Action object.
+
+        :param id: the id of the Course of Action
+        :type id: str
+        :param filters: the filters to apply if no id provided
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Course of Action object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -367,14 +419,54 @@ class CourseOfAction:
             )
             return None
 
-    """
-        Create a Course Of Action object
-
-        :param name: the name of the Course Of Action
-        :return Course Of Action object
-    """
-
     def create(self, **kwargs):
+        """Create a Course of Action object.
+
+        :param name: the name of the Course of Action (required)
+        :type name: str
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param createdBy: (optional) the author ID
+        :type createdBy: str
+        :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
+        :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
+        :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
+        :param revoked: (optional) whether the course of action is revoked
+        :type revoked: bool
+        :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
+        :param lang: (optional) language
+        :type lang: str
+        :param created: (optional) creation date
+        :type created: str
+        :param modified: (optional) modification date
+        :type modified: str
+        :param description: (optional) description
+        :type description: str
+        :param x_opencti_aliases: (optional) list of aliases
+        :type x_opencti_aliases: list
+        :param x_mitre_id: (optional) MITRE ATT&CK ID
+        :type x_mitre_id: str
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
+        :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
+        :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param file: (optional) File object to attach
+        :type file: dict
+        :param fileMarkings: (optional) list of marking definition IDs for the file
+        :type fileMarkings: list
+        :return: Course of Action object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -394,6 +486,8 @@ class CourseOfAction:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
+        file = kwargs.get("file", None)
+        file_markings = kwargs.get("fileMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Course Of Action", {"name": name})
@@ -430,6 +524,8 @@ class CourseOfAction:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
+                        "file": file,
+                        "fileMarkings": file_markings,
                     }
                 },
             )
@@ -438,17 +534,22 @@ class CourseOfAction:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_course_of_action] Missing parameters: name and description"
+                "[opencti_course_of_action] Missing parameters: name"
             )
-
-    """
-        Import an Course-Of-Action object from a STIX2 object
-
-        :param stixObject: the Stix-Object Course-Of-Action
-        :return Course-Of-Action object
-    """
+            return None
 
     def import_from_stix2(self, **kwargs):
+        """Import a Course of Action object from a STIX2 object.
+
+        :param stixObject: the STIX2 Course of Action object
+        :type stixObject: dict
+        :param extras: extra parameters including created_by_id, object_marking_ids, etc.
+        :type extras: dict
+        :param update: whether to update if the entity already exists
+        :type update: bool
+        :return: Course of Action object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
@@ -550,8 +651,11 @@ class CourseOfAction:
                     else None
                 ),
                 update=update,
+                file=extras.get("file"),
+                fileMarkings=extras.get("fileMarkings"),
             )
         else:
             self.opencti.app_logger.error(
                 "[opencti_course_of_action] Missing parameters: stixObject"
             )
+            return None

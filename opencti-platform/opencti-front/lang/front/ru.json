@@ -222,6 +222,7 @@
   "All types of target": "Все типы мишеней",
   "All years": "Все годы",
   "Allow modification of sensitive configuration": "Позволяет изменять конфиденциальную конфигурацию",
+  "Allow multiple files": "Разрешить несколько файлов",
   "Allow multiple instances": "Разрешить несколько экземпляров",
   "Allow multiple instances of main entity": "Разрешить несколько экземпляров главной сущности",
   "allow to deploy in one-click threat management resources such as feeds, dashboards, playbooks, etc.": "позволяют в один клик развернуть ресурсы для управления угрозами, такие как фиды, панели управления, плейбуки и т. д.",

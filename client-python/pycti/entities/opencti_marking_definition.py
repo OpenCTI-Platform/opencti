@@ -12,9 +12,15 @@ class MarkingDefinition:
     Manages marking definitions (TLP, statements) in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the MarkingDefinition instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -33,6 +39,15 @@ class MarkingDefinition:
 
     @staticmethod
     def generate_id(definition_type, definition):
+        """Generate a STIX ID for a Marking Definition.
+
+        :param definition_type: The type of marking (TLP, statement, etc.)
+        :type definition_type: str
+        :param definition: The definition value
+        :type definition: str
+        :return: STIX ID for the marking definition
+        :rtype: str
+        """
         # Handle static IDs from OpenCTI
         if definition_type == "TLP":
             if definition == "TLP:CLEAR" or definition == "TLP:WHITE":
@@ -53,20 +68,37 @@ class MarkingDefinition:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from marking definition data.
+
+        :param data: Dictionary containing 'definition_type' and 'definition' keys
+        :type data: dict
+        :return: STIX ID for the marking definition
+        :rtype: str
+        """
         return MarkingDefinition.generate_id(
             data["definition_type"], data["definition"]
         )
 
-    """
-        List Marking-Definition objects
+    def list(self, **kwargs):
+        """List Marking-Definition objects.
 
         :param filters: the filters to apply
+        :type filters: dict
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Marking-Definition objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: list
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :return: List of Marking-Definition objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         first = kwargs.get("first", 500)
         after = kwargs.get("after", None)
@@ -114,15 +146,16 @@ class MarkingDefinition:
             result["data"]["markingDefinitions"], with_pagination
         )
 
-    """
-        Read a Marking-Definition object
+    def read(self, **kwargs):
+        """Read a Marking-Definition object.
 
         :param id: the id of the Marking-Definition
+        :type id: str
         :param filters: the filters to apply if no id provided
-        :return Marking-Definition object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :return: Marking-Definition object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         if id is not None:
@@ -154,15 +187,30 @@ class MarkingDefinition:
             )
             return None
 
-    """
-        Create a Marking-Definition object
-
-        :param definition_type: the definition_type
-        :param definition: the definition
-        :return Marking-Definition object
-    """
-
     def create(self, **kwargs):
+        """Create a Marking-Definition object.
+
+        :param stix_id: (optional) the STIX ID
+        :type stix_id: str
+        :param created: (optional) creation date
+        :type created: datetime
+        :param modified: (optional) modification date
+        :type modified: datetime
+        :param definition_type: the definition type (required)
+        :type definition_type: str
+        :param definition: the definition value (required)
+        :type definition: str
+        :param x_opencti_order: (optional) order (default: 0)
+        :type x_opencti_order: int
+        :param x_opencti_color: (optional) color
+        :type x_opencti_color: str
+        :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :return: Marking-Definition object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
@@ -208,16 +256,18 @@ class MarkingDefinition:
             self.opencti.app_logger.error(
                 "[opencti_marking_definition] Missing parameters: definition and definition_type",
             )
-
-    """
-        Update a Marking definition object field
-
-        :param id: the Marking definition id
-        :param input: the input of the field
-        :return The updated Marking definition object
-    """
+            return None
 
     def update_field(self, **kwargs):
+        """Update a Marking Definition object field.
+
+        :param id: the Marking Definition id
+        :type id: str
+        :param input: the input of the field
+        :type input: list
+        :return: The updated Marking Definition object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
@@ -245,18 +295,20 @@ class MarkingDefinition:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_marking_definition] Missing parameters: id and key and value"
+                "[opencti_marking_definition] Missing parameters: id and input"
             )
             return None
 
-    """
-        Import an Marking Definition object from a STIX2 object
-
-        :param stixObject: the MarkingDefinition
-        :return MarkingDefinition object
-    """
-
     def import_from_stix2(self, **kwargs):
+        """Import a Marking Definition object from a STIX2 object.
+
+        :param stixObject: the Stix-Object Marking Definition
+        :type stixObject: dict
+        :param update: set the update flag on import
+        :type update: bool
+        :return: Marking Definition object
+        :rtype: dict or None
+        """
         stix_object = kwargs.get("stixObject", None)
         update = kwargs.get("update", False)
         if stix_object is not None:
@@ -326,7 +378,7 @@ class MarkingDefinition:
                     self.opencti.get_attribute_in_extension("stix_ids", stix_object)
                 )
 
-            return self.opencti.marking_definition.create(
+            return self.create(
                 stix_id=stix_object["id"],
                 created=stix_object["created"] if "created" in stix_object else None,
                 modified=stix_object["modified"] if "modified" in stix_object else None,
@@ -353,8 +405,15 @@ class MarkingDefinition:
             self.opencti.app_logger.error(
                 "[opencti_marking_definition] Missing parameters: stixObject"
             )
+            return None
 
     def delete(self, **kwargs):
+        """Delete a Marking-Definition object.
+
+        :param id: the id of the Marking-Definition to delete
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Marking-Definition", {"id": id})

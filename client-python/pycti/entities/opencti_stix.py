@@ -4,19 +4,26 @@ class Stix:
     Provides generic STIX object operations in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    :type opencti: OpenCTIApiClient
     """
 
     def __init__(self, opencti):
+        """Initialize the Stix instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
 
-    """
-        Delete a Stix element
+    def delete(self, **kwargs):
+        """Delete a Stix element.
 
         :param id: the Stix element id
-        :return void
-    """
-
-    def delete(self, **kwargs):
+        :type id: str
+        :param force_delete: force deletion (default: True)
+        :type force_delete: bool
+        :return: None
+        """
         id = kwargs.get("id", None)
         force_delete = kwargs.get("force_delete", True)
         if id is not None:
@@ -33,16 +40,16 @@ class Stix:
             self.opencti.app_logger.error("[opencti_stix] Missing parameters: id")
             return None
 
-    """
-            Merge a Stix-Object object field
-    
-            :param id: the Stix-Object id
-            :param key: the key of the field
-            :param value: the value of the field
-            :return The updated Stix-Object object
-        """
-
     def merge(self, **kwargs):
+        """Merge STIX objects into one.
+
+        :param id: the target Stix-Object id
+        :type id: str
+        :param object_ids: list of source STIX object IDs to merge into target
+        :type object_ids: list
+        :return: The merged Stix-Object object
+        :rtype: dict or None
+        """
         id = kwargs.get("id")
         stix_objects_ids = kwargs.get("object_ids")
         if id is not None and stix_objects_ids is not None:

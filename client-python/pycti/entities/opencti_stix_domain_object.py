@@ -12,12 +12,16 @@ class StixDomainObject:
     Manages STIX Domain Objects in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :param file: file handling configuration
+    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti, file):
+    def __init__(self, opencti):
+        """Initialize the StixDomainObject instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
-        self.file = file
         self.properties = """
             id
             standard_id
@@ -1095,18 +1099,34 @@ class StixDomainObject:
             }
         """
 
-    """
-        List Stix-Domain-Object objects
+    def list(self, **kwargs):
+        """List Stix-Domain-Object objects.
 
         :param types: the list of types
+        :type types: list
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Stix-Domain-Object objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: List of Stix-Domain-Object objects
+        :rtype: list
+        """
         types = kwargs.get("types", None)
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
@@ -1167,7 +1187,7 @@ class StixDomainObject:
             final_data = final_data + data
             while result["data"]["stixDomainObjects"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixDomainObjects"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing Stix-Domain-Objects", {"after": after}
                 )
                 result = self.opencti.query(
@@ -1192,16 +1212,22 @@ class StixDomainObject:
                 result["data"]["stixDomainObjects"], with_pagination
             )
 
-    """
-        Read a Stix-Domain-Object object
+    def read(self, **kwargs):
+        """Read a Stix-Domain-Object object.
 
         :param id: the id of the Stix-Domain-Object
+        :type id: str
         :param types: list of Stix Domain Entity types
+        :type types: list
         :param filters: the filters to apply if no id provided
-        :return Stix-Domain-Object object
-    """
-
-    def read(self, **kwargs):
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Stix-Domain-Object object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         types = kwargs.get("types", None)
         filters = kwargs.get("filters", None)
@@ -1242,16 +1268,24 @@ class StixDomainObject:
             )
             return None
 
-    """
-        Get a Stix-Domain-Object object by stix_id or name
+    def get_by_stix_id_or_name(self, **kwargs):
+        """Get a Stix-Domain-Object object by stix_id or name.
 
         :param types: a list of Stix-Domain-Object types
+        :type types: list
         :param stix_id: the STIX ID of the Stix-Domain-Object
+        :type stix_id: str
         :param name: the name of the Stix-Domain-Object
-        :return Stix-Domain-Object object
-    """
-
-    def get_by_stix_id_or_name(self, **kwargs):
+        :type name: str
+        :param aliases: list of aliases to search
+        :type aliases: list
+        :param fieldName: the field name to use for alias search
+        :type fieldName: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :return: Stix-Domain-Object object
+        :rtype: dict or None
+        """
         types = kwargs.get("types", None)
         stix_id = kwargs.get("stix_id", None)
         name = kwargs.get("name", None)
@@ -1295,14 +1329,16 @@ class StixDomainObject:
                         )
         return object_result
 
-    """
-        Update a Stix-Domain-Object object field
+    def update_field(self, **kwargs):
+        """Update a Stix-Domain-Object object field.
 
         :param id: the Stix-Domain-Object id
+        :type id: str
         :param input: the input of the field
-    """
-
-    def update_field(self, **kwargs):
+        :type input: list
+        :return: Updated Stix-Domain-Object object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
@@ -1334,14 +1370,13 @@ class StixDomainObject:
             )
             return None
 
-    """
-        Delete a Stix-Domain-Object
+    def delete(self, **kwargs):
+        """Delete a Stix-Domain-Object.
 
         :param id: the Stix-Domain-Object id
-        :return void
-    """
-
-    def delete(self, **kwargs):
+        :type id: str
+        :return: None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting Stix-Domain-Object", {"id": id})
@@ -1359,16 +1394,28 @@ class StixDomainObject:
             )
             return None
 
-    """
-        Upload a file in this Stix-Domain-Object
+    def add_file(self, **kwargs):
+        """Upload a file to this Stix-Domain-Object.
 
         :param id: the Stix-Domain-Object id
-        :param file_name
-        :param data
-        :return void
-    """
-
-    def add_file(self, **kwargs):
+        :type id: str
+        :param file_name: the file name or path
+        :type file_name: str
+        :param data: the file data (optional, will read from file_name if not provided)
+        :type data: bytes or None
+        :param fileMarkings: list of marking definition IDs for the file
+        :type fileMarkings: list
+        :param version: version datetime
+        :type version: str
+        :param mime_type: MIME type of the file
+        :type mime_type: str
+        :param no_trigger_import: whether to skip triggering import
+        :type no_trigger_import: bool
+        :param embedded: whether the file is embedded
+        :type embedded: bool
+        :return: File upload result
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         file_name = kwargs.get("file_name", None)
         data = kwargs.get("data", None)
@@ -1403,7 +1450,7 @@ class StixDomainObject:
                 query,
                 {
                     "id": id,
-                    "file": (self.file(final_file_name, data, mime_type)),
+                    "file": (self.opencti.file(final_file_name, data, mime_type)),
                     "fileMarkings": file_markings,
                     "version": version,
                     "noTriggerImport": (
@@ -1430,15 +1477,33 @@ class StixDomainObject:
         list_filters="",
         mime_type=None,
     ):
+        """Push a list export file.
+
+        :param entity_id: the entity id
+        :type entity_id: str
+        :param entity_type: the entity type
+        :type entity_type: str
+        :param file_name: the file name
+        :type file_name: str
+        :param file_markings: list of marking definition IDs
+        :type file_markings: list
+        :param data: the file data
+        :type data: bytes or str
+        :param list_filters: filters applied to the list export
+        :type list_filters: str
+        :param mime_type: MIME type of the file
+        :type mime_type: str or None
+        :return: None
+        """
         query = """
             mutation StixDomainObjectsExportPush($entity_id: String, $entity_type: String!, $file: Upload!, $file_markings: [String]!, $listFilters: String) {
                 stixDomainObjectsExportPush(entity_id: $entity_id, entity_type: $entity_type, file: $file,  file_markings: $file_markings, listFilters: $listFilters)
             }
         """
         if mime_type is None:
-            file = self.file(file_name, data)
+            file = self.opencti.file(file_name, data)
         else:
-            file = self.file(file_name, data, mime_type)
+            file = self.opencti.file(file_name, data, mime_type)
         self.opencti.query(
             query,
             {
@@ -1453,6 +1518,20 @@ class StixDomainObject:
     def push_entity_export(
         self, entity_id, file_name, data, file_markings=None, mime_type=None
     ):
+        """Push an entity export file.
+
+        :param entity_id: the entity id
+        :type entity_id: str
+        :param file_name: the file name
+        :type file_name: str
+        :param data: the file data
+        :type data: bytes or str
+        :param file_markings: list of marking definition IDs
+        :type file_markings: list or None
+        :param mime_type: MIME type of the file
+        :type mime_type: str or None
+        :return: None
+        """
         if file_markings is None:
             file_markings = []
         query = """
@@ -1469,22 +1548,23 @@ class StixDomainObject:
             }
         """
         if mime_type is None:
-            file = self.file(file_name, data)
+            file = self.opencti.file(file_name, data)
         else:
-            file = self.file(file_name, data, mime_type)
+            file = self.opencti.file(file_name, data, mime_type)
         self.opencti.query(
             query, {"id": entity_id, "file": file, "file_markings": file_markings}
         )
 
-    """
-        Update the Identity author of a Stix-Domain-Object object (created_by)
+    def update_created_by(self, **kwargs):
+        """Update the Identity author of a Stix-Domain-Object object (created_by).
 
         :param id: the id of the Stix-Domain-Object
+        :type id: str
         :param identity_id: the id of the Identity
-        :return Boolean
-    """
-
-    def update_created_by(self, **kwargs):
+        :type identity_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         identity_id = kwargs.get("identity_id", None)
         if id is not None:
@@ -1558,15 +1638,16 @@ class StixDomainObject:
             self.opencti.app_logger.error("Missing parameters: id")
             return False
 
-    """
-        Add a Marking-Definition object to Stix-Domain-Object object (object_marking_refs)
+    def add_marking_definition(self, **kwargs):
+        """Add a Marking-Definition object to Stix-Domain-Object object (object_marking_refs).
 
         :param id: the id of the Stix-Domain-Object
+        :type id: str
         :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def add_marking_definition(self, **kwargs):
+        :type marking_definition_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
@@ -1623,15 +1704,16 @@ class StixDomainObject:
             )
             return False
 
-    """
-        Remove a Marking-Definition object to Stix-Domain-Object object
+    def remove_marking_definition(self, **kwargs):
+        """Remove a Marking-Definition object from Stix-Domain-Object object.
 
         :param id: the id of the Stix-Domain-Object
+        :type id: str
         :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def remove_marking_definition(self, **kwargs):
+        :type marking_definition_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
@@ -1658,18 +1740,23 @@ class StixDomainObject:
             )
             return True
         else:
-            self.opencti.app_logger.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and marking_definition_id"
+            )
             return False
 
-    """
-        Add a Label object to Stix-Domain-Object object
+    def add_label(self, **kwargs):
+        """Add a Label object to Stix-Domain-Object object.
 
         :param id: the id of the Stix-Domain-Object
+        :type id: str
         :param label_id: the id of the Label
-        :return Boolean
-    """
-
-    def add_label(self, **kwargs):
+        :type label_id: str
+        :param label_name: the name of the Label (alternative to label_id)
+        :type label_name: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
         label_name = kwargs.get("label_name", None)
@@ -1714,15 +1801,18 @@ class StixDomainObject:
             self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
-    """
-        Remove a Label object to Stix-Domain-Object object
+    def remove_label(self, **kwargs):
+        """Remove a Label object from Stix-Domain-Object object.
 
         :param id: the id of the Stix-Domain-Object
+        :type id: str
         :param label_id: the id of the Label
-        :return Boolean
-    """
-
-    def remove_label(self, **kwargs):
+        :type label_id: str
+        :param label_name: the name of the Label (alternative to label_id)
+        :type label_name: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
         label_name = kwargs.get("label_name", None)
@@ -1763,15 +1853,16 @@ class StixDomainObject:
             self.opencti.app_logger.error("Missing parameters: id and label_id")
             return False
 
-    """
-        Add a External-Reference object to Stix-Domain-Object object (object_marking_refs)
+    def add_external_reference(self, **kwargs):
+        """Add an External-Reference object to Stix-Domain-Object object.
 
         :param id: the id of the Stix-Domain-Object
-        :param marking_definition_id: the id of the Marking-Definition
-        :return Boolean
-    """
-
-    def add_external_reference(self, **kwargs):
+        :type id: str
+        :param external_reference_id: the id of the External-Reference
+        :type external_reference_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
@@ -1805,15 +1896,16 @@ class StixDomainObject:
             )
             return False
 
-    """
-        Remove a Label object to Stix-Domain-Object object
+    def remove_external_reference(self, **kwargs):
+        """Remove an External-Reference object from Stix-Domain-Object object.
 
         :param id: the id of the Stix-Domain-Object
-        :param label_id: the id of the Label
-        :return Boolean
-    """
-
-    def remove_external_reference(self, **kwargs):
+        :type id: str
+        :param external_reference_id: the id of the External-Reference
+        :type external_reference_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
@@ -1840,18 +1932,21 @@ class StixDomainObject:
             )
             return True
         else:
-            self.opencti.app_logger.error("Missing parameters: id and label_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and external_reference_id"
+            )
             return False
 
-    """
-        Add a Kill-Chain-Phase object to Stix-Domain-Object object (kill_chain_phases)
+    def add_kill_chain_phase(self, **kwargs):
+        """Add a Kill-Chain-Phase object to Stix-Domain-Object object (kill_chain_phases).
 
         :param id: the id of the Stix-Domain-Object
+        :type id: str
         :param kill_chain_phase_id: the id of the Kill-Chain-Phase
-        :return Boolean
-    """
-
-    def add_kill_chain_phase(self, **kwargs):
+        :type kill_chain_phase_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
         if id is not None and kill_chain_phase_id is not None:
@@ -1885,15 +1980,16 @@ class StixDomainObject:
             )
             return False
 
-    """
-        Remove a Kill-Chain-Phase object to Stix-Domain-Object object
+    def remove_kill_chain_phase(self, **kwargs):
+        """Remove a Kill-Chain-Phase object from Stix-Domain-Object object.
 
         :param id: the id of the Stix-Domain-Object
+        :type id: str
         :param kill_chain_phase_id: the id of the Kill-Chain-Phase
-        :return Boolean
-    """
-
-    def remove_kill_chain_phase(self, **kwargs):
+        :type kill_chain_phase_id: str
+        :return: True if successful, False otherwise
+        :rtype: bool
+        """
         id = kwargs.get("id", None)
         kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
         if id is not None and kill_chain_phase_id is not None:
@@ -1925,14 +2021,14 @@ class StixDomainObject:
             )
             return False
 
-    """
-        Get the reports about a Stix-Domain-Object object
+    def reports(self, **kwargs):
+        """Get the reports about a Stix-Domain-Object object.
 
         :param id: the id of the Stix-Domain-Object
-        :return List of reports
-    """
-
-    def reports(self, **kwargs):
+        :type id: str
+        :return: List of reports
+        :rtype: list or None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info(
@@ -2052,14 +2148,14 @@ class StixDomainObject:
             self.opencti.app_logger.error("Missing parameters: id")
             return None
 
-    """
-        Get the notes about a Stix-Domain-Object object
+    def notes(self, **kwargs):
+        """Get the notes about a Stix-Domain-Object object.
 
         :param id: the id of the Stix-Domain-Object
-        :return List of notes
-    """
-
-    def notes(self, **kwargs):
+        :type id: str
+        :return: List of notes
+        :rtype: list or None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info(
@@ -2180,14 +2276,14 @@ class StixDomainObject:
             self.opencti.app_logger.error("Missing parameters: id")
             return None
 
-    """
-        Get the observed data of a Stix-Domain-Object object
+    def observed_data(self, **kwargs):
+        """Get the observed data of a Stix-Domain-Object object.
 
         :param id: the id of the Stix-Domain-Object
-        :return List of observed data
-    """
-
-    def observed_data(self, **kwargs):
+        :type id: str
+        :return: List of observed data
+        :rtype: list or None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info(

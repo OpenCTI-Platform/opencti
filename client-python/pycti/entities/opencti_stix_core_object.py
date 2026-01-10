@@ -8,12 +8,16 @@ class StixCoreObject:
     Base class for managing STIX core objects in the OpenCTI platform.
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :param file: file handling configuration
+    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti, file):
+    def __init__(self, opencti):
+        """Initialize the StixCoreObject instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
-        self.file = file
         self.properties = """
             id
             standard_id
@@ -434,18 +438,6 @@ class StixCoreObject:
                 description
                 aliases
                 narrative_types
-            }
-            ... on DataComponent {
-                name
-                description
-            }
-            ... on DataSource {
-                name
-                description
-            }
-            ... on DataSource {
-                name
-                description
             }
             ... on Case {
                 name
@@ -1162,18 +1154,6 @@ class StixCoreObject:
                 aliases
                 narrative_types
             }
-            ... on DataComponent {
-                name
-                description
-            }
-            ... on DataSource {
-                name
-                description
-            }
-            ... on DataSource {
-                name
-                description
-            }
             ... on Case {
                 name
                 description
@@ -1418,6 +1398,12 @@ class StixCoreObject:
             ... on PhoneNumber {
                 value
             }
+            ... on TrackingNumber {
+                value
+            }
+            ... on Credential {
+                value
+            }
             ... on PaymentCard {
                 card_number
                 expiration_date
@@ -1437,18 +1423,34 @@ class StixCoreObject:
             }
         """
 
-    """
-        List Stix-Core-Object objects
+    def list(self, **kwargs):
+        """List Stix-Core-Object objects.
 
         :param types: the list of types
+        :type types: list
         :param filters: the filters to apply
+        :type filters: dict
         :param search: the search keyword
+        :type search: str
         :param first: return the first n rows from the after ID (or the beginning if not set)
+        :type first: int
         :param after: ID of the first row for pagination
-        :return List of Stix-Core-Object objects
-    """
-
-    def list(self, **kwargs):
+        :type after: str
+        :param orderBy: field to order results by
+        :type orderBy: str
+        :param orderMode: ordering mode (asc/desc)
+        :type orderMode: str
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
+        :param withPagination: whether to include pagination info
+        :type withPagination: bool
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: List of Stix-Core-Object objects
+        :rtype: list
+        """
         types = kwargs.get("types", None)
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
@@ -1509,7 +1511,7 @@ class StixCoreObject:
             final_data = final_data + data
             while result["data"]["stixCoreObjects"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCoreObjects"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing Stix-Core-Objects", {"after": after}
                 )
                 result = self.opencti.query(
@@ -1532,16 +1534,22 @@ class StixCoreObject:
                 result["data"]["stixCoreObjects"], with_pagination
             )
 
-    """
-            Read a Stix-Core-Object object
-
-            :param id: the id of the Stix-Core-Object
-            :param types: list of Stix Core Entity types
-            :param filters: the filters to apply if no id provided
-            :return Stix-Core-Object object
-        """
-
     def read(self, **kwargs):
+        """Read a Stix-Core-Object object.
+
+        :param id: the id of the Stix-Core-Object
+        :type id: str
+        :param types: list of Stix Core Entity types
+        :type types: list
+        :param filters: the filters to apply if no id provided
+        :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
+        :return: Stix-Core-Object object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         types = kwargs.get("types", None)
         filters = kwargs.get("filters", None)
@@ -1583,6 +1591,13 @@ class StixCoreObject:
             return None
 
     def list_files(self, **kwargs):
+        """List files of a Stix-Core-Object.
+
+        :param id: the id of the Stix-Core-Object
+        :type id: str
+        :return: List of files associated with the object
+        :rtype: list
+        """
         id = kwargs.get("id", None)
         self.opencti.app_logger.debug("Listing files of Stix-Core-Object", {"id": id})
         query = """
@@ -1618,6 +1633,23 @@ class StixCoreObject:
         list_filters="",
         mime_type=None,
     ):
+        """Push a list export file for Stix-Core-Objects.
+
+        :param entity_id: the id of the entity (optional)
+        :type entity_id: str or None
+        :param entity_type: the type of the entity
+        :type entity_type: str
+        :param file_name: the name of the file to export
+        :type file_name: str
+        :param file_markings: list of marking definition ids to apply
+        :type file_markings: list
+        :param data: the data content to export
+        :type data: str
+        :param list_filters: filters to apply on the list (default: "")
+        :type list_filters: str
+        :param mime_type: the MIME type of the file (optional)
+        :type mime_type: str or None
+        """
         query = """
             mutation StixCoreObjectsExportPush($entity_id: String, $entity_type: String!, $file: Upload!, $file_markings: [String]!, $listFilters: String) {
                 stixCoreObjectsExportPush(entity_id: $entity_id, entity_type: $entity_type, file: $file, file_markings: $file_markings, listFilters: $listFilters)
@@ -1625,9 +1657,9 @@ class StixCoreObject:
         """
 
         if mime_type is None:
-            file = self.file(file_name, data)
+            file = self.opencti.file(file_name, data)
         else:
-            file = self.file(file_name, data, mime_type)
+            file = self.opencti.file(file_name, data, mime_type)
         self.opencti.query(
             query,
             {
@@ -1648,6 +1680,21 @@ class StixCoreObject:
         content_type,
         analysis_type,
     ):
+        """Push an analysis file for a Stix-Core-Object.
+
+        :param entity_id: the id of the Stix-Core-Object
+        :type entity_id: str
+        :param file_name: the name of the analysis file
+        :type file_name: str
+        :param data: the analysis data content
+        :type data: str
+        :param content_source: the source of the content
+        :type content_source: str
+        :param content_type: the type of analysis content
+        :type content_type: str
+        :param analysis_type: the type of analysis
+        :type analysis_type: str
+        """
         query = """
             mutation StixCoreObjectEdit(
                 $id: ID!, $file: Upload!, $contentSource: String!, $contentType: AnalysisContentType!, $analysisType: String!
@@ -1661,7 +1708,7 @@ class StixCoreObject:
             }
         """
 
-        file = self.file(file_name, data)
+        file = self.opencti.file(file_name, data)
         self.opencti.query(
             query,
             {
@@ -1673,14 +1720,14 @@ class StixCoreObject:
             },
         )
 
-    """
-        Get the reports about a Stix-Core-Object object
+    def reports(self, **kwargs):
+        """Get the reports about a Stix-Core-Object object.
 
         :param id: the id of the Stix-Core-Object
-        :return List of reports
-    """
-
-    def reports(self, **kwargs):
+        :type id: str
+        :return: List of reports
+        :rtype: list or None
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info(
@@ -1800,15 +1847,14 @@ class StixCoreObject:
             self.opencti.app_logger.error("Missing parameters: id")
             return None
 
-    """
-        Apply rule to Stix-Core-Object object
+    def rule_apply(self, **kwargs):
+        """Apply rule to Stix-Core-Object object.
 
         :param element_id: the Stix-Core-Object id
+        :type element_id: str
         :param rule_id: the rule to apply
-        :return void
-    """
-
-    def rule_apply(self, **kwargs):
+        :type rule_id: str
+        """
         rule_id = kwargs.get("rule_id", None)
         element_id = kwargs.get("element_id", None)
         if element_id is not None and rule_id is not None:
@@ -1823,19 +1869,18 @@ class StixCoreObject:
             self.opencti.query(query, {"elementId": element_id, "ruleId": rule_id})
         else:
             self.opencti.app_logger.error(
-                "[stix_core_object] Cant apply rule, missing parameters: id"
+                "[stix_core_object] Cannot apply rule, missing parameters: id"
             )
             return None
 
-    """
-        Apply rule clear to Stix-Core-Object object
+    def rule_clear(self, **kwargs):
+        """Apply rule clear to Stix-Core-Object object.
 
         :param element_id: the Stix-Core-Object id
-        :param rule_id: the rule to apply
-        :return void
-    """
-
-    def rule_clear(self, **kwargs):
+        :type element_id: str
+        :param rule_id: the rule to clear
+        :type rule_id: str
+        """
         rule_id = kwargs.get("rule_id", None)
         element_id = kwargs.get("element_id", None)
         if element_id is not None and rule_id is not None:
@@ -1850,18 +1895,16 @@ class StixCoreObject:
             self.opencti.query(query, {"elementId": element_id, "ruleId": rule_id})
         else:
             self.opencti.app_logger.error(
-                "[stix_core_object] Cant clear rule, missing parameters: id"
+                "[stix_core_object] Cannot clear rule, missing parameters: id"
             )
             return None
 
-    """
-        Apply rules rescan to Stix-Core-Object object
+    def rules_rescan(self, **kwargs):
+        """Apply rules rescan to Stix-Core-Object object.
 
         :param element_id: the Stix-Core-Object id
-        :return void
-    """
-
-    def rules_rescan(self, **kwargs):
+        :type element_id: str
+        """
         element_id = kwargs.get("element_id", None)
         if element_id is not None:
             self.opencti.app_logger.info(
@@ -1875,18 +1918,16 @@ class StixCoreObject:
             self.opencti.query(query, {"elementId": element_id})
         else:
             self.opencti.app_logger.error(
-                "[stix_core_object] Cant rescan rule, missing parameters: id"
+                "[stix_core_object] Cannot rescan rule, missing parameters: id"
             )
             return None
 
-    """
-        Ask clear restriction
+    def clear_access_restriction(self, **kwargs):
+        """Ask clear restriction on a Stix-Core-Object.
 
         :param element_id: the Stix-Core-Object id
-        :return void
-    """
-
-    def clear_access_restriction(self, **kwargs):
+        :type element_id: str
+        """
         element_id = kwargs.get("element_id", None)
         if element_id is not None:
             query = """
@@ -1906,19 +1947,18 @@ class StixCoreObject:
             )
         else:
             self.opencti.app_logger.error(
-                "[stix_core_object] Cant clear access restriction, missing parameters: id"
+                "[stix_core_object] Cannot clear access restriction, missing parameters: id"
             )
             return None
 
-    """
-        Ask enrichment with single connector
+    def ask_enrichment(self, **kwargs):
+        """Ask enrichment with a single connector.
 
         :param element_id: the Stix-Core-Object id
-        :param connector_id the connector
-        :return void
-    """
-
-    def ask_enrichment(self, **kwargs):
+        :type element_id: str
+        :param connector_id: the connector id
+        :type connector_id: str
+        """
         element_id = kwargs.get("element_id", None)
         connector_id = kwargs.get("connector_id", None)
         query = """
@@ -1938,15 +1978,14 @@ class StixCoreObject:
             },
         )
 
-    """
-        Ask enrichment with multiple connectors
+    def ask_enrichments(self, **kwargs):
+        """Ask enrichment with multiple connectors.
 
         :param element_id: the Stix-Core-Object id
-        :param connector_ids the connectors
-        :return void
-    """
-
-    def ask_enrichments(self, **kwargs):
+        :type element_id: str
+        :param connector_ids: list of connector ids
+        :type connector_ids: list
+        """
         element_id = kwargs.get("element_id", None)
         connector_ids = kwargs.get("connector_ids", None)
         query = """
@@ -1966,15 +2005,16 @@ class StixCoreObject:
             },
         )
 
-    """
-        Share element to multiple organizations
+    def organization_share(self, entity_id, organization_ids, sharing_direct_container):
+        """Share element to multiple organizations.
 
         :param entity_id: the Stix-Core-Object id
-        :param organization_id:s the organization to share with
-        :return void
-    """
-
-    def organization_share(self, entity_id, organization_ids, sharing_direct_container):
+        :type entity_id: str
+        :param organization_ids: list of organization ids to share with
+        :type organization_ids: list
+        :param sharing_direct_container: whether to share direct containers
+        :type sharing_direct_container: bool
+        """
         query = """
             mutation StixCoreObjectEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) {
                 stixCoreObjectEdit(id: $id) {
@@ -1993,17 +2033,18 @@ class StixCoreObject:
             },
         )
 
-    """
-        Unshare element from multiple organizations
-
-        :param entity_id: the Stix-Core-Object id
-        :param organization_id:s the organization to share with
-        :return void
-    """
-
     def organization_unshare(
         self, entity_id, organization_ids, sharing_direct_container
     ):
+        """Unshare element from multiple organizations.
+
+        :param entity_id: the Stix-Core-Object id
+        :type entity_id: str
+        :param organization_ids: list of organization ids to unshare from
+        :type organization_ids: list
+        :param sharing_direct_container: whether to unshare direct containers
+        :type sharing_direct_container: bool
+        """
         query = """
             mutation StixCoreObjectEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) {
                 stixCoreObjectEdit(id: $id) {
@@ -2022,14 +2063,12 @@ class StixCoreObject:
             },
         )
 
-    """
-        Delete a Stix-Core-Object object
+    def delete(self, **kwargs):
+        """Delete a Stix-Core-Object object.
 
         :param id: the Stix-Core-Object id
-        :return void
-    """
-
-    def delete(self, **kwargs):
+        :type id: str
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Deleting stix_core_object", {"id": id})
@@ -2042,17 +2081,17 @@ class StixCoreObject:
             """
             self.opencti.query(query, {"id": id})
         else:
-            self.opencti.app_logger.error("[stix_core_object] Missing parameters: id")
+            self.opencti.app_logger.error(
+                "[opencti_stix_core_object] Missing parameters: id"
+            )
             return None
 
-    """
-        Remove a Stix-Core-Object object from draft (revert)
+    def remove_from_draft(self, **kwargs):
+        """Remove a Stix-Core-Object object from draft (revert).
 
         :param id: the Stix-Core-Object id
-        :return void
-    """
-
-    def remove_from_draft(self, **kwargs):
+        :type id: str
+        """
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.app_logger.info("Draft remove stix_core_object", {"id": id})
@@ -2066,6 +2105,6 @@ class StixCoreObject:
             self.opencti.query(query, {"id": id})
         else:
             self.opencti.app_logger.error(
-                "[stix_core_object] Cant remove from draft, missing parameters: id"
+                "[stix_core_object] Cannot remove from draft, missing parameters: id"
             )
             return None

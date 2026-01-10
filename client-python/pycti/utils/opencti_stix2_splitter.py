@@ -26,6 +26,13 @@ supported_types = (
 
 
 def is_id_supported(key):
+    """Check if a STIX ID type is supported for processing.
+
+    :param key: STIX ID or identifier to check
+    :type key: str
+    :return: True if the ID type is supported, False otherwise
+    :rtype: bool
+    """
     if "--" in key:
         id_type = key.split("--")[0]
         return id_type in supported_types
@@ -34,18 +41,31 @@ def is_id_supported(key):
 
 
 class OpenCTIStix2Splitter:
-    """STIX2 bundle splitter for OpenCTI
+    """STIX2 bundle splitter for OpenCTI.
 
-    Splits large STIX2 bundles into smaller chunks for processing.
+    Splits large STIX2 bundles into smaller chunks for processing,
+    handling dependencies between objects and deduplicating references.
     """
 
     def __init__(self):
+        """Initialize the STIX2 bundle splitter.
+
+        Sets up internal caches for tracking processed elements,
+        references, and incompatible items.
+        """
         self.cache_index = {}
         self.cache_refs = {}
         self.elements = []
         self.incompatible_items = []
 
     def get_internal_ids_in_extension(self, item):
+        """Get internal IDs from OpenCTI extensions in a STIX object.
+
+        :param item: the STIX object to extract IDs from
+        :type item: dict
+        :return: list of internal IDs found in extensions
+        :rtype: list
+        """
         ids = []
         if item.get("x_opencti_id"):
             ids.append(item["x_opencti_id"])
@@ -60,6 +80,19 @@ class OpenCTIStix2Splitter:
     def enlist_element(
         self, item_id, raw_data, cleanup_inconsistent_bundle, parent_acc
     ):
+        """Enlist an element and its dependencies for processing.
+
+        :param item_id: the ID of the item to enlist
+        :type item_id: str
+        :param raw_data: the raw data dictionary of all items
+        :type raw_data: dict
+        :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
+        :type cleanup_inconsistent_bundle: bool
+        :param parent_acc: accumulator of parent IDs to prevent circular references
+        :type parent_acc: list
+        :return: number of dependencies enlisted
+        :rtype: int
+        """
         nb_deps = 1
         if item_id not in raw_data:
             return 0
@@ -191,8 +224,8 @@ class OpenCTIStix2Splitter:
                 )
             elif item["type"] == "sighting":
                 is_compatible = (
-                    item["sighting_of_ref"] is not None
-                    and len(item["where_sighted_refs"]) > 0
+                    item.get("sighting_of_ref") is not None
+                    and len(item.get("where_sighted_refs", [])) > 0
                 )
             else:
                 is_compatible = is_id_supported(item_id)
@@ -214,12 +247,24 @@ class OpenCTIStix2Splitter:
         event_version=None,
         cleanup_inconsistent_bundle=False,
     ) -> Tuple[int, list, list]:
-        """splits a valid stix2 bundle into a list of bundles"""
+        """Split a valid STIX2 bundle into a list of bundles.
+
+        :param bundle: the STIX2 bundle to split
+        :type bundle: str or dict
+        :param use_json: whether the bundle is JSON string (True) or dict (False)
+        :type use_json: bool
+        :param event_version: (optional) event version to include in bundles
+        :type event_version: str or None
+        :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
+        :type cleanup_inconsistent_bundle: bool
+        :return: tuple of (number of expectations, incompatible items, list of bundles)
+        :rtype: Tuple[int, list, list]
+        """
         if use_json:
             try:
                 bundle_data = json.loads(bundle)
-            except:
-                raise Exception("File data is not a valid JSON")
+            except json.JSONDecodeError as e:
+                raise Exception(f"File data is not a valid JSON: {e}")
         else:
             bundle_data = bundle
 
@@ -242,6 +287,13 @@ class OpenCTIStix2Splitter:
         bundles = []
 
         def by_dep_size(elem):
+            """Get the dependency count for sorting elements.
+
+            :param elem: Element dictionary containing nb_deps
+            :type elem: dict
+            :return: Number of dependencies
+            :rtype: int
+            """
             return elem["nb_deps"]
 
         self.elements.sort(key=by_dep_size)
@@ -271,6 +323,20 @@ class OpenCTIStix2Splitter:
 
     @deprecated("Use split_bundle_with_expectations instead")
     def split_bundle(self, bundle, use_json=True, event_version=None) -> list:
+        """Split a valid STIX2 bundle into a list of bundles.
+
+        .. deprecated::
+            Use :meth:`split_bundle_with_expectations` instead.
+
+        :param bundle: the STIX2 bundle to split
+        :type bundle: str or dict
+        :param use_json: whether the bundle is JSON string (True) or dict (False)
+        :type use_json: bool
+        :param event_version: (optional) event version to include in bundles
+        :type event_version: str or None
+        :return: list of STIX2 bundles
+        :rtype: list
+        """
         _, _, bundles = self.split_bundle_with_expectations(
             bundle, use_json, event_version
         )
@@ -278,14 +344,20 @@ class OpenCTIStix2Splitter:
 
     @staticmethod
     def stix2_create_bundle(bundle_id, bundle_seq, items, use_json, event_version=None):
-        """create a stix2 bundle with items
+        """Create a STIX2 bundle with items.
 
-        :param items: valid stix2 items
-        :type items:
-        :param use_json: use JSON?
-        :type use_json:
-        :return: JSON of the stix2 bundle
-        :rtype:
+        :param bundle_id: the bundle ID
+        :type bundle_id: str
+        :param bundle_seq: the bundle sequence number
+        :type bundle_seq: int
+        :param items: valid STIX2 items
+        :type items: list
+        :param use_json: whether to return JSON string (True) or dict (False)
+        :type use_json: bool
+        :param event_version: (optional) event version to include
+        :type event_version: str or None
+        :return: STIX2 bundle as JSON string or dict
+        :rtype: str or dict
         """
 
         bundle = {

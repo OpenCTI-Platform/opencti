@@ -973,6 +973,20 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Select>
         </FormControl>
 
+        {/* Multiple files option for files type */}
+        {field.type === 'files' && (
+          <FormControlLabel
+            control={(
+              <Switch
+                checked={field.multiple === true}
+                onChange={(e) => handleFieldChange(`fields.${fieldIndex}.multiple`, e.target.checked)}
+              />
+            )}
+            label={t_i18n('Allow multiple files')}
+            style={{ marginTop: 20, display: 'block' }}
+          />
+        )}
+
         <FormControlLabel
           control={(
             <Switch
@@ -982,7 +996,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             />
           )}
           label={t_i18n('Required')}
-          style={{ marginTop: 20 }}
+          style={{ marginTop: 20, display: 'block' }}
         />
       </Box>
     );

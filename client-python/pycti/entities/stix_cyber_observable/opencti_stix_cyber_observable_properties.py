@@ -468,6 +468,10 @@ SCO_PROPERTIES_WITH_FILES = """
                     id
                     name
                     size
+                    metaData {
+                        mimetype
+                        version
+                    }
                 }
             }
         }

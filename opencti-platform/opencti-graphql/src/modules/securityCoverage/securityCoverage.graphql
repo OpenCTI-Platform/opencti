@@ -215,6 +215,8 @@ input SecurityCoverageAddInput {
   x_opencti_modified_at: DateTime
   external_uri: String
   externalReferences: [String]
+  file: Upload
+  fileMarkings: [String]
   update: Boolean
   # coverage specific
   auto_enrichment_disable: Boolean!
