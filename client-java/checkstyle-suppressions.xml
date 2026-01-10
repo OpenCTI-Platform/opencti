@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+        "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- Suppress all checks for test files -->
+    <suppress checks="JavadocMethod" files=".*Test\.java$"/>
+    <suppress checks="JavadocType" files=".*Test\.java$"/>
+    <suppress checks="MissingJavadocMethod" files=".*Test\.java$"/>
+    <suppress checks="MissingJavadocType" files=".*Test\.java$"/>
+    <suppress checks="LineLength" files=".*Test\.java$"/>
+    <suppress checks="EmptyLineSeparator" files=".*Test\.java$"/>
+    <suppress checks="LeftCurly" files=".*Test\.java$"/>
+    <suppress checks="ArrayTrailingComma" files=".*Test\.java$"/>
+    
+    <!-- Suppress all checks for integration tests -->
+    <suppress checks=".*" files=".*IT\.java$"/>
+    
+    <!-- Suppress all checks for examples -->
+    <suppress checks=".*" files="examples[/\\].*\.java$"/>
+    
+    <!-- Suppress method name check for test methods -->
+    <suppress checks="MethodName" files=".*Test\.java$"/>
+    
+    <!-- Suppress magic number checks (too strict for this project) -->
+    <suppress checks="MagicNumber" files=".*"/>
+    
+    <!-- Allow longer lines in GraphQL queries (text blocks) -->
+    <suppress checks="LineLength" files=".*Entity\.java$"/>
+    <suppress checks="LineLength" files="OpenCTIApiClient\.java$"/>
+    
+    <!-- Suppress member name check for some generated patterns -->
+    <suppress checks="MemberName" files=".*"/>
+    
+    <!-- Suppress for Lombok-generated methods -->
+    <suppress checks="HiddenField" files=".*"/>
+    
+    <!-- Suppress unused imports check (IDE handles this better) -->
+    <suppress checks="UnusedImports" files=".*"/>
+    
+    <!-- Suppress empty line separator for compact code -->
+    <suppress checks="EmptyLineSeparator" files="OpenCTIApiClient\.java$"/>
+    <suppress checks="LeftCurly" files="OpenCTIApiClient\.java$"/>
+    <suppress checks="ArrayTrailingComma" files="OpenCTIApiClient\.java$"/>
+    
+    <!-- Suppress Javadoc param issues -->
+    <suppress checks="JavadocMethod" files="OpenCTIApiClient\.java$"/>
+    
+    <!-- Suppress for all entity files -->
+    <suppress checks="EmptyLineSeparator" files=".*Entity\.java$"/>
+    <suppress checks="EmptyLineSeparator" files="entities[/\\].*\.java$"/>
+    
+    <!-- Suppress for API classes -->
+    <suppress checks="EmptyLineSeparator" files="api[/\\].*\.java$"/>
+    
+    <!-- Suppress for model classes -->
+    <suppress checks="EmptyLineSeparator" files="model[/\\].*\.java$"/>
+</suppressions>
+

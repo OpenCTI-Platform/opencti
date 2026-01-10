@@ -39,6 +39,14 @@ jobs:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
 
+  wf-client-java-test:
+      name: Client Java
+      uses: ./.github/workflows/ci-test-client-java.yml
+      needs: wf-build-image
+      with:
+        checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+      secrets: inherit
+
   wf-license-check:
       name: License check
       uses: ./.github/workflows/ci-license-check.yml

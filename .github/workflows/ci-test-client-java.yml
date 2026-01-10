@@ -1,0 +1,149 @@
+name: Run Client Java tests
+
+on:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        description: "Reference of the branch or commit sha"
+        type: string
+        default: ${{ github.sha }}
+
+jobs:
+  client-java-lint:
+    runs-on: ubuntu-latest
+    name: java-client lint
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Compile and Checkstyle
+      working-directory: client-java
+      run: |
+        mvn compile checkstyle:check --batch-mode
+
+    - name: SpotBugs Analysis
+      working-directory: client-java
+      run: |
+        mvn spotbugs:check --batch-mode -DskipTests
+
+    - name: Upload Lint Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: java-client-lint-reports
+        path: |
+          client-java/target/checkstyle-result.xml
+          client-java/target/spotbugs*.xml
+
+  client-java-test:
+    runs-on: ubuntu-latest
+    name: java-client test - java ${{ matrix.java-version }}
+    needs: client-java-lint
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: ["17", "21"]
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh
+
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Run Unit Tests with Coverage
+      working-directory: client-java
+      run: |
+        mvn clean test -DskipTests=false -Dgroups=unit -Dcheckstyle.skip=true -Dspotbugs.skip=true --batch-mode
+
+    - name: Upload Coverage Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: java-client-coverage-${{ matrix.java-version }}
+        path: client-java/target/site/jacoco/
+
+    - name: Download image platform
+      continue-on-error: true
+      uses: actions/download-artifact@v7
+      with:
+        name: docker-image-opencti-platform
+        path: /tmp
+
+    - name: Load image
+      run: |
+        set -eux
+        docker load --input /tmp/opencti-platform.tar
+        docker images
+
+    - name: Set up Docker Compose for backends
+      run: |
+        set -ex
+        cd scripts/ci
+        export TAG=${{ github.sha }}
+        docker network create runner-docker-network
+        docker compose --profile "backend" --profile "ci-test-pycti" up -d
+
+    - name: Wait for OpenCTI backend to start
+      run: ./scripts/ci/wait-for-url-200.sh http://localhost:4600/health?health_access_key=cihealthkey 300 10
+
+    - name: Run Integration Tests
+      working-directory: client-java
+      run: |
+        mvn verify -P integration-tests -DskipTests=false -Dcheckstyle.skip=true -Dspotbugs.skip=true --batch-mode
+      env:
+        OPENCTI_API_URL: http://localhost:4100
+        OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+
+    - name: Generate Test Report
+      if: always()
+      working-directory: client-java
+      run: |
+        mvn surefire-report:report-only --batch-mode || true
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: java-client-test-results-${{ matrix.java-version }}
+        path: |
+          client-java/target/surefire-reports/
+          client-java/target/failsafe-reports/
+          client-java/target/site/
+
+    - name: Logs opencti-pycti-start
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-pycti-start
+
+    - name: Log backends
+      if: always()
+      continue-on-error: true
+      run: |
+        echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+        echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+        echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
+        echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
+
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: cat runner_resource_stat.log || true

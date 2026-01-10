@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter
+        xmlns="https://github.com/spotbugs/filter/3.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+
+    <!-- Exclude all test classes -->
+    <Match>
+        <Source name="~.*Test\.java"/>
+    </Match>
+    <Match>
+        <Source name="~.*IT\.java"/>
+    </Match>
+    <Match>
+        <Package name="~.*\.integration.*"/>
+    </Match>
+
+    <!-- Exclude examples -->
+    <Match>
+        <Package name="~.*\.examples.*"/>
+    </Match>
+
+    <!-- Suppress warnings for unchecked casts in Map operations (common pattern in this library) -->
+    <Match>
+        <Bug pattern="BC_UNCONFIRMED_CAST"/>
+    </Match>
+
+    <!-- Suppress warnings for returning mutable objects (intentional for Maps) -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Suppress for method returning same parameter (builder pattern) -->
+    <Match>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+
+    <!-- Suppress for Lombok-generated code -->
+    <Match>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
+    </Match>
+
+    <!-- Allow null checks after method calls (defensive programming) -->
+    <Match>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE"/>
+    </Match>
+
+    <!-- Suppress serialization warnings (not needed for this library) -->
+    <Match>
+        <Bug pattern="SE_BAD_FIELD"/>
+    </Match>
+    <Match>
+        <Bug pattern="SE_NO_SERIALVERSIONID"/>
+    </Match>
+
+    <!-- Suppress inner class warnings -->
+    <Match>
+        <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON"/>
+    </Match>
+
+    <!-- Suppress unused field warnings for Lombok -->
+    <Match>
+        <Bug pattern="URF_UNREAD_FIELD"/>
+    </Match>
+    <Match>
+        <Bug pattern="UWF_UNWRITTEN_FIELD"/>
+    </Match>
+    <Match>
+        <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+    </Match>
+
+    <!-- Suppress resource leak warnings for OkHttp client (managed internally) -->
+    <Match>
+        <Class name="io.filigran.opencti.OpenCTIApiClient"/>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK"/>
+    </Match>
+
+    <!-- Suppress SQL injection warnings (no SQL in this project) -->
+    <Match>
+        <Bug pattern="SQL_INJECTION"/>
+    </Match>
+
+    <!-- Allow switch without default when all enum cases are covered -->
+    <Match>
+        <Bug pattern="SF_SWITCH_NO_DEFAULT"/>
+    </Match>
+
+    <!-- Suppress dead local store warnings (sometimes intentional) -->
+    <Match>
+        <Bug pattern="DLS_DEAD_LOCAL_STORE"/>
+    </Match>
+
+    <!-- Suppress comparison of strings using == (intentional in some cases) -->
+    <Match>
+        <Bug pattern="ES_COMPARING_STRINGS_WITH_EQ"/>
+    </Match>
+
+    <!-- Suppress format string warnings -->
+    <Match>
+        <Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/>
+    </Match>
+
+    <!-- Exclude entity classes from certain checks (they follow a pattern) -->
+    <Match>
+        <Package name="io.filigran.opencti.entities"/>
+        <Bug pattern="CRLF_INJECTION_LOGS"/>
+    </Match>
+
+    <!-- Suppress HTTP parameter pollution (false positive for GraphQL) -->
+    <Match>
+        <Bug pattern="HTTP_PARAMETER_POLLUTION"/>
+    </Match>
+
+    <!-- Suppress performance warnings for small collections (not critical here) -->
+    <Match>
+        <Bug pattern="WMI_WRONG_MAP_ITERATOR"/>
+    </Match>
+
+    <!-- Suppress null pointer warnings for Map.get (handled by caller) -->
+    <Match>
+        <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+    </Match>
+
+</FindBugsFilter>
+
