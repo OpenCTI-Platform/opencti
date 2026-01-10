@@ -751,25 +751,37 @@ class OpenCTIApiClient:
         :type binary: bool, optional
         :param serialize: if True, returns base64-encoded content, defaults to False
         :type serialize: bool, optional
-        :return: returns either the file content as text, bytes, or base64-encoded string
-        :rtype: str or bytes
+        :return: returns either the file content as text, bytes, base64-encoded string, or None on failure
+        :rtype: str, bytes, or None
         """
-
-        r = self.session.get(
-            fetch_uri,
-            headers=self.request_headers,
-            verify=self.ssl_verify,
-            cert=self.cert,
-            proxies=self.proxies,
-            timeout=self.session_requests_timeout,
-        )
-        if binary:
+        try:
+            r = self.session.get(
+                fetch_uri,
+                headers=self.request_headers,
+                verify=self.ssl_verify,
+                cert=self.cert,
+                proxies=self.proxies,
+                timeout=self.session_requests_timeout,
+            )
+            # Check if request was successful
+            if not r.ok:
+                self.app_logger.warning(
+                    "Failed to fetch file",
+                    {"uri": fetch_uri, "status_code": r.status_code},
+                )
+                return None
+            if binary:
+                if serialize:
+                    return base64.b64encode(r.content).decode("utf-8")
+                return r.content
             if serialize:
-                return base64.b64encode(r.content).decode("utf-8")
-            return r.content
-        if serialize:
-            return base64.b64encode(r.text.encode("utf-8")).decode("utf-8")
-        return r.text
+                return base64.b64encode(r.text.encode("utf-8")).decode("utf-8")
+            return r.text
+        except Exception as e:
+            self.app_logger.warning(
+                "Error fetching file", {"uri": fetch_uri, "error": str(e)}
+            )
+            return None
 
     def health_check(self):
         """Submit an example request to the OpenCTI API.
