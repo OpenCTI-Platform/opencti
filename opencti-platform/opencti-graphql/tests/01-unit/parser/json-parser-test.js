@@ -4,6 +4,9 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { cisa_data, cisa_mapper } from './json-mapper-cisa';
 import { trino_data, trino_mapper } from './json-mapper-trino';
 import { misp_data, misp_mapper } from './json-mapper-misp';
+import { ecrime_data, ecrime_mapper } from './json-mapper-ecrime';
+import { domains_data, domains_mapper } from './json-mapper-domains';
+import { indicators_data, indicators_mapper } from './json-mapper-indicators';
 import { STIX_EXT_OCTI_SCO } from '../../../src/types/stix-2-1-extensions';
 
 const buildMaps = (stixBundle) => {
@@ -110,4 +113,76 @@ describe('JSON mapper testing', () => {
     expect(report.report_types).toStrictEqual(['misp-event']);
     expect(report.object_refs.length).toBe(121);
   });
+  it('should ecrime correctly parsed', async () => {
+    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, ecrime_data, ecrime_mapper);
+    const { mapById, mapByType, mapByFromAndTo } = buildMaps(stixBundle);
+    expect(stixBundle.objects.length).toBe(26);
+    expect(mapByType.get('identity').length).toBe(9);
+    expect(mapByType.get('location').length).toBe(2);
+    expect(mapByType.get('intrusion-set').length).toBe(1);
+    expect(mapByType.get('report').length).toBe(5);
+    expect(mapByType.get('relationship').length).toBe(9);
+
+    // Test organization binding
+    const organizations = mapByType.get('identity').filter((i) => i.identity_class === 'organization');
+    const organization = organizations.find((o) => o.name === 'MOBI Technologies, Inc.');
+    expect(organization).toBeDefined();
+    expect(organization.description).toBe('11-50 employees');
+
+    // Test intrusion-set binding
+    const intrusionSets = mapByType.get('intrusion-set');
+    const intrusionSet = intrusionSets.find((i) => i.name === 'Akira');
+    expect(intrusionSet).toBeDefined();
+
+    // Test relationship binding
+    const relationship = mapByFromAndTo.get(`${intrusionSet.id}-${organization.id}`);
+    expect(relationship).not.toBeNull();
+    expect(relationship.relationship_type).toBe('targets');
+
+    // Test report binding
+    const reports = mapByType.get('report');
+    const report = reports.find((r) => r.name === 'MOBI Technologies');
+    expect(report).toBeDefined();
+
+    // Verify object_refs contains United States (Country) and Consumer Electronics (Sector)
+    const locations = mapByType.get('location');
+    const country = locations.find((l) => l.name === 'United States');
+    expect(country).toBeDefined();
+
+    const sectors = mapByType.get('identity').filter((i) => i.identity_class === 'class'); // Sectors are identities but mapped as Sector in STIX? Wait, ecrime mapper maps to Sector identity
+    const identities = mapByType.get('identity');
+    const sector = identities.find((i) => i.name === 'Consumer Electronics');
+    expect(sector).toBeDefined();
+
+    expect(report.object_refs).toContain(country.id);
+    expect(report.object_refs).toContain(sector.id);
+  });
+  it('should domains correctly parsed', async () => {
+    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, domains_data, domains_mapper);
+    const { mapByType } = buildMaps(stixBundle);
+    expect(stixBundle.objects.length).toBe(1);
+    expect(mapByType.get('domain-name').length).toBe(1);
+
+    // Test domain binding
+    const domain = mapByType.get('domain-name')[0];
+    expect(domain.value).toBe('evil.com');
+  });
+  it('should indicators correctly parsed', async () => {
+    const stixBundle = await jsonMappingExecution(testContext, ADMIN_USER, indicators_data, indicators_mapper);
+    const { mapById, mapByType } = buildMaps(stixBundle);
+    expect(stixBundle.objects.length).toBe(4);
+    expect(mapByType.get('indicator').length).toBe(2);
+    expect(mapByType.get('external-reference').length).toBe(2);
+
+    // Test indicator binding
+    const indicators = mapByType.get('indicator');
+    const indicator1 = indicators.find((i) => i.name === "[domain-name:value = 'malicious.com']");
+    const indicator2 = indicators.find((i) => i.name === "[domain-name:value = 'malicious2.com']");
+    expect(indicator1.external_references.length).toBe(1);
+    const ref1_id = indicator1.external_references[0]; // external_references is array of IDs in mapByType? No, in mapByType objects are raw STIX objects?
+    expect(indicator1.external_references[0].url).toBe('https://abuse.ch/domain/malicious.com');
+    expect(indicator2.external_references.length).toBe(1);
+    expect(indicator2.external_references[0].url).toBe('https://abuse.ch/domain/malicious2.com');
+  });
 });
+

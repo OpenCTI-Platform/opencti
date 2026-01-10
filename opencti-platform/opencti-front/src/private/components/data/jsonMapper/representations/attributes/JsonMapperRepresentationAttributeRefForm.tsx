@@ -2,20 +2,20 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import classNames from 'classnames';
 import MuiTextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
+import IconButton from '@mui/material/IconButton';
+import { Add, Delete } from '@mui/icons-material';
 import { representationLabel } from '@components/data/jsonMapper/representations/RepresentationUtils';
 import * as R from 'ramda';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field, FieldProps } from 'formik';
+import { FieldProps } from 'formik';
 import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
 import JsonMapperRepresentationDialogOption from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationDialogOption';
 import JsonMapperRepresentationAttributeOptions from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeOptions';
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
 import { SchemaAttribute } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
-import { TextField } from 'formik-mui';
 import { useTheme } from '@mui/styles';
-import { SelectChangeEvent } from '@mui/material/Select';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
@@ -156,19 +156,6 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
     }
   }, [errors]);
 
-  const onIdentifierValueChange = async (val: SelectChangeEvent) => {
-    const updateAttribute: JsonMapperRepresentationAttributeFormData = {
-      ...(value ?? {}),
-      key: schemaAttribute.name,
-      mode: 'base',
-      based_on: {
-        identifier: val.target.value,
-        representations: value?.based_on?.representations ?? [],
-      },
-    };
-    await setFieldValue(name, updateAttribute);
-  };
-
   const onSelectValueChange = async (
     val: JsonMapperRepresentationFormData[] | JsonMapperRepresentationFormData | null,
   ) => {
@@ -184,7 +171,7 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
       key: schemaAttribute.name,
       mode: 'base',
       based_on: {
-        identifier: value?.based_on?.identifier ?? '',
+        identifier: value?.based_on?.identifier ?? [''],
         representations: ids,
       },
     };
@@ -259,17 +246,81 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
         )}
       </div>
       <div>Identifier</div>
-      <div>
-        <Field
-          component={TextField}
-          label={t_i18n('JSON Path')}
-          name={`${name}.identifier`}
-          variant="standard"
-          style={{ width: '100%' }}
-          value={value?.based_on?.identifier ?? ''}
-          onChange={(val: SelectChangeEvent) => onIdentifierValueChange(val)}
-          handleErrors={handleErrors}
-        />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {(() => {
+          const identifiers: string[] = Array.isArray(value?.based_on?.identifier)
+            ? value?.based_on?.identifier : [value?.based_on?.identifier ?? ''];
+
+          const handleIdentifierChange = async (index: number, val: string) => {
+            const newIdentifiers = [...identifiers];
+            newIdentifiers[index] = val;
+            const updateAttribute: JsonMapperRepresentationAttributeFormData = {
+              ...(value ?? {}),
+              key: schemaAttribute.name,
+              mode: 'base',
+              based_on: {
+                identifier: newIdentifiers,
+                representations: value?.based_on?.representations ?? [],
+              },
+            };
+            await setFieldValue(name, updateAttribute);
+          };
+
+          const handleAddIdentifier = async () => {
+            const newIdentifiers = [...identifiers, ''];
+            const updateAttribute: JsonMapperRepresentationAttributeFormData = {
+              ...(value ?? {}),
+              key: schemaAttribute.name,
+              mode: 'base',
+              based_on: {
+                identifier: newIdentifiers,
+                representations: value?.based_on?.representations ?? [],
+              },
+            };
+            await setFieldValue(name, updateAttribute);
+          };
+
+          const handleRemoveIdentifier = async (index: number) => {
+            const newIdentifiers = [...identifiers];
+            newIdentifiers.splice(index, 1);
+            const updateAttribute: JsonMapperRepresentationAttributeFormData = {
+              ...(value ?? {}),
+              key: schemaAttribute.name,
+              mode: 'base',
+              based_on: {
+                identifier: newIdentifiers,
+                representations: value?.based_on?.representations ?? [],
+              },
+            };
+            await setFieldValue(name, updateAttribute);
+          };
+
+          return identifiers.map((identifier, index) => (
+            <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <MuiTextField
+                label={t_i18n('JSON Path')}
+                variant="standard"
+                style={{ width: '100%' }}
+                value={identifier}
+                onChange={(e) => handleIdentifierChange(index, e.target.value)}
+              />
+              <div style={{ display: 'flex' }}>
+                <IconButton
+                  disabled={identifiers.length === 1}
+                  onClick={() => handleRemoveIdentifier(index)}
+                  size="small"
+                >
+                  <Delete />
+                </IconButton>
+                {index === identifiers.length - 1 && (
+                  <IconButton onClick={handleAddIdentifier} size="small">
+                    <Add />
+                  </IconButton>
+                )}
+              </div>
+            </div>
+          ));
+        })()}
       </div>
     </div>
   );
