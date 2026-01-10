@@ -37,6 +37,10 @@ from pycti.utils.opencti_stix2_utils import (
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
 
+# For Python 3.11+, datetime.UTC is preferred over datetime.timezone.utc
+# Fallback to datetime.timezone.utc for older Python versions
+UTC = getattr(datetime, "UTC", datetime.timezone.utc)
+
 # Spec version
 SPEC_VERSION = "2.1"
 ERROR_TYPE_LOCK = "LOCK_ERROR"
@@ -171,11 +175,11 @@ class OpenCTIStix2:
             except (dateutil.parser.ParserError, TypeError, OverflowError) as e:
                 raise ValueError(f"{e}: {date} does not contain a valid date string")
         else:
-            date_value = datetime.datetime.now(datetime.timezone.utc)
+            date_value = datetime.datetime.now(tz=UTC)
 
         if not date_value.tzinfo:
             self.opencti.app_logger.info("No timezone found. Setting to UTC")
-            date_value = date_value.replace(tzinfo=datetime.timezone.utc)
+            date_value = date_value.replace(tzinfo=UTC)
 
         return date_value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
@@ -1941,7 +1945,11 @@ class OpenCTIStix2:
                         "filters": [
                             {
                                 "key": "ids",
-                                "values": entity_id if isinstance(entity_id, list) else [entity_id],
+                                "values": (
+                                    entity_id
+                                    if isinstance(entity_id, list)
+                                    else [entity_id]
+                                ),
                             }
                         ],
                         "filterGroups": [],
@@ -1958,7 +1966,9 @@ class OpenCTIStix2:
                     {
                         "key": "ids",
                         "mode": "or",
-                        "values": entity_id if isinstance(entity_id, list) else [entity_id],
+                        "values": (
+                            entity_id if isinstance(entity_id, list) else [entity_id]
+                        ),
                     }
                 ],
             }
