@@ -2600,6 +2600,12 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (!initial) {
     throw FunctionalError('Cant find element to update', { id, type });
   }
+  // Check if trying to update an inferred relationship (which is immutable)
+  const isInferred = isInferredIndex(initial._index);
+  const isRuleManaged = isRuleUser(user);
+  if (isInferred && !isRuleManaged) {
+    throw UnsupportedError('Cannot update an inferred relationship. Inferred relationships are created by inference rules and are immutable.', { id, type });
+  }
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);

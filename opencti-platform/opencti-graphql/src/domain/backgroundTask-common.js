@@ -133,6 +133,15 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     } else {
       throw UnsupportedError('A background task should be of type query or list.');
     }
+    // 2.5. Check that inferred relationships are not being modified
+    // Inferred relationships are immutable and should not be modified by mass operations
+    if (taskType === TASK_TYPE_LIST) {
+      const objects = await internalFindByIds(context, user, ids, { includeDeletedInDraft: true });
+      const hasInferredRelationships = objects.some((o) => o?.is_inferred === true);
+      if (hasInferredRelationships) {
+        throw ForbiddenAccess('Cannot modify inferred relationships. Inferred relationships are created by inference rules and are immutable.');
+      }
+    }
   } else if (scope === BackgroundTaskScope.UserNotification) { // 03. Background task of scope UserNotification (i.e. on Notifications)
     // Check the targeted entities are Notifications
     // and the user has the right to modify them (= notifications are the ones of the user OR the user has SET_ACCESS capability)
