@@ -490,6 +490,10 @@ class Task:
         :type due_date: str
         :param createdBy: the creator of the Task
         :type createdBy: str
+        :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
+        :param file: (optional) file object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
         :return: Task object
         :rtype: dict or None
         """

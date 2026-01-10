@@ -454,6 +454,8 @@ class Language:
         :type x_opencti_modified_at: str
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
+        :param file: (optional) file object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
         :return: Language object
         :rtype: dict or None
         """

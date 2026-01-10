@@ -488,6 +488,8 @@ class Location:
         :type x_opencti_modified_at: datetime
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
+        :param file: (optional) file object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
         :return: Location object
         :rtype: dict or None
         """

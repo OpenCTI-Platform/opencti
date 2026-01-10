@@ -483,6 +483,8 @@ class Identity:
         :param x_opencti_workflow_id: (optional) workflow ID
         :param x_opencti_modified_at: (optional) custom modification date
         :param update: (optional) whether to update if exists (default: False)
+        :param file: (optional) file object to attach
+        :param fileMarkings: (optional) list of marking definition IDs for the file
         :return: Identity object
         :rtype: dict or None
         """
