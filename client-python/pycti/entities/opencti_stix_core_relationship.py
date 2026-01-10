@@ -964,7 +964,9 @@ class StixCoreRelationship:
             )
             return True
         else:
-            self.opencti.app_logger.error("Missing parameters: id and marking_definition_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and marking_definition_id"
+            )
             return False
 
     def add_label(self, **kwargs):
@@ -1155,7 +1157,9 @@ class StixCoreRelationship:
             )
             return True
         else:
-            self.opencti.app_logger.error("Missing parameters: id and external_reference_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and external_reference_id"
+            )
             return False
 
     def add_kill_chain_phase(self, **kwargs):

@@ -2081,7 +2081,9 @@ class StixCoreObject:
             """
             self.opencti.query(query, {"id": id})
         else:
-            self.opencti.app_logger.error("[opencti_stix_core_object] Missing parameters: id")
+            self.opencti.app_logger.error(
+                "[opencti_stix_core_object] Missing parameters: id"
+            )
             return None
 
     def remove_from_draft(self, **kwargs):

@@ -835,7 +835,9 @@ class StixSightingRelationship:
             )
             return True
         else:
-            self.opencti.app_logger.error("Missing parameters: id and marking_definition_id")
+            self.opencti.app_logger.error(
+                "Missing parameters: id and marking_definition_id"
+            )
             return False
 
     def update_created_by(self, **kwargs):

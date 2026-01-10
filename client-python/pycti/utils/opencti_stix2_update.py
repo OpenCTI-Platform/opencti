@@ -20,7 +20,9 @@ class OpenCTIStix2Update:
         """
         self.opencti = opencti
 
-    def add_object_marking_refs(self, entity_type, entity_id, object_marking_refs, version=2):
+    def add_object_marking_refs(
+        self, entity_type, entity_id, object_marking_refs, version=2
+    ):
         """Add marking definition references to an entity.
 
         :param entity_type: Type of the entity
@@ -86,7 +88,9 @@ class OpenCTIStix2Update:
                     id=entity_id, marking_definition_id=object_marking_ref
                 )
 
-    def add_external_references(self, entity_type, entity_id, external_references, version=2):
+    def add_external_references(
+        self, entity_type, entity_id, external_references, version=2
+    ):
         """Add external references to an entity.
 
         :param entity_type: Type of the entity
@@ -157,7 +161,9 @@ class OpenCTIStix2Update:
                     id=entity_id, external_reference_id=external_reference["id"]
                 )
 
-    def add_kill_chain_phases(self, entity_type, entity_id, kill_chain_phases, version=2):
+    def add_kill_chain_phases(
+        self, entity_type, entity_id, kill_chain_phases, version=2
+    ):
         """Add kill chain phases to an entity.
 
         :param entity_type: Type of the entity
@@ -347,11 +353,17 @@ class OpenCTIStix2Update:
             if version == 2:
                 label = label["value"]
             if entity_type == "relationship":
-                self.opencti.stix_core_relationship.add_label(id=entity_id, label_name=label)
+                self.opencti.stix_core_relationship.add_label(
+                    id=entity_id, label_name=label
+                )
             elif StixCyberObservableTypes.has_value(entity_type):
-                self.opencti.stix_cyber_observable.add_label(id=entity_id, label_name=label)
+                self.opencti.stix_cyber_observable.add_label(
+                    id=entity_id, label_name=label
+                )
             else:
-                self.opencti.stix_domain_object.add_label(id=entity_id, label_name=label)
+                self.opencti.stix_domain_object.add_label(
+                    id=entity_id, label_name=label
+                )
 
     def remove_labels(self, entity_type, entity_id, labels, version=2):
         """Remove labels from an entity.
@@ -373,9 +385,13 @@ class OpenCTIStix2Update:
                     id=entity_id, label_name=label
                 )
             elif StixCyberObservableTypes.has_value(entity_type):
-                self.opencti.stix_cyber_observable.remove_label(id=entity_id, label_name=label)
+                self.opencti.stix_cyber_observable.remove_label(
+                    id=entity_id, label_name=label
+                )
             else:
-                self.opencti.stix_domain_object.remove_label(id=entity_id, label_name=label)
+                self.opencti.stix_domain_object.remove_label(
+                    id=entity_id, label_name=label
+                )
 
     def replace_created_by_ref(self, entity_type, entity_id, created_by_ref, version=2):
         """Replace the created_by reference of an entity.
@@ -422,15 +438,23 @@ class OpenCTIStix2Update:
         """
         # Relations
         if entity_type == "relationship":
-            self.opencti.stix_core_relationship.update_field(id=entity_id, input=field_input)
+            self.opencti.stix_core_relationship.update_field(
+                id=entity_id, input=field_input
+            )
         elif entity_type == "sighting":
-            self.opencti.stix_sighting_relationship.update_field(id=entity_id, input=field_input)
+            self.opencti.stix_sighting_relationship.update_field(
+                id=entity_id, input=field_input
+            )
         # Observables
         elif StixCyberObservableTypes.has_value(entity_type):
-            self.opencti.stix_cyber_observable.update_field(id=entity_id, input=field_input)
+            self.opencti.stix_cyber_observable.update_field(
+                id=entity_id, input=field_input
+            )
         # Meta
         elif entity_type == "marking-definition":
-            self.opencti.marking_definition.update_field(id=entity_id, input=field_input)
+            self.opencti.marking_definition.update_field(
+                id=entity_id, input=field_input
+            )
         elif entity_type == "label":
             self.opencti.label.update_field(id=entity_id, input=field_input)
         elif entity_type == "vocabulary":
@@ -438,10 +462,14 @@ class OpenCTIStix2Update:
         elif entity_type == "kill-chain-phase":
             self.opencti.kill_chain_phase.update_field(id=entity_id, input=field_input)
         elif entity_type == "external-reference":
-            self.opencti.external_reference.update_field(id=entity_id, input=field_input)
+            self.opencti.external_reference.update_field(
+                id=entity_id, input=field_input
+            )
         # Remaining stix domain
         else:
-            self.opencti.stix_domain_object.update_field(id=entity_id, input=field_input)
+            self.opencti.stix_domain_object.update_field(
+                id=entity_id, input=field_input
+            )
 
     def process_update(self, data):
         """Process a STIX2 patch/update operation.
@@ -485,7 +513,8 @@ class OpenCTIStix2Update:
                             values = (
                                 current_val["value"]
                                 if (
-                                    isinstance(current_val, dict) and "value" in current_val
+                                    isinstance(current_val, dict)
+                                    and "value" in current_val
                                 )
                                 else str(current_val)
                             )

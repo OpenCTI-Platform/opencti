@@ -499,9 +499,7 @@ class Channel:
             result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["channelAdd"])
         else:
-            self.opencti.app_logger.error(
-                "[opencti_channel] Missing parameters: name"
-            )
+            self.opencti.app_logger.error("[opencti_channel] Missing parameters: name")
             return None
 
     def import_from_stix2(self, **kwargs):

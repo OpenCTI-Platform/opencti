@@ -535,9 +535,7 @@ class Campaign:
             )
             return self.opencti.process_multiple_fields(result["data"]["campaignAdd"])
         else:
-            self.opencti.app_logger.error(
-                "[opencti_campaign] Missing parameters: name"
-            )
+            self.opencti.app_logger.error("[opencti_campaign] Missing parameters: name")
             return None
 
     def import_from_stix2(self, **kwargs):

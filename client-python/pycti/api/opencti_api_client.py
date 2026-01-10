@@ -580,8 +580,10 @@ class OpenCTIApiClient:
         if isinstance(obj, File):
             return None, [{"key": path_prefix, "file": obj, "multiple": False}]
 
-        if isinstance(obj, list) and len(obj) > 0 and all(
-            map(lambda x: isinstance(x, File), obj)
+        if (
+            isinstance(obj, list)
+            and len(obj) > 0
+            and all(map(lambda x: isinstance(x, File), obj))
         ):
             return [None] * len(obj), [
                 {"key": path_prefix, "file": obj, "multiple": True}

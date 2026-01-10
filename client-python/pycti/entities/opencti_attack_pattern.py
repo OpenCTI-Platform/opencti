@@ -760,5 +760,7 @@ class AttackPattern:
              """
             self.opencti.query(query, {"id": id})
         else:
-            self.opencti.app_logger.error("[opencti_attack_pattern] Missing parameters: id")
+            self.opencti.app_logger.error(
+                "[opencti_attack_pattern] Missing parameters: id"
+            )
             return None

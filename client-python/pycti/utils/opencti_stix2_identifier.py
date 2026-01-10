@@ -22,7 +22,9 @@ def external_reference_generate_id(url=None, source_name=None, external_id=None)
     else:
         return None
     data = canonicalize(data, utf8=False)
-    generated_id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+    generated_id = str(
+        uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data)
+    )
     return "external-reference--" + generated_id
 
 
@@ -38,5 +40,7 @@ def kill_chain_phase_generate_id(phase_name, kill_chain_name):
     """
     data = {"phase_name": phase_name, "kill_chain_name": kill_chain_name}
     data = canonicalize(data, utf8=False)
-    generated_id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+    generated_id = str(
+        uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data)
+    )
     return "kill-chain-phase--" + generated_id

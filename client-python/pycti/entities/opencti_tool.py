@@ -440,9 +440,7 @@ class Tool:
             )
             return self.opencti.process_multiple_fields(result["data"]["toolAdd"])
         else:
-            self.opencti.app_logger.error(
-                "[opencti_tool] Missing parameters: name"
-            )
+            self.opencti.app_logger.error("[opencti_tool] Missing parameters: name")
             return None
 
     def import_from_stix2(self, **kwargs):

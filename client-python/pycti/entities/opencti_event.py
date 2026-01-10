@@ -523,9 +523,7 @@ class Event:
             result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["eventAdd"])
         else:
-            self.opencti.app_logger.error(
-                "[opencti_event] Missing parameters: name"
-            )
+            self.opencti.app_logger.error("[opencti_event] Missing parameters: name")
             return None
 
     def import_from_stix2(self, **kwargs):

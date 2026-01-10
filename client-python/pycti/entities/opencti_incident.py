@@ -558,9 +558,7 @@ class Incident:
             )
             return self.opencti.process_multiple_fields(result["data"]["incidentAdd"])
         else:
-            self.opencti.app_logger.error(
-                "[opencti_incident] Missing parameters: name"
-            )
+            self.opencti.app_logger.error("[opencti_incident] Missing parameters: name")
             return None
 
     def import_from_stix2(self, **kwargs):
