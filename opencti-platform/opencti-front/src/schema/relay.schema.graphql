@@ -4094,6 +4094,8 @@ input IdentityAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  file: Upload
+  fileMarkings: [String]
   update: Boolean
 }
 
@@ -4801,6 +4803,8 @@ input LocationAddInput {
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
 }
 
 enum PositionsOrdering {
@@ -10342,6 +10346,8 @@ input LanguageAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
 }
 
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
@@ -11438,6 +11444,8 @@ input TaskAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
 }
 
 type TaskTemplate implements InternalObject & BasicObject {
@@ -14690,6 +14698,8 @@ input SecurityPlatformAddInput {
   x_opencti_modified_at: DateTime
   externalReferences: [String]
   update: Boolean
+  file: Upload
+  fileMarkings: [String]
 }
 
 type CoverageResult {

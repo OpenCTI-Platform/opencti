@@ -10678,6 +10678,8 @@ export type IdentityAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -13239,6 +13241,8 @@ export type LanguageAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -13520,6 +13524,8 @@ export type LocationAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -27352,6 +27358,8 @@ export type SecurityPlatformAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -30954,6 +30962,8 @@ export type TaskAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   due_date?: InputMaybe<Scalars['DateTime']['input']>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   name: Scalars['String']['input'];
   objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
