@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { graphql } from 'react-relay';
+import {fetchQuery, graphql} from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -16,9 +16,10 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import {commitMutation, environment, QueryRenderer} from '../../../../relay/environment';
 import SyncEdition from './SyncEdition';
 import { deleteNode } from '../../../../utils/store';
+import fileDownload from "js-file-download";
 
 const styles = (theme) => ({
   container: {
@@ -100,6 +101,16 @@ const syncEditionQuery = graphql`
     }
   }
 `;
+
+const syncPopoverExportQuery = graphql`
+  query SyncPopoverExportQuery($id: String!) {
+    synchronizer(id: $id) {
+      name
+      toConfigurationExport
+    }
+  }
+`;
+
 
 class SyncPopover extends Component {
   constructor(props) {
@@ -210,6 +221,42 @@ class SyncPopover extends Component {
     });
   }
 
+  async exportSync() {
+    const { syncId } = this.props;
+
+    const data = await fetchQuery(environment,
+      syncPopoverExportQuery,
+      {id: syncId}
+    ).toPromise();
+
+    if (data && data.synchronizer) {
+      const { synchronizer } = data;
+
+      const blob = new Blob(
+        [synchronizer.toConfigurationExport],
+        { type: 'application/json' },
+      );
+
+      const [day, month, year] = new Date()
+        .toLocaleDateString('fr-FR')
+        .split('/');
+
+      const fileName = `${year}${month}${day}_synchronizer_${synchronizer.name}.json`;
+
+      fileDownload(blob, fileName);
+    }
+  }
+
+  async handleExport(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    this.setState({ anchorEl: null });
+    await this.exportSync();
+  }
+
   render() {
     const { classes, t, syncId, running } = this.props;
     return (
@@ -240,6 +287,9 @@ class SyncPopover extends Component {
           )}
           <MenuItem disabled={running} onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
+          </MenuItem>
+          <MenuItem onClick={this.handleExport.bind(this)}>
+            {t('Export')}
           </MenuItem>
           <MenuItem disabled={running} onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}

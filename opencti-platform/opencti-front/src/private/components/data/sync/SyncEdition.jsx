@@ -24,6 +24,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import { extractToken } from '../../../../utils/ingestionAuthentificationUtils';
+import IngestionEditionUserHandling from '../../../../private/components/data/IngestionEditionUserHandling';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -51,6 +52,20 @@ const syncMutationFieldPatch = graphql`
       fieldPatch(input: $input) {
         ...SyncEdition_synchronizer
       }
+    }
+  }
+`;
+
+export const syncEditionUserHandlingPatch = graphql`
+  mutation SyncEditionUserHandlingMutation($id: ID!, $input: SynchronizerAddAutoUserInput!) {
+      synchronizerAddAutoUser(id: $id, input: $input) {
+        id
+        name
+        user {
+            id
+            entity_type
+            name
+        }
     }
   }
 `;
@@ -88,8 +103,9 @@ const SyncEditionContainer = ({ synchronizer }) => {
     no_dependencies: synchronizer.no_dependencies,
     ssl_verify: synchronizer.ssl_verify,
     synchronized: synchronizer.synchronized,
-    current_state_date: buildDate(synchronizer.current_state_date),
+    current_state_date: buildDate(synchronizer?.current_state_date),
     user_id: relatedUser,
+    automatic_user: true,
   };
 
   const isStreamAccessible = isNotEmptyField(
@@ -157,7 +173,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
       initialValues={initialValues}
       validationSchema={syncValidation(t_i18n)}
     >
-      {({ values }) => (
+      {({ values, setFieldValue }) => (
         <Form>
           <Field
             component={TextField}
@@ -228,11 +244,22 @@ const SyncEditionContainer = ({ synchronizer }) => {
           </Alert>
           <CreatorField
             name="user_id"
-            label={t_i18n('User responsible for data creation (empty = System)')}
+            label={t_i18n('User responsible for data creation')}
             containerStyle={fieldSpacingContainerStyle}
             onChange={handleSubmitField}
             showConfidence
           />
+          {synchronizer.user?.name === 'SYSTEM'
+            && (
+              <IngestionEditionUserHandling
+                key={values.name}
+                feedName={values.name}
+                onAutoUserCreated={() => setFieldValue('user_id', `[S] ${values.name}`)}
+                dataId={synchronizer.id}
+                mutation={syncEditionUserHandlingPatch}
+              />
+            )
+          }
           <Field
             component={DateTimePickerField}
             name="current_state_date"
