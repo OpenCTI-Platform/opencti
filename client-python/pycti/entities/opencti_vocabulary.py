@@ -293,6 +293,6 @@ class Vocabulary:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_vocabulary] Missing parameters: id and key and value"
+                "[opencti_vocabulary] Missing parameters: id and input"
             )
             return None

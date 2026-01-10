@@ -698,6 +698,7 @@ class User:
             self.opencti.admin_logger.error(
                 "[opencti_user] Missing parameters: id and organization_id"
             )
+            return None
 
         self.opencti.admin_logger.info(
             "Adding user to organization",
@@ -739,6 +740,7 @@ class User:
             self.opencti.admin_logger.error(
                 "[opencti_user] Missing parameters: id and organization_id"
             )
+            return None
 
         self.opencti.admin_logger.info(
             "Removing user from organization",
@@ -816,6 +818,7 @@ class User:
             self.opencti.admin_logger.error(
                 "[opencti_user] Missing parameters: id and template_id"
             )
+            return None
 
         self.opencti.admin_logger.info(
             "Send email to user", {"id": id, "template_id": template_id}

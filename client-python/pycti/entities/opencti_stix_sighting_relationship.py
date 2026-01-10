@@ -727,7 +727,7 @@ class StixSightingRelationship:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_stix_sighting] Missing parameters: id and key and value"
+                "[opencti_stix_sighting] Missing parameters: id and input"
             )
             return None
 

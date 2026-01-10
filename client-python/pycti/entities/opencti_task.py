@@ -575,7 +575,7 @@ class Task:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_task] Missing parameters: id and key and value"
+                "[opencti_task] Missing parameters: id and input"
             )
             return None
 
