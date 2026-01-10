@@ -9,6 +9,8 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.12"
+  apt_packages:
+    - graphviz
 
 # Build documentation in the client-python/docs/ directory with Sphinx
 sphinx:

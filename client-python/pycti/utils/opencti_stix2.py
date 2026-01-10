@@ -49,10 +49,14 @@ ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_DRAFT_LOCK = "DRAFT_LOCKED"
 ERROR_TYPE_TIMEOUT = "Request timed out"
 
-# Extensions
-STIX_EXT_OCTI = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-STIX_EXT_OCTI_SCO = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-STIX_EXT_MITRE = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+#: STIX Extension ID for OpenCTI custom objects and properties
+STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+
+#: STIX Extension ID for OpenCTI custom Cyber Observables (SCO)
+STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+
+#: STIX Extension ID for MITRE ATT&CK framework objects
+STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 100
 

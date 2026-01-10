@@ -69,6 +69,7 @@ const authorizeGlobals = new Map<string, string | true>([
   ['encodeURIComponent', true],
   ['decodeURI', true],
   ['decodeURIComponent', true],
+  ['escape', true],
 ]);
 
 const forbiddenGlobals = [
@@ -82,7 +83,10 @@ const forbiddenGlobals = [
 
 const noop = () => {};
 
-const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod }: SafeOptions) => {
+const createSafeContext = (
+  async: boolean,
+  { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod, escape }: SafeOptions & { escape?: (str: string) => string },
+) => {
   let executedStatementCount = 0;
   const checkMaxExecutedStatementCount = maxExecutedStatementCount > 0 ? () => {
     executedStatementCount += 1;
@@ -98,7 +102,7 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
     }
   } : noop;
 
-  return {
+  const context: Record<string, unknown> = {
     [safeName('statement')]: async
       ? async () => {
         checkMaxExecutedStatementCount();
@@ -140,6 +144,13 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
       },
     }),
   };
+
+  // If a custom escape function is provided, make it available in template context
+  if (escape) {
+    context.escape = escape;
+  }
+
+  return context;
 };
 
 const extractEJSCode = (template: string, openTag: string, closeTag: string) => {
