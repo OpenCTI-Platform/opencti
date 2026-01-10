@@ -16,6 +16,11 @@ class Campaign:
     """
 
     def __init__(self, opencti):
+        """Initialize the Campaign instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id

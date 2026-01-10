@@ -19,8 +19,11 @@ class ThreatActor:
     """
 
     def __init__(self, opencti):
-        """Create an instance of ThreatActor"""
+        """Initialize the ThreatActor instance.
 
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.threat_actor_group = ThreatActorGroup(opencti)
         self.threat_actor_individual = ThreatActorIndividual(opencti)

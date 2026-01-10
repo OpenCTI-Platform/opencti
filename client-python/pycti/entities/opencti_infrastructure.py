@@ -14,6 +14,11 @@ class Infrastructure:
     """
 
     def __init__(self, opencti):
+        """Initialize the Infrastructure instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id

@@ -16,6 +16,11 @@ class CaseIncident:
     """
 
     def __init__(self, opencti):
+        """Initialize the CaseIncident instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id

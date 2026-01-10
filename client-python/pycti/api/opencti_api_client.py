@@ -573,6 +573,45 @@ class OpenCTIApiClient:
             "" if retry_number is None else str(retry_number)
         )
 
+    def _extract_files(self, obj, path_prefix=""):
+        """Recursively extract File objects from nested dictionaries.
+
+        :param obj: the object to search for File objects
+        :param path_prefix: the current path prefix for nested keys
+        :return: tuple of (cleaned_obj, files_vars) where cleaned_obj has Files replaced with None
+        """
+        if type(obj) is File:
+            return None, [{"key": path_prefix, "file": obj, "multiple": False}]
+
+        if isinstance(obj, list) and len(obj) > 0 and all(
+            map(lambda x: isinstance(x, File), obj)
+        ):
+            return [None] * len(obj), [
+                {"key": path_prefix, "file": obj, "multiple": True}
+            ]
+
+        if isinstance(obj, dict):
+            cleaned = {}
+            files_vars = []
+            for key, val in obj.items():
+                new_path = f"{path_prefix}.{key}" if path_prefix else key
+                cleaned_val, nested_files = self._extract_files(val, new_path)
+                cleaned[key] = cleaned_val
+                files_vars.extend(nested_files)
+            return cleaned, files_vars
+
+        if isinstance(obj, list):
+            cleaned = []
+            files_vars = []
+            for i, item in enumerate(obj):
+                new_path = f"{path_prefix}.{i}" if path_prefix else str(i)
+                cleaned_item, nested_files = self._extract_files(item, new_path)
+                cleaned.append(cleaned_item)
+                files_vars.extend(nested_files)
+            return cleaned, files_vars
+
+        return obj, []
+
     def query(self, query, variables=None, disable_impersonate=False):
         """Submit a query to the OpenCTI GraphQL API.
 
@@ -587,25 +626,11 @@ class OpenCTIApiClient:
         :raises ValueError: if the API returns an error or non-200 status code
         """
         variables = variables or {}
-        query_var = {}
-        files_vars = []
         # Implementation of spec https://github.com/jaydenseric/graphql-multipart-request-spec
         # Support for single or multiple upload
         # Batching or mixed upload or not supported
-        var_keys = variables.keys()
-        for key in var_keys:
-            val = variables[key]
-            is_file = type(val) is File
-            is_files = (
-                isinstance(val, list)
-                and len(val) > 0
-                and all(map(lambda x: isinstance(x, File), val))
-            )
-            if is_file or is_files:
-                files_vars.append({"key": key, "file": val, "multiple": is_files})
-                query_var[key] = None if is_file else [None] * len(val)
-            else:
-                query_var[key] = val
+        # Recursively extract File objects from nested dictionaries
+        query_var, files_vars = self._extract_files(variables)
 
         query_headers = self.request_headers.copy()
         if disable_impersonate and "opencti-applicant-id" in query_headers:

@@ -14,6 +14,11 @@ class Vocabulary:
     """
 
     def __init__(self, opencti):
+        """Initialize the Vocabulary instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id

@@ -16,6 +16,11 @@ class AttackPattern:
     """
 
     def __init__(self, opencti):
+        """Initialize the AttackPattern instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
