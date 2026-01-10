@@ -1,3 +1,22 @@
+"""OpenCTI Connector Helper module.
+
+This module provides the main helper class and utilities for building OpenCTI
+connectors. It handles connector registration, message queue communication,
+stream listening, scheduling, and STIX2 bundle processing.
+
+Key components:
+    - OpenCTIConnectorHelper: Main class for connector development
+    - ListenQueue: Handles RabbitMQ message consumption
+    - ListenStream: Handles SSE stream consumption
+    - PingAlive: Maintains connector heartbeat with the platform
+    - ConnectorInfo: Stores connector runtime information
+
+Example:
+    >>> from pycti import OpenCTIConnectorHelper
+    >>> helper = OpenCTIConnectorHelper(config)
+    >>> helper.listen(callback_function)
+"""
+
 import asyncio
 import base64
 import copy
@@ -32,23 +51,36 @@ from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
 TRUTHY: List[str] = ["yes", "true", "True"]
+"""List of string values considered as boolean True."""
+
 FALSY: List[str] = ["no", "false", "False"]
+"""List of string values considered as boolean False."""
 
 app = FastAPI()
 
 
-def killProgramHook(etype, value, tb):
-    """Exception hook to terminate the program.
+def killProgramHook(etype, value, tb) -> None:
+    """Exception hook to terminate the program on unhandled exceptions.
 
-    :param etype: Exception type
-    :param value: Exception value
-    :param tb: Traceback object
+    This function is used as a system exception hook to ensure the program
+    terminates cleanly when an unhandled exception occurs, particularly
+    useful for background threads.
+
+    :param etype: The exception type (class)
+    :type etype: type
+    :param value: The exception instance
+    :type value: BaseException
+    :param tb: The traceback object
+    :type tb: types.TracebackType
     """
     os.kill(os.getpid(), signal.SIGTERM)
 
 
-def start_loop(loop):
-    """Start an asyncio event loop.
+def start_loop(loop) -> None:
+    """Start an asyncio event loop and run it forever.
+
+    Sets the given event loop as the current loop for the thread and
+    runs it indefinitely until stopped.
 
     :param loop: The asyncio event loop to start
     :type loop: asyncio.AbstractEventLoop
@@ -60,19 +92,48 @@ def start_loop(loop):
 def get_config_variable(
     env_var: str,
     yaml_path: List,
-    config: Dict = {},
+    config: Optional[Dict] = None,
     isNumber: Optional[bool] = False,
     default=None,
     required=False,
 ) -> Union[bool, int, None, str]:
-    """[summary]
+    """Retrieve a configuration variable from environment or YAML config.
 
-    :param env_var: environment variable name
-    :param yaml_path: path to yaml config
-    :param config: client config dict, defaults to {}
-    :param isNumber: specify if the variable is a number, defaults to False
-    :param default: default value
+    Looks up configuration values with the following precedence:
+    1. Environment variable (highest priority)
+    2. YAML configuration file
+    3. Default value (lowest priority)
+
+    Boolean string values ("yes", "true", "True", "no", "false", "False")
+    are automatically converted to Python bool.
+
+    :param env_var: Name of the environment variable to check
+    :type env_var: str
+    :param yaml_path: Two-element list specifying [section, key] in YAML config
+    :type yaml_path: List[str]
+    :param config: Configuration dictionary loaded from YAML file
+    :type config: Dict
+    :param isNumber: If True, convert the value to integer
+    :type isNumber: bool
+    :param default: Default value if not found in env or config
+    :type default: any
+    :param required: If True and no value found, raise ValueError
+    :type required: bool
+
+    :return: The configuration value as bool, int, str, or None
+    :rtype: Union[bool, int, None, str]
+
+    :raises ValueError: If required=True and no value is found
+
+    Example:
+        >>> get_config_variable("OPENCTI_URL", ["opencti", "url"], config)
+        'http://localhost:8080'
+        >>> get_config_variable("CONNECTOR_LOG_LEVEL", ["connector", "log_level"],
+        ...                     config, default="INFO")
+        'INFO'
     """
+    if config is None:
+        config = {}
 
     if os.getenv(env_var) is not None:
         result = os.getenv(env_var)
@@ -105,26 +166,27 @@ def get_config_variable(
 
 
 def normalize_email_prefix(email: str) -> str:
-    """
-    Normalize the prefix (local part) of an email address by replacing
-    invalid characters with hyphens.
+    """Normalize the local part of an email address by replacing invalid characters.
 
-    Valid characters in email prefix: a-z, A-Z, 0-9, and special chars: . _ + -
-    All other characters are replaced with '-'
+    Replaces any characters not valid in email prefixes with hyphens.
+    Valid characters include: a-z, A-Z, 0-9, and special chars: . _ + -
+    Consecutive hyphens are collapsed and leading/trailing hyphens are removed.
 
-    Args:
-        email: Email address to normalize
+    :param email: Email address to normalize
+    :type email: str
 
-    Returns:
-        Normalized email address
+    :return: Normalized email address with valid local part
+    :rtype: str
 
-    Examples:
+    :raises ValueError: If the email address does not contain an '@' symbol
+
+    Example:
         >>> normalize_email_prefix("john.doe@example.com")
         'john.doe@example.com'
         >>> normalize_email_prefix("john@doe@example.com")
         'john-doe@example.com'
-        >>> normalize_email_prefix("user!name#test@example.com")
-        'user-name-test@example.com'
+        >>> normalize_email_prefix("user!name@domain.com")
+        'user-name@domain.com'
     """
     if "@" not in email:
         raise ValueError("Invalid email: missing '@' symbol")
@@ -149,24 +211,43 @@ def normalize_email_prefix(email: str) -> str:
     return f"{normalized_prefix}@{domain}"
 
 
-def is_memory_certificate(certificate):
+def is_memory_certificate(certificate: str) -> bool:
     """Check if a certificate is provided as a PEM string in memory.
 
-    :param certificate: The certificate data to check
+    Determines whether the certificate data is an in-memory PEM-formatted
+    string (starting with "-----BEGIN") rather than a file path.
+
+    :param certificate: The certificate data to check (PEM string or file path)
     :type certificate: str
-    :return: True if the certificate is a PEM string, False otherwise
+
+    :return: True if the certificate is a PEM string, False if it's a file path
     :rtype: bool
+
+    Example:
+        >>> is_memory_certificate("-----BEGIN CERTIFICATE-----\\n...")
+        True
+        >>> is_memory_certificate("/path/to/cert.pem")
+        False
     """
     return certificate.startswith("-----BEGIN")
 
 
-def ssl_verify_locations(ssl_context, certdata):
-    """Load certificate verification locations into SSL context.
+def ssl_verify_locations(ssl_context: ssl.SSLContext, certdata: Optional[str]) -> None:
+    """Load CA certificate verification locations into an SSL context.
+
+    Configures the SSL context with certificate authority (CA) certificates
+    for verifying peer certificates. Supports both file paths and in-memory
+    PEM-formatted certificates.
 
     :param ssl_context: The SSL context to configure
     :type ssl_context: ssl.SSLContext
-    :param certdata: Certificate data (file path or PEM string)
+    :param certdata: CA certificate data as file path or PEM string, or None to skip
     :type certdata: str or None
+
+    Example:
+        >>> ssl_ctx = ssl.create_default_context()
+        >>> ssl_verify_locations(ssl_ctx, "/path/to/ca-bundle.crt")
+        >>> ssl_verify_locations(ssl_ctx, "-----BEGIN CERTIFICATE-----\\n...")
     """
     if certdata is None:
         return
@@ -177,16 +258,27 @@ def ssl_verify_locations(ssl_context, certdata):
         ssl_context.load_verify_locations(cafile=certdata)
 
 
-def data_to_temp_file(data):
+def data_to_temp_file(data: str) -> str:
     """Write data to a temporary file securely.
 
-    Creates a temporary file in the most secure manner possible.
-    The file is readable and writable only by the creating user ID.
+    Creates a temporary file with secure permissions (readable and writable
+    only by the creating user). The file descriptor is not inherited by
+    child processes.
 
-    :param data: The data to write to the temporary file
+    .. note::
+        The caller is responsible for deleting the temporary file when
+        it is no longer needed.
+
+    :param data: The string data to write to the temporary file
     :type data: str
-    :return: Path to the created temporary file
+
+    :return: Absolute path to the created temporary file
     :rtype: str
+
+    Example:
+        >>> path = data_to_temp_file("-----BEGIN PRIVATE KEY-----\\n...")
+        >>> # Use the file...
+        >>> os.unlink(path)  # Clean up when done
     """
     # The file is readable and writable only by the creating user ID.
     # If the operating system uses permission bits to indicate whether a
@@ -195,21 +287,34 @@ def data_to_temp_file(data):
     file_descriptor, file_path = tempfile.mkstemp()
     with os.fdopen(file_descriptor, "w") as open_file:
         open_file.write(data)
-        open_file.close()
     return file_path
 
 
-def ssl_cert_chain(ssl_context, cert_data, key_data, passphrase):
-    """Load certificate chain into SSL context.
+def ssl_cert_chain(
+    ssl_context: ssl.SSLContext,
+    cert_data: Optional[str],
+    key_data: Optional[str],
+    passphrase: Optional[str],
+) -> None:
+    """Load a certificate chain and private key into an SSL context.
+
+    Configures the SSL context with a client certificate and private key
+    for mutual TLS authentication. Supports both file paths and in-memory
+    PEM-formatted certificates/keys. Temporary files are created and
+    cleaned up automatically when using in-memory data.
 
     :param ssl_context: The SSL context to configure
     :type ssl_context: ssl.SSLContext
-    :param cert_data: Certificate data (file path or PEM string)
+    :param cert_data: Certificate data as file path or PEM string, or None to skip
     :type cert_data: str or None
-    :param key_data: Private key data (file path or PEM string)
+    :param key_data: Private key data as file path or PEM string, or None
     :type key_data: str or None
-    :param passphrase: Passphrase for the private key
+    :param passphrase: Passphrase for encrypted private key, or None if unencrypted
     :type passphrase: str or None
+
+    Example:
+        >>> ssl_ctx = ssl.create_default_context()
+        >>> ssl_cert_chain(ssl_ctx, "/path/to/cert.pem", "/path/to/key.pem", None)
     """
     if cert_data is None:
         return
@@ -236,12 +341,22 @@ def ssl_cert_chain(ssl_context, cert_data, key_data, passphrase):
         os.unlink(key_file_path)
 
 
-def create_callback_ssl_context(config) -> ssl.SSLContext:
-    """Create SSL context for API callback server.
+def create_callback_ssl_context(config: Dict) -> ssl.SSLContext:
+    """Create an SSL context for the API callback server.
 
-    :param config: Configuration dictionary
-    :type config: dict
-    :return: Configured SSL context
+    Creates and configures an SSL context suitable for the HTTPS callback
+    server used in API listen protocol mode. Loads certificate chain from
+    configuration.
+
+    Configuration keys used:
+        - LISTEN_PROTOCOL_API_SSL_KEY: Path or PEM string for SSL private key
+        - LISTEN_PROTOCOL_API_SSL_CERT: Path or PEM string for SSL certificate
+        - LISTEN_PROTOCOL_API_SSL_PASSPHRASE: Optional passphrase for private key
+
+    :param config: Configuration dictionary containing SSL settings
+    :type config: Dict
+
+    :return: Configured SSL context for client authentication
     :rtype: ssl.SSLContext
     """
     listen_protocol_api_ssl_key = get_config_variable(
@@ -272,12 +387,24 @@ def create_callback_ssl_context(config) -> ssl.SSLContext:
     return ssl_context
 
 
-def create_mq_ssl_context(config) -> ssl.SSLContext:
-    """Create SSL context for message queue connections.
+def create_mq_ssl_context(config: Dict) -> ssl.SSLContext:
+    """Create an SSL context for RabbitMQ message queue connections.
 
-    :param config: Configuration dictionary
-    :type config: dict
-    :return: Configured SSL context for MQ connections
+    Creates and configures an SSL context for secure connections to RabbitMQ.
+    Supports CA verification, client certificates, and optional certificate
+    verification bypass.
+
+    Configuration keys used:
+        - MQ_USE_SSL_CA: CA certificate for server verification
+        - MQ_USE_SSL_CERT: Client certificate for mutual TLS
+        - MQ_USE_SSL_KEY: Client private key for mutual TLS
+        - MQ_USE_SSL_REJECT_UNAUTHORIZED: Whether to verify server certificate
+        - MQ_USE_SSL_PASSPHRASE: Optional passphrase for private key
+
+    :param config: Configuration dictionary containing MQ SSL settings
+    :type config: Dict
+
+    :return: Configured SSL context for RabbitMQ connections
     :rtype: ssl.SSLContext
     """
     use_ssl_ca = get_config_variable("MQ_USE_SSL_CA", ["mq", "use_ssl_ca"], config)
@@ -308,29 +435,74 @@ def create_mq_ssl_context(config) -> ssl.SSLContext:
 
 
 class ListenQueue(threading.Thread):
-    """Main class for the ListenQueue used in OpenCTIConnectorHelper
+    """Thread class for consuming messages from RabbitMQ or HTTP API.
 
-    :param helper: instance of a `OpenCTIConnectorHelper` class
+    Handles message consumption from either RabbitMQ (AMQP protocol) or
+    an HTTP API endpoint, depending on the configured listen protocol.
+    Messages are processed through a callback function provided at initialization.
+
+    This class supports two listen protocols:
+        - AMQP: Connects to RabbitMQ and consumes messages from a queue
+        - API: Starts an HTTP server and receives messages via POST requests
+
+    :param helper: The OpenCTIConnectorHelper instance
     :type helper: OpenCTIConnectorHelper
-    :param config: dict containing client config
+    :param opencti_token: Authentication token for OpenCTI API
+    :type opencti_token: str
+    :param config: Global configuration dictionary
     :type config: Dict
-    :param callback: callback function to process queue
-    :type callback: callable
+    :param connector_config: Connector-specific configuration from registration
+    :type connector_config: Dict
+    :param applicant_id: ID of the user/connector making requests
+    :type applicant_id: str
+    :param listen_protocol: Protocol to use ("AMQP" or "API")
+    :type listen_protocol: str
+    :param listen_protocol_api_ssl: Whether to use SSL for API protocol
+    :type listen_protocol_api_ssl: bool
+    :param listen_protocol_api_path: URL path for API endpoint
+    :type listen_protocol_api_path: str
+    :param listen_protocol_api_port: Port for API server
+    :type listen_protocol_api_port: int
+    :param callback: Function to call when processing messages
+    :type callback: Callable[[Dict], str]
     """
 
     def __init__(
         self,
         helper,
-        opencti_token,
+        opencti_token: str,
         config: Dict,
         connector_config: Dict,
-        applicant_id,
-        listen_protocol,
-        listen_protocol_api_ssl,
-        listen_protocol_api_path,
-        listen_protocol_api_port,
-        callback,
+        applicant_id: str,
+        listen_protocol: str,
+        listen_protocol_api_ssl: bool,
+        listen_protocol_api_path: str,
+        listen_protocol_api_port: int,
+        callback: Callable[[Dict], str],
     ) -> None:
+        """Initialize the ListenQueue thread.
+
+        :param helper: The OpenCTIConnectorHelper instance
+        :type helper: OpenCTIConnectorHelper
+        :param opencti_token: Authentication token for OpenCTI API
+        :type opencti_token: str
+        :param config: Global configuration dictionary
+        :type config: Dict
+        :param connector_config: Connector configuration from registration
+        :type connector_config: Dict
+        :param applicant_id: ID of the user/connector making requests
+        :type applicant_id: str
+        :param listen_protocol: Protocol to use ("AMQP" or "API")
+        :type listen_protocol: str
+        :param listen_protocol_api_ssl: Whether to use SSL for API protocol
+        :type listen_protocol_api_ssl: bool
+        :param listen_protocol_api_path: URL path for API endpoint
+        :type listen_protocol_api_path: str
+        :param listen_protocol_api_port: Port for API server
+        :type listen_protocol_api_port: int
+        :param callback: Function to process received messages
+        :type callback: Callable[[Dict], str]
+        """
         threading.Thread.__init__(self)
         self.pika_credentials = None
         self.pika_parameters = None
@@ -357,16 +529,20 @@ class ListenQueue(threading.Thread):
 
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body) -> None:
-        """process a message from the rabbit queue
+        """Process a message from the RabbitMQ queue.
 
-        :param channel: channel instance
-        :type channel: callable
-        :param method: message methods
-        :type method: callable
-        :param properties: unused
-        :type properties: str
-        :param body: message body (data)
-        :type body: str or bytes or bytearray
+        Acknowledges the message immediately before processing to prevent
+        infinite re-delivery if the connector fails. Spawns a separate thread
+        for data handling and maintains the connection alive during processing.
+
+        :param channel: The RabbitMQ channel instance
+        :type channel: pika.channel.Channel
+        :param method: Message delivery method with routing info and delivery tag
+        :type method: pika.spec.Basic.Deliver
+        :param properties: Message properties (unused)
+        :type properties: pika.spec.BasicProperties
+        :param body: The message body containing JSON data
+        :type body: bytes
         """
         json_data = json.loads(body)
         # Message should be ack before processing as we don't own the processing
@@ -405,7 +581,21 @@ class ListenQueue(threading.Thread):
         self.helper.api.set_draft_id(draft_id)
         self.helper.api_impersonate.set_draft_id(draft_id)
 
-    def _data_handler(self, json_data) -> None:
+    def _data_handler(self, json_data: Dict) -> None:
+        """Process incoming message data and execute the callback.
+
+        Handles the full message processing workflow including:
+        - Extracting event data and entity information
+        - Setting up draft and work contexts
+        - Resolving enrichment entity data for enrichment connectors
+        - Handling playbook execution context
+        - Managing organization sharing propagation
+        - Executing the user-provided callback function
+
+        :param json_data: The parsed JSON message data containing event and internal info
+        :type json_data: Dict
+        """
+        work_id = None
         # Execute the callback
         try:
             event_data = json_data["event"]
@@ -448,7 +638,7 @@ class ListenQueue(threading.Thread):
                 opencti_entity = do_read(id=entity_id, withFiles=True)
                 if opencti_entity is None:
                     raise ValueError(
-                        "Unable to read/access to the entity, please check that the connector permission"
+                        "Unable to read/access the entity, please check the connector permissions"
                     )
                 event_data["enrichment_entity"] = opencti_entity
                 # Handle action vs playbook behavior
@@ -513,7 +703,7 @@ class ListenQueue(threading.Thread):
                         )
                     )
 
-            # Handle applicant_id for in-personalization
+            # Handle applicant_id for impersonation
             self.helper.applicant_id = self.connector_applicant_id
             self.helper.api_impersonate.set_applicant_id_header(
                 self.connector_applicant_id
@@ -542,13 +732,30 @@ class ListenQueue(threading.Thread):
             if work_id:
                 try:
                     self.helper.api.work.to_processed(work_id, str(e), True)
-                except:  # pylint: disable=bare-except
+                except Exception:  # pylint: disable=broad-except
                     self.helper.metric.inc("error_count")
                     self.helper.connector_logger.error(
                         "Failing reporting the processing"
                     )
 
-    async def _http_process_callback(self, request: Request):
+    async def _http_process_callback(self, request: Request) -> JSONResponse:
+        """Handle incoming HTTP POST requests for API listen protocol.
+
+        Validates the request authentication using Bearer token and processes
+        the JSON payload through the data handler.
+
+        :param request: The incoming FastAPI request object
+        :type request: Request
+
+        :return: JSON response with status code and message
+        :rtype: JSONResponse
+
+        Response codes:
+            - 202: Message successfully received and queued for processing
+            - 400: Invalid JSON payload
+            - 401: Invalid or missing authentication credentials
+            - 500: Error occurred during message processing
+        """
         # 01. Check the authentication
         authorization: str = request.headers.get("Authorization", "")
         items = authorization.split() if isinstance(authorization, str) else []
@@ -587,12 +794,22 @@ class ListenQueue(threading.Thread):
         )
 
     def run(self) -> None:
+        """Execute the message listening thread.
+
+        Starts the appropriate listener based on the configured protocol:
+        - AMQP: Connects to RabbitMQ and consumes messages from the queue
+        - API: Starts a FastAPI/Uvicorn HTTP server to receive messages
+
+        The thread runs until stopped via the stop() method or an error occurs.
+
+        :raises ValueError: If an unsupported listen protocol is configured
+        """
         if self.listen_protocol == "AMQP":
             self.helper.connector_logger.info("Starting ListenQueue thread")
             while not self.exit_event.is_set():
                 try:
                     self.helper.connector_logger.info(
-                        "ListenQueue connecting to rabbitMq."
+                        "ListenQueue connecting to RabbitMQ."
                     )
                     # Connect the broker
                     self.pika_credentials = pika.PlainCredentials(
@@ -616,7 +833,7 @@ class ListenQueue(threading.Thread):
                     self.pika_connection = pika.BlockingConnection(self.pika_parameters)
                     self.channel = self.pika_connection.channel()
                     try:
-                        # confirm_delivery is only for cluster mode rabbitMQ
+                        # confirm_delivery is only for cluster mode RabbitMQ
                         # when not in cluster mode this line raise an exception
                         self.channel.confirm_delivery()
                     except Exception as err:  # pylint: disable=broad-except
@@ -679,16 +896,54 @@ class ListenQueue(threading.Thread):
 
 
 class PingAlive(threading.Thread):
+    """Daemon thread that maintains connector heartbeat with OpenCTI platform.
+
+    Periodically pings the OpenCTI API to indicate the connector is alive
+    and synchronizes connector state between local and remote instances.
+
+    :param connector_logger: Logger instance for the connector
+    :type connector_logger: logging.Logger
+    :param connector_id: Unique identifier of the connector
+    :type connector_id: str
+    :param api: OpenCTI API client instance
+    :type api: OpenCTIApiClient
+    :param get_state: Function to retrieve current connector state
+    :type get_state: Callable[[], Optional[Dict]]
+    :param set_state: Function to update connector state
+    :type set_state: Callable[[str], None]
+    :param metric: Metric handler for recording ping statistics
+    :type metric: OpenCTIMetricHandler
+    :param connector_info: ConnectorInfo instance with runtime details
+    :type connector_info: ConnectorInfo
+    """
+
     def __init__(
         self,
         connector_logger,
-        connector_id,
+        connector_id: str,
         api,
-        get_state,
-        set_state,
+        get_state: Callable[[], Optional[Dict]],
+        set_state: Callable[[str], None],
         metric,
         connector_info,
     ) -> None:
+        """Initialize the PingAlive daemon thread.
+
+        :param connector_logger: Logger instance for the connector
+        :type connector_logger: logging.Logger
+        :param connector_id: Unique identifier of the connector
+        :type connector_id: str
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        :param get_state: Function to retrieve current connector state
+        :type get_state: Callable[[], Optional[Dict]]
+        :param set_state: Function to update connector state
+        :type set_state: Callable[[str], None]
+        :param metric: Metric handler for recording ping statistics
+        :type metric: OpenCTIMetricHandler
+        :param connector_info: ConnectorInfo instance with runtime details
+        :type connector_info: ConnectorInfo
+        """
         threading.Thread.__init__(self, daemon=True)
         self.connector_logger = connector_logger
         self.connector_id = connector_id
@@ -701,6 +956,18 @@ class PingAlive(threading.Thread):
         self.connector_info = connector_info
 
     def ping(self) -> None:
+        """Execute the ping loop to maintain connector heartbeat.
+
+        Continuously pings the OpenCTI API every 40 seconds to:
+        - Signal that the connector is alive
+        - Send current connector state and info
+        - Receive and apply any remote state updates
+
+        If the remote state differs from local state, the local state
+        is updated to match. This allows state resets from the UI.
+
+        The loop continues until the exit_event is set.
+        """
         while not self.exit_event.is_set():
             try:
                 self.connector_logger.debug("PingAlive running.")
@@ -736,22 +1003,55 @@ class PingAlive(threading.Thread):
             self.exit_event.wait(40)
 
     def run(self) -> None:
+        """Start the PingAlive thread execution.
+
+        Entry point for the thread that initiates the ping loop.
+        """
         self.connector_logger.info("Starting PingAlive thread")
         self.ping()
 
     def stop(self) -> None:
+        """Stop the PingAlive thread gracefully.
+
+        Sets the exit event to signal the ping loop to terminate.
+        """
         self.connector_logger.info("Preparing PingAlive for clean shutdown")
         self.exit_event.set()
 
 
 class StreamAlive(threading.Thread):
-    def __init__(self, helper, q) -> None:
+    """Watchdog thread that monitors SSE stream health via heartbeat messages.
+
+    Monitors a queue for heartbeat signals from the stream listener.
+    If no heartbeat is received within 45 seconds, the connector is
+    stopped to allow for reconnection.
+
+    :param helper: The OpenCTIConnectorHelper instance
+    :type helper: OpenCTIConnectorHelper
+    :param q: Queue for receiving heartbeat signals from stream listener
+    :type q: Queue
+    """
+
+    def __init__(self, helper, q: Queue) -> None:
+        """Initialize the StreamAlive watchdog thread.
+
+        :param helper: The OpenCTIConnectorHelper instance
+        :type helper: OpenCTIConnectorHelper
+        :param q: Queue for receiving heartbeat signals
+        :type q: Queue
+        """
         threading.Thread.__init__(self)
         self.helper = helper
         self.q = q
         self.exit_event = threading.Event()
 
     def run(self) -> None:
+        """Execute the stream health monitoring loop.
+
+        Checks every 5 seconds for heartbeat signals in the queue.
+        If no signal is received for 45 seconds, terminates the connector
+        to trigger a reconnection.
+        """
         try:
             self.helper.connector_logger.info("Starting StreamAlive thread")
             time_since_last_heartbeat = 0
@@ -779,25 +1079,84 @@ class StreamAlive(threading.Thread):
             sys.excepthook(*sys.exc_info())
 
     def stop(self) -> None:
+        """Stop the StreamAlive watchdog thread gracefully.
+
+        Sets the exit event to signal the monitoring loop to terminate.
+        """
         self.helper.connector_logger.info("Preparing StreamAlive for clean shutdown")
         self.exit_event.set()
 
 
 class ListenStream(threading.Thread):
+    """Thread class for consuming events from OpenCTI SSE stream.
+
+    Connects to an OpenCTI event stream and processes events through
+    a callback function. Supports recovery from a specific point in time
+    and various filtering options.
+
+    :param helper: The OpenCTIConnectorHelper instance
+    :type helper: OpenCTIConnectorHelper
+    :param callback: Function to call for each stream event
+    :type callback: Callable
+    :param url: Base URL for the stream endpoint
+    :type url: str
+    :param token: Authentication token for the stream
+    :type token: str
+    :param verify_ssl: Whether to verify SSL certificates
+    :type verify_ssl: bool
+    :param start_timestamp: Timestamp to start reading from (format: "timestamp-0")
+    :type start_timestamp: str or None
+    :param live_stream_id: ID of the specific stream to connect to
+    :type live_stream_id: str or None
+    :param listen_delete: Whether to receive delete events
+    :type listen_delete: bool
+    :param no_dependencies: Whether to exclude dependency objects
+    :type no_dependencies: bool
+    :param recover_iso_date: ISO date to recover events from
+    :type recover_iso_date: str or None
+    :param with_inferences: Whether to include inferred relationships
+    :type with_inferences: bool
+    """
+
     def __init__(
         self,
         helper,
-        callback,
-        url,
-        token,
-        verify_ssl,
-        start_timestamp,
-        live_stream_id,
-        listen_delete,
-        no_dependencies,
-        recover_iso_date,
-        with_inferences,
+        callback: Callable,
+        url: str,
+        token: str,
+        verify_ssl: bool,
+        start_timestamp: Optional[str],
+        live_stream_id: Optional[str],
+        listen_delete: bool,
+        no_dependencies: bool,
+        recover_iso_date: Optional[str],
+        with_inferences: bool,
     ) -> None:
+        """Initialize the ListenStream thread.
+
+        :param helper: The OpenCTIConnectorHelper instance
+        :type helper: OpenCTIConnectorHelper
+        :param callback: Function to process stream events
+        :type callback: Callable
+        :param url: Base URL for the stream endpoint
+        :type url: str
+        :param token: Authentication token
+        :type token: str
+        :param verify_ssl: Whether to verify SSL certificates
+        :type verify_ssl: bool
+        :param start_timestamp: Starting timestamp for stream position
+        :type start_timestamp: str or None
+        :param live_stream_id: Specific stream ID to connect to
+        :type live_stream_id: str or None
+        :param listen_delete: Whether to receive delete events
+        :type listen_delete: bool
+        :param no_dependencies: Whether to exclude dependencies
+        :type no_dependencies: bool
+        :param recover_iso_date: ISO date for event recovery
+        :type recover_iso_date: str or None
+        :param with_inferences: Whether to include inferences
+        :type with_inferences: bool
+        """
         threading.Thread.__init__(self)
         self.helper = helper
         self.callback = callback
@@ -813,6 +1172,17 @@ class ListenStream(threading.Thread):
         self.exit_event = threading.Event()
 
     def run(self) -> None:  # pylint: disable=too-many-branches
+        """Execute the stream listening loop.
+
+        Connects to the OpenCTI SSE stream and processes events:
+        - Initializes or restores stream position from connector state
+        - Starts a StreamAlive watchdog for health monitoring
+        - Processes heartbeat, connected, and data events
+        - Updates connector state with latest event ID
+        - Calls the callback function for each data event
+
+        The loop continues until stopped or an error occurs.
+        """
         try:
             self.helper.connector_logger.info("Starting ListenStream thread")
             current_state = self.helper.get_state()
@@ -850,7 +1220,7 @@ class ListenStream(threading.Thread):
             stream_alive.start()
             # Computing args building
             live_stream_url = self.url
-            # In case no recover is explicitely set
+            # In case no recover is explicitly set
             if recover_until is not False and recover_until not in [
                 "no",
                 "none",
@@ -928,6 +1298,31 @@ class ListenStream(threading.Thread):
 
 
 class ConnectorInfo:
+    """Container for connector runtime information and status.
+
+    Stores runtime metrics and status information about the connector,
+    which is sent to the OpenCTI platform during ping operations.
+
+    :param run_and_terminate: Whether connector runs once and terminates
+    :type run_and_terminate: bool
+    :param buffering: Whether connector is currently buffering due to queue limits
+    :type buffering: bool
+    :param queue_threshold: Maximum allowed queue size in MB before buffering
+    :type queue_threshold: float
+    :param queue_messages_size: Current size of queued messages in MB
+    :type queue_messages_size: float
+    :param next_run_datetime: Scheduled datetime for next connector run
+    :type next_run_datetime: datetime or None
+    :param last_run_datetime: Datetime of the last connector run
+    :type last_run_datetime: datetime or None
+
+    Example:
+        >>> info = ConnectorInfo(run_and_terminate=False, queue_threshold=500.0)
+        >>> info.buffering = True
+        >>> info.queue_messages_size = 450.0
+        >>> details = info.all_details
+    """
+
     def __init__(
         self,
         run_and_terminate: bool = False,
@@ -937,6 +1332,21 @@ class ConnectorInfo:
         next_run_datetime: datetime = None,
         last_run_datetime: datetime = None,
     ):
+        """Initialize ConnectorInfo with runtime parameters.
+
+        :param run_and_terminate: Whether connector runs once and terminates
+        :type run_and_terminate: bool
+        :param buffering: Whether connector is buffering
+        :type buffering: bool
+        :param queue_threshold: Maximum queue size in MB
+        :type queue_threshold: float
+        :param queue_messages_size: Current queue size in MB
+        :type queue_messages_size: float
+        :param next_run_datetime: Next scheduled run time
+        :type next_run_datetime: datetime or None
+        :param last_run_datetime: Last run time
+        :type last_run_datetime: datetime or None
+        """
         self._run_and_terminate = run_and_terminate
         self._buffering = buffering
         self._queue_threshold = queue_threshold
@@ -962,10 +1372,15 @@ class ConnectorInfo:
 
     @property
     def run_and_terminate(self) -> bool:
+        """Get the run_and_terminate flag.
+
+        :return: Whether the connector runs once and terminates
+        :rtype: bool
+        """
         return self._run_and_terminate
 
     @run_and_terminate.setter
-    def run_and_terminate(self, value):
+    def run_and_terminate(self, value: bool) -> None:
         """Set the run_and_terminate flag.
 
         :param value: Whether the connector should run once and terminate
@@ -975,10 +1390,15 @@ class ConnectorInfo:
 
     @property
     def buffering(self) -> bool:
+        """Get the buffering status.
+
+        :return: Whether the connector is currently buffering
+        :rtype: bool
+        """
         return self._buffering
 
     @buffering.setter
-    def buffering(self, value):
+    def buffering(self, value: bool) -> None:
         """Set the buffering status.
 
         :param value: Whether the connector is currently buffering
@@ -988,10 +1408,15 @@ class ConnectorInfo:
 
     @property
     def queue_threshold(self) -> float:
+        """Get the queue threshold value.
+
+        :return: Maximum allowed queue size in MB
+        :rtype: float
+        """
         return self._queue_threshold
 
     @queue_threshold.setter
-    def queue_threshold(self, value):
+    def queue_threshold(self, value: float) -> None:
         """Set the queue threshold value.
 
         :param value: The queue size threshold in MB
@@ -1001,10 +1426,15 @@ class ConnectorInfo:
 
     @property
     def queue_messages_size(self) -> float:
+        """Get the current queue messages size.
+
+        :return: Current size of queued messages in MB
+        :rtype: float
+        """
         return self._queue_messages_size
 
     @queue_messages_size.setter
-    def queue_messages_size(self, value):
+    def queue_messages_size(self, value: float) -> None:
         """Set the current queue messages size.
 
         :param value: The current size of messages in the queue in MB
@@ -1014,10 +1444,15 @@ class ConnectorInfo:
 
     @property
     def next_run_datetime(self) -> datetime:
+        """Get the next scheduled run datetime.
+
+        :return: Datetime for the next scheduled run, or None if not scheduled
+        :rtype: datetime or None
+        """
         return self._next_run_datetime
 
     @next_run_datetime.setter
-    def next_run_datetime(self, value):
+    def next_run_datetime(self, value: datetime) -> None:
         """Set the next scheduled run datetime.
 
         :param value: The datetime for the next scheduled run
@@ -1027,10 +1462,15 @@ class ConnectorInfo:
 
     @property
     def last_run_datetime(self) -> datetime:
+        """Get the last run datetime.
+
+        :return: Datetime of the last connector run, or None if never run
+        :rtype: datetime or None
+        """
         return self._last_run_datetime
 
     @last_run_datetime.setter
-    def last_run_datetime(self, value):
+    def last_run_datetime(self, value: datetime) -> None:
         """Set the last run datetime.
 
         :param value: The datetime of the last run
@@ -1040,13 +1480,50 @@ class ConnectorInfo:
 
 
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
-    """Python API for OpenCTI connector
+    """Main helper class for developing OpenCTI connectors.
 
-    :param config: dict standard config
+    Provides a comprehensive API for connector development, handling:
+    - Connector registration and configuration
+    - Message queue communication (RabbitMQ/API)
+    - SSE stream consumption
+    - STIX2 bundle creation and submission
+    - Scheduling and lifecycle management
+    - Metrics and logging
+
+    :param config: Configuration dictionary containing OpenCTI and connector settings
     :type config: Dict
+    :param playbook_compatible: Whether the connector can be used in playbooks
+    :type playbook_compatible: bool
+
+    Example:
+        >>> config = {
+        ...     "opencti": {"url": "http://localhost:8080", "token": "xxx"},
+        ...     "connector": {"id": "xxx", "name": "My Connector", "type": "EXTERNAL_IMPORT"}
+        ... }
+        >>> helper = OpenCTIConnectorHelper(config)
+        >>> helper.listen(my_callback_function)
+
+    Attributes:
+        api: OpenCTI API client for connector operations
+        api_impersonate: API client that impersonates the request applicant
+        connector_logger: Logger instance for connector messages
+        connector_info: Runtime information about the connector
+        metric: Prometheus metric handler
     """
 
     class TimeUnit(Enum):
+        """Time unit enumeration for scheduling intervals (deprecated).
+
+        Use ISO 8601 duration format with schedule_iso() instead.
+
+        :cvar SECONDS: 1 second
+        :cvar MINUTES: 60 seconds
+        :cvar HOURS: 3600 seconds
+        :cvar DAYS: 86400 seconds
+        :cvar WEEKS: 604800 seconds
+        :cvar YEARS: 31536000 seconds
+        """
+
         SECONDS = 1
         MINUTES = 60
         HOURS = 3600
@@ -1054,7 +1531,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         WEEKS = 604800
         YEARS = 31536000
 
-    def __init__(self, config: Dict, playbook_compatible=False) -> None:
+    def __init__(self, config: Dict, playbook_compatible: bool = False) -> None:
+        """Initialize the OpenCTIConnectorHelper.
+
+        :param config: Configuration dictionary with OpenCTI and connector settings
+        :type config: Dict
+        :param playbook_compatible: Whether the connector can be used in playbooks
+        :type playbook_compatible: bool
+        """
         sys.excepthook = killProgramHook
 
         # Cache
@@ -1566,9 +2050,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         return self.connect_validate_before_import
 
     def set_state(self, state) -> None:
-        """sets the connector state
+        """Set the connector state.
 
-        :param state: state object
+        Stores the connector state as a JSON string for persistence across runs.
+        The state can be retrieved later using get_state().
+
+        :param state: State object to store, or None to clear the state
         :type state: Dict or None
         """
         if isinstance(state, Dict):
@@ -1577,12 +2064,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connector_state = None
 
     def get_state(self) -> Optional[Dict]:
-        """get the connector state
+        """Get the connector state.
 
-        :return: returns the current state of the connector if there is any
-        :rtype:
+        Retrieves the current connector state that was previously stored.
+        The state is used to track progress and resume operations across runs.
+
+        :return: The current state of the connector, or None if no state exists
+        :rtype: Optional[Dict]
         """
-
         try:
             if self.connector_state:
                 state = json.loads(self.connector_state)
@@ -1622,11 +2111,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connector_logger.error("Error pinging the API", {"reason": str(e)})
 
     def next_run_datetime(self, duration_period_in_seconds: Union[int, float]) -> None:
-        """
-        Lets you know what the next run of the scheduler will be in iso datetime format
+        """Calculate and set the next scheduled run datetime in ISO format.
 
-        :param duration_period_in_seconds: Duration in seconds
-        :return: None
+        :param duration_period_in_seconds: Duration in seconds until next run
+        :type duration_period_in_seconds: Union[int, float]
         """
         try:
             duration_timedelta = datetime.timedelta(seconds=duration_period_in_seconds)
@@ -1636,43 +2124,38 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 "%Y-%m-%dT%H:%M:%SZ"
             )
             self.connector_logger.info(
-                "[INFO] Schedule next run of connector: ",
+                "Schedule next run of connector",
                 {"next_run_datetime": self.connector_info.next_run_datetime},
             )
-            return
         except Exception as err:
             self.metric.inc("error_count")
             self.connector_logger.error(
-                "[ERROR] An error occurred while calculating the next run in datetime",
+                "An error occurred while calculating the next run in datetime",
                 {"reason": str(err)},
             )
             sys.excepthook(*sys.exc_info())
 
     def last_run_datetime(self) -> None:
-        """
-        Lets you know what the last run of the connector the scheduler processed, will be in iso datetime format
-
-        :return: None
-        """
+        """Set the last run datetime to the current UTC time in ISO format."""
         try:
             current_datetime = datetime.datetime.utcnow()
             # Set last_run_datetime
             self.connector_info.last_run_datetime = current_datetime.strftime(
                 "%Y-%m-%dT%H:%M:%SZ"
             )
-            return
         except Exception as err:
             self.metric.inc("error_count")
             self.connector_logger.error(
-                "[ERROR] An error occurred while converting the last run in datetime",
+                "An error occurred while converting the last run in datetime",
                 {"reason": str(err)},
             )
             sys.excepthook(*sys.exc_info())
 
     def check_connector_buffering(self) -> bool:
-        """
-        Lets you know if the RabbitMQ queue has exceeded the allowed threshold defined by the connector or not
-        :return: boolean
+        """Check if the RabbitMQ queue has exceeded the allowed threshold.
+
+        :return: True if queue size exceeds threshold, False otherwise
+        :rtype: bool
         """
         try:
             connector_details = self.api.connector.read(connector_id=self.connector_id)
@@ -1684,11 +2167,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 queue_messages_size_byte = connector_queue_details["messages_size"]
                 queue_threshold = float(self.connect_queue_threshold)
 
-                # Convert queue_messages_size to Mo (decimal)
+                # Convert queue_messages_size to MB (decimal)
                 queue_messages_size_mo = queue_messages_size_byte / 1000000
 
                 self.connector_logger.debug(
-                    "[DEBUG] Connector queue details ...",
+                    "Connector queue details",
                     {
                         "connector_queue_id": connector_queue_id,
                         "queue_threshold": queue_threshold,
@@ -1707,7 +2190,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     return False
                 else:
                     self.connector_logger.info(
-                        "[INFO] Connector will not run until the queue messages size is reduced under queue threshold"
+                        "Connector will not run until the queue messages size is reduced under queue threshold"
                     )
                     # Set buffering
                     self.connector_info.buffering = True
@@ -1716,13 +2199,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             else:
                 self.metric.inc("error_count")
                 self.connector_logger.error(
-                    "[ERROR] An error occurred while retrieving connector details"
+                    "An error occurred while retrieving connector details"
                 )
                 sys.excepthook(*sys.exc_info())
         except Exception as err:
             self.metric.inc("error_count")
             self.connector_logger.error(
-                "[ERROR] An error occurred while checking the queue size",
+                "An error occurred while checking the queue size",
                 {"reason": str(err)},
             )
             sys.excepthook(*sys.exc_info())
@@ -1733,17 +2216,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         duration_period: Union[int, float, str],
         time_unit: TimeUnit,
     ) -> None:
-        """
-        This (deprecated) method is there to manage backward compatibility of intervals on connectors,
-        allows you to calculate the duration period of connectors in seconds with time_unit and will be
-        replaced by the "schedule_iso" method. It uses a TimeUnit enum.
+        """Schedule connector execution with a time unit (deprecated).
 
-        :param message_callback: Corresponds to the connector process
-        :param duration_period: Corresponds to the connector interval, it can vary depending on the connector
-        configuration.
-        :param time_unit: The unit of time for the duration_period.
-        Enum TimeUnit Valid (YEARS, WEEKS, DAYS, HOURS, MINUTES, SECONDS)
-        :return: None
+        This method manages backward compatibility of intervals on connectors.
+        Use schedule_iso method instead.
+
+        :param message_callback: The connector process callback function
+        :type message_callback: Callable[[], None]
+        :param duration_period: The connector interval value
+        :type duration_period: Union[int, float, str]
+        :param time_unit: The unit of time (YEARS, WEEKS, DAYS, HOURS, MINUTES, SECONDS)
+        :type time_unit: TimeUnit
         """
         try:
             # Calculates the duration period in seconds
@@ -1756,7 +2239,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         except Exception as err:
             self.metric.inc("error_count")
             self.connector_logger.error(
-                "[ERROR] An unexpected error occurred during schedule_unit",
+                "An unexpected error occurred during schedule_unit",
                 {"reason": str(err)},
             )
             sys.excepthook(*sys.exc_info())
@@ -1764,13 +2247,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     def schedule_iso(
         self, message_callback: Callable[[], None], duration_period: str
     ) -> None:
-        """
-        This method allows you to calculate the duration period of connectors in seconds from ISO 8601 format
-        and start the scheduler process.
+        """Schedule connector execution using ISO 8601 duration format.
 
-        :param message_callback: Corresponds to the connector process
-        :param duration_period: Corresponds to a string in ISO 8601 format "P18Y9W4DT11H9M8S"
-        :return: None
+        :param message_callback: The connector process callback function
+        :type message_callback: Callable[[], None]
+        :param duration_period: Duration in ISO 8601 format (e.g., "P18Y9W4DT11H9M8S")
+        :type duration_period: str
         """
         try:
             if duration_period == "0":
@@ -1787,7 +2269,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         except Exception as err:
             self.metric.inc("error_count")
             self.connector_logger.error(
-                "[ERROR] An unexpected error occurred during schedule_iso",
+                "An unexpected error occurred during schedule_iso",
                 {"reason": str(err)},
             )
             sys.excepthook(*sys.exc_info())
@@ -1798,18 +2280,20 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         message_callback: Callable[[], None],
         duration_period: Union[int, float],
     ) -> None:
-        """
-        When scheduling, the function retrieves the details of the connector queue,
-        and the connector process starts only if the size of the queue messages is less than or
-        equal to the queue_threshold variable.
+        """Execute scheduled connector process if queue is not buffering.
 
-        :param scheduler: Scheduler contains a list of all tasks to be started
-        :param message_callback: Corresponds to the connector process
-        :param duration_period: Corresponds to the connector's interval
-        :return: None
+        The connector process starts only if the queue messages size is less than
+        or equal to the queue_threshold variable.
+
+        :param scheduler: Scheduler containing tasks to be started
+        :type scheduler: sched.scheduler
+        :param message_callback: The connector process callback function
+        :type message_callback: Callable[[], None]
+        :param duration_period: The connector's interval in seconds
+        :type duration_period: Union[int, float]
         """
         try:
-            self.connector_logger.info("[INFO] Starting schedule")
+            self.connector_logger.info("Starting schedule")
             check_connector_buffering = self.check_connector_buffering()
 
             if not check_connector_buffering:
@@ -1821,7 +2305,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         except Exception as err:
             self.metric.inc("error_count")
             self.connector_logger.error(
-                "[ERROR] An error occurred while checking the queue size",
+                "An error occurred while checking the queue size",
                 {"reason": str(err)},
             )
             sys.excepthook(*sys.exc_info())
@@ -1840,19 +2324,21 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     def schedule_process(
         self, message_callback: Callable[[], None], duration_period: Union[int, float]
     ) -> None:
-        """
-        This method schedules the execution of a connector process.
-        If `duration_period' is zero or `self.connect_run_and_terminate' is True, the process will run and terminate.
-        Otherwise, it schedules the next run based on the interval.
+        """Schedule the execution of a connector process.
 
-        :param message_callback: Corresponds to the connector process
-        :param duration_period: Corresponds to the connector's interval in seconds
-        :return: None
+        If duration_period is zero or connect_run_and_terminate is True,
+        the process will run once and terminate. Otherwise, it schedules
+        the next run based on the interval.
+
+        :param message_callback: The connector process callback function
+        :type message_callback: Callable[[], None]
+        :param duration_period: The connector's interval in seconds
+        :type duration_period: Union[int, float]
         """
         try:
             # In the case where the duration_period_converted is zero, we consider it to be a run and terminate
             if self.connect_run_and_terminate or duration_period == 0:
-                self.connector_logger.info("[INFO] Starting run and terminate")
+                self.connector_logger.info("Starting run and terminate")
                 # Set run_and_terminate
                 self.connector_info.run_and_terminate = True
                 check_connector_buffering = self.check_connector_buffering()
@@ -1863,7 +2349,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
                 # Lets you know what is the last run of the connector datetime
                 self.last_run_datetime()
-                self.connector_logger.info("[INFO] Closing run and terminate")
+                self.connector_logger.info("Closing run and terminate")
                 self.force_ping()
                 sys.exit(0)
             else:
@@ -1888,14 +2374,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         except SystemExit:
             self.connector_logger.info("SystemExit caught, stopping the scheduler")
             if self.connect_run_and_terminate:
-                self.connector_logger.info("[INFO] Closing run and terminate")
+                self.connector_logger.info("Closing run and terminate")
                 self.force_ping()
                 sys.exit(0)
 
         except Exception as err:
             self.metric.inc("error_count")
             self.connector_logger.error(
-                "[ERROR] An unexpected error occurred during schedule",
+                "An unexpected error occurred during schedule",
                 {"reason": str(err)},
             )
             sys.excepthook(*sys.exc_info())
@@ -1904,12 +2390,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self,
         message_callback: Callable[[Dict], str],
     ) -> None:
-        """listen for messages and register callback function
+        """Listen for messages from the queue and process them via callback.
 
-        :param message_callback: callback function to process messages
+        Starts a listener thread that consumes messages from RabbitMQ or HTTP API
+        (depending on configured listen protocol) and processes each message
+        through the provided callback function. This method blocks until the
+        listener is stopped.
+
+        :param message_callback: Function to process incoming messages. Receives
+            event data dict and should return a status message string.
         :type message_callback: Callable[[Dict], str]
         """
-
         self.listen_queue = ListenQueue(
             self,
             self.opencti_token,
@@ -1927,20 +2418,45 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     def listen_stream(
         self,
-        message_callback,
-        url=None,
-        token=None,
-        verify_ssl=None,
-        start_timestamp=None,
-        live_stream_id=None,
-        listen_delete=None,
-        no_dependencies=None,
-        recover_iso_date=None,
-        with_inferences=None,
+        message_callback: Callable,
+        url: Optional[str] = None,
+        token: Optional[str] = None,
+        verify_ssl: Optional[bool] = None,
+        start_timestamp: Optional[str] = None,
+        live_stream_id: Optional[str] = None,
+        listen_delete: Optional[bool] = None,
+        no_dependencies: Optional[bool] = None,
+        recover_iso_date: Optional[str] = None,
+        with_inferences: Optional[bool] = None,
     ) -> ListenStream:
-        """listen for messages and register callback function
+        """Start listening to an OpenCTI event stream.
 
-        :param message_callback: callback function to process messages
+        Connects to an SSE stream and processes events through the callback.
+        Parameters default to connector configuration values if not specified.
+
+        :param message_callback: Function to call for each stream event
+        :type message_callback: Callable
+        :param url: Base URL for stream (defaults to opencti_url)
+        :type url: str or None
+        :param token: Authentication token (defaults to opencti_token)
+        :type token: str or None
+        :param verify_ssl: Whether to verify SSL certificates
+        :type verify_ssl: bool or None
+        :param start_timestamp: Stream position to start from
+        :type start_timestamp: str or None
+        :param live_stream_id: Specific stream ID to connect to
+        :type live_stream_id: str or None
+        :param listen_delete: Whether to receive delete events
+        :type listen_delete: bool or None
+        :param no_dependencies: Whether to exclude dependencies
+        :type no_dependencies: bool or None
+        :param recover_iso_date: ISO date to recover events from
+        :type recover_iso_date: str or None
+        :param with_inferences: Whether to include inferred data
+        :type with_inferences: bool or None
+
+        :return: The started ListenStream thread
+        :rtype: ListenStream
         """
         # URL
         if url is None:
@@ -2034,9 +2550,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         return self.connector
 
     def date_now(self) -> str:
-        """get the current date (UTC)
-        :return: current datetime for utc
+        """Get the current UTC datetime in ISO 8601 format.
+
+        Returns the current time with timezone offset notation (+00:00).
+
+        :return: Current UTC datetime as ISO 8601 string (e.g., "2024-01-15T10:30:00+00:00")
         :rtype: str
+
+        Example:
+            >>> helper.date_now()
+            '2024-01-15T10:30:00+00:00'
         """
         return (
             datetime.datetime.utcnow()
@@ -2045,9 +2568,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
 
     def date_now_z(self) -> str:
-        """get the current date (UTC)
-        :return: current datetime for utc
+        """Get the current UTC datetime in ISO 8601 format with Z suffix.
+
+        Returns the current time with 'Z' suffix instead of '+00:00'.
+        This format is commonly used in STIX objects.
+
+        :return: Current UTC datetime as ISO 8601 string (e.g., "2024-01-15T10:30:00Z")
         :rtype: str
+
+        Example:
+            >>> helper.date_now_z()
+            '2024-01-15T10:30:00Z'
         """
         return (
             datetime.datetime.utcnow()
@@ -2058,21 +2589,51 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     # Push Stix2 helper
     def send_stix2_bundle(self, bundle: str, **kwargs) -> list:
-        """send a stix2 bundle to the API
+        """Send a STIX2 bundle to the OpenCTI platform.
 
-        :param work_id: a valid work id
-        :param draft_id: a draft context to send the bundle to
-        :param bundle: valid stix2 bundle
-        :type bundle:
-        :param entities_types: list of entities, defaults to None
+        Processes and sends a STIX2 bundle to OpenCTI via the message queue or API.
+        The bundle is split into smaller chunks and sent with proper sequencing.
+        Supports validation workflows, draft mode, and directory export.
+
+        :param bundle: Valid STIX2 bundle as a JSON string
+        :type bundle: str
+        :param work_id: Work ID for tracking the import job (default: self.work_id)
+        :type work_id: str, optional
+        :param validation_mode: Validation mode - "workbench" or "draft" (default: self.validation_mode)
+        :type validation_mode: str, optional
+        :param draft_id: Draft context ID to send the bundle to (default: self.draft_id)
+        :type draft_id: str, optional
+        :param entities_types: List of entity types to filter (default: None)
         :type entities_types: list, optional
-        :param update: whether to updated data in the database, defaults to False
+        :param update: Whether to update existing data in the database (default: False)
         :type update: bool, optional
-        :param bypass_split: use to prevent splitting of the bundle. This option has been removed since 6.3 and is no longer used.
-        :type bypass_split: bool, optional
-        :raises ValueError: if the bundle is empty
-        :return: list of bundles
+        :param event_version: Event version for the bundle (default: None)
+        :type event_version: str, optional
+        :param bypass_validation: Skip validation workflow (default: False)
+        :type bypass_validation: bool, optional
+        :param force_validation: Force validation even if not configured (default: self.force_validation)
+        :type force_validation: bool, optional
+        :param entity_id: Entity ID for context (default: None)
+        :type entity_id: str, optional
+        :param file_markings: File markings to apply (default: None)
+        :type file_markings: list, optional
+        :param file_name: File name for workbench upload (default: None)
+        :type file_name: str, optional
+        :param send_to_queue: Whether to send to message queue (default: self.bundle_send_to_queue)
+        :type send_to_queue: bool, optional
+        :param cleanup_inconsistent_bundle: Clean up inconsistent bundle data (default: False)
+        :type cleanup_inconsistent_bundle: bool, optional
+        :param send_to_directory: Whether to write bundle to directory (default: self.bundle_send_to_directory)
+        :type send_to_directory: bool, optional
+        :param send_to_directory_path: Directory path for bundle export (default: self.bundle_send_to_directory_path)
+        :type send_to_directory_path: str, optional
+        :param send_to_directory_retention: Days to retain exported files (default: self.bundle_send_to_directory_retention)
+        :type send_to_directory_retention: int, optional
+
+        :return: List of processed bundle chunks
         :rtype: list
+
+        :raises ValueError: If the bundle is empty or contains no valid objects
         """
         work_id = kwargs.get("work_id", self.work_id)
         validation_mode = kwargs.get("validation_mode", self.validation_mode)
@@ -2297,18 +2858,25 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         return bundles
 
     def _send_bundle(self, channel, bundle, **kwargs) -> None:
-        """send a STIX2 bundle to RabbitMQ to be consumed by workers
+        """Send a STIX2 bundle to RabbitMQ to be consumed by workers.
 
-        :param channel: RabbitMQ channel
-        :type channel: callable
-        :param bundle: valid stix2 bundle
-        :type bundle:
-        :param entities_types: list of entity types, defaults to None
+        Publishes a bundle message to the configured RabbitMQ exchange with
+        persistent delivery mode. Retries automatically on delivery failure.
+
+        :param channel: RabbitMQ channel for publishing
+        :type channel: pika.channel.Channel
+        :param bundle: Valid STIX2 bundle as a JSON string
+        :type bundle: str
+        :param work_id: Work ID for tracking (default: None)
+        :type work_id: str, optional
+        :param sequence: Sequence number for bundle ordering (default: 0)
+        :type sequence: int, optional
+        :param entities_types: List of entity types to filter (default: None)
         :type entities_types: list, optional
-        :param update: whether to update data in the database, defaults to False
+        :param update: Whether to update existing data in the database (default: False)
         :type update: bool, optional
-        :param draft_id: if draft_id is set, bundle must be set in draft context
-        :type draft_id:
+        :param draft_id: Draft context ID for the bundle (default: None)
+        :type draft_id: str, optional
         """
         work_id = kwargs.get("work_id", None)
         sequence = kwargs.get("sequence", 0)
@@ -2361,11 +2929,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def stix2_deduplicate_objects(items) -> list:
-        """deduplicate stix2 items
+        """Deduplicate STIX2 objects by their ID.
 
-        :param items: valid stix2 items
-        :type items:
-        :return: de-duplicated list of items
+        Removes duplicate STIX2 objects from a list, keeping only the first
+        occurrence of each unique ID.
+
+        :param items: List of STIX2 objects to deduplicate
+        :type items: list
+        :return: Deduplicated list of STIX2 objects
         :rtype: list
         """
 
@@ -2379,12 +2950,15 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def stix2_create_bundle(items) -> Optional[str]:
-        """create a stix2 bundle with items
+        """Create a STIX2 bundle from a list of objects.
 
-        :param items: valid stix2 items
-        :type items:
-        :return: JSON of the stix2 bundle
-        :rtype:
+        Wraps STIX2 objects in a valid bundle structure with a generated UUID.
+        Automatically serializes objects if they are STIX2 library instances.
+
+        :param items: List of STIX2 objects (dicts or STIX2 library objects)
+        :type items: list
+        :return: JSON string of the STIX2 bundle, or None if items is empty
+        :rtype: Optional[str]
         """
 
         # Check if item are native STIX 2 lib
@@ -2402,16 +2976,25 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def check_max_tlp(tlp: str, max_tlp: str) -> bool:
-        """check the allowed TLP levels for a TLP string
+        """Check if a TLP level is within the allowed maximum TLP level.
 
-        :param tlp: string for TLP level to check
+        Validates that the given TLP marking is at or below the maximum
+        allowed TLP level. Useful for filtering data based on sharing
+        restrictions.
+
+        :param tlp: The TLP level to check (e.g., "TLP:GREEN", "TLP:AMBER")
         :type tlp: str
-        :param max_tlp: the highest allowed TLP level
+        :param max_tlp: The highest allowed TLP level for comparison
         :type max_tlp: str
-        :return: TLP level in allowed TLPs
+        :return: True if the TLP level is within the allowed range, False otherwise
         :rtype: bool
-        """
 
+        Example:
+            >>> OpenCTIConnectorHelper.check_max_tlp("TLP:GREEN", "TLP:AMBER")
+            True
+            >>> OpenCTIConnectorHelper.check_max_tlp("TLP:RED", "TLP:GREEN")
+            False
+        """
         if tlp is None or max_tlp is None:
             return True
 
@@ -2440,47 +3023,84 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         return tlp.upper() in allowed_tlps[max_tlp.upper()]
 
     @staticmethod
-    def get_attribute_in_extension(key, object) -> any:
+    def get_attribute_in_extension(key: str, stix_object: Dict) -> any:
+        """Get an attribute from OpenCTI STIX extensions.
+
+        Retrieves a value from OpenCTI's custom STIX extension definitions.
+        Checks both the primary OpenCTI extension and the SDO extension,
+        falling back to the object's root attributes if not found in extensions.
+
+        :param key: The attribute key to retrieve
+        :type key: str
+        :param stix_object: A STIX object dictionary
+        :type stix_object: Dict
+
+        :return: The attribute value, or None if not found
+        :rtype: any
+
+        Example:
+            >>> obj = {"extensions": {"extension-definition--ea279b3e-...": {"score": 85}}}
+            >>> OpenCTIConnectorHelper.get_attribute_in_extension("score", obj)
+            85
+        """
         if (
-            "extensions" in object
+            "extensions" in stix_object
             and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            in object["extensions"]
+            in stix_object["extensions"]
             and key
-            in object["extensions"][
+            in stix_object["extensions"][
                 "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
             ]
         ):
-            return object["extensions"][
+            return stix_object["extensions"][
                 "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
             ][key]
         elif (
-            "extensions" in object
+            "extensions" in stix_object
             and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            in object["extensions"]
+            in stix_object["extensions"]
             and key
-            in object["extensions"][
+            in stix_object["extensions"][
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
             ]
         ):
-            return object["extensions"][
+            return stix_object["extensions"][
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
             ][key]
-        elif key in object and key not in ["type"]:
-            return object[key]
+        elif key in stix_object and key not in ["type"]:
+            return stix_object[key]
         return None
 
     @staticmethod
-    def get_attribute_in_mitre_extension(key, object) -> any:
+    def get_attribute_in_mitre_extension(key: str, stix_object: Dict) -> any:
+        """Get an attribute from MITRE ATT&CK STIX extension.
+
+        Retrieves a value from the MITRE ATT&CK custom STIX extension
+        definition used for attack patterns and techniques.
+
+        :param key: The attribute key to retrieve
+        :type key: str
+        :param stix_object: A STIX object dictionary
+        :type stix_object: Dict
+
+        :return: The attribute value, or None if not found
+        :rtype: any
+
+        Example:
+            >>> obj = {"extensions": {"extension-definition--322b8f77-...": {"x_mitre_version": "1.0"}}}
+            >>> OpenCTIConnectorHelper.get_attribute_in_mitre_extension("x_mitre_version", obj)
+            '1.0'
+        """
         if (
-            "extensions" in object
+            "extensions" in stix_object
             and "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
-            in object["extensions"]
+            in stix_object["extensions"]
             and key
-            in object["extensions"][
+            in stix_object["extensions"][
                 "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
             ]
         ):
-            return object["extensions"][
+            return stix_object["extensions"][
                 "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
             ][key]
         return None

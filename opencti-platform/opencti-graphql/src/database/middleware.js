@@ -3345,7 +3345,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       const path = `import/${type}/${dataEntity.element[ID_INTERNAL]}`;
       const key = `${path}/${filename}`;
       const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
-      const file_markings = resolvedInput.objectMarking?.map(({ id }) => id);
+      const file_markings = isNotEmptyField(resolvedInput.fileMarkings) ? resolvedInput.fileMarkings : resolvedInput.objectMarking?.map(({ id }) => id);
       const { upload: file } = await uploadToStorage(context, user, path, input.file, { entity: dataEntity.element, file_markings, meta });
       dataEntity.element = { ...dataEntity.element, x_opencti_files: [storeFileConverter(user, file)] };
       // Add external references from files if necessary

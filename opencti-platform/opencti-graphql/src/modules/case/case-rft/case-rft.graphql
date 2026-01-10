@@ -241,6 +241,7 @@ input CaseRftAddInput {
   created: DateTime
   modified: DateTime
   file: Upload
+  fileMarkings: [String]
   clientMutationId: String
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String

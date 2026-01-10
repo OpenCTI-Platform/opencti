@@ -230,6 +230,7 @@ input ThreatActorIndividualAddInput {
   x_opencti_modified_at: DateTime
   update: Boolean
   file: Upload
+  fileMarkings: [String]
 }
 
 type Query {

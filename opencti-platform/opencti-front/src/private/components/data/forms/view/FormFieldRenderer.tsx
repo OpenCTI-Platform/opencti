@@ -136,8 +136,16 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       Promise.all(filePromises).then((fileData: { name?: string; data?: string }[]) => {
-        const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
-        setFieldValue(field.name, [...currentFiles, ...fileData]);
+        // multiple defaults to false (single file mode)
+        // Set multiple=true explicitly to allow multiple files
+        const allowMultiple = field.multiple === true;
+        if (allowMultiple) {
+          const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
+          setFieldValue(field.name, [...currentFiles, ...fileData]);
+        } else {
+          // Single file mode: replace existing file
+          setFieldValue(field.name, [fileData[0]]);
+        }
       });
     }
   };
@@ -414,27 +422,37 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           />
         );
 
-      case 'files':
+      case 'files': {
+        // multiple defaults to false (single file mode)
+        // Set multiple=true explicitly to allow multiple files
+        const allowMultipleFiles = field.multiple === true;
+        const hasExistingFile = fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0;
+        // In single file mode, hide upload button if file already exists
+        const showUploadButton = allowMultipleFiles || !hasExistingFile;
         return (
           <div className={classes.field} style={{ marginTop: 20 }}>
             <InputLabel>{displayLabel}</InputLabel>
             <div className={classes.fileUpload}>
-              <input
-                accept="*/*"
-                style={{ display: 'none' }}
-                id={`file-upload-${fieldName}`}
-                multiple
-                type="file"
-                onChange={handleFileUpload}
-              />
-              <label htmlFor={`file-upload-${fieldName}`}>
-                <IconButton color="primary" component="span">
-                  <CloudUploadOutlined />
-                </IconButton>
-              </label>
-              <span>{t_i18n('Upload files')}</span>
+              {showUploadButton && (
+                <>
+                  <input
+                    accept="*/*"
+                    style={{ display: 'none' }}
+                    id={`file-upload-${fieldName}`}
+                    multiple={allowMultipleFiles}
+                    type="file"
+                    onChange={handleFileUpload}
+                  />
+                  <label htmlFor={`file-upload-${fieldName}`}>
+                    <IconButton color="primary" component="span">
+                      <CloudUploadOutlined />
+                    </IconButton>
+                  </label>
+                  <span>{allowMultipleFiles ? t_i18n('Upload files') : t_i18n('Upload file')}</span>
+                </>
+              )}
             </div>
-            {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 ? (
+            {hasExistingFile ? (
               <div className={classes.fileList}>
                 {(fieldValue as Array<{ name?: string; url?: string }>).map((file, index: number) => (
                   <Chip
@@ -451,6 +469,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             )}
           </div>
         );
+      }
 
       default:
         return (
