@@ -744,10 +744,10 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       submenu_show_icons
       submenu_auto_collapse
       monochrome_labels
-      # personal_notifiers {
-      #   id
-      #   name
-      # }
+      personal_notifiers {
+        id
+        name
+      }
       objectOrganization {
         edges {
           node {

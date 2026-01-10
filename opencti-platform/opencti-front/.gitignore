@@ -1,5 +1,6 @@
 .eslintcache
 config/development.json
+.yarnrc.yml
 
 # testing
 /coverage
