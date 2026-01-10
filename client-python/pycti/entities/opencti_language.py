@@ -455,7 +455,9 @@ class Language:
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
         :param files: (optional) list of File objects to attach
+        :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
         :return: Language object
         :rtype: dict or None
         """
