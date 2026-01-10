@@ -11,6 +11,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import re
 import sys
 
 # Add the client-python directory to the path for pycti module discovery
@@ -27,10 +28,17 @@ copyright = "2025, Filigran"
 author = "OpenCTI Project"
 
 # The full version, including alpha/beta/rc tags
-# Dynamically read from pycti to stay in sync
-from pycti import __version__  # isort: skip
+# Read version from pycti/__init__.py without importing (avoids dependency issues)
+def get_version():
+    init_path = os.path.join(client_python_dir, "pycti", "__init__.py")
+    with open(init_path, "r") as f:
+        content = f.read()
+    match = re.search(r'^__version__\s*=\s*["\']([^"\']+)["\']', content, re.MULTILINE)
+    if match:
+        return match.group(1)
+    return "unknown"
 
-release = __version__
+release = get_version()
 
 master_doc = "index"
 
