@@ -336,3 +336,40 @@ describe('check safeRender on real files', () => {
     },
   );
 });
+
+describe('check customEscapeFunction', () => {
+  it('should handle undefined values gracefully', () => {
+    const result = customEscapeFunction(undefined);
+    expect(result).toBe('');
+  });
+
+  it('should handle null values', () => {
+    const result = customEscapeFunction(null);
+    expect(result).toBe('null');
+  });
+
+  it('should handle string values', () => {
+    const result = customEscapeFunction('test');
+    expect(result).toBe('test');
+  });
+
+  it('should handle number values', () => {
+    const result = customEscapeFunction(123);
+    expect(result).toBe('123');
+  });
+
+  it('should handle object values', () => {
+    const result = customEscapeFunction({ key: 'value' });
+    expect(result).toBe('{"key":"value"}');
+  });
+
+  it('should handle empty array', () => {
+    const result = customEscapeFunction([]);
+    expect(result).toBe('');
+  });
+
+  it('should handle non-empty array', () => {
+    const result = customEscapeFunction([1, 2, 3]);
+    expect(result).toBe('[1,2,3]');
+  });
+});

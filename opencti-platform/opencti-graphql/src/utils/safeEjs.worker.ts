@@ -21,7 +21,11 @@ export const customEscapeFunction = (value: any): string => {
     return '';
   }
   const result = JSON.stringify(value);
-  return result && result.startsWith('"') && result.endsWith('"')
+  // Handle undefined result from JSON.stringify (e.g., when value is undefined or a function)
+  if (result === undefined) {
+    return '';
+  }
+  return result.startsWith('"') && result.endsWith('"')
     ? result.slice(1, -1)
     : result;
 };

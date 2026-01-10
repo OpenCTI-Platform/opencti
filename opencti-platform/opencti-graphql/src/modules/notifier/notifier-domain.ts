@@ -158,7 +158,7 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
     },
     notifier,
     MOCK_NOTIFICATIONS[notifier.notifier_test_id],
-    [{ created: (new Date()).toISOString() }] as unknown as BasicStoreEntityTrigger[],
+    [{ name: 'Sample Notification', created: (new Date()).toISOString() }] as unknown as BasicStoreEntityTrigger[],
     usersFromCache,
   ).catch((error) => {
     return error.message;
