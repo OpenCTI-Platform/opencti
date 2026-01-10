@@ -391,10 +391,10 @@ class ThreatActorIndividual:
         :type personal_motivations: list
         :param update: (optional) choose to updated an existing Threat-Actor-Individual entity, default `False`
         :type update: bool
-        :param file: (optional) File object to attach
-        :type file: dict
-        :param fileMarkings: (optional) list of marking definition IDs for the file
-        :type fileMarkings: list
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
         :return: Threat-Actor-Individual object
         :rtype: dict or None
         """
@@ -427,8 +427,8 @@ class ThreatActorIndividual:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
-        file = kwargs.get("file", None)
-        file_markings = kwargs.get("fileMarkings", None)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info(
@@ -476,8 +476,8 @@ class ThreatActorIndividual:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
-                        "file": file,
-                        "fileMarkings": file_markings,
+                        "files": files,
+                        "filesMarkings": files_markings,
                     }
                 },
             )
@@ -494,7 +494,7 @@ class ThreatActorIndividual:
         """Import a Threat-Actor-Individual object from a STIX2 object.
 
         :param stixObject: the STIX2 Threat-Actor-Individual object
-        :param extras: extra parameters including created_by_id, object_marking_ids, file, fileMarkings, etc.
+        :param extras: extra parameters including created_by_id, object_marking_ids, files, filesMarkings, etc.
         :param update: whether to update if the entity already exists
         :return: Threat-Actor-Individual object
         :rtype: dict or None
@@ -612,8 +612,8 @@ class ThreatActorIndividual:
                     else None
                 ),
                 update=update,
-                file=extras.get("file"),
-                fileMarkings=extras.get("fileMarkings"),
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
             )
         else:
             self.opencti.app_logger.error(

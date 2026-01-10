@@ -252,6 +252,8 @@ input IndicatorAddInput {
   x_opencti_workflow_id: String
   file: Upload
   fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   basedOn: [String!]
 }
 

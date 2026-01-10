@@ -643,34 +643,35 @@ class OpenCTIStix2:
                                 )
                             )
 
-                        # Prepare first file for upload during creation
-                        file_to_upload = None
-                        file_markings = None
-                        if len(ext_ref_files) > 0:
-                            first_file = ext_ref_files[0]
+                        # Prepare all files for upload during creation
+                        files_to_upload = []
+                        files_markings = []
+                        for file_obj in ext_ref_files:
                             data = None
-                            if "data" in first_file:
-                                data = base64.b64decode(first_file["data"])
-                            elif "uri" in first_file:
+                            if "data" in file_obj:
+                                data = base64.b64decode(file_obj["data"])
+                            elif "uri" in file_obj:
                                 file_url = self.opencti.api_url.replace(
-                                    "/graphql", first_file["uri"]
+                                    "/graphql", file_obj["uri"]
                                 )
                                 data = self.opencti.fetch_opencti_file(
                                     fetch_uri=file_url, binary=True, serialize=False
                                 )
                             if data is not None:
-                                file_to_upload = self.opencti.file(
-                                    first_file["name"],
-                                    data,
-                                    first_file.get(
-                                        "mime_type", "application/octet-stream"
-                                    ),
+                                files_to_upload.append(
+                                    self.opencti.file(
+                                        file_obj["name"],
+                                        data,
+                                        file_obj.get(
+                                            "mime_type", "application/octet-stream"
+                                        ),
+                                    )
                                 )
-                                file_markings = first_file.get(
-                                    "object_marking_refs", None
+                                files_markings.append(
+                                    file_obj.get("object_marking_refs", None)
                                 )
 
-                        # Create external reference with first file attached
+                        # Create external reference with all files attached
                         external_reference_id = self.opencti.external_reference.create(
                             source_name=source_name,
                             url=url,
@@ -680,37 +681,10 @@ class OpenCTIStix2:
                                 if "description" in external_reference
                                 else None
                             ),
-                            file=file_to_upload,
-                            fileMarkings=file_markings,
+                            files=files_to_upload if files_to_upload else None,
+                            filesMarkings=files_markings if files_markings else None,
                         )["id"]
 
-                    # Upload additional files after creation (first file attached during creation)
-                    if len(ext_ref_files) > 1:
-                        for file in ext_ref_files[1:]:
-                            data = None
-                            if "data" in file:
-                                data = base64.b64decode(file["data"])
-                            elif "uri" in file:
-                                file_url = self.opencti.api_url.replace(
-                                    "/graphql", file["uri"]
-                                )
-                                data = self.opencti.fetch_opencti_file(
-                                    fetch_uri=file_url, binary=True, serialize=False
-                                )
-                            if data is not None:
-                                self.opencti.external_reference.add_file(
-                                    id=external_reference_id,
-                                    file_name=file["name"],
-                                    version=file.get("version", None),
-                                    data=data,
-                                    fileMarkings=file.get("object_marking_refs", None),
-                                    mime_type=file.get(
-                                        "mime_type", "application/octet-stream"
-                                    ),
-                                    no_trigger_import=file.get(
-                                        "no_trigger_import", False
-                                    ),
-                                )
                     external_references_ids.append(external_reference_id)
                     if stix_object["type"] in [
                         "threat-actor",
@@ -844,9 +818,9 @@ class OpenCTIStix2:
                 if generated_ref_id is None:
                     continue
                 else:
-                    # Prepare file for direct upload during creation
-                    file_to_upload = None
-                    file_markings = None
+                    # Prepare all files for direct upload during creation
+                    files_to_upload = []
+                    files_markings = []
                     all_files = []
                     if "x_opencti_files" in external_reference:
                         all_files = external_reference["x_opencti_files"]
@@ -860,25 +834,28 @@ class OpenCTIStix2:
                             "files", external_reference
                         )
 
-                    if len(all_files) > 0:
-                        file = all_files[0]
+                    for file_obj in all_files:
                         data = None
-                        if "data" in file:
-                            data = base64.b64decode(file["data"])
-                        elif "uri" in file:
+                        if "data" in file_obj:
+                            data = base64.b64decode(file_obj["data"])
+                        elif "uri" in file_obj:
                             file_url = self.opencti.api_url.replace(
-                                "/graphql", file["uri"]
+                                "/graphql", file_obj["uri"]
                             )
                             data = self.opencti.fetch_opencti_file(
                                 fetch_uri=file_url, binary=True, serialize=False
                             )
                         if data is not None:
-                            file_to_upload = self.opencti.file(
-                                file["name"],
-                                data,
-                                file.get("mime_type", "application/octet-stream"),
+                            files_to_upload.append(
+                                self.opencti.file(
+                                    file_obj["name"],
+                                    data,
+                                    file_obj.get("mime_type", "application/octet-stream"),
+                                )
                             )
-                            file_markings = file.get("object_marking_refs", None)
+                            files_markings.append(
+                                file_obj.get("object_marking_refs", None)
+                            )
 
                     external_reference_id = self.opencti.external_reference.create(
                         source_name=source_name,
@@ -889,35 +866,10 @@ class OpenCTIStix2:
                             if "description" in external_reference
                             else None
                         ),
-                        file=file_to_upload,
-                        fileMarkings=file_markings,
+                        files=files_to_upload if files_to_upload else None,
+                        filesMarkings=files_markings if files_markings else None,
                     )["id"]
 
-                    # Upload additional files (beyond the first one)
-                    for file in all_files[1:]:
-                        data = None
-                        if "data" in file:
-                            data = base64.b64decode(file["data"])
-                        elif "uri" in file:
-                            file_url = self.opencti.api_url.replace(
-                                "/graphql", file["uri"]
-                            )
-                            data = self.opencti.fetch_opencti_file(
-                                fetch_uri=file_url, binary=True, serialize=False
-                            )
-                        if data is not None:
-                            self.opencti.external_reference.add_file(
-                                id=external_reference_id,
-                                file_name=file["name"],
-                                version=file.get("version", None),
-                                data=data,
-                                fileMarkings=file.get("object_marking_refs", None),
-                                mime_type=file.get(
-                                    "mime_type", "application/octet-stream"
-                                ),
-                                no_trigger_import=file.get("no_trigger_import", False),
-                                embedded=file.get("embedded", False),
-                            )
                 external_references_ids.append(external_reference_id)
         # Granted refs
         granted_refs_ids = []
@@ -1165,26 +1117,27 @@ class OpenCTIStix2:
                 self.opencti.get_attribute_in_extension("files", stix_object)
             )
 
-        # Prepare first file for direct upload during creation
-        file_to_upload = None
-        file_markings = None
-        if len(x_opencti_files) > 0:
-            first_file = x_opencti_files[0]
+        # Prepare all files for direct upload during creation
+        files_to_upload = []
+        files_markings = []
+        for file_obj in x_opencti_files:
             data = None
-            if "data" in first_file:
-                data = base64.b64decode(first_file["data"])
-            elif "uri" in first_file:
-                url = self.opencti.api_url.replace("/graphql", first_file["uri"])
+            if "data" in file_obj:
+                data = base64.b64decode(file_obj["data"])
+            elif "uri" in file_obj:
+                url = self.opencti.api_url.replace("/graphql", file_obj["uri"])
                 data = self.opencti.fetch_opencti_file(
                     fetch_uri=url, binary=True, serialize=False
                 )
             if data is not None:
-                file_to_upload = self.opencti.file(
-                    first_file["name"],
-                    data,
-                    first_file.get("mime_type", "application/octet-stream"),
+                files_to_upload.append(
+                    self.opencti.file(
+                        file_obj["name"],
+                        data,
+                        file_obj.get("mime_type", "application/octet-stream"),
+                    )
                 )
-                file_markings = first_file.get("object_marking_refs", None)
+                files_markings.append(file_obj.get("object_marking_refs", None))
 
         # Extra
         extras = {
@@ -1197,8 +1150,8 @@ class OpenCTIStix2:
             "external_references_ids": external_references_ids,
             "reports": reports,
             "sample_ids": sample_refs_ids,
-            "file": file_to_upload,
-            "fileMarkings": file_markings,
+            "files": files_to_upload if files_to_upload else None,
+            "filesMarkings": files_markings if files_markings else None,
         }
 
         stix_helper = self.get_stix_helper().get(stix_object["type"])
@@ -1250,29 +1203,6 @@ class OpenCTIStix2:
                         id=reports[external_reference_id]["id"],
                         stixObjectOrStixRelationshipId=stix_object_result["id"],
                     )
-            # Add additional files (first file is attached during creation)
-            # Upload remaining files after entity creation
-            if x_opencti_files is not None and len(x_opencti_files) > 1:
-                for file in x_opencti_files[1:]:
-                    data = None
-                    if "data" in file:
-                        data = base64.b64decode(file["data"])
-                    elif "uri" in file:
-                        url = self.opencti.api_url.replace("/graphql", file["uri"])
-                        data = self.opencti.fetch_opencti_file(
-                            fetch_uri=url, binary=True, serialize=False
-                        )
-                    if data is not None:
-                        self.opencti.stix_domain_object.add_file(
-                            id=stix_object_result["id"],
-                            file_name=file["name"],
-                            version=file.get("version", None),
-                            data=data,
-                            fileMarkings=file.get("object_marking_refs", None),
-                            mime_type=file.get("mime_type", "application/octet-stream"),
-                            no_trigger_import=file.get("no_trigger_import", False),
-                            embedded=file.get("embedded", False),
-                        )
         return stix_object_results
 
     def import_observable(
@@ -1309,26 +1239,27 @@ class OpenCTIStix2:
                 self.opencti.get_attribute_in_extension("files", stix_object)
             )
 
-        # Prepare first file for direct upload during creation (all observable types support files)
-        file_to_upload = None
-        file_markings = None
-        if len(x_opencti_files) > 0:
-            first_file = x_opencti_files[0]
+        # Prepare all files for direct upload during creation
+        files_to_upload = []
+        files_markings = []
+        for file_obj in x_opencti_files:
             data = None
-            if "data" in first_file:
-                data = base64.b64decode(first_file["data"])
-            elif "uri" in first_file:
-                url = self.opencti.api_url.replace("/graphql", first_file["uri"])
+            if "data" in file_obj:
+                data = base64.b64decode(file_obj["data"])
+            elif "uri" in file_obj:
+                url = self.opencti.api_url.replace("/graphql", file_obj["uri"])
                 data = self.opencti.fetch_opencti_file(
                     fetch_uri=url, binary=True, serialize=False
                 )
             if data is not None:
-                file_to_upload = self.opencti.file(
-                    first_file["name"],
-                    data,
-                    first_file.get("mime_type", "application/octet-stream"),
+                files_to_upload.append(
+                    self.opencti.file(
+                        file_obj["name"],
+                        data,
+                        file_obj.get("mime_type", "application/octet-stream"),
+                    )
                 )
-                file_markings = first_file.get("object_marking_refs", None)
+                files_markings.append(file_obj.get("object_marking_refs", None))
 
         # Extra
         extras = {
@@ -1342,8 +1273,8 @@ class OpenCTIStix2:
             "external_references_ids": external_references_ids,
             "reports": reports,
             "sample_ids": sample_refs_ids,
-            "file": file_to_upload,
-            "fileMarkings": file_markings,
+            "files": files_to_upload if files_to_upload else None,
+            "filesMarkings": files_markings if files_markings else None,
         }
         if stix_object["type"] == "simple-observable":
             stix_observable_result = self.opencti.stix_cyber_observable.create(
@@ -1387,8 +1318,8 @@ class OpenCTIStix2:
                     extras["granted_refs_ids"] if "granted_refs_ids" in extras else []
                 ),
                 update=update,
-                file=file_to_upload,
-                fileMarkings=file_markings,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
             )
         else:
             stix_observable_result = self.opencti.stix_cyber_observable.create(
@@ -1413,37 +1344,10 @@ class OpenCTIStix2:
                     extras["granted_refs_ids"] if "granted_refs_ids" in extras else []
                 ),
                 update=update,
-                file=file_to_upload,
-                fileMarkings=file_markings,
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
             )
         if stix_observable_result is not None:
-            # Upload files after observable creation
-            # All observable types support file at creation, skip the first file
-            # and upload additional files after creation
-            files_to_upload_after = (
-                x_opencti_files[1:] if len(x_opencti_files) > 1 else []
-            )
-            if files_to_upload_after is not None and len(files_to_upload_after) > 0:
-                for file in files_to_upload_after:
-                    data = None
-                    if "data" in file:
-                        data = base64.b64decode(file["data"])
-                    elif "uri" in file:
-                        url = self.opencti.api_url.replace("/graphql", file["uri"])
-                        data = self.opencti.fetch_opencti_file(
-                            fetch_uri=url, binary=True, serialize=False
-                        )
-                    if data is not None:
-                        self.opencti.stix_cyber_observable.add_file(
-                            id=stix_observable_result["id"],
-                            file_name=file["name"],
-                            version=file.get("version", None),
-                            data=data,
-                            fileMarkings=file.get("object_marking_refs", None),
-                            mime_type=file.get("mime_type", "application/octet-stream"),
-                            no_trigger_import=file.get("no_trigger_import", False),
-                            embedded=file.get("embedded", False),
-                        )
             if "id" in stix_object:
                 self.set_in_cache(
                     stix_object["id"],

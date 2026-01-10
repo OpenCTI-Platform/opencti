@@ -781,10 +781,10 @@ class CaseRfi:
         :type update: bool
         :param information_types: (optional) list of information types
         :type information_types: list
-        :param file: (optional) File object to attach
-        :type file: dict
-        :param fileMarkings: (optional) list of marking definition IDs for the file
-        :type fileMarkings: list
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
         :return: Case RFI object
         :rtype: dict or None
         """
@@ -812,8 +812,8 @@ class CaseRfi:
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
         information_types = kwargs.get("information_types", None)
-        file = kwargs.get("file", None)
-        file_markings = kwargs.get("fileMarkings", None)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Case Rfi", {"name": name})
@@ -852,8 +852,8 @@ class CaseRfi:
                 "x_opencti_modified_at": x_opencti_modified_at,
                 "update": update,
                 "information_types": information_types,
-                "file": file,
-                "fileMarkings": file_markings,
+                "files": files,
+                "filesMarkings": files_markings,
             }
             result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["caseRfiAdd"])
@@ -1081,8 +1081,8 @@ class CaseRfi:
                     if "information_types" in stix_object
                     else None
                 ),
-                file=extras.get("file"),
-                fileMarkings=extras.get("fileMarkings"),
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
             )
         else:
             self.opencti.app_logger.error(

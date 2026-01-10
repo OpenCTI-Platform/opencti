@@ -193,6 +193,8 @@ input DataComponentAddInput {
     dataSource: String
     file: Upload
     fileMarkings: [String]
+    files: [Upload]
+    filesMarkings: [[String]]
     x_opencti_workflow_id: String
     x_opencti_modified_at: DateTime
 }

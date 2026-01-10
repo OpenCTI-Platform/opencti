@@ -781,8 +781,8 @@ class Report:
         :param x_opencti_workflow_id: (optional) workflow ID
         :param x_opencti_modified_at: (optional) custom modification date
         :param update: (optional) whether to update if exists (default: False)
-        :param file: (optional) File object to attach
-        :param fileMarkings: (optional) list of marking definition IDs for the file
+        :param files: (optional) list of File objects to attach
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :return: Report object
         :rtype: dict or None
         """
@@ -810,8 +810,8 @@ class Report:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
-        file = kwargs.get("file", None)
-        file_markings = kwargs.get("fileMarkings", None)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
 
         if name is not None and published is not None:
             self.opencti.app_logger.info("Creating Report", {"name": name})
@@ -850,8 +850,8 @@ class Report:
                 "x_opencti_workflow_id": x_opencti_workflow_id,
                 "x_opencti_modified_at": x_opencti_modified_at,
                 "update": update,
-                "file": file,
-                "fileMarkings": file_markings,
+                "files": files,
+                "filesMarkings": files_markings,
             }
             result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(result["data"]["reportAdd"])
@@ -1089,8 +1089,8 @@ class Report:
                     else None
                 ),
                 update=update,
-                file=extras.get("file"),
-                fileMarkings=extras.get("fileMarkings"),
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
             )
         else:
             self.opencti.app_logger.error(

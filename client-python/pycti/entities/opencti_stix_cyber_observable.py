@@ -303,10 +303,10 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         :type update: bool
         :param resolve_result_indicators: (optional) resolve result indicators (default: True)
         :type resolve_result_indicators: bool
-        :param file: (optional) File object to attach
-        :type file: dict
-        :param fileMarkings: (optional) list of marking definition IDs for the file
-        :type fileMarkings: list
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
         :return: Stix-Cyber-Observable object
         :rtype: dict or None
         """
@@ -325,8 +325,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
         resolve_result_indicators = kwargs.get("resolve_result_indicators", True)
-        file = kwargs.get("file", None)
-        file_markings = kwargs.get("fileMarkings", None)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
 
         create_indicator = (
             observable_data["x_opencti_create_indicator"]
@@ -571,8 +571,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         observable_data["name"] if "name" in observable_data else None
                     ),
                     "rir": observable_data["rir"] if "rir" in observable_data else None,
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Directory":
                 input_variables["Directory"] = {
@@ -591,14 +591,14 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "atime": (
                         observable_data["atime"] if "atime" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Domain-Name":
                 input_variables["DomainName"] = {
                     "value": observable_data["value"],
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
                 if attribute is not None:
                     input_variables["DomainName"][attribute] = simple_observable_value
@@ -610,8 +610,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "display_name" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Email-Message":
                 input_variables["EmailMessage"] = {
@@ -641,8 +641,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "body": (
                         observable_data["body"] if "body" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Email-Mime-Part-Type":
                 input_variables["EmailMimePartType"] = {
@@ -659,8 +659,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "content_disposition" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Artifact":
                 if (
@@ -698,8 +698,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "x_opencti_additional_names" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "StixFile":
                 if (
@@ -751,8 +751,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "x_opencti_additional_names" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "X509-Certificate":
                 input_variables["X509Certificate"] = {
@@ -892,8 +892,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "policy_mappings" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "SSH-Key" or type.lower() == "ssh-key":
                 input_variables["SSHKey"] = {
@@ -937,40 +937,40 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "expiration_date" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "IPv4-Addr":
                 input_variables["IPv4Addr"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "IPv6-Addr":
                 input_variables["IPv6Addr"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Mac-Addr":
                 input_variables["MacAddr"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Mutex":
                 input_variables["Mutex"] = {
                     "name": (
                         observable_data["name"] if "name" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Network-Traffic":
                 input_variables["NetworkTraffic"] = {
@@ -1028,8 +1028,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "dst_packets" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Process":
                 input_variables["Process"] = {
@@ -1055,8 +1055,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "environment_variables" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Software":
                 if (
@@ -1099,16 +1099,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "x_opencti_product" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Url":
                 input_variables["Url"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "User-Account":
                 input_variables["UserAccount"] = {
@@ -1182,8 +1182,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "account_last_login" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Windows-Registry-Key":
                 input_variables["WindowsRegistryKey"] = {
@@ -1200,8 +1200,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "number_of_subkeys" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Windows-Registry-Value-Type":
                 input_variables["WindowsRegistryValueType"] = {
@@ -1216,40 +1216,40 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "data_type" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "User-Agent":
                 input_variables["UserAgent"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Cryptographic-Key":
                 input_variables["CryptographicKey"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Hostname":
                 input_variables["Hostname"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Text":
                 input_variables["Text"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Bank-Account":
                 input_variables["BankAccount"] = {
@@ -1262,16 +1262,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "account_number" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Phone-Number":
                 input_variables["PhoneNumber"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Payment-Card":
                 input_variables["PaymentCard"] = {
@@ -1291,8 +1291,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "holder_name" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Media-Content":
                 input_variables["MediaContent"] = {
@@ -1315,8 +1315,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "publication_date" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Persona":
                 input_variables["Persona"] = {
@@ -1330,8 +1330,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "persona_type" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Payment-Card" or type.lower() == "x-opencti-payment-card":
                 input_variables["PaymentCard"] = {
@@ -1351,8 +1351,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "holder_name" in observable_data
                         else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif (
                 type == "Cryptocurrency-Wallet"
@@ -1362,16 +1362,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif type == "Credential" or type.lower() == "x-opencti-credential":
                 input_variables["Credential"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             elif (
                 type == "Tracking-Number" or type.lower() == "x-opencti-tracking-number"
@@ -1380,8 +1380,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
-                    "file": file,
-                    "fileMarkings": file_markings,
+                    "files": files,
+                    "filesMarkings": files_markings,
                 }
             result = self.opencti.query(query, input_variables)
             if "payload_bin" in observable_data and "mime_type" in observable_data:

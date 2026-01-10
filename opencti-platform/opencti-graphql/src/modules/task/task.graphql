@@ -227,6 +227,8 @@ input TaskAddInput {
   update: Boolean
   file: Upload
   fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
 }
 
 type Mutation {

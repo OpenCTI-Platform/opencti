@@ -237,6 +237,8 @@ input FeedbackAddInput {
   x_opencti_modified_at: DateTime
   file: Upload
   fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   rating: Int
