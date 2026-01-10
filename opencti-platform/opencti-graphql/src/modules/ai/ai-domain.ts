@@ -38,8 +38,7 @@ import type {
 } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../../schema/stixMetaObject';
