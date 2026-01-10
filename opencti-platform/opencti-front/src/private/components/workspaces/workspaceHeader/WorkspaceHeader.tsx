@@ -10,7 +10,7 @@ import { nowUTC } from 'src/utils/Time';
 import { EXPLORE_EXUPDATE } from 'src/utils/hooks/useGranted';
 import ExportButtons from 'src/components/ExportButtons';
 import { useGetCurrentUserAccessRight } from 'src/utils/authorizedMembers';
-import { truncate } from 'src/utils/String';
+import { truncate } from '../../../../utils/String';
 import WorkspaceWidgetConfig from 'src/private/components/workspaces/dashboards/WorkspaceWidgetConfig';
 import { WorkspaceHeaderToStixReportBundleQuery$data } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderToStixReportBundleQuery.graphql';
 import WorkspaceKebabMenu from '@components/workspaces/WorkspaceKebabMenu';

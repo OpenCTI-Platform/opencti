@@ -18,6 +18,7 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
   const [expand, setExpand] = useState(false);
   const onClick = () => setExpand(!expand);
   const shouldBeTruncated = (source || '').length > limit;
+  const content = expand ? emptyFilled(source) : truncate(source, limit);
   return (
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
@@ -29,7 +30,7 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
       )}
       <div style={{ overflowX: 'auto' }}>
         <MarkdownDisplay
-          content={expand ? emptyFilled(source) : truncate(source, limit)}
+          content={content ?? null}
           remarkGfmPlugin={true}
           commonmark={true}
           removeLinks={removeLinks}
