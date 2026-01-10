@@ -268,10 +268,10 @@ class ExternalReference:
         :type x_opencti_stix_ids: list
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
-        :param file: (optional) File object to attach
-        :type file: dict
-        :param fileMarkings: (optional) list of marking definition IDs for the file
-        :type fileMarkings: list
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
         :return: External Reference object
         :rtype: dict or None
         """
@@ -284,8 +284,8 @@ class ExternalReference:
         description = kwargs.get("description", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
-        file = kwargs.get("file", None)
-        file_markings = kwargs.get("fileMarkings", None)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
 
         if source_name is not None or url is not None:
             self.opencti.app_logger.info(
@@ -312,8 +312,8 @@ class ExternalReference:
                 "url": url,
                 "x_opencti_stix_ids": x_opencti_stix_ids,
                 "update": update,
-                "file": file,
-                "fileMarkings": file_markings,
+                "files": files,
+                "filesMarkings": files_markings,
             }
             result = self.opencti.query(query, {"input": input_variables})
             return self.opencti.process_multiple_fields(

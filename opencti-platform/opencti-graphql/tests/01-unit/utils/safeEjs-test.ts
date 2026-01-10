@@ -292,7 +292,7 @@ describe('check safeRender with escape function', () => {
       };
       return escapeMap[char] || char;
     });
-    
+
     const result = safeRender(template, data, { escape: escapeFunc });
     expect(result).toContain('&lt;script&gt;');
     expect(result).toContain('&lt;/script&gt;');
@@ -327,7 +327,7 @@ describe('check safeRender with escape function', () => {
       };
       return escapeMap[char] || char;
     });
-    
+
     const result = safeRender(template, data, { escape: escapeFunc });
     expect(result).toContain('<a href="http://example.com">link</a>');
   });
@@ -360,7 +360,7 @@ describe('check safeRender with escape function', () => {
       };
       return escapeMap[char] || char;
     });
-    
+
     const result = safeRender(template, data, { escape: escapeFunc });
     // The escape function should escape the special characters
     expect(result).not.toContain('<script>');

@@ -317,6 +317,8 @@ export type AdministrativeAreaAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -655,6 +657,8 @@ export type ArtifactAddInput = {
   encryption_algorithm?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   mime_type?: InputMaybe<Scalars['String']['input']>;
   payload_bin?: InputMaybe<Scalars['String']['input']>;
@@ -945,6 +949,8 @@ export type AttackPatternAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
@@ -1357,6 +1363,8 @@ export type AutonomousSystemToStixArgs = {
 export type AutonomousSystemAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   name?: InputMaybe<Scalars['String']['input']>;
   number: Scalars['Int']['input'];
   rir?: InputMaybe<Scalars['String']['input']>;
@@ -1691,6 +1699,8 @@ export type BankAccountAddInput = {
   bic?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   iban?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -1959,6 +1969,8 @@ export type CampaignAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   lang?: InputMaybe<Scalars['String']['input']>;
   last_seen?: InputMaybe<Scalars['DateTime']['input']>;
@@ -2654,6 +2666,8 @@ export type CaseIncidentAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -2977,6 +2991,8 @@ export type CaseRfiAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   information_types?: InputMaybe<Array<Scalars['String']['input']>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
@@ -3297,6 +3313,8 @@ export type CaseRftAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -3668,6 +3686,8 @@ export type ChannelAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -3950,6 +3970,8 @@ export type CityAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -4739,6 +4761,8 @@ export type CountryAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -5024,6 +5048,8 @@ export type CourseOfActionAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -5330,6 +5356,8 @@ export type CredentialToStixArgs = {
 export type CredentialAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -5536,6 +5564,8 @@ export type CryptocurrencyWalletToStixArgs = {
 export type CryptocurrencyWalletAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -5742,6 +5772,8 @@ export type CryptographicKeyToStixArgs = {
 export type CryptographicKeyAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -6118,6 +6150,8 @@ export type DataComponentAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -6380,6 +6414,8 @@ export type DataSourceAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -6842,6 +6878,8 @@ export type DirectoryAddInput = {
   ctime?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   mtime?: InputMaybe<Scalars['DateTime']['input']>;
   path: Scalars['String']['input'];
   path_enc?: InputMaybe<Scalars['String']['input']>;
@@ -7127,6 +7165,8 @@ export type DomainNameToStixArgs = {
 export type DomainNameAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value: Scalars['String']['input'];
 };
 
@@ -7481,6 +7521,8 @@ export type EmailAddrAddInput = {
   display_name?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -7696,6 +7738,8 @@ export type EmailMessageAddInput = {
   content_type?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   is_multipart?: InputMaybe<Scalars['Boolean']['input']>;
   message_id?: InputMaybe<Scalars['String']['input']>;
   received_lines?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -7910,6 +7954,8 @@ export type EmailMimePartTypeAddInput = {
   content_type?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
 };
 
 export type EmailTemplate = BasicObject & InternalObject & {
@@ -8226,6 +8272,8 @@ export type EventAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -8420,6 +8468,8 @@ export type ExternalReferenceAddInput = {
   external_id?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   hash?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   source_name: Scalars['String']['input'];
@@ -8846,6 +8896,8 @@ export type FeedbackAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -9558,6 +9610,8 @@ export type GroupingAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -10036,6 +10090,8 @@ export type HostnameToStixArgs = {
 export type HostnameAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -10244,6 +10300,8 @@ export type IPv4AddrAddInput = {
   belongsTo?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   resolvesTo?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
@@ -10452,6 +10510,8 @@ export type IPv6AddrToStixArgs = {
 export type IPv6AddrAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -10680,6 +10740,8 @@ export type IdentityAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -10986,6 +11048,8 @@ export type IncidentAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   incident_type?: InputMaybe<Scalars['String']['input']>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -11345,6 +11409,8 @@ export type IndicatorAddInput = {
   externalReferences?: InputMaybe<Array<Scalars['String']['input']>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   indicator_types?: InputMaybe<Array<Scalars['String']['input']>>;
   killChainPhases?: InputMaybe<Array<Scalars['String']['input']>>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -11655,6 +11721,8 @@ export type IndividualAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -11967,6 +12035,8 @@ export type InfrastructureAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   infrastructure_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -12655,6 +12725,8 @@ export type IntrusionSetAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -13243,6 +13315,8 @@ export type LanguageAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -13526,6 +13600,8 @@ export type LocationAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -13858,6 +13934,8 @@ export type MacAddrToStixArgs = {
 export type MacAddrAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -14092,6 +14170,8 @@ export type MalwareAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   implementation_languages?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   is_family?: InputMaybe<Scalars['Boolean']['input']>;
@@ -14366,6 +14446,8 @@ export type MalwareAnalysisAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   hostVm?: InputMaybe<Scalars['String']['input']>;
   installedSoftware?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -14928,6 +15010,8 @@ export type MediaContentAddInput = {
   content?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   media_category?: InputMaybe<Scalars['String']['input']>;
   publication_date?: InputMaybe<Scalars['DateTime']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
@@ -18181,6 +18265,8 @@ export type MutexToStixArgs = {
 export type MutexAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   name?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -18414,6 +18500,8 @@ export type NarrativeAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -18673,6 +18761,8 @@ export type NetworkTrafficAddInput = {
   end?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   is_active?: InputMaybe<Scalars['Boolean']['input']>;
   networkDst?: InputMaybe<Scalars['String']['input']>;
   networkSrc?: InputMaybe<Scalars['String']['input']>;
@@ -18948,6 +19038,8 @@ export type NoteAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   likelihood?: InputMaybe<Scalars['Int']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
@@ -19446,6 +19538,8 @@ export type ObservedDataAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_observed: Scalars['DateTime']['input'];
   lang?: InputMaybe<Scalars['String']['input']>;
   last_observed: Scalars['DateTime']['input'];
@@ -19795,6 +19889,8 @@ export type OpinionAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -20151,6 +20247,8 @@ export type OrganizationAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -20464,6 +20562,8 @@ export type PaymentCardAddInput = {
   expiration_date?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   holder_name?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -20671,6 +20771,8 @@ export type PersonaToStixArgs = {
 export type PersonaAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   persona_name: Scalars['String']['input'];
   persona_type: Scalars['String']['input'];
 };
@@ -20878,6 +20980,8 @@ export type PhoneNumberToStixArgs = {
 export type PhoneNumberAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -21444,6 +21548,8 @@ export type PositionAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -21757,6 +21863,8 @@ export type ProcessAddInput = {
   environment_variables?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   group_name?: InputMaybe<Scalars['String']['input']>;
   integrity_level?: InputMaybe<Scalars['String']['input']>;
   is_hidden?: InputMaybe<Scalars['Boolean']['input']>;
@@ -25564,6 +25672,8 @@ export type RegionAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   latitude?: InputMaybe<Scalars['Float']['input']>;
   longitude?: InputMaybe<Scalars['Float']['input']>;
@@ -25933,6 +26043,8 @@ export type ReportAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -26495,6 +26607,8 @@ export type SshKeyAddInput = {
   expiration_date?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   fingerprint_md5?: InputMaybe<Scalars['String']['input']>;
   fingerprint_sha256: Scalars['String']['input'];
   key_length?: InputMaybe<Scalars['String']['input']>;
@@ -26777,6 +26891,8 @@ export type SectorAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -27091,6 +27207,8 @@ export type SecurityCoverageAddInput = {
   external_uri?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
   objectCovered: Scalars['String']['input'];
@@ -27360,6 +27478,8 @@ export type SecurityPlatformAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -27747,6 +27867,8 @@ export type SoftwareAddInput = {
   cpe?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   languages?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   name?: InputMaybe<Scalars['String']['input']>;
   swid?: InputMaybe<Scalars['String']['input']>;
@@ -29438,6 +29560,8 @@ export type StixFileAddInput = {
   ctime?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   magic_number_hex?: InputMaybe<Scalars['String']['input']>;
   mime_type?: InputMaybe<Scalars['String']['input']>;
@@ -29649,6 +29773,8 @@ export type StixRefRelationshipAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   fromId?: InputMaybe<Scalars['StixRef']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -30629,6 +30755,8 @@ export type SystemAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -30964,6 +31092,8 @@ export type TaskAddInput = {
   due_date?: InputMaybe<Scalars['DateTime']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   name: Scalars['String']['input'];
   objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -31318,6 +31448,8 @@ export type TextToStixArgs = {
 export type TextAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -31847,6 +31979,8 @@ export type ThreatActorGroupAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -32164,6 +32298,8 @@ export type ThreatActorIndividualAddInput = {
   eye_color?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
   gender?: InputMaybe<Scalars['String']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -32472,6 +32608,8 @@ export type ToolAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
@@ -32752,6 +32890,8 @@ export type TrackingNumberToStixArgs = {
 export type TrackingNumberAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -33093,6 +33233,8 @@ export type UrlToStixArgs = {
 export type UrlAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -33398,6 +33540,8 @@ export type UserAccountAddInput = {
   display_name?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   is_disabled?: InputMaybe<Scalars['Boolean']['input']>;
   is_privileged?: InputMaybe<Scalars['Boolean']['input']>;
   is_service_account?: InputMaybe<Scalars['Boolean']['input']>;
@@ -33630,6 +33774,8 @@ export type UserAgentToStixArgs = {
 export type UserAgentAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -34173,6 +34319,8 @@ export type VulnerabilityAddInput = {
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
@@ -34552,6 +34700,8 @@ export type WindowsRegistryKeyAddInput = {
   attribute_key?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   modified_time?: InputMaybe<Scalars['DateTime']['input']>;
   number_of_subkeys?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -34763,6 +34913,8 @@ export type WindowsRegistryValueTypeAddInput = {
   data_type?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   name?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -35178,6 +35330,8 @@ export type X509CertificateAddInput = {
   extended_key_usage?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   inhibit_any_policy?: InputMaybe<Scalars['String']['input']>;
   is_self_signed?: InputMaybe<Scalars['Boolean']['input']>;

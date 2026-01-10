@@ -251,6 +251,8 @@ input CaseRfiAddInput {
   x_opencti_workflow_id: String
   file: Upload
   fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
   clientMutationId: String
   update: Boolean
   information_types: [String!]

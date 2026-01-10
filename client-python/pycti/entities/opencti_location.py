@@ -488,8 +488,10 @@ class Location:
         :type x_opencti_modified_at: datetime
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
-        :param file: (optional) file object to attach
-        :param fileMarkings: (optional) list of marking definition IDs for the file
+        :param files: (optional) list of File objects to attach
+        :type files: list
+        :param filesMarkings: (optional) list of lists of marking definition IDs for each file
+        :type filesMarkings: list
         :return: Location object
         :rtype: dict or None
         """
@@ -514,8 +516,8 @@ class Location:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
-        file = kwargs.get("file", None)
-        file_markings = kwargs.get("fileMarkings", None)
+        files = kwargs.get("files", None)
+        files_markings = kwargs.get("filesMarkings", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Location", {"name": name})
@@ -554,8 +556,8 @@ class Location:
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "x_opencti_modified_at": x_opencti_modified_at,
                         "update": update,
-                        "file": file,
-                        "fileMarkings": file_markings,
+                        "files": files,
+                        "filesMarkings": files_markings,
                     }
                 },
             )
@@ -678,8 +680,8 @@ class Location:
                     else None
                 ),
                 update=update,
-                file=extras.get("file"),
-                fileMarkings=extras.get("fileMarkings"),
+                files=extras.get("files"),
+                filesMarkings=extras.get("filesMarkings"),
             )
         else:
             self.opencti.app_logger.error(

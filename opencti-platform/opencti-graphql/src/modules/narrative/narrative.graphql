@@ -195,6 +195,8 @@ input NarrativeAddInput {
     update: Boolean
     file: Upload
     fileMarkings: [String]
+    files: [Upload]
+    filesMarkings: [[String]]
     x_opencti_modified_at: DateTime
     x_opencti_workflow_id: String
 }
