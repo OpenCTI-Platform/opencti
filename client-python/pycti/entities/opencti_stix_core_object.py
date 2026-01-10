@@ -1511,7 +1511,7 @@ class StixCoreObject:
             final_data = final_data + data
             while result["data"]["stixCoreObjects"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCoreObjects"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing Stix-Core-Objects", {"after": after}
                 )
                 result = self.opencti.query(

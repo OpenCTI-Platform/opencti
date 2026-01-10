@@ -226,6 +226,7 @@ class OpenCTIStix2Utils:
         """Retrieve the appropriate API class for a given entity type and method.
 
         :param openCTIApiClient: OpenCTI API client instance
+        :type openCTIApiClient: OpenCTIApiClient
         :param entity: Entity dictionary containing the type
         :type entity: Dict
         :param type_path: Path to the type field in the entity

@@ -2064,12 +2064,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connector_state = None
 
     def get_state(self) -> Optional[Dict]:
-        """get the connector state
+        """Get the connector state.
 
-        :return: returns the current state of the connector if there is any
-        :rtype:
+        Retrieves the current connector state that was previously stored.
+        The state is used to track progress and resume operations across runs.
+
+        :return: The current state of the connector, or None if no state exists
+        :rtype: Optional[Dict]
         """
-
         try:
             if self.connector_state:
                 state = json.loads(self.connector_state)
@@ -2388,12 +2390,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self,
         message_callback: Callable[[Dict], str],
     ) -> None:
-        """listen for messages and register callback function
+        """Listen for messages from the queue and process them via callback.
 
-        :param message_callback: callback function to process messages
+        Starts a listener thread that consumes messages from RabbitMQ or HTTP API
+        (depending on configured listen protocol) and processes each message
+        through the provided callback function. This method blocks until the
+        listener is stopped.
+
+        :param message_callback: Function to process incoming messages. Receives
+            event data dict and should return a status message string.
         :type message_callback: Callable[[Dict], str]
         """
-
         self.listen_queue = ListenQueue(
             self,
             self.opencti_token,
@@ -2969,16 +2976,25 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     @staticmethod
     def check_max_tlp(tlp: str, max_tlp: str) -> bool:
-        """check the allowed TLP levels for a TLP string
+        """Check if a TLP level is within the allowed maximum TLP level.
 
-        :param tlp: string for TLP level to check
+        Validates that the given TLP marking is at or below the maximum
+        allowed TLP level. Useful for filtering data based on sharing
+        restrictions.
+
+        :param tlp: The TLP level to check (e.g., "TLP:GREEN", "TLP:AMBER")
         :type tlp: str
-        :param max_tlp: the highest allowed TLP level
+        :param max_tlp: The highest allowed TLP level for comparison
         :type max_tlp: str
-        :return: TLP level in allowed TLPs
+        :return: True if the TLP level is within the allowed range, False otherwise
         :rtype: bool
-        """
 
+        Example:
+            >>> OpenCTIConnectorHelper.check_max_tlp("TLP:GREEN", "TLP:AMBER")
+            True
+            >>> OpenCTIConnectorHelper.check_max_tlp("TLP:RED", "TLP:GREEN")
+            False
+        """
         if tlp is None or max_tlp is None:
             return True
 

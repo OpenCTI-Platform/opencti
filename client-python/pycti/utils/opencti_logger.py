@@ -80,6 +80,7 @@ def logger(level, json_logging=True):
             :param lib: Library name
             :type lib: str
             :param log_level: Logging level to set
+            :type log_level: int
             """
             logging.getLogger(lib).setLevel(log_level)
 

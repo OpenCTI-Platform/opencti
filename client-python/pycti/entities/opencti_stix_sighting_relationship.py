@@ -467,7 +467,7 @@ class StixSightingRelationship:
                 after = result["data"]["stixSightingRelationships"]["pageInfo"][
                     "endCursor"
                 ]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing StixSightingRelationships", {"after": after}
                 )
                 result = self.opencti.query(

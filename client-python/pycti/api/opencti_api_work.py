@@ -244,7 +244,6 @@ class OpenCTIApiWork:
         :rtype: str or None
         """
         status = ""
-        cnt = 0
         while status != "complete":
             state = self.get_work(work_id=work_id)
             if len(state) > 0:
@@ -257,7 +256,6 @@ class OpenCTIApiWork:
                     return ""
 
             time.sleep(1)
-            cnt += 1
 
     def get_work(self, work_id: str) -> Dict:
         """Get a work by id.

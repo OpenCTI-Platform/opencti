@@ -18,6 +18,11 @@ class ExternalReference:
     """
 
     def __init__(self, opencti):
+        """Initialize the ExternalReference instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -178,7 +183,7 @@ class ExternalReference:
             final_data = final_data + data
             while result["data"]["externalReferences"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["externalReferences"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing External-References", {"after": after}
                 )
                 result = self.opencti.query(

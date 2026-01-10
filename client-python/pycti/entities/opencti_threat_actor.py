@@ -14,6 +14,8 @@ from pycti.entities.opencti_threat_actor_individual import ThreatActorIndividual
 class ThreatActor:
     """Main ThreatActor class for OpenCTI
 
+    Manages threat actor entities (groups and individuals) in the OpenCTI platform.
+
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
     :type opencti: OpenCTIApiClient
     """

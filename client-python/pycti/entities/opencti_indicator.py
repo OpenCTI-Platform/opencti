@@ -21,6 +21,11 @@ class Indicator:
     """
 
     def __init__(self, opencti):
+        """Initialize the Indicator instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = INDICATOR_PROPERTIES
         self.properties_with_files = INDICATOR_PROPERTIES_WITH_FILES

@@ -17,7 +17,11 @@ class ThreatActorIndividual:
     """
 
     def __init__(self, opencti):
+        """Initialize the ThreatActorIndividual instance.
 
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -254,7 +258,7 @@ class ThreatActorIndividual:
                 after = result["data"]["threatActorsIndividuals"]["pageInfo"][
                     "endCursor"
                 ]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing threatActorsIndividuals", {"after": after}
                 )
                 result = self.opencti.query(

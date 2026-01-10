@@ -675,6 +675,13 @@ class DataComponent:
             return None
 
     def process_multiple_fields(self, data):
+        """Process Data Component fields to extract related data source ID.
+
+        :param data: the Data Component data dictionary
+        :type data: dict
+        :return: Processed data with dataSourceId field added
+        :rtype: dict
+        """
         if "dataSource" in data and data["dataSource"] is not None:
             data["dataSourceId"] = data["dataSource"]["id"]
         else:

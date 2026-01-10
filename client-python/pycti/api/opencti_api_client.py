@@ -166,14 +166,8 @@ class OpenCTIApiClient:
     :type log_level: str, optional
     :param ssl_verify: Requiring the requests to verify the TLS certificate at the server.
     :type ssl_verify: bool, str, optional
-    :param proxies:
-    :type proxies: dict, optional, The proxy configuration, would have `http` and `https` attributes. Defaults to {}
-        ```
-        proxies: {
-            "http": "http://my_proxy:8080"
-            "https": "http://my_proxy:8080"
-        }
-        ```
+    :param proxies: proxy configuration with "http" and "https" keys (e.g., {"http": "http://my_proxy:8080", "https": "http://my_proxy:8080"})
+    :type proxies: dict, optional
     :param json_logging: format the logs as json if set to True
     :type json_logging: bool, optional
     :param bundle_send_to_queue: if bundle will be sent to queue
@@ -577,10 +571,13 @@ class OpenCTIApiClient:
         """Recursively extract File objects from nested dictionaries.
 
         :param obj: the object to search for File objects
+        :type obj: any
         :param path_prefix: the current path prefix for nested keys
+        :type path_prefix: str
         :return: tuple of (cleaned_obj, files_vars) where cleaned_obj has Files replaced with None
+        :rtype: tuple
         """
-        if type(obj) is File:
+        if isinstance(obj, File):
             return None, [{"key": path_prefix, "file": obj, "multiple": False}]
 
         if isinstance(obj, list) and len(obj) > 0 and all(
@@ -835,10 +832,7 @@ class OpenCTIApiClient:
             if isinstance(value, datetime.date):
                 return True
             if isinstance(value, str):
-                if len(value) > 0:
-                    return True
-                else:
-                    return False
+                return len(value) > 0
             if isinstance(value, dict):
                 return bool(value)
             if isinstance(value, list):
@@ -851,10 +845,8 @@ class OpenCTIApiClient:
                 return True
             if isinstance(value, int):
                 return True
-            else:
-                return False
-        else:
             return False
+        return False
 
     def process_multiple(self, data: dict, with_pagination=False) -> Union[dict, list]:
         """Process data returned by the OpenCTI API with multiple entities.
@@ -1034,7 +1026,8 @@ class OpenCTIApiClient:
                 }
              """
             if data is None:
-                data = open(file_name, "rb")
+                with open(file_name, "rb") as f:
+                    data = f.read()
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
@@ -1114,7 +1107,8 @@ class OpenCTIApiClient:
                     }
                  """
             if data is None:
-                data = open(file_name, "rb")
+                with open(file_name, "rb") as f:
+                    data = f.read()
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:

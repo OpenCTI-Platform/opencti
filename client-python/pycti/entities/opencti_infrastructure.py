@@ -9,6 +9,8 @@ from stix2.canonicalization.Canonicalize import canonicalize
 class Infrastructure:
     """Main Infrastructure class for OpenCTI
 
+    Manages threat infrastructure (servers, domains, etc.) in the OpenCTI platform.
+
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
     :type opencti: OpenCTIApiClient
     """
@@ -364,7 +366,7 @@ class Infrastructure:
             final_data = final_data + data
             while result["data"]["infrastructures"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["infrastructures"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing Infrastructures", {"after": after}
                 )
                 result = self.opencti.query(

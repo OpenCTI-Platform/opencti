@@ -16,6 +16,11 @@ class StixDomainObject:
     """
 
     def __init__(self, opencti):
+        """Initialize the StixDomainObject instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -1182,7 +1187,7 @@ class StixDomainObject:
             final_data = final_data + data
             while result["data"]["stixDomainObjects"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixDomainObjects"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing Stix-Domain-Objects", {"after": after}
                 )
                 result = self.opencti.query(

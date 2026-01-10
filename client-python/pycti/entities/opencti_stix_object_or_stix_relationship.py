@@ -652,7 +652,7 @@ class StixObjectOrStixRelationship:
                 after = result["data"]["stixObjectOrStixRelationships"]["pageInfo"][
                     "endCursor"
                 ]
-                self.opencti.app_logger.info(
+                self.opencti.app_logger.debug(
                     "Listing stixObjectOrStixRelationships", {"after": after}
                 )
                 after_variables = {**variables, **{"after": after}}

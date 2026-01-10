@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import base64
 import datetime
 import json
@@ -144,11 +142,11 @@ class OpenCTIStix2:
         )
 
     def convert_markdown(self, text: str) -> str:
-        """converts input text to markdown style code annotation
+        """Convert input text to markdown style code annotation.
 
-        :param text: input text
+        :param text: Input text to convert
         :type text: str
-        :return: sanitized text with markdown style code annotation
+        :return: Sanitized text with markdown style code annotation
         :rtype: str
         """
         if text is not None:
@@ -183,13 +181,13 @@ class OpenCTIStix2:
         return date_value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
     def filter_objects(self, uuids: List, objects: List) -> List:
-        """filters objects based on UUIDs
+        """Filter objects based on UUIDs.
 
-        :param uuids: list of UUIDs
+        :param uuids: List of UUIDs to filter by
         :type uuids: list
-        :param objects: list of objects to filter
+        :param objects: List of objects to filter
         :type objects: list
-        :return: list of filtered objects
+        :return: List of filtered objects not in the uuids list
         :rtype: list
         """
 
@@ -201,12 +199,12 @@ class OpenCTIStix2:
         return result
 
     def pick_aliases(self, stix_object: Dict) -> Optional[List]:
-        """check stix2 object for multiple aliases and return a list
+        """Check STIX2 object for multiple aliases and return a list.
 
-        :param stix_object: valid stix2 object
+        :param stix_object: Valid STIX2 object
         :type stix_object: Dict
-        :return: list of aliases
-        :rtype: list
+        :return: List of aliases or None if no aliases found
+        :rtype: list or None
         """
 
         # Add aliases
@@ -226,16 +224,16 @@ class OpenCTIStix2:
         update: bool = False,
         types: List = None,
     ) -> Optional[Tuple[list, list]]:
-        """import a stix2 bundle from a file
+        """Import a STIX2 bundle from a file.
 
-        :param file_path: valid path to the file
+        :param file_path: Valid path to the file
         :type file_path: str
-        :param update: whether to update data in the database, defaults to False
+        :param update: Whether to update data in the database, defaults to False
         :type update: bool, optional
-        :param types: list of stix2 types, defaults to None
+        :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
-        :return: list of imported stix2 objects
-        :rtype: List
+        :return: Tuple of (imported objects, failed objects) or None if file not found
+        :rtype: Tuple[list, list] or None
         """
         if not os.path.isfile(file_path):
             self.opencti.app_logger.error("The bundle file does not exist")
@@ -252,20 +250,20 @@ class OpenCTIStix2:
         work_id: str = None,
         objects_max_refs: int = 0,
     ) -> Tuple[list, list]:
-        """import a stix2 bundle from JSON data
+        """Import a STIX2 bundle from JSON data.
 
-        :param json_data: JSON data
+        :param json_data: JSON data as string or bytes
         :type json_data: str or bytes
-        :param update: whether to update data in the database, defaults to False
+        :param update: Whether to update data in the database, defaults to False
         :type update: bool, optional
-        :param types: list of stix2 types, defaults to None
+        :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
-        :param work_id: work ID for tracking
+        :param work_id: Work ID for tracking import progress
         :type work_id: str, optional
-        :param objects_max_refs: max deps amount of objects, reject object import if larger than configured amount
+        :param objects_max_refs: Maximum object references; rejects import if exceeded
         :type objects_max_refs: int, optional
-        :return: list of imported stix2 objects and a list of stix2 objects with too many deps
-        :rtype: Tuple[List,List]
+        :return: Tuple of (imported objects, objects with too many dependencies)
+        :rtype: Tuple[list, list]
         """
         data = json.loads(json_data)
         return self.import_bundle(data, update, types, work_id, objects_max_refs)
@@ -341,13 +339,13 @@ class OpenCTIStix2:
     def extract_embedded_relationships(
         self, stix_object: Dict, types: List = None
     ) -> Dict:
-        """extracts embedded relationship objects from a stix2 entity
+        """Extract embedded relationship objects from a STIX2 entity.
 
-        :param stix_object: valid stix2 object
+        :param stix_object: Valid STIX2 object
         :type stix_object: Dict
-        :param types: list of stix2 types, defaults to None
+        :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
-        :return: embedded relationships as dict
+        :return: Dictionary containing embedded relationships and references
         :rtype: dict
         """
 
@@ -1092,16 +1090,16 @@ class OpenCTIStix2:
     def import_object(
         self, stix_object: Dict, update: bool = False, types: List = None
     ) -> Optional[List]:
-        """import a stix2 object
+        """Import a STIX2 object into OpenCTI.
 
-        :param stix_object: valid stix2 object
+        :param stix_object: Valid STIX2 object to import
         :type stix_object: Dict
-        :param update: whether to update data in the database, defaults to False
+        :param update: Whether to update data in the database, defaults to False
         :type update: bool, optional
-        :param types: list of stix2 types, defaults to None
+        :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
-        :return: list of imported stix2 objects
-        :rtype: list
+        :return: List of imported STIX2 objects or None on failure
+        :rtype: list or None
         """
 
         self.opencti.app_logger.info(

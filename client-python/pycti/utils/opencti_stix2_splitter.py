@@ -288,6 +288,13 @@ class OpenCTIStix2Splitter:
         bundles = []
 
         def by_dep_size(elem):
+            """Get the dependency count for sorting elements.
+
+            :param elem: Element dictionary containing nb_deps
+            :type elem: dict
+            :return: Number of dependencies
+            :rtype: int
+            """
             return elem["nb_deps"]
 
         self.elements.sort(key=by_dep_size)

@@ -27,7 +27,11 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
     """
 
     def __init__(self, opencti):
+        """Initialize the StixCyberObservable instance.
 
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = SCO_PROPERTIES
         self.properties_with_files = SCO_PROPERTIES_WITH_FILES

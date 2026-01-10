@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from pycti.utils.constants import StixCyberObservableTypes
 
 
@@ -21,7 +19,6 @@ class OpenCTIStix2Update:
         :type opencti: OpenCTIApiClient
         """
         self.opencti = opencti
-        self.mapping_cache = {}
 
     def add_object_marking_refs(self, entity_type, id, object_marking_refs, version=2):
         """Add marking definition references to an entity.

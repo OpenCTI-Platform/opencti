@@ -373,6 +373,10 @@ class Event:
         :type id: str
         :param filters: the filters to apply if no id provided
         :type filters: dict
+        :param customAttributes: custom attributes to return
+        :type customAttributes: str
+        :param withFiles: whether to include files
+        :type withFiles: bool
         :return: Event object
         :rtype: dict or None
         """
