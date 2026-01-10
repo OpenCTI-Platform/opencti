@@ -374,8 +374,13 @@ export const aiSummary = async (context, user, args) => {
   # Reports
   ${JSON.stringify(content)}
   
-  # Instructions
-    - Your response should match the provided content format which is HTML, including appropriate HTML tags such as <h2>, <ul>, and any necessary styling or structure. Ensure the content is well-formatted, semantic, and compatible with modern browsers.
+  # IMPORTANT: Output Format
+    - Your response MUST be in HTML format only. DO NOT use Markdown syntax.
+    - Use HTML tags like <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em> for formatting.
+    - DO NOT use Markdown syntax such as ##, ###, **, *, - for lists, etc.
+    - Example: Use <h2>Key Findings</h2> NOT ## Key Findings
+    - Example: Use <ul><li>Item</li></ul> NOT - Item
+    - Your response should include appropriate HTML tags such as <h2>, <ul>, and any necessary styling or structure. Ensure the content is well-formatted, semantic, and compatible with modern browsers.
     - Do not include <html>, <head> and <body> tags.
   `;
   const userPromptTopics = `
