@@ -264,8 +264,8 @@ class OpenCTIStix2Splitter:
         if use_json:
             try:
                 bundle_data = json.loads(bundle)
-            except json.JSONDecodeError:
-                raise Exception("File data is not a valid JSON")
+            except json.JSONDecodeError as e:
+                raise Exception(f"File data is not a valid JSON: {e}")
         else:
             bundle_data = bundle
 
