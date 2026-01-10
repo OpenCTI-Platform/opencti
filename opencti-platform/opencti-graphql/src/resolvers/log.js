@@ -37,6 +37,7 @@ const logResolvers = {
       return Promise.resolve(data.external_references ?? [])
         .then((externalReferences) => refPromises.then((refs) => externalReferences.concat(refs)));
     },
+    changes: (data, _, __) => data.changes ?? [],
   },
   Mutation: {
     frontendErrorLog: (_, { message, codeStack, componentStack }, __) => {
