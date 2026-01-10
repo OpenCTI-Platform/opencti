@@ -1,5 +1,10 @@
-name: Check signed commits in PR 
-on: [pull_request,pull_request_target]
+name: Check Pull request conventions
+on:
+  pull_request:
+    types: [edited, synchronize, opened, reopened]
+  pull_request_target:
+    types: [edited, synchronize, opened, reopened]
+
 jobs:
   check-signed-commits:
     name: Check signed commits in PR
@@ -17,3 +22,18 @@ jobs:
       with:
         comment: |
           Thank you for your contribution, but we need you to sign your commits. Please see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits
+
+  verify-linked-issue:
+    name: Verify Linked Issue
+    if: !contains(github.event.issue.labels.*.name, 'dependencies')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+    - name: Verify Linked Issue
+      uses: hattan/verify-linked-issue-action@v1.1.5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        message: 'Please attach at least one issue to your Pull Request'
