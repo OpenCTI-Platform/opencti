@@ -16,6 +16,11 @@ class Label:
     """
 
     def __init__(self, opencti):
+        """Initialize the Label instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id

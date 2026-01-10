@@ -8,6 +8,11 @@ class OpenCTIApiNotification:
     """
 
     def __init__(self, api):
+        """Initialize the OpenCTIApiNotification instance.
+
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        """
         self.api = api
 
     def delete(self, **kwargs):

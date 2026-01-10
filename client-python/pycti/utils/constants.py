@@ -744,6 +744,16 @@ class CustomObservableCryptographicKey:
     ["value"],
 )
 class CustomObservableSshKey:
-    """SSH-Key observable."""
+    """Custom STIX2 SSH-Key observable for OpenCTI.
+
+    Represents an SSH key cyber observable such as public or private SSH keys.
+
+    :param value: The SSH key value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
 
     pass

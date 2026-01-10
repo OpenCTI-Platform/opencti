@@ -12,6 +12,11 @@ class OpenCTIApiWork:
     """
 
     def __init__(self, api):
+        """Initialize the OpenCTIApiWork instance.
+
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        """
         self.api = api
 
     def to_received(self, work_id: str, message: str):

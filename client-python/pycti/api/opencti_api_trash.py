@@ -8,6 +8,11 @@ class OpenCTIApiTrash:
     """
 
     def __init__(self, api):
+        """Initialize the OpenCTIApiTrash instance.
+
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        """
         self.api = api
 
     def restore(self, operation_id: str):

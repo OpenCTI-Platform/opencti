@@ -141,7 +141,15 @@ class File:
     """
 
     def __init__(self, name, data, mime="text/plain"):
-        """Constructor method."""
+        """Initialize the File instance.
+
+        :param name: the filename
+        :type name: str
+        :param data: the file content
+        :type data: str or bytes
+        :param mime: the MIME type of the file (default: "text/plain")
+        :type mime: str
+        """
         self.name = name
         self.data = data
         self.mime = mime
@@ -197,7 +205,35 @@ class OpenCTIApiClient:
         requests_timeout: int = 300,
         provider: Optional[str] = None,
     ):
-        """Constructor method"""
+        """Initialize the OpenCTIApiClient instance.
+
+        :param url: OpenCTI platform URL
+        :type url: str
+        :param token: OpenCTI API authentication token
+        :type token: str
+        :param log_level: logging level (default: "info")
+        :type log_level: str
+        :param ssl_verify: SSL certificate verification setting
+        :type ssl_verify: Union[bool, str]
+        :param proxies: proxy configuration dictionary with "http" and "https" keys
+        :type proxies: Dict[str, str] or None
+        :param json_logging: whether to format logs as JSON (default: False)
+        :type json_logging: bool
+        :param bundle_send_to_queue: whether bundles are sent to queue (default: True)
+        :type bundle_send_to_queue: bool
+        :param cert: client certificate path or tuple of (cert, key) paths
+        :type cert: str, tuple, or None
+        :param custom_headers: custom headers in format "header01:value;header02:value"
+        :type custom_headers: str or None
+        :param perform_health_check: whether to check API access on init (default: True)
+        :type perform_health_check: bool
+        :param requests_timeout: timeout for API requests in seconds (default: 300)
+        :type requests_timeout: int
+        :param provider: client provider for User-Agent header (format: provider/version)
+        :type provider: str or None
+
+        :raises ValueError: If URL or token is missing or invalid
+        """
 
         # Check configuration
         self.bundle_send_to_queue = bundle_send_to_queue

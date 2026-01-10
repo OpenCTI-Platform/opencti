@@ -14,6 +14,11 @@ class OpenCTIApiConnector:
     """
 
     def __init__(self, api):
+        """Initialize the OpenCTIApiConnector instance.
+
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        """
         self.api = api
 
     def read(self, connector_id: str) -> Dict:

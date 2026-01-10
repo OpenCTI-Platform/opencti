@@ -16,6 +16,11 @@ class Role:
     """
 
     def __init__(self, opencti):
+        """Initialize the Role instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id

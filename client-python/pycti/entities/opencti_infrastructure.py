@@ -441,29 +441,53 @@ class Infrastructure:
         """Create an Infrastructure object.
 
         :param name: the name of the Infrastructure (required)
+        :type name: str
         :param stix_id: (optional) the STIX ID
+        :type stix_id: str
         :param createdBy: (optional) the author ID
+        :type createdBy: str
         :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
         :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
         :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
         :param revoked: (optional) whether the infrastructure is revoked
+        :type revoked: bool
         :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
         :param lang: (optional) language
+        :type lang: str
         :param created: (optional) creation date
+        :type created: str
         :param modified: (optional) modification date
+        :type modified: str
         :param description: (optional) description
+        :type description: str
         :param aliases: (optional) list of aliases
+        :type aliases: list
         :param infrastructure_types: (optional) list of infrastructure types
+        :type infrastructure_types: list
         :param first_seen: (optional) first seen date
+        :type first_seen: str
         :param last_seen: (optional) last seen date
+        :type last_seen: str
         :param killChainPhases: (optional) list of kill chain phase IDs
+        :type killChainPhases: list
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
         :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
         :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
         :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
         :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
         :param file: (optional) File object to attach
+        :type file: dict
         :param fileMarkings: (optional) list of marking definition IDs for the file
+        :type fileMarkings: list
         :return: Infrastructure object
         :rtype: dict or None
         """

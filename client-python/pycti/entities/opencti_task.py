@@ -16,6 +16,11 @@ class Task:
     """
 
     def __init__(self, opencti):
+        """Initialize the Task instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id

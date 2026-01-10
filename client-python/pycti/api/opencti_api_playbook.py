@@ -8,6 +8,11 @@ class OpenCTIApiPlaybook:
     """
 
     def __init__(self, api):
+        """Initialize the OpenCTIApiPlaybook instance.
+
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        """
         self.api = api
 
     def playbook_step_execution(self, playbook: dict, bundle: str):

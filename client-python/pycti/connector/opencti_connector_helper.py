@@ -1532,6 +1532,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         YEARS = 31536000
 
     def __init__(self, config: Dict, playbook_compatible: bool = False) -> None:
+        """Initialize the OpenCTIConnectorHelper.
+
+        :param config: Configuration dictionary with OpenCTI and connector settings
+        :type config: Dict
+        :param playbook_compatible: Whether the connector can be used in playbooks
+        :type playbook_compatible: bool
+        """
         sys.excepthook = killProgramHook
 
         # Cache

@@ -8,6 +8,11 @@ class OpenCTIApiWorkspace:
     """
 
     def __init__(self, api):
+        """Initialize the OpenCTIApiWorkspace instance.
+
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        """
         self.api = api
 
     def delete(self, **kwargs):

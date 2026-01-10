@@ -17,6 +17,11 @@ class Incident:
     """
 
     def __init__(self, opencti):
+        """Initialize the Incident instance.
+
+        :param opencti: OpenCTI API client instance
+        :type opencti: OpenCTIApiClient
+        """
         self.opencti = opencti
         self.properties = """
             id
@@ -425,31 +430,57 @@ class Incident:
         """Create an Incident object.
 
         :param name: the name of the Incident (required)
+        :type name: str
         :param stix_id: (optional) the STIX ID
+        :type stix_id: str
         :param createdBy: (optional) the author ID
+        :type createdBy: str
         :param objectMarking: (optional) list of marking definition IDs
+        :type objectMarking: list
         :param objectLabel: (optional) list of label IDs
+        :type objectLabel: list
         :param externalReferences: (optional) list of external reference IDs
+        :type externalReferences: list
         :param revoked: (optional) whether the incident is revoked
+        :type revoked: bool
         :param confidence: (optional) confidence level (0-100)
+        :type confidence: int
         :param lang: (optional) language
+        :type lang: str
         :param created: (optional) creation date
+        :type created: str
         :param modified: (optional) modification date
+        :type modified: str
         :param description: (optional) description
+        :type description: str
         :param aliases: (optional) list of aliases
+        :type aliases: list
         :param first_seen: (optional) first seen date
+        :type first_seen: str
         :param last_seen: (optional) last seen date
+        :type last_seen: str
         :param objective: (optional) objective of the incident
+        :type objective: str
         :param incident_type: (optional) type of incident
+        :type incident_type: str
         :param severity: (optional) severity level
+        :type severity: str
         :param source: (optional) source of the incident
+        :type source: str
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
+        :type x_opencti_stix_ids: list
         :param objectOrganization: (optional) list of organization IDs
+        :type objectOrganization: list
         :param x_opencti_workflow_id: (optional) workflow ID
+        :type x_opencti_workflow_id: str
         :param x_opencti_modified_at: (optional) custom modification date
+        :type x_opencti_modified_at: str
         :param update: (optional) whether to update if exists (default: False)
+        :type update: bool
         :param file: (optional) File object to attach
+        :type file: dict
         :param fileMarkings: (optional) list of marking definition IDs for the file
+        :type fileMarkings: list
         :return: Incident object
         :rtype: dict or None
         """

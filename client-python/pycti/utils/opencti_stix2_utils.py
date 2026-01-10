@@ -158,9 +158,10 @@ OBSERVABLES_VALUE_INT = [
 
 
 class OpenCTIStix2Utils:
-    """Utility class for STIX2 operations in OpenCTI
+    """Utility class for STIX2 operations in OpenCTI.
 
-    Provides helper methods for STIX2 conversions and pattern generation.
+    Provides helper methods for STIX2 conversions and pattern generation,
+    including type mappings, observable pattern creation, and reference counting.
     """
 
     @staticmethod

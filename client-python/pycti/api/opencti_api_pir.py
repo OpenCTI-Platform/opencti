@@ -8,6 +8,11 @@ class OpenCTIApiPir:
     """
 
     def __init__(self, api):
+        """Initialize the OpenCTIApiPir instance.
+
+        :param api: OpenCTI API client instance
+        :type api: OpenCTIApiClient
+        """
         self.api = api
 
     def pir_flag_element(self, **kwargs):
