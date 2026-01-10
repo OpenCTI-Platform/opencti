@@ -27,7 +27,6 @@ const AI_AZURE_DEPLOYMENT = conf.get('ai:ai_azure_deployment');
 let AI_ENABLED = true;
 let client: Mistral | OpenAI | AzureOpenAI | null = null;
 let nlqChat: ChatOpenAI | ChatMistralAI | AzureChatOpenAI | null = null;
-let initializingClients = false;
 
 const resetClients = () => {
   client = null;
@@ -35,16 +34,15 @@ const resetClients = () => {
 };
 
 const initClients = () => {
-  if (client || nlqChat) {
+  if (client && nlqChat) {
     return;
   }
-  if (initializingClients) {
-    return;
+  if ((client && !nlqChat) || (!client && nlqChat)) {
+    resetClients();
   }
   if (!AI_ENABLED || !AI_TOKEN) {
     return;
   }
-  initializingClients = true;
   switch (AI_TYPE) {
     case 'mistralai':
       client = new Mistral({
@@ -116,24 +114,18 @@ const initClients = () => {
     default:
       throw UnsupportedError('Not supported AI type (currently support: mistralai, openai, azureopenai)', { type: AI_TYPE });
   }
-  initializingClients = false;
 };
 
 export const setAiEnabled = (enabled: boolean) => {
   AI_ENABLED = enabled;
   if (!AI_ENABLED) {
-    if (client || nlqChat) {
-      resetClients();
-    }
-    initializingClients = false;
+    resetClients();
     return;
   }
-  if (!client && !nlqChat) {
-    initClients();
-  }
+  initClients();
 };
 
-if (AI_TOKEN) {
+if (AI_ENABLED && AI_TOKEN) {
   initClients();
 }
 
@@ -245,6 +237,9 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
     endpoint: AI_ENDPOINT,
     model: AI_MODEL,
   });
+  if (!AI_ENABLED) {
+    throw UnsupportedError('AI is disabled in platform settings');
+  }
   initClients();
   if (!nlqChat) {
     throw badAiConfigError;
