@@ -18,9 +18,7 @@ jobs:
 
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
-      with:
-        ref: ${{ inputs.checkout_ref }}
+      uses: actions/checkout@v4
 
     - name: Runner information
       continue-on-error: true
@@ -142,7 +140,7 @@ jobs:
 
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
 
     - name: Runner information
       continue-on-error: true
@@ -217,7 +215,7 @@ jobs:
 
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
 
     - name: Runner information
       continue-on-error: true
