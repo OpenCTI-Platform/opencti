@@ -832,7 +832,7 @@ class StixCoreRelationship:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_stix_core_relationship] Missing parameters: id and key and value",
+                "[opencti_stix_core_relationship] Missing parameters: id and input",
             )
             return None
 

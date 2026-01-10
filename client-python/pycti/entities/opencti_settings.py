@@ -330,8 +330,10 @@ class Settings:
         """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
-        if id is None:
-            self.opencti.admin_logger.error("[opencti_settings] Missing parameters: id")
+        if id is None or input is None:
+            self.opencti.admin_logger.error(
+                "[opencti_settings] Missing parameters: id and input"
+            )
             return None
 
         query = (

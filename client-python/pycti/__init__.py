@@ -12,8 +12,6 @@ from .connector.opencti_connector_helper import (
 from .connector.opencti_metric_handler import OpenCTIMetricHandler
 from .entities.opencti_attack_pattern import AttackPattern
 from .entities.opencti_campaign import Campaign
-
-# Administrative entities
 from .entities.opencti_capability import Capability
 from .entities.opencti_case_incident import CaseIncident
 from .entities.opencti_case_rfi import CaseRfi
@@ -47,6 +45,8 @@ from .entities.opencti_report import Report
 from .entities.opencti_role import Role
 from .entities.opencti_security_coverage import SecurityCoverage
 from .entities.opencti_settings import Settings
+from .entities.opencti_stix import Stix
+from .entities.opencti_stix_core_object import StixCoreObject
 from .entities.opencti_stix_core_relationship import StixCoreRelationship
 from .entities.opencti_stix_cyber_observable import StixCyberObservable
 from .entities.opencti_stix_domain_object import StixDomainObject
@@ -63,8 +63,6 @@ from .entities.opencti_tool import Tool
 from .entities.opencti_user import User
 from .entities.opencti_vocabulary import Vocabulary
 from .entities.opencti_vulnerability import Vulnerability
-from .entities.opencti_stix import Stix
-from .entities.opencti_stix_core_object import StixCoreObject
 from .utils.constants import (
     CustomObjectCaseIncident,
     CustomObjectChannel,

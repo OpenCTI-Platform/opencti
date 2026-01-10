@@ -663,7 +663,7 @@ class Opinion:
             return True
         else:
             self.opencti.app_logger.error(
-                "[opencti_opinion] Missing parameters: id and entity_id"
+                "[opencti_opinion] Missing parameters: id and stixObjectOrStixRelationshipId"
             )
             return False
 

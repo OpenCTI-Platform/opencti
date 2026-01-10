@@ -385,5 +385,7 @@ class StixNestedRefRelationship:
                 result["data"]["stixRefRelationshipEdit"]["fieldPatch"]
             )
         else:
-            self.opencti.app_logger.error("Missing parameters: id and key and value")
+            self.opencti.app_logger.error(
+                "[opencti_stix_nested_ref_relationship] Missing parameters: id and input"
+            )
             return None

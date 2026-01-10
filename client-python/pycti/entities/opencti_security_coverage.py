@@ -274,6 +274,7 @@ class SecurityCoverage:
         duration = kwargs.get("duration", None)
         type_affinity = kwargs.get("type_affinity", None)
         platforms_affinity = kwargs.get("platforms_affinity", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         file = kwargs.get("file", None)
         file_markings = kwargs.get("fileMarkings", None)
 
@@ -311,6 +312,7 @@ class SecurityCoverage:
                         "duration": duration,
                         "type_affinity": type_affinity,
                         "platforms_affinity": platforms_affinity,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
                         "file": file,
                         "fileMarkings": file_markings,
                     }

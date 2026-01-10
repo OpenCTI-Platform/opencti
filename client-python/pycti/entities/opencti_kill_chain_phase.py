@@ -272,7 +272,7 @@ class KillChainPhase:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_kill_chain] Missing parameters: id and key and value"
+                "[opencti_kill_chain_phase] Missing parameters: id and input"
             )
             return None
 

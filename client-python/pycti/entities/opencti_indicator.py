@@ -157,6 +157,7 @@ class Indicator:
                         "after": after,
                         "orderBy": order_by,
                         "orderMode": order_mode,
+                        "toStix": to_stix,
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["indicators"])

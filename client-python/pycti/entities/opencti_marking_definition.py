@@ -295,7 +295,7 @@ class MarkingDefinition:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_marking_definition] Missing parameters: id and key and value"
+                "[opencti_marking_definition] Missing parameters: id and input"
             )
             return None
 

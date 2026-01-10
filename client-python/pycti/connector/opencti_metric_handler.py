@@ -82,7 +82,7 @@ class OpenCTIMetricHandler:
                 ),
                 "run_count": Counter(
                     "runs_total",
-                    "Number of run",
+                    "Number of runs",
                     namespace=namespace,
                     subsystem=subsystem,
                 ),

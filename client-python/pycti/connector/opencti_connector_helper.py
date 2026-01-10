@@ -638,7 +638,7 @@ class ListenQueue(threading.Thread):
                 opencti_entity = do_read(id=entity_id, withFiles=True)
                 if opencti_entity is None:
                     raise ValueError(
-                        "Unable to read/access to the entity, please check that the connector permission"
+                        "Unable to read/access the entity, please check the connector permissions"
                     )
                 event_data["enrichment_entity"] = opencti_entity
                 # Handle action vs playbook behavior
@@ -703,7 +703,7 @@ class ListenQueue(threading.Thread):
                         )
                     )
 
-            # Handle applicant_id for in-personalization
+            # Handle applicant_id for impersonation
             self.helper.applicant_id = self.connector_applicant_id
             self.helper.api_impersonate.set_applicant_id_header(
                 self.connector_applicant_id
@@ -809,7 +809,7 @@ class ListenQueue(threading.Thread):
             while not self.exit_event.is_set():
                 try:
                     self.helper.connector_logger.info(
-                        "ListenQueue connecting to rabbitMq."
+                        "ListenQueue connecting to RabbitMQ."
                     )
                     # Connect the broker
                     self.pika_credentials = pika.PlainCredentials(
@@ -833,7 +833,7 @@ class ListenQueue(threading.Thread):
                     self.pika_connection = pika.BlockingConnection(self.pika_parameters)
                     self.channel = self.pika_connection.channel()
                     try:
-                        # confirm_delivery is only for cluster mode rabbitMQ
+                        # confirm_delivery is only for cluster mode RabbitMQ
                         # when not in cluster mode this line raise an exception
                         self.channel.confirm_delivery()
                     except Exception as err:  # pylint: disable=broad-except
@@ -2167,7 +2167,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 queue_messages_size_byte = connector_queue_details["messages_size"]
                 queue_threshold = float(self.connect_queue_threshold)
 
-                # Convert queue_messages_size to Mo (decimal)
+                # Convert queue_messages_size to MB (decimal)
                 queue_messages_size_mo = queue_messages_size_byte / 1000000
 
                 self.connector_logger.debug(
@@ -2199,7 +2199,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             else:
                 self.metric.inc("error_count")
                 self.connector_logger.error(
-                    "[ERROR] An error occurred while retrieving connector details"
+                    "An error occurred while retrieving connector details"
                 )
                 sys.excepthook(*sys.exc_info())
         except Exception as err:

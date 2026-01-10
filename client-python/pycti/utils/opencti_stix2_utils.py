@@ -220,10 +220,38 @@ class OpenCTIStix2Utils:
         )
 
     @staticmethod
+    def retrieve_class_for_method(
+        opencti_api_client, entity: Dict, type_path: str, method: str
+    ) -> Any:
+        """Retrieve the appropriate API class for a given entity type and method.
+
+        :param opencti_api_client: OpenCTI API client instance
+        :type opencti_api_client: OpenCTIApiClient
+        :param entity: Entity dictionary containing the type
+        :type entity: Dict
+        :param type_path: Path to the type field in the entity
+        :type type_path: str
+        :param method: Name of the method to check for
+        :type method: str
+        :return: The API class that has the specified method, or None
+        :rtype: Any
+        """
+        if entity is not None and type_path in entity:
+            attribute_name = entity[type_path].lower().replace("-", "_")
+            if hasattr(opencti_api_client, attribute_name):
+                attribute = getattr(opencti_api_client, attribute_name)
+                if hasattr(attribute, method):
+                    return attribute
+        return None
+
+    @staticmethod
     def retrieveClassForMethod(
         openCTIApiClient, entity: Dict, type_path: str, method: str
     ) -> Any:
         """Retrieve the appropriate API class for a given entity type and method.
+
+        .. deprecated::
+            Use :meth:`retrieve_class_for_method` instead.
 
         :param openCTIApiClient: OpenCTI API client instance
         :type openCTIApiClient: OpenCTIApiClient
@@ -236,13 +264,9 @@ class OpenCTIStix2Utils:
         :return: The API class that has the specified method, or None
         :rtype: Any
         """
-        if entity is not None and type_path in entity:
-            attributeName = entity[type_path].lower().replace("-", "_")
-            if hasattr(openCTIApiClient, attributeName):
-                attribute = getattr(openCTIApiClient, attributeName)
-                if hasattr(attribute, method):
-                    return attribute
-        return None
+        return OpenCTIStix2Utils.retrieve_class_for_method(
+            openCTIApiClient, entity, type_path, method
+        )
 
     @staticmethod
     def compute_object_refs_number(entity: Dict):

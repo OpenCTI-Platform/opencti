@@ -14,7 +14,7 @@ class CustomJsonFormatter(json.JsonFormatter):
         :param record: The LogRecord instance
         :param message_dict: The message dictionary
         """
-        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
+        super().add_fields(log_record, record, message_dict)
         if not log_record.get("timestamp"):
             # This doesn't use record.created, so it is slightly off
             now = datetime.now(tz=timezone.utc)

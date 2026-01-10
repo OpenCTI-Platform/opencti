@@ -294,7 +294,7 @@ class Label:
             )
         else:
             self.opencti.app_logger.error(
-                "[opencti_label] Missing parameters: id and key and value"
+                "[opencti_label] Missing parameters: id and input"
             )
             return None
 

@@ -14,6 +14,7 @@ import pytz
 from cachetools import LRUCache
 from opentelemetry import metrics
 from requests import RequestException, Timeout
+from typing_extensions import deprecated
 
 from pycti.entities.opencti_identity import Identity
 from pycti.utils.constants import (
@@ -23,8 +24,6 @@ from pycti.utils.constants import (
     StixCyberObservableTypes,
     ThreatActorTypes,
 )
-from typing_extensions import deprecated
-
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
 from pycti.utils.opencti_stix2_utils import (
@@ -172,7 +171,7 @@ class OpenCTIStix2:
             except (dateutil.parser.ParserError, TypeError, OverflowError) as e:
                 raise ValueError(f"{e}: {date} does not contain a valid date string")
         else:
-            date_value = datetime.datetime.utcnow()
+            date_value = datetime.datetime.now(datetime.timezone.utc)
 
         if not date_value.tzinfo:
             self.opencti.app_logger.info("No timezone found. Setting to UTC")
@@ -1901,8 +1900,8 @@ class OpenCTIStix2:
         if "hashes" in entity:
             hashes = entity["hashes"]
             entity["hashes"] = {}
-            for hash in hashes:
-                entity["hashes"][hash["algorithm"]] = hash["hash"]
+            for hash_item in hashes:
+                entity["hashes"][hash_item["algorithm"]] = hash_item["hash"]
 
         # Final
         entity["x_opencti_id"] = entity["id"]
@@ -2461,21 +2460,21 @@ class OpenCTIStix2:
 
             # Refilter all the reports object refs
             final_result = []
-            for entity in result:
-                if entity["type"] in [
+            for result_entity in result:
+                if result_entity["type"] in [
                     "report",
                     "note",
                     "opinion",
                     "observed-data",
                     "grouping",
                 ]:
-                    if "object_refs" in entity:
-                        entity["object_refs"] = [
-                            k for k in entity["object_refs"] if k in uuids
+                    if "object_refs" in result_entity:
+                        result_entity["object_refs"] = [
+                            k for k in result_entity["object_refs"] if k in uuids
                         ]
-                    final_result.append(entity)
+                    final_result.append(result_entity)
                 else:
-                    final_result.append(entity)
+                    final_result.append(result_entity)
             return final_result
         else:
             return []

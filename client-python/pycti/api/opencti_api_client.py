@@ -10,7 +10,7 @@ import shutil
 import signal
 import tempfile
 import threading
-from typing import Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import magic
 import requests
@@ -876,7 +876,7 @@ class OpenCTIApiClient:
                     result.append(self.process_multiple_fields(row))
             return result
 
-        # -- When data is wrapper in edges
+        # -- When data is wrapped in edges
         for edge in (
             data["edges"] if "edges" in data and data["edges"] is not None else []
         ):
@@ -1032,7 +1032,7 @@ class OpenCTIApiClient:
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
-            query_vars = {"file": (File(file_name, data, mime_type))}
+            query_vars = {"file": File(file_name, data, mime_type)}
             # optional file markings
             if file_markings is not None:
                 query_vars["fileMarkings"] = file_markings
@@ -1116,7 +1116,7 @@ class OpenCTIApiClient:
             return self.query(
                 query,
                 {
-                    "file": (File(file_name, data, mime_type)),
+                    "file": File(file_name, data, mime_type),
                     "entityId": entity_id,
                     "file_markings": file_markings,
                 },
@@ -1180,7 +1180,7 @@ class OpenCTIApiClient:
         return json.loads(result["data"]["stix"])
 
     @staticmethod
-    def get_attribute_in_extension(key, object) -> any:
+    def get_attribute_in_extension(key, stix_object) -> Any:
         """Get an attribute value from OpenCTI STIX extensions.
 
         Searches for the key in OpenCTI extension definitions, or falls back
@@ -1188,60 +1188,60 @@ class OpenCTIApiClient:
 
         :param key: the attribute key to retrieve
         :type key: str
-        :param object: the STIX object containing extensions
-        :type object: dict
+        :param stix_object: the STIX object containing extensions
+        :type stix_object: dict
         :return: the attribute value if found, None otherwise
-        :rtype: any
+        :rtype: Any
         """
         if (
-            "extensions" in object
+            "extensions" in stix_object
             and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            in object["extensions"]
+            in stix_object["extensions"]
             and key
-            in object["extensions"][
+            in stix_object["extensions"][
                 "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
             ]
         ):
-            return object["extensions"][
+            return stix_object["extensions"][
                 "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
             ][key]
         elif (
-            "extensions" in object
+            "extensions" in stix_object
             and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            in object["extensions"]
+            in stix_object["extensions"]
             and key
-            in object["extensions"][
+            in stix_object["extensions"][
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
             ]
         ):
-            return object["extensions"][
+            return stix_object["extensions"][
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
             ][key]
-        elif key in object and key not in ["type"]:
-            return object[key]
+        elif key in stix_object and key not in ["type"]:
+            return stix_object[key]
         return None
 
     @staticmethod
-    def get_attribute_in_mitre_extension(key, object) -> any:
+    def get_attribute_in_mitre_extension(key, stix_object) -> Any:
         """Get an attribute value from MITRE ATT&CK STIX extension.
 
         :param key: the attribute key to retrieve
         :type key: str
-        :param object: the STIX object containing extensions
-        :type object: dict
+        :param stix_object: the STIX object containing extensions
+        :type stix_object: dict
         :return: the attribute value if found, None otherwise
-        :rtype: any
+        :rtype: Any
         """
         if (
-            "extensions" in object
+            "extensions" in stix_object
             and "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
-            in object["extensions"]
+            in stix_object["extensions"]
             and key
-            in object["extensions"][
+            in stix_object["extensions"][
                 "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
             ]
         ):
-            return object["extensions"][
+            return stix_object["extensions"][
                 "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
             ][key]
         return None

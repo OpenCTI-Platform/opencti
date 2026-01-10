@@ -593,6 +593,11 @@ class ObservedData:
                 return result[0]
             else:
                 return None
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_observed_data] Missing parameters: id or filters"
+            )
+            return None
 
     def contains_stix_object_or_stix_relationship(self, **kwargs):
         """Check if an observedData already contains a STIX entity.
