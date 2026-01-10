@@ -649,9 +649,7 @@ class OpenCTIStix2:
                                 if "description" in external_reference
                                 else None
                             ),
-                            x_opencti_files=(
-                                ext_ref_files if len(ext_ref_files) > 0 else None
-                            ),
+                            x_opencti_files=(ext_ref_files or None),
                         )["id"]
 
                     # Upload additional files after creation (first file attached during creation)
