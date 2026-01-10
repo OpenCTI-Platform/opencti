@@ -104,7 +104,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
             </Typography>
             <div className="clearfix" />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', paddingRight: 200 }}>
             <div style={{ display: 'flex' }}>
               <div style={{ marginRight: theme.spacing(0.5) }}>
                 {canDelete && (

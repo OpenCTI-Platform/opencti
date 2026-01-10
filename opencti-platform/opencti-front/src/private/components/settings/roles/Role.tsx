@@ -27,7 +27,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     margin: 0,
-    padding: 0,
+    padding: '0 200px 0 0',
   },
   gridContainer: {
     marginBottom: 20,
