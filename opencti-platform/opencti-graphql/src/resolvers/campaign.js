@@ -8,6 +8,7 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
+import { findSecurityCoverageByCoveredId } from '../modules/securityCoverage/securityCoverage-domain';
 
 const campaignResolvers = {
   Query: {
@@ -19,6 +20,9 @@ const campaignResolvers = {
       }
       return campaignsTimeSeries(context, context.user, args);
     },
+  },
+  Campaign: {
+    securityCoverage: (campaign, _, context) => findSecurityCoverageByCoveredId(context, context.user, campaign.id),
   },
   Mutation: {
     campaignEdit: (_, { id }, context) => ({
