@@ -28,7 +28,8 @@ author = "OpenCTI Project"
 
 # The full version, including alpha/beta/rc tags
 # Dynamically read from pycti to stay in sync
-from pycti import __version__
+from pycti import __version__  # isort: skip
+
 release = __version__
 
 master_doc = "index"
