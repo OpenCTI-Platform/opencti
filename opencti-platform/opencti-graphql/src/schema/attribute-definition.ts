@@ -325,7 +325,9 @@ export const authorizedMembers: NestedObjectAttribute<AuthorizedMembers> = {
     return translate;
   },
   representative: (item, translate, _ = DefaultFormating): string => {
-    return translate[item.id] + ' (' + item.access_right + ')';
+    const groupIds = item.groups_restriction_ids ?? [];
+    const organizationGroups = groupIds.map((id) => translate[id]).join(', ');
+    return translate[item.id] + (groupIds.length > 0 ? ' x [' + organizationGroups + ']' : '') + ' (' + item.access_right + ')';
   },
   mappings: [
     id,
