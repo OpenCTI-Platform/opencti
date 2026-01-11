@@ -134,7 +134,15 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
   if (!AI_ENABLED) {
     throw UnsupportedError('AI is disabled in platform settings');
   }
-  initClients();
+  // Initialize AI clients only if not already initialized, and handle initialization errors explicitly.
+  if (!client) {
+    try {
+      initClients();
+    } catch (err) {
+      logApp.error('[AI] Failed to initialize AI clients before querying MistralAI', { cause: err });
+      throw UnknownError('AI client initialization failed');
+    }
+  }
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
