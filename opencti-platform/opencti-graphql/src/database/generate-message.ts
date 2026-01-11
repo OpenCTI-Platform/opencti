@@ -190,3 +190,44 @@ export const generateMessageFromChanges = (changes: Change[], format: Formating 
   }
   return newMessage;
 };
+
+type LegacyChangeFormat = {
+  field: string;
+  previous: string[];
+  new: string[];
+  added: string[];
+  removed: string[];
+};
+const legacyHistoryChanges = (log: any) => {
+  const { context_data } = log;
+  return context_data.changes.map((change: LegacyChangeFormat) => {
+    if (change.new.length > 0) {
+      return {
+        field: change.field,
+        changes_added: change.new.map((v) => ({ raw: v, human: v })),
+        changes_removed: change.previous.map((v) => ({ raw: v, human: v })),
+      };
+    }
+    return {
+      field: change.field,
+      changes_added: change.added.map((v) => ({ raw: v, human: v })),
+      changes_removed: change.removed.map((v) => ({ raw: v, human: v })),
+    };
+  });
+};
+
+export const enrichContextDataWithMessageAndChanges = (log: any, args: Formating) => {
+  const { context_data } = log;
+  // For retro compatibility directly use the message if available
+  const historyChanges = context_data.history_changes ?? [];
+  const message = historyChanges.length > 0
+    ? generateMessageFromChanges(context_data.history_changes, args) : context_data.message;
+  // For retro compatibility use context._data.changes if available
+  if (context_data.changes) {
+    const changes = legacyHistoryChanges(log);
+    return { ...context_data, message, changes, entity_id: log.entity_id ?? log.context_data.id };
+  }
+  // For new changes format
+  const changes = humanizeHistoryChanges(historyChanges, args);
+  return { ...context_data, message, changes, entity_id: log.entity_id ?? log.context_data.id };
+};

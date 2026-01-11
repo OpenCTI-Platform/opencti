@@ -3,7 +3,7 @@ import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { logFrontend } from '../config/conf';
 import { filterMembersWithUsersOrgs } from '../utils/access';
-import { generateMessageFromChanges, humanizeHistoryChanges } from '../database/generate-message';
+import { enrichContextDataWithMessageAndChanges } from '../database/generate-message';
 
 const logResolvers = {
   Query: {
@@ -26,13 +26,7 @@ const logResolvers = {
       const filteredUser = await filterMembersWithUsersOrgs(context, context.user, [realUser]);
       return filteredUser[0];
     },
-    context_data: (log, args, _) => {
-      const { context_data } = log;
-      const message = (context_data.history_changes ?? []).length > 0
-        ? generateMessageFromChanges(context_data.history_changes, args) : context_data.message;
-      const changes = humanizeHistoryChanges(log.context_data.history_changes ?? [], args);
-      return { ...context_data, message, changes, entity_id: log.entity_id ?? log.context_data.id };
-    },
+    context_data: (log, args, _) => enrichContextDataWithMessageAndChanges(log, args),
     raw_data: (log, _, __) => JSON.stringify(log, null, 2),
     context_uri: (log, _, __) => (log.context_data.id && log.entity_type === 'History' ? `/dashboard/id/${log.context_data.id}` : undefined),
     event_status: (log, _, __) => log.event_status ?? 'success',
