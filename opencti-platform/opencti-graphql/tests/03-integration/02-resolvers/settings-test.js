@@ -159,19 +159,21 @@ describe('Settings resolver standard behavior', () => {
     });
     resetCacheForEntity(ENTITY_TYPE_SETTINGS);
 
-    const aiResult = await queryAsAdmin({
-      query: AI_FIX_SPELLING_MUTATION,
-      variables: { id: 'ai-test', content: 'Some content to check.' },
-    });
-    expect(aiResult).not.toBeNull();
-    expect(aiResult.errors.length).toEqual(1);
-    expect(aiResult.errors.at(0).message).toEqual('AI is disabled in platform settings');
-
-    await queryAsAdmin({
-      query: UPDATE_SETTINGS_QUERY,
-      variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [true] }] },
-    });
-    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    try {
+      const aiResult = await queryAsAdmin({
+        query: AI_FIX_SPELLING_MUTATION,
+        variables: { id: 'ai-test', content: 'Some content to check.' },
+      });
+      expect(aiResult).not.toBeNull();
+      expect(aiResult.errors.length).toEqual(1);
+      expect(aiResult.errors.at(0).message).toEqual('AI is disabled in platform settings');
+    } finally {
+      await queryAsAdmin({
+        query: UPDATE_SETTINGS_QUERY,
+        variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [true] }] },
+      });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    }
   });
 });
 
