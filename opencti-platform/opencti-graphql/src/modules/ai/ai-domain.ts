@@ -42,7 +42,6 @@ import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObj
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../../schema/stixMetaObject';
-import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../../schema/stixMetaObject';
 import { RELATION_EXTERNAL_REFERENCE } from '../../schema/stixRefRelationship';
 import type { BasicStoreEntity } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
