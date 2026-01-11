@@ -1,8 +1,12 @@
 // region static registration of rules definition
 import AttributedToAttributedDefinition from './attributed-to-attributed/AttributedToAttributedDefinition';
+import AttributionIndicatorIndicatesDefinition from './attribution-indicator-indicates/AttributionIndicatorIndicatesDefinition';
+import AttributionObservableRelatedDefinition from './attribution-observable-related/AttributionObservableRelatedDefinition';
 import AttributionTargetsDefinition from './attribution-targets/AttributionTargetsDefinition';
 import AttributionUseDefinition from './attribution-use/AttributionUseDefinition';
+import BelongsToAttributedDefinition from './belongs-to-attributed/BelongsToAttributedDefinition';
 import IndicateSightedDefinition from './indicate-sighted/IndicateSightedDefinition';
+import InfrastructureObservableRelatedDefinition from './infrastructure-observable-related/InfrastructureObservableRelatedDefinition';
 import LocalizationOfTargetsDefinition from './localization-of-targets/LocalizationOfTargetsDefinition';
 import LocatedAtLocatedDefinition from './located-at-located/LocatedAtLocatedDefinition';
 import LocationTargetsDefinition from './location-targets/LocationTargetsDefinition';
@@ -16,6 +20,7 @@ import ReportRefIdentityPartOfDefinition from './report-refs-identity-part-of/Re
 import ReportRefIndicatorBasedOnDefinition from './report-refs-indicator-based-on/ReportRefIndicatorBasedOnDefinition';
 import ReportRefLocationLocatedAtDefinition from './report-refs-location-located-at/ReportRefLocationLocatedAtDefinition';
 import ReportRefObservableBasedOnDefinition from './report-refs-observable-based-on/ReportRefObservableBasedOnDefinition';
+import ReportRefObservableBelongsToDefinition from './report-refs-observable-belongs-to/ReportRefObservableBelongsToDefinition';
 import SightingIncidentDefinition from './sighting-incident/SightingIncidentDefinition';
 import SightingIndicatorDefinition from './sighting-indicator/SightingIndicatorDefinition';
 import SightingObservableDefinition from './sighting-observable/SightingObservableDefinition';
@@ -23,9 +28,13 @@ import ParentTechniqueUseDefinition from './parent-technique-use/ParentTechnique
 
 export const rule_definitions = [
   AttributedToAttributedDefinition,
+  AttributionIndicatorIndicatesDefinition,
+  AttributionObservableRelatedDefinition,
   AttributionTargetsDefinition,
   AttributionUseDefinition,
+  BelongsToAttributedDefinition,
   IndicateSightedDefinition,
+  InfrastructureObservableRelatedDefinition,
   LocalizationOfTargetsDefinition,
   LocatedAtLocatedDefinition,
   LocationTargetsDefinition,
@@ -39,6 +48,7 @@ export const rule_definitions = [
   ReportRefIndicatorBasedOnDefinition,
   ReportRefLocationLocatedAtDefinition,
   ReportRefObservableBasedOnDefinition,
+  ReportRefObservableBelongsToDefinition,
   SightingIncidentDefinition,
   SightingIndicatorDefinition,
   SightingObservableDefinition,

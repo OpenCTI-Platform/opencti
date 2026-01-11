@@ -2,9 +2,13 @@ import type { RuleRuntime } from '../types/rules';
 import type { BasicRuleEntity } from '../types/store';
 import { ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import AttributedToAttributedRule from '../rules/attributed-to-attributed/AttributedToAttributedRule';
+import AttributionIndicatorIndicatesRule from '../rules/attribution-indicator-indicates/AttributionIndicatorIndicatesRule';
+import AttributionObservableRelatedRule from '../rules/attribution-observable-related/AttributionObservableRelatedRule';
 import AttributionTargetsRule from '../rules/attribution-targets/AttributionTargetsRule';
 import AttributionUseRule from '../rules/attribution-use/AttributionUseRule';
+import BelongsToAttributedRule from '../rules/belongs-to-attributed/BelongsToAttributedRule';
 import RuleLocalizationOfTargets from '../rules/localization-of-targets/LocalizationOfTargetsRule';
+import InfrastructureObservableRelatedRule from '../rules/infrastructure-observable-related/InfrastructureObservableRelatedRule';
 import LocatedAtLocatedRule from '../rules/located-at-located/LocatedAtLocatedRule';
 import LocationTargetsRule from '../rules/location-targets/LocationTargetsRule';
 import ParticipateToParts from '../rules/participate-to-parts/ParticipateToPartsRule';
@@ -20,6 +24,7 @@ import SightingIndicatorRule from '../rules/sighting-indicator/SightingIndicator
 import ReportRefIdentityPartOfRule from '../rules/report-refs-identity-part-of/ReportRefIdentityPartOfRule';
 import ReportRefsIndicatorBasedOnRule from '../rules/report-refs-indicator-based-on/ReportRefIndicatorBasedOnRule';
 import ReportRefObservableBasedOnRule from '../rules/report-refs-observable-based-on/ReportRefObservableBasedOnRule';
+import ReportRefObservableBelongsToRule from '../rules/report-refs-observable-belongs-to/ReportRefObservableBelongsToRule';
 import ReportRefsLocationLocatedAtRule from '../rules/report-refs-location-located-at/ReportRefLocationLocatedAtRule';
 import ParentTechniqueUseRule from '../rules/parent-technique-use/ParentTechniqueUseRule';
 import { BUS_TOPICS, DEV_MODE, logApp } from '../config/conf';
@@ -35,9 +40,13 @@ import { publishUserAction } from '../listener/UserActionListener';
 
 export const RULES_DECLARATION: Array<RuleRuntime> = [
   AttributedToAttributedRule,
+  AttributionIndicatorIndicatesRule,
+  AttributionObservableRelatedRule,
   AttributionTargetsRule,
-  IndicateSightedRule,
   AttributionUseRule,
+  BelongsToAttributedRule,
+  IndicateSightedRule,
+  InfrastructureObservableRelatedRule,
   RuleLocalizationOfTargets,
   LocatedAtLocatedRule,
   LocationTargetsRule,
@@ -52,6 +61,7 @@ export const RULES_DECLARATION: Array<RuleRuntime> = [
   ReportRefIdentityPartOfRule,
   ReportRefsIndicatorBasedOnRule,
   ReportRefObservableBasedOnRule,
+  ReportRefObservableBelongsToRule,
   ReportRefsLocationLocatedAtRule,
   ParentTechniqueUseRule,
 ];
