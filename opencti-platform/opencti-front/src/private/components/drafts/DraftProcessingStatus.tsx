@@ -7,6 +7,7 @@ import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Badge } from '@mui/material';
 import { CheckCircleOutlined } from '@mui/icons-material';
+import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../components/i18n';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import DraftWorks from './DraftWorks';
@@ -27,15 +28,16 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       {!isCurrentDraftProcessing && (
-        <Tooltip title={t_i18n('No processes running')}>
-          <CheckCircleOutlined
-            onClick={() => {
-              setDisplayProcesses(true);
-            }}
-            color="success"
-            style={{ cursor: 'pointer' }}
-          />
-        </Tooltip>
+        <IconButton
+          color="success"
+          size="default"
+          onClick={() => {
+            forceRefetch();
+            setDisplayProcesses(true);
+          }}
+        >
+          <CheckCircleOutlined />
+        </IconButton>
       )}
       {isCurrentDraftProcessing && (
         <Tooltip title={t_i18n('Processes currently running')}>

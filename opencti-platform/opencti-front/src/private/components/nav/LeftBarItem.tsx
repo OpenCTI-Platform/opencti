@@ -157,7 +157,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         {menuItem}
       </Tooltip>
     ) : (
-      <React.Fragment key={item.label}>{menuItem}</React.Fragment>
+      <div key={item.label}>{menuItem}</div>
     );
   };
 

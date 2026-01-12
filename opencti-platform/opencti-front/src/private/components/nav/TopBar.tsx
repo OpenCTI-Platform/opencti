@@ -209,10 +209,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       sx={{
         marginLeft: navOpen ? `${OPEN_BAR_WIDTH}px` : `${SMALL_BAR_WIDTH}px`,
         width: navOpen ? `calc(100% - ${OPEN_BAR_WIDTH}px)` : `calc(100% - ${SMALL_BAR_WIDTH}px)`,
+        backgroundColor: 'transparent',
         backdropFilter: 'blur(4px)',
-        background: `linear-gradient(90deg, ${appBarGradient} 100%)`,
-        borderBottom: `1px solid ${theme.palette.background.secondary}`,
-        height: 68,
       }}
     >
       {/* Header and Footer Banners containing classification level of system */}
@@ -220,13 +218,14 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         style={{
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
-          borderBottom: draftContext ? `1px solid ${draftModeColor}` : 'initial',
           height: '100%',
           minHeight: 68,
           paddingLeft: theme.spacing(3),
           paddingRight: theme.spacing(3),
           display: 'flex',
           justifyContent: 'space-between',
+          background: `linear-gradient(90deg, ${appBarGradient} 100%)`,
+          borderBottom: draftContext ? `1px solid ${draftModeColor}` : `1px solid ${theme.palette.background.secondary}`,
         }}
       >
         {hasKnowledgeAccess && (
@@ -239,10 +238,11 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           />
         )}
         <div>
-          {!!draftContext && (
-            <DraftContextBanner />
-          )}
           <Stack direction="row" gap={1} alignItems="center">
+            {draftContext && (
+              <DraftContextBanner />
+            )}
+
             {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <>

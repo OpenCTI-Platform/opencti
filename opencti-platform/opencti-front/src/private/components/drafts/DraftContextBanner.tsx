@@ -4,7 +4,8 @@ import { DraftContextBanner_data$key } from '@components/drafts/__generated__/Dr
 import { DraftContextBannerQuery } from '@components/drafts/__generated__/DraftContextBannerQuery.graphql';
 import DraftProcessingStatus from '@components/drafts/DraftProcessingStatus';
 import { LockOutlined } from '@mui/icons-material';
-import { AlertTitle, IconButton, Tooltip } from '@mui/material';
+import { AlertTitle, Stack, Tooltip } from '@mui/material';
+import IconButton from '@common/button/IconButton';
 import Alert from '@mui/material/Alert';
 import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
@@ -187,96 +188,87 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
   }, []);
 
   return (
-    <div style={{ padding: '0 12px', flex: 1 }}>
-      <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-        <div style={{ padding: '0 12px' }}>
-          {currentAccessRight.canManage && (
-            <Tooltip title={t_i18n('Authorized members')}>
-              <IconButton
-                onClick={() => {
-                  setDisplayAuthorizeMembersDialog(true);
-                }}
-                color="primary"
-              >
-                <LockOutlined />
-              </IconButton>
-            </Tooltip>
-          )}
-          {displayAuthorizeMembersDialog && (
-            <FormAuthorizedMembersDialog
-              id={id}
-              mutation={draftContextBannerDraftEditAuthorizedMembersMutation}
-              authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
-              open={displayAuthorizeMembersDialog}
-              handleClose={() => setDisplayAuthorizeMembersDialog(false)}
-              owner={creators?.[0]}
-              canDeactivate
-            />
-          )}
-        </div>
-        <div style={{ padding: '0 12px' }}>
-          <DraftProcessingStatus forceRefetch={refetch} />
-        </div>
-        <div style={{ padding: '0 12px', flex: 1 }}>
-          <DraftBlock body={truncate(name, 40)} />
-        </div>
-        <div>
+    <Stack direction="row" alignItems="center" gap={1}>
+      {currentAccessRight.canManage && (
+        <Tooltip title={t_i18n('Authorized members')}>
+          <IconButton
+            size="default"
+            onClick={() => {
+              setDisplayAuthorizeMembersDialog(true);
+            }}
+            color="primary"
+          >
+            <LockOutlined />
+          </IconButton>
+        </Tooltip>
+      )}
+
+      {displayAuthorizeMembersDialog && (
+        <FormAuthorizedMembersDialog
+          id={id}
+          mutation={draftContextBannerDraftEditAuthorizedMembersMutation}
+          authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
+          open={displayAuthorizeMembersDialog}
+          handleClose={() => setDisplayAuthorizeMembersDialog(false)}
+          owner={creators?.[0]}
+          canDeactivate
+        />
+      )}
+
+      <DraftProcessingStatus forceRefetch={refetch} />
+      <DraftBlock body={truncate(name, 40)} />
+
+      <Button
+        variant="secondary"
+        onClick={handleExitDraft}
+      >
+        {t_i18n('Exit draft')}
+      </Button>
+
+      <Tooltip title={(!canDeleteKnowledge || !currentAccessRight.canEdit) ? t_i18n('You do not have the access rights to approve a draft') : ''}>
+        <span>
           <Button
-            variant="secondary"
             style={{ width: '100%' }}
-            onClick={handleExitDraft}
+            onClick={() => setDisplayApprove(true)}
+            disabled={objectsCount.totalCount < 1 || !canDeleteKnowledge || !currentAccessRight.canEdit}
           >
-            {t_i18n('Exit draft')}
+            {t_i18n('Approve draft')}
           </Button>
-        </div>
+        </span>
+      </Tooltip>
 
-        <div style={{ padding: '0 12px' }}>
-          <Tooltip title={(!canDeleteKnowledge || !currentAccessRight.canEdit) ? t_i18n('You do not have the access rights to approve a draft') : ''}>
-            <span>
-              <Button
-                style={{ width: '100%' }}
-                onClick={() => setDisplayApprove(true)}
-                disabled={objectsCount.totalCount < 1 || !canDeleteKnowledge || !currentAccessRight.canEdit}
-              >
-                {t_i18n('Approve draft')}
-              </Button>
-            </span>
-          </Tooltip>
-          <Dialog
-            open={displayApprove}
-            slotProps={{ paper: { elevation: 1 } }}
-            keepMounted={true}
-            slots={{ transition: Transition }}
-            onClose={() => setDisplayApprove(false)}
-          >
-            <DialogTitle>
-              {t_i18n('Are you sure?')}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                {t_i18n('Do you want to approve this draft and send it to ingestion?')}
-                {currentlyProcessing && (
-                  <Alert style={{ marginTop: 10 }} severity="warning">
-                    <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
-                    {t_i18n('There are processes still running that could impact the data of the draft. '
-                      + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
-                  </Alert>
-                )}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button variant="secondary" onClick={() => setDisplayApprove(false)} disabled={approving}>
-                {t_i18n('Cancel')}
-              </Button>
-              <Button onClick={handleValidateDraft} disabled={approving}>
-                {t_i18n('Approve')}
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </div>
-
-      </div>
-    </div>
+      <Dialog
+        open={displayApprove}
+        slotProps={{ paper: { elevation: 1 } }}
+        keepMounted={true}
+        slots={{ transition: Transition }}
+        onClose={() => setDisplayApprove(false)}
+      >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to approve this draft and send it to ingestion?')}
+            {currentlyProcessing && (
+              <Alert style={{ marginTop: 10 }} severity="warning">
+                <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
+                {t_i18n('There are processes still running that could impact the data of the draft. '
+                  + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
+              </Alert>
+            )}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="secondary" onClick={() => setDisplayApprove(false)} disabled={approving}>
+            {t_i18n('Cancel')}
+          </Button>
+          <Button onClick={handleValidateDraft} disabled={approving}>
+            {t_i18n('Approve')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Stack>
   );
 };
 
