@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
+import { alpha, useTheme } from '@mui/material';
 
 const styles = () => ({
   chip: {
@@ -24,14 +25,15 @@ const styles = () => ({
   },
 });
 
+const theme = useTheme();
 const inlineStyles = {
   white: {
     backgroundColor: '#ffffff',
     color: '#2b2b2b',
   },
   green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
+    backgroundColor: alpha(theme.palette.success.main, 0.08),
+    color: theme.palette.success.main,
   },
   blue: {
     backgroundColor: 'rgba(92, 123, 245, 0.08)',

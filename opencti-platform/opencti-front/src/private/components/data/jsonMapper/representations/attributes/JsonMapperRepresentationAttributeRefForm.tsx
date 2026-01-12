@@ -25,6 +25,7 @@ import type { Theme } from '../../../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
+const theme = useTheme<Theme>();
 const useStyles = makeStyles(() => ({
   container: {
     width: '100%',
@@ -36,11 +37,11 @@ const useStyles = makeStyles(() => ({
   },
   inputError: {
     '& fieldset': {
-      borderColor: 'rgb(244, 67, 54)',
+      borderColor: theme.palette.error.main,
     },
   },
   redStar: {
-    color: 'rgb(244, 67, 54)',
+    color: theme.palette.error.main,
     marginLeft: '5px',
   },
 }));
@@ -60,7 +61,6 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
 
   const { name, value } = field;
   const isRelationFromOrTo = name.endsWith('from') || name.endsWith('to');

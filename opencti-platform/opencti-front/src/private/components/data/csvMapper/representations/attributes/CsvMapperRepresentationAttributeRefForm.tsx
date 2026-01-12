@@ -18,9 +18,11 @@ import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects, isStixCoreRelationships } from '../../../../../../utils/stixTypeUtils';
+import { useTheme } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
+const theme = useTheme();
 const useStyles = makeStyles(() => ({
   container: {
     width: '100%',
@@ -32,11 +34,11 @@ const useStyles = makeStyles(() => ({
   },
   inputError: {
     '& fieldset': {
-      borderColor: 'rgb(244, 67, 54)',
+      borderColor: theme.palette.error.main,
     },
   },
   redStar: {
-    color: 'rgb(244, 67, 54)',
+    color: theme.palette.error.main,
     marginLeft: '5px',
   },
 }));

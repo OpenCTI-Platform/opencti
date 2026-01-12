@@ -9,9 +9,11 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
 import TextField from '../../../../../../components/TextField';
 import JsonMapperRepresentionAttributeSelectedConfigurations from './JsonMapperRepresentionAttributeSelectedConfigurations';
+import { useTheme } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
+const theme = useTheme();
 const useStyles = makeStyles(() => ({
   container: {
     width: '100%',
@@ -22,7 +24,7 @@ const useStyles = makeStyles(() => ({
     gap: '10px',
   },
   redStar: {
-    color: 'rgb(244, 67, 54)',
+    color: theme.palette.error.main,
     marginLeft: '5px',
   },
 }));

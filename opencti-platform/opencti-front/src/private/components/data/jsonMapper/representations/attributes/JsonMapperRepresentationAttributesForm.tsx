@@ -18,6 +18,7 @@ import { isEmptyField } from '../../../../../../utils/utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
+const theme = useTheme<Theme>();
 const useStyles = makeStyles(() => ({
   container: {
     width: '100%',
@@ -30,7 +31,7 @@ const useStyles = makeStyles(() => ({
     gap: '10px',
   },
   redStar: {
-    color: 'rgb(244, 67, 54)',
+    color: theme.palette.error.main,
     marginLeft: '5px',
   },
 }));
@@ -84,7 +85,6 @@ const JsonMapperRepresentationAttributesForm: FunctionComponent<
   JsonMapperRepresentationAttributesFormProps
 > = ({ handleErrors, representation, representationType, representationName }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const classes = useStyles();
   const { schemaAttributes } = useJsonMappersData();
   const data = useFragment<JsonMapperRepresentationAttributesForm_allSchemaAttributes$key>(
