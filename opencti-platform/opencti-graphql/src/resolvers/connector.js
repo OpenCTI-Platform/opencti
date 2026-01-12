@@ -56,6 +56,7 @@ import {
   computeManagerConnectorImage,
   computeManagerContractHash,
   connector,
+  getConnectorJwks,
   connectorManager,
   connectorManagers,
   connectors,
@@ -114,6 +115,7 @@ const connectorResolvers = {
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn, true),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
     manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
+    jwks: () => getConnectorJwks(),
   },
   ManagedConnector: {
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),

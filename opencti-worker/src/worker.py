@@ -312,7 +312,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         if listen_consumer is None or not listen_consumer.is_alive():
                             listen_handler = ListenHandler(
                                 self.worker_logger,
-                                connector["connector_user"]["api_token"],
+                                self.api,
                                 listen_callback_uri,
                                 self.listen_api_ssl_verify,
                                 self.listen_api_http_proxy,

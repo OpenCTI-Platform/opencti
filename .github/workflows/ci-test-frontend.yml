@@ -94,6 +94,7 @@ jobs:
           -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='["*"]' \
           -e APP__ADMIN__PASSWORD=admin \
+          -e APP__CRYPTO__MASTER_SEED=mMG7tprE8I9atEkYth6jIcAyKUbXMkoKC66VDnLK2Lc= \
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
           -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \

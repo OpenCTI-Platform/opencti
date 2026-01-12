@@ -1089,7 +1089,16 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       if (isObjectAttribute(key)) {
         const path = object_path ?? key;
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
-        const patch = [{ op: operation, path: preparedPath }];
+        let patch;
+        const current = jsonpatch.getValueByPointer(instance, preparedPath);
+        if (Array.isArray(current) && value) {
+          const toRemove = Array.isArray(value) ? value : [value];
+          // Filter out items in current that match items in toRemove
+          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || R.equals(r, c)));
+          patch = [{ op: UPDATE_OPERATION_REPLACE, path: preparedPath, value: newValues }];
+        } else {
+          patch = [{ op: operation, path: preparedPath }];
+        }
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {

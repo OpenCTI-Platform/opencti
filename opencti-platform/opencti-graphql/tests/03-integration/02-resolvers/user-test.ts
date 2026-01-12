@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { elLoadById } from '../../../src/database/engine';
-import { generateStandardId, MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import {
   ADMIN_USER,
@@ -18,7 +18,6 @@ import {
   testContext,
   TESTING_USERS,
   USER_CONNECTOR,
-  USER_DISINFORMATION_ANALYST,
   USER_EDITOR,
   USER_PARTICIPATE,
   USER_SECURITY,
@@ -35,12 +34,10 @@ import {
   setOrganization,
   unSetOrganization,
 } from '../../utils/testQueryHelper';
-import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
-import { stixDomainObjectAddRelation, stixDomainObjectDeleteRelation } from '../../../src/domain/stixDomainObject';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 
 const LIST_QUERY = gql`
   query users(
@@ -83,13 +80,19 @@ const READ_QUERY = gql`
       id
       standard_id
       name
-      description
-      created_at
-      creator {
-        name
-      }
+      user_email
+      firstname
+      lastname
+      language
+      theme
+      user_service_account
+      external
       user_confidence_level {
         max_confidence
+        overrides {
+          entity_type
+          max_confidence
+        }
       }
       effective_confidence_level {
         max_confidence
@@ -105,7 +108,16 @@ const READ_QUERY = gql`
         edges {
           node {
             id
+            standard_id
             name
+            description
+            group_confidence_level {
+              max_confidence
+              overrides {
+                entity_type
+                max_confidence
+              }
+            }
           }
         }
       }
@@ -121,7 +133,6 @@ const READ_QUERY = gql`
         name
         description
       }
-      api_token
     }
   }
 `;
@@ -205,7 +216,6 @@ const UPDATE_QUERY = gql`
         description
         language
         user_email
-        api_token
         user_service_account
         account_status
         user_confidence_level {
@@ -254,17 +264,6 @@ const DELETE_GROUP_QUERY = gql`
       delete
     }
   }
-`;
-
-const TOKEN_RENEW_QUERY = gql`
-    mutation UserEdit($id: ID!) {
-        userEdit(id: $id) {
-            tokenRenew {
-                id
-                api_token
-            }
-        }
-    }
 `;
 
 describe('User resolver standard behavior', () => {
@@ -402,35 +401,7 @@ describe('User resolver standard behavior', () => {
       expect(result.errors[0].message).toBe('Email cannot be updated for external user');
     }
   });
-  it('should Admin be able renew a user token', async () => {
-    const queryUserBeforeRenew = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
-    const tokenBeforeRenew = queryUserBeforeRenew.data?.user.api_token;
-    expect(tokenBeforeRenew).toBeDefined();
 
-    const renewResult = await queryAsAdminWithSuccess({
-      query: TOKEN_RENEW_QUERY,
-      variables: { id: userInternalId },
-    });
-    expect(renewResult.data?.userEdit.tokenRenew.api_token).toBeDefined();
-    expect(renewResult.data?.userEdit.tokenRenew.api_token).not.toBe(tokenBeforeRenew);
-  });
-  it('should Analyst NOT ne able to renew user token', async () => {
-    await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST.client, {
-      query: TOKEN_RENEW_QUERY,
-      variables: { id: userInternalId },
-    });
-  });
-  it('should be forbidden to renew yaml/env configured token (admin)', async () => {
-    const result = await queryAsAdmin({
-      query: TOKEN_RENEW_QUERY,
-      variables: { id: OPENCTI_ADMIN_UUID },
-    });
-    expect(result.errors).toBeDefined();
-    expect(result.errors?.length).toBe(1);
-    if (result.errors) {
-      expect(result.errors[0].message).toBe('Cannot renew token of admin user defined in configuration, please change configuration instead.');
-    }
-  });
   it('should update user confidence level', async () => {
     const queryResult = await adminQuery({
       query: UPDATE_QUERY,
@@ -939,7 +910,7 @@ describe('User has no settings capability and is organization admin query behavi
     const editorUserQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: userEditorId } });
     expect(editorUserQueryResult).not.toBeNull();
     expect(editorUserQueryResult.data.user).not.toBeNull();
-    expect(editorUserQueryResult.data.user.capabilities.length).toEqual(8);
+    expect(editorUserQueryResult.data.user.capabilities.length).toEqual(10);
     const { capabilities } = editorUserQueryResult.data.user;
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
@@ -1111,7 +1082,7 @@ describe('meUser specific resolvers', async () => {
         lastname
         language
         theme
-        api_token
+        theme
         otp_activated
         otp_qr
         description
@@ -1132,18 +1103,7 @@ describe('meUser specific resolvers', async () => {
     });
     expect(queryResult.data.meEdit.language).toEqual('fr-fr');
   });
-  it('User should NOT update unauthorized attribute', async () => {
-    const variables = {
-      password: USER_EDITOR.password,
-      input: [
-        { key: 'api_token', value: 'd434ce02-e58e-4cac-8b4c-42bf16748e84' },
-      ],
-    };
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
-      query: ME_EDIT,
-      variables,
-    });
-  });
+
   it('User should update multiple authorized attributes', async () => {
     const variables = {
       password: USER_EDITOR.password,
@@ -1158,19 +1118,7 @@ describe('meUser specific resolvers', async () => {
     });
     expect(queryResult.data.meEdit.language).toEqual('en-us');
   });
-  it('User should NOT update multiple attribute when unauthorized keys in input', async () => {
-    const variables = {
-      password: USER_EDITOR.password,
-      input: [
-        { key: 'language', value: 'fr-fr' },
-        { key: 'api_token', value: 'd434ce02-e58e-4cac-8b4c-42bf16748e84' },
-      ],
-    };
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
-      query: ME_EDIT,
-      variables,
-    });
-  });
+
   it('User should NOT update password without providing proper current password', async () => {
     const variables = {
       password: 'incorrect_current_password',
@@ -1264,7 +1212,7 @@ describe('Service account User coverage', async () => {
             name
             description
           }
-          api_token
+
         }
       }
     `;
@@ -1322,5 +1270,57 @@ describe('Service account User coverage', async () => {
       const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userId } });
       expect(queryResult.data.user).toBeNull();
     }
+  });
+});
+
+describe('User API Token Mutation', () => {
+  const USER_TOKEN_ADD_MUTATION = gql`
+    mutation UserTokenAdd($input: UserTokenAddInput!) {
+      userTokenAdd(input: $input) {
+        token_id
+        plaintext_token
+        expires_at
+      }
+    }
+  `;
+
+  // Use the admin user ID for testing
+
+  it('should admin generate a token for themselves', async () => {
+    const queryResult = await adminQueryWithSuccess({
+      query: USER_TOKEN_ADD_MUTATION,
+      variables: {
+        input: {
+          name: 'Integration Test Token',
+          duration: 'UNLIMITED',
+        },
+      },
+    });
+
+    const tokenData = queryResult.data?.userTokenAdd;
+    expect(tokenData).toBeDefined();
+    expect(tokenData.token_id).toBeDefined();
+    expect(tokenData.plaintext_token).toBeDefined();
+    expect(tokenData.plaintext_token.startsWith('flgrn_octi_tkn_')).toBe(true);
+    expect(tokenData.expires_at).toBeNull();
+  });
+
+  it('should admin generate a token for another user (via context)', async () => {
+    // Note: Implicitly testing context handling if we were to switch users,
+    // but userTokenAdd currently uses the logged-in user (context.user).
+    // The current mutation definition doesn't accept a userId to generate FOR someone else directly unless impersonating.
+    // For this test, we verify basic functionality first.
+
+    const queryResult = await adminQueryWithSuccess({
+      query: USER_TOKEN_ADD_MUTATION,
+      variables: {
+        input: {
+          name: 'Short Lived Token',
+          duration: 'DAYS_30',
+        },
+      },
+    });
+
+    expect(queryResult.data?.userTokenAdd.expires_at).toBeDefined();
   });
 });

@@ -37,9 +37,13 @@ const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>)
   for (let i = 0; i < entities.length; i += 1) {
     const entity = entities[i];
     const ids = [entity.internal_id, ...(entity.x_opencti_stix_ids ?? [])];
-    // Use the user api_token as an id
-    if ('api_token' in entity && entity.api_token) {
-      ids.push(entity.api_token as string);
+    // Use the user api_tokens hashes as ids
+    if ('api_tokens' in entity && Array.isArray(entity.api_tokens)) {
+      (entity.api_tokens as Array<{ hash: string }>).forEach((token) => {
+        if (token.hash) {
+          ids.push(token.hash);
+        }
+      });
     }
     if (entity.standard_id) {
       ids.push(entity.standard_id);

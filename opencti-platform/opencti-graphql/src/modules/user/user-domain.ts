@@ -1,15 +1,26 @@
 import { v4 as uuid } from 'uuid';
+import { DateTime } from 'luxon';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { addUser, findUserPaginated } from '../../domain/user';
-import { SYSTEM_USER } from '../../utils/access';
+import { SYSTEM_USER, isUserHasCapability } from '../../utils/access';
 import type { BasicGroupEntity } from '../../types/store';
 import { findDefaultIngestionGroups } from '../../domain/group';
-import { FunctionalError, ValidationError } from '../../config/errors';
-import type { UserAddInput } from '../../generated/graphql';
+import { FunctionalError, ValidationError, ForbiddenAccess } from '../../config/errors';
+import { TokenDuration, type UserAddInput, type UserTokenAddInput } from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { updateAttribute } from '../../database/middleware';
 
+import { publishUserAction } from '../../listener/UserActionListener';
+import { notify } from '../../database/redis';
+import { BUS_TOPICS } from '../../config/conf';
+import { internalLoadById } from '../../database/middleware-loader';
+import { generateSecureToken } from '../../utils/security';
+import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../database/utils';
+import { apiTokens } from '../attributes/internalObject-registrationAttributes';
+
+// -- Existing Logic --
 export const userAlreadyExists = async (context: AuthContext, name: string) => {
   // We use SYSTEM_USER because manage ingestion should be enough to create an ingestion Feed
   const users = await findUserPaginated(context, SYSTEM_USER, {
@@ -28,11 +39,8 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
   return users.edges.length > 0;
 };
 
-export const createOnTheFlyUser = async (
-  context: AuthContext,
-  user: AuthUser,
-  input: { userName: string; serviceAccount: boolean; confidenceLevel: number | null | undefined },
-) => {
+type OnTheFlyInput = { userName: string; serviceAccount: boolean; confidenceLevel: number | null | undefined };
+export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: OnTheFlyInput) => {
   const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
   if (defaultIngestionGroups.length < 1) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
@@ -63,6 +71,208 @@ export const createOnTheFlyUser = async (
     }
     userInput = { ...userInput, user_confidence_level: { max_confidence: userConfidence, overrides: [] } };
   }
-  const newlyCreatedUser = await addUser(context, user, userInput);
-  return newlyCreatedUser;
+  return await addUser(context, user, userInput);
+};
+
+// -- API Token Logic --
+export const addUserToken = async (context: AuthContext, user: AuthUser, input: UserTokenAddInput) => {
+  if (!isUserHasCapability(user, 'APIACCESS_USETOKEN')) {
+    throw ForbiddenAccess('You are not allowed use API tokens');
+  }
+  const { duration, name } = input;
+  let expires_at = null;
+  if (duration && duration !== TokenDuration.Unlimited) {
+    const durationDays: Record<string, number> = {
+      [TokenDuration.Days_30]: 30,
+      [TokenDuration.Days_60]: 60,
+      [TokenDuration.Days_90]: 90,
+      [TokenDuration.Days_365]: 365,
+    };
+    const days = durationDays[duration];
+    if (days) {
+      expires_at = DateTime.now().plus({ days }).toUTC().toString();
+    }
+  }
+
+  const { token, hash, masked_token } = await generateSecureToken();
+  const tokenId = uuid();
+  const now = DateTime.now().toUTC().toString();
+
+  const newToken = {
+    id: tokenId,
+    name,
+    hash,
+    created_at: now,
+    expires_at,
+    masked_token,
+  };
+
+  const updates = [{ key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD }];
+  const { element } = await updateAttribute(context, user, user.id, ENTITY_TYPE_USER, updates);
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `generated a new API token '${newToken.name}'`,
+    context_data: {
+      id: user.id,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        duration,
+        name,
+        token_id: tokenId,
+      },
+    },
+  });
+
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+
+  return {
+    token_id: tokenId,
+    plaintext_token: token,
+    masked_token,
+    expires_at,
+  };
+};
+
+export const revokeUserToken = async (context: AuthContext, user: AuthUser, tokenId: string) => {
+  if (!isUserHasCapability(user, 'APIACCESS_USETOKEN')) {
+    throw ForbiddenAccess('You are not allowed use API tokens');
+  }
+  // Reload user to ensure we have the latest tokens
+  const userToEdit = await internalLoadById(context, user, user.id) as unknown as AuthUser;
+  const tokens = userToEdit.api_tokens || [];
+  const tokenToRemove = tokens.find((t: any) => t.id === tokenId);
+  if (!tokenToRemove) {
+    throw FunctionalError('Token not found', { tokenId });
+  }
+
+  const updates = [{ key: apiTokens.name, value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE }];
+  const { element } = await updateAttribute(context, user, user.id, ENTITY_TYPE_USER, updates);
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `revoked API token '${tokenToRemove.name}'`,
+    context_data: {
+      id: user.id,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        token_id: tokenId,
+      },
+    },
+  });
+
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+
+  return tokenId;
+};
+
+export const revokeUserTokenByAdmin = async (context: AuthContext, user: AuthUser, targetUserId: string, tokenId: string) => {
+  // Load target user
+  const userToEdit = await internalLoadById(context, user, targetUserId) as unknown as AuthUser;
+  if (!userToEdit) {
+    throw FunctionalError('User not found', { targetUserId });
+  }
+
+  const tokens = userToEdit.api_tokens || [];
+  const tokenToRemove = tokens.find((t: any) => t.id === tokenId);
+  if (!tokenToRemove) {
+    throw FunctionalError('Token not found', { tokenId });
+  }
+
+  const updates = [{ key: apiTokens.name, value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE }];
+  const { element } = await updateAttribute(context, user, targetUserId, ENTITY_TYPE_USER, updates);
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `revoked API token '${tokenToRemove.name}' for user '${userToEdit.user_email}'`,
+    context_data: {
+      id: targetUserId,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        token_id: tokenId,
+      },
+    },
+  });
+
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+
+  return tokenId;
+};
+
+export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, targetUserId: string, input: UserTokenAddInput) => {
+  // Load target user
+  const userToEdit = await internalLoadById(context, user, targetUserId) as unknown as AuthUser;
+  if (!userToEdit) {
+    throw FunctionalError('User not found', { targetUserId });
+  }
+
+  const { duration, name } = input;
+  let expires_at = null;
+  if (duration && duration !== TokenDuration.Unlimited) {
+    const durationDays: Record<string, number> = {
+      [TokenDuration.Days_30]: 30,
+      [TokenDuration.Days_60]: 60,
+      [TokenDuration.Days_90]: 90,
+      [TokenDuration.Days_365]: 365,
+    };
+    const days = durationDays[duration];
+    if (days) {
+      expires_at = DateTime.now().plus({ days }).toUTC().toString();
+    }
+  }
+
+  const { token, hash, masked_token } = await generateSecureToken();
+  const tokenId = uuid();
+  const now = DateTime.now().toUTC().toString();
+
+  const newToken = {
+    id: tokenId,
+    name,
+    hash,
+    created_at: now,
+    expires_at,
+    masked_token,
+  };
+
+  const updates = [{ key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD }];
+  const { element } = await updateAttribute(context, user, targetUserId, ENTITY_TYPE_USER, updates);
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `generated a new API token '${newToken.name}' for user '${userToEdit.user_email}'`,
+    context_data: {
+      id: targetUserId,
+      entity_type: ENTITY_TYPE_USER,
+      input: {
+        duration,
+        name,
+        token_id: tokenId,
+      },
+    },
+  });
+
+  // Notify for cache invalidation
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
+
+  return {
+    token_id: tokenId,
+    plaintext_token: token,
+    masked_token,
+    expires_at,
+  };
 };

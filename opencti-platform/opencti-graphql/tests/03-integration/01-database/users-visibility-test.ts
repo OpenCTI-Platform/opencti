@@ -361,6 +361,7 @@ describe('Users visibility according to their direct organizations', () => {
         password: 'userA2',
         user_email: 'userA2@mail.com',
         objectOrganization: [organizationAId],
+        groups: [GREEN_GROUP.id],
       },
     };
     USER_A2_CLIENT = createHttpClient(USER_TO_CREATE_A2.input.user_email, USER_TO_CREATE_A2.input.password);
@@ -370,6 +371,7 @@ describe('Users visibility according to their direct organizations', () => {
         password: 'userB',
         user_email: 'userB@mail.com',
         objectOrganization: [organizationBId],
+        groups: [GREEN_GROUP.id],
       },
     };
     const USER_TO_CREATE_AB = {
@@ -378,6 +380,7 @@ describe('Users visibility according to their direct organizations', () => {
         password: 'userAB',
         user_email: 'userAB@mail.com',
         objectOrganization: [organizationABId],
+        groups: [GREEN_GROUP.id],
       },
     };
     USER_AB_CLIENT = createHttpClient(USER_TO_CREATE_AB.input.user_email, USER_TO_CREATE_AB.input.password);
@@ -386,6 +389,7 @@ describe('Users visibility according to their direct organizations', () => {
         name: 'userO',
         password: 'userO',
         user_email: 'userO@mail.com',
+        groups: [GREEN_GROUP.id],
       },
     };
 
@@ -396,6 +400,7 @@ describe('Users visibility according to their direct organizations', () => {
         user_email: 'userServiceAccount@mail.com',
         objectOrganization: [organizationCId],
         user_service_account: true,
+        groups: [GREEN_GROUP.id],
       },
     };
 

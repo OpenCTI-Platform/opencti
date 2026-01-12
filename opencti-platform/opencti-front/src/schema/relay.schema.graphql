@@ -106,6 +106,14 @@ enum MemberType {
   Organization
 }
 
+enum TokenDuration {
+  DAYS_30
+  DAYS_60
+  DAYS_90
+  DAYS_365
+  UNLIMITED
+}
+
 type PageInfo {
   startCursor: String!
   endCursor: String!
@@ -1487,17 +1495,6 @@ interface IntlSettings {
   platform_translations: String
 }
 
-type MetricAttributes {
-  attribute: String!
-  name: String!
-  description: String
-}
-
-type MetricDefinition {
-  entity_type: String!
-  metrics: [MetricAttributes!]
-}
-
 interface ThemeSettings {
   platform_title: String
   platform_favicon: String
@@ -1523,6 +1520,17 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   platform_enterprise_edition_license_validated: Boolean!
   playground_enabled: Boolean!
   metrics_definition: [MetricDefinition!]
+}
+
+type MetricAttributes {
+  attribute: String!
+  name: String!
+  description: String
+}
+
+type MetricDefinition {
+  entity_type: String!
+  metrics: [MetricAttributes!]
 }
 
 enum PlatformType {
@@ -1834,6 +1842,27 @@ enum EffectiveConfidenceLevelSourceType {
 
 union EffectiveConfidenceLevelSourceObject = Group | User
 
+type ApiToken {
+  id: ID!
+  name: String
+  created_at: DateTime
+  expires_at: DateTime
+  masked_token: String
+  last_used_at: DateTime
+}
+
+type TokenGenerated {
+  token_id: String!
+  plaintext_token: String!
+  expires_at: DateTime
+  masked_token: String!
+}
+
+input UserTokenAddInput {
+  name: String!
+  duration: TokenDuration!
+}
+
 type User implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
@@ -1841,7 +1870,7 @@ type User implements BasicObject & InternalObject {
   parent_types: [String!]!
   metrics: [Metric]
   user_email: String!
-  api_token: String!
+  api_tokens: [ApiToken!]!
   personal_notifiers: [Notifier!]
   individual_id: String
   name: String!
@@ -1899,7 +1928,7 @@ type MeUser implements BasicObject & InternalObject {
   language: String
   external: Boolean
   individual_id: String
-  api_token: String!
+  api_tokens: [ApiToken!]!
   personal_notifiers: [Notifier!]
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
@@ -2410,6 +2439,7 @@ type Connector implements BasicObject & InternalObject {
   manager_connector_uptime: Int
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
+  jwks: String!
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -9620,7 +9650,6 @@ type UserEditMutations {
   fieldPatch(input: [EditInput]!): User
   contextPatch(input: EditContext): User
   contextClean: User
-  tokenRenew: User
   relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): User
   organizationAdd(organizationId: ID!): User
@@ -10075,6 +10104,7 @@ type Mutation {
   rulesRescan(elementId: ID!): Boolean
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean
   token(input: UserLoginInput): String
+  tokenJWTConnector: String!
   otpActivation(input: UserOTPActivationInput): MeUser
   otpDeactivation: MeUser
   otpUserDeactivation(id: ID!): MeUser
@@ -10091,7 +10121,10 @@ type Mutation {
   groupEdit(id: ID!): GroupEditMutations
   userAdd(input: UserAddInput!): User
   userEdit(id: ID!): UserEditMutations
-  meTokenRenew: MeUser
+  userTokenAdd(input: UserTokenAddInput!): TokenGenerated!
+  userTokenRevoke(id: ID!): ID
+  userAdminTokenRevoke(userId: ID!, id: ID!): ID
+  userAdminTokenAdd(userId: ID!, input: UserTokenAddInput!): TokenGenerated!
   meEdit(input: [EditInput]!, password: String): MeUser
   bookmarkAdd(id: ID!, type: String!): StixDomainObject
   bookmarkDelete(id: ID!): ID

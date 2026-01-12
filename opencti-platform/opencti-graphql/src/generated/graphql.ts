@@ -402,6 +402,16 @@ export enum AnalysisContentType {
   File = 'file'
 }
 
+export type ApiToken = {
+  __typename?: 'ApiToken';
+  created_at?: Maybe<Scalars['DateTime']['output']>;
+  expires_at?: Maybe<Scalars['DateTime']['output']>;
+  id: Scalars['ID']['output'];
+  last_used_at?: Maybe<Scalars['DateTime']['output']>;
+  masked_token?: Maybe<Scalars['String']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+};
+
 export type AppDebugDistribution = {
   __typename?: 'AppDebugDistribution';
   label: Scalars['String']['output'];
@@ -4138,6 +4148,7 @@ export type Connector = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
+  jwks: Scalars['String']['output'];
   manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
   manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
   manager_contract_configuration?: Maybe<Array<ManagerContractConfiguration>>;
@@ -14932,7 +14943,7 @@ export type MeUser = BasicObject & InternalObject & {
   account_status: Scalars['String']['output'];
   administrated_organizations: Array<Organization>;
   allowed_marking?: Maybe<Array<MarkingDefinition>>;
-  api_token: Scalars['String']['output'];
+  api_tokens: Array<ApiToken>;
   can_manage_sensitive_config?: Maybe<Scalars['Boolean']['output']>;
   capabilities: Array<Capability>;
   capabilitiesInDraft: Array<Capability>;
@@ -15577,7 +15588,6 @@ export type Mutation = {
   markingDefinitionAdd?: Maybe<MarkingDefinition>;
   markingDefinitionEdit?: Maybe<MarkingDefinitionEditMutations>;
   meEdit?: Maybe<MeUser>;
-  meTokenRenew?: Maybe<MeUser>;
   metricPatch?: Maybe<BasicObject>;
   narrativeAdd?: Maybe<Narrative>;
   narrativeContextClean?: Maybe<Narrative>;
@@ -15752,6 +15762,7 @@ export type Mutation = {
   threatActorIndividualRelationAdd?: Maybe<StixRefRelationship>;
   threatActorIndividualRelationDelete?: Maybe<ThreatActorIndividual>;
   token?: Maybe<Scalars['String']['output']>;
+  tokenJWTConnector: Scalars['String']['output'];
   toolAdd?: Maybe<Tool>;
   toolEdit?: Maybe<ToolEditMutations>;
   triggerActivityDelete?: Maybe<Scalars['ID']['output']>;
@@ -15772,10 +15783,14 @@ export type Mutation = {
   uploadImport?: Maybe<File>;
   uploadPending?: Maybe<File>;
   userAdd?: Maybe<User>;
+  userAdminTokenAdd: TokenGenerated;
+  userAdminTokenRevoke?: Maybe<Scalars['ID']['output']>;
   userEdit?: Maybe<UserEditMutations>;
   userNoteAdd?: Maybe<Note>;
   userOpinionAdd?: Maybe<Opinion>;
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
+  userTokenAdd: TokenGenerated;
+  userTokenRevoke?: Maybe<Scalars['ID']['output']>;
   verifyMfa?: Maybe<Scalars['Boolean']['output']>;
   verifyOtp?: Maybe<VerifyOtp>;
   vocabularyAdd?: Maybe<Vocabulary>;
@@ -18214,6 +18229,18 @@ export type MutationUserAddArgs = {
 };
 
 
+export type MutationUserAdminTokenAddArgs = {
+  input: UserTokenAddInput;
+  userId: Scalars['ID']['input'];
+};
+
+
+export type MutationUserAdminTokenRevokeArgs = {
+  id: Scalars['ID']['input'];
+  userId: Scalars['ID']['input'];
+};
+
+
 export type MutationUserEditArgs = {
   id: Scalars['ID']['input'];
 };
@@ -18230,6 +18257,16 @@ export type MutationUserOpinionAddArgs = {
 
 
 export type MutationUserSessionsKillArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationUserTokenAddArgs = {
+  input: UserTokenAddInput;
+};
+
+
+export type MutationUserTokenRevokeArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -32906,6 +32943,22 @@ export type TimeSeries = {
   value: Scalars['Int']['output'];
 };
 
+export enum TokenDuration {
+  Days_30 = 'DAYS_30',
+  Days_60 = 'DAYS_60',
+  Days_90 = 'DAYS_90',
+  Days_365 = 'DAYS_365',
+  Unlimited = 'UNLIMITED'
+}
+
+export type TokenGenerated = {
+  __typename?: 'TokenGenerated';
+  expires_at?: Maybe<Scalars['DateTime']['output']>;
+  masked_token: Scalars['String']['output'];
+  plaintext_token: Scalars['String']['output'];
+  token_id: Scalars['String']['output'];
+};
+
 export enum Tone {
   Operational = 'operational',
   Strategic = 'strategic',
@@ -33779,7 +33832,7 @@ export type User = BasicObject & InternalObject & {
   account_lock_after_date?: Maybe<Scalars['DateTime']['output']>;
   account_status: Scalars['String']['output'];
   administrated_organizations: Array<Organization>;
-  api_token: Scalars['String']['output'];
+  api_tokens: Array<ApiToken>;
   capabilities: Array<Maybe<Capability>>;
   capabilitiesInDraft: Array<Maybe<Capability>>;
   created_at: Scalars['DateTime']['output'];
@@ -34343,7 +34396,6 @@ export type UserEditMutations = {
   organizationDelete?: Maybe<User>;
   relationAdd?: Maybe<InternalRelationship>;
   relationDelete?: Maybe<User>;
-  tokenRenew?: Maybe<User>;
 };
 
 
@@ -34401,6 +34453,11 @@ export type UserStatus = {
   __typename?: 'UserStatus';
   message: Scalars['String']['output'];
   status: Scalars['String']['output'];
+};
+
+export type UserTokenAddInput = {
+  duration: TokenDuration;
+  name: Scalars['String']['input'];
 };
 
 export enum UsersOrdering {
@@ -36755,6 +36812,7 @@ export type ResolversTypes = ResolversObject<{
   Analysis: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['Analysis']>;
   AnalysisContentType: AnalysisContentType;
   Any: ResolverTypeWrapper<Scalars['Any']['output']>;
+  ApiToken: ResolverTypeWrapper<ApiToken>;
   AppDebugDistribution: ResolverTypeWrapper<AppDebugDistribution>;
   AppDebugStatistics: ResolverTypeWrapper<AppDebugStatistics>;
   AppInfo: ResolverTypeWrapper<AppInfo>;
@@ -37710,6 +37768,8 @@ export type ResolversTypes = ResolversObject<{
   ThreatActorsIndividualOrdering: ThreatActorsIndividualOrdering;
   ThreatActorsOrdering: ThreatActorsOrdering;
   TimeSeries: ResolverTypeWrapper<TimeSeries>;
+  TokenDuration: TokenDuration;
+  TokenGenerated: ResolverTypeWrapper<TokenGenerated>;
   Tone: Tone;
   Tool: ResolverTypeWrapper<Omit<Tool, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'killChainPhases' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, killChainPhases?: Maybe<Array<ResolversTypes['KillChainPhase']>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   ToolAddInput: ToolAddInput;
@@ -37745,12 +37805,13 @@ export type ResolversTypes = ResolversObject<{
   UserAgentAddInput: UserAgentAddInput;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges: Array<ResolversTypes['UserEdge']> }>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
-  UserEditMutations: ResolverTypeWrapper<Omit<UserEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'organizationAdd' | 'organizationDelete' | 'relationAdd' | 'relationDelete' | 'tokenRenew'> & { contextClean?: Maybe<ResolversTypes['User']>, contextPatch?: Maybe<ResolversTypes['User']>, fieldPatch?: Maybe<ResolversTypes['User']>, organizationAdd?: Maybe<ResolversTypes['User']>, organizationDelete?: Maybe<ResolversTypes['User']>, relationAdd?: Maybe<ResolversTypes['InternalRelationship']>, relationDelete?: Maybe<ResolversTypes['User']>, tokenRenew?: Maybe<ResolversTypes['User']> }>;
+  UserEditMutations: ResolverTypeWrapper<Omit<UserEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'organizationAdd' | 'organizationDelete' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['User']>, contextPatch?: Maybe<ResolversTypes['User']>, fieldPatch?: Maybe<ResolversTypes['User']>, organizationAdd?: Maybe<ResolversTypes['User']>, organizationDelete?: Maybe<ResolversTypes['User']>, relationAdd?: Maybe<ResolversTypes['InternalRelationship']>, relationDelete?: Maybe<ResolversTypes['User']> }>;
   UserLoginInput: UserLoginInput;
   UserOTPActivationInput: UserOtpActivationInput;
   UserOTPLoginInput: UserOtpLoginInput;
   UserSession: ResolverTypeWrapper<UserSession>;
   UserStatus: ResolverTypeWrapper<UserStatus>;
+  UserTokenAddInput: UserTokenAddInput;
   UsersOrdering: UsersOrdering;
   ValidationMode: ValidationMode;
   VerifyMfaInput: VerifyMfaInput;
@@ -37815,6 +37876,7 @@ export type ResolversParentTypes = ResolversObject<{
   AiSummary: AiSummary;
   Analysis: ResolversUnionTypes<ResolversParentTypes>['Analysis'];
   Any: Scalars['Any']['output'];
+  ApiToken: ApiToken;
   AppDebugDistribution: AppDebugDistribution;
   AppDebugStatistics: AppDebugStatistics;
   AppInfo: AppInfo;
@@ -38632,6 +38694,7 @@ export type ResolversParentTypes = ResolversObject<{
   ThreatActorIndividualConnection: Omit<ThreatActorIndividualConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ThreatActorIndividualEdge']>>> };
   ThreatActorIndividualEdge: Omit<ThreatActorIndividualEdge, 'node'> & { node: ResolversParentTypes['ThreatActorIndividual'] };
   TimeSeries: TimeSeries;
+  TokenGenerated: TokenGenerated;
   Tool: Omit<Tool, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'killChainPhases' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, killChainPhases?: Maybe<Array<ResolversParentTypes['KillChainPhase']>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ToolAddInput: ToolAddInput;
   ToolConnection: Omit<ToolConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ToolEdge']>>> };
@@ -38659,12 +38722,13 @@ export type ResolversParentTypes = ResolversObject<{
   UserAgentAddInput: UserAgentAddInput;
   UserConnection: Omit<UserConnection, 'edges'> & { edges: Array<ResolversParentTypes['UserEdge']> };
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
-  UserEditMutations: Omit<UserEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'organizationAdd' | 'organizationDelete' | 'relationAdd' | 'relationDelete' | 'tokenRenew'> & { contextClean?: Maybe<ResolversParentTypes['User']>, contextPatch?: Maybe<ResolversParentTypes['User']>, fieldPatch?: Maybe<ResolversParentTypes['User']>, organizationAdd?: Maybe<ResolversParentTypes['User']>, organizationDelete?: Maybe<ResolversParentTypes['User']>, relationAdd?: Maybe<ResolversParentTypes['InternalRelationship']>, relationDelete?: Maybe<ResolversParentTypes['User']>, tokenRenew?: Maybe<ResolversParentTypes['User']> };
+  UserEditMutations: Omit<UserEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'organizationAdd' | 'organizationDelete' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['User']>, contextPatch?: Maybe<ResolversParentTypes['User']>, fieldPatch?: Maybe<ResolversParentTypes['User']>, organizationAdd?: Maybe<ResolversParentTypes['User']>, organizationDelete?: Maybe<ResolversParentTypes['User']>, relationAdd?: Maybe<ResolversParentTypes['InternalRelationship']>, relationDelete?: Maybe<ResolversParentTypes['User']> };
   UserLoginInput: UserLoginInput;
   UserOTPActivationInput: UserOtpActivationInput;
   UserOTPLoginInput: UserOtpLoginInput;
   UserSession: UserSession;
   UserStatus: UserStatus;
+  UserTokenAddInput: UserTokenAddInput;
   VerifyMfaInput: VerifyMfaInput;
   VerifyOtp: VerifyOtp;
   VerifyOtpInput: VerifyOtpInput;
@@ -38859,6 +38923,15 @@ export type AnalysisResolvers<ContextType = any, ParentType extends ResolversPar
 export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Any'], any> {
   name: 'Any';
 }
+
+export type ApiTokenResolvers<ContextType = any, ParentType extends ResolversParentTypes['ApiToken'] = ResolversParentTypes['ApiToken']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  expires_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  last_used_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  masked_token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
 
 export type AppDebugDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppDebugDistribution'] = ResolversParentTypes['AppDebugDistribution']> = ResolversObject<{
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -40022,6 +40095,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ManagerContractConfiguration']>>, ParentType, ContextType>;
@@ -43750,7 +43824,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   account_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   administrated_organizations?: Resolver<Array<ResolversTypes['Organization']>, ParentType, ContextType>;
   allowed_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
-  api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  api_tokens?: Resolver<Array<ResolversTypes['ApiToken']>, ParentType, ContextType>;
   can_manage_sensitive_config?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
   capabilitiesInDraft?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
@@ -44183,7 +44257,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markingDefinitionAdd?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionAddArgs, 'input'>>;
   markingDefinitionEdit?: Resolver<Maybe<ResolversTypes['MarkingDefinitionEditMutations']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionEditArgs, 'id'>>;
   meEdit?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
-  meTokenRenew?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
   metricPatch?: Resolver<Maybe<ResolversTypes['BasicObject']>, ParentType, ContextType, RequireFields<MutationMetricPatchArgs, 'id' | 'input'>>;
   narrativeAdd?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeAddArgs, 'input'>>;
   narrativeContextClean?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextCleanArgs, 'id'>>;
@@ -44358,6 +44431,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   threatActorIndividualRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationAddArgs, 'id' | 'input'>>;
   threatActorIndividualRelationDelete?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutationTokenArgs>>;
+  tokenJWTConnector?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toolAdd?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<MutationToolAddArgs, 'input'>>;
   toolEdit?: Resolver<Maybe<ResolversTypes['ToolEditMutations']>, ParentType, ContextType, RequireFields<MutationToolEditArgs, 'id'>>;
   triggerActivityDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTriggerActivityDeleteArgs, 'id'>>;
@@ -44378,10 +44452,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file'>>;
   uploadPending?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadPendingArgs, 'file'>>;
   userAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUserAddArgs, 'input'>>;
+  userAdminTokenAdd?: Resolver<ResolversTypes['TokenGenerated'], ParentType, ContextType, RequireFields<MutationUserAdminTokenAddArgs, 'input' | 'userId'>>;
+  userAdminTokenRevoke?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationUserAdminTokenRevokeArgs, 'id' | 'userId'>>;
   userEdit?: Resolver<Maybe<ResolversTypes['UserEditMutations']>, ParentType, ContextType, RequireFields<MutationUserEditArgs, 'id'>>;
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
+  userTokenAdd?: Resolver<ResolversTypes['TokenGenerated'], ParentType, ContextType, RequireFields<MutationUserTokenAddArgs, 'input'>>;
+  userTokenRevoke?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationUserTokenRevokeArgs, 'id'>>;
   verifyMfa?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyMfaArgs, 'input'>>;
   verifyOtp?: Resolver<Maybe<ResolversTypes['VerifyOtp']>, ParentType, ContextType, RequireFields<MutationVerifyOtpArgs, 'input'>>;
   vocabularyAdd?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyAddArgs, 'input'>>;
@@ -48536,6 +48614,13 @@ export type TimeSeriesResolvers<ContextType = any, ParentType extends ResolversP
   value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
+export type TokenGeneratedResolvers<ContextType = any, ParentType extends ResolversParentTypes['TokenGenerated'] = ResolversParentTypes['TokenGenerated']> = ResolversObject<{
+  expires_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  masked_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  plaintext_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  token_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type ToolResolvers<ContextType = any, ParentType extends ResolversParentTypes['Tool'] = ResolversParentTypes['Tool']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
@@ -48780,7 +48865,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   account_lock_after_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   account_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   administrated_organizations?: Resolver<Array<ResolversTypes['Organization']>, ParentType, ContextType>;
-  api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  api_tokens?: Resolver<Array<ResolversTypes['ApiToken']>, ParentType, ContextType>;
   capabilities?: Resolver<Array<Maybe<ResolversTypes['Capability']>>, ParentType, ContextType>;
   capabilitiesInDraft?: Resolver<Array<Maybe<ResolversTypes['Capability']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -48960,7 +49045,6 @@ export type UserEditMutationsResolvers<ContextType = any, ParentType extends Res
   organizationDelete?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<UserEditMutationsOrganizationDeleteArgs, 'organizationId'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<UserEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<UserEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  tokenRenew?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
 }>;
 
 export type UserSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserSession'] = ResolversParentTypes['UserSession']> = ResolversObject<{
@@ -49498,6 +49582,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AiSummary?: AiSummaryResolvers<ContextType>;
   Analysis?: AnalysisResolvers<ContextType>;
   Any?: GraphQLScalarType;
+  ApiToken?: ApiTokenResolvers<ContextType>;
   AppDebugDistribution?: AppDebugDistributionResolvers<ContextType>;
   AppDebugStatistics?: AppDebugStatisticsResolvers<ContextType>;
   AppInfo?: AppInfoResolvers<ContextType>;
@@ -50109,6 +50194,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ThreatActorIndividualConnection?: ThreatActorIndividualConnectionResolvers<ContextType>;
   ThreatActorIndividualEdge?: ThreatActorIndividualEdgeResolvers<ContextType>;
   TimeSeries?: TimeSeriesResolvers<ContextType>;
+  TokenGenerated?: TokenGeneratedResolvers<ContextType>;
   Tool?: ToolResolvers<ContextType>;
   ToolConnection?: ToolConnectionResolvers<ContextType>;
   ToolEdge?: ToolEdgeResolvers<ContextType>;

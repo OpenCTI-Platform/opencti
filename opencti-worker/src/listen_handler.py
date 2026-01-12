@@ -3,8 +3,9 @@ import time
 import traceback
 from dataclasses import dataclass
 from typing import Any, Literal
+
 import requests
-from pycti import __version__
+from pycti import OpenCTIApiClient, __version__
 from requests import RequestException, Timeout
 
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
@@ -14,7 +15,7 @@ ERROR_TYPE_TIMEOUT = "Request timed out"
 @dataclass(unsafe_hash=True)
 class ListenHandler:
     logger: Any
-    connector_token: str
+    api: OpenCTIApiClient
     callback_uri: str
     listen_api_ssl_verify: bool
     listen_api_http_proxy: str
@@ -22,12 +23,14 @@ class ListenHandler:
 
     def handle_message(self, body: str) -> Literal["ack", "nack", "requeue"]:
         try:
+            # Round trip with JWT service every 30 minutes with issueConnectorJWT
+            connector_jwt = self.api.token_jwt_connector()
             response = requests.post(
                 self.callback_uri,
                 data=body,
                 headers={
                     "User-Agent": f"pycti/{__version__}",
-                    "Authorization": f"Bearer {self.connector_token}",
+                    "Authorization": f"Bearer {connector_jwt}",
                     "Content-Type": "application/json",
                 },
                 verify=self.listen_api_ssl_verify,
