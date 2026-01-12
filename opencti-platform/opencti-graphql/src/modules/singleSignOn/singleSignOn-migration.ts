@@ -47,8 +47,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
 
   if (envConfiguration.config) {
     // TODO we will need to move this function inside current file
-    const mappedConfig = configRemapping(envConfiguration.config);
-
+    const mappedConfig = strategy === StrategyType.OpenIdConnectStrategy ? envConfiguration.config : configRemapping(envConfiguration.config);
     for (const configKey in mappedConfig) {
       logApp.debug(`[SSO MIGRATION] current config key:${configKey}`);
 

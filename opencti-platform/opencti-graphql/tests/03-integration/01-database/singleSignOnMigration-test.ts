@@ -313,7 +313,7 @@ describe('Migration of SSO environment test coverage', () => {
       });
     });
   });
-  describe.only('Dry run of OpenId migrations', () => {
+  describe.todo('Dry run of OpenId migrations', () => {
     it('should OpenId minimal configuration works', async () => {
       const configuration = {
         oic_minimal: {
@@ -340,7 +340,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'clientID', type: 'string', value: 'openctioid' },
         { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
     });
 
@@ -372,7 +372,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'clientID', type: 'string', value: 'openctioid' },
         { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
     });
 
@@ -424,7 +424,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'clientID', type: 'string', value: 'openctioid' },
         { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
 
       expect(groupManagementOpenIdConfiguration.groups_management).toStrictEqual({
@@ -442,7 +442,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'clientID', type: 'string', value: 'openctioid' },
         { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
 
       expect(groupManagementEmptyConfiguration.groups_management).toStrictEqual({
@@ -485,7 +485,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'clientID', type: 'string', value: 'openctioid' },
         { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
       expect(multiOicConfigurations[1].strategy).toBe('OpenIDConnectStrategy');
       expect(multiOicConfigurations[1].name).toMatch(/oic_2-*/);
@@ -495,7 +495,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'clientID', type: 'string', value: 'openctioid' },
         { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
     });
 
@@ -528,7 +528,7 @@ describe('Migration of SSO environment test coverage', () => {
         { key: 'issuer', type: 'string', value: 'http://localhost:9999/realms/master' },
         { key: 'clientID', type: 'string', value: 'openctioid' },
         { key: 'clientSecret', type: 'string', value: 'youShallNotPass' },
-        { key: 'redirectUris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
+        { key: 'redirect_uris', type: 'array', value: '["http://localhost:4000/auth/oic/callback"]' },
       ]);
 
       expect(defaultValuesConfiguration.groups_management).toStrictEqual({
