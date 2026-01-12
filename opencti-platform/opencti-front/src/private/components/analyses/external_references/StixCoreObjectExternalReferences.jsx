@@ -8,10 +8,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
 import Skeleton from '@mui/material/Skeleton';
+import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectExternalReferencesLines, { stixCoreObjectExternalReferencesLinesQuery } from './StixCoreObjectExternalReferencesLines';
-import Card from '../../../../components/common/card/Card';
 
 const styles = (theme) => ({
   paper: {
