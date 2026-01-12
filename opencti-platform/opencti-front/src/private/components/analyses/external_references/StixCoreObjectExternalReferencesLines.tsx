@@ -25,7 +25,7 @@ import { FileLine_file$data } from '@components/common/files/__generated__/FileL
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, Stack } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -104,6 +104,8 @@ interface Connector {
     readonly name: string;
   }> | null | undefined;
 }
+
+const BUTTON_CONTAINER_WIDTH = 180;
 
 const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
   StixCoreObjectExternalReferencesLinesContainerProps
@@ -293,13 +295,12 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                             divider={true}
                             disablePadding
                             secondaryAction={(
-                              <>
+                              <Stack direction="row" gap={1}>
                                 <Tooltip title={t_i18n('Browse the link')}>
                                   <IconButton
                                     onClick={() => handleOpenExternalLink(
                                       externalReference.url ?? '',
-                                    )
-                                    }
+                                    )}
                                     color="primary"
                                   >
                                     <OpenInBrowserOutlined />
@@ -326,22 +327,37 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                     variant="inLine"
                                   />
                                 </Security>
-                              </>
+                              </Stack>
                             )}
                           >
                             <ListItemButton
                               component={Link}
                               to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                              sx={{
+                                '&.MuiListItemButton-root': {
+                                  // corresponds to button container width with some spacing
+                                  paddingRight: `${BUTTON_CONTAINER_WIDTH}px`,
+                                },
+                              }}
                             >
                               <ListItemIcon>
                                 <ItemIcon type="External-Reference" />
                               </ListItemIcon>
                               <ListItemText
-                                primary={truncate(
-                                  `${externalReference.source_name} ${externalReferenceId}`,
-                                  70,
-                                )}
-                                secondary={truncate(externalReferenceSecondary, 70)}
+                                primary={`${externalReference.source_name} ${externalReferenceId}`}
+                                secondary={externalReferenceSecondary}
+                                slotProps={{
+                                  primary: {
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  },
+                                  secondary: {
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  },
+                                }}
                               />
                             </ListItemButton>
                           </ListItem>

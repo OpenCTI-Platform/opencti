@@ -27,6 +27,7 @@ const styles = (theme) => ({
     gap: theme.spacing(1),
     marginBottom: theme.spacing(2),
     flexWrap: 'wrap',
+    alignItems: 'center',
   },
   sortFieldContainer: {
     display: 'flex',
