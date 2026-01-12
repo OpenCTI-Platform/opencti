@@ -21,20 +21,20 @@ const theme = useTheme();
 
 const inlineStyles = {
   blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
+    backgroundColor: alpha(theme.palette.severity?.info || '#4DCCFF', 0.08),
+    color: theme.palette.severity?.info || '#4DCCFF',
   },
   grey: {
     backgroundColor: alpha(theme.palette.common.grey, 0.08),
     color: theme.palette.common.grey,
   },
   orange: {
-    backgroundColor: 'rgba(255, 152, 0, 0.08)',
-    color: '#ff9800',
+    backgroundColor: alpha(theme.palette.severity?.high || '#E6700F', 0.08),
+    color: theme.palette.severity?.high || '#E6700F',
   },
   rose: {
-    backgroundColor: 'rgba(255, 192, 203, 0.2)',
-    color: '#FFC0CB',
+    backgroundColor: alpha('#F8958C', 0.08),
+    color: '#F8958C',
   },
   red: {
     backgroundColor: alpha(theme.palette.error.main, 0.08),

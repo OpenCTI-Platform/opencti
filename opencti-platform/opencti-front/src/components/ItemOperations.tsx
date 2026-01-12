@@ -22,11 +22,11 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
       color: theme.palette.common.white,
     },
     yellow: {
-      backgroundColor: '#ff9800',
+      backgroundColor: theme.palette.severity.medium,
       color: theme.palette.common.white,
     },
     lightYellow: {
-      backgroundColor: '#ec7629',
+      backgroundColor: theme.palette.severity.high,
       color: theme.palette.common.white,
     },
   };
@@ -39,10 +39,10 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
       backgroundColor: theme.palette.error.dark,
     },
     yellow: {
-      backgroundColor: '#ff9800',
+      backgroundColor: theme.palette.severity.medium,
     },
     lightYellow: {
-      backgroundColor: '#ec7629',
+      backgroundColor: theme.palette.severity.high,
     },
   };
 

@@ -13,12 +13,12 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
   const inlineStyles = {
     whiteDark: {
       backgroundColor: theme.palette.common.white,
-      color: '#2b2b2b',
+      color: '#313235',
     },
     whiteLight: {
       backgroundColor: theme.palette.common.white,
-      color: '#2b2b2b',
-      border: '1px solid #2b2b2b',
+      color: '#313235',
+      border: '1px solid #313235',
     },
     blueGrey: {
       backgroundColor: alpha(theme.palette.common.grey || '#95969D', 0.08),
@@ -31,16 +31,16 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
       color: theme.palette.success.main,
     },
     blue: {
-      backgroundColor: 'rgba(92, 123, 245, 0.08)',
-      color: '#5c7bf5',
+      backgroundColor: alpha(theme.palette.severity?.info || '#4DCCFF', 0.08),
+      color: theme.palette.severity?.info || '#4DCCFF',
     },
     red: {
       backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
       color: theme.palette.error.main,
     },
     orange: {
-      backgroundColor: 'rgba(255, 152, 0, 0.08)',
-      color: '#ff9800',
+      backgroundColor: alpha(theme.palette.severity?.high || '#E6700F', 0.08),
+      color: theme.palette.severity?.high || '#E6700F',
     },
     black: {
       backgroundColor: theme.palette.common.black,

@@ -31,44 +31,44 @@ const styles = () => ({
 const theme = useTheme();
 const inlineStylesDark = {
   white: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
+    backgroundColor: theme.palette.common.white,
+    color: '#313235',
   },
   green: {
-    backgroundColor: '#2e7d32',
+    backgroundColor: theme.palette.success.main,
   },
   blue: {
-    backgroundColor: '#283593',
+    backgroundColor: '#001BDB',
   },
   red: {
     backgroundColor: theme.palette.error.dark,
   },
   orange: {
-    backgroundColor: '#d84315',
+    backgroundColor: '#E6700F',
   },
 };
 
 const inlineStylesLight = {
   white: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
-    border: '1px solid #2b2b2b',
+    backgroundColor: theme.palette.common.white,
+    color: '#313235',
+    border: '1px solid #313235',
   },
   green: {
-    backgroundColor: '#2e7d32',
-    color: '#ffffff',
+    backgroundColor: theme.palette.success.main,
+    color: theme.palette.common.white,
   },
   blue: {
-    backgroundColor: '#283593',
-    color: '#ffffff',
+    backgroundColor: '#001BDB',
+    color: theme.palette.common.white,
   },
   red: {
     backgroundColor: theme.palette.error.dark,
-    color: '#ffffff',
+    color: theme.palette.common.white,
   },
   orange: {
-    backgroundColor: '#d84315',
-    color: '#ffffff',
+    backgroundColor: '#E6700F',
+    color: theme.palette.common.white,
   },
 };
 
@@ -90,15 +90,15 @@ const StixItemMarkings = (props) => {
           let textColor = theme.palette.text.primary;
           let border = '0';
           if (theme.palette.mode === 'light') {
-            if (backgroundColor === '#ffffff') {
-              backgroundColor = '#ffffff';
-              textColor = '#2b2b2b';
-              border = '1px solid #2b2b2b';
+            if (backgroundColor === theme.palette.common.white) {
+              backgroundColor = theme.palette.common.white;
+              textColor = '#313235';
+              border = '1px solid #313235';
             } else {
-              textColor = '#ffffff';
+              textColor = theme.palette.common.white;
             }
-          } else if (backgroundColor === '#ffffff') {
-            textColor = '#2b2b2b';
+          } else if (backgroundColor === theme.palette.common.white) {
+            textColor = '#313235';
           }
           return (
             <Chip

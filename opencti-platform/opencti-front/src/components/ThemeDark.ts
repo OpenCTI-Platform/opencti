@@ -4,14 +4,14 @@ import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text_dark.png';
 import LogoCollapsed from '../static/images/logo_dark.png';
 import { hexToRGB } from '../utils/Colors';
-import { lighten } from '@mui/material';
+import { alpha, lighten } from '@mui/material';
 
 const EE_COLOR = '#00f18d';
 
 export const THEME_DARK_DEFAULT_BACKGROUND = '#070d19';
 export const THEME_DARK_DEFAULT_BODY_END_GRADIENT = '#0C1524';
 export const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
-export const THEME_DARK_DEFAULT_SECONDARY = '#00f18d';
+export const THEME_DARK_DEFAULT_SECONDARY = '#00f18d'; // '#00f1bd'
 export const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
 export const THEME_DARK_DEFAULT_PAPER = '#09101e';
 export const THEME_DARK_DEFAULT_TEXT = '#F2F2F3';
@@ -50,7 +50,7 @@ const ThemeDark = (
     },
     dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#f44336', contrastText: '#000000', text: { primary: '#fbc2be' } },
     success: { main: '#17AB1F', dark: '#094E0B' },
-    primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
+    primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#B2ECFF' },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
     gradient: { main: '#00f18d' },
     border: {
@@ -104,13 +104,13 @@ const ThemeDark = (
       popoverItem: '#070D19',
     },
     severity: {
-      critical: '#EE3838',
+      critical: '#F14337', // #EE3838
       high: '#E6700F',
-      medium: '#E1B823',
-      low: '#16AD34',
-      info: '#1565c0',
-      none: '#424242',
-      default: '#1C2F49',
+      medium: '#F2BE3A', // #E1B823
+      low: '#17AB1F', // #16AD34
+      info: '#4DCCFF', // #1565c0
+      none: '#363B46', // #424242
+      default: '#004C66', // #1C2F49
     },
   },
   tag: {

@@ -11,15 +11,15 @@ const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({
 }) => {
   const theme = useTheme();
   const COLORS: Record<string, string> = {
-    stix: 'rgb(32, 58, 246)',
-    pcre: 'rgb(92, 123, 245)',
+    stix: theme.palette.primary.main,
+    pcre: theme.palette.primary.light,
     sigma: theme.palette.success.main,
     snort: 'rgb(231, 133, 109)',
     suricata: theme.palette.success.dark,
     yara: theme.palette.error.main,
     'tanium-signal': theme.palette.error.dark,
     spl: 'rgb(239, 108, 0)',
-    eql: 'rgb(32, 201, 151, 0.10)',
+    eql: 'rgba(32, 201, 151, 0.10)',
     shodan: 'rgb(185, 52, 37)',
   } as const;
   return (

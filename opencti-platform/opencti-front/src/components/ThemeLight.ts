@@ -8,10 +8,10 @@ import { alpha, lighten } from '@mui/material';
 
 const EE_COLOR = '#00BD94';
 
-export const THEME_LIGHT_DEFAULT_BACKGROUND = '#ececf2';
+export const THEME_LIGHT_DEFAULT_BACKGROUND = '#ececf2'; // '#f8f8f8'
 export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
-const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8';
-const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94';
+const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8'; // '#001bda'
+const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94'; // '#0c7e69'
 const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
 const THEME_LIGHT_DEFAULT_TEXT = '#18191B';
 const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
@@ -50,7 +50,7 @@ const ThemeLight = (
     },
     dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#d1584f', contrastText: '#000000', text: { primary: '#d1584f' } },
     success: { main: '#1CA55E', dark: '#0D7E39' },
-    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY },
+    primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#7587FF' },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
     border: {
@@ -105,13 +105,13 @@ const ThemeLight = (
       popoverItem: '#ECECF2',
     },
     severity: {
-      critical: '#EE3838',
+      critical: '#F14337', // #EE3838
       high: '#E6700F',
-      medium: '#E1B823',
-      low: '#16AD34',
-      info: '#1565c0',
-      none: '#424242',
-      default: '#DDE1FE',
+      medium: '#F2BE3A', // #E1B823
+      low: '#1CA55E', // #16AD34
+      info: '#00719E', // #1565c0
+      none: '#62636A', // #424242
+      default: '#ECECF2', // #DDE1FE
     },
   },
   tag: {

@@ -97,7 +97,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
 }) => {
   const theme = useTheme();
   const packageStatusColors: { [key in PackageStatus]: string } = {
-    IN_PROGRESS: '#303f9f',
+    IN_PROGRESS: theme.palette.primary.main,
     READY: theme.palette.success.main,
     IN_ERROR: theme.palette.error.main,
     TIMEOUT: theme.palette.error.main,

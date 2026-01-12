@@ -19,16 +19,16 @@ const inlineStyles = {
     color: theme.palette.success.main,
   },
   blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
+    backgroundColor: alpha(theme.palette.severity.info, 0.08),
+    color: theme.palette.severity.info,
   },
   red: {
     backgroundColor: alpha(theme.palette.error.main, 0.08),
     color: theme.palette.error.main,
   },
   orange: {
-    backgroundColor: 'rgba(255, 152, 0, 0.08)',
-    color: '#ff9800',
+    backgroundColor: alpha(theme.palette.severity.high, 0.08),
+    color: theme.palette.severity.high,
   },
 };
 
