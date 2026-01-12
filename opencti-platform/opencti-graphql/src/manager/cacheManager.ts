@@ -56,8 +56,6 @@ import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-ty
 import { fromB64 } from '../utils/base64';
 import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
-import { type BasicStoreEntitySingleSignOn, ENTITY_TYPE_SINGLE_SIGN_ON } from '../modules/singleSignOn/singleSignOn-types';
-import { refreshStrategy, registerStrategy, unregisterStrategy } from '../modules/singleSignOn/singleSignOn-providers';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -338,25 +336,6 @@ const platformPirs = (context: AuthContext) => {
   return { values: null, fn: reloadPirs, refresh: refreshPirs };
 };
 
-const platformSingleSignOn = () => {
-  const reloadSingleSignOn = () => {
-    logApp.info('[SSO] Reload in cluster not implemented yet');
-  };
-  const refreshSingleSignOn = async (values: BasicStoreEntitySingleSignOn[], instance: BasicStoreEntitySingleSignOn) => {
-    logApp.info('[SSO] Refresh implemented');
-    await refreshStrategy(instance);
-  };
-  const removeSingleSignOn = async (values: BasicStoreEntitySingleSignOn[], instance: BasicStoreEntitySingleSignOn) => {
-    logApp.info('[SSO] Remove implemented');
-    await unregisterStrategy(instance);
-  };
-  const addSingleSignOn = async (values: BasicStoreEntitySingleSignOn[], instance: BasicStoreEntitySingleSignOn) => {
-    logApp.info('[SSO] Add in cluster implemented');
-    await registerStrategy(instance);
-  };
-  return { value: null, fn: reloadSingleSignOn, refresh: refreshSingleSignOn, remove: removeSingleSignOn, add: addSingleSignOn };
-};
-
 type SubEvent = { instance: StoreEntity | StoreRelation };
 
 const initCacheManager = () => {
@@ -383,7 +362,6 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_DRAFT_WORKSPACE, platformDraftWorkspaces(context));
     writeCacheForEntity(ENTITY_TYPE_PIR, platformPirs(context));
     writeCacheForEntity(ENTITY_TYPE_DECAY_EXCLUSION_RULE, platformDecayExclusionRules(context));
-    writeCacheForEntity(ENTITY_TYPE_SINGLE_SIGN_ON, platformSingleSignOn());
   };
   return {
     init: () => initCacheContent(), // Use for testing

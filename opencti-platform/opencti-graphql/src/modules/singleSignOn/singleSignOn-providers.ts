@@ -22,6 +22,7 @@ import { isNotEmptyField } from '../../database/utils';
 import * as R from 'ramda';
 import { registerAuthenticationProvider, unregisterAuthenticationProvider } from '../../config/providers-initialization';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
+import { isSingleSignOnInGuiEnabled } from './singleSignOn';
 
 export const providerLoginHandler = (userInfo: any, done: any, opts = {}) => {
   loginFromProvider(userInfo, opts)
@@ -162,32 +163,6 @@ export const computeSamlUserInfo = (ssoConfiguration: any, samlProfile: any) => 
   return { email: userEmail, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } };
 };
 
-export const callSamlLoginCallback = (profile: any, done: any, ssoEntity: BasicStoreEntitySingleSignOn) => {
-  const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity);
-  const groupsManagement = ssoEntity.groups_management;
-  const orgsManagement = ssoEntity.organizations_management;
-
-  if (!profile) {
-    throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
-  }
-  logAuthInfo('Successfully logged from provider, computing groups and organizations', EnvStrategyType.STRATEGY_SAML, { profile, done });
-
-  const isGroupBaseAccess = (isNotEmptyField(groupsManagement) && isNotEmptyField(groupsManagement?.groups_mapping));
-  const opts = computeSamlGroupAndOrg(ssoConfiguration, profile, groupsManagement, orgsManagement);
-  const groupsToAssociate = opts.providerGroups;
-
-  if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
-    const opts = computeSamlGroupAndOrg(ssoConfiguration, profile, groupsManagement, orgsManagement);
-    const userInfo = computeSamlUserInfo(ssoConfiguration, profile);
-    addUserLoginCount();
-    logAuthInfo('All configuration is fine, login user with', EnvStrategyType.STRATEGY_SAML, { opts, userInfo });
-    providerLoginHandler(userInfo, done, opts);
-  } else {
-    logAuthInfo('Group configuration not found', EnvStrategyType.STRATEGY_SAML, { isGroupBaseAccess, groupsToAssociate, profile });
-    done({ name: 'SAML error', message: 'Restricted access, ask your administrator' });
-  }
-};
-
 export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
   const providerRef = ssoEntity.identifier || 'saml';
   logAuthInfo('Configuring SAML', EnvStrategyType.STRATEGY_SAML, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
@@ -195,7 +170,29 @@ export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSign
   const samlOptions: PassportSamlConfig = await buildSAMLOptions(ssoEntity);
 
   const samlLoginCallback: VerifyWithoutRequest = (profile, done) => {
-    callSamlLoginCallback(profile, done, ssoEntity);
+    const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity);
+    const groupsManagement = ssoEntity.groups_management;
+    const orgsManagement = ssoEntity.organizations_management;
+
+    if (!profile) {
+      throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
+    }
+    logAuthInfo('Successfully logged from provider, computing groups and organizations', EnvStrategyType.STRATEGY_SAML, { profile, done });
+
+    const isGroupBaseAccess = (isNotEmptyField(groupsManagement) && isNotEmptyField(groupsManagement?.groups_mapping));
+    const opts = computeSamlGroupAndOrg(ssoConfiguration, profile, groupsManagement, orgsManagement);
+    const groupsToAssociate = opts.providerGroups;
+
+    if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
+      const opts = computeSamlGroupAndOrg(ssoConfiguration, profile, groupsManagement, orgsManagement);
+      const userInfo = computeSamlUserInfo(ssoConfiguration, profile);
+      addUserLoginCount();
+      logAuthInfo('All configuration is fine, login user with', EnvStrategyType.STRATEGY_SAML, { opts, userInfo });
+      providerLoginHandler(userInfo, done, opts);
+    } else {
+      logAuthInfo('Group configuration not found', EnvStrategyType.STRATEGY_SAML, { isGroupBaseAccess, groupsToAssociate, profile });
+      done({ name: 'SAML error', message: 'Restricted access, ask your administrator' });
+    }
   };
 
   const samlLogoutCallback: VerifyWithoutRequest = (profile) => {
@@ -334,22 +331,24 @@ export const initAuthenticationProviders = async (context: AuthContext, user: Au
     logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
     await registerLocalStrategy();
   } else {
-    const providersFromDatabase = await findAllSingleSignOn(context, user);
+    if (isSingleSignOnInGuiEnabled) {
+      const providersFromDatabase = await findAllSingleSignOn(context, user);
 
-    if (providersFromDatabase.length === 0) {
-      // No configuration in database, fallback to default local strategy
-      logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
-      await registerLocalStrategy();
-    } else {
-      for (let i = 0; i < providersFromDatabase.length; i++) {
-        await registerStrategy(providersFromDatabase[i]);
+      if (providersFromDatabase.length === 0) {
+        // No configuration in database, fallback to default local strategy
+        logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
+        await registerLocalStrategy();
+      } else {
+        for (let i = 0; i < providersFromDatabase.length; i++) {
+          await registerStrategy(providersFromDatabase[i]);
+        }
       }
-    }
 
-    // At the end if there is no local, need to add the internal local
-    if (!isStrategyActivated(EnvStrategyType.STRATEGY_LOCAL)) {
-      logAuthWarn('No local strategy configured, adding it', EnvStrategyType.STRATEGY_LOCAL);
-      await registerLocalStrategy();
+      // At the end if there is no local, need to add the internal local
+      if (!isStrategyActivated(EnvStrategyType.STRATEGY_LOCAL)) {
+        logAuthWarn('No local strategy configured, adding it', EnvStrategyType.STRATEGY_LOCAL);
+        await registerLocalStrategy();
+      }
     }
   }
 };

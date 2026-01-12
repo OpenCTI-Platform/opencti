@@ -2,7 +2,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   buildSAMLOptions,
-  callSamlLoginCallback,
   computeSamlGroupAndOrg,
   convertKeyValueToJsConfiguration,
   initAuthenticationProviders,
@@ -125,23 +124,6 @@ describe('Single sign on Provider coverage tests', () => {
         wantAuthnResponseSigned: false,
         acceptedClockSkewMs: 3,
       });
-    });
-  });
-
-  describe('SAML callback coverage', () => {
-    it('should callback without profile raise error', async () => {
-      const done = () => {};
-      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
-        identifier: 'saml',
-        configuration: [
-          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
-          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
-          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
-          { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
-        ],
-      };
-      expect(() => callSamlLoginCallback(undefined, done, ssoEntity as BasicStoreEntitySingleSignOn))
-        .toThrowError('No profile in SAML response, please verify SAML server configuration');
     });
   });
 
