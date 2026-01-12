@@ -30,8 +30,8 @@ import {
 import { genConfigMapper, providerLoginHandler } from '../modules/singleSignOn/singleSignOn-providers';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { SINGLE_SIGN_ON_FF } from '../modules/singleSignOn/singleSignOn';
-import { isSSOAllowed, logAuthInfo, runSingleSignOnRunMigration } from '../modules/singleSignOn/singleSignOn-domain';
+import { isSingleSignOnInGuiEnabled, SINGLE_SIGN_ON_FF } from '../modules/singleSignOn/singleSignOn';
+import { logAuthInfo, runSingleSignOnRunMigration } from '../modules/singleSignOn/singleSignOn-domain';
 
 export const MIGRATED_STRATEGY = [EnvStrategyType.STRATEGY_LOCAL, EnvStrategyType.STRATEGY_SAML];
 
@@ -172,7 +172,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
       if (strategy === EnvStrategyType.STRATEGY_LOCAL) {
         logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy found in configuration');
 
-        if (await isSSOAllowed(context)) {
+        if (isSingleSignOnInGuiEnabled) {
           if (isAuthenticationProviderMigrated(settings, LOCAL_STRATEGY_IDENTIFIER)) {
             logApp.info('[ENV-PROVIDER][LOCAL] LocalStrategy migrated, skipping old configuration');
             willLocalBeInDatabase = true;
@@ -181,7 +181,6 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
             shouldRunSSOMigration = true;
           }
         } else {
-          // Community edition
           const localStrategy = new LocalStrategy({}, (username, password, done) => {
             return login(username, password)
               .then((info) => {
@@ -265,7 +264,7 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
       if (strategy === EnvStrategyType.STRATEGY_SAML) {
         const providerRef = identifier || 'saml';
         logApp.info(`[ENV-PROVIDER][SAML] SAMLStrategy found in configuration providerRef:${providerRef}`);
-        if (await isSSOAllowed(context)) {
+        if (isSingleSignOnInGuiEnabled) {
           if (isAuthenticationProviderMigrated(settings, providerRef)) {
             logApp.info(`[ENV-PROVIDER][SAML] ${providerRef} migrated, skipping old configuration`);
           } else {

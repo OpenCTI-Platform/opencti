@@ -412,10 +412,5 @@
     "password": "",
     "forced_sender_email": "",
     "email_max_cc_size": 500
-  },
-  "providers": {
-    "local": {
-      "strategy": "LocalStrategy"
-    }
   }
 }

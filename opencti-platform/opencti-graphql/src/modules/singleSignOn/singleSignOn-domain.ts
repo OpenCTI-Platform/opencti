@@ -13,7 +13,7 @@ import { isSingleSignOnInGuiEnabled } from './singleSignOn';
 import nconf from 'nconf';
 import { parseSingleSignOnRunConfiguration } from './singleSignOn-migration';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
-import { registerStrategy, unregisterStrategy } from './singleSignOn-providers';
+import { refreshStrategy, registerStrategy, unregisterStrategy } from './singleSignOn-providers';
 import { EnvStrategyType } from '../../config/providers-configuration';
 
 const toEnv = (newStrategyType: StrategyType) => {
@@ -45,6 +45,14 @@ export const checkSSOAllowed = async (context: AuthContext) => {
 // For now it's only a logApp, but will be also send to UI via Redis.
 export const logAuthInfo = (message: string, strategyType: EnvStrategyType, meta?: any) => {
   logApp.info(`[Auth][${strategyType}]${message}`, { meta });
+};
+
+export const logAuthWarn = (message: string, strategyType: EnvStrategyType, meta?: any) => {
+  logApp.warn(`[Auth][${strategyType}]${message}`, { meta });
+};
+
+export const logAuthError = (message: string, meta?: any) => {
+  logApp.error(`[Auth]${message}`, { meta });
 };
 
 export const findSingleSignOnById = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -111,14 +119,7 @@ export const fieldPatchSingleSignOn = async (context: AuthContext, user: AuthUse
     context_data: { id, entity_type: ENTITY_TYPE_SINGLE_SIGN_ON, input },
   });
 
-  if (singleSignOnEntityBeforeUpdate.enabled && !singleSignOnEntityAfterUpdate.enabled) {
-    logAuthInfo('Disabling strategy', toEnv(singleSignOnEntityAfterUpdate.strategy), { identifier: singleSignOnEntityAfterUpdate.identifier });
-    await registerStrategy(singleSignOnEntityAfterUpdate);
-  } else if (!singleSignOnEntityBeforeUpdate.enabled && singleSignOnEntityAfterUpdate.enabled) {
-    logAuthInfo('Activating strategy', toEnv(singleSignOnEntityAfterUpdate.strategy), { identifier: singleSignOnEntityAfterUpdate.identifier });
-    await unregisterStrategy(singleSignOnEntityAfterUpdate);
-  }
-
+  await refreshStrategy(singleSignOnEntityAfterUpdate); // is it done by cache manager too ??
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 

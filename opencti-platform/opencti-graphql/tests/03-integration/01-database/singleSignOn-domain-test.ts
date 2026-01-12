@@ -3,6 +3,9 @@ import { addSingleSignOn, deleteSingleSignOn, findAllSingleSignOn } from '../../
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { type SingleSignOnAddInput, StrategyType } from '../../../src/generated/graphql';
 import { PROVIDERS } from '../../../src/config/providers-configuration';
+import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter';
+import type { BasicStoreEntitySingleSignOn, StixSingleSignOn, StoreEntitySingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-types';
+import { v4 as uuid } from 'uuid';
 
 describe('Single sign on Domain coverage tests', () => {
   let createdSamlId: string;
@@ -117,5 +120,20 @@ describe('Single sign on Domain coverage tests', () => {
         await deleteSingleSignOn(testContext, ADMIN_USER, allSso[i].id);
       }
     }
+  });
+
+  it('should convert to 2.1 stix', async () => {
+    const id = uuid();
+
+    const ssoEntity: Partial<StoreEntitySingleSignOn> = {
+      identifier: 'stixIdentifier',
+      id,
+      label: 'stix sso button',
+    };
+
+    const stixSso: StixSingleSignOn = convertStoreToStix_2_1(ssoEntity as StoreEntitySingleSignOn) as StixSingleSignOn;
+    expect(stixSso.identifier).toBe('stixIdentifier');
+    expect(stixSso.id).toBe(id);
+    expect(stixSso.label).toBe('stix sso button');
   });
 });

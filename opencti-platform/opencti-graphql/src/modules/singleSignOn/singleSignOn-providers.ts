@@ -1,18 +1,27 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { StrategyType } from '../../generated/graphql';
-import { logApp } from '../../config/conf';
+import { type GroupsManagement, type OrganizationsManagement, StrategyType } from '../../generated/graphql';
+import conf, { logApp } from '../../config/conf';
 import LocalStrategy from 'passport-local';
 import { login, loginFromProvider } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { findAllSingleSignOn, logAuthInfo } from './singleSignOn-domain';
-import { AuthType, EnvStrategyType, isAuthenticationActivatedByIdentifier, type ProviderConfiguration } from '../../config/providers-configuration';
+import { findAllSingleSignOn, logAuthError, logAuthInfo, logAuthWarn } from './singleSignOn-domain';
+import {
+  AuthType,
+  EnvStrategyType,
+  INTERNAL_SECURITY_PROVIDER,
+  isAuthenticationActivatedByIdentifier,
+  isStrategyActivated,
+  LOCAL_STRATEGY_IDENTIFIER,
+  type ProviderConfiguration,
+} from '../../config/providers-configuration';
 import type { BasicStoreEntitySingleSignOn } from './singleSignOn-types';
-import { ConfigurationError, UnsupportedError } from '../../config/errors';
+import { AuthenticationFailure, ConfigurationError } from '../../config/errors';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy';
 import type { PassportSamlConfig, VerifyWithoutRequest } from '@node-saml/passport-saml/lib/types';
 import { isNotEmptyField } from '../../database/utils';
 import * as R from 'ramda';
 import { registerAuthenticationProvider, unregisterAuthenticationProvider } from '../../config/providers-initialization';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export const providerLoginHandler = (userInfo: any, done: any, opts = {}) => {
   loginFromProvider(userInfo, opts)
@@ -37,7 +46,7 @@ export const genConfigMapper = (elements: string[]) => {
   );
 };
 
-export const buildAllConfiguration = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
+export const convertKeyValueToJsConfiguration = (ssoEntity: BasicStoreEntitySingleSignOn) => {
   if (ssoEntity.configuration) {
     const ssoConfiguration: any = {};
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
@@ -47,7 +56,7 @@ export const buildAllConfiguration = async (ssoEntity: BasicStoreEntitySingleSig
       } else if (currentConfig.type === 'boolean') {
         ssoConfiguration[currentConfig.key] = currentConfig.value === 'true';
       } else if (currentConfig.type === 'array') {
-        ssoConfiguration[currentConfig.key] = JSON.parse(ssoConfiguration[currentConfig.key]);
+        ssoConfiguration[currentConfig.key] = JSON.parse(currentConfig.value);
       } else {
         ssoConfiguration[currentConfig.key] = currentConfig.value;
       }
@@ -101,72 +110,92 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
   }
 };
 
-export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
-  const providerRef = ssoEntity.identifier || 'saml';
-  logAuthInfo('Configuring SAML', EnvStrategyType.STRATEGY_SAML, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
+export const computeSamlGroupAndOrg = (ssoConfiguration: any, samlProfile: any, groupsManagement?: GroupsManagement, orgsManagement?: OrganizationsManagement) => {
+  logAuthInfo('Groups management and organization management configuration', EnvStrategyType.STRATEGY_SAML, { groupsManagement, orgsManagement });
 
-  const providerName = ssoEntity?.label || ssoEntity?.identifier || ssoEntity.id;
-  const ssoConfiguration: any = await buildAllConfiguration(ssoEntity);
-  const samlOptions: PassportSamlConfig = await buildSAMLOptions(ssoEntity);
+  const samlAttributes: any = samlProfile['attributes'] ? samlProfile['attributes'] : samlProfile;
+  const groupAttributes = groupsManagement?.group_attributes || ['groups'];
+
+  const isOrgaMapping = isNotEmptyField(ssoConfiguration.organizations_default) || isNotEmptyField(orgsManagement);
+  const computeOrganizationsMapping = () => {
+    const orgaDefault = ssoConfiguration.organizations_default ?? [];
+    const orgasMapping = orgsManagement?.organizations_mapping || [];
+    const orgaPath = orgsManagement?.organizations_path || ['organizations'];
+    const samlOrgas = R.path(orgaPath, samlProfile) || [];
+    const availableOrgas = Array.isArray(samlOrgas) ? samlOrgas : [samlOrgas];
+    const orgasMapper = genConfigMapper(orgasMapping);
+    return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
+  };
+  const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
+
+  const computeGroupsMapping = () => {
+    const attrGroups: any[][] = groupAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
+    const samlGroups = R.flatten(attrGroups).filter((v) => isNotEmptyField(v));
+    const groupsMapping = groupsManagement?.groups_mapping || [];
+    const groupsMapper = genConfigMapper(groupsMapping);
+    return samlGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
+  };
+  const groupsToAssociate = R.uniq(computeGroupsMapping());
+
+  return {
+    providerGroups: groupsToAssociate,
+    providerOrganizations: organizationsToAssociate,
+    autoCreateGroup: ssoConfiguration.auto_create_group ?? false,
+  };
+};
+
+export const computeSamlUserInfo = (ssoConfiguration: any, samlProfile: any) => {
+  const samlAttributes: any = samlProfile['attributes'] ? samlProfile['attributes'] : samlProfile;
+  const userName = samlAttributes[ssoConfiguration.account_attribute] || '';
+  const firstname = samlAttributes[ssoConfiguration.firstname_attribute] || '';
+  const lastname = samlAttributes[ssoConfiguration.lastname_attribute] || '';
+  const nameID = samlProfile['nameID'];
+  const nameIDFormat = samlProfile['nameIDFormat'];
+  const userEmail = samlAttributes[ssoConfiguration.mail_attribute] || nameID;
+  if (ssoConfiguration.mail_attribute && !samlAttributes[ssoConfiguration.mail_attribute]) {
+    logAuthInfo(`Custom mail_attribute "${ssoConfiguration.mail_attribute}" in configuration but the custom field is not present SAML server response.`, EnvStrategyType.STRATEGY_SAML);
+  }
+
+  if (!userEmail) {
+    throw ConfigurationError('No userEmail found in SAML response, please verify SAML server and OpenCTI configuration', { profile: userEmail, openctiMailAttribute: ssoConfiguration.mail_attribute });
+  }
+  return { email: userEmail, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } };
+};
+
+export const callSamlLoginCallback = (profile: any, done: any, ssoEntity: BasicStoreEntitySingleSignOn) => {
+  const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity);
   const groupsManagement = ssoEntity.groups_management;
   const orgsManagement = ssoEntity.organizations_management;
 
-  const samlLoginCallback: VerifyWithoutRequest = (profile, done) => {
-    if (!profile) {
-      throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
-    }
+  if (!profile) {
+    throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
+  }
+  logAuthInfo('Successfully logged from provider, computing groups and organizations', EnvStrategyType.STRATEGY_SAML, { profile, done });
 
-    logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_SAML, { profile, done });
+  const isGroupBaseAccess = (isNotEmptyField(groupsManagement) && isNotEmptyField(groupsManagement?.groups_mapping));
+  const opts = computeSamlGroupAndOrg(ssoConfiguration, profile, groupsManagement, orgsManagement);
+  const groupsToAssociate = opts.providerGroups;
+
+  if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
+    const opts = computeSamlGroupAndOrg(ssoConfiguration, profile, groupsManagement, orgsManagement);
+    const userInfo = computeSamlUserInfo(ssoConfiguration, profile);
     addUserLoginCount();
-    const nameID = profile['nameID'];
-    const nameIDFormat = profile['nameIDFormat'];
-    const samlAttributes: any = profile['attributes'] ? profile['attributes'] : profile;
-    const userEmail = samlAttributes[ssoConfiguration.mail_attribute] || nameID;
-    const groupAttributes = groupsManagement?.group_attributes || ['groups'];
+    logAuthInfo('All configuration is fine, login user with', EnvStrategyType.STRATEGY_SAML, { opts, userInfo });
+    providerLoginHandler(userInfo, done, opts);
+  } else {
+    logAuthInfo('Group configuration not found', EnvStrategyType.STRATEGY_SAML, { isGroupBaseAccess, groupsToAssociate, profile });
+    done({ name: 'SAML error', message: 'Restricted access, ask your administrator' });
+  }
+};
 
-    if (ssoConfiguration.mail_attribute && !samlAttributes[ssoConfiguration.mail_attribute]) {
-      logAuthInfo(`Custom mail_attribute "${ssoConfiguration.mail_attribute}" in configuration but the custom field is not present SAML server response.`, EnvStrategyType.STRATEGY_SAML);
-    }
-    const userName = samlAttributes[ssoConfiguration.account_attribute] || '';
-    const firstname = samlAttributes[ssoConfiguration.firstname_attribute] || '';
-    const lastname = samlAttributes[ssoConfiguration.lastname_attribute] || '';
-    const isGroupBaseAccess = (isNotEmptyField(groupsManagement) && isNotEmptyField(groupsManagement?.groups_mapping));
-    logAuthInfo('Groups management configuration', EnvStrategyType.STRATEGY_SAML, { groupsManagement: groupsManagement });
-    // region groups mapping
-    const computeGroupsMapping = () => {
-      const attrGroups: any[][] = groupAttributes.map((a) => (Array.isArray(samlAttributes[a]) ? samlAttributes[a] : [samlAttributes[a]]));
-      const samlGroups = R.flatten(attrGroups).filter((v) => isNotEmptyField(v));
-      const groupsMapping = groupsManagement?.groups_mapping || [];
-      const groupsMapper = genConfigMapper(groupsMapping);
-      return samlGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
-    };
-    const groupsToAssociate = R.uniq(computeGroupsMapping());
-    // endregion
-    // region organizations mapping
-    const isOrgaMapping = isNotEmptyField(ssoConfiguration.organizations_default) || isNotEmptyField(orgsManagement);
-    const computeOrganizationsMapping = () => {
-      const orgaDefault = ssoConfiguration.organizations_default ?? [];
-      const orgasMapping = orgsManagement?.organizations_mapping || [];
-      const orgaPath = orgsManagement?.organizations_path || ['organizations'];
-      const samlOrgas = R.path(orgaPath, profile) || [];
-      const availableOrgas = Array.isArray(samlOrgas) ? samlOrgas : [samlOrgas];
-      const orgasMapper = genConfigMapper(orgasMapping);
-      return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
-    };
-    const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
-    // endregion
-    logAuthInfo('Login handler', EnvStrategyType.STRATEGY_SAML, { isGroupBaseAccess, groupsToAssociate });
-    if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
-      const opts = {
-        providerGroups: groupsToAssociate,
-        providerOrganizations: organizationsToAssociate,
-        autoCreateGroup: ssoConfiguration.auto_create_group ?? false,
-      };
-      const userInfo = { email: userEmail, name: userName, firstname, lastname, provider_metadata: { nameID, nameIDFormat } };
-      providerLoginHandler(userInfo, done, opts);
-    } else {
-      // done({ name: 'SAML error', message: 'Restricted access, ask your administrator' });
-    }
+export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSignOn) => {
+  const providerRef = ssoEntity.identifier || 'saml';
+  logAuthInfo('Configuring SAML', EnvStrategyType.STRATEGY_SAML, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
+  const providerName = ssoEntity?.label || ssoEntity?.identifier || ssoEntity.id;
+  const samlOptions: PassportSamlConfig = await buildSAMLOptions(ssoEntity);
+
+  const samlLoginCallback: VerifyWithoutRequest = (profile, done) => {
+    callSamlLoginCallback(profile, done, ssoEntity);
   };
 
   const samlLogoutCallback: VerifyWithoutRequest = (profile) => {
@@ -181,7 +210,36 @@ export const registerSAMLStrategy = async (ssoEntity: BasicStoreEntitySingleSign
   logAuthInfo('Passport SAML configured', EnvStrategyType.STRATEGY_SAML, { id: ssoEntity.id, identifier: ssoEntity.identifier, providerRef });
 };
 
-export const registerLocalStrategy = async (providerName: string) => {
+export const registerAdminLocalStrategy = async () => {
+  logAuthInfo('Configuring internal local', EnvStrategyType.STRATEGY_LOCAL);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore as per document new LocalStrategy is the right way, not sure what to do.
+  const adminLocalStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
+    const adminEmail = conf.get('app:admin:email');
+    if (username !== adminEmail) {
+      return done(AuthenticationFailure());
+    }
+    return login(username, password)
+      .then((info) => {
+        addUserLoginCount();
+        return done(null, info);
+      })
+      .catch((err) => {
+        done(err);
+      });
+  });
+
+  // Only one local, remove existing.
+  const providerConfig: ProviderConfiguration
+    = { name: INTERNAL_SECURITY_PROVIDER, type: AuthType.AUTH_FORM, strategy: EnvStrategyType.STRATEGY_LOCAL, provider: LOCAL_STRATEGY_IDENTIFIER };
+  if (isAuthenticationActivatedByIdentifier('local')) {
+    unregisterAuthenticationProvider('local');
+  }
+  registerAuthenticationProvider(INTERNAL_SECURITY_PROVIDER, adminLocalStrategy, providerConfig);
+};
+
+export const registerLocalStrategy = async () => {
+  logAuthInfo('Configuring local', EnvStrategyType.STRATEGY_LOCAL);
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore as per document new LocalStrategy is the right way, not sure what to do.
   const localStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
@@ -197,16 +255,35 @@ export const registerLocalStrategy = async (providerName: string) => {
   });
 
   // Only one local, remove existing.
-  const providerConfig: ProviderConfiguration = { name: providerName, type: AuthType.AUTH_FORM, strategy: EnvStrategyType.STRATEGY_LOCAL, provider: 'local' };
-  if (isAuthenticationActivatedByIdentifier('local')) {
-    unregisterAuthenticationProvider('local');
+  const providerConfig: ProviderConfiguration = {
+    name: LOCAL_STRATEGY_IDENTIFIER,
+    type: AuthType.AUTH_FORM,
+    strategy: EnvStrategyType.STRATEGY_LOCAL,
+    provider: LOCAL_STRATEGY_IDENTIFIER,
+  };
+  if (isAuthenticationActivatedByIdentifier(LOCAL_STRATEGY_IDENTIFIER)) {
+    unregisterAuthenticationProvider(LOCAL_STRATEGY_IDENTIFIER);
   }
-  registerAuthenticationProvider('local', localStrategy, providerConfig);
+  registerAuthenticationProvider(LOCAL_STRATEGY_IDENTIFIER, localStrategy, providerConfig);
+};
+
+export const refreshStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
+  await unregisterStrategy(authenticationStrategy);
+
+  if (authenticationStrategy.enabled) {
+    await registerStrategy(authenticationStrategy);
+  }
 };
 
 export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntitySingleSignOn) => {
   if (authenticationStrategy.strategy === StrategyType.LocalStrategy) {
-    throw UnsupportedError('Disabling local strategy not implemented yet');
+    if (authenticationStrategy.identifier === LOCAL_STRATEGY_IDENTIFIER) {
+      unregisterAuthenticationProvider(LOCAL_STRATEGY_IDENTIFIER);
+      await registerAdminLocalStrategy();
+    } else if (authenticationStrategy.identifier === INTERNAL_SECURITY_PROVIDER) {
+      unregisterAuthenticationProvider(INTERNAL_SECURITY_PROVIDER);
+      await registerLocalStrategy();
+    }
   } else {
     unregisterAuthenticationProvider(authenticationStrategy.identifier);
   }
@@ -217,7 +294,11 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
     switch (authenticationStrategy.strategy) {
       case StrategyType.LocalStrategy:
         logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_LOCAL);
-        await registerLocalStrategy(authenticationStrategy.name);
+        if (authenticationStrategy.enabled) {
+          await registerLocalStrategy();
+        } else {
+          await registerAdminLocalStrategy();
+        }
         break;
       case StrategyType.SamlStrategy:
         logAuthInfo(`Configuring ${authenticationStrategy?.name} - ${authenticationStrategy?.identifier}`, EnvStrategyType.STRATEGY_SAML);
@@ -231,14 +312,14 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
         break;
 
       default:
-        logApp.error('[SSO] unknown strategy should not be possible, skipping', {
+        logAuthError('Unknown strategy should not be possible, skipping', {
           name: authenticationStrategy?.name,
           strategy: authenticationStrategy.strategy,
         });
         break;
     }
   } else {
-    logApp.error('[SSO INIT] configuration without strategy or identifier should not be possible, skipping', { id: authenticationStrategy?.id, strategy: authenticationStrategy.strategy, identifier: authenticationStrategy.identifier });
+    logAuthError('[SSO INIT] configuration without strategy or identifier should not be possible, skipping', { id: authenticationStrategy?.id, strategy: authenticationStrategy.strategy, identifier: authenticationStrategy.identifier });
   }
 };
 
@@ -249,15 +330,26 @@ export const registerStrategy = async (authenticationStrategy: BasicStoreEntityS
  * @param user
  */
 export const initAuthenticationProviders = async (context: AuthContext, user: AuthUser) => {
-  const providersFromDatabase = await findAllSingleSignOn(context, user);
-
-  if (providersFromDatabase.length === 0) {
-    // No configuration in database, fallback to default local strategy
+  if (!await isEnterpriseEdition(context)) {
     logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
-    await registerLocalStrategy('local');
+    await registerLocalStrategy();
   } else {
-    for (let i = 0; i < providersFromDatabase.length; i++) {
-      await registerStrategy(providersFromDatabase[i]);
+    const providersFromDatabase = await findAllSingleSignOn(context, user);
+
+    if (providersFromDatabase.length === 0) {
+      // No configuration in database, fallback to default local strategy
+      logAuthInfo('configuring default local strategy', EnvStrategyType.STRATEGY_LOCAL);
+      await registerLocalStrategy();
+    } else {
+      for (let i = 0; i < providersFromDatabase.length; i++) {
+        await registerStrategy(providersFromDatabase[i]);
+      }
+    }
+
+    // At the end if there is no local, need to add the internal local
+    if (!isStrategyActivated(EnvStrategyType.STRATEGY_LOCAL)) {
+      logAuthWarn('No local strategy configured, adding it', EnvStrategyType.STRATEGY_LOCAL);
+      await registerLocalStrategy();
     }
   }
 };

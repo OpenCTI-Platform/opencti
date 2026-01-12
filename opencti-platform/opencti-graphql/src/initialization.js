@@ -25,7 +25,7 @@ import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initAuthenticationProviders } from './modules/singleSignOn/singleSignOn-providers';
-import { isSSOAllowed } from './modules/singleSignOn/singleSignOn-domain';
+import { isEnterpriseEdition } from './enterprise-edition/ee';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -137,11 +137,10 @@ const platformInit = async (withMarkings = true) => {
     await initExclusionListCache();
 
     // Authentication
-    // Env authorization will be deprecated but for now both env and database works together.
-    await initializeEnvAuthenticationProviders(context, SYSTEM_USER);
-    if (await isSSOAllowed(context)) {
-      await initAuthenticationProviders(context, SYSTEM_USER);
+    if (await isEnterpriseEdition(context)) {
+      await initializeEnvAuthenticationProviders(context, SYSTEM_USER);
     }
+    await initAuthenticationProviders(context, SYSTEM_USER);
 
     // parse schema metrics conf to throw error on start if bad configured
     loadEntityMetricsConfiguration();

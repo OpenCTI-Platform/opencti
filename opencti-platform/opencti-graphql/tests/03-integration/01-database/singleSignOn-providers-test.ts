@@ -1,9 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { registerLocalStrategy, buildSAMLOptions, initAuthenticationProviders } from '../../../src/modules/singleSignOn/singleSignOn-providers';
+import {
+  registerLocalStrategy,
+  buildSAMLOptions,
+  initAuthenticationProviders,
+  callSamlLoginCallback,
+  computeSamlGroupAndOrg,
+  convertKeyValueToJsConfiguration,
+} from '../../../src/modules/singleSignOn/singleSignOn-providers';
 import { type ProviderConfiguration, PROVIDERS } from '../../../src/config/providers-configuration';
 import type { BasicStoreEntitySingleSignOn } from '../../../src/modules/singleSignOn/singleSignOn-types';
-import { StrategyType } from '../../../src/generated/graphql';
+import { type GroupsManagement, type OrganizationsManagement, StrategyType } from '../../../src/generated/graphql';
 
 describe('Single sign on Provider coverage tests', () => {
   describe('initialization coverage', () => {
@@ -55,14 +62,14 @@ describe('Single sign on Provider coverage tests', () => {
       expect(PROVIDERS).toStrictEqual([]);
 
       // WHEN calling addLocalStrategy twice
-      await registerLocalStrategy('localFirst');
+      await registerLocalStrategy();
       console.log('PROVIDERS:', PROVIDERS);
-      await registerLocalStrategy('localSecond');
+      await registerLocalStrategy();
 
       // THEN only last local strategy is configured and enabled
       expect(PROVIDERS).toStrictEqual([
         {
-          name: 'localSecond',
+          name: 'local',
           type: 'FORM',
           strategy: 'LocalStrategy',
           provider: 'local',
@@ -118,6 +125,160 @@ describe('Single sign on Provider coverage tests', () => {
         wantAuthnResponseSigned: false,
         acceptedClockSkewMs: 3,
       });
+    });
+  });
+
+  describe('SAML callback coverage', () => {
+    it('should callback without profile raise error', async () => {
+      const done = () => {};
+      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        identifier: 'saml',
+        configuration: [
+          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+          { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+        ],
+      };
+      expect(() => callSamlLoginCallback(undefined, done, ssoEntity as BasicStoreEntitySingleSignOn))
+        .toThrowError('No profile in SAML response, please verify SAML server configuration');
+    });
+
+    it('should callback with default configuration works', async () => {
+      const profile = { attributes: {}, nameID: 'test@opencti.io' };
+      const done = () => {};
+      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        identifier: 'saml',
+        configuration: [
+          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+          { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+        ],
+      };
+
+      callSamlLoginCallback(profile, done, ssoEntity as BasicStoreEntitySingleSignOn);
+    });
+
+    it('should SAML with mail attribute configuration works', async () => {
+      // default mail attribute is nameID, let's use another one like emailID
+      const profile = { attributes: { emailID: 'test@opencti.io' } };
+      const done = () => {};
+      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        identifier: 'saml',
+        configuration: [
+          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+          { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+          { key: 'mail_attribute', type: 'string', value: 'emailID' },
+        ],
+      };
+      callSamlLoginCallback(profile, done, ssoEntity as BasicStoreEntitySingleSignOn);
+    });
+
+    it('should SAML with wrong mail attribute be ignored', async () => {
+      // default mail attribute is nameID, let's use another one like emailID
+      const profile = { attributes: { }, nameID: 'test@opencti.io' };
+      const done = () => {};
+      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        identifier: 'saml',
+        configuration: [
+          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+          { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+          { key: 'mail_attribute', type: 'string', value: 'mailID' }, // does not exist in attributes => nameID should be taken instead
+        ],
+      };
+      callSamlLoginCallback(profile, done, ssoEntity as BasicStoreEntitySingleSignOn);
+    });
+
+    it('should SAML group mapping be computed correctly with default group attributes', async () => {
+      // default mail attribute is nameID, let's use another one like emailID
+      const samlProfile = { attributes: { groups: ['samlGroupB', 'samlGroupD', 'samlGroupC'] }, nameID: 'test@opencti.io' };
+      const groupsManagement: GroupsManagement = {
+        groups_mapping: ['samlGroupA:openCTIGroupA', 'samlGroupB:openCTIGroupB', 'samlGroupC:openCTIGroupC'],
+      };
+      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        identifier: 'saml',
+        configuration: [
+          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+          { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+        ],
+      };
+      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+
+      const result = computeSamlGroupAndOrg(ssoConfiguration, samlProfile, groupsManagement, undefined);
+      expect(result.providerGroups).toStrictEqual(['openCTIGroupB', 'openCTIGroupC']); // no mapping for D, so should have only B and C
+    });
+
+    it('should SAML group mapping be computed correctly with another group attributes', async () => {
+      // default mail attribute is nameID, let's use another one like emailID
+      const samlProfile = { attributes: { membership: ['samlGroupB1', 'samlGroupD1'], membership2: ['samlGroupC2'] }, nameID: 'test@opencti.io' };
+      const groupsManagement: GroupsManagement = {
+        groups_mapping: ['samlGroupA:openCTIGroupA', 'samlGroupB1:openCTIGroupB', 'samlGroupC2:openCTIGroupC'],
+        group_attributes: ['membership', 'membership2'],
+      };
+      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        identifier: 'saml',
+        configuration: [
+          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+          { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+        ],
+      };
+      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+
+      const result = computeSamlGroupAndOrg(ssoConfiguration, samlProfile, groupsManagement, undefined);
+      expect(result.providerGroups).toStrictEqual(['openCTIGroupB', 'openCTIGroupC']); // no mapping for D, so should have only B and C
+    });
+
+    it('should SAML organization mapping works with default attribute', async () => {
+      // default mail attribute is nameID, let's use another one like emailID
+      const samlProfile = { attributes: { groups: ['samlGroupC2'] }, nameID: 'test@opencti.io', organizations: ['samlOrgA', 'samlOrgB'] };
+      const orgsManagement: OrganizationsManagement = {
+        organizations_mapping: ['samlOrgB:OpenCTIOrgB', 'samlOrgC:OpenCTIOrgC'],
+      };
+      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        identifier: 'saml',
+        configuration: [
+          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+          { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+        ],
+      };
+      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+
+      const result = computeSamlGroupAndOrg(ssoConfiguration, samlProfile, undefined, orgsManagement);
+      expect(result.providerOrganizations).toStrictEqual(['OpenCTIOrgB']); // no mapping for D, so should have only B
+    });
+
+    it('should SAML organization mapping works with org default', async () => {
+      // default mail attribute is nameID, let's use another one like emailID
+      const samlProfile = { attributes: { groups: ['samlGroupC2'] }, nameID: 'test@opencti.io', organizations: ['samlOrgA', 'samlOrgB'] };
+      const orgsManagement: OrganizationsManagement = {
+        organizations_mapping: ['samlOrgB:OpenCTIOrgB', 'samlOrgC:OpenCTIOrgC'],
+      };
+      const ssoEntity: Partial<BasicStoreEntitySingleSignOn> = {
+        identifier: 'saml',
+        configuration: [
+          { key: 'issuer', type: 'string', value: 'openctisaml_default' },
+          { key: 'entryPoint', type: 'string', value: 'http://localhost:8888/realms/master/protocol/saml' },
+          { key: 'callbackUrl', type: 'string', value: 'http://localhost:3000/auth/saml/callback' },
+          { key: 'idpCert', type: 'string', value: 'totallyFakeCertGroups' },
+          { key: 'organizations_default', type: 'array', value: '["OrgDefA", "OrgDefB"]' },
+        ],
+      };
+      const ssoConfiguration: any = convertKeyValueToJsConfiguration(ssoEntity as BasicStoreEntitySingleSignOn);
+
+      const result = computeSamlGroupAndOrg(ssoConfiguration, samlProfile, undefined, orgsManagement);
+      // The 2 default org in config + the one mapped from saml profile
+      expect(result.providerOrganizations).toStrictEqual(['OrgDefA', 'OrgDefB', 'OpenCTIOrgB']);
     });
   });
 });
