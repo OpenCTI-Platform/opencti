@@ -23,7 +23,7 @@ interface GroupsManagement {
 }
 
 export interface BasicStoreEntitySingleSignOn extends BasicStoreEntity {
-  name: string;
+  name?: string;
   identifier: string;
   description: string;
   enabled: boolean;
@@ -35,7 +35,7 @@ export interface BasicStoreEntitySingleSignOn extends BasicStoreEntity {
 }
 
 export interface StoreEntitySingleSignOn extends StoreEntity {
-  name: string;
+  name?: string;
   identifier: string;
   description: string;
   enabled: boolean;
@@ -47,7 +47,7 @@ export interface StoreEntitySingleSignOn extends StoreEntity {
 }
 
 export interface StixSingleSignOn extends StixObject {
-  name: string;
+  name?: string;
   identifier: string;
   description: string;
   enabled: boolean;

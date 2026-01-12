@@ -23,7 +23,7 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
     },
   },
   attributes: [
-    { name: 'name', label: 'Authentication name', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
+    { name: 'name', label: 'Authentication name', type: 'string', mandatoryType: 'no', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
     { name: 'identifier', label: 'IDP Identifier', type: 'string', mandatoryType: 'internal', format: 'short', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
     { name: 'description', label: 'Description', mandatoryType: 'customizable', type: 'string', format: 'text', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
     { name: 'enabled', label: 'Enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: SINGLE_SIGN_ON_FF },
@@ -35,7 +35,7 @@ const SINGLE_SIGN_ON_DEFINITION: ModuleDefinition<StoreEntitySingleSignOn, StixS
   ],
   relations: [],
   representative: (stix: StixSingleSignOn) => {
-    return stix.name;
+    return stix.identifier;
   },
   converter_2_1: convertSingleSignOnToStix,
 };
