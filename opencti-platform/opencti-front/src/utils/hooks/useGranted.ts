@@ -53,6 +53,14 @@ export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_FILEINDEXING = 'SETTINGS_FILEINDEXING';
 export const SETTINGS_SUPPORT = 'SETTINGS_SUPPORT';
 
+export const hasCapabilitiesInDraft = (capabilities: string[]) => {
+  const { me } = useAuth();
+  const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
+  return capabilities.some((capability) => (
+    userCapabilitiesInDraft.includes(capability)
+  ));
+};
+
 export const isOnlyOrganizationAdmin = () => {
   const { me: user } = useAuth();
   const userCapabilities = user.capabilities.map((n) => n.name);
