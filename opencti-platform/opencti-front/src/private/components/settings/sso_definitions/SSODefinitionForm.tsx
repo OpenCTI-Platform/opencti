@@ -102,9 +102,37 @@ const SSODefinitionForm = ({
     organizations_path: [],
     organizations_mapping: [],
   };
+  const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
+  const issuerField = data?.configuration?.find((e) => e.key === 'issuer');
+  const idpCertField = data?.configuration?.find((e) => e.key === 'idpCertField');
+  const callbackUrlField = data?.configuration?.find((e) => e.key === 'callbackUrl');
+  const wantAssertionsSignedField = data?.configuration?.find((e) => e.key === 'wantAssertionsSigned');
+  const wantAuthnResponseSignedField = data?.configuration?.find((e) => e.key === 'wantAuthnResponseSigned');
+  const loginIdpDirectlyField = data?.configuration?.find((e) => e.key === 'loginIdpDirectly');
+  const logoutRemoteField = data?.configuration?.find((e) => e.key === 'logoutRemote');
+  const providerMethodField = data?.configuration?.find((e) => e.key === 'providerMethod');
+  const signingCertField = data?.configuration?.find((e) => e.key === 'signingCert');
+  const ssoBindingTypeField = data?.configuration?.find((e) => e.key === 'ssoBindingType');
+  const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
+  const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
 
   if (data) {
     initialValues.identifier = data.identifier;
+    initialValues.label = data.label || '';
+    initialValues.enabled = data.enabled;
+    initialValues.privateKey = privateField?.value ?? '';
+    initialValues.issuer = issuerField?.value ?? '';
+    initialValues.idpCert = idpCertField?.value ?? '';
+    initialValues.callbackUrl = callbackUrlField?.value ?? '';
+    initialValues.wantAssertionsSigned = !!wantAssertionsSignedField?.value;
+    initialValues.wantAuthnResponseSigned = !!wantAuthnResponseSignedField?.value;
+    initialValues.loginIdpDirectly = !!loginIdpDirectlyField?.value;
+    initialValues.logoutRemote = !!logoutRemoteField?.value;
+    initialValues.providerMethod = providerMethodField?.value ?? '';
+    initialValues.signingCert = signingCertField?.value ?? '';
+    initialValues.ssoBindingType = ssoBindingTypeField?.value ?? '';
+    initialValues.forceReauthentication = !!forceReauthenticationField?.value;
+    initialValues.enableDebugMode = !!enableDebugModeField?.value;
   }
 
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
@@ -152,6 +180,7 @@ const SSODefinitionForm = ({
                 component={TextField}
                 variant="standard"
                 name="label"
+                onSubmit={updateField}
                 label={t_i18n('Login Button Name *')}
                 fullWidth
                 style={{ marginTop: 20 }}
@@ -161,6 +190,7 @@ const SSODefinitionForm = ({
                 variant="standard"
                 name="enabled"
                 type="checkbox"
+                onSubmit={updateField}
                 label={t_i18n('Enable SAML authentication')}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
