@@ -45,6 +45,7 @@ export interface SSODefinitionFormValues {
   ssoBindingType: string;
   forceReauthentication: boolean;
   enableDebugMode: boolean;
+  entryPoint: string;
   advancedConfigurations: {
     key: string;
     value: string;
@@ -77,6 +78,7 @@ const SSODefinitionForm = ({
     issuer: Yup.string().required(t_i18n('This field is required')),
     idpCert: Yup.string().required(t_i18n('This field is required')),
     callbackUrl: Yup.string().required(t_i18n('This field is required')),
+    entryPoint: Yup.string().required(t_i18n('This field is required')),
   });
   const initialValues = {
     name: '',
@@ -97,6 +99,7 @@ const SSODefinitionForm = ({
     ssoBindingType: '',
     forceReauthentication: false,
     enableDebugMode: false,
+    entryPoint: '',
     advancedConfigurations: [],
     groups_path: [],
     groups_mapping: [],
@@ -117,6 +120,7 @@ const SSODefinitionForm = ({
   const ssoBindingTypeField = data?.configuration?.find((e) => e.key === 'ssoBindingType');
   const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
   const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
+  const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
 
   if (data) {
     initialValues.name = data.name;
@@ -134,6 +138,7 @@ const SSODefinitionForm = ({
     initialValues.providerMethod = providerMethodField?.value ?? '';
     initialValues.signingCert = signingCertField?.value ?? '';
     initialValues.ssoBindingType = ssoBindingTypeField?.value ?? '';
+    initialValues.entryPoint = entryPointField?.value ?? '';
     initialValues.forceReauthentication = !!forceReauthenticationField?.value;
     initialValues.enableDebugMode = !!enableDebugModeField?.value;
   }

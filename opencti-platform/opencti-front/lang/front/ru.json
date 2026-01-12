@@ -1598,6 +1598,7 @@
   "entity_Workbench": "Workbench",
   "entity_Workspace": "Рабочая область",
   "entity_X509-Certificate": "Сертификат X509",
+  "Entry point": "Точка входа",
   "EPSS Percentile": "Процентное соотношение EPSS",
   "EPSS Score": "Балл EPSS",
   "eql": "eql",

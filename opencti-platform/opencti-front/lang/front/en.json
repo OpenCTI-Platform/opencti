@@ -1598,6 +1598,7 @@
   "entity_Workbench": "Workbench",
   "entity_Workspace": "Workspace",
   "entity_X509-Certificate": "X509 certificate",
+  "Entry point": "Entry point",
   "EPSS Percentile": "EPSS - Percentile",
   "EPSS Score": "EPSS - Score",
   "eql": "Elastic EQL",

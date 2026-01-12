@@ -143,7 +143,19 @@ const SAMLCreation = ({ updateField }: Props) => {
         onSubmit={updateField}
         containerstyle={{ marginLeft: 2 }}
       />
-
+      <Field
+        id="filled-multiline-flexible"
+        component={TextField}
+        variant="standard"
+        name="entryPoint"
+        label={t_i18n('Entry point')}
+        onSubmit={updateField}
+        required
+        fullWidth
+        multiline
+        rows={4}
+        style={{ marginTop: 20 }}
+      />
       <FieldArray name="advancedConfigurations">
         {({ push, remove, form }) => (
           <>

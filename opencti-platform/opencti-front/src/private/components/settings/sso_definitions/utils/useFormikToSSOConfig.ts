@@ -68,6 +68,11 @@ const useFormikToSSOConfig = () => {
         value: values.enableDebugMode ? 'true' : 'false',
         type: 'Boolean',
       },
+      {
+        key: 'entryPoint',
+        value: values.entryPoint,
+        type: 'String',
+      },
     ];
   };
   return { formikToSamlConfig };

@@ -1598,6 +1598,7 @@
   "entity_Workbench": "工作台",
   "entity_Workspace": "工作区",
   "entity_X509-Certificate": "X509证书",
+  "Entry point": "入口点",
   "EPSS Percentile": "EPSS - 百分位数",
   "EPSS Score": "EPSS - 分数",
   "eql": "Elastic EQL",

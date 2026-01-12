@@ -99,6 +99,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       ),
     };
     const finalValues = {
+      name: values.name,
       identifier: values.identifier,
       label: values.label,
       enabled: values.enabled,

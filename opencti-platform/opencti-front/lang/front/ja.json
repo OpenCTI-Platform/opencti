@@ -1598,6 +1598,7 @@
   "entity_Workbench": "ワークベンチ",
   "entity_Workspace": "ワークスペース",
   "entity_X509-Certificate": "X.509証明書",
+  "Entry point": "エントリーポイント",
   "EPSS Percentile": "EPSS - パーセンタイル",
   "EPSS Score": "EPSS - スコア",
   "eql": "Elastic EQL",
