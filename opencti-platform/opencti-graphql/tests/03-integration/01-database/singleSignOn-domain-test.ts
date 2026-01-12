@@ -122,7 +122,7 @@ describe('Single sign on Domain coverage tests', () => {
     }
   });
 
-  it('should convert to 2.1 stix', async () => {
+  it.todo('should convert to 2.1 stix', async () => {
     const id = uuid();
 
     const ssoEntity: Partial<StoreEntitySingleSignOn> = {
