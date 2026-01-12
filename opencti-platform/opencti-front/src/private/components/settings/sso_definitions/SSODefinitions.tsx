@@ -71,7 +71,7 @@ const ssoDefinitionsLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: {
         type: "SingleSignOnOrdering"
-        defaultValue: name
+        defaultValue: identifier
     }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
