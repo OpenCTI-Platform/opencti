@@ -71,7 +71,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   ) => {
     const configuration = formikToSamlConfig(values);
 
-    values.advanced_configurations.forEach((conf) => {
+    values.advancedConfigurations.forEach((conf) => {
       if (conf.key && conf.value && conf.type) {
         configuration.push({
           key: conf.key,
@@ -99,7 +99,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       ),
     };
     const finalValues = {
-      name: values.name,
+      identifier: values.identifier,
       label: values.label,
       enabled: values.enabled,
       strategy: strategyConfig,

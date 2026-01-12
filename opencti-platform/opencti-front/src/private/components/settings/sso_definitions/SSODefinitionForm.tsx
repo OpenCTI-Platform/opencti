@@ -28,6 +28,7 @@ interface SSODefinitionFormProps {
   isOpen?: boolean;
 }
 export interface SSODefinitionFormValues {
+  identifier: string;
   label: string;
   enabled: boolean;
   privateKey: string;

@@ -39,7 +39,7 @@ const Rules = lazy(() => import('./rules/Rules'));
 const Sessions = lazy(() => import('./Sessions'));
 const Settings = lazy(() => import('./Settings'));
 const SettingsOrganizations = lazy(() => import('./SettingsOrganizations'));
-const SSODefinitions = lazy(() => import('./SSODefinitions'));
+const SSODefinitions = lazy(() => import('./sso_definitions/SSODefinitions'));
 const SSODefinition = lazy(() => import('./sso_definitions/SSODefinition'));
 const FileIndexing = lazy(() => import('./file_indexing/FileIndexing'));
 const StatusTemplates = lazy(() => import('./status_templates/StatusTemplates'));

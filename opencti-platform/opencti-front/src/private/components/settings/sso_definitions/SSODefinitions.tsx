@@ -1,16 +1,16 @@
-import { useFormatter } from '../../../components/i18n';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { useFormatter } from '../../../../components/i18n';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import AccessesMenu from '@components/settings/AccessesMenu';
 import React from 'react';
 import { graphql } from 'react-relay';
-import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import DataTable from '../../../components/dataGrid/DataTable';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import DataTable from '../../../../components/dataGrid/DataTable';
 import { SSODefinitionsLinesPaginationQuery } from '@components/settings/__generated__/SSODefinitionsLinesPaginationQuery.graphql';
 import { SSODefinitionsLines_data$data } from '@components/settings/__generated__/SSODefinitionsLines_data.graphql';
-import Breadcrumbs from '../../../components/Breadcrumbs';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
@@ -126,7 +126,7 @@ const SSODefinitions = () => {
     name: {
       label: 'Configuration name',
       percentWidth: 25,
-      render: (node: { name: string }) => <div>{node.name}</div>,
+      render: (node: { identifier: string }) => <div>{node.identifier}</div>,
     },
     enabled: {
       label: 'Enabled',
