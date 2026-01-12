@@ -71,7 +71,7 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
     finalInput = { ...finalInput, restricted_members: finalInput.authorized_members } as FeedAddInput & { restricted_members: MemberAccessInput[] };
     delete finalInput.authorized_members;
   }
-  await elReplace(INDEX_INTERNAL_OBJECTS, id, { doc: finalInput });
+  await elReplace(feed._index, feed.internal_id, { doc: finalInput });
   await publishUserAction({
     user,
     event_type: 'mutation',
