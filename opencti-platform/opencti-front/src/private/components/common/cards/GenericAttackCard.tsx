@@ -1,8 +1,6 @@
-import { FunctionComponent, MouseEvent } from 'react';
+import { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import CardHeader from '@mui/material/CardHeader';
-import IconButton from '@common/button/IconButton';
-import { StarBorderOutlined } from '@mui/icons-material';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
@@ -13,11 +11,11 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
 import { emptyFilled } from '../../../../utils/String';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import { addBookmark, deleteBookMark } from '../stix_domain_objects/StixDomainObjectBookmark';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import Card from '../../../../components/common/card/Card';
+import BookmarkToggle from '../../../../components/common/bookmark/BookmarkToggle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -92,6 +90,8 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n, fld } = useFormatter();
 
+  const isBookmarked = !!bookmarksIds?.includes(cardData.id);
+
   const relatedIntrusionSets = R.uniq((cardData.relatedIntrusionSets?.edges ?? [])
     .map((n) => n?.node?.from?.name))
     .join(', ');
@@ -104,15 +104,6 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   const targetedSectors = R.uniq((cardData.targetedSectors?.edges ?? [])
     .map((n) => n?.node?.to?.name))
     .join(', ');
-
-  const handleBookmarksIds = (e: MouseEvent<HTMLElement>) => {
-    e.preventDefault();
-    if (bookmarksIds?.includes(cardData.id)) {
-      deleteBookMark(cardData.id, entityType);
-    } else {
-      addBookmark(cardData.id, entityType);
-    }
-  };
 
   const Info = (props: { title: string; value: string }) => (
     <Stack direction="row" gap={1} alignItems="center">
@@ -154,8 +145,6 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
           mb: 2,
           '.MuiCardHeader-content': {
             minWidth: 0,
-            fontSize: 12,
-            color: theme.palette.text.secondary,
           },
           '.MuiCardHeader-subheader': {
             fontSize: 12,
@@ -205,13 +194,11 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
           labels={cardData.objectLabel}
           onClick={onLabelClick}
         />
-        <IconButton
-          size="small"
-          onClick={handleBookmarksIds}
-          color={bookmarksIds?.includes(cardData.id) ? 'secondary' : 'primary'}
-        >
-          <StarBorderOutlined />
-        </IconButton>
+        <BookmarkToggle
+          stixId={cardData.id}
+          stixEntityType={entityType}
+          isBookmarked={isBookmarked}
+        />
       </CardActions>
     </Card>
   );
