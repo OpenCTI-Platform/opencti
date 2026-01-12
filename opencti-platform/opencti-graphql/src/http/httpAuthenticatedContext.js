@@ -1,6 +1,6 @@
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { authenticateUserFromRequest, userWithOrigin, batchCreator, batchCreators, batchRolesForUsers, batchUserEffectiveConfidenceLevel } from '../domain/user';
+import { authenticateUserFromRequest, userWithOrigin, batchCreator, batchCreators, batchRolesForUsers, batchUserEffectiveConfidenceLevel, batchUserTokens } from '../domain/user';
 import { isNotEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
 import { batchLoader } from '../database/middleware';
@@ -26,6 +26,7 @@ export const computeLoaders = (executeContext, user) => {
     // Specific loaders
     domainsBatchLoader: batchLoader(batchStixDomainObjects, executeContext, user), // Could be change to use idsBatchLoader?
     userRolesBatchLoader: batchLoader(batchRolesForUsers, executeContext, user),
+    tokenBatchLoader: batchLoader(batchUserTokens, executeContext, user),
     userEffectiveConfidenceBatchLoader: batchLoader(batchUserEffectiveConfidenceLevel, executeContext, user),
     fileMarkingsBatchLoader: batchLoader(batchFileMarkingDefinitions, executeContext, user),
     fileWorksBatchLoader: batchLoader(batchFileWorks, executeContext, user),

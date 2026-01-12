@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
+import TokenList from './api_tokens/TokenList';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -9,7 +11,7 @@ import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import { LockOutlined, NoEncryptionOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
+import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
@@ -23,21 +25,18 @@ import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/fields/SelectField';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
-import useGranted, { KNOWLEDGE, OPENCTI_ADMIN_UUID } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, APIACCESS_USETOKEN } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/login/OtpInputField';
-import ItemCopy from '../../../components/ItemCopy';
 import { availableLanguage } from '../../../components/AppIntlProvider';
-import { maskString } from '../../../utils/String';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import ProfileLocalStorage from './ProfileLocalStorage';
 import useHelper from '../../../utils/hooks/useHelper';
 import DashboardSettings from '../DashboardSettings';
-import IconButton from '../../../components/common/button/IconButton';
 
 const styles = () => ({
   container: {
@@ -64,14 +63,6 @@ const profileOverviewFieldPatch = graphql`
     $password: String
   ) {
     meEdit(input: $input, password: $password) {
-      ...ProfileOverview_me
-    }
-  }
-`;
-
-const renewTokenPatch = graphql`
-  mutation ProfileOverviewTokenRenewMutation {
-    meTokenRenew {
       ...ProfileOverview_me
     }
   }
@@ -213,7 +204,6 @@ const OtpComponent = ({ closeFunction }) => (
 
 const ProfileOverviewComponent = (props) => {
   const { t, me, classes, about, settings, themes } = props;
-  const theme = useTheme();
   const { external, otp_activated: useOtp } = me;
   const { t_i18n } = useFormatter();
   const { isPlaygroundEnable } = useHelper();
@@ -221,8 +211,9 @@ const ProfileOverviewComponent = (props) => {
   setTitle(t_i18n('Profile'));
   const objectOrganization = convertOrganizations(me);
   const [display2FA, setDisplay2FA] = useState(false);
-  const [showToken, setShowToken] = useState(false);
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
+  const hasAccessTokenCapability = useGranted([APIACCESS_USETOKEN]);
+  const [displayTokenCreation, setDisplayTokenCreation] = useState(false);
 
   const fieldNames = [
     'name',
@@ -248,12 +239,6 @@ const ProfileOverviewComponent = (props) => {
   const disableOtp = () => {
     commitMutation({
       mutation: disableOtpPatch,
-    });
-  };
-
-  const renewToken = () => {
-    commitMutation({
-      mutation: renewTokenPatch,
     });
   };
 
@@ -296,6 +281,11 @@ const ProfileOverviewComponent = (props) => {
       gap={2}
       sx={{ width: 900, margin: '0 auto' }}
     >
+      <TokenCreationDrawer
+        userId={me.id}
+        open={displayTokenCreation}
+        onClose={() => setDisplayTokenCreation(false)}
+      />
       <Dialog
         open={display2FA}
         slotProps={{ paper: { elevation: 1 } }}
@@ -581,93 +571,17 @@ const ProfileOverviewComponent = (props) => {
             {t('OpenCTI version')}
           </Typography>
           <pre>{about.version}</pre>
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ marginTop: 16 }}
-          >
-            {t('API key')}
-          </Typography>
-          <pre
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-              padding: `${theme.spacing(1)}`,
-              gap: 4,
-            }}
-          >
-            <span style={{ flexGrow: 1 }}>
-              <ItemCopy
-                content={showToken ? me.api_token : maskString(me.api_token)}
-                value={me.api_token}
-              />
-            </span>
-            <IconButton
-              onClick={() => setShowToken((value) => !value)}
-              aria-label={showToken ? t('Hide') : t('Show')}
-            >
-              {showToken ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-            </IconButton>
-          </pre>
-          {me.id !== OPENCTI_ADMIN_UUID && (
-            <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
-              <Button onClick={renewToken}>
-                {t('Renew')}
+          <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16, gap: 10 }}>
+            {hasAccessTokenCapability && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setDisplayTokenCreation(true)}
+              >
+                {t('Generate Token')}
               </Button>
-            </div>
-          )}
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ marginTop: 16 }}
-          >
-            {t('Required headers')}
-          </Typography>
-          <pre
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-              gap: 4,
-            }}
-          >
-            <span
-              style={{
-                flexGrow: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <ItemCopy
-                content={(
-                  <>
-                    Content-Type: application/json
-                    <br />
-                    Authorization: Bearer {showToken ? me.api_token : maskString(me.api_token)}
-                  </>
-                )}
-                value={`Content-Type: application/json\nAuthorization: Bearer ${me.api_token}`}
-              />
-            </span>
-            <IconButton
-              style={{
-                cursor: 'pointer',
-                color: theme.palette.primary.main,
-                padding: `0 ${theme.spacing(1)}`,
-                position: 'relative',
-                top: '-8px',
-              }}
-              onClick={() => setShowToken((value) => !value)}
-              aria-label={showToken ? t('Hide') : t('Show')}
-            >
-              {showToken ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-            </IconButton>
-          </pre>
-          { isPlaygroundEnable() && (
-            <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
+            )}
+            {hasAccessTokenCapability && isPlaygroundEnable() && (
               <Button
                 component={Link}
                 to="/public/graphql"
@@ -675,8 +589,9 @@ const ProfileOverviewComponent = (props) => {
               >
                 {t('Playground')}
               </Button>
-            </div>
-          )}
+            )}
+          </div>
+          <TokenList node={me} />
         </div>
       </Card>
       <ProfileLocalStorage />
@@ -705,7 +620,6 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       lastname
       language
       theme
-      api_token
       otp_activated
       otp_qr
       description
@@ -724,6 +638,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
           }
         }
       }
+      ...TokenList_node
     }
   `,
   about: graphql`

@@ -396,7 +396,6 @@ describe('Providers initialization coverage', () => {
 
       const existingAdmin = await findUserById(testContext, SYSTEM_USER, OPENCTI_ADMIN_UUID) as AuthUser;
       expect(existingAdmin.user_email).toBe(adminEmail);
-      expect(existingAdmin.api_token).toBe(adminToken);
     });
 
     it('should well configured admin be initialized', async () => {
@@ -411,7 +410,6 @@ describe('Providers initialization coverage', () => {
 
       const existingAdmin = await findUserById(testContext, SYSTEM_USER, OPENCTI_ADMIN_UUID) as AuthUser;
       expect(existingAdmin.user_email).toBe('cecilia.payne@filigran.io');
-      expect(existingAdmin.api_token).toBe(newToken);
     });
 
     it('should password env with digit only works', async () => {

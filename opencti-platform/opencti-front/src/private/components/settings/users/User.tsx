@@ -1,8 +1,9 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import { DeleteForeverOutlined, DeleteOutlined, RefreshOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
+import { DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
+import Typography from '@mui/material/Typography';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -17,7 +18,6 @@ import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
-import { UserUserRenewTokenMutation } from '@components/settings/users/__generated__/UserUserRenewTokenMutation.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton } from '@mui/material';
@@ -41,13 +41,13 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
 import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
 import ItemAccountStatus from '../../../../components/ItemAccountStatus';
+import UserTokenList from './UserTokenList';
 import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import ItemCopy from '../../../../components/ItemCopy';
-import { EMPTY_VALUE, maskString } from '../../../../utils/String';
+import { EMPTY_VALUE } from '../../../../utils/String';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
@@ -64,17 +64,6 @@ export const userSessionKillMutation = graphql`
 export const userUserSessionsKillMutation = graphql`
   mutation UserUserSessionsKillMutation($id: ID!) {
     userSessionsKill(id: $id)
-  }
-`;
-
-export const userUserRenewTokenMutation = graphql`
-  mutation UserUserRenewTokenMutation($id: ID!) {
-    userEdit(id: $id) {
-      tokenRenew {
-        id
-        api_token
-      }
-    }
   }
 `;
 
@@ -132,7 +121,6 @@ const UserFragment = graphql`
     account_status
     account_lock_after_date
     language
-    api_token
     otp_activated
     created_at
     creator {
@@ -208,6 +196,7 @@ const UserFragment = graphql`
       created
       ttl
     }
+    ...UserTokenList_node
   }
 `;
 
@@ -226,10 +215,8 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const { t_i18n, nsdt, fsd, fldt } = useFormatter();
   const { me } = useAuth();
   const theme = useTheme<Theme>();
-  const [showToken, setShowToken] = useState<boolean>(false);
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
-  const [displayRenewToken, setDisplayRenewToken] = useState<boolean>(false);
   const [killing, setKilling] = useState<boolean>(false);
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
   const user = useFragment(UserFragment, data);
@@ -240,7 +227,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
     userSessionKillMutation,
   );
   const [commitUserUserSessionsKill] = useApiMutation<UserUserSessionsKillMutation>(userUserSessionsKillMutation);
-  const [commitUserUserRenewToken] = useApiMutation<UserUserRenewTokenMutation>(userUserRenewTokenMutation);
   const [commitUserOtpDeactivation] = useApiMutation<UserOtpDeactivationMutation>(
     userOtpDeactivationMutation,
   );
@@ -292,27 +278,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       onCompleted: () => {
         setKilling(false);
         handleCloseKillSessions();
-        refetch();
-      },
-    });
-  };
-
-  const handleOpenRenewToken = () => {
-    setDisplayRenewToken(true);
-  };
-  const handleCloseRenewToken = () => {
-    setDisplayRenewToken(false);
-  };
-  const submitRenewToken = () => {
-    commitUserUserRenewToken({
-      variables: {
-        id: user.id,
-      },
-      onError: (error: Error) => {
-        handleError(error);
-      },
-      onCompleted: () => {
-        handleCloseRenewToken();
         refetch();
       },
     });
@@ -420,56 +385,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </>
               )}
               <Grid item xs={12}>
-                <Label action={(
-                  <Security needs={[SETTINGS_SETACCESSES]}>
-                    <Tooltip title={t_i18n('Revoke token')}>
-                      <IconButton
-                        color="primary"
-                        aria-label={t_i18n('Revoke token')}
-                        onClick={handleOpenRenewToken}
-                        size="small"
-                      >
-                        <RefreshOutlined fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Security>
-                )}
-                >
-                  {t_i18n('Token')}
-                </Label>
-                <pre
-                  style={{
-                    margin: 0,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    width: '100%',
-                    padding: `${theme.spacing(1)}`,
-                    gap: 4,
-                  }}
-                >
-                  <span style={{ flexGrow: 1 }}>
-                    <ItemCopy
-                      content={showToken ? user.api_token : maskString(user.api_token)}
-                      value={user.api_token}
-                    />
-                  </span>
-                  <IconButton
-                    style={{
-                      cursor: 'pointer',
-                      color: theme.palette.primary.main,
-                      padding: `0 ${theme.spacing(1)}`,
-                    }}
-                    disableRipple
-                    onClick={() => setShowToken((value) => !value)}
-                    aria-label={showToken ? t_i18n('Hide') : t_i18n('Show')}
-                  >
-                    {showToken
-                      ? <VisibilityOff fontSize="small" />
-                      : <Visibility fontSize="small" />
-                    }
-                  </IconButton>
-                </pre>
+                <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+                  {t_i18n('API Tokens')}
+                </Typography>
+                <div className="clearfix" />
+                <UserTokenList node={user} />
               </Grid>
               {!isServiceAccount && (
                 <>
@@ -511,7 +431,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <Label>
                       {t_i18n('Created by')}
                     </Label>
-                    { creatorName }
+                    {creatorName}
                   </Grid>
                   <Grid item xs={6}>
                     <Label>
@@ -849,32 +769,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           <Button
             onClick={submitKillSessions}
             disabled={killing}
-          >
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={displayRenewToken}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseRenewToken}
-      >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to revoke this user token ? Once the token is revoked all access are forbidden, please verify that the token is not used by connectors or other API calls before revoking.')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button variant="secondary" onClick={handleCloseRenewToken}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={submitRenewToken}
           >
             {t_i18n('Confirm')}
           </Button>

@@ -1,7 +1,7 @@
 import functools
+from concurrent.futures import Future
 from dataclasses import dataclass, field
 from threading import Thread
-from concurrent.futures import Future
 from typing import Any, Callable, Literal
 
 import pika

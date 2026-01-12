@@ -33,6 +33,9 @@ describe('Data initialization test', () => {
     expect(capabilities.length).toEqual(entitiesCounter.Capability);
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
+      'APIACCESS',
+      'APIACCESS_USEBASICAUTH',
+      'APIACCESS_USETOKEN',
       'AUTOMATION',
       'AUTOMATION_AUTMANAGE',
       'BYPASS',

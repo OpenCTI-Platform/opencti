@@ -18,7 +18,6 @@ import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import PasswordTextField from '../../../../../components/PasswordTextField';
 import type { Theme } from '../../../../../components/Theme';
 
 export const userMutationFieldPatch = graphql`
@@ -115,7 +114,6 @@ const UserEditionOverviewComponent: FunctionComponent<
     firstname: user.firstname,
     lastname: user.lastname,
     language: user.language,
-    api_token: user.api_token,
     description: user.description,
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
@@ -180,7 +178,7 @@ const UserEditionOverviewComponent: FunctionComponent<
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={userValidation(t_i18n, userIsOnlyOrganizationAdmin)}
-      onSubmit={() => {}}
+      onSubmit={() => { }}
     >
       {() => (
         <Form style={{ marginTop: theme.spacing(2) }}>
@@ -282,17 +280,6 @@ const UserEditionOverviewComponent: FunctionComponent<
             style={fieldSpacingContainerStyle}
             outlined={false}
           />
-          <PasswordTextField
-            name="api_token"
-            label={t_i18n('Token')}
-            disabled={true}
-            onFocus={handleChangeFocus}
-            onSubmit={handleSubmitField}
-            style={{ marginTop: 20 }}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="api_token" />
-            }
-          />
           <Field
             component={SelectField}
             variant="standard"
@@ -351,7 +338,6 @@ const UserEditionOverview = createFragmentContainer(
         lastname
         language
         theme
-        api_token
         otp_activated
         otp_qr
         account_status

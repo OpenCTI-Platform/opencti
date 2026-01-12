@@ -75,7 +75,10 @@ class OpenCTIApiConnector:
                     id
                     name
                     connector_user {
-                      api_token
+                      api_tokens {
+                        id
+                        name
+                      }
                     }
                     connector_priority_group
                     config {
@@ -156,6 +159,7 @@ class OpenCTIApiConnector:
                 registerConnector(input: $input) {
                     id
                     connector_state
+                    jwks
                     config {
                         connection {
                             host
