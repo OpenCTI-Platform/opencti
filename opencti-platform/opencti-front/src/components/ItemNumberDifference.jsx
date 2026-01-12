@@ -5,6 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import { ArrowUpward, ArrowDownward, ArrowForward } from '@mui/icons-material';
 
 import inject18n from './i18n';
+import { alpha, useTheme } from '@mui/material';
 
 const styles = (theme) => ({
   diff: {
@@ -29,14 +30,16 @@ const styles = (theme) => ({
   },
 });
 
+const theme = useTheme();
+
 const inlineStyles = {
   green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
+    backgroundColor: alpha(theme.palette.success.main, 0.08),
+    color: theme.palette.success.main,
   },
   red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
+    backgroundColor: alpha(theme.palette.error.main, 0.08),
+    color: theme.palette.error.main,
   },
   blueGrey: {
     backgroundColor: 'rgba(96, 125, 139, 0.08)',

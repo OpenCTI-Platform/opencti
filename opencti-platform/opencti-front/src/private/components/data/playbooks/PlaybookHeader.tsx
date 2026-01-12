@@ -29,7 +29,7 @@ import { interval } from 'rxjs';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import { Stack, useTheme } from '@mui/material';
+import { alpha, Stack, useTheme } from '@mui/material';
 import ListItemButton from '@mui/material/ListItemButton';
 import PlaybookEdition from '@components/data/playbooks/PlaybookEdition';
 import Drawer from '../../common/drawer/Drawer';
@@ -42,17 +42,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 
 const interval$ = interval(FIVE_SECONDS);
-
-const inlineStyles = {
-  green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-  },
-  red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-  },
-};
 
 const playbookHeaderRefetchQuery = graphql`
   query PlaybookHeaderRefetchQuery($id: String!) {
@@ -70,6 +59,16 @@ const PlaybookHeaderComponent = ({
   relay: RelayRefetchProp;
 }) => {
   const theme = useTheme();
+  const inlineStyles = {
+    green: {
+      backgroundColor: alpha(theme.palette.success.main, 0.08),
+      color: theme.palette.success.main,
+    },
+    red: {
+      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      color: theme.palette.error.main,
+    },
+  };
 
   useEffect(() => {
     // Refresh

@@ -25,6 +25,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { alpha } from '@mui/material/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -37,8 +38,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontSize: 12,
     lineHeight: '12px',
     height: 20,
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
+    backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
+    color: theme.palette.error.main,
     textTransform: 'uppercase',
     borderRadius: 4,
   },
@@ -46,8 +47,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontSize: 12,
     lineHeight: '12px',
     height: 20,
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
+    backgroundColor: alpha(theme.palette.success.main || '#17AB1F', 0.08),
+    color: theme.palette.success.main,
     textTransform: 'uppercase',
     borderRadius: 4,
   },

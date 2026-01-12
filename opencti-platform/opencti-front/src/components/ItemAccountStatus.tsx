@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
+import { alpha, useTheme } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -13,11 +14,13 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const theme = useTheme();
+
 const inlineStyles = {
   green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
-    borderColor: '#4caf50',
+    backgroundColor: alpha(theme.palette.success.main, 0.08),
+    color: theme.palette.success.main,
+    borderColor: theme.palette.success.main,
   },
   blue: {
     backgroundColor: 'rgba(92, 123, 245, 0.08)',
@@ -25,9 +28,9 @@ const inlineStyles = {
     borderColor: '#5c7bf5',
   },
   red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
-    borderColor: '#f44336',
+    backgroundColor: alpha(theme.palette.error.main, 0.08),
+    color: theme.palette.error.main,
+    borderColor: theme.palette.error.main,
   },
   orange: {
     backgroundColor: 'rgba(255, 152, 0, 0.08)',

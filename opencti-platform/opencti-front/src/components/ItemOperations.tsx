@@ -9,43 +9,42 @@ interface ItemOperationsProps {
   draftOperation?: string;
 }
 
-const operationStylesLight = {
-  green: {
-    backgroundColor: '#2e7d32',
-    color: '#ffffff',
-  },
-  red: {
-    backgroundColor: '#c62828',
-    color: '#ffffff',
-  },
-  yellow: {
-    backgroundColor: '#ff9800',
-    color: '#ffffff',
-  },
-  lightYellow: {
-    backgroundColor: '#ec7629',
-    color: '#ffffff',
-  },
-};
-
-const operationStylesDark = {
-  green: {
-    backgroundColor: '#2e7d32',
-  },
-  red: {
-    backgroundColor: '#c62828',
-  },
-  yellow: {
-    backgroundColor: '#ff9800',
-  },
-  lightYellow: {
-    backgroundColor: '#ec7629',
-  },
-};
-
 const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const operationStylesLight = {
+    green: {
+      backgroundColor: theme.palette.success.dark,
+      color: '#ffffff',
+    },
+    red: {
+      backgroundColor: theme.palette.error.dark,
+      color: '#ffffff',
+    },
+    yellow: {
+      backgroundColor: '#ff9800',
+      color: '#ffffff',
+    },
+    lightYellow: {
+      backgroundColor: '#ec7629',
+      color: '#ffffff',
+    },
+  };
+
+  const operationStylesDark = {
+    green: {
+      backgroundColor: theme.palette.success.dark,
+    },
+    red: {
+      backgroundColor: theme.palette.error.dark,
+    },
+    yellow: {
+      backgroundColor: '#ff9800',
+    },
+    lightYellow: {
+      backgroundColor: '#ec7629',
+    },
+  };
 
   const getChipStyle = () => {
     switch (draftOperation) {

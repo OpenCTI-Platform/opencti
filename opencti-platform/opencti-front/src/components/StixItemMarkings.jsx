@@ -6,6 +6,7 @@ import withTheme from '@mui/styles/withTheme';
 import Chip from '@mui/material/Chip';
 import { compose } from 'ramda';
 import { truncate } from '../utils/String';
+import { useTheme } from '@mui/material';
 
 const styles = () => ({
   chip: {
@@ -27,6 +28,7 @@ const styles = () => ({
   },
 });
 
+const theme = useTheme();
 const inlineStylesDark = {
   white: {
     backgroundColor: '#ffffff',
@@ -39,7 +41,7 @@ const inlineStylesDark = {
     backgroundColor: '#283593',
   },
   red: {
-    backgroundColor: '#c62828',
+    backgroundColor: theme.palette.error.dark,
   },
   orange: {
     backgroundColor: '#d84315',
@@ -61,7 +63,7 @@ const inlineStylesLight = {
     color: '#ffffff',
   },
   red: {
-    backgroundColor: '#c62828',
+    backgroundColor: theme.palette.error.dark,
     color: '#ffffff',
   },
   orange: {

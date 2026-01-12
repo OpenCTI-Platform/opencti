@@ -12,7 +12,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from 'react-router-dom';
 import Slide from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, useTheme } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
@@ -104,6 +104,7 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nested }) => {
+  const theme = useTheme();
   const { t_i18n, nsdt } = useFormatter();
   const { me } = useAuth();
   const deletion = useDeletion({});
@@ -197,7 +198,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
             {!isProgress && (isFail || isOutdated) && (
               <WarningOutlined
                 color={nested ? 'primary' : 'inherit'}
-                style={{ fontSize: 15, color: '#f44336' }}
+                style={{ fontSize: 15, color: theme.palette.error.main }}
               />
             )}
             {!isProgress && !isFail && !isOutdated && (

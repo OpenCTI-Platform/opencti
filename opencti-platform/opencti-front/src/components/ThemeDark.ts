@@ -42,14 +42,14 @@ const ThemeDark = (
     mode: 'dark',
     common: { white: '#ffffff', grey: '#7A7C85', lightGrey: '#ffffffb3' },
     error: {
-      main: '#f44336',
-      dark: '#c62828',
+      main: '#F14337',
+      dark: '#881106',
     },
     warn: {
       main: '#ffa726',
     },
     dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#f44336', contrastText: '#000000', text: { primary: '#fbc2be' } },
-    success: { main: '#03a847' },
+    success: { main: '#17AB1F', dark: '#094E0B' },
     primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
     gradient: { main: '#00f18d' },
@@ -365,14 +365,14 @@ const ThemeDark = (
           },
           '.error .react-mde textarea': {
             border: '0 !important',
-            borderBottom: '2px solid #f44336 !important',
+            borderBottom: '2px solid #F14337 !important',
             '&:hover': {
               border: '0 !important',
-              borderBottom: '2px solid #f44336 !important',
+              borderBottom: '2px solid #F14337 !important',
             },
             '&:focus': {
               border: '0 !important',
-              borderBottom: '2px solid #f44336 !important',
+              borderBottom: '2px solid #F14337 !important',
             },
           },
           '.mde-header': {

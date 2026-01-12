@@ -22,6 +22,7 @@ import { minutesBetweenDates, now } from '../../../../utils/Time';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { chipInListBasicStyle } from '../../../../utils/chipStyle';
+import { useTheme } from '@mui/material';
 
 const styles = {
   bodyItem: {
@@ -48,6 +49,8 @@ const styles = {
     textOverflow: 'ellipsis',
   },
 };
+
+const theme = useTheme();
 
 type PackageStatus = 'IN_PROGRESS' | 'READY' | 'IN_ERROR' | 'TIMEOUT' | '%future added value';
 
@@ -85,9 +88,9 @@ export const supportPackageLineFragment = graphql`
 
 const packageStatusColors: { [key in PackageStatus]: string } = {
   IN_PROGRESS: '#303f9f',
-  READY: '#4caf50',
-  IN_ERROR: '#f44336',
-  TIMEOUT: '#f44336',
+  READY: theme.palette.success.main,
+  IN_ERROR: theme.palette.error.main,
+  TIMEOUT: theme.palette.error.main,
   '%future added value': '#9e9e9e',
 };
 

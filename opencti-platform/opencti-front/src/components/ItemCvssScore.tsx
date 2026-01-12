@@ -1,7 +1,9 @@
 import Chip from '@mui/material/Chip';
 import React, { CSSProperties } from 'react';
-import { useTheme } from '@mui/styles';
+import { alpha, useTheme } from '@mui/material';
 import type { Theme } from './Theme';
+
+const theme = useTheme();
 
 const inlineStyles = {
   whiteDark: {
@@ -20,16 +22,16 @@ const inlineStyles = {
     fontStyle: 'italic',
   },
   green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
+    backgroundColor: alpha(theme.palette.success.main, 0.08),
+    color: theme.palette.success.main,
   },
   blue: {
     backgroundColor: 'rgba(92, 123, 245, 0.08)',
     color: '#5c7bf5',
   },
   red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
+    backgroundColor: alpha(theme.palette.error.main, 0.08),
+    color: theme.palette.error.main,
   },
   orange: {
     backgroundColor: 'rgba(255, 152, 0, 0.08)',

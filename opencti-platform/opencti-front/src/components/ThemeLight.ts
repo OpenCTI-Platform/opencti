@@ -13,6 +13,7 @@ export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
 const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8';
 const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94';
 const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
+const THEME_LIGHT_DEFAULT_TEXT = '#18191B';
 const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
 const THEME_LIGHT_DEFAULT_NAV = '#ffffff';
 
@@ -32,23 +33,23 @@ const ThemeLight = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
-  text_color = 'rgba(0, 0, 0, 0.87)',
+  text_color = THEME_LIGHT_DEFAULT_TEXT,
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
   borderRadius: 4,
   palette: {
     mode: 'light',
-    common: { white: '#ffffff', grey: '#494A50', lightGrey: 'rgba(0, 0, 0, 0.6)' },
+    common: { white: '#ffffff', grey: '#494A50', lightGrey: '#AFB0B6' },
     error: {
-      main: '#f44336',
-      dark: '#c62828',
+      main: '#F14337',
+      dark: '#881106',
     },
     warn: {
       main: '#ffa726',
     },
     dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#d1584f', contrastText: '#000000', text: { primary: '#d1584f' } },
-    success: { main: '#03a847' },
+    success: { main: '#1CA55E', dark: '#0D7E39' },
     primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
@@ -78,7 +79,7 @@ const ThemeLight = (
       main: EE_COLOR,
       background: hexToRGB(EE_COLOR, 0.2),
       lightBackground: hexToRGB(EE_COLOR, 0.08),
-      contrastText: '#ffffff',
+      contrastText: '#F2F2F3',
     },
     background: {
       default: background || THEME_LIGHT_DEFAULT_BACKGROUND,
@@ -365,14 +366,14 @@ const ThemeLight = (
           },
           '.error .react-mde textarea': {
             border: '0 !important',
-            borderBottom: '2px solid #f44336 !important',
+            borderBottom: '2px solid #F14337 !important',
             '&:hover': {
               border: '0 !important',
-              borderBottom: '2px solid #f44336 !important',
+              borderBottom: '2px solid #F14337 !important',
             },
             '&:focus': {
               border: '0 !important',
-              borderBottom: '2px solid #f44336 !important',
+              borderBottom: '2px solid #F14337 !important',
             },
           },
           '.mde-header': {
@@ -420,8 +421,8 @@ const ThemeLight = (
             backgroundColor: `${paper || '#ffffff'} !important`,
           },
           '.react-grid-item .react-resizable-handle::after': {
-            borderRight: '2px solid rgba(0, 0, 0, 0.6) !important',
-            borderBottom: '2px solid rgba(0, 0, 0, 0.6) !important',
+            borderRight: '2px solid #AFB0B6 !important',
+            borderBottom: '2px solid #AFB0B6 !important',
           },
         },
       },

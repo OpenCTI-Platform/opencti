@@ -11,7 +11,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { v4 as uuid } from 'uuid';
-import { ListItemButton } from '@mui/material';
+import { ListItemButton, useTheme } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -86,6 +86,7 @@ const styles = (theme) => ({
 });
 
 const ExternalReferenceEnrichment = (props) => {
+  const theme = useTheme();
   const { externalReference, connectorsForImport, relay, classes, t, nsdt } = props;
   const { id } = externalReference;
   const file = externalReference.importFiles
@@ -190,7 +191,7 @@ const ExternalReferenceEnrichment = (props) => {
                   >
                     <ListItemIcon
                       style={{
-                        color: connector.active ? '#4caf50' : '#f44336',
+                        color: connector.active ? theme.palette.success.main : theme.palette.error.main,
                       }}
                     >
                       <Extension />
@@ -247,7 +248,7 @@ const ExternalReferenceEnrichment = (props) => {
                               <Warning
                                 style={{
                                   fontSize: 15,
-                                  color: '#f44336',
+                                  color: theme.palette.error.main,
                                 }}
                               />
                             )}
@@ -255,7 +256,7 @@ const ExternalReferenceEnrichment = (props) => {
                               <CheckCircle
                                 style={{
                                   fontSize: 15,
-                                  color: '#4caf50',
+                                  color: theme.palette.success.main,
                                 }}
                               />
                             )}

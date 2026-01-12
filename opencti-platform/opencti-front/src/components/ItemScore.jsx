@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import inject18n from './i18n';
 import { isEmptyField } from '../utils/utils';
+import { alpha, useTheme } from '@mui/material';
 
 const styles = () => ({
   chip: {
@@ -27,6 +28,8 @@ const styles = () => ({
   },
 });
 
+const theme = useTheme();
+
 const inlineStyles = {
   white: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -37,16 +40,16 @@ const inlineStyles = {
     color: '#000000',
   },
   green: {
-    backgroundColor: 'rgba(76, 175, 80, 0.08)',
-    color: '#4caf50',
+    backgroundColor: alpha(theme.palette.success.main, 0.08),
+    color: theme.palette.success.main,
   },
   blue: {
     backgroundColor: 'rgba(92, 123, 245, 0.08)',
     color: '#5c7bf5',
   },
   red: {
-    backgroundColor: 'rgba(244, 67, 54, 0.08)',
-    color: '#f44336',
+    backgroundColor: alpha(theme.palette.error.main, 0.08),
+    color: theme.palette.error.main,
   },
   orange: {
     backgroundColor: 'rgba(255, 152, 0, 0.08)',
