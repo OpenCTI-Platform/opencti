@@ -1,5 +1,5 @@
 import { useFormatter } from '../../../../components/i18n';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { Stack } from '@mui/material';
 import TitleMainEntity from '@common/typography/TitleMainEntity';
@@ -8,11 +8,14 @@ import { graphql, useFragment } from 'react-relay';
 import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefinitionEdition';
 import { SSODefinitionHeaderFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionHeaderFragment.graphql';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
+import SSODefinitionPopover from '@components/settings/sso_definitions/SSODefinitionPopover';
 
 export const headerFragment = graphql`
   fragment SSODefinitionHeaderFragment on SingleSignOn {
+    id
     name
     strategy
+    ...SSODefinitionPopoverFragment
   }
 `;
 
@@ -40,16 +43,19 @@ const SSODefinitionHeader = (
       <Breadcrumbs elements={breadcrumb} />
       <>
         <Stack direction="row" alignItems="center" gap={0.5} marginBottom={3}>
-          <TitleMainEntity sx={{ flex: 1 }}>
-            {name}
-          </TitleMainEntity>
-          <Button
-            onClick={() => setIsEditionOpen(true)}
-            aria-label={t_i18n('Update')}
-            title={t_i18n('Update')}
-          >
-            {t_i18n('Update')}
-          </Button>
+          <>
+            <TitleMainEntity sx={{ flex: 1 }}>
+              {name}
+            </TitleMainEntity>
+            <Button
+              onClick={() => setIsEditionOpen(true)}
+              aria-label={t_i18n('Update')}
+              title={t_i18n('Update')}
+            >
+              {t_i18n('Update')}
+            </Button>
+            <SSODefinitionPopover data={sso} />
+          </>
         </Stack>
         <SSODefinitionEdition
           isOpen={isEditionOpen}

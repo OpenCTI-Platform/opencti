@@ -21,7 +21,6 @@ const useComputeLinkFn = () => {
   const { isRelationship } = useSchema();
   const computeLink = (node: ComputeLinkNode): string | undefined => {
     let redirectLink;
-    console.log(node);
     if (node.relationship_type === 'stix-sighting-relationship' && node.from) {
       redirectLink = `${resolveLink(node.from.entity_type)}/${
         node.from.id

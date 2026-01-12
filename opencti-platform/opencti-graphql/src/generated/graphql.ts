@@ -27910,7 +27910,7 @@ export type SingleSignOnAddInput = {
   groups_management?: InputMaybe<GroupsManagementInput>;
   identifier: Scalars['String']['input'];
   label?: InputMaybe<Scalars['String']['input']>;
-  name: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
   organizations_management?: InputMaybe<OrganizationsManagementInput>;
   strategy: StrategyType;
 };

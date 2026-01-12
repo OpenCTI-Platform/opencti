@@ -106,7 +106,7 @@ const SSODefinitions = () => {
   setTitle(t_i18n('SSO Definitions | Security | Settings'));
   const initialValues = {
     searchTerm: '',
-    sortBy: 'name',
+    sortBy: 'identifier',
     orderAsc: true,
     filters: emptyFilterGroup,
   };

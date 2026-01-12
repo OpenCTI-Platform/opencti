@@ -101,7 +101,7 @@ input ConfigurationTypeInput {
 }
 
 input SingleSignOnAddInput {
-  name: String!
+  name: String
   identifier: String!
   description: String
   enabled: Boolean!
