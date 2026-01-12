@@ -1,23 +1,21 @@
-import { FunctionComponent, MouseEvent } from 'react';
+import { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import CardHeader from '@mui/material/CardHeader';
-import IconButton from '@common/button/IconButton';
-import { StarBorderOutlined } from '@mui/icons-material';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import Skeleton from '@mui/material/Skeleton';
-import { Stack } from '@mui/material';
+import { CardActions, Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
 import { emptyFilled } from '../../../../utils/String';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import { addBookmark, deleteBookMark } from '../stix_domain_objects/StixDomainObjectBookmark';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import Card from '../../../../components/common/card/Card';
+import BookmarkToggle from '../../../../components/common/bookmark/BookmarkToggle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -27,10 +25,6 @@ const useStyles = makeStyles<Theme>(() => ({
     paddingBottom: 0,
     marginBottom: 0,
   },
-  content: {
-    width: '100%',
-    padding: 0,
-  },
   contentDummy: {
     width: '100%',
     height: 200,
@@ -39,32 +33,12 @@ const useStyles = makeStyles<Theme>(() => ({
   },
   description: {
     marginTop: 5,
-    height: 65,
+    height: 90,
     display: '-webkit-box',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    '-webkit-line-clamp': 3,
+    '-webkit-line-clamp': 4,
     '-webkit-box-orient': 'vertical',
-  },
-  objectLabel: {
-    height: 45,
-    paddingTop: 14,
-  },
-  extras: {
-    marginTop: 18,
-  },
-  extraColumn: {
-    height: 58,
-    width: '50%',
-    float: 'left',
-    display: '-webkit-box',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    '-webkit-line-clamp': 3,
-    '-webkit-box-orient': 'vertical',
-  },
-  title: {
-    fontWeight: 600,
   },
 }));
 
@@ -116,6 +90,8 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n, fld } = useFormatter();
 
+  const isBookmarked = !!bookmarksIds?.includes(cardData.id);
+
   const relatedIntrusionSets = R.uniq((cardData.relatedIntrusionSets?.edges ?? [])
     .map((n) => n?.node?.from?.name))
     .join(', ');
@@ -129,24 +105,28 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
     .map((n) => n?.node?.to?.name))
     .join(', ');
 
-  const handleBookmarksIds = (e: MouseEvent<HTMLElement>) => {
-    e.preventDefault();
-    if (bookmarksIds?.includes(cardData.id)) {
-      deleteBookMark(cardData.id, entityType);
-    } else {
-      addBookmark(cardData.id, entityType);
-    }
-  };
-
   const Info = (props: { title: string; value: string }) => (
     <Stack direction="row" gap={1} alignItems="center">
       <Typography
         variant="h4"
-        sx={{ margin: 0, color: theme.palette.text.secondary }}
+        sx={{
+          margin: 0,
+          color: theme.palette.text.secondary,
+          whiteSpace: 'nowrap',
+        }}
       >
         {props.title}:
       </Typography>
-      <Typography variant="body2">
+      <Typography
+        variant="body2"
+        sx={{
+          margin: 0,
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
+          overflow: 'hidden',
+          minWidth: 0,
+        }}
+      >
         {props.value}
       </Typography>
     </Stack>
@@ -155,21 +135,24 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   return (
     <Card to={cardLink}>
       <CardHeader
-        sx={{ padding: 0 }}
-        classes={{ root: classes.header, title: classes.title }}
         title={renderCardTitle(cardData)}
-        subheader={fld(cardData.modified)}
-        action={(
-          <IconButton
-            size="small"
-            onClick={handleBookmarksIds}
-            color={bookmarksIds?.includes(cardData.id) ? 'secondary' : 'primary'}
-          >
-            <StarBorderOutlined />
-          </IconButton>
+        subheader={t_i18n(
+          'Last modified on',
+          { values: { date: fld(cardData.modified) } },
         )}
+        sx={{
+          padding: 0,
+          mb: 2,
+          '.MuiCardHeader-content': {
+            minWidth: 0,
+          },
+          '.MuiCardHeader-subheader': {
+            fontSize: 12,
+            color: theme.palette.text.secondary,
+          },
+        }}
       />
-      <CardContent className={classes.content}>
+      <CardContent sx={{ p: 0 }}>
         <div className={classes.description}>
           <MarkdownDisplay
             content={cardData.description}
@@ -180,14 +163,14 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
             limit={260}
           />
         </div>
-        <div className={classes.extras}>
+        <div style={{ paddingTop: 12 }}>
           <Info
             title={t_i18n('Known as')}
             value={emptyFilled((cardData.aliases || []).join(', '))}
           />
           {entityType === 'Malware' ? (
             <Info
-              title={t_i18n('Correlated intrusion sets')}
+              title={t_i18n('Intrusion sets')}
               value={emptyFilled(relatedIntrusionSets)}
             />
           ) : (
@@ -205,13 +188,18 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
             value={emptyFilled(targetedSectors)}
           />
         </div>
-        <div className={classes.objectLabel}>
-          <StixCoreObjectLabels
-            labels={cardData.objectLabel}
-            onClick={onLabelClick}
-          />
-        </div>
       </CardContent>
+      <CardActions sx={{ p: 0, mt: 2, justifyContent: 'space-between' }}>
+        <StixCoreObjectLabels
+          labels={cardData.objectLabel}
+          onClick={onLabelClick}
+        />
+        <BookmarkToggle
+          stixId={cardData.id}
+          stixEntityType={entityType}
+          isBookmarked={isBookmarked}
+        />
+      </CardActions>
     </Card>
   );
 };
@@ -223,14 +211,6 @@ export const GenericAttackCardDummy = () => {
       <CardHeader
         sx={{ padding: 0 }}
         classes={{ root: classes.header }}
-        avatar={(
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
-        )}
         title={(
           <Skeleton
             animation="wave"
@@ -245,14 +225,6 @@ export const GenericAttackCardDummy = () => {
             variant="rectangular"
             width="90%"
             style={{ marginBottom: 10 }}
-          />
-        )}
-        action={(
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
           />
         )}
         slotProps={{
@@ -280,35 +252,31 @@ export const GenericAttackCardDummy = () => {
             style={{ marginBottom: 10 }}
           />
         </div>
-        <div className={classes.extras}>
-          <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="100%"
-              style={{ marginBottom: 10 }}
-            />
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="100%"
-              style={{ marginBottom: 10 }}
-            />
-          </div>
-          <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="100%"
-              style={{ marginBottom: 10 }}
-            />
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="100%"
-              style={{ marginBottom: 10 }}
-            />
-          </div>
+        <div>
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="100%"
+            style={{ marginBottom: 10 }}
+          />
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="100%"
+            style={{ marginBottom: 10 }}
+          />
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="100%"
+            style={{ marginBottom: 10 }}
+          />
+          <Skeleton
+            animation="wave"
+            variant="rectangular"
+            width="100%"
+            style={{ marginBottom: 10 }}
+          />
         </div>
       </CardContent>
     </Card>

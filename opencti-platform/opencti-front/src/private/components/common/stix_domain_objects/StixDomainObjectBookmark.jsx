@@ -4,61 +4,14 @@ import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import CardHeader from '@mui/material/CardHeader';
+import { useTheme } from '@mui/styles';
 import CardContent from '@mui/material/CardContent';
-import { StarBorderOutlined } from '@mui/icons-material';
-import IconButton from '@common/button/IconButton';
 import Skeleton from '@mui/material/Skeleton';
-import withTheme from '@mui/styles/withTheme';
 import Card from '@common/card/Card';
-import inject18n from '../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
-import { commitMutation } from '../../../../relay/environment';
-import { deleteNode, insertNode } from '../../../../utils/store';
 import { renderCardTitle } from '../../../../utils/Card';
-
-const stixDomainObjectBookmarkCreateMutation = graphql`
-  mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
-    bookmarkAdd(id: $id, type: $type) {
-      id
-      ...StixDomainObjectBookmark_node
-    }
-  }
-`;
-
-const stixDomainObjectBookmarkRemoveMutation = graphql`
-  mutation StixDomainObjectBookmarkRemoveMutation($id: ID!) {
-    bookmarkDelete(id: $id)
-  }
-`;
-
-export const addBookmark = (id, type, event = null) => {
-  if (event) {
-    event.stopPropagation();
-    event.preventDefault();
-  }
-  commitMutation({
-    mutation: stixDomainObjectBookmarkCreateMutation,
-    variables: { id, type },
-    updater: (store) => insertNode(
-      store,
-      'Pagination_bookmarks',
-      { types: [type] },
-      'bookmarkAdd',
-    ),
-  });
-};
-
-export const deleteBookMark = (id, type, event = null) => {
-  if (event) {
-    event.stopPropagation();
-    event.preventDefault();
-  }
-  commitMutation({
-    mutation: stixDomainObjectBookmarkRemoveMutation,
-    variables: { id },
-    updater: (store) => deleteNode(store, 'Pagination_bookmarks', { types: [type] }, id),
-  });
-};
+import BookmarkToggle from '../../../../components/common/bookmark/BookmarkToggle';
 
 const styles = (theme) => ({
   avatar: {
@@ -81,40 +34,50 @@ const styles = (theme) => ({
   },
 });
 
-class StixDomainObjectBookmarkComponent extends Component {
-  render() {
-    const { t, fsd, classes, node } = this.props;
-    const link = resolveLink(node.entity_type);
-    return (
-      <Card to={`${link}/${node.id}`}>
-        <CardHeader
-          classes={{ root: classes.header }}
-          title={renderCardTitle(node)}
-          subheader={`${t('Updated on')} ${fsd(node.modified)}`}
-          action={(
-            <IconButton
-              size="small"
-              onClick={deleteBookMark.bind(this, node.id, node.entity_type)}
-              color="secondary"
-            >
-              <StarBorderOutlined />
-            </IconButton>
-          )}
-        />
-      </Card>
-    );
-  }
-}
+const StixDomainObjectBookmarkComponent = ({ node }) => {
+  const { t_i18n, fld } = useFormatter();
+  const theme = useTheme();
+  const link = resolveLink(node.entity_type);
+
+  return (
+    <Card to={`${link}/${node.id}`}>
+      <CardHeader
+        title={renderCardTitle(node)}
+        subheader={t_i18n(
+          'Last modified on',
+          { values: { date: fld(node.modified) } },
+        )}
+        sx={{
+          padding: 0,
+          mb: 2,
+          '.MuiCardHeader-content': {
+            minWidth: 0,
+          },
+          '.MuiCardHeader-title': {
+            mt: 0,
+          },
+          '.MuiCardHeader-subheader': {
+            fontSize: 12,
+            color: theme.palette.text.secondary,
+          },
+        }}
+        action={(
+          <BookmarkToggle
+            stixId={node.id}
+            stixEntityType={node.entity_type}
+            isBookmarked={true}
+          />
+        )}
+      />
+    </Card>
+  );
+};
 
 StixDomainObjectBookmarkComponent.propTypes = {
   node: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fsd: PropTypes.func,
-  onLabelClick: PropTypes.func,
 };
 
-const StixDomainObjectBookmarkFragment = createFragmentContainer(
+export const StixDomainObjectBookmark = createFragmentContainer(
   StixDomainObjectBookmarkComponent,
   {
     node: graphql`
@@ -280,12 +243,6 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
     `,
   },
 );
-
-export const StixDomainObjectBookmark = R.compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(StixDomainObjectBookmarkFragment);
 
 class StixDomainObjectBookmarkDummyComponent extends Component {
   render() {

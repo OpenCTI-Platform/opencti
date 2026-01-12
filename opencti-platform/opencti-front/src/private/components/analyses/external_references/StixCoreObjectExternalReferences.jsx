@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
 import Skeleton from '@mui/material/Skeleton';
+import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectExternalReferencesLines, { stixCoreObjectExternalReferencesLinesQuery } from './StixCoreObjectExternalReferencesLines';
@@ -56,52 +55,43 @@ class StixCoreObjectExternalReferences extends Component {
             );
           }
           return (
-            <>
-              <Typography
-                variant="h4"
-                style={{ float: 'left', marginBottom: 15 }}
-              >
-                {t('External references')}
-              </Typography>
-              <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
-                <List>
-                  {Array.from(Array(5), (e, i) => (
-                    <ListItem
-                      key={i}
-                      dense={true}
-                      divider={true}
-                      classes={classes.container}
-                    >
-                      <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatarDisabled }}>
-                          {i}
-                        </Avatar>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={(
-                          <Skeleton
-                            animation="wave"
-                            variant="rectangular"
-                            width="90%"
-                            height={15}
-                            style={{ marginBottom: 10 }}
-                          />
-                        )}
-                        secondary={(
-                          <Skeleton
-                            animation="wave"
-                            variant="rectangular"
-                            width="90%"
-                            height={15}
-                          />
-                        )}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </>
+            <Card padding="horizontal" title={t('External references')}>
+              <List>
+                {Array.from(Array(5), (e, i) => (
+                  <ListItem
+                    key={i}
+                    dense={true}
+                    divider={true}
+                    classes={classes.container}
+                  >
+                    <ListItemIcon>
+                      <Avatar classes={{ root: classes.avatarDisabled }}>
+                        {i}
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={(
+                        <Skeleton
+                          animation="wave"
+                          variant="rectangular"
+                          width="90%"
+                          height={15}
+                          style={{ marginBottom: 10 }}
+                        />
+                      )}
+                      secondary={(
+                        <Skeleton
+                          animation="wave"
+                          variant="rectangular"
+                          width="90%"
+                          height={15}
+                        />
+                      )}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </Card>
           );
         }}
       />

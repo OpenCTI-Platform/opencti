@@ -39,13 +39,13 @@ const StixCoreObjectsNumber = ({
   endDate,
   dataSelection,
   parameters = {},
+  entityType,
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
 
   const title = parameters.title ?? t_i18n('Entities number');
-  const translatedTitle = translateEntityType(parameters.title);
-  const isTitleEntityType = title !== translatedTitle;
+  const translatedTitle = translateEntityType(title);
 
   const selection = dataSelection[0];
   const dataSelectionTypes = ['Stix-Core-Object'];
@@ -72,7 +72,7 @@ const StixCoreObjectsNumber = ({
           const { total, count } = props.stixCoreObjectsNumber;
           return (
             <CardNumber
-              entityType={isTitleEntityType ? title : undefined}
+              entityType={entityType}
               label={translatedTitle}
               value={total}
               diffLabel={t_i18n('24 hours')}

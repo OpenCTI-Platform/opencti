@@ -1,10 +1,8 @@
-import React from 'react';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import { CardActions, Stack, Typography } from '@mui/material';
 import { VerifiedOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useTheme } from '@mui/styles';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
@@ -36,8 +34,8 @@ const ConnectorLogo = ({ src, alt }: ConnectorLogoProps) => {
   return (
     <img
       style={{
-        height: '6rem',
-        width: '6rem',
+        height: 80,
+        width: 80,
         borderRadius: 4,
       }}
       src={src}
@@ -72,14 +70,14 @@ const ConnectorTitle = ({ title }: ConnectorTitleProps) => {
 };
 
 interface ConnectorActionsProps {
-  connectorMetadata: { label: string; color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' | string };
+  connector: IngestionConnector;
   isEnterpriseEdition: boolean;
   deploymentCount: number;
   onClickDeploy: () => void;
 }
 
 const ConnectorActions = ({
-  connectorMetadata,
+  connector,
   isEnterpriseEdition,
   deploymentCount,
   onClickDeploy,
@@ -87,17 +85,15 @@ const ConnectorActions = ({
   return (
     <CardActions
       sx={{
+        width: '100%',
         justifyContent: 'space-between',
-        padding: 2,
-        flexWrap: 'wrap',
+        padding: 0,
+        flexWrap: 'nowrap',
         gap: 1,
         alignItems: 'flex-end',
       }}
     >
-      <IngestionCatalogChip
-        label={connectorMetadata.label}
-        color={connectorMetadata.color}
-      />
+      <ConnectorUseCases useCases={connector.use_cases} />
       <Stack
         sx={{ marginLeft: '0!important' }}
         direction="row"
@@ -161,8 +157,9 @@ const IngestionCatalogCard = ({
     >
       <CardHeader
         sx={{
-          paddingBottom: 0.5,
-          paddingTop: 2,
+          width: '100%',
+          padding: 0,
+          paddingBottom: 3,
           alignItems: 'flex-start',
           '& .MuiCardHeader-content': {
             minWidth: 0,
@@ -174,16 +171,25 @@ const IngestionCatalogCard = ({
           },
         }}
         avatar={<ConnectorLogo src={connector.logo} alt={connector.title} />}
-        title={<ConnectorTitle title={connector.title} />}
-        subheader={<ConnectorUseCases useCases={connector.use_cases} />}
+        title={(
+          <>
+            <Typography
+              variant="body2"
+              color={theme.palette.primary.main}
+              gutterBottom
+            >
+              {connectorMetadata.label}
+            </Typography>
+            <ConnectorTitle title={connector.title} />
+          </>
+        )}
         action={connector.verified && <VerifiedOutlined color="success" />}
       />
 
       <CardContent
         sx={{
           flexGrow: 1,
-          pt: 1,
-          pb: 2,
+          padding: 0,
           overflow: 'hidden',
           display: 'flex',
           alignItems: 'flex-start',
@@ -206,7 +212,7 @@ const IngestionCatalogCard = ({
       </CardContent>
 
       <ConnectorActions
-        connectorMetadata={connectorMetadata}
+        connector={connector}
         isEnterpriseEdition={isEnterpriseEdition}
         deploymentCount={deploymentCount}
         onClickDeploy={onClickDeploy}

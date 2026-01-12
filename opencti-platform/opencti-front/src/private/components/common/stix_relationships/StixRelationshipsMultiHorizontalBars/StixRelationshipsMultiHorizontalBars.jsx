@@ -457,6 +457,7 @@ const StixRelationshipsMultiHorizontalBars = ({
 
   return (
     <WidgetContainer
+      padding="small"
       height={height}
       title={parameters.title ?? title ?? t_i18n('Distribution of entities')}
       variant={variant}

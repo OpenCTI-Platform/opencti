@@ -106,6 +106,7 @@ const StixRelationshipsMultiHeatMap = ({
   };
   return (
     <WidgetContainer
+      padding="small"
       height={height}
       title={parameters.title ?? t_i18n('Entities history')}
       variant={variant}

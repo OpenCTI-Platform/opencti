@@ -59,6 +59,7 @@ const DashboardAuditsViz = ({
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
+          entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
         />
       );

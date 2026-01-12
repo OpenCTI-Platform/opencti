@@ -5,10 +5,10 @@ import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';
 import { Link } from 'react-router-dom';
 
-interface CardProps extends PropsWithChildren {
+export interface CardProps extends PropsWithChildren {
   title?: ReactNode;
   action?: ReactNode;
-  noPadding?: boolean;
+  padding?: 'none' | 'small' | 'horizontal' | 'default';
   sx?: SxProps;
   titleSx?: SxProps;
   fullHeight?: boolean;
@@ -23,7 +23,7 @@ const Card = ({
   title,
   children,
   action,
-  noPadding = false,
+  padding = 'default',
   sx = {},
   titleSx,
   fullHeight = true,
@@ -33,21 +33,42 @@ const Card = ({
   ...otherProps
 }: CardProps) => {
   const theme = useTheme<Theme>();
+  // If no link and no onClick callback then we put the padding on the
+  // card container directly, otherwise we put the padding on the
+  // CardActionArea component.
+  const applyStyleToContainer = !onClick && !to;
 
-  const containerPadding = !noPadding && !onClick && !to;
+  let paddingStyle: SxProps = {
+    padding: theme.spacing(3),
+  };
+  if (padding === 'horizontal') {
+    paddingStyle = {
+      paddingX: theme.spacing(3),
+      paddingY: theme.spacing(1),
+    };
+  } else if (padding === 'small') {
+    paddingStyle = {
+      padding: theme.spacing(1),
+    };
+  } else if (padding === 'none') {
+    paddingStyle = {
+      padding: 0,
+    };
+  }
 
   const containerSx: SxProps = {
     position: 'relative',
     flexGrow: fullHeight ? 1 : 0,
-    padding: containerPadding ? theme.spacing(3) : 0,
     borderRadius: theme.spacing(0.5),
     background: theme.palette.background.secondary,
-    ...sx,
+    ...(applyStyleToContainer ? paddingStyle : {}),
+    ...(applyStyleToContainer ? sx : {}),
   };
 
   const actionAreaSx: SxProps = {
-    padding: noPadding ? 0 : theme.spacing(3),
     height: '100%',
+    ...paddingStyle,
+    ...sx,
   };
 
   let content = children;

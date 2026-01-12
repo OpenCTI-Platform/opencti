@@ -4571,6 +4571,7 @@ const StixRelationshipsList = ({
   };
   return (
     <WidgetContainer
+      padding="horizontal"
       height={height}
       title={parameters.title ?? t_i18n('Relationships list')}
       variant={variant}

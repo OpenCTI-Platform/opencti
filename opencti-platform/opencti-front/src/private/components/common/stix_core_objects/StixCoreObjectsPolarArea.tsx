@@ -168,6 +168,7 @@ const StixCoreObjectsPolarArea = ({
 
   return (
     <WidgetContainer
+      padding="small"
       height={height}
       title={parameters?.title ?? t_i18n('Distribution of entities')}
       variant={variant}

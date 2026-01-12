@@ -44,7 +44,7 @@ const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestH
   );
 
   const Fallback = (
-    <Card title={t_i18n('Most recent history')}>
+    <Card title={t_i18n('Most recent history')} padding="horizontal">
       <List>
         {Array.from(Array(5), (e, i) => (
           <ListItem

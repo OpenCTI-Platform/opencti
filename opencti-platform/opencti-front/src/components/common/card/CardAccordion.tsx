@@ -38,8 +38,9 @@ const CardAccordion = ({
     '.MuiAccordionSummary-content': {
       margin: 0,
     },
-    '.MuiAccordionSummary-content.Mui-expanded': {
+    '&.MuiAccordionSummary-root.Mui-expanded': {
       margin: 0,
+      minHeight: 0,
     },
   };
 
@@ -51,7 +52,7 @@ const CardAccordion = ({
   };
 
   return (
-    <Card title={title} action={action} noPadding>
+    <Card title={title} action={action} padding="none">
       <Accordion
         expanded={expanded}
         onChange={(_, val) => {

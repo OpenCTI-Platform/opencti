@@ -52,6 +52,7 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreObjectReportsHorizontalBar';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import CardNumber from '../../../../components/common/card/CardNumber';
+import { useTheme } from '@mui/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -129,6 +130,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
 */
 > = ({ stixDomainObjectId, stixDomainObjectName, stixDomainObjectType, displayObservablesStats }) => {
   const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [viewType, setViewType] = useState('diamond');
   const [timeField, setTimeField] = useState('technical');
@@ -276,7 +278,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                     diffValue={difference}
                     icon={(
                       <DescriptionOutlined
-                        color="primary"
+                        style={{ color: theme.palette.text.secondary }}
                         fontSize="large"
                       />
                     )}
@@ -321,8 +323,8 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                     diffLabel={t_i18n('30 days')}
                     diffValue={difference}
                     icon={displayObservablesStats
-                      ? <HexagonMultipleOutline color="primary" fontSize="large" />
-                      : <ShieldSearch color="primary" fontSize="large" />
+                      ? <HexagonMultipleOutline style={{ color: theme.palette.text.secondary }} fontSize="large" />
+                      : <ShieldSearch style={{ color: theme.palette.text.secondary }} fontSize="large" />
                     }
                   />
                 );
@@ -360,7 +362,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
                     diffValue={difference}
                     icon={(
                       <DeviceHubOutlined
-                        color="primary"
+                        style={{ color: theme.palette.text.secondary }}
                         fontSize="large"
                       />
                     )}

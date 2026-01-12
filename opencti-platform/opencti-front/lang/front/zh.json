@@ -2236,6 +2236,7 @@
   "Last modification date": "最后修改日期",
   "Last modified": "上次修改",
   "Last modified entities": "最后修改的实体",
+  "Last modified on": "最后修改于 {date}",
   "Last month": "最近1个月",
   "Last notes": "最后注释",
   "Last obs.": "最后观测.",
