@@ -4,8 +4,10 @@ import useDebounceCallback from '../../../../../../../utils/hooks/useDebounceCal
 const GAP = 8;
 const MIN_CHIP_WIDTH = 60;
 
-const useChipOverflow = (items: string[] = []) => {
-  const [visibleCount, setVisibleCount] = useState(items?.length ?? []);
+const useChipOverflow = (items: string[] | null | undefined = []) => {
+  const currentItems = items ?? [];
+
+  const [visibleCount, setVisibleCount] = useState(currentItems.length);
   const chipRefs = useRef<(HTMLElement | null)[]>([]);
   const [containerElement, setContainerElement] = useState<HTMLDivElement | null>(null);
 
@@ -16,7 +18,7 @@ const useChipOverflow = (items: string[] = []) => {
   }, []);
 
   const calculateVisibleCount = useCallback(() => {
-    if (!containerElement) return;
+    if (!containerElement || currentItems.length === 0) return;
 
     const containerWidth = containerElement.offsetWidth;
 
@@ -53,7 +55,7 @@ const useChipOverflow = (items: string[] = []) => {
     }
 
     setVisibleCount(Math.max(1, visibleChips));
-  }, [containerElement, items?.length]);
+  }, [containerElement, currentItems.length]);
 
   const debouncedCalculate = useDebounceCallback(calculateVisibleCount, 150);
 
@@ -61,7 +63,7 @@ const useChipOverflow = (items: string[] = []) => {
     if (containerElement) {
       calculateVisibleCount();
     }
-  }, [containerElement, items, calculateVisibleCount]);
+  }, [containerElement, currentItems, calculateVisibleCount]);
 
   useEffect(() => {
     if (!containerElement) return;
@@ -82,7 +84,7 @@ const useChipOverflow = (items: string[] = []) => {
     containerRef,
     chipRefs,
     visibleCount,
-    shouldTruncate: visibleCount < (items?.length ?? 0),
+    shouldTruncate: visibleCount < currentItems.length,
   };
 };
 
