@@ -7,7 +7,7 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "vite.config.mts",
-    "vitest.config.ts",
+    "vite.config.ts",
+    "vitest.config.ts"
   ]
 }

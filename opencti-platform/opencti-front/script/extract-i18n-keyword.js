@@ -1,11 +1,5 @@
-const fs = require('fs');
-const util = require('util');
-const path = require('path');
-
-const readdir = util.promisify(fs.readdir);
-const stat = util.promisify(fs.stat);
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
+import { readdir, stat, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 const srcDirectory = 'src';
 const englishTranslationFiles = 'lang/front/en.json';
@@ -18,12 +12,12 @@ const extractedValues = {};
 // extract all translation in the t_i18n() formatter from frontend
 // and add them in opencti-front/lang/en.json
 
-function extractValueFromPattern(pattern) {
+const extractValueFromPattern = (pattern) => {
   const match = /t_i18n\('([^']+)'\)/.exec(pattern);
   return match ? match[1] : null;
 }
 
-async function extractI18nValues(directory) {
+const extractI18nValues = async (directory) => {
   try {
     const files = await readdir(directory);
     for (const file of files) {
@@ -60,7 +54,7 @@ async function extractI18nValues(directory) {
   }
 }
 
-async function mergeWithExistingData() {
+const mergeWithExistingData = async () => {
   try {
     const existingData = await readFile(englishTranslationFiles, 'utf8');
     const existingValues = JSON.parse(existingData);
@@ -89,11 +83,6 @@ async function mergeWithExistingData() {
   }
 }
 
-
-async function main() {
-  console.log('--- extract i18n values from frontend ---');
-  await extractI18nValues(srcDirectory);
-  await mergeWithExistingData();
-}
-
-main();
+console.log('--- extract i18n values from frontend ---');
+await extractI18nValues(srcDirectory);
+await mergeWithExistingData();

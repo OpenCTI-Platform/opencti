@@ -2,6 +2,7 @@
   "name": "opencti-front",
   "version": "6.9.7",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*"
   ],
@@ -9,11 +10,10 @@
     "relay": "relay-compiler relay.config.json",
     "dev": "yarn relay && vite",
     "dev:vite:debug": "yarn relay && vite --debug plugin-transform",
-    "start": "yarn relay && node builder/dev/dev.js",
-    "esbuild": "node builder/prod/prod.js",
-    "build": "yarn relay && yarn esbuild",
-    "build:standalone": "yarn relay && yarn esbuild --keep",
-    "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.mjs src",
+    "start": "yarn relay && vite",
+    "build": "yarn relay && vite build",
+    "build:standalone": "yarn relay && vite build",
+    "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.js src",
     "control": "yarn audit --groups dependencies --summary",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -155,7 +155,6 @@
     "babel-plugin-relay": "20.1.1",
     "chokidar": "5.0.0",
     "compression": "1.8.1",
-    "esbuild": "0.27.2",
     "eslint": "9.39.2",
     "eslint-import-resolver-typescript": "4.4.4",
     "eslint-plugin-custom-rules": "workspace:*",
@@ -191,16 +190,7 @@
     "webpack": "5.104.1"
   },
   "dependenciesMeta": {
-    "canvas": {
-      "built": false
-    },
     "core-js": {
-      "built": false
-    },
-    "esbuild": {
-      "built": false
-    },
-    "protobufjs": {
       "built": false
     }
   }

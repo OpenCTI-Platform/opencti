@@ -1,11 +1,5 @@
-const fs = require('fs');
-const util = require('util');
-const path = require('path');
-
-const readdir = util.promisify(fs.readdir);
-const stat = util.promisify(fs.stat);
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
+import { readdir, stat, readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 const srcDirectoryFrontend = 'src';
 const srcDirectoryBackend = '../opencti-graphql/src';
@@ -20,17 +14,17 @@ const backendExtractedValues = {};
 let missingTranslationsFrontend = 0;
 let missingTranslationsBackend = 0;
 
-function extractValueFromPatternFrontend(pattern) {
+const extractValueFromPatternFrontend = (pattern) => {
   const match = /t_i18n\('([^']+)'\)/.exec(pattern);
   return match ? match[1] : null;
 }
 
-function extractValueFromPatternBackend(pattern) {
+const extractValueFromPatternBackend = (pattern) => {
   const match = /label: '([^']+)'/.exec(pattern);
   return match ? match[1] : null;
 }
 
-async function extractI18nValuesFrontend(directory) {
+const extractI18nValuesFrontend = async (directory) => {
   try {
     const files = await readdir(directory);
     for (const file of files) {
@@ -57,7 +51,7 @@ async function extractI18nValuesFrontend(directory) {
   }
 }
 
-async function extractI18nValuesBackend(directory) {
+const extractI18nValuesBackend = async (directory) => {
   try {
     const files = await readdir(directory);
     for (const file of files) {
@@ -84,7 +78,7 @@ async function extractI18nValuesBackend(directory) {
   }
 }
 
-async function mergeWithExistingDataFrontend() {
+const mergeWithExistingDataFrontend = async () => {
   try {
     const existingData = await readFile(englishTranslationFileFrontend, 'utf8');
     const existingValues = JSON.parse(existingData);
@@ -104,7 +98,7 @@ async function mergeWithExistingDataFrontend() {
   }
 }
 
-async function mergeWithExistingDataBackend() {
+const mergeWithExistingDataBackend = async () => {
   try {
     const existingData = await readFile(englishTranslationFileBackend, 'utf8');
     const existingValues = JSON.parse(existingData);
@@ -123,17 +117,13 @@ async function mergeWithExistingDataBackend() {
   }
 }
 
-async function main() {
-  await extractI18nValuesFrontend(srcDirectoryFrontend);
-  await mergeWithExistingDataFrontend();
-  
-  await extractI18nValuesBackend(srcDirectoryBackend);
-  await mergeWithExistingDataBackend();
-  
-  const frontendResult = missingTranslationsFrontend ? 1 : 0;
-  const backendResult = missingTranslationsBackend ? 1 : 0;
-  
-  return frontendResult + backendResult > 0 ? 1 : 0;
-}
+await extractI18nValuesFrontend(srcDirectoryFrontend);
+await mergeWithExistingDataFrontend();
 
-main().then(result => process.exit(result));
+await extractI18nValuesBackend(srcDirectoryBackend);
+await mergeWithExistingDataBackend();
+
+const frontendResult = missingTranslationsFrontend ? 1 : 0;
+const backendResult = missingTranslationsBackend ? 1 : 0;
+
+process.exit(frontendResult + backendResult > 0 ? 1 : 0);

@@ -5,10 +5,6 @@ config/development.json
 # testing
 /coverage
 
-# production
-/builder/dev/build
-/builder/prod/build
-
 # misc
 .env.local
 .env.development.local

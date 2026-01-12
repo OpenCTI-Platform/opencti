@@ -11,7 +11,6 @@ import stylistic from '@stylistic/eslint-plugin'
 export default defineConfig([
   {
     ignores: [
-      '**/builder/**',
       '**/coverage/**',
       '**/node_module/**',
       '**/packages/**',
@@ -20,7 +19,7 @@ export default defineConfig([
       '**/src/static/ext/**',
       'extract-i18n-keyword.js',
       'playwright.config.ts',
-      'vite.config.mts',
+      'vite.config.ts',
       'vitest.config.ts',
       'setup-vitest.ts',
     ],
