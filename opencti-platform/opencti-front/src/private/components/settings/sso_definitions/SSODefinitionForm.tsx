@@ -28,6 +28,7 @@ interface SSODefinitionFormProps {
   isOpen?: boolean;
 }
 export interface SSODefinitionFormValues {
+  name: string;
   identifier: string;
   label: string;
   enabled: boolean;
@@ -71,13 +72,14 @@ const SSODefinitionForm = ({
     setCurrentTab(value);
   };
   const validationSchema = Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
     identifier: Yup.string().required(t_i18n('This field is required')),
-    label: Yup.string().required(t_i18n('This field is required')),
     issuer: Yup.string().required(t_i18n('This field is required')),
     idpCert: Yup.string().required(t_i18n('This field is required')),
     callbackUrl: Yup.string().required(t_i18n('This field is required')),
   });
   const initialValues = {
+    name: '',
     identifier: '',
     label: '',
     enabled: true,
@@ -117,6 +119,7 @@ const SSODefinitionForm = ({
   const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
 
   if (data) {
+    initialValues.name = data.name;
     initialValues.identifier = data.identifier;
     initialValues.label = data.label || '';
     initialValues.enabled = data.enabled;
@@ -166,13 +169,22 @@ const SSODefinitionForm = ({
           </Box>
           {currentTab === 0 && (
             <>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="name"
+                onSubmit={updateField}
+                label={t_i18n('Configuration Name *')}
+                fullWidth
+                style={{ marginTop: 20 }}
+              />
               <div style={{ marginTop: 20 }}>
                 <Field
                   component={TextField}
                   variant="standard"
                   name="identifier"
                   onSubmit={updateField}
-                  label={t_i18n('Configuration Name *')}
+                  label={t_i18n('Authentication Name *')}
                   fullWidth
                 />
               </div>
@@ -181,7 +193,7 @@ const SSODefinitionForm = ({
                 variant="standard"
                 name="label"
                 onSubmit={updateField}
-                label={t_i18n('Login Button Name *')}
+                label={t_i18n('Login Button Name')}
                 fullWidth
                 style={{ marginTop: 20 }}
               />
