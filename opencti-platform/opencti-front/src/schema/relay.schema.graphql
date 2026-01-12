@@ -15280,9 +15280,9 @@ type SingleSignOn implements InternalObject & BasicObject {
   metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
-  name: String!
+  name: String
   identifier: String!
-  label: String
+  label: String!
   description: String
   enabled: Boolean!
   strategy: StrategyType!
