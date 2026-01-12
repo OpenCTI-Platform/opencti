@@ -94,6 +94,13 @@ enum MemberType {
   Group
   Organization
 }
+enum TokenDuration {
+  DAYS_30
+  DAYS_60
+  DAYS_90
+  DAYS_365
+  UNLIMITED
+}
 
 ### RELAY
 
@@ -1394,17 +1401,6 @@ interface IntlSettings {
     platform_translations: String
 }
 
-type MetricAttributes {
-  attribute: String!
-  name: String!
-  description: String
-}
-
-type MetricDefinition {
-  entity_type: String!
-  metrics: [MetricAttributes!]
-}
-
 interface ThemeSettings {
   platform_title: String
   platform_favicon: String
@@ -1741,6 +1737,25 @@ enum EffectiveConfidenceLevelSourceType {
 }
 union EffectiveConfidenceLevelSourceObject = Group | User
 
+type ApiToken {
+  id: ID!
+  name: String
+  created_at: DateTime
+  expires_at: DateTime
+}
+
+type TokenGenerated {
+  token_id: String!
+  plaintext_token: String!
+  expires_at: DateTime!
+  masked_token: String!
+}
+
+input UserTokenAddInput {
+  duration: TokenDuration!
+  description: String
+}
+
 type User implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
@@ -1749,7 +1764,7 @@ type User implements BasicObject & InternalObject {
   metrics:[Metric]
   # User
   user_email: String!
-  api_token: String! @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  api_tokens: [ApiToken!]! @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   personal_notifiers: [Notifier!]
   individual_id: String
   name: String!
@@ -1822,7 +1837,7 @@ type MeUser implements BasicObject & InternalObject {
   language: String
   external: Boolean
   individual_id: String
-  api_token: String!
+  api_tokens: [ApiToken!]!
   personal_notifiers: [Notifier!]
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
@@ -15137,7 +15152,6 @@ type UserEditMutations {
   fieldPatch(input: [EditInput]!): User
   contextPatch(input: EditContext): User
   contextClean: User
-  tokenRenew: User @auth(for: [SETTINGS_SETACCESSES])
   relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): User
   organizationAdd(organizationId: ID!): User
@@ -15616,6 +15630,7 @@ type Mutation {
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
   userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  userTokenAdd(input: UserTokenAddInput!): TokenGenerated! @auth
   meTokenRenew: MeUser @auth
   meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])

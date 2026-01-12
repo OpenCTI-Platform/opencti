@@ -21,7 +21,6 @@ const EmailTemplateAttributesSidebar = () => {
     { variableName: 'user.lastname', label: 'Last name' },
     { variableName: 'user.name', label: 'Name' },
     { variableName: 'user.user_email', label: 'Email' },
-    { variableName: 'user.api_token', label: 'API token' },
     { variableName: 'user.account_status', label: 'Status' },
     { variableName: 'user.objectOrganization', label: 'Organizations' },
     { variableName: 'user.account_lock_after_date', label: 'Expire Date' },

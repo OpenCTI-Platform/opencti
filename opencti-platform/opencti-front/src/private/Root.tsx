@@ -168,7 +168,6 @@ const meUserFragment = graphql`
     name
     entity_type
     lastname
-    api_token
     language
     theme
     user_email

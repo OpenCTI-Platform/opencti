@@ -1,7 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import { testContext } from '../../utils/testQuery';
 import { checkPasswordInlinePolicy, isSensitiveChangesAllowed } from '../../../src/domain/user';
+import { addUserToken } from '../../../src/modules/user/user-domain';
+import { generateSecureToken } from '../../../src/utils/security';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { patchAttribute } from '../../../src/database/middleware';
+
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { vi } from 'vitest';
+import { DateTime } from 'luxon';
+import type { AuthContext, AuthUser } from '../../../src/types/user';
+import type { UserTokenAddInput } from '../../../src/generated/graphql';
+
+vi.mock('../../../src/database/middleware', () => ({
+  patchAttribute: vi.fn(),
+}));
+
+vi.mock('../../../src/listener/UserActionListener', () => ({
+  publishUserAction: vi.fn(),
+}));
 
 describe('password checker', () => {
   it('should no policy applied', async () => {
@@ -91,8 +108,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
-      updated_at: '2024-08-06T13:30:04.478Z'
-    }
+      updated_at: '2024-08-06T13:30:04.478Z',
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -111,8 +128,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: true
-    }
+      can_manage_sensitive_config: true,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -131,8 +148,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
-    }
+      can_manage_sensitive_config: false,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -163,8 +180,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
-    }
+      can_manage_sensitive_config: false,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -195,8 +212,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: true
-    }
+      can_manage_sensitive_config: true,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -215,7 +232,7 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
+      can_manage_sensitive_config: false,
     },
     {
       _index: 'opencti_internal_objects-000001',
@@ -228,8 +245,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
-    }
+      can_manage_sensitive_config: false,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
@@ -248,7 +265,7 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
+      can_manage_sensitive_config: false,
     },
     {
       _index: 'opencti_internal_objects-000001',
@@ -261,8 +278,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: false
-    }
+      can_manage_sensitive_config: false,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(OPENCTI_ADMIN_UUID, roles);
@@ -293,8 +310,8 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
       internal_id: '57312f0e-f276-44f8-97d3-88191ee57e1a',
       name: 'Administrator',
       updated_at: '2024-08-06T13:30:04.478Z',
-      can_manage_sensitive_config: true
-    }
+      can_manage_sensitive_config: true,
+    },
     ];
 
     const result = isSensitiveChangesAllowed(OPENCTI_ADMIN_UUID, roles);
@@ -313,5 +330,83 @@ describe('isSensitiveChangesAllowed use case coverage', () => {
     const roles: any[] = [];
     const result = isSensitiveChangesAllowed(NOT_INFRA_ADMIN_USER_ID, roles);
     expect(result, 'A user with no role should be isSensitiveChangesAllowed=false').toBeFalsy();
+  });
+});
+
+describe('API Token Generation', () => {
+  it('generateSecureToken should produce valid token and hash', () => {
+    const { token, hash } = generateSecureToken();
+    expect(token).toBeDefined();
+    expect(hash).toBeDefined();
+    expect(token.startsWith('flgrn_octi_tkn_')).toBe(true);
+    expect(token.length).toBeGreaterThan(64); // Prefix + 64 random chars (approx)
+    expect(hash.length).toBe(64); // SHA256 hex string
+  });
+
+  it('addUserToken should create token, patch user, log action, and return plaintext', async () => {
+    const user = { id: 'user-123', user_email: 'test@example.com' } as AuthUser;
+    const input = { duration: 'UNLIMITED', description: 'Test Token' } as UserTokenAddInput;
+    const context = { user: { id: 'admin' } } as AuthContext;
+
+    const result = await addUserToken(context, user, input);
+
+    expect(result.plaintext_token).toBeDefined();
+    expect(result.plaintext_token.startsWith('flgrn_octi_tkn_')).toBe(true);
+    expect(result.expires_at).toBeNull(); // Unlimited duration
+
+    // Verify DB Patch
+    expect(patchAttribute).toHaveBeenCalledWith(
+      context,
+      user,
+      user.id,
+      ENTITY_TYPE_USER,
+      expect.objectContaining({
+        api_tokens: expect.arrayContaining([
+          expect.objectContaining({
+            name: 'Test Token',
+            // Hash validation would be ideal but hash is generated inside
+          }),
+        ]),
+      }),
+      { operation: 'add' },
+    );
+  });
+
+  it('addUserToken should calculate expiration correctly', async () => {
+    const user = { id: 'user-123' } as AuthUser;
+    const input = { duration: 'DAYS_30', description: 'Expiring Token' } as UserTokenAddInput;
+    const context = {} as AuthContext;
+
+    const result = await addUserToken(context, user, input);
+
+    expect(result.expires_at).toBeDefined();
+    const expires = DateTime.fromISO(result.expires_at as string);
+    const now = DateTime.now();
+    const diff = expires.diff(now, 'days').days;
+    // expect(diff).toBeCloseTo(30, 0); // 30.0 days
+    expect(Math.abs(diff - 30)).toBeLessThan(0.1);
+  });
+
+  it('addUserToken should use default description if none provided', async () => {
+    const user = { id: 'user-123' } as AuthUser;
+    const input = { duration: 'UNLIMITED' } as UserTokenAddInput;
+    const context = {} as AuthContext;
+
+    await addUserToken(context, user, input);
+
+    expect(patchAttribute).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        api_tokens: expect.arrayContaining([
+          expect.objectContaining({
+            name: 'API Token', // Default value
+          }),
+        ]),
+      }),
+      expect.anything(),
+    );
   });
 });

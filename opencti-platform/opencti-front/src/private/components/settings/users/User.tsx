@@ -20,7 +20,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { ApexOptions } from 'apexcharts';
 import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
-import { UserUserRenewTokenMutation } from '@components/settings/users/__generated__/UserUserRenewTokenMutation.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton } from '@mui/material';
@@ -85,17 +84,6 @@ export const userUserSessionsKillMutation = graphql`
   }
 `;
 
-export const userUserRenewTokenMutation = graphql`
-  mutation UserUserRenewTokenMutation($id: ID!) {
-    userEdit(id: $id) {
-      tokenRenew {
-        id
-        api_token
-      }
-    }
-  }
-`;
-
 export const userOtpDeactivationMutation = graphql`
   mutation UserOtpDeactivationMutation($id: ID!) {
     otpUserDeactivation(id: $id) {
@@ -150,7 +138,6 @@ const UserFragment = graphql`
     account_status
     account_lock_after_date
     language
-    api_token
     otp_activated
     created_at
     creator {
@@ -248,7 +235,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const [showToken, setShowToken] = useState<boolean>(false);
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
-  const [displayRenewToken, setDisplayRenewToken] = useState<boolean>(false);
   const [killing, setKilling] = useState<boolean>(false);
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
   const user = useFragment(UserFragment, data);
@@ -259,7 +245,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
     userSessionKillMutation,
   );
   const [commitUserUserSessionsKill] = useApiMutation<UserUserSessionsKillMutation>(userUserSessionsKillMutation);
-  const [commitUserUserRenewToken] = useApiMutation<UserUserRenewTokenMutation>(userUserRenewTokenMutation);
   const [commitUserOtpDeactivation] = useApiMutation<UserOtpDeactivationMutation>(
     userOtpDeactivationMutation,
   );
@@ -311,27 +296,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       onCompleted: () => {
         setKilling(false);
         handleCloseKillSessions();
-        refetch();
-      },
-    });
-  };
-
-  const handleOpenRenewToken = () => {
-    setDisplayRenewToken(true);
-  };
-  const handleCloseRenewToken = () => {
-    setDisplayRenewToken(false);
-  };
-  const submitRenewToken = () => {
-    commitUserUserRenewToken({
-      variables: {
-        id: user.id,
-      },
-      onError: (error: Error) => {
-        handleError(error);
-      },
-      onCompleted: () => {
-        handleCloseRenewToken();
         refetch();
       },
     });
@@ -426,14 +390,15 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     </Typography>
                     {user.user_service_account
                       ? (
-                          <Chip
-                            variant="outlined"
-                            label={t_i18n('Service account')}
-                            style={{
-                              borderRadius: 4,
-                              width: 150 }}
-                          />
-                        )
+                        <Chip
+                          variant="outlined"
+                          label={t_i18n('Service account')}
+                          style={{
+                            borderRadius: 4,
+                            width: 150
+                          }}
+                        />
+                      )
                       : '-'}
                   </Grid>
                   <Grid item xs={4}>
@@ -458,49 +423,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
                   {t_i18n('Token')}
                 </Typography>
-                <Security needs={[SETTINGS_SETACCESSES]}>
-                  <Tooltip title={t_i18n('Revoke token')}>
-                    <IconButton
-                      color="primary"
-                      aria-label={t_i18n('Revoke token')}
-                      onClick={handleOpenRenewToken}
-                      classes={{ root: classes.floatingButton }}
-                      size="small"
-                    >
-                      <RefreshOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Security>
                 <div className="clearfix" />
-                <pre
-                  style={{
-                    margin: 0,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    width: '100%',
-                    padding: `${theme.spacing(1)}`,
-                  }}
-                >
-                  <span style={{ flexGrow: 1 }}>
-                    <ItemCopy
-                      content={showToken ? user.api_token : maskString(user.api_token)}
-                      value={user.api_token}
-                    />
-                  </span>
-                  <IconButton
-                    style={{
-                      cursor: 'pointer',
-                      color: theme.palette.primary.main,
-                      padding: `0 ${theme.spacing(1)}`,
-                    }}
-                    disableRipple
-                    onClick={() => setShowToken((value) => !value)}
-                    aria-label={showToken ? t_i18n('Hide') : t_i18n('Show')}
-                  >
-                    {showToken ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </pre>
+                <Typography variant="body2" style={{ padding: theme.spacing(1) }}>
+                  {t_i18n('API Token management has been moved to the "Tokens" tab.')}
+                </Typography>
               </Grid>
               {!isServiceAccount && (
                 <>
@@ -540,7 +466,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Created by')}
                     </Typography>
-                    { creatorName }
+                    {creatorName}
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
@@ -646,9 +572,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                                 ?? []
                               ).includes(user.id)
                                 ? (
-                                    theme.palette
-                                      .warning as SimplePaletteColorOptions
-                                  ).main
+                                  theme.palette
+                                    .warning as SimplePaletteColorOptions
+                                ).main
                                 : theme.palette.primary.main
                             }
                           />

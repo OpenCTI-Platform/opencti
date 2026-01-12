@@ -70,14 +70,6 @@ const profileOverviewFieldPatch = graphql`
   }
 `;
 
-const renewTokenPatch = graphql`
-  mutation ProfileOverviewTokenRenewMutation {
-    meTokenRenew {
-      ...ProfileOverview_me
-    }
-  }
-`;
-
 const generateOTP = graphql`
   query ProfileOverviewOTPQuery {
     otpGeneration {
@@ -222,7 +214,6 @@ const ProfileOverviewComponent = (props) => {
   setTitle(t_i18n('Profile'));
   const objectOrganization = convertOrganizations(me);
   const [display2FA, setDisplay2FA] = useState(false);
-  const [showToken, setShowToken] = useState(false);
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
 
   const fieldNames = [
@@ -249,12 +240,6 @@ const ProfileOverviewComponent = (props) => {
   const disableOtp = () => {
     commitMutation({
       mutation: disableOtpPatch,
-    });
-  };
-
-  const renewToken = () => {
-    commitMutation({
-      mutation: renewTokenPatch,
     });
   };
 
@@ -496,7 +481,7 @@ const ProfileOverviewComponent = (props) => {
           )}
         </Formik>
       </Paper>
-      { hasKnowledgeAccess ? (
+      {hasKnowledgeAccess ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Typography variant="h1" gutterBottom={true}>
             {t('Dashboard settings')}
@@ -606,96 +591,12 @@ const ProfileOverviewComponent = (props) => {
           </Typography>
           <pre>{about.version}</pre>
           <Typography
-            variant="h4"
-            gutterBottom={true}
+            variant="body1"
             style={{ marginTop: 16 }}
           >
-            {t('API key')}
+            {t('API Token management has been moved to the "Tokens" tab.')}
           </Typography>
-          <pre
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-              padding: `${theme.spacing(1)}`,
-            }}
-          >
-            <span style={{ flexGrow: 1 }}>
-              <ItemCopy
-                content={showToken ? me.api_token : maskString(me.api_token)}
-                value={me.api_token}
-              />
-            </span>
-            <IconButton
-              style={{
-                cursor: 'pointer',
-                color: theme.palette.primary.main,
-                padding: `0 ${theme.spacing(1)}`,
-              }}
-              disableRipple
-              onClick={() => setShowToken((value) => !value)}
-              aria-label={showToken ? t('Hide') : t('Show')}
-            >
-              {showToken ? <VisibilityOff /> : <Visibility />}
-            </IconButton>
-          </pre>
-          {me.id !== OPENCTI_ADMIN_UUID && (
-            <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
-              <Button variant="contained" color="primary" onClick={renewToken}>
-                {t('Renew')}
-              </Button>
-            </div>
-          )}
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ marginTop: 16 }}
-          >
-            {t('Required headers')}
-          </Typography>
-          <pre
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              width: '100%',
-            }}
-          >
-            <span
-              style={{
-                flexGrow: 1,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <ItemCopy
-                content={(
-                  <>
-                    Content-Type: application/json
-                    <br />
-                    Authorization: Bearer {showToken ? me.api_token : maskString(me.api_token)}
-                  </>
-                )}
-                value={`Content-Type: application/json\nAuthorization: Bearer ${me.api_token}`}
-              />
-            </span>
-            <IconButton
-              style={{
-                cursor: 'pointer',
-                color: theme.palette.primary.main,
-                padding: `0 ${theme.spacing(1)}`,
-                position: 'relative',
-                top: '-8px',
-              }}
-              disableRipple
-              onClick={() => setShowToken((value) => !value)}
-              aria-label={showToken ? t('Hide') : t('Show')}
-            >
-              {showToken ? <VisibilityOff /> : <Visibility />}
-            </IconButton>
-          </pre>
-          { isPlaygroundEnable() && (
+          {isPlaygroundEnable() && (
             <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
               <Button
                 variant="contained"
@@ -736,7 +637,6 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       lastname
       language
       theme
-      api_token
       otp_activated
       otp_qr
       description

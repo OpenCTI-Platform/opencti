@@ -57,6 +57,7 @@ import {
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
+import { addUserToken } from '../modules/user/user-domain';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
@@ -92,6 +93,7 @@ const userResolvers = {
     sessions: (current) => findUserSessions(current.id),
     effective_confidence_level: (current, _, context) => context.batch.userEffectiveConfidenceBatchLoader.load(current),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
+    api_tokens: (current) => current.api_tokens ?? [],
   },
   Member: {
     name: (current, _, context) => {
@@ -120,6 +122,7 @@ const userResolvers = {
     draftContext: (current, _, context) => findDraftById(context, context.user, current.draft_context),
     effective_confidence_level: (current, _, context) => getUserEffectiveConfidenceLevel(current, context),
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
+    api_tokens: (current) => current.api_tokens ?? [],
   },
   UserSession: {
     user: (session, _, context) => loadCreator(context, context.user, session.user_id),
@@ -248,6 +251,7 @@ const userResolvers = {
     sendUserMail: (_, { input }, context) => {
       return sendEmailToUser(context, context.user, input);
     },
+    userTokenAdd: (_, { input }, context) => addUserToken(context, context.user, input),
   },
   Subscription: {
     me: {

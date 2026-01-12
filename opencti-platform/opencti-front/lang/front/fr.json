@@ -273,6 +273,7 @@
   "And many more features...": "Et bien d'autres fonctionnalités...",
   "API access": "Accès à l'API",
   "API key": "Clé d'API",
+  "API Token management has been moved to the \"Tokens\" tab.": "La gestion des jetons API a été déplacée vers l'onglet \"Jetons\".",
   "application/json": "JSON",
   "application/pdf": "PDF",
   "application/vnd.ms-excel": "XLS",

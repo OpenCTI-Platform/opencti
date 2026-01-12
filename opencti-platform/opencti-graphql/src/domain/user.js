@@ -641,7 +641,6 @@ export const sendEmailToUser = async (context, user, input) => {
     .replace(/\$user\.lastname/g, '<%= user.lastname %>')
     .replace(/\$user\.name/g, '<%= user.name %>')
     .replace(/\$user\.user_email/g, '<%= user.user_email %>')
-    .replace(/\$user\.api_token/g, '<%= user.api_token %>')
     .replace(/\$user\.account_status/g, '<%= user.account_status %>')
     .replace(/\$user\.objectOrganization/g, '<%= organizationNames.join(", ") %>')
     .replace(/\$user\.account_lock_after_date/g, '<%= user.account_lock_after_date %>')
