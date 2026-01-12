@@ -47,20 +47,24 @@ export const genConfigMapper = (elements: string[]) => {
   );
 };
 
+const parseValueAsType = (value: string, type: string) => {
+  if (type.toLowerCase() === 'number') {
+    return +value;
+  } else if (type.toLowerCase() === 'boolean') {
+    return value === 'true';
+  } else if (type.toLowerCase() === 'array') {
+    return JSON.parse(value);
+  } else {
+    return value;
+  }
+};
+
 export const convertKeyValueToJsConfiguration = (ssoEntity: BasicStoreEntitySingleSignOn) => {
   if (ssoEntity.configuration) {
     const ssoConfiguration: any = {};
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
       const currentConfig = ssoEntity.configuration[i];
-      if (currentConfig.type === 'number') {
-        ssoConfiguration[currentConfig.key] = +currentConfig.value;
-      } else if (currentConfig.type === 'boolean') {
-        ssoConfiguration[currentConfig.key] = currentConfig.value === 'true';
-      } else if (currentConfig.type === 'array') {
-        ssoConfiguration[currentConfig.key] = JSON.parse(currentConfig.value);
-      } else {
-        ssoConfiguration[currentConfig.key] = currentConfig.value;
-      }
+      ssoConfiguration[currentConfig.key] = parseValueAsType(currentConfig.value, currentConfig.type);
     }
     return ssoConfiguration;
   } else {
@@ -97,13 +101,7 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
     const ssoOtherOptions: any = {};
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
       const currentConfig = ssoEntity.configuration[i];
-      if (currentConfig.type === 'number') {
-        ssoOtherOptions[currentConfig.key] = +currentConfig.value;
-      } else if (currentConfig.type === 'boolean') {
-        ssoOtherOptions[currentConfig.key] = currentConfig.value === 'true';
-      } else {
-        ssoOtherOptions[currentConfig.key] = currentConfig.value;
-      }
+      ssoOtherOptions[currentConfig.key] = parseValueAsType(currentConfig.value, currentConfig.type);
     }
     return { ...ssoOptions, ...ssoOtherOptions } as PassportSamlConfig;
   } else {
