@@ -31,7 +31,8 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
-  const canEdit = !draftContext || currentDraftAccessRight.canEdit;
+  const currentAccessRight = useGetCurrentUserAccessRight(stixCyberObservable.currentUserAccessRight);
+  const canEdit = currentAccessRight.canEdit && (!draftContext || currentDraftAccessRight.canEdit);
 
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]) && canEdit;
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]) && canEdit;
