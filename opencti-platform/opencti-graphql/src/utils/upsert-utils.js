@@ -216,9 +216,20 @@ export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchIn
     if (updatePatchInput.value?.length > 0) {
       finalPatchValue.push(...updatePatchInput.value);
     }
-    finalPatchValue = Array.from(new Set(finalPatchValue)); // keep only unique values
+    // keep only unique values
+    let finalDedupedPatchValuesMap = new Map();
+    for (let i = 0; i < finalPatchValue.length; i++) {
+      const currentPatchValue = finalPatchValue[i];
+      if (!finalDedupedPatchValuesMap.has(currentPatchValue) && !finalDedupedPatchValuesMap.has(currentPatchValue?.id)) {
+        if (currentPatchValue?.id) {
+          finalDedupedPatchValuesMap.set(currentPatchValue.id);
+        } else {
+          finalDedupedPatchValuesMap.set(currentPatchValue);
+        }
+      }
+    }
     // we replace current values
-    finalPatchInput.value = finalPatchValue;
+    finalPatchInput.value = Array.from(finalDedupedPatchValuesMap.values());
   }
   return finalPatchInput;
 };
