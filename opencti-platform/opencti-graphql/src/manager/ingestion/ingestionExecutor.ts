@@ -11,11 +11,11 @@ import {
   buildIngestSuccessMessages,
   type IngestionTypes,
   isMustExecuteIteration,
-  updateBuiltInConnectorInfo
+  updateBuiltInConnectorInfo,
 } from './ingestionUtils';
 
 // region Types
-type DataHandlerFn = () => Promise<{ size: number, ingestionPatch: Record<string, any>, connectorInfo: Record<string, any> }>;
+type DataHandlerFn = () => Promise<{ size: number; ingestionPatch: Record<string, any>; connectorInfo: Record<string, any> }>;
 // endregion Types
 
 export const ingestionQueueExecution = async (context: AuthContext, ingestion: IngestionTypes, dataHandlerFn: DataHandlerFn) => {

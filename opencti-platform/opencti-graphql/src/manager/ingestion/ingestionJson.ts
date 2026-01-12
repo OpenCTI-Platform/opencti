@@ -11,7 +11,7 @@ import { ingestionQueueExecution } from './ingestionExecutor';
 type JsonConnectorState = { ingestion_json_state?: object };
 type JsonIngestionPatch = JsonConnectorState & { last_execution_date: string };
 type JsonConnectorInfo = { state?: JsonConnectorState };
-type HandlerResponse = { size: number, ingestionPatch: JsonIngestionPatch, connectorInfo: JsonConnectorInfo };
+type HandlerResponse = { size: number; ingestionPatch: JsonIngestionPatch; connectorInfo: JsonConnectorInfo };
 type JsonHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionJson) => Promise<HandlerResponse>;
 // endregion Types
 

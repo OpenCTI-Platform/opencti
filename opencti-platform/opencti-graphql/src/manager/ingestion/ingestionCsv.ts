@@ -17,10 +17,10 @@ import { createWorkForIngestion } from './ingestionUtils';
 import { ingestionQueueExecution } from './ingestionExecutor';
 
 // region Types
-type CsvConnectorState = { current_state_cursor?: string, added_after_start?: string };
+type CsvConnectorState = { current_state_cursor?: string; added_after_start?: string };
 type CsvIngestionPatch = CsvConnectorState & { last_execution_date: string };
 type CsvConnectorInfo = { state?: CsvConnectorState };
-type HandlerResponse = { size: number, ingestionPatch: CsvIngestionPatch, connectorInfo: CsvConnectorInfo };
+type HandlerResponse = { size: number; ingestionPatch: CsvIngestionPatch; connectorInfo: CsvConnectorInfo };
 type CsvHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => Promise<HandlerResponse>;
 // endregion Types
 
@@ -29,7 +29,7 @@ export const processCsvLines = async (
   ingestion: BasicStoreEntityIngestionCsv,
   csvMapperParsed: CsvMapperParsed,
   csvLines: string[],
-  addedLast: string | undefined | null
+  addedLast: string | undefined | null,
 ): Promise<HandlerResponse> => {
   const linesContent = csvLines.join('');
   const hashedIncomingData = hashSHA256(linesContent);
@@ -44,7 +44,7 @@ export const processCsvLines = async (
   }
   logApp.info(`[OPENCTI-MODULE] INGESTION - ingesting ${csvLines.length} csv lines`);
   const work = await createWorkForIngestion(context, ingestion);
-  const bundlerOpts : CsvBundlerIngestionOpts = {
+  const bundlerOpts: CsvBundlerIngestionOpts = {
     workId: work.id,
     applicantUser: ingestionUser as AuthUser,
     entity: undefined, // TODO is it possible to ingest in entity context ?

@@ -4,26 +4,30 @@ import React from 'react';
 import { isEmptyField } from '../utils/utils';
 
 interface IngestionTooltipProps {
-  children: React.ReactNode,
-  logs: readonly string[]
+  children: React.ReactNode;
+  logs: readonly string[];
 }
 
 const IngestionTooltip = ({ children, logs }: IngestionTooltipProps) => {
-  return <Tooltip slotProps={{
-    tooltip: {
-      sx: {
-        maxWidth: 'none',
-        minWidth: '400px',
-        overflow: 'auto',
-      },
-    },
-  }} title={<pre>{isEmptyField(logs) ? 'No information yet' : logs.join('\r\n')}</pre>}
-         >
-    <div>
-      <InfoOutlined fontSize="inherit" />
-      <span style={{ marginLeft: 8 }}>{children}</span>
-    </div>
-  </Tooltip>;
+  return (
+    <Tooltip
+      slotProps={{
+        tooltip: {
+          sx: {
+            maxWidth: 'none',
+            minWidth: '400px',
+            overflow: 'auto',
+          },
+        },
+      }}
+      title={<pre>{isEmptyField(logs) ? 'No information yet' : logs.join('\r\n')}</pre>}
+    >
+      <div>
+        <InfoOutlined fontSize="inherit" />
+        <span style={{ marginLeft: 8 }}>{children}</span>
+      </div>
+    </Tooltip>
+  );
 };
 
 export default IngestionTooltip;

@@ -18,42 +18,42 @@ import { asArray, pushBundleToConnectorQueue } from './ingestionUtils';
 import { ingestionQueueExecution } from './ingestionExecutor';
 
 const RSS_FEED_USER_AGENT = conf.get('ingestion_manager:rss_feed:user_agent')
-    || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0';
+  || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0';
 
 const turndownService = new TurndownService();
 
 // region Types
 interface RssElement {
-  pubDate: { _: string }
-  lastBuildDate: { _: string }
-  updated: { _: string }
+  pubDate: { _: string };
+  lastBuildDate: { _: string };
+  updated: { _: string };
 }
 interface RssItem {
-  title: { _: string }
-  summary: { _: string }
-  description: { _: string }
-  link: { _: string, href?: string }
-  content: { _: string }
-  'content:encoded': { _: string }
-  category: { _: string } | { _: string }[]
-  pubDate: { _: string }
-  lastBuildDate: { _: string }
-  updated: { _: string }
+  title: { _: string };
+  summary: { _: string };
+  description: { _: string };
+  link: { _: string; href?: string };
+  content: { _: string };
+  'content:encoded': { _: string };
+  category: { _: string } | { _: string }[];
+  pubDate: { _: string };
+  lastBuildDate: { _: string };
+  updated: { _: string };
 }
 interface DataItem {
-  title: string
-  description: string
-  link: string | undefined
-  content: string
-  labels: string[]
-  pubDate: Moment
+  title: string;
+  description: string;
+  link: string | undefined;
+  content: string;
+  labels: string[];
+  pubDate: Moment;
 }
 
 type Getter = (uri: string) => Promise<object>;
 type RssConnectorState = { current_state_date?: string };
 type RssIngestionPatch = RssConnectorState & { last_execution_date: string };
 type RssConnectorInfo = { state?: RssConnectorState };
-type HandlerResponse = { size: number, ingestionPatch: RssIngestionPatch, connectorInfo: RssConnectorInfo };
+type HandlerResponse = { size: number; ingestionPatch: RssIngestionPatch; connectorInfo: RssConnectorInfo };
 type RssHandlerFn = (context: AuthContext, httpRssGet: Getter, ingestion: BasicStoreEntityIngestionRss) => Promise<HandlerResponse>;
 // endregion Types
 
@@ -84,7 +84,7 @@ const rssItemV2Convert = (channel: RssElement, item: RssItem): DataItem => {
 const rssHttpGetter = (): Getter => {
   const httpClientOptions: GetHttpClient = {
     responseType: 'text',
-    headers: { 'User-Agent': RSS_FEED_USER_AGENT }
+    headers: { 'User-Agent': RSS_FEED_USER_AGENT },
   };
   const httpClient = getHttpClient(httpClientOptions);
   return async (uri: string) => {
@@ -140,7 +140,7 @@ const rssDataHandler: RssHandlerFn = async (context: AuthContext, httpRssGet: Ge
         report.external_references = [{
           source_name: item.title,
           description: `${ingestion.name} ${item.title}. Retrieved ${item.pubDate.toISOString()}.`,
-          url: item.link
+          url: item.link,
         }];
       }
       return report;

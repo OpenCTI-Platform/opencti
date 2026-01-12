@@ -12,7 +12,7 @@ import type {
   BasicStoreEntityIngestionJson,
   BasicStoreEntityIngestionRss,
   BasicStoreEntityIngestionTaxii,
-  BasicStoreEntityIngestionTaxiiCollection
+  BasicStoreEntityIngestionTaxiiCollection,
 } from '../../modules/ingestion/ingestion-types';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
@@ -26,13 +26,13 @@ export const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 30000;
 
 // region Types
 interface UpdateInfo {
-  state?: any
-  buffering?: boolean
-  messages_size?: number
+  state?: any;
+  buffering?: boolean;
+  messages_size?: number;
 }
 
 export type IngestionTypes = BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson;
+  | BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson;
 // endregion Types
 
 export const asArray = (data: unknown) => {
@@ -65,7 +65,7 @@ export const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: 
       run_and_terminate: false,
       buffering: opts.buffering ?? false,
       queue_threshold: 0,
-      queue_messages_size: (opts.messages_size ?? 0) / 1000000 // In Mb
+      queue_messages_size: (opts.messages_size ?? 0) / 1000000, // In Mb
     },
     connector_user_id: user_id,
   };
@@ -98,7 +98,7 @@ export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion
     applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
     content,
     work_id: work.id,
-    update: true
+    update: true,
   });
   return work.id;
 };
