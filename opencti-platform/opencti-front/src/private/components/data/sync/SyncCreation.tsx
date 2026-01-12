@@ -32,11 +32,10 @@ import IngestionCreationUserHandling from '../../../../private/components/data/I
 import { PaginationOptions } from '../../../../components/list_lines';
 import { SyncImportQuery$data } from '@components/data/__generated__/SyncImportQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { FormikHelpers } from 'formik/dist/types';
+import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { SyncCreationCheckMutation$data } from '@components/data/sync/__generated__/SyncCreationCheckMutation.graphql';
-import {
-  SyncCreationStreamCollectionQuery$data
-} from "@components/data/sync/__generated__/SyncCreationStreamCollectionQuery.graphql";
+import { SyncCreationStreamCollectionQuery$data } from '@components/data/sync/__generated__/SyncCreationStreamCollectionQuery.graphql';
+import { RelayError } from '../../../../relay/relayTypes';
 
 const syncCreationMutation = graphql`
   mutation SyncCreationMutation($input: SynchronizerAddInput!) {
@@ -143,7 +142,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
 
   const [commitVerify] = useApiMutation(syncCheckMutation);
 
-  const handleVerify = (values: SynchronizerAddInput, setErrors: FormikErrors<SynchronizerAddInput>) => {
+  const handleVerify = (values: SynchronizerAddInput, setErrors: FormikHelpers<SynchronizerAddInput>['setErrors']) => {
     const userId
       = typeof values.user_id === 'object'
         ? values.user_id?.value
@@ -170,7 +169,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
 
   const [commitCreation] = useApiMutation(syncCreationMutation);
 
-  const onSubmit = (values: SynchronizerAddInput, { setSubmitting, setErrors, resetForm }: FormikHelpers<SynchronizerAddInput>) => {
+  const onSubmit: FormikConfig<SynchronizerAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const userId
       = typeof values.user_id === 'object'
         ? values.user_id?.value
@@ -229,9 +228,9 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
           setStreams(resultStreams as StreamOption[]);
         }
       })
-      .catch((e) => {
+      .catch((e: RelayError) => {
         const errors = e.res.errors.map((err) => ({
-          [err.data.field]: err.data.message,
+          [err.data?.field ?? 'unknownField']: err.data?.message,
         }));
         const formError = R.mergeAll(errors);
         setErrors({ ...currentErrors, ...formError });
@@ -247,7 +246,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
       controlledDial={triggerButton ? CreateSynchronizerControlledDial : undefined}
     >
       {({ onClose }) => (
-        <Formik
+        <Formik<SynchronizerAddInput>
           initialValues={{
             name: ingestionSynchronizerData?.name || '',
             uri: ingestionSynchronizerData?.uri || '',
@@ -325,9 +324,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                       label={t_i18n('Remote OpenCTI stream ID')}
                       inputProps={{ name: 'stream_id', id: 'stream_id' }}
                       containerstyle={fieldSpacingContainerStyle}
-                      renderValue={(value) => streams.filter((stream) => stream.value === value).at(0)
-                        .name
-                      }
+                      renderValue={(value: string | undefined) => streams.filter((stream) => stream.value === value).at(0)?.name}
                     >
                       {streams.map(
                         ({ value, label, name, description, filters }) => {

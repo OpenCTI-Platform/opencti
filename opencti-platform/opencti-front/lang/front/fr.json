@@ -245,7 +245,7 @@
   "An enumeration of Windows service statuses": "Une énumération de statuts de services Windows",
   "An enumeration of Windows service types": "Une énumération des types de services Windows",
   "An error occurred while creating the connector": "Une erreur s'est produite lors de la création du connecteur",
-  "An error occurred while importing Synchronizer configuration.": "Une erreur s'est produite lors de l'importation de la configuration de Synchronizer.",
+  "An error occurred while importing Synchronizer configuration.": "Une erreur s'est produite lors de l'importation de la configuration du Synchronizer.",
   "An error occurred while importing Taxii Feed configuration.": "Une erreur s'est produite lors de l'importation de la configuration de Taxii Feed.",
   "An error occurred while retrieving data for this widget:": "Une erreur s'est produite lors de la récupération des données pour ce widget :",
   "An error occurred while updating the connector": "Une erreur s'est produite lors de la mise à jour du connecteur",

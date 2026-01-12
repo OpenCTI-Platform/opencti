@@ -36,7 +36,7 @@ Additional configuration options:
 
 ![Live stream additional configuration](../assets/live-stream-additional-configuration.png)
 
-## Export a OpenCTI Stream
+## Export an OpenCTI Stream
 
 You can export your existing OpenCTI Stream from the platform, making it easy to share your configuration with others.
 
@@ -52,5 +52,5 @@ When you click, you can select the desired file. After that, a drawer will open 
 Add your desired platform's token. 
 By default, a user is already provided.
 
-You can select OpenCTI Stream from the XTM Hub by clicking the ```Import from Hub``` button
+You can select an OpenCTI Stream from the XTM Hub by clicking the ```Import from Hub``` button
 

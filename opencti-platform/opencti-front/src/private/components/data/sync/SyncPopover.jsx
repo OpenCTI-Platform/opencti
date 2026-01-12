@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import {fetchQuery, graphql} from 'react-relay';
+import { fetchQuery, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -16,10 +16,10 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
-import {commitMutation, environment, QueryRenderer} from '../../../../relay/environment';
+import { commitMutation, environment, QueryRenderer } from '../../../../relay/environment';
 import SyncEdition from './SyncEdition';
 import { deleteNode } from '../../../../utils/store';
-import fileDownload from "js-file-download";
+import fileDownload from 'js-file-download';
 
 const styles = (theme) => ({
   container: {
@@ -110,7 +110,6 @@ const syncPopoverExportQuery = graphql`
     }
   }
 `;
-
 
 class SyncPopover extends Component {
   constructor(props) {
@@ -226,7 +225,7 @@ class SyncPopover extends Component {
 
     const data = await fetchQuery(environment,
       syncPopoverExportQuery,
-      {id: syncId}
+      { id: syncId },
     ).toPromise();
 
     if (data && data.synchronizer) {
