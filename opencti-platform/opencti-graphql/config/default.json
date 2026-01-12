@@ -1,8 +1,5 @@
 {
   "app": {
-    "work": {
-      "export_timeout": 20
-    },
     "port": 4000,
     "base_path": "",
     "base_url": "http://localhost:4000/",
@@ -412,5 +409,10 @@
     "password": "",
     "forced_sender_email": "",
     "email_max_cc_size": 500
+  },
+  "providers": {
+    "local": {
+      "strategy": "LocalStrategy"
+    }
   }
 }
