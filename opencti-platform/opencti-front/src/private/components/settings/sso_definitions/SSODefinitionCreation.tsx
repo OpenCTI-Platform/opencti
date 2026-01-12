@@ -8,7 +8,7 @@ import { commitMutation, defaultCommitMutation } from '../../../../relay/environ
 import { PaginationOptions } from '../../../../components/list_lines';
 import CreateSplitControlledDial from '../../../../components/CreateSplitControlledDial';
 
-import useFormikToSSOConfig from './useFormikToSSOConfig';
+import useFormikToSSOConfig from './utils/useFormikToSSOConfig';
 import SSODefinitionForm, { SSODefinitionFormValues } from '@components/settings/sso_definitions/SSODefinitionForm';
 
 const ssoDefinitionMutation = graphql`
