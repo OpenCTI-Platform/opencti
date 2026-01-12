@@ -3843,13 +3843,13 @@ const internalCreateEntityRaw = async (
       const filesMarkings = resolvedInput.filesMarkings || [];
       for (let i = 0; i < resolvedInput.files.length; i += 1) {
         const fileInput = resolvedInput.files[i];
-        const fileMarking = filesMarkings[i] || resolvedInput.objectMarking?.map(({ id: string }) => id);
+        const fileMarking = filesMarkings[i] || resolvedInput.objectMarking?.map(({ id }: { id: string }) => id);
         filesToUpload.push({ file: fileInput, markings: fileMarking });
       }
     }
     // Handle single file upload (backward compatibility)
     if (!isEmptyField(resolvedInput.file)) {
-      const file_markings = isNotEmptyField(resolvedInput.fileMarkings) ? resolvedInput.fileMarkings : resolvedInput.objectMarking?.map(({ id: string }) => id);
+      const file_markings = isNotEmptyField(resolvedInput.fileMarkings) ? resolvedInput.fileMarkings : resolvedInput.objectMarking?.map(({ id }: { id: string }) => id);
       filesToUpload.push({ file: resolvedInput.file, markings: file_markings });
     }
     // Process all files to upload
