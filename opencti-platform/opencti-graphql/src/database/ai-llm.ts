@@ -186,7 +186,12 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
   if (!AI_ENABLED) {
     throw UnsupportedError('AI is disabled in platform settings');
   }
-  initClients();
+  try {
+    initClients();
+  } catch (err) {
+    logApp.error('[AI] Failed to initialize AI clients', { cause: err });
+    throw err;
+  }
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -248,7 +253,12 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
   if (!AI_ENABLED) {
     throw UnsupportedError('AI is disabled in platform settings');
   }
-  initClients();
+  try {
+    initClients();
+  } catch (err) {
+    logApp.error('[AI] Failed to initialize AI clients', { cause: err });
+    throw err;
+  }
   if (!nlqChat) {
     throw badAiConfigError;
   }
