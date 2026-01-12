@@ -310,7 +310,7 @@ describe('middleware upsertElement test', () => {
       expect(input.value.some((v) => v.value === labelToReplace.value)).toBe(true);
     });
 
-    it('should mergeUpsertInput with indicator : upsert adds label and operation replaces labels', () => {
+    it('should mergeUpsertInput with indicator : upsert adds label and operation add labels', () => {
       const labelToAddId = 'eda3b7d5-b722-4c34-9dd5-d70cea8f5cfc';
       const labelToAdd = { ...labelToRemove, value: 'label-to-add', id: labelToAddId, internal_id: labelToAddId, standard_id: labelToAddId };
       const labelCurrentId = 'ada3b7d5-b722-4c34-9dd5-d70cea8f5cfc';
@@ -333,9 +333,8 @@ describe('middleware upsertElement test', () => {
 
       // inputs should be operation: 'replace', value: [labelCurrentValue, labelToAdd]
       expect(input.key).toEqual('objectLabel');
-      expect(input.operation).toEqual('replace');
-      expect(input.value.length).toEqual(3);
-      expect(input.value.some((v) => v.value === labelCurrentValue.value)).toBe(true);
+      expect(input.operation).toEqual('add');
+      expect(input.value.length).toEqual(2);
       expect(input.value.some((v) => v.value === labelToAdd.value)).toBe(true);
       expect(input.value.some((v) => v.value === labelToUpsertAdd.value)).toBe(true);
     });

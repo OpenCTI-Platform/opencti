@@ -330,6 +330,7 @@ export type AdministrativeAreaAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -662,6 +663,7 @@ export type ArtifactAddInput = {
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   mime_type?: InputMaybe<Scalars['String']['input']>;
   payload_bin?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   url?: InputMaybe<Scalars['String']['input']>;
   x_opencti_additional_names?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -961,6 +963,7 @@ export type AttackPatternAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_mitre_detection?: InputMaybe<Scalars['String']['input']>;
   x_mitre_id?: InputMaybe<Scalars['String']['input']>;
   x_mitre_permissions_required?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -1368,6 +1371,7 @@ export type AutonomousSystemAddInput = {
   name?: InputMaybe<Scalars['String']['input']>;
   number: Scalars['Int']['input'];
   rir?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type BackgroundTask = {
@@ -1702,6 +1706,7 @@ export type BankAccountAddInput = {
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   iban?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type BasicObject = {
@@ -1984,6 +1989,7 @@ export type CampaignAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -2683,6 +2689,7 @@ export type CaseIncidentAddInput = {
   severity?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -3008,6 +3015,7 @@ export type CaseRfiAddInput = {
   severity?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_request_access?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -3330,6 +3338,7 @@ export type CaseRftAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   takedown_types?: InputMaybe<Array<Scalars['String']['input']>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -3697,6 +3706,7 @@ export type ChannelAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -3984,6 +3994,7 @@ export type CityAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -4774,6 +4785,7 @@ export type CountryAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -5059,6 +5071,7 @@ export type CourseOfActionAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_mitre_id?: InputMaybe<Scalars['String']['input']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
@@ -5358,6 +5371,7 @@ export type CredentialAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -5566,6 +5580,7 @@ export type CryptocurrencyWalletAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -5774,6 +5789,7 @@ export type CryptographicKeyAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -6161,6 +6177,7 @@ export type DataComponentAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -6425,6 +6442,7 @@ export type DataSourceAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_mitre_platforms?: InputMaybe<Array<Scalars['String']['input']>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -6883,6 +6901,7 @@ export type DirectoryAddInput = {
   mtime?: InputMaybe<Scalars['DateTime']['input']>;
   path: Scalars['String']['input'];
   path_enc?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type Display = {
@@ -7167,6 +7186,7 @@ export type DomainNameAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value: Scalars['String']['input'];
 };
 
@@ -7523,6 +7543,7 @@ export type EmailAddrAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -7744,6 +7765,7 @@ export type EmailMessageAddInput = {
   message_id?: InputMaybe<Scalars['String']['input']>;
   received_lines?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   subject?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -7956,6 +7978,7 @@ export type EmailMimePartTypeAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type EmailTemplate = BasicObject & InternalObject & {
@@ -8284,6 +8307,7 @@ export type EventAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   stop_time?: InputMaybe<Scalars['DateTime']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -8910,6 +8934,7 @@ export type FeedbackAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -9622,6 +9647,7 @@ export type GroupingAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -9675,6 +9701,7 @@ export type Hash = {
 export type HashInput = {
   algorithm: Scalars['String']['input'];
   hash: Scalars['String']['input'];
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type HashedObservable = {
@@ -10092,6 +10119,7 @@ export type HostnameAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -10303,6 +10331,7 @@ export type IPv4AddrAddInput = {
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   resolvesTo?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -10512,6 +10541,7 @@ export type IPv6AddrAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -10752,6 +10782,7 @@ export type IdentityAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   type: IdentityType;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -11067,6 +11098,7 @@ export type IncidentAddInput = {
   source?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -11425,6 +11457,7 @@ export type IndicatorAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   valid_from?: InputMaybe<Scalars['DateTime']['input']>;
   valid_until?: InputMaybe<Scalars['DateTime']['input']>;
   x_mitre_platforms?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -11733,6 +11766,7 @@ export type IndividualAddInput = {
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_firstname?: InputMaybe<Scalars['String']['input']>;
   x_opencti_lastname?: InputMaybe<Scalars['String']['input']>;
@@ -12050,6 +12084,7 @@ export type InfrastructureAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -12743,6 +12778,7 @@ export type IntrusionSetAddInput = {
   secondary_motivations?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -13614,6 +13650,7 @@ export type LocationAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   type: Scalars['String']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -13936,6 +13973,7 @@ export type MacAddrAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -14189,6 +14227,7 @@ export type MalwareAddInput = {
   samples?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -14465,6 +14504,7 @@ export type MalwareAnalysisAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   submitted?: InputMaybe<Scalars['DateTime']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   version?: InputMaybe<Scalars['String']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -15015,6 +15055,7 @@ export type MediaContentAddInput = {
   media_category?: InputMaybe<Scalars['String']['input']>;
   publication_date?: InputMaybe<Scalars['DateTime']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   url: Scalars['String']['input'];
 };
 
@@ -17531,6 +17572,7 @@ export type MutationStixCyberObservableAddArgs = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   type: Scalars['String']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_description?: InputMaybe<Scalars['String']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_score?: InputMaybe<Scalars['Int']['input']>;
@@ -18268,6 +18310,7 @@ export type MutexAddInput = {
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   name?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type NlqResponse = {
@@ -18512,6 +18555,7 @@ export type NarrativeAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -18771,6 +18815,7 @@ export type NetworkTrafficAddInput = {
   src_packets?: InputMaybe<Scalars['Int']['input']>;
   src_port?: InputMaybe<Scalars['Int']['input']>;
   start?: InputMaybe<Scalars['DateTime']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type Note = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
@@ -19051,6 +19096,7 @@ export type NoteAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -19552,6 +19598,7 @@ export type ObservedDataAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -20258,6 +20305,7 @@ export type OrganizationAddInput = {
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_organization_type?: InputMaybe<Scalars['String']['input']>;
@@ -20565,6 +20613,7 @@ export type PaymentCardAddInput = {
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   holder_name?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type Persona = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -20775,6 +20824,7 @@ export type PersonaAddInput = {
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   persona_name: Scalars['String']['input'];
   persona_type: Scalars['String']['input'];
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -20982,6 +21032,7 @@ export type PhoneNumberAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -21563,6 +21614,7 @@ export type PositionAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   street_address?: InputMaybe<Scalars['String']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -21877,6 +21929,7 @@ export type ProcessAddInput = {
   service_type?: InputMaybe<Scalars['String']['input']>;
   start_type?: InputMaybe<Scalars['String']['input']>;
   startup_info?: InputMaybe<Array<InputMaybe<DictionaryInput>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   window_title?: InputMaybe<Scalars['String']['input']>;
   x_opencti_description?: InputMaybe<Scalars['String']['input']>;
 };
@@ -25685,6 +25738,7 @@ export type RegionAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -26059,6 +26113,7 @@ export type ReportAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_reliability?: InputMaybe<Scalars['String']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -26614,6 +26669,7 @@ export type SshKeyAddInput = {
   key_length?: InputMaybe<Scalars['String']['input']>;
   key_type?: InputMaybe<Scalars['String']['input']>;
   public_key?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type SavedFilter = BasicObject & InternalObject & {
@@ -26902,6 +26958,7 @@ export type SectorAddInput = {
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -27488,6 +27545,7 @@ export type SecurityPlatformAddInput = {
   security_platform_type?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -27872,6 +27930,7 @@ export type SoftwareAddInput = {
   languages?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   name?: InputMaybe<Scalars['String']['input']>;
   swid?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   vendor?: InputMaybe<Scalars['String']['input']>;
   version?: InputMaybe<Scalars['String']['input']>;
   x_opencti_product?: InputMaybe<Scalars['String']['input']>;
@@ -28496,6 +28555,7 @@ export type StixCoreRelationshipAddInput = {
   stop_time?: InputMaybe<Scalars['DateTime']['input']>;
   toId: Scalars['StixRef']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -29570,6 +29630,7 @@ export type StixFileAddInput = {
   name_enc?: InputMaybe<Scalars['String']['input']>;
   obsContent?: InputMaybe<Scalars['ID']['input']>;
   size?: InputMaybe<Scalars['Int']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_additional_names?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
@@ -30065,6 +30126,7 @@ export type StixSightingRelationshipAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   toId: Scalars['StixRef']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_negative?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -30767,6 +30829,7 @@ export type SystemAddInput = {
   roles?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_firstname?: InputMaybe<Scalars['String']['input']>;
   x_opencti_lastname?: InputMaybe<Scalars['String']['input']>;
@@ -31102,6 +31165,7 @@ export type TaskAddInput = {
   objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -31450,6 +31514,7 @@ export type TextAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -32001,6 +32066,7 @@ export type ThreatActorGroupAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -32325,6 +32391,7 @@ export type ThreatActorIndividualAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   weight?: InputMaybe<Array<MeasureInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -32622,6 +32689,7 @@ export type ToolAddInput = {
   tool_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   tool_version?: InputMaybe<Scalars['String']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -32892,6 +32960,7 @@ export type TrackingNumberAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -33235,6 +33304,7 @@ export type UrlAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -33545,6 +33615,7 @@ export type UserAccountAddInput = {
   is_disabled?: InputMaybe<Scalars['Boolean']['input']>;
   is_privileged?: InputMaybe<Scalars['Boolean']['input']>;
   is_service_account?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -33776,6 +33847,7 @@ export type UserAgentAddInput = {
   fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -34330,6 +34402,7 @@ export type VulnerabilityAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   x_opencti_cisa_kev?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_cvss_attack_complexity?: InputMaybe<Scalars['String']['input']>;
@@ -34704,6 +34777,7 @@ export type WindowsRegistryKeyAddInput = {
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   modified_time?: InputMaybe<Scalars['DateTime']['input']>;
   number_of_subkeys?: InputMaybe<Scalars['Int']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -34916,6 +34990,7 @@ export type WindowsRegistryValueTypeAddInput = {
   files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
   filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
   name?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
 export type Work = {
@@ -35352,6 +35427,7 @@ export type X509CertificateAddInput = {
   subject_public_key_algorithm?: InputMaybe<Scalars['String']['input']>;
   subject_public_key_exponent?: InputMaybe<Scalars['Int']['input']>;
   subject_public_key_modulus?: InputMaybe<Scalars['String']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
   validity_not_after?: InputMaybe<Scalars['DateTime']['input']>;
   validity_not_before?: InputMaybe<Scalars['DateTime']['input']>;
   version?: InputMaybe<Scalars['String']['input']>;
