@@ -81,8 +81,9 @@ const SAMLCreation = ({ updateField }: Props) => {
         component={TextField}
         variant="standard"
         name="issuer"
-        label={t_i18n('SAML Entity ID/Issuer *')}
+        label={t_i18n('SAML Entity ID/Issuer')}
         onSubmit={updateField}
+        required
         fullWidth
         style={{ marginTop: 20 }}
       />
@@ -90,9 +91,10 @@ const SAMLCreation = ({ updateField }: Props) => {
         component={TextField}
         variant="standard"
         name="callbackUrl"
-        label={t_i18n('SAML SSO URL *')}
+        label={t_i18n('SAML SSO URL')}
         onSubmit={updateField}
         fullWidth
+        required
         style={{ marginTop: 20 }}
       />
       <Field
@@ -112,8 +114,9 @@ const SAMLCreation = ({ updateField }: Props) => {
         component={TextField}
         variant="standard"
         name="idpCert"
-        label={t_i18n('Identity Provider Encryption Certificate *')}
+        label={t_i18n('Identity Provider Encryption Certificate')}
         onSubmit={updateField}
+        required
         fullWidth
         multiline
         rows={4}
