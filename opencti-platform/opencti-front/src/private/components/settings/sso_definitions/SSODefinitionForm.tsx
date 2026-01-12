@@ -174,7 +174,7 @@ const SSODefinitionForm = ({
                 variant="standard"
                 name="name"
                 onSubmit={updateField}
-                label={t_i18n('Configuration Name *')}
+                label={t_i18n('Configuration Name')}
                 fullWidth
                 style={{ marginTop: 20 }}
               />
@@ -184,7 +184,7 @@ const SSODefinitionForm = ({
                   variant="standard"
                   name="identifier"
                   onSubmit={updateField}
-                  label={t_i18n('Authentication Name *')}
+                  label={t_i18n('Authentication Name')}
                   fullWidth
                 />
               </div>
