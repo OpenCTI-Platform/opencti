@@ -59,10 +59,11 @@ type RssHandlerFn = (context: AuthContext, httpRssGet: Getter, ingestion: BasicS
 
 const rssItemV1Convert = (feed: RssElement, entry: RssItem): DataItem => {
   const { updated } = feed;
+  const link = entry.link?.href?.trim() ?? ''; // Safe access to link with fallback to empty string
   return {
-    title: entry.title._,
+    title: entry.title?._ || link || 'Untitled', // Use link as fallback if title is missing, or 'Untitled' as last resort
     description: turndownService.turndown(entry.summary?._ ?? ''),
-    link: isNotEmptyField(entry.link) ? (entry.link as { href: string }).href?.trim() : '',
+    link,
     content: turndownService.turndown(entry.content?._ ?? ''),
     labels: [], // No label in rss v1
     pubDate: utcDate(sanitizeForMomentParsing(entry.updated?._ ?? updated?._ ?? FROM_START_STR)),
@@ -71,10 +72,11 @@ const rssItemV1Convert = (feed: RssElement, entry: RssItem): DataItem => {
 
 const rssItemV2Convert = (channel: RssElement, item: RssItem): DataItem => {
   const { pubDate } = channel;
+  const link = item.link?._?.trim() ?? ''; // Safe access to link with fallback to empty string
   return {
-    title: item.title._ ?? '',
+    title: item.title?._ || link || 'Untitled', // Use link as fallback if title is missing, or 'Untitled' as last resort
     description: turndownService.turndown(item.description?._ ?? ''),
-    link: isNotEmptyField(item.link) ? ((item.link as { _: string })._ ?? '').trim() : '',
+    link,
     content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),
     labels: R.uniq(asArray(item.category).filter((c) => isNotEmptyField(c)).map((c) => (c as { _: string })._.trim())),
     pubDate: utcDate(sanitizeForMomentParsing(item.pubDate?._ ?? pubDate?._ ?? FROM_START_STR)),
