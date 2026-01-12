@@ -6,15 +6,14 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-   opencti-frontend-e2e-test-ee:
-     if: ${{ github.event.pull_request.head.repo.fork }}
-     name: Run only on fork
-     runs-on: ubuntu-latest
-     steps:
+  check-fork:
+      if: ${{ github.event.pull_request.head.repo.fork }}
+      name: Run only on fork
+      runs-on: ubuntu-latest
+      steps:
       - name: Run only on fork
         continue-on-error: true
         run: echo "This is a fork"
-
 
   wf-build-image:
       name: Build image
