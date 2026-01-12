@@ -27895,7 +27895,7 @@ export type SingleSignOn = BasicObject & InternalObject & {
   identifier: Scalars['String']['output'];
   label: Scalars['String']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
-  name?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
   organizations_management?: Maybe<OrganizationsManagement>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
@@ -27910,7 +27910,7 @@ export type SingleSignOnAddInput = {
   groups_management?: InputMaybe<GroupsManagementInput>;
   identifier: Scalars['String']['input'];
   label?: InputMaybe<Scalars['String']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
   organizations_management?: InputMaybe<OrganizationsManagementInput>;
   strategy: StrategyType;
 };
@@ -46659,7 +46659,7 @@ export type SingleSignOnResolvers<ContextType = any, ParentType extends Resolver
   identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   organizations_management?: Resolver<Maybe<ResolversTypes['OrganizationsManagement']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

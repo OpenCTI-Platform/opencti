@@ -7,7 +7,7 @@ type SingleSignOn implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   # SingleSignOn
-  name: String
+  name: String!
   identifier: String!
   label: String!
   description: String
@@ -101,7 +101,7 @@ input ConfigurationTypeInput {
 }
 
 input SingleSignOnAddInput {
-  name: String
+  name: String!
   identifier: String!
   description: String
   enabled: Boolean!
