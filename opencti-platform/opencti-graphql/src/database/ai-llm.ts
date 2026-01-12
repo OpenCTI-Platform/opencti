@@ -190,7 +190,7 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
     initClients();
   } catch (err) {
     logApp.error('[AI] Failed to initialize AI clients', { cause: err });
-    throw err;
+    throw UnknownError('Failed to initialize AI clients for OpenAI', { cause: err });
   }
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
