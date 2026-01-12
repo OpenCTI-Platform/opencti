@@ -21,7 +21,7 @@ const SAMLCreation = ({ updateField }: Props) => {
         component={TextField}
         variant="standard"
         name="private_key"
-        label={t_i18n('Private key')}
+        label={t_i18n('privateKey')}
         onSubmit={updateField}
         fullWidth
         style={{ marginTop: 20 }}
@@ -30,7 +30,7 @@ const SAMLCreation = ({ updateField }: Props) => {
         component={SwitchField}
         variant="standard"
         type="checkbox"
-        name="want_assertions_signed"
+        name="wantAssertionsSigned"
         label={t_i18n('Want assertion signed')}
         containerstyle={{ marginLeft: 2, marginTop: 20 }}
       />
@@ -38,7 +38,7 @@ const SAMLCreation = ({ updateField }: Props) => {
         component={SwitchField}
         variant="standard"
         type="checkbox"
-        name="want_auth_response_signed"
+        name="wantAuthnResponseSigned"
         label={t_i18n('Requires SAML responses to be signed')}
         containerstyle={{ marginLeft: 2 }}
       />
@@ -48,7 +48,7 @@ const SAMLCreation = ({ updateField }: Props) => {
           component={SwitchField}
           variant="standard"
           type="checkbox"
-          name="login_idp_directly"
+          name="loginIdpDirectly"
           label={t_i18n('Allow login from identity provider directly')}
           containerstyle={{ marginLeft: 2 }}
         />
@@ -56,7 +56,7 @@ const SAMLCreation = ({ updateField }: Props) => {
           component={SwitchField}
           variant="standard"
           type="checkbox"
-          name="logout_remote"
+          name="logoutRemote"
           label={t_i18n('Allow logout from Identity provider directly')}
           containerstyle={{ marginLeft: 2 }}
         />
@@ -64,7 +64,7 @@ const SAMLCreation = ({ updateField }: Props) => {
       <Field
         component={SelectField}
         variant="standard"
-        name="provider_method"
+        name="providerMethod"
         label={t_i18n('Method of Provider metadata')}
         fullWidth
         containerstyle={{ width: '100%' }}
@@ -83,7 +83,7 @@ const SAMLCreation = ({ updateField }: Props) => {
       <Field
         component={TextField}
         variant="standard"
-        name="saml_callback_url"
+        name="callbackUrl"
         label={t_i18n('SAML SSO URL *')}
         fullWidth
         style={{ marginTop: 20 }}
@@ -92,7 +92,7 @@ const SAMLCreation = ({ updateField }: Props) => {
         id="filled-multiline-flexible"
         component={TextField}
         variant="standard"
-        name="idp_signing_certificate"
+        name="signingCert"
         label={t_i18n('Identity Provider Signing Certificate')}
         fullWidth
         multiline
@@ -103,7 +103,7 @@ const SAMLCreation = ({ updateField }: Props) => {
         id="filled-multiline-flexible"
         component={TextField}
         variant="standard"
-        name="idp_cert"
+        name="idpCert"
         label={t_i18n('Identity Provider Encryption Certificate *')}
         fullWidth
         multiline
@@ -113,7 +113,7 @@ const SAMLCreation = ({ updateField }: Props) => {
       <Field
         component={SelectField}
         variant="standard"
-        name="sso_binding_type"
+        name="ssoBindingType"
         label={t_i18n('SSO Binding type')}
         fullWidth
         containerstyle={{ width: '100%' }}
@@ -125,7 +125,7 @@ const SAMLCreation = ({ updateField }: Props) => {
         component={SwitchField}
         variant="standard"
         type="checkbox"
-        name="force_reauthentication"
+        name="forceReauthentication"
         label={t_i18n('Force re-authentication even if user has valid SSO session')}
         containerstyle={{ marginLeft: 2 }}
       />

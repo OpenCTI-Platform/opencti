@@ -28,23 +28,22 @@ interface SSODefinitionFormProps {
   isOpen?: boolean;
 }
 export interface SSODefinitionFormValues {
-  name: string;
   label: string;
   enabled: boolean;
-  private_key: string;
+  privateKey: string;
   issuer: string;
-  idp_cert: string;
-  saml_callback_url: string;
-  want_assertions_signed: boolean;
-  want_auth_response_signed: boolean;
-  login_idp_directly: boolean;
-  logout_remote: boolean;
-  provider_method: string;
-  idp_signing_certificate: string;
-  sso_binding_type: string;
-  force_reauthentication: boolean;
-  enable_debug_mode: boolean;
-  advanced_configurations: {
+  idpCert: string;
+  callbackUrl: string;
+  wantAssertionsSigned: boolean;
+  wantAuthnResponseSigned: boolean;
+  loginIdpDirectly: boolean;
+  logoutRemote: boolean;
+  providerMethod: string;
+  signingCert: string;
+  ssoBindingType: string;
+  forceReauthentication: boolean;
+  enableDebugMode: boolean;
+  advancedConfigurations: {
     key: string;
     value: string;
     type: string;
@@ -71,33 +70,31 @@ const SSODefinitionForm = ({
     setCurrentTab(value);
   };
   const validationSchema = Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
+    identifier: Yup.string().required(t_i18n('This field is required')),
     label: Yup.string().required(t_i18n('This field is required')),
     issuer: Yup.string().required(t_i18n('This field is required')),
-    idp_cert: Yup.string().required(t_i18n('This field is required')),
-    saml_callback_url: Yup.string()
-      .url(t_i18n('Must be a valid URL'))
-      .required(t_i18n('This field is required')),
+    idpCert: Yup.string().required(t_i18n('This field is required')),
+    callbackUrl: Yup.string().required(t_i18n('This field is required')),
   });
   const initialValues = {
-    name: '',
+    identifier: '',
     label: '',
     enabled: true,
     // SAML
-    private_key: '',
+    privateKey: '',
     issuer: '',
-    idp_cert: '',
-    saml_callback_url: '',
-    want_assertions_signed: false,
-    want_auth_response_signed: false,
-    login_idp_directly: false,
-    logout_remote: false,
-    provider_method: '',
-    idp_signing_certificate: '',
-    sso_binding_type: '',
-    force_reauthentication: false,
-    enable_debug_mode: false,
-    advanced_configurations: [],
+    idpCert: '',
+    callbackUrl: '',
+    wantAssertionsSigned: false,
+    wantAuthnResponseSigned: false,
+    loginIdpDirectly: false,
+    logoutRemote: false,
+    providerMethod: '',
+    signingCert: '',
+    ssoBindingType: '',
+    forceReauthentication: false,
+    enableDebugMode: false,
+    advancedConfigurations: [],
     groups_path: [],
     groups_mapping: [],
     read_userinfo: false,
@@ -106,7 +103,7 @@ const SSODefinitionForm = ({
   };
 
   if (data) {
-    initialValues.name = data.name;
+    initialValues.identifier = data.identifier;
   }
 
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
@@ -144,7 +141,7 @@ const SSODefinitionForm = ({
                 <Field
                   component={TextField}
                   variant="standard"
-                  name="name"
+                  name="identifier"
                   onSubmit={updateField}
                   label={t_i18n('Configuration Name *')}
                   fullWidth
