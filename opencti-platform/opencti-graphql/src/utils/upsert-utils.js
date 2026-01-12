@@ -191,6 +191,31 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   return [];
 };
 
+const mergeUpsertOperations = (upsertKey, elementCurrentValue, upsertOperations) => {
+  let currentValueArray = elementCurrentValue ?? [];
+  let mergedUpsertOperationValue = [...currentValueArray];
+  let mergedUpsertOperationOperation;
+  for (let i = 0; i < upsertOperations.length; i++) {
+    const { operation: currentUpsertOperation, value: currentUpsertValue } = upsertOperations[i];
+    if (currentUpsertOperation === 'remove') {
+      // filter values to remove from current values in DB
+      mergedUpsertOperationValue = mergedUpsertOperationValue.filter((e) =>
+        !currentUpsertValue?.includes(e) && (!e?.id || !currentUpsertValue?.some((u) => u?.id === e?.id)),
+      );
+      mergedUpsertOperationOperation = 'replace';
+    } else if (currentUpsertOperation === 'replace') {
+      // replace current values in DB with upsert values
+      mergedUpsertOperationValue = [...(currentUpsertValue ?? [])];
+      mergedUpsertOperationOperation = 'replace';
+    } else if (currentUpsertOperation === 'add') {
+      // add upsert operation values to final patch values first
+      mergedUpsertOperationValue.push(...(currentUpsertValue ?? []));
+      mergedUpsertOperationOperation = (!mergedUpsertOperationOperation || mergedUpsertOperationOperation === 'add') ? 'add' : 'replace';
+    }
+  }
+  return { key: upsertKey, operation: mergedUpsertOperationOperation, value: mergedUpsertOperationValue };
+};
+
 export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchInput, upsertOperation) => {
   const finalPatchInput = { ...updatePatchInput };
   // for now we only handle 'add' operations coming from updatePatchInput for multiple attributes
@@ -248,21 +273,37 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
     return updatePatchInputs;
   }
   const updatePatchInputsMap = new Map(updatePatchInputs.map((input) => [input.key, input]));
+  const upsertOperationsByKeyMap = new Map();
   for (let i = 0; i < upsertOperations.length; i += 1) {
-    const upsertOperation = upsertOperations[i];
-    const key = upsertOperation.key;
-    if (updatePatchInputsMap.has(key)) {
-      const updatePatchInput = updatePatchInputsMap.get(key);
-      const elementCurrentValue = resolvedElement[key];
-      const upsertValue = updatePatch[key];
-      const mergedInput = mergeUpsertInput(elementCurrentValue, upsertValue, updatePatchInput, upsertOperation);
-      updatePatchInputsMap.set(key, mergedInput); // replace updatePatchInput
+    const currentUpsertOperation = upsertOperations[i];
+    if (upsertOperationsByKeyMap.has(currentUpsertOperation.key)) {
+      upsertOperationsByKeyMap.get(currentUpsertOperation.key).push(currentUpsertOperation);
     } else {
-      updatePatchInputsMap.set(key, upsertOperation); // just add the upsert operation
+      upsertOperationsByKeyMap.set(currentUpsertOperation.key, [currentUpsertOperation]);
     }
   }
-  const mergedInputs = Array.from(updatePatchInputsMap.values());
-  return mergedInputs;
+  const upsertOperationsKeys = Array.from(upsertOperationsByKeyMap.keys());
+  for (let i = 0; i < upsertOperationsKeys.length; i += 1) {
+    const upsertOperationKey = upsertOperationsKeys[i];
+    const elementCurrentValue = resolvedElement[upsertOperationKey];
+    const upsertOperationValues = upsertOperationsByKeyMap.get(upsertOperationKey);
+    let finalUpsertOperation;
+    if (upsertOperationValues.length > 1) {
+      finalUpsertOperation = mergeUpsertOperations(upsertOperationKey, elementCurrentValue, upsertOperationValues);
+    } else {
+      finalUpsertOperation = upsertOperationValues[0];
+    }
+    if (updatePatchInputsMap.has(upsertOperationKey)) {
+      const updatePatchInput = updatePatchInputsMap.get(upsertOperationKey);
+      const elementCurrentValue = resolvedElement[upsertOperationKey];
+      const upsertValue = updatePatch[upsertOperationKey];
+      const mergedInput = mergeUpsertInput(elementCurrentValue, upsertValue, updatePatchInput, finalUpsertOperation);
+      updatePatchInputsMap.set(upsertOperationKey, mergedInput); // replace updatePatchInput
+    } else {
+      updatePatchInputsMap.set(upsertOperationKey, finalUpsertOperation); // just add the upsert operation
+    }
+  }
+  return Array.from(updatePatchInputsMap.values());
 };
 
 export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {

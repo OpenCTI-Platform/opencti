@@ -309,7 +309,6 @@ describe('middleware upsertElement test', () => {
       expect(input.value.some((v) => v.value === labelToAdd.value)).toBe(true);
       expect(input.value.some((v) => v.value === labelToReplace.value)).toBe(true);
     });
-
     it('should mergeUpsertInput with indicator : upsert adds label and operation add labels', () => {
       const labelToAddId = 'eda3b7d5-b722-4c34-9dd5-d70cea8f5cfc';
       const labelToAdd = { ...labelToRemove, value: 'label-to-add', id: labelToAddId, internal_id: labelToAddId, standard_id: labelToAddId };
@@ -337,6 +336,45 @@ describe('middleware upsertElement test', () => {
       expect(input.value.length).toEqual(2);
       expect(input.value.some((v) => v.value === labelToAdd.value)).toBe(true);
       expect(input.value.some((v) => v.value === labelToUpsertAdd.value)).toBe(true);
+    });
+    it('should mergeUpsertInputss with indicator : upsert adds label and operations add labels, replace labels and remove label', () => {
+      const labelToAddId = 'eda3b7d5-b722-4c34-9dd5-d70cea8f5cfc';
+      const labelToAdd = { ...labelToRemove, value: 'label-to-add', id: labelToAddId, internal_id: labelToAddId, standard_id: labelToAddId };
+      const labelToAdd2Id = 'f5cd3534-5e4b-4176-865a-d1ee73566d9c';
+      const labelToAdd2 = { ...labelToRemove, value: 'label-to-add2', id: labelToAdd2Id, internal_id: labelToAdd2Id, standard_id: labelToAdd2Id };
+      const labelToReplaceId = 'eaab8db2-253d-4c67-9549-56be027ee81c';
+      const labelToReplace = { ...labelToRemove, value: 'label-to-replace', id: labelToReplaceId, internal_id: labelToReplaceId, standard_id: labelToReplaceId };
+      const labelCurrentId = 'ada3b7d5-b722-4c34-9dd5-d70cea8f5cfc';
+      const labelCurrentValue = { ...labelToRemove, value: 'label-current', id: labelCurrentId, internal_id: labelCurrentId, standard_id: labelCurrentId };
+      const updatePatchInput = {
+        operation: 'add',
+        key: 'objectLabel',
+        value: [labelToAdd],
+      };
+      const upsertOperations = [
+        {
+          operation: 'remove',
+          key: 'objectLabel',
+          value: [labelToAdd],
+        },
+        {
+          operation: 'replace',
+          key: 'objectLabel',
+          value: [labelToReplace],
+        },
+        {
+          operation: 'add',
+          key: 'objectLabel',
+          value: [labelToAdd2],
+        },
+      ];
+      const currentIndicator = { ...indicator1, objectLabel: [labelCurrentValue, labelToRemove] };
+      const updatePatch = { ...indicator1, objectLabel: [labelCurrentValue, labelToAdd] };
+      const inputs = mergeUpsertInputs(currentIndicator, updatePatch, [updatePatchInput], upsertOperations);
+
+      // inputs should be operation: 'replace', value: [labelCurrentValue, labelToAdd]
+      expect(inputs.length).toEqual(1);
+      expect(inputs.find((n) => n.key === 'objectLabel')).toEqual({ operation: 'replace', key: 'objectLabel', value: [labelToReplace, labelToAdd2, labelToAdd] });
     });
   });
 });
