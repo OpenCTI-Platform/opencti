@@ -50,8 +50,6 @@ const styles = {
   },
 };
 
-const theme = useTheme();
-
 type PackageStatus = 'IN_PROGRESS' | 'READY' | 'IN_ERROR' | 'TIMEOUT' | '%future added value';
 
 const SupportPackageLineForceZipMutation = graphql`
@@ -86,14 +84,6 @@ export const supportPackageLineFragment = graphql`
   }
 `;
 
-const packageStatusColors: { [key in PackageStatus]: string } = {
-  IN_PROGRESS: '#303f9f',
-  READY: theme.palette.success.main,
-  IN_ERROR: theme.palette.error.main,
-  TIMEOUT: theme.palette.error.main,
-  '%future added value': '#9e9e9e',
-};
-
 interface SupportPackageLineProps {
   dataColumns: DataColumns;
   node: SupportPackageLine_node$key;
@@ -105,6 +95,14 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
   paginationOptions,
   dataColumns,
 }) => {
+  const theme = useTheme();
+  const packageStatusColors: { [key in PackageStatus]: string } = {
+    IN_PROGRESS: '#303f9f',
+    READY: theme.palette.success.main,
+    IN_ERROR: theme.palette.error.main,
+    TIMEOUT: theme.palette.error.main,
+    '%future added value': '#9e9e9e',
+  };
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(supportPackageLineFragment, node);
   const [commitDelete] = useApiMutation(SupportPackageLineDeleteMutation);

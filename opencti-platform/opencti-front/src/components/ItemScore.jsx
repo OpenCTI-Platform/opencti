@@ -28,36 +28,36 @@ const styles = () => ({
   },
 });
 
-const theme = useTheme();
-
-const inlineStyles = {
-  white: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    color: '#ffffff',
-  },
-  whiteLight: {
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
-    color: '#000000',
-  },
-  green: {
-    backgroundColor: alpha(theme.palette.success.main, 0.08),
-    color: theme.palette.success.main,
-  },
-  blue: {
-    backgroundColor: 'rgba(92, 123, 245, 0.08)',
-    color: '#5c7bf5',
-  },
-  red: {
-    backgroundColor: alpha(theme.palette.error.main, 0.08),
-    color: theme.palette.error.main,
-  },
-  orange: {
-    backgroundColor: 'rgba(255, 152, 0, 0.08)',
-    color: '#ff9800',
-  },
-};
-
 const ItemScore = (props) => {
+  const theme = useTheme();
+
+  const inlineStyles = {
+    white: {
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+      color: '#ffffff',
+    },
+    whiteLight: {
+      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      color: '#000000',
+    },
+    green: {
+      backgroundColor: alpha(theme.palette.success.main, 0.08),
+      color: theme.palette.success.main,
+    },
+    blue: {
+      backgroundColor: 'rgba(92, 123, 245, 0.08)',
+      color: '#5c7bf5',
+    },
+    red: {
+      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      color: theme.palette.error.main,
+    },
+    orange: {
+      backgroundColor: 'rgba(255, 152, 0, 0.08)',
+      color: '#ff9800',
+    },
+  };
+
   const { score, classes, variant } = props;
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   if (isEmptyField(score)) {
