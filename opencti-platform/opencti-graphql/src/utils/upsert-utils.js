@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
-import { INTERNAL_USERS, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from './access';
+import { INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from './access';
 import { logApp } from '../config/conf';
 import { storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { computeDateFromEventId, utcDate } from './format';
@@ -15,6 +15,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { FunctionalError } from '../config/errors';
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -272,6 +273,7 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
   if (!upsertOperations || upsertOperations.length === 0) {
     return updatePatchInputs;
   }
+
   const updatePatchInputsMap = new Map(updatePatchInputs.map((input) => [input.key, input]));
   const upsertOperationsByKeyMap = new Map();
   for (let i = 0; i < upsertOperations.length; i += 1) {
@@ -418,6 +420,9 @@ export const generateInputsForUpsert = async (context, user, resolvedElement, ty
   inputs.push(...refsInputs);
 
   // -- merge inputs with upsertOperations
+  if (updatePatch.upsertOperations?.length > 0 && !isBypassUser(user)) {
+    throw FunctionalError('User has insufficient rights to use upsertOperations', { user_id: user.id, element_id: resolvedElement.id });
+  }
   const finalInputs = mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
 
   return finalInputs;
