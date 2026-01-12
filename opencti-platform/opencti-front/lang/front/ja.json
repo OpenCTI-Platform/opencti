@@ -2236,6 +2236,7 @@
   "Last modification date": "最終更新日",
   "Last modified": "最終更新日時",
   "Last modified entities": "最後に変更されたエンティティ",
+  "Last modified on": "最終更新{date}日",
   "Last month": "過去1ヶ月",
   "Last notes": "最新ノート",
   "Last obs.": "最終観測日時",

@@ -2236,6 +2236,7 @@
   "Last modification date": "마지막 수정 날짜",
   "Last modified": "마지막 수정",
   "Last modified entities": "마지막으로 수정된 엔터티",
+  "Last modified on": "마지막 수정: {date}",
   "Last month": "지난 달",
   "Last notes": "마지막 노트",
   "Last obs.": "마지막 관찰",
