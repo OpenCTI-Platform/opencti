@@ -4,23 +4,31 @@ import useDebounceCallback from '../../../../../../../utils/hooks/useDebounceCal
 const GAP = 8;
 const MIN_CHIP_WIDTH = 60;
 
-const useChipOverflow = (items: string[]) => {
-  const [visibleCount, setVisibleCount] = useState(items.length);
-  const containerRef = useRef<HTMLDivElement>(null);
+const useChipOverflow = (items: string[] = []) => {
+  const [visibleCount, setVisibleCount] = useState(items?.length ?? []);
   const chipRefs = useRef<(HTMLElement | null)[]>([]);
-  const overflowChipRef = useRef<HTMLElement | null>(null);
+  const [containerElement, setContainerElement] = useState<HTMLDivElement | null>(null);
+
+  const containerRef = useCallback((node: HTMLDivElement | null) => {
+    if (node !== null) {
+      setContainerElement(node);
+    }
+  }, []);
 
   const calculateVisibleCount = useCallback(() => {
-    if (!containerRef.current) return;
+    if (!containerElement) return;
 
-    const containerWidth = containerRef.current.offsetWidth;
+    const containerWidth = containerElement.offsetWidth;
 
     let usedWidth = 0;
     let visibleChips = 0;
 
-    for (let i = 0; i < chipRefs.current.length; i++) {
-      const chip = chipRefs.current[i];
-      if (!chip) continue;
+    const validChips = chipRefs.current.filter((chip) => chip !== null);
+
+    if (validChips.length === 0) return;
+
+    for (let i = 0; i < validChips.length; i++) {
+      const chip = validChips[i];
 
       const chipWidth = chip.offsetWidth;
       const gapBeforeChip = i > 0 ? GAP : 0;
@@ -35,14 +43,9 @@ const useChipOverflow = (items: string[]) => {
 
       // Chip doesn't fit completely
       const spaceLeft = containerWidth - usedWidth - gapBeforeChip;
-      const isLastChip = (i === items.length - 1);
-      const chipsStillHidden = items.length - visibleChips;
 
-      // Show with ellipsis if: last chip OR only 1 would be hidden
-      const shouldShowWithEllipsis
-        = (isLastChip || chipsStillHidden === 1) && spaceLeft >= MIN_CHIP_WIDTH;
-
-      if (shouldShowWithEllipsis) {
+      // Show with ellipsis if there's at least MIN_CHIP_WIDTH space
+      if (spaceLeft >= MIN_CHIP_WIDTH) {
         visibleChips++;
       }
 
@@ -50,32 +53,36 @@ const useChipOverflow = (items: string[]) => {
     }
 
     setVisibleCount(Math.max(1, visibleChips));
-  }, [items.length]);
+  }, [containerElement, items?.length]);
 
   const debouncedCalculate = useDebounceCallback(calculateVisibleCount, 150);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    if (containerElement) {
+      calculateVisibleCount();
+    }
+  }, [containerElement, items, calculateVisibleCount]);
+
+  useEffect(() => {
+    if (!containerElement) return;
 
     const observer = new ResizeObserver(() => {
       debouncedCalculate();
     });
 
-    observer.observe(container);
+    observer.observe(containerElement);
     calculateVisibleCount();
 
     return () => {
       observer.disconnect();
     };
-  }, [calculateVisibleCount, debouncedCalculate]);
+  }, [containerElement, calculateVisibleCount, debouncedCalculate]);
 
   return {
     containerRef,
     chipRefs,
-    overflowChipRef,
     visibleCount,
-    shouldTruncate: visibleCount < items.length,
+    shouldTruncate: visibleCount < (items?.length ?? 0),
   };
 };
 
