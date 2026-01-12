@@ -65,7 +65,7 @@ const SSODefinitionEdition = ({
   const selectedStrategy = sso.strategy;
   const onEdit = (field: SSOEditionFormInputKeys, value: unknown) => {
     const input: { key: string; value: unknown[] } = { key: field, value: [value] };
-    if (field === 'private_key') {
+    if (field === 'privateKey') {
       input.key = 'configuration';
       input.value = (sso.configuration ?? []).map((e) => {
         if (e.key !== field) return e;
