@@ -4,7 +4,7 @@ import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text_light.png';
 import LogoCollapsed from '../static/images/logo_light.png';
 import { hexToRGB } from '../utils/Colors';
-import { lighten } from '@mui/material';
+import { alpha, lighten } from '@mui/material';
 
 const EE_COLOR = '#00BD94';
 
@@ -86,7 +86,7 @@ const ThemeLight = (
       paper: paper || THEME_LIGHT_DEFAULT_PAPER,
       nav: nav || THEME_LIGHT_DEFAULT_NAV,
       accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
-      shadow: 'rgba(0, 0, 0, .15)',
+      shadow: alpha('#000000', 0.15),
       secondary: '#FFFFFF',
       drawer: '#f4f1f1',
       gradient: {

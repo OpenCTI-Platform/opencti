@@ -15,19 +15,19 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
   const operationStylesLight = {
     green: {
       backgroundColor: theme.palette.success.dark,
-      color: '#ffffff',
+      color: theme.palette.common.white,
     },
     red: {
       backgroundColor: theme.palette.error.dark,
-      color: '#ffffff',
+      color: theme.palette.common.white,
     },
     yellow: {
       backgroundColor: '#ff9800',
-      color: '#ffffff',
+      color: theme.palette.common.white,
     },
     lightYellow: {
       backgroundColor: '#ec7629',
-      color: '#ffffff',
+      color: theme.palette.common.white,
     },
   };
 

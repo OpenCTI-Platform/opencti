@@ -101,7 +101,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
     READY: theme.palette.success.main,
     IN_ERROR: theme.palette.error.main,
     TIMEOUT: theme.palette.error.main,
-    '%future added value': '#9e9e9e',
+    '%future added value': theme.palette.common.grey,
   };
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(supportPackageLineFragment, node);

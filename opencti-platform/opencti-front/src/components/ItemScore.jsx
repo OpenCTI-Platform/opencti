@@ -33,12 +33,12 @@ const ItemScore = (props) => {
 
   const inlineStyles = {
     white: {
-      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-      color: '#ffffff',
+      backgroundColor: alpha(theme.palette.common.white, 0.08),
+      color: theme.palette.common.white,
     },
     whiteLight: {
-      backgroundColor: 'rgba(0, 0, 0, 0.08)',
-      color: '#000000',
+      backgroundColor: alpha(theme.palette.common.black, 0.08),
+      color: theme.palette.common.black,
     },
     green: {
       backgroundColor: alpha(theme.palette.success.main, 0.08),

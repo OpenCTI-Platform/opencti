@@ -42,8 +42,8 @@ const inlineStyles = {
     color: theme.palette.error.main,
   },
   blueGrey: {
-    backgroundColor: 'rgba(96, 125, 139, 0.08)',
-    color: '#607d8b',
+    backgroundColor: alpha(theme.palette.common.grey, 0.08),
+    color: theme.palette.common.grey,
   },
 };
 

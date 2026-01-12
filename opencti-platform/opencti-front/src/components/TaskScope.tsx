@@ -25,8 +25,8 @@ const inlineStyles = {
     color: '#5c7bf5',
   },
   grey: {
-    backgroundColor: 'rgba(96, 125, 139, 0.08)',
-    color: '#607d8b',
+    backgroundColor: alpha(theme.palette.common.grey, 0.08),
+    color: theme.palette.common.grey,
   },
   orange: {
     backgroundColor: 'rgba(255, 152, 0, 0.08)',

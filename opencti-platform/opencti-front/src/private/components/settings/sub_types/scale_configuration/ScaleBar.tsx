@@ -2,6 +2,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
 import type { Theme } from '../../../../../components/Theme';
 import type { ScaleConfig } from './scale';
+import { useTheme } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -33,7 +34,7 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const ScaleBar = ({ scale }: { scale: ScaleConfig }) => {
   const classes = useStyles();
-
+  const theme = useTheme();
   const ticks = [scale.min, ...scale.ticks];
 
   return (
@@ -41,7 +42,7 @@ const ScaleBar = ({ scale }: { scale: ScaleConfig }) => {
       {ticks.map((tick, index) => (
         <div key={index} className={classes.tickContainer}>
           <div className={classes.tickValue}>
-            <span style={{ color: `${index === 0 ? '#607d8b' : tick.color}` }}>
+            <span style={{ color: `${index === 0 ? theme.palette.common.grey : tick.color}` }}>
               {tick.value}
             </span>
             {index === scale.ticks.length && (

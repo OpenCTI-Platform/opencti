@@ -38,9 +38,9 @@ const inlineStyles = {
     borderColor: '#ff9800',
   },
   blueGrey: {
-    backgroundColor: 'rgba(96, 125, 139, 0.08)',
-    color: '#607d8b',
-    borderColor: '#607d8b',
+    backgroundColor: alpha(theme.palette.common.grey, 0.08),
+    color: theme.palette.common.grey,
+    borderColor: theme.palette.common.grey,
     fontStyle: 'italic',
   },
 };

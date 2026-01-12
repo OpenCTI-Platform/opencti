@@ -20,7 +20,7 @@ const NumberDifference = ({ value, description }: ItemNumberDifferenceProps) => 
       color: theme.palette.error.main,
     },
     blueGrey: {
-      color: '#607d8b',
+      color: theme.palette.common.grey,
     },
   };
 

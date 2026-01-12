@@ -12,18 +12,18 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
   const theme = useTheme<Theme>();
   const inlineStyles = {
     whiteDark: {
-      backgroundColor: '#ffffff',
+      backgroundColor: theme.palette.common.white,
       color: '#2b2b2b',
     },
     whiteLight: {
-      backgroundColor: '#ffffff',
+      backgroundColor: theme.palette.common.white,
       color: '#2b2b2b',
       border: '1px solid #2b2b2b',
     },
     blueGrey: {
-      backgroundColor: 'rgba(96, 125, 139, 0.08)',
-      color: '#607d8b',
-      borderColor: '#607d8b',
+      backgroundColor: alpha(theme.palette.common.grey || '#95969D', 0.08),
+      color: theme.palette.common.grey,
+      borderColor: theme.palette.common.grey,
       fontStyle: 'italic',
     },
     green: {
@@ -43,8 +43,8 @@ const ItemCvssScore = ({ score, style }: ItemCvssScoreProps) => {
       color: '#ff9800',
     },
     black: {
-      backgroundColor: '#000000',
-      color: '#ffffff',
+      backgroundColor: theme.palette.common.black,
+      color: theme.palette.common.white,
     },
   };
 
