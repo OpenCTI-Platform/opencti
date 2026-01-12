@@ -60,7 +60,7 @@
     "@escape.tech/graphql-armor": "3.2.0",
     "@graphql-tools/merge": "9.1.7",
     "@graphql-tools/schema": "10.0.31",
-    "@graphql-tools/utils": "10.11.0",
+    "@graphql-tools/utils": "11.0.0",
     "@jorgeferrero/stream-to-buffer": "2.0.6",
     "@langchain/core": "0.3.59",
     "@langchain/mistralai": "0.2.0",
