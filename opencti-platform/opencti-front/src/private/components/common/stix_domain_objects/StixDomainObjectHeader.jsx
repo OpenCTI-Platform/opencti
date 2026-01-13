@@ -503,6 +503,7 @@ const StixDomainObjectHeader = (props) => {
         sx={{
           width: '100%',
           minWidth: 0,
+          marginBottom: theme.spacing(3),
         }}
       >
         {/* Title + Aliases */}
