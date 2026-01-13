@@ -124,7 +124,7 @@
     "helmet": "8.1.0",
     "http-proxy-agent": "7.0.2",
     "https-proxy-agent": "7.0.6",
-    "ioredis": "5.8.2",
+    "ioredis": "5.9.1",
     "ipaddr.js": "2.3.0",
     "js-deep-equals": "2.1.1",
     "json-to-plain-text": "1.2.0",
