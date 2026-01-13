@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import { alpha, useTheme } from '@mui/material';
+import { alpha } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/

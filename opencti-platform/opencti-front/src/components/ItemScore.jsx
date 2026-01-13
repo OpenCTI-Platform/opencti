@@ -7,7 +7,8 @@ import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import inject18n from './i18n';
 import { isEmptyField } from '../utils/utils';
-import { alpha, useTheme } from '@mui/material';
+import { alpha } from '@mui/material';
+import { useTheme } from '@mui/styles';
 
 const styles = () => ({
   chip: {

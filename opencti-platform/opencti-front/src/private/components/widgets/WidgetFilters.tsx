@@ -1,6 +1,8 @@
 import Filters from '@components/common/lists/Filters';
 import React, { FunctionComponent, useEffect } from 'react';
-import { Box, useTheme } from '@mui/material';
+import { Box } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../components/Theme';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { isFilterGroupNotEmpty, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
@@ -16,7 +18,7 @@ interface WidgetFiltersProps {
 }
 
 const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [filters, helpers] = useFiltersState(dataSelection.filters);
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);

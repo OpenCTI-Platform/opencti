@@ -1,6 +1,7 @@
 import Chip from '@mui/material/Chip';
 import React, { CSSProperties } from 'react';
-import { alpha, useTheme } from '@mui/material';
+import { alpha } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 
 type ItemCvssScoreProps = {

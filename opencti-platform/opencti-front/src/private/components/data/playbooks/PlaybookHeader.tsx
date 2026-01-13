@@ -29,7 +29,9 @@ import { interval } from 'rxjs';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
-import { alpha, Stack, useTheme } from '@mui/material';
+import { alpha, Stack } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../../components/Theme';
 import ListItemButton from '@mui/material/ListItemButton';
 import PlaybookEdition from '@components/data/playbooks/PlaybookEdition';
 import Drawer from '../../common/drawer/Drawer';
@@ -58,14 +60,14 @@ const PlaybookHeaderComponent = ({
   playbook: PlaybookHeader_playbook$data;
   relay: RelayRefetchProp;
 }) => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const inlineStyles = {
     green: {
-      backgroundColor: alpha(theme.palette.success.main, 0.08),
+      backgroundColor: alpha(theme.palette.success.main || '#17AB1F', 0.08),
       color: theme.palette.success.main,
     },
     red: {
-      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
       color: theme.palette.error.main,
     },
   };
