@@ -2,7 +2,6 @@ import { Theme } from '@mui/material/styles';
 import type { GradientVariant, ColorDefinition, GradientColor, ButtonSize, ButtonColorKey } from './Button.types';
 
 export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorDefinition> => {
-  console.log(theme.palette.primary.main);
   return {
     default: {
       main: theme.palette.primary.main,
