@@ -98,7 +98,6 @@ const ExternalReferencePopover: FunctionComponent<
         <IconButton
           onClick={handleOpen}
           aria-haspopup="true"
-          style={{ marginTop: 3 }}
           size="small"
           variant="tertiary"
         >
