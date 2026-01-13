@@ -16,26 +16,6 @@ import { useTheme } from '@mui/material';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const theme = useTheme();
-const useStyles = makeStyles(() => ({
-  container: {
-    width: '100%',
-    display: 'inline-grid',
-    gridTemplateColumns: '2fr 3fr 50px',
-    alignItems: 'center',
-    marginTop: '10px',
-    gap: '10px',
-  },
-  inputError: {
-    '& fieldset': {
-      borderColor: theme.palette.error.main,
-    },
-  },
-  redStar: {
-    color: theme.palette.error.main,
-    marginLeft: '5px',
-  },
-}));
 
 export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
@@ -49,9 +29,28 @@ interface CsvMapperRepresentationAttributeFormProps
 const CsvMapperRepresentationAttributeForm: FunctionComponent<
   CsvMapperRepresentationAttributeFormProps
 > = ({ form, field, schemaAttribute, label, handleErrors }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
-
+  const theme = useTheme();
+  const useStyles = makeStyles(() => ({
+    container: {
+      width: '100%',
+      display: 'inline-grid',
+      gridTemplateColumns: '2fr 3fr 50px',
+      alignItems: 'center',
+      marginTop: '10px',
+      gap: '10px',
+    },
+    inputError: {
+      '& fieldset': {
+        borderColor: theme.palette.error.main,
+      },
+    },
+    redStar: {
+      color: theme.palette.error.main,
+      marginLeft: '5px',
+    },
+  }));
+  const classes = useStyles();
   const { name, value } = field;
   const { setFieldValue } = form;
 

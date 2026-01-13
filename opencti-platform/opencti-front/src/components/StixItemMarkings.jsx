@@ -6,7 +6,6 @@ import withTheme from '@mui/styles/withTheme';
 import Chip from '@mui/material/Chip';
 import { compose } from 'ramda';
 import { truncate } from '../utils/String';
-import { useTheme } from '@mui/material';
 
 const styles = () => ({
   chip: {
@@ -28,56 +27,55 @@ const styles = () => ({
   },
 });
 
-const theme = useTheme();
-const inlineStylesDark = {
-  white: {
-    backgroundColor: theme.palette.common.white,
-    color: '#313235',
-  },
-  green: {
-    backgroundColor: theme.palette.success.main,
-  },
-  blue: {
-    backgroundColor: '#001BDB',
-  },
-  red: {
-    backgroundColor: theme.palette.error.dark,
-  },
-  orange: {
-    backgroundColor: '#E6700F',
-  },
-};
-
-const inlineStylesLight = {
-  white: {
-    backgroundColor: theme.palette.common.white,
-    color: '#313235',
-    border: '1px solid #313235',
-  },
-  green: {
-    backgroundColor: theme.palette.success.main,
-    color: theme.palette.common.white,
-  },
-  blue: {
-    backgroundColor: '#001BDB',
-    color: theme.palette.common.white,
-  },
-  red: {
-    backgroundColor: theme.palette.error.dark,
-    color: theme.palette.common.white,
-  },
-  orange: {
-    backgroundColor: '#E6700F',
-    color: theme.palette.common.white,
-  },
-};
-
 const StixItemMarkings = (props) => {
   const { classes, variant, markingDefinitions, limit, theme } = props;
   const className = variant === 'inList' ? classes.chipInList : classes.chip;
   const number = limit || 1;
   const sortBy = R.sortWith([R.descend(R.prop('name'))]);
   const markings = R.pipe(sortBy, R.take(number))(markingDefinitions);
+  const inlineStylesDark = {
+    white: {
+      backgroundColor: theme.palette.common.white,
+      color: '#313235',
+    },
+    green: {
+      backgroundColor: theme.palette.success.main,
+    },
+    blue: {
+      backgroundColor: '#001BDB',
+    },
+    red: {
+      backgroundColor: theme.palette.error.dark,
+    },
+    orange: {
+      backgroundColor: '#E6700F',
+    },
+  };
+
+  const inlineStylesLight = {
+    white: {
+      backgroundColor: theme.palette.common.white,
+      color: '#313235',
+      border: '1px solid #313235',
+    },
+    green: {
+      backgroundColor: theme.palette.success.main,
+      color: theme.palette.common.white,
+    },
+    blue: {
+      backgroundColor: '#001BDB',
+      color: theme.palette.common.white,
+    },
+    red: {
+      backgroundColor: theme.palette.error.dark,
+      color: theme.palette.common.white,
+    },
+    orange: {
+      backgroundColor: '#E6700F',
+      color: theme.palette.common.white,
+    },
+  };
+
   return (
     <div>
       {markings.map((markingDefinition) => {

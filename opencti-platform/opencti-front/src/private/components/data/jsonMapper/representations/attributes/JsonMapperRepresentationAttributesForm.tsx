@@ -18,23 +18,6 @@ import { isEmptyField } from '../../../../../../utils/utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const theme = useTheme<Theme>();
-const useStyles = makeStyles(() => ({
-  container: {
-    width: '100%',
-    display: 'inline-grid',
-    gridTemplateColumns: '2fr 3fr 50px',
-    alignItems: 'center',
-    padding: 10,
-    marginTop: 20,
-    marginBottom: 10,
-    gap: '10px',
-  },
-  redStar: {
-    color: theme.palette.error.main,
-    marginLeft: '5px',
-  },
-}));
 
 export const JsonMapperRepresentationAttributesFormFragment = graphql`
   fragment JsonMapperRepresentationAttributesForm_allSchemaAttributes on Query {
@@ -85,6 +68,23 @@ const JsonMapperRepresentationAttributesForm: FunctionComponent<
   JsonMapperRepresentationAttributesFormProps
 > = ({ handleErrors, representation, representationType, representationName }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const useStyles = makeStyles(() => ({
+    container: {
+      width: '100%',
+      display: 'inline-grid',
+      gridTemplateColumns: '2fr 3fr 50px',
+      alignItems: 'center',
+      padding: 10,
+      marginTop: 20,
+      marginBottom: 10,
+      gap: '10px',
+    },
+    redStar: {
+      color: theme.palette.error.main,
+      marginLeft: '5px',
+    },
+  }));
   const classes = useStyles();
   const { schemaAttributes } = useJsonMappersData();
   const data = useFragment<JsonMapperRepresentationAttributesForm_allSchemaAttributes$key>(

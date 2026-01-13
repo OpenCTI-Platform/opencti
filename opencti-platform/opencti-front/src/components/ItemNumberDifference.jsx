@@ -30,25 +30,25 @@ const styles = (theme) => ({
   },
 });
 
-const theme = useTheme();
-
-const inlineStyles = {
-  green: {
-    backgroundColor: alpha(theme.palette.success.main, 0.08),
-    color: theme.palette.success.main,
-  },
-  red: {
-    backgroundColor: alpha(theme.palette.error.main, 0.08),
-    color: theme.palette.error.main,
-  },
-  blueGrey: {
-    backgroundColor: alpha(theme.palette.common.grey, 0.08),
-    color: theme.palette.common.grey,
-  },
-};
-
 const ItemNumberDifference = (props) => {
   const { t, difference, classes, description } = props;
+  const theme = useTheme();
+
+  const inlineStyles = {
+    green: {
+      backgroundColor: alpha(theme.palette.success.main, 0.08),
+      color: theme.palette.success.main,
+    },
+    red: {
+      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      color: theme.palette.error.main,
+    },
+    blueGrey: {
+      backgroundColor: alpha(theme.palette.common.grey, 0.08),
+      color: theme.palette.common.grey,
+    },
+  };
+
   if (difference < 0) {
     return (
       <div className={classes.diff} style={inlineStyles.red}>

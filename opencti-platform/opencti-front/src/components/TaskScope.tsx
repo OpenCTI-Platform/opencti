@@ -17,31 +17,6 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const theme = useTheme();
-
-const inlineStyles = {
-  blue: {
-    backgroundColor: alpha(theme.palette.severity?.info || '#4DCCFF', 0.08),
-    color: theme.palette.severity?.info || '#4DCCFF',
-  },
-  grey: {
-    backgroundColor: alpha(theme.palette.common.grey, 0.08),
-    color: theme.palette.common.grey,
-  },
-  orange: {
-    backgroundColor: alpha(theme.palette.severity?.high || '#E6700F', 0.08),
-    color: theme.palette.severity?.high || '#E6700F',
-  },
-  rose: {
-    backgroundColor: alpha('#F8958C', 0.08),
-    color: '#F8958C',
-  },
-  red: {
-    backgroundColor: alpha(theme.palette.error.main, 0.08),
-    color: theme.palette.error.main,
-  },
-};
-
 interface TaskScopeProps {
   label: string;
   scope: string;
@@ -50,6 +25,31 @@ interface TaskScopeProps {
 const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
   const classes = useStyles();
   const style = classes.chip;
+  const theme = useTheme();
+
+  const inlineStyles = {
+    blue: {
+      backgroundColor: alpha(theme.palette.severity?.info || '#4DCCFF', 0.08),
+      color: theme.palette.severity?.info || '#4DCCFF',
+    },
+    grey: {
+      backgroundColor: alpha(theme.palette.common.grey, 0.08),
+      color: theme.palette.common.grey,
+    },
+    orange: {
+      backgroundColor: alpha(theme.palette.severity?.high || '#E6700F', 0.08),
+      color: theme.palette.severity?.high || '#E6700F',
+    },
+    rose: {
+      backgroundColor: alpha('#F8958C', 0.08),
+      color: '#F8958C',
+    },
+    red: {
+      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      color: theme.palette.error.main,
+    },
+  };
+
   switch (scope) {
     case 'SETTINGS':
       return (

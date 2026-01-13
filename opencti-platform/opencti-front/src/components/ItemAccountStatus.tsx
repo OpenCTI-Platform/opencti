@@ -14,69 +14,68 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const theme = useTheme();
-
-const inlineStyles = {
-  green: {
-    backgroundColor: alpha(theme.palette.success.main, 0.08),
-    color: theme.palette.success.main,
-    borderColor: theme.palette.success.main,
-  },
-  blue: {
-    backgroundColor: alpha(theme.palette.severity?.info || '#4DCCFF', 0.08),
-    color: theme.palette.severity?.info || '#4DCCFF',
-    borderColor: theme.palette.severity?.info || '#4DCCFF',
-  },
-  red: {
-    backgroundColor: alpha(theme.palette.error.main, 0.08),
-    color: theme.palette.error.main,
-    borderColor: theme.palette.error.main,
-  },
-  orange: {
-    backgroundColor: alpha(theme.palette.severity?.high || '#E6700F', 0.08),
-    color: theme.palette.severity?.high || '#E6700F',
-    borderColor: theme.palette.severity?.high || '#E6700F',
-  },
-  blueGrey: {
-    backgroundColor: alpha(theme.palette.common.grey, 0.08),
-    color: theme.palette.common.grey,
-    borderColor: theme.palette.common.grey,
-    fontStyle: 'italic',
-  },
-};
-
 interface ItemAccountStatusProps {
   label: string;
   account_status?: string | null;
   variant?: 'outlined' | 'filled';
 }
 
-const computeAccountStatusStyle = (
-  account_status: string | undefined | null,
-) => {
-  switch (account_status) {
-    case 'Active':
-      return inlineStyles.green;
-    case 'Locked (security)':
-      return inlineStyles.blueGrey;
-    case 'Locked (training)':
-      return inlineStyles.blueGrey;
-    case 'Inactive':
-      return inlineStyles.orange;
-    case 'Expired':
-      return inlineStyles.red;
-    default:
-      return inlineStyles.blueGrey;
-  }
-};
-
 const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
   label,
   account_status,
   variant,
 }) => {
+  const theme = useTheme();
   const classes = useStyles();
   const style = classes.chip;
+  const inlineStyles = {
+    green: {
+      backgroundColor: alpha(theme.palette.success.main, 0.08),
+      color: theme.palette.success.main,
+      borderColor: theme.palette.success.main,
+    },
+    blue: {
+      backgroundColor: alpha(theme.palette.severity?.info || '#4DCCFF', 0.08),
+      color: theme.palette.severity?.info || '#4DCCFF',
+      borderColor: theme.palette.severity?.info || '#4DCCFF',
+    },
+    red: {
+      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      color: theme.palette.error.main,
+      borderColor: theme.palette.error.main,
+    },
+    orange: {
+      backgroundColor: alpha(theme.palette.severity?.high || '#E6700F', 0.08),
+      color: theme.palette.severity?.high || '#E6700F',
+      borderColor: theme.palette.severity?.high || '#E6700F',
+    },
+    blueGrey: {
+      backgroundColor: alpha(theme.palette.common.grey, 0.08),
+      color: theme.palette.common.grey,
+      borderColor: theme.palette.common.grey,
+      fontStyle: 'italic',
+    },
+  };
+
+  const computeAccountStatusStyle = (
+    account_status: string | undefined | null,
+  ) => {
+    switch (account_status) {
+      case 'Active':
+        return inlineStyles.green;
+      case 'Locked (security)':
+        return inlineStyles.blueGrey;
+      case 'Locked (training)':
+        return inlineStyles.blueGrey;
+      case 'Inactive':
+        return inlineStyles.orange;
+      case 'Expired':
+        return inlineStyles.red;
+      default:
+        return inlineStyles.blueGrey;
+    }
+  };
+
   const classStyle = computeAccountStatusStyle(account_status);
   return (
     <Chip
