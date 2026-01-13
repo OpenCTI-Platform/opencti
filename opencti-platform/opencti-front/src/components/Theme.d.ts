@@ -67,6 +67,10 @@ declare module '@mui/material/styles' {
       popoverItem: string;
       drawer: string;
     };
+    common: CommonColors & {
+      grey: string;
+      lightGrey: string;
+    };
     severity?: {
       critical: string;
       high: string;
@@ -102,6 +106,10 @@ declare module '@mui/material/styles' {
       popoverItem?: string;
       drawer?: string;
     };
+    common?: Partial<CommonColors & {
+      grey?: string;
+      lightGrey?: string;
+    }>;
     severity?: {
       critical?: string;
       high?: string;

@@ -1,7 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import { alpha, useTheme } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { alpha } from '@mui/material';
+import { Theme } from 'src/components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -25,7 +27,7 @@ interface TaskScopeProps {
 const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
   const classes = useStyles();
   const style = classes.chip;
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
 
   const inlineStyles = {
     blue: {
@@ -33,7 +35,7 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
       color: theme.palette.severity?.info || '#4DCCFF',
     },
     grey: {
-      backgroundColor: alpha(theme.palette.common.grey, 0.08),
+      backgroundColor: alpha(theme.palette.common.grey || '#95969D', 0.08),
       color: theme.palette.common.grey,
     },
     orange: {
@@ -45,7 +47,7 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
       color: '#F8958C',
     },
     red: {
-      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
       color: theme.palette.error.main,
     },
   };

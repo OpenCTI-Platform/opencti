@@ -2,7 +2,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
 import type { Theme } from '../../../../../components/Theme';
 import type { ScaleConfig } from './scale';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/styles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -34,7 +34,7 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const ScaleBar = ({ scale }: { scale: ScaleConfig }) => {
   const classes = useStyles();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const ticks = [scale.min, ...scale.ticks];
 
   return (

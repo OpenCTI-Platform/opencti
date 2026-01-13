@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import { alpha, useTheme } from '@mui/material';
+import { Theme } from 'src/components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -25,12 +26,12 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
   account_status,
   variant,
 }) => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const classes = useStyles();
   const style = classes.chip;
   const inlineStyles = {
     green: {
-      backgroundColor: alpha(theme.palette.success.main, 0.08),
+      backgroundColor: alpha(theme.palette.success.main || '#17AB1F', 0.08),
       color: theme.palette.success.main,
       borderColor: theme.palette.success.main,
     },
@@ -40,7 +41,7 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
       borderColor: theme.palette.severity?.info || '#4DCCFF',
     },
     red: {
-      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      backgroundColor: alpha(theme.palette.error.main || '#F14337', 0.08),
       color: theme.palette.error.main,
       borderColor: theme.palette.error.main,
     },
@@ -50,7 +51,7 @@ const ItemAccountStatus: FunctionComponent<ItemAccountStatusProps> = ({
       borderColor: theme.palette.severity?.high || '#E6700F',
     },
     blueGrey: {
-      backgroundColor: alpha(theme.palette.common.grey, 0.08),
+      backgroundColor: alpha(theme.palette.common.grey || '#95969D', 0.08),
       color: theme.palette.common.grey,
       borderColor: theme.palette.common.grey,
       fontStyle: 'italic',

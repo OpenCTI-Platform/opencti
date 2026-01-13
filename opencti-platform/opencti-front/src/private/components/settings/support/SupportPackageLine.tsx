@@ -23,6 +23,7 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { chipInListBasicStyle } from '../../../../utils/chipStyle';
 import { useTheme } from '@mui/material';
+import type { Theme } from 'src/components/Theme';
 
 const styles = {
   bodyItem: {
@@ -95,13 +96,13 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
   paginationOptions,
   dataColumns,
 }) => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const packageStatusColors: { [key in PackageStatus]: string } = {
-    IN_PROGRESS: theme.palette.primary.main,
-    READY: theme.palette.success.main,
-    IN_ERROR: theme.palette.error.main,
-    TIMEOUT: theme.palette.error.main,
-    '%future added value': theme.palette.common.grey,
+    IN_PROGRESS: theme.palette.primary.main || '#0fbcff',
+    READY: theme.palette.success.main || '#17AB1F',
+    IN_ERROR: theme.palette.error.main || '#F14337',
+    TIMEOUT: theme.palette.error.main || '#F14337',
+    '%future added value': theme.palette.common.grey || '#95969D',
   };
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(supportPackageLineFragment, node);
