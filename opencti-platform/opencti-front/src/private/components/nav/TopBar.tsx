@@ -38,7 +38,7 @@ import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import { THEME_DARK_DEFAULT_BACKGROUND, THEME_DARK_DEFAULT_BODY_END_GRADIENT } from 'src/components/ThemeDark';
+import { THEME_DARK_DEFAULT_BACKGROUND, THEME_DARK_DEFAULT_BODY_END_GRADIENT } from '../../../components/ThemeDark';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
