@@ -64,7 +64,9 @@ export const convertKeyValueToJsConfiguration = (ssoEntity: BasicStoreEntitySing
     const ssoConfiguration: any = {};
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
       const currentConfig = ssoEntity.configuration[i];
-      ssoConfiguration[currentConfig.key] = parseValueAsType(currentConfig.value, currentConfig.type);
+      if (isNotEmptyField(currentConfig.value)) {
+        ssoConfiguration[currentConfig.key] = parseValueAsType(currentConfig.value, currentConfig.type);
+      }
     }
     return ssoConfiguration;
   } else {
@@ -101,7 +103,9 @@ export const buildSAMLOptions = async (ssoEntity: BasicStoreEntitySingleSignOn) 
     const ssoOtherOptions: any = {};
     for (let i = 0; i < ssoEntity.configuration.length; i++) {
       const currentConfig = ssoEntity.configuration[i];
-      ssoOtherOptions[currentConfig.key] = parseValueAsType(currentConfig.value, currentConfig.type);
+      if (isNotEmptyField(currentConfig.value)) {
+        ssoOtherOptions[currentConfig.key] = parseValueAsType(currentConfig.value, currentConfig.type);
+      }
     }
     return { ...ssoOptions, ...ssoOtherOptions } as PassportSamlConfig;
   } else {
@@ -240,7 +244,7 @@ export const registerLocalStrategy = async () => {
   const localStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
     return login(username, password)
       .then((info) => {
-        logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_SAML, { username });
+        logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_LOCAL, { username });
         addUserLoginCount();
         return done(null, info);
       })

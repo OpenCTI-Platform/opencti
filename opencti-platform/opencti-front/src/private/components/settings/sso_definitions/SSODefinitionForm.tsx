@@ -131,16 +131,16 @@ const SSODefinitionForm = ({
     initialValues.issuer = issuerField?.value ?? '';
     initialValues.idpCert = idpCertField?.value ?? '';
     initialValues.callbackUrl = callbackUrlField?.value ?? '';
-    initialValues.wantAssertionsSigned = !!wantAssertionsSignedField?.value;
-    initialValues.wantAuthnResponseSigned = !!wantAuthnResponseSignedField?.value;
-    initialValues.loginIdpDirectly = !!loginIdpDirectlyField?.value;
-    initialValues.logoutRemote = !!logoutRemoteField?.value;
+    initialValues.wantAssertionsSigned = wantAssertionsSignedField ? wantAssertionsSignedField?.value === 'true' : true;
+    initialValues.wantAuthnResponseSigned = wantAuthnResponseSignedField ? wantAuthnResponseSignedField?.value === 'true' : true;
+    initialValues.loginIdpDirectly = loginIdpDirectlyField ? loginIdpDirectlyField?.value === 'true' : false;
+    initialValues.logoutRemote = logoutRemoteField ? logoutRemoteField?.value === 'true' : false;
     initialValues.providerMethod = providerMethodField?.value ?? '';
     initialValues.signingCert = signingCertField?.value ?? '';
     initialValues.ssoBindingType = ssoBindingTypeField?.value ?? '';
     initialValues.entryPoint = entryPointField?.value ?? '';
-    initialValues.forceReauthentication = !!forceReauthenticationField?.value;
-    initialValues.enableDebugMode = !!enableDebugModeField?.value;
+    initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
+    initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
   }
 
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
