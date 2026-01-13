@@ -2700,6 +2700,7 @@
   "not_contains": "ne contient pas",
   "not_ends_with": "ne se termine pas par",
   "not_starts_with": "ne commence pas par",
+  "Note type": "Type de note",
   "Note types": "Types de note",
   "note_types": "Types de note",
   "Notes": "Notes",
