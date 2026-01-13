@@ -175,7 +175,7 @@
   "Add to container": "Добавить в контейнер",
   "Add vulnerabilities": "Добавить уязвимости",
   "Added": "Добавлено",
-  "added a note": "добавил примечание",
+  "added a note on": "добавлена заметка о {date}",
   "Additional Entities": "Дополнительные сущности",
   "Additional Entity": "Дополнительная сущность",
   "Additional Fields": "Дополнительные поля",

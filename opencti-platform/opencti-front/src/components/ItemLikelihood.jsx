@@ -1,24 +1,9 @@
 import React from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
-import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
-import Chip from '@mui/material/Chip';
+import Tag from '@common/tag/Tag';
 import inject18n from './i18n';
-import { chipInListBasicStyle } from '../utils/chipStyle';
-
-const styles = () => ({
-  chip: {
-    fontSize: 12,
-    marginRight: 7,
-    borderRadius: 4,
-    width: 120,
-  },
-  chipInList: {
-    ...chipInListBasicStyle,
-    width: 80,
-  },
-});
 
 const inlineStyles = {
   white: {
@@ -47,12 +32,10 @@ const inlineStyles = {
   },
 };
 
-const ItemLikelihood = ({ likelihood, classes, variant, t, theme }) => {
-  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+const ItemLikelihood = ({ likelihood, t, theme }) => {
   if (!likelihood) {
     return (
-      <Chip
-        classes={{ root: style }}
+      <Tag
         style={
           theme.palette.mode === 'dark'
             ? inlineStyles.white
@@ -64,8 +47,7 @@ const ItemLikelihood = ({ likelihood, classes, variant, t, theme }) => {
   }
   if (likelihood <= 20) {
     return (
-      <Chip
-        classes={{ root: style }}
+      <Tag
         style={inlineStyles.red}
         label={`${likelihood} / 100`}
       />
@@ -73,17 +55,15 @@ const ItemLikelihood = ({ likelihood, classes, variant, t, theme }) => {
   }
   if (likelihood <= 50) {
     return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.orange}
+      <Tag
+        color={inlineStyles.orange.color}
         label={`${likelihood} / 100`}
       />
     );
   }
   if (likelihood <= 75) {
     return (
-      <Chip
-        classes={{ root: style }}
+      <Tag
         style={inlineStyles.blue}
         label={`${likelihood} / 100`}
       />
@@ -91,16 +71,14 @@ const ItemLikelihood = ({ likelihood, classes, variant, t, theme }) => {
   }
   if (likelihood <= 100) {
     return (
-      <Chip
-        classes={{ root: style }}
+      <Tag
         style={inlineStyles.green}
         label={`${likelihood} / 100`}
       />
     );
   }
   return (
-    <Chip
-      classes={{ root: style }}
+    <Tag
       style={inlineStyles.white}
       label={`${likelihood} / 100`}
     />
@@ -116,5 +94,4 @@ ItemLikelihood.propTypes = {
 export default compose(
   withTheme,
   inject18n,
-  withStyles(styles),
 )(ItemLikelihood);

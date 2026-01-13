@@ -175,7 +175,7 @@
   "Add to container": "添加到容器",
   "Add vulnerabilities": "添加漏洞",
   "Added": "已添加",
-  "added a note": "添加了注释",
+  "added a note on": "为 {date} 添加了注释",
   "Additional Entities": "附加实体",
   "Additional Entity": "附加实体",
   "Additional Fields": "附加字段",

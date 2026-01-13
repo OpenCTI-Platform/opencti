@@ -175,7 +175,7 @@
   "Add to container": "Zum Container hinzufügen",
   "Add vulnerabilities": "Schwachstellen hinzufügen",
   "Added": "Hinzugefügt",
-  "added a note": "eine Notiz hinzugefügt",
+  "added a note on": "eine Notiz zu {date} hinzugefügt",
   "Additional Entities": "Zusätzliche Entitäten",
   "Additional Entity": "Zusätzliche Entität",
   "Additional Fields": "Zusätzliche Felder",

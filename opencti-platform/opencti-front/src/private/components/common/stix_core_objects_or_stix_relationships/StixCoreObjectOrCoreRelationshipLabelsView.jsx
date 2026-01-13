@@ -1,6 +1,5 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import CardTitle from '@common/card/CardTitle';
 import Tag from '@common/tag/Tag';
 import { Add } from '@mui/icons-material';
 import Dialog from '@mui/material/Dialog';
@@ -9,7 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
-import { Label } from 'mdi-material-ui';
+import { Label as MdiLabel } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { filter, map, pipe } from 'ramda';
@@ -24,6 +23,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import LabelCreation from '../../settings/labels/LabelCreation';
 import CommitMessage from '../form/CommitMessage';
+import Label from '../../../../components/common/label/Label';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -148,7 +148,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
 
   return (
     <>
-      <CardTitle
+      <Label
         sx={{ marginTop: '20px' }}
         action={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -165,7 +165,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
         )}
       >
         {t_i18n('Labels')}
-      </CardTitle>
+      </Label>
       <div className={classes.objectLabel} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
         <FieldOrEmpty source={labels}>
           {map(
@@ -280,7 +280,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                         className={classes.icon}
                         style={{ color: option.color }}
                       >
-                        <Label />
+                        <MdiLabel />
                       </div>
                       <div className={classes.text}>{option.label}</div>
                     </li>
