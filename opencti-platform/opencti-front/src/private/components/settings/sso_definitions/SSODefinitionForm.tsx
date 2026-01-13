@@ -109,7 +109,7 @@ const SSODefinitionForm = ({
   };
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
   const issuerField = data?.configuration?.find((e) => e.key === 'issuer');
-  const idpCertField = data?.configuration?.find((e) => e.key === 'idpCertField');
+  const idpCertField = data?.configuration?.find((e) => e.key === 'idpCert');
   const callbackUrlField = data?.configuration?.find((e) => e.key === 'callbackUrl');
   const wantAssertionsSignedField = data?.configuration?.find((e) => e.key === 'wantAssertionsSigned');
   const wantAuthnResponseSignedField = data?.configuration?.find((e) => e.key === 'wantAuthnResponseSigned');

@@ -71,7 +71,9 @@ const SSODefinitionEdition = ({
       || field === 'callbackUrl'
       || field === 'signingCert'
       || field === 'idpCert'
-      || field === 'ssoBindingType') {
+      || field === 'ssoBindingType'
+      || field === 'entryPoint'
+    ) {
       input.key = 'configuration';
       input.value = (sso.configuration ?? []).map((e) => {
         if (e.key !== field) return e;

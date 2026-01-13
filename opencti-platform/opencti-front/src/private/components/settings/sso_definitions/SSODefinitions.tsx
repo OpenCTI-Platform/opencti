@@ -126,7 +126,7 @@ const SSODefinitions = () => {
     name: {
       label: 'Configuration name',
       percentWidth: 25,
-      render: (node: { identifier: string }) => <div>{node.identifier}</div>,
+      render: (node: { name: string }) => <div>{node.name}</div>,
     },
     enabled: {
       label: 'Enabled',
