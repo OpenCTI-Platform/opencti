@@ -26,6 +26,7 @@ type OrganizationsManagement {
 
 type GroupsManagement {
   group_attributes: [String!]
+  group_attribute: String
   groups_path: [String!]
   groups_mapping: [String!]
   read_userinfo: Boolean
@@ -86,9 +87,9 @@ input OrganizationsManagementInput {
 
 input GroupsManagementInput {
   group_attributes: [String!]
+  group_attribute: String
   groups_path: [String!]
   groups_mapping: [String!]
-  # read_userinfo is only used in OpenIDStrategy so far, should not be mandatory
   read_userinfo: Boolean
   token_reference: String
   # TODO missing groups_header, groups_splitter for HeaderStrategy

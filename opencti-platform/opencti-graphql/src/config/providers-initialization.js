@@ -33,7 +33,12 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isSingleSignOnInGuiEnabled, SINGLE_SIGN_ON_FF } from '../modules/singleSignOn/singleSignOn';
 import { logAuthInfo, runSingleSignOnRunMigration } from '../modules/singleSignOn/singleSignOn-domain';
 
-export const MIGRATED_STRATEGY = [EnvStrategyType.STRATEGY_LOCAL, EnvStrategyType.STRATEGY_SAML];
+export const MIGRATED_STRATEGY = [
+  EnvStrategyType.STRATEGY_LOCAL,
+  EnvStrategyType.STRATEGY_SAML,
+  EnvStrategyType.STRATEGY_OPENID,
+  EnvStrategyType.STRATEGY_LDAP,
+];
 
 // (providerRef: string)
 export const unregisterAuthenticationProvider = (providerRef) => {

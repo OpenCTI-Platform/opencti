@@ -15299,6 +15299,7 @@ type OrganizationsManagement {
 
 type GroupsManagement {
   group_attributes: [String!]
+  group_attribute: String
   groups_path: [String!]
   groups_mapping: [String!]
   read_userinfo: Boolean
@@ -15346,6 +15347,7 @@ input OrganizationsManagementInput {
 
 input GroupsManagementInput {
   group_attributes: [String!]
+  group_attribute: String
   groups_path: [String!]
   groups_mapping: [String!]
   read_userinfo: Boolean

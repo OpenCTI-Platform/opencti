@@ -62,7 +62,7 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         const currentValue = mappedConfig[configKey];
         logApp.info('[SSO MIGRATION] groups management configured', currentValue);
 
-        const { group_attributes, groups_mapping, groups_path, read_userinfo, token_reference } = currentValue;
+        const { group_attributes, group_attribute, groups_mapping, groups_path, read_userinfo, token_reference } = currentValue;
         groups_management = {};
 
         // SAML, OpenId and LDAP
@@ -97,6 +97,12 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
         } else if (strategy === StrategyType.OpenIdConnectStrategy) {
           groups_management['token_reference'] = 'access_token';
         }
+        // LDAP only
+        if (group_attribute) {
+          groups_management['group_attribute'] = group_attribute;
+        } else if (strategy === StrategyType.LdapStrategy) {
+          groups_management['group_attribute'] = 'cn';
+        }
       } else if (configKey === ORG_MANAGEMENT_KEY) {
       // 3. Extract organization management
         const currentValue = mappedConfig[configKey];
@@ -104,15 +110,16 @@ const computeConfiguration = (envConfiguration: any, strategy: StrategyType) => 
 
         const { organizations_path, organizations_mapping } = currentValue;
         organizations_management = {};
-        // SAML only
+
+        // SAML, OpenId and LDAP
         if (organizations_path) {
           organizations_management['organizations_path'] = organizations_path;
-        } else if (strategy === StrategyType.SamlStrategy) {
+        } else if (strategy === StrategyType.SamlStrategy || StrategyType.OpenIdConnectStrategy || StrategyType.LdapStrategy) {
           organizations_management['organizations_path'] = ['organizations'];
         }
 
         if (organizations_mapping) {
-          organizations_management['organizations_mapping'] = organizations_path;
+          organizations_management['organizations_mapping'] = organizations_mapping;
         } else {
           organizations_management['organizations_mapping'] = [];
         }
@@ -189,7 +196,6 @@ const parseSAMLStrategyConfiguration = (ssoKey: string, envConfiguration: any, d
   return authEntity;
 };
 
-/*
 const parseOpenIdStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
   const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.OpenIdConnectStrategy);
   const identifier = envConfiguration?.identifier || 'oic';
@@ -208,7 +214,23 @@ const parseOpenIdStrategyConfiguration = (ssoKey: string, envConfiguration: any,
   return authEntity;
 };
 
- */
+const parseLDAPStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
+  const { configuration, groups_management, organizations_management } = computeConfiguration(envConfiguration, StrategyType.LdapStrategy);
+  const identifier = envConfiguration?.identifier || 'ldapauth';
+
+  const authEntity: SingleSignOnAddInput = {
+    identifier,
+    strategy: StrategyType.LdapStrategy,
+    name: computeAuthenticationName(ssoKey, envConfiguration, 'TODO'),
+    label: computeAuthenticationLabel(ssoKey, envConfiguration),
+    description: `${StrategyType.LdapStrategy} Automatically ${dryRun ? 'detected' : 'created'} from ${ssoKey} at ${now()}`,
+    enabled: computeEnabled(envConfiguration),
+    configuration,
+    groups_management,
+    organizations_management,
+  };
+  return authEntity;
+};
 
 const parseLocalStrategyConfiguration = (ssoKey: string, envConfiguration: any, dryRun: boolean) => {
   const authEntity: SingleSignOnAddInput = {
@@ -239,15 +261,16 @@ export const parseSingleSignOnRunConfiguration = async (context: AuthContext, us
             authenticationStrategiesInput.push(parseLocalStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_OPENID:
-            logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
-            // authenticationStrategiesInput.push(parseOpenIdStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
+            logApp.info('[SSO MIGRATION] Looking at OpenID migration');
+            authenticationStrategiesInput.push(parseOpenIdStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_SAML:
             logApp.info('[SSO MIGRATION] Looking at SAML migration');
             authenticationStrategiesInput.push(parseSAMLStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_LDAP:
-            logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);
+            logApp.info('[SSO MIGRATION] Looking at LDAP migration');
+            authenticationStrategiesInput.push(parseLDAPStrategyConfiguration(ssoKey, currentSSOconfig, dryRun));
             break;
           case EnvStrategyType.STRATEGY_CERT:
             logApp.warn(`[SSO MIGRATION] NOT IMPLEMENTED ${currentSSOconfig.strategy} detected.`);

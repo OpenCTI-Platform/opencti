@@ -9703,6 +9703,7 @@ export enum GroupingsOrdering {
 
 export type GroupsManagement = {
   __typename?: 'GroupsManagement';
+  group_attribute?: Maybe<Scalars['String']['output']>;
   group_attributes?: Maybe<Array<Scalars['String']['output']>>;
   groups_mapping?: Maybe<Array<Scalars['String']['output']>>;
   groups_path?: Maybe<Array<Scalars['String']['output']>>;
@@ -9712,6 +9713,7 @@ export type GroupsManagement = {
 };
 
 export type GroupsManagementInput = {
+  group_attribute?: InputMaybe<Scalars['String']['input']>;
   group_attributes?: InputMaybe<Array<Scalars['String']['input']>>;
   groups_mapping?: InputMaybe<Array<Scalars['String']['input']>>;
   groups_path?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -41711,6 +41713,7 @@ export type GroupingEdgeResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type GroupsManagementResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupsManagement'] = ResolversParentTypes['GroupsManagement']> = ResolversObject<{
+  group_attribute?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   group_attributes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   groups_mapping?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   groups_path?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
