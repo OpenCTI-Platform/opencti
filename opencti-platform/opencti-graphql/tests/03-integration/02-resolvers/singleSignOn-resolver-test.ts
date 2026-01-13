@@ -35,6 +35,10 @@ export const SINGLE_SIGN_ON_UPDATE = gql`
             name
             strategy
             enabled
+          groups_management {
+            groups_path
+            groups_mapping
+          }
         }
     }
 `;
@@ -139,6 +143,23 @@ describe('Single Sign On', () => {
 
       expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
       expect(result?.data?.singleSignOnFieldPatch?.name).toBe('updated name 1');
+    });
+    it('should edit single sign on entity with group management', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: SINGLE_SIGN_ON_UPDATE,
+        variables: {
+          id: createdSingleSignOn1Id,
+          input: { key: 'groups_management', value: [{
+            groups_path: ['member'],
+            groups_mapping: [
+              '/Connector:Connectors',
+            ],
+          }] },
+        },
+      });
+      expect(result?.data?.singleSignOnFieldPatch).toBeDefined();
+      expect(result?.data?.singleSignOnFieldPatch?.groups_management.groups_path).toStrictEqual(['member']);
+      expect(result?.data?.singleSignOnFieldPatch?.groups_management.groups_mapping).toStrictEqual(['/Connector:Connectors']);
     });
   });
   describe('Delete', () => {
