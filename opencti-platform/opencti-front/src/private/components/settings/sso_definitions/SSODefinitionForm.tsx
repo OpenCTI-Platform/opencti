@@ -14,6 +14,7 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
 import { SSODefinitionEditionFragment$data } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 import TextField from '../../../../components/TextField';
+import { getAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 import SAMLConfig from '@components/settings/sso_definitions/SAMLConfig';
 
 interface SSODefinitionFormProps {
@@ -64,7 +65,8 @@ const SSODefinitionForm = ({
   onCancel,
   onSubmit,
   selectedStrategy,
-  onSubmitField }: SSODefinitionFormProps) => {
+  onSubmitField
+}: SSODefinitionFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [currentTab, setCurrentTab] = useState(0);
@@ -80,6 +82,7 @@ const SSODefinitionForm = ({
     callbackUrl: Yup.string().required(t_i18n('This field is required')),
     entryPoint: Yup.string().required(t_i18n('This field is required')),
   });
+
   const initialValues = {
     name: '',
     identifier: '',
@@ -121,6 +124,7 @@ const SSODefinitionForm = ({
   const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
   const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
+  const advancedConfigurations = getAdvancedConfigFromData(data?.configuration ?? []);
 
   if (data) {
     initialValues.name = data.name;
@@ -141,7 +145,9 @@ const SSODefinitionForm = ({
     initialValues.entryPoint = entryPointField?.value ?? '';
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
     initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
+    initialValues.advancedConfigurations = advancedConfigurations
   }
+
 
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) {
@@ -154,7 +160,7 @@ const SSODefinitionForm = ({
 
   return (
     <Formik
-      enableReinitialize
+      enableReinitialize={!updateField}
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={onSubmit ? onSubmit : () => {}}

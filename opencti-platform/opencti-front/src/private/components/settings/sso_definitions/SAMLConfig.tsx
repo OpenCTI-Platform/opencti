@@ -191,6 +191,7 @@ const SAMLConfig = ({ updateField }: Props) => {
                     <Field
                       component={TextField}
                       variant="standard"
+                      onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
                       name={`advancedConfigurations[${index}].key`}
                       label={t_i18n('Key (in passport)')}
                       containerstyle={{ width: '20%' }}
@@ -198,6 +199,7 @@ const SAMLConfig = ({ updateField }: Props) => {
                     <Field
                       component={TextField}
                       variant="standard"
+                      onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
                       name={`advancedConfigurations[${index}].value`}
                       label={t_i18n('Value (in IDP)')}
                       containerstyle={{ width: '20%' }}
@@ -205,6 +207,7 @@ const SAMLConfig = ({ updateField }: Props) => {
                     <Field
                       component={SelectField}
                       variant="standard"
+                      onSubmit={() => updateField('advancedConfigurations', form.values.advancedConfigurations)}
                       name={`advancedConfigurations[${index}].type`}
                       label={t_i18n('Field type')}
                       containerstyle={{ width: '20%' }}
@@ -220,7 +223,12 @@ const SAMLConfig = ({ updateField }: Props) => {
                       style={{ marginTop: 10 }}
                       onClick={() => remove(index)} // Delete
                     >
-                      <Delete fontSize="small" />
+                      <Delete fontSize="small" onClick={() => {
+                        remove(index);
+                        const advancedConfigurations = [...form.values.advancedConfigurations];
+                        advancedConfigurations.splice(index,1)
+                        updateField('advancedConfigurations', advancedConfigurations)
+                      }} />
                     </IconButton>
                   </div>
                 ),
