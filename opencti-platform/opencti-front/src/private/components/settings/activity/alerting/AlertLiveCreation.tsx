@@ -1,35 +1,33 @@
-import { Close } from '@mui/icons-material';
 import Button from '@common/button/Button';
+import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
-import IconButton from '@common/button/IconButton';
-import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import Box from '@mui/material/Box';
+import DrawerHeader from '@common/drawer/DrawerHeader';
+import MarkdownField from '../../../../../components/fields/MarkdownField';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
 import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
+import useFiltersState from '../../../../../utils/filters/useFiltersState';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../../utils/store';
-import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
+import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import Filters from '../../../common/lists/Filters';
 import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
-import useFiltersState from '../../../../../utils/filters/useFiltersState';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -53,16 +51,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
   },
   container: {
     padding: '10px 20px 20px 20px',
@@ -237,17 +225,11 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t_i18n('Create a live activity trigger')}</Typography>
-        </div>
+        <DrawerHeader
+          title={t_i18n('Create a live activity trigger')}
+          onClose={handleClose}
+        />
+
         <div className={classes.container}>
           <Formik<TriggerActivityLiveAddInput>
             initialValues={liveInitialValues}

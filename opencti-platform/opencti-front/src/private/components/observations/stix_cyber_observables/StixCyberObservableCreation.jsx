@@ -47,6 +47,7 @@ import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
+import DrawerHeader from '@common/drawer/DrawerHeader';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -82,14 +83,6 @@ const useStyles = makeStyles((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
-    padding: '10px 0',
-    paddingLeft: '5px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '5px',
   },
   container: {
     padding: '10px 20px 20px 20px',
@@ -1021,26 +1014,21 @@ const StixCyberObservableCreation = ({
           classes={{ paper: classes.drawerPaper }}
           onClose={localHandleClose}
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={localHandleClose}
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="subtitle2">{t_i18n('Create an observable')}</Typography>
-            {!isFromBulkRelation && status.type
-              ? (
-                  <BulkTextModalButton
-                    onClick={() => setBulkOpen(true)}
-                    title={t_i18n('Create multiple observables')}
-                    disabled={!bulkConf}
-                  />
-                )
-              : <></>
+          <DrawerHeader
+            title={t_i18n('Create an observable')}
+            onClose={localHandleClose}
+            endContent={
+              !isFromBulkRelation && status.type
+                ? (
+                    <BulkTextModalButton
+                      onClick={() => setBulkOpen(true)}
+                      title={t_i18n('Create multiple observables')}
+                      disabled={!bulkConf}
+                    />
+                  )
+                : <></>
             }
-          </div>
+          />
           <div className={classes.container}>
             {!status.type ? renderList() : renderForm()}
           </div>

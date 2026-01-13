@@ -14,16 +14,14 @@ const BulkTextModalButton = ({ onClick, title, disabled, sx = {} }: BulkTextModa
   const { t_i18n } = useFormatter();
 
   const bulkButton = (
-    <Box sx={{ marginLeft: 'auto', marginRight: 2, ...sx }}>
-      <Button
-        variant="tertiary"
-        onClick={onClick}
-        disabled={disabled}
+    <Button
+      variant="secondary"
+      onClick={onClick}
+      disabled={disabled}
 
-      >
-        {title || t_i18n('Create multiple entities')}
-      </Button>
-    </Box>
+    >
+      {title || t_i18n('Create multiple entities')}
+    </Button>
   );
 
   return disabled

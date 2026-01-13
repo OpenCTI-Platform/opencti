@@ -29,13 +29,7 @@ const StixCoreRelationshipCreationHeaderButtons: FunctionComponent<
   const handleCloseCreateObservable = () => setOpenCreateObservable(false);
 
   return show && (
-    <div
-      style={{
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'end',
-      }}
-    >
+    <>
       {showSDOs && (
         <StixDomainObjectCreation
           display={true}
@@ -52,14 +46,10 @@ const StixCoreRelationshipCreationHeaderButtons: FunctionComponent<
           isFromBulkRelation={undefined}
           defaultMarkingDefinitions={undefined}
           stixDomainObjectTypes={actualTypeFilterValues}
-          controlledDialStyles={{ marginRight: '10px' }}
         />
       )}
       {showSCOs && (
-        <Button
-          onClick={handleOpenCreateObservable}
-          style={{ marginRight: '10px' }}
-        >
+        <Button onClick={handleOpenCreateObservable}>
           {t_i18n('Create an observable')}
         </Button>
       )}
@@ -75,7 +65,7 @@ const StixCoreRelationshipCreationHeaderButtons: FunctionComponent<
         type={undefined}
         defaultCreatedBy={undefined}
       />
-    </div>
+    </>
   );
 };
 

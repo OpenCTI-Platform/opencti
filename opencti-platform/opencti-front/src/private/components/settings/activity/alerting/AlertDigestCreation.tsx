@@ -1,34 +1,32 @@
-import React, { FunctionComponent } from 'react';
-import { graphql } from 'react-relay';
-import { FormikConfig, FormikHelpers } from 'formik/dist/types';
-import { Field, Form, Formik } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@common/button/IconButton';
-import { Close } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import * as Yup from 'yup';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Drawer from '@mui/material/Drawer';
+import MenuItem from '@mui/material/MenuItem';
 import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig, FormikHelpers } from 'formik/dist/types';
+import React, { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
+import * as Yup from 'yup';
+import DrawerHeader from '@common/drawer/DrawerHeader';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
+import SelectField from '../../../../../components/fields/SelectField';
+import { useFormatter } from '../../../../../components/i18n';
+import TextField from '../../../../../components/TextField';
+import type { Theme } from '../../../../../components/Theme';
+import TimePickerField from '../../../../../components/TimePickerField';
 import { handleErrorInForm } from '../../../../../relay/environment';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../../utils/store';
 import { dayStartDate, parse } from '../../../../../utils/Time';
-import { useFormatter } from '../../../../../components/i18n';
-import TimePickerField from '../../../../../components/TimePickerField';
-import SelectField from '../../../../../components/fields/SelectField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import type { Theme } from '../../../../../components/Theme';
-import TextField from '../../../../../components/TextField';
 import NotifierField from '../../../common/form/NotifierField';
-import AlertsField from './AlertsField';
-import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
+import AlertsField from './AlertsField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -52,16 +50,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
   },
   container: {
     padding: '10px 20px 20px 20px',
@@ -283,17 +271,10 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       classes={{ paper: classes.drawerPaper }}
       onClose={handleClose}
     >
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6">{t_i18n('Create a regular activity digest')}</Typography>
-      </div>
+      <DrawerHeader
+        title={t_i18n('Create a regular activity digest')}
+        onClose={handleClose}
+      />
       <div className={classes.container}>
         <Formik<TriggerDigestActivityAddInput>
           initialValues={digestInitialValues}

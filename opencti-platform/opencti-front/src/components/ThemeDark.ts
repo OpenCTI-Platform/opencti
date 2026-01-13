@@ -81,6 +81,7 @@ const ThemeDark = (
         start: '#070d19',
         end: '#0C1524',
       },
+      drawer: '#0f1d34',
     },
     text: {
       secondary: '#AFB0B6',
@@ -169,10 +170,10 @@ const ThemeDark = (
       },
     },
     h5: {
-      fontWeight: 400,
-      fontSize: 13,
-      marginTop: -4,
+      fontWeight: 700,
+      fontSize: 16,
       color: text_color,
+      fontFamily: '"Geologica", sans-serif',
       textTransform: 'lowercase',
       '&::first-letter': {
         textTransform: 'uppercase',

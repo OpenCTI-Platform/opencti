@@ -199,7 +199,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
           )}
           <div className={classes.buttons}>
             <Button
-              color="primary"
+              variant="secondary"
               onClick={() => {
                 notifierConfiguration.current = JSON.stringify(
                   formRef.current?.state.formData,
@@ -212,6 +212,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
               {t_i18n('Test')}
             </Button>
             <Button
+              variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
               classes={{ root: classes.button }}

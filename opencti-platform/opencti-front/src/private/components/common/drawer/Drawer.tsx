@@ -1,16 +1,15 @@
-import React, { CSSProperties, useEffect, useState, forwardRef } from 'react';
+import DrawerHeader from '@common/drawer/DrawerHeader';
+import { Add, Edit } from '@mui/icons-material';
 import DrawerMUI from '@mui/material/Drawer';
-import makeStyles from '@mui/styles/makeStyles';
-import IconButton from '@common/button/IconButton';
-import { Add, Close, Edit } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
+import { createStyles, useTheme } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
-import { createStyles } from '@mui/styles';
-import { GenericContext } from '../model/GenericContextModel';
+import React, { CSSProperties, forwardRef, useEffect, useState } from 'react';
+import { SubscriptionAvatars } from '../../../../components/Subscription';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
+import { GenericContext } from '../model/GenericContextModel';
 
 export enum DrawerVariant {
   create = 'create',
@@ -47,7 +46,7 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     alignItems: 'center',
   },
   container: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(3),
     height: '100%',
     overflowY: 'auto',
   },
@@ -104,6 +103,8 @@ const Drawer = forwardRef(({
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
+
+  const theme = useTheme<Theme>();
   const classes = useStyles({ bannerHeightNumber });
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
@@ -169,19 +170,25 @@ const Drawer = forwardRef(({
         onClick={(e) => e.stopPropagation()}
         PaperProps={{ ref }}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            onClick={handleClose}
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>{title}</Typography>
-          {context && <SubscriptionAvatars context={context} />}
-          {header}
+        <DrawerHeader
+          title={title}
+          endContent={(
+            <>
+              {context && <SubscriptionAvatars context={context} />}
+              {header}
+            </>
+          )}
+          onClose={handleClose}
+        />
+        <div
+          className={classes.container}
+          style={{
+            ...containerStyle,
+            backgroundColor: theme.palette.background.drawer,
+          }}
+        >
+          {component}
         </div>
-        <div className={classes.container} style={containerStyle}>{component}</div>
       </DrawerMUI>
     </>
   );

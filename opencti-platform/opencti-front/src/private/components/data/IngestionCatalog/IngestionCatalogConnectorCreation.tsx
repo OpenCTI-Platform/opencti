@@ -252,54 +252,54 @@ const IngestionCatalogConnectorCreation = ({
       open={open}
       onClose={onClose}
       header={(
-        <div style={{ position: 'absolute', right: theme.spacing(1) }}>
-          <Stack direction="row" alignItems="center">
-            <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
-              <Button
-                variant="secondary"
+        <Stack direction="row" alignItems="center" gap={1}>
+          <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
+            <Button
+              variant="secondary"
+              component={Link}
+              size="small"
+              to={buildConnectorsUrl()}
+              startIcon={<HubOutlined />}
+              color="warning"
+              disabled={deploymentCount === 0}
+            >
+              {`${deploymentCount} ${t_i18n('instances deployed')}`}
+            </Button>
+          </Tooltip>
+
+          <Tooltip title={t_i18n('Vendor contact')}>
+            <span> {/** keep span so tooltip is still displayed if button is disabled * */}
+              <IconButton
+                variant="tertiary"
+                aria-label="Vendor contact"
                 component={Link}
-                size="small"
-                to={buildConnectorsUrl()}
-                startIcon={<HubOutlined />}
-                color="warning"
-                disabled={deploymentCount === 0}
+                to={connector.subscription_link}
+                target="blank"
+                rel="noopener noreferrer"
+                disabled={!connector.subscription_link}
+                size="default"
               >
-                {`${deploymentCount} ${t_i18n('instances deployed')}`}
-              </Button>
-            </Tooltip>
+                <Launch />
+              </IconButton>
+            </span>
+          </Tooltip>
 
-            <Tooltip title={t_i18n('Vendor contact')}>
-              <span> {/** keep span so tooltip is still displayed if button is disabled * */}
-                <IconButton
-                  variant="tertiary"
-                  aria-label="Vendor contact"
-                  component={Link}
-                  to={connector.subscription_link}
-                  target="blank"
-                  rel="noopener noreferrer"
-                  disabled={!connector.subscription_link}
-                >
-                  <Launch />
-                </IconButton>
-              </span>
-            </Tooltip>
-
-            <Tooltip title={t_i18n('Source code')}>
-              <span>
-                <Button
-                  variant="tertiary"
-                  aria-label="Go to"
-                  component={Link}
-                  to={connector.source_code}
-                  target="blank"
-                  rel="noopener noreferrer"
-                >
-                  <LibraryBooksOutlined />
-                </Button>
-              </span>
-            </Tooltip>
-          </Stack>
-        </div>
+          <Tooltip title={t_i18n('Source code')}>
+            <span>
+              <IconButton
+                variant="tertiary"
+                aria-label="Go to"
+                component={Link}
+                to={connector.source_code}
+                target="blank"
+                rel="noopener noreferrer"
+                size="default"
+              >
+                <LibraryBooksOutlined />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Stack>
       )}
     >
       <Stack gap={1}>
