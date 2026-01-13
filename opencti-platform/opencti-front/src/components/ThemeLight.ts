@@ -1,17 +1,17 @@
 import { buttonClasses } from '@mui/material/Button';
 import type { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
-import LogoText from '../static/images/logo_text_light.png';
-import LogoCollapsed from '../static/images/logo_light.png';
+import LogoText from '../static/images/logo_text_light.svg';
+import LogoCollapsed from '../static/images/logo_light.svg';
 import { hexToRGB } from '../utils/Colors';
 import { alpha, lighten } from '@mui/material';
 
 const EE_COLOR = '#00BD94';
 
-export const THEME_LIGHT_DEFAULT_BACKGROUND = '#ececf2'; // '#f8f8f8'
+export const THEME_LIGHT_DEFAULT_BACKGROUND = '#ececf2';
 export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
-const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8'; // '#001bda'
-const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94'; // '#0c7e69'
+const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8';
+const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94';
 const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
 const THEME_LIGHT_DEFAULT_TEXT = '#18191B';
 const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
@@ -46,9 +46,15 @@ const ThemeLight = (
       dark: '#881106',
     },
     warn: {
-      main: '#ffa726',
+      main: '#E6700F',
     },
-    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#d1584f', contrastText: '#000000', text: { primary: '#d1584f' } },
+    dangerZone: {
+      main: '#E51E10',
+      light: '#F8958C',
+      dark: '#881106',
+      contrastText: '#000000',
+      text: { primary: '#881106' },
+    },
     success: { main: '#1CA55E', dark: '#0D7E39' },
     primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#7587FF' },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
@@ -68,12 +74,9 @@ const ThemeLight = (
     ai: {
       main: '#5E1AD5',
       light: '#D6C2FA',
-      dark: '#B286FF',
+      dark: '#3C108C',
       contrastText: '#000000',
       background: 'rgba(221, 225, 254, 0.94)',
-      text: {
-        primary: '#673ab7',
-      },
     },
     ee: {
       main: EE_COLOR,
@@ -96,7 +99,7 @@ const ThemeLight = (
     },
     text: {
       secondary: '#494A50',
-      light: '#494A50',
+      light: '#F2F2F3',
     },
     leftBar: {
       header: {
@@ -110,8 +113,8 @@ const ThemeLight = (
       medium: '#F2BE3A',
       low: '#1CA55E',
       info: '#00719E',
-      none: '#62636A', // #424242
-      default: '#ECECF2', // #DDE1FE
+      none: '#62636A',
+      default: '#ECECF2',
     },
   },
   tag: {
