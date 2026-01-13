@@ -85,7 +85,7 @@ export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed): stri
 
 const initHttpRollingFeeds = (app: Express.Application) => {
   app.get(`${basePath}/feeds/:id`, async (req: Express.Request, res: Express.Response) => {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     res.set({ 'content-type': 'text/plain; charset=utf-8' });
     try {
       const context = await createAuthenticatedContext(req, res, 'rolling_feeds');

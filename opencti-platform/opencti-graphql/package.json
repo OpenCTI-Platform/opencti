@@ -212,6 +212,7 @@
     "chokidar": "5.0.0",
     "cookie": "1.1.1",
     "cross-fetch": "4.1.0",
+    "ioredis": "5.8.2",
     "jose": "5.10.0",
     "json5": "2.2.3",
     "@datadog/pprof": "patch:@datadog/pprof@5.13.1#./patch/@datadog-pprof.patch",
