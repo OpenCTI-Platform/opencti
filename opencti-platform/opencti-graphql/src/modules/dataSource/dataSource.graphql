@@ -199,6 +199,7 @@ input DataSourceAddInput {
     filesMarkings: [[String]]
     x_opencti_workflow_id: String
     x_opencti_modified_at: DateTime
+    upsertOperations: [EditInput!]
 }
 
 type Mutation {

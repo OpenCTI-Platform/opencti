@@ -251,6 +251,7 @@ input CaseRftAddInput {
   takedown_types: [String!]
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {

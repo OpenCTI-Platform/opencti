@@ -199,6 +199,7 @@ input NarrativeAddInput {
     filesMarkings: [[String]]
     x_opencti_modified_at: DateTime
     x_opencti_workflow_id: String
+    upsertOperations: [EditInput!]
 }
 
 type Mutation {

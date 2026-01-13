@@ -647,6 +647,7 @@ class StixSightingRelationship:
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         self.opencti.app_logger.info(
             "Creating stix_sighting", {"from_id": from_id, "to_id": to_id}
@@ -685,6 +686,7 @@ class StixSightingRelationship:
                     "x_opencti_modified_at": x_opencti_modified_at,
                     "objectOrganization": granted_refs,
                     "update": update,
+                    "upsertOperations": upsert_operations,
                 }
             },
         )

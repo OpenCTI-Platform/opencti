@@ -255,6 +255,7 @@ input IndicatorAddInput {
   files: [Upload]
   filesMarkings: [[String]]
   basedOn: [String!]
+  upsertOperations: [EditInput!]
 }
 
 type Query {

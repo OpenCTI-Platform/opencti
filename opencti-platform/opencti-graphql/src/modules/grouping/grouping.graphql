@@ -274,6 +274,7 @@ input GroupingAddInput {
     files: [Upload]
     filesMarkings: [[String]]
     authorized_members: [MemberAccessInput!]
+    upsertOperations: [EditInput!]
 }
 
 type Mutation {

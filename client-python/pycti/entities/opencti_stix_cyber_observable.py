@@ -327,6 +327,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         resolve_result_indicators = kwargs.get("resolve_result_indicators", True)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         create_indicator = (
             observable_data["x_opencti_create_indicator"]
@@ -443,6 +444,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 "objectLabel": object_label,
                 "externalReferences": external_references,
                 "update": update,
+                "upsertOperations": upsert_operations,
             }
             query = (
                 """
@@ -458,6 +460,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         $objectOrganization: [String],
                         $externalReferences: [String],
                         $update: Boolean,
+                        $upsertOperations: [EditInput!],
                         $AutonomousSystem: AutonomousSystemAddInput,
                         $Directory: DirectoryAddInput,
                         $DomainName: DomainNameAddInput,
@@ -502,6 +505,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                             objectMarking: $objectMarking,
                             objectLabel: $objectLabel,
                             update: $update,
+                            upsertOperations: $upsertOperations,
                             externalReferences: $externalReferences,
                             objectOrganization: $objectOrganization,
                             AutonomousSystem: $AutonomousSystem,

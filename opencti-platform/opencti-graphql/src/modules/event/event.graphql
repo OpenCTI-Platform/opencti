@@ -201,6 +201,7 @@ input EventAddInput {
     fileMarkings: [String]
     files: [Upload]
     filesMarkings: [[String]]
+    upsertOperations: [EditInput!]
 }
 
 type Mutation {

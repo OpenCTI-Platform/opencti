@@ -742,6 +742,7 @@ class StixCoreRelationship:
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         coverage_information = kwargs.get("coverage_information", None)
         update = kwargs.get("update", False)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         self.opencti.app_logger.info(
             "Creating stix_core_relationship",
@@ -788,6 +789,7 @@ class StixCoreRelationship:
                     "x_opencti_modified_at": x_opencti_modified_at,
                     "coverage_information": coverage_information,
                     "update": update,
+                    "upsertOperations": upsert_operations,
                 }
             },
         )
@@ -1371,6 +1373,12 @@ class StixCoreRelationship:
                         "modified_at", stix_relation
                     )
                 )
+            if "opencti_upsert_operations" not in stix_relation:
+                stix_relation["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_relation
+                    )
+                )
 
             raw_coverages = (
                 stix_relation["coverage"] if "coverage" in stix_relation else []
@@ -1465,6 +1473,11 @@ class StixCoreRelationship:
                     else None
                 ),
                 update=update,
+                upsert_operations=(
+                    stix_relation["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_relation
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(

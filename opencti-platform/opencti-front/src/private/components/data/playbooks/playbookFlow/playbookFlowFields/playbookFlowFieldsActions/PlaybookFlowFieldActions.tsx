@@ -24,7 +24,6 @@ import { isEmptyField } from '../../../../../../../utils/utils';
 import type { Theme } from '../../../../../../../components/Theme';
 import SelectField from '../../../../../../../components/fields/SelectField';
 import { attributesMultiple, PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
-import PlaybookActionAlerts from './PlaybookActionAlerts';
 import useActionFieldOptions from './useActionFieldOptions';
 import PlaybookActionValueField from './PlaybookActionValueField';
 
@@ -83,7 +82,6 @@ const PlaybookFlowFieldActions = ({
 
             return (
               <div key={i}>
-                <PlaybookActionAlerts action={action} />
                 <div style={{
                   position: 'relative',
                   width: '100%',

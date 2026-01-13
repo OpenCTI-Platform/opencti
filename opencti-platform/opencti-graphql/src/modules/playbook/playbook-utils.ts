@@ -74,6 +74,17 @@ export const convertMembersToUsers = async (
   return R.uniqBy(R.prop('id'), users);
 };
 
+export const applyOperationFieldPatch = (element: StixObject, patchObject: {
+  key: string;
+  value: any[];
+  operation: 'add' | 'replace' | 'remove';
+}[]) => {
+  if (!element.extensions[STIX_EXT_OCTI].opencti_upsert_operations) {
+    element.extensions[STIX_EXT_OCTI].opencti_upsert_operations = [];
+  }
+  element.extensions[STIX_EXT_OCTI].opencti_upsert_operations.push(...patchObject);
+};
+
 export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkDefinition[]) => {
   // Resolve all nodes to delete
   const linksToDelete = links;
@@ -91,7 +102,7 @@ export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links
     childrenNodes = definition.nodes.filter((n) => linksToDelete.map((o) => o.to.id).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
     if (childrenNodes.length > 0) {
       nodesToDelete.push(...childrenNodes);
-      // eslint-disable-next-line @typescript-eslint/no-loop-func
+
       childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
     } else {
       childrenLinks = [];
