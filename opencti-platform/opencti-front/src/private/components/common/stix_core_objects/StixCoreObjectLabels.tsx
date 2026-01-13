@@ -135,7 +135,7 @@ const StixCoreObjectLabels = ({
             e.stopPropagation();
             onClick?.('objectLabel', null, 'eq');
           }}
-          color="#1C2F49"
+          color={theme.palette.severity?.default}
         />
       )}
     </>

@@ -11,7 +11,7 @@ const EE_COLOR = '#00f18d';
 export const THEME_DARK_DEFAULT_BACKGROUND = '#070d19';
 export const THEME_DARK_DEFAULT_BODY_END_GRADIENT = '#0C1524';
 export const THEME_DARK_DEFAULT_PRIMARY = '#0fbcff';
-export const THEME_DARK_DEFAULT_SECONDARY = '#00f18d'; // '#00f1bd'
+export const THEME_DARK_DEFAULT_SECONDARY = '#00f18d';
 export const THEME_DARK_DEFAULT_ACCENT = '#0f1e38';
 export const THEME_DARK_DEFAULT_PAPER = '#09101e';
 export const THEME_DARK_DEFAULT_TEXT = '#F2F2F3';
@@ -104,13 +104,13 @@ const ThemeDark = (
       popoverItem: '#070D19',
     },
     severity: {
-      critical: '#F14337', // #EE3838
+      critical: '#F14337',
       high: '#E6700F',
-      medium: '#F2BE3A', // #E1B823
-      low: '#17AB1F', // #16AD34
-      info: '#4DCCFF', // #1565c0
-      none: '#363B46', // #424242
-      default: '#004C66', // #1C2F49
+      medium: '#F2BE3A',
+      low: '#17AB1F',
+      info: '#4DCCFF',
+      none: '#363B46',
+      default: '#004C66',
     },
   },
   tag: {

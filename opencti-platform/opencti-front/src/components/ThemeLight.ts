@@ -105,11 +105,11 @@ const ThemeLight = (
       popoverItem: '#ECECF2',
     },
     severity: {
-      critical: '#F14337', // #EE3838
+      critical: '#F14337',
       high: '#E6700F',
-      medium: '#F2BE3A', // #E1B823
-      low: '#1CA55E', // #16AD34
-      info: '#00719E', // #1565c0
+      medium: '#F2BE3A',
+      low: '#1CA55E',
+      info: '#00719E',
       none: '#62636A', // #424242
       default: '#ECECF2', // #DDE1FE
     },
