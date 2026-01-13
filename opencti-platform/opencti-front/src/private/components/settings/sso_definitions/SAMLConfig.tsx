@@ -12,7 +12,7 @@ import TextField from '../../../../components/TextField';
 interface Props {
   updateField: (field: keyof SSODefinitionFormValues, value: unknown) => void;
 }
-const SAMLCreation = ({ updateField }: Props) => {
+const SAMLConfig = ({ updateField }: Props) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -232,4 +232,4 @@ const SAMLCreation = ({ updateField }: Props) => {
   );
 };
 
-export default SAMLCreation;
+export default SAMLConfig;

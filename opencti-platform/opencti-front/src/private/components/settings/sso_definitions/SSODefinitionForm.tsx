@@ -5,7 +5,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import SwitchField from '../../../../components/fields/SwitchField';
-import SAMLCreation from '@components/settings/sso_definitions/SAMLCreation';
 import Typography from '@mui/material/Typography';
 import { IconButton } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
@@ -15,6 +14,7 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
 import { SSODefinitionEditionFragment$data } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 import TextField from '../../../../components/TextField';
+import SAMLConfig from '@components/settings/sso_definitions/SAMLConfig';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -213,7 +213,7 @@ const SSODefinitionForm = ({
                 label={t_i18n('Enable SAML authentication')}
                 containerstyle={{ marginLeft: 2, marginTop: 20 }}
               />
-              {selectedStrategy === 'SAML' && <SAMLCreation updateField={updateField} />}
+              {selectedStrategy === 'SAML' && <SAMLConfig updateField={updateField} />}
             </>
           )}
           {currentTab === 1 && (
