@@ -1,8 +1,8 @@
 import { buttonClasses } from '@mui/material/Button';
 import type { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
-import LogoText from '../static/images/logo_text_dark.png';
-import LogoCollapsed from '../static/images/logo_dark.png';
+import LogoText from '../static/images/logo_text_dark.svg';
+import LogoCollapsed from '../static/images/logo_dark.svg';
 import { hexToRGB } from '../utils/Colors';
 import { alpha, lighten } from '@mui/material';
 
@@ -46,9 +46,14 @@ const ThemeDark = (
       dark: '#881106',
     },
     warn: {
-      main: '#ffa726',
+      main: '#E6700F',
     },
-    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#f44336', contrastText: '#000000', text: { primary: '#fbc2be' } },
+    dangerZone: {
+      main: '#F44336',
+      light: '#F8958C',
+      dark: '#881106',
+      contrastText: '#000000',
+      text: { primary: '#F8958C' } },
     success: { main: '#17AB1F', dark: '#094E0B' },
     primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#B2ECFF' },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
@@ -58,7 +63,7 @@ const ThemeDark = (
       secondary: hexToRGB((secondary || THEME_DARK_DEFAULT_SECONDARY), 0.3),
       pagination: hexToRGB('#ffffff', 0.5),
       paper: hexToRGB('#ffffff', 0.12),
-      main: '#2B3447',
+      main: '#252A35',
     },
     pagination: {
       main: '#ffffff',
@@ -67,12 +72,9 @@ const ThemeDark = (
     ai: {
       main: '#B286FF',
       light: '#D6C2FA',
-      dark: '#B286FF',
+      dark: '#5E1AD5',
       contrastText: '#000000',
       background: 'rgba(28, 47, 73, 0.94)',
-      text: {
-        primary: '#B286FF',
-      },
     },
     ee: {
       main: EE_COLOR,
@@ -86,7 +88,7 @@ const ThemeDark = (
       nav: nav || THEME_DARK_DEFAULT_NAV,
       accent: accent || THEME_DARK_DEFAULT_ACCENT,
       shadow: 'rgba(200, 200, 200, 0.15)',
-      secondary: '#0D182A',
+      secondary: '#0C1524',
       drawer: '#0f1d34',
       gradient: {
         start: background || THEME_DARK_DEFAULT_BACKGROUND,

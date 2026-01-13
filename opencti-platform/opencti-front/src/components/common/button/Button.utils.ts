@@ -2,6 +2,7 @@ import { Theme } from '@mui/material/styles';
 import type { GradientVariant, ColorDefinition, GradientColor, ButtonSize, ButtonColorKey } from './Button.types';
 
 export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorDefinition> => {
+  console.log(theme.palette.primary.main);
   return {
     default: {
       main: theme.palette.primary.main,
@@ -19,10 +20,10 @@ export const getColorDefinitions = (theme: Theme): Record<ButtonColorKey, ColorD
     },
     ai: {
       main: theme.palette.ai?.main ?? '#B286FF',
-      hover: theme.palette?.ai?.dark ?? '#B286FF',
+      hover: theme.palette?.ai?.dark ?? '#5E1AD5',
       focus: theme.palette?.ai?.main ?? '#B286FF',
-      text: theme.palette.ai?.contrastText ?? '#B286FF',
-      border: theme.palette?.ai?.light ?? '#B286FF',
+      text: theme.palette.ai?.contrastText ?? '#000000',
+      border: theme.palette?.ai?.light ?? '#D6C2FA',
     },
     primary: {
       main: theme.palette.primary.main,
