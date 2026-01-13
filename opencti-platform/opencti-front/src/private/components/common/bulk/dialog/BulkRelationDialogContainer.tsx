@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Button from '@common/button/Button';
+import Button, { ButtonVariant } from '@common/button/Button';
 import BulkRelationDialog from '@components/common/bulk/dialog/BulkRelationDialog';
 import { PaginationOptions } from 'src/components/list_lines';
 import { useFormatter } from 'src/components/i18n';
@@ -15,15 +15,9 @@ type BulkRelationDialogContainerProps = {
   paginationOptions: PaginationOptions;
   targetObjectTypes: string[];
   onBulkCreate: () => void;
+  buttonVariant?: ButtonVariant;
 };
 
-const inlinedStyle = {
-  button: {
-    display: 'flex',
-    float: 'right',
-    alignItems: 'center',
-  },
-};
 const BulkRelationDialogContainer = ({
   stixDomainObjectId,
   stixDomainObjectName,
@@ -34,6 +28,7 @@ const BulkRelationDialogContainer = ({
   paginationOptions,
   targetObjectTypes,
   onBulkCreate,
+  buttonVariant = 'secondary',
 }: BulkRelationDialogContainerProps) => {
   const { t_i18n } = useFormatter();
 
@@ -45,7 +40,10 @@ const BulkRelationDialogContainer = ({
 
   return (
     <>
-      <Button onClick={handleOpenDialog} variant="secondary" sx={inlinedStyle.button} size="small">
+      <Button
+        onClick={handleOpenDialog}
+        variant={buttonVariant}
+      >
         {t_i18n('Create relations in bulk')}
       </Button>
       {isDialogOpen && (

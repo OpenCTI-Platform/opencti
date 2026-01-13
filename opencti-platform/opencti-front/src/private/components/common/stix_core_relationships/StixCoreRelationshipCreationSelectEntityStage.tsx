@@ -40,6 +40,7 @@ interface StixCoreRelationshipCreationSelectEntityStageProps {
   virtualEntityTypes: string[];
   handleClose: () => void;
   setSearchPaginationOptions: (p: PaginationOptions) => void;
+  additionalHeaderButtons?: React.ReactNode[];
 }
 
 const fragment = graphql`
@@ -63,6 +64,7 @@ const StixCoreRelationshipCreationSelectEntityStage: FunctionComponent<
   virtualEntityTypes,
   handleClose,
   setSearchPaginationOptions,
+  additionalHeaderButtons = [],
 }) => {
   const { t_i18n } = useFormatter();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
@@ -198,7 +200,7 @@ const StixCoreRelationshipCreationSelectEntityStage: FunctionComponent<
               preloadedPaginationProps={preloadedPaginationProps}
               entityTypes={virtualEntityTypes}
               availableEntityTypes={virtualEntityTypes}
-              additionalHeaderButtons={[(
+              additionalHeaderButtons={[
                 <BulkRelationDialogContainer
                   targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
                   paginationOptions={searchPaginationOptions}
@@ -210,8 +212,9 @@ const StixCoreRelationshipCreationSelectEntityStage: FunctionComponent<
                   defaultRelationshipType={allowedRelationshipTypes?.[0]}
                   selectedEntities={targetEntities}
                   onBulkCreate={handleClose}
-                />
-              )]}
+                />,
+                ...additionalHeaderButtons,
+              ]}
             />
           )}
         </UserContext.Consumer>

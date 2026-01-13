@@ -369,7 +369,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <>
-            <DialogTitle>{t_i18n('Create a live trigger fdsfsd')}</DialogTitle>
+            <DialogTitle>{t_i18n('Create a live trigger')}</DialogTitle>
             <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
             <DialogActions classes={{ root: classes.dialogActions }}>
               <Button onClick={handleReset} disabled={isSubmitting}>
