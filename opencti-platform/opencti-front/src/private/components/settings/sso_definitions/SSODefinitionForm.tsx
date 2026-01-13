@@ -131,6 +131,8 @@ const SSODefinitionForm = ({
   const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[]);
   const groupsPath = data?.groups_management.groups_path
   const groupsMapping = data?.groups_management.groups_mapping;
+  const organizationsPath = data?.organizations_management.organizations_path
+  const organizationsMapping = data?.organizations_management.organizations_mapping;
 
 
   if (data) {
@@ -155,6 +157,8 @@ const SSODefinitionForm = ({
     initialValues.advancedConfigurations = advancedConfigurations;
     initialValues.groups_path = groupsPath ?? [];
     initialValues.groups_mapping = groupsMapping ?? [];
+    initialValues.organizations_path = organizationsPath ?? [];
+    initialValues.organizations_mapping = organizationsMapping ?? [];
   }
 
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
@@ -259,9 +263,7 @@ const SSODefinitionForm = ({
                         aria-label="Add a new value"
                         size="large"
                         style={{ marginBottom: 12 }}
-                        onClick={() =>
-                          push('')
-                        }
+                        onClick={() => push('')}
                       >
                         <Add fontSize="small" />
                       </IconButton>
@@ -345,6 +347,7 @@ const SSODefinitionForm = ({
                   component={TextField}
                   variant="standard"
                   name="organizations_path"
+                  onSubmit={updateField}
                   label={t_i18n('Attribute/path in token')}
                   fullWidth
                 />
@@ -365,9 +368,7 @@ const SSODefinitionForm = ({
                         aria-label="Add a new value"
                         size="large"
                         style={{ marginBottom: 12 }}
-                        onClick={() =>
-                          push({ value: '', auto_create: 'Boolean' })
-                        }
+                        onClick={() => push('')}
                       >
                         <Add fontSize="small" />
                       </IconButton>
@@ -388,6 +389,7 @@ const SSODefinitionForm = ({
                               variant="standard"
                               name={`organizations_mapping[${index}]`}
                               label={t_i18n('Value organizations mappings')}
+                              onSubmit={() => updateField('organizations_mapping', form.values.organizations_mapping)}
                               fullWidth
                               style={{ marginTop: 20 }}
                             />
@@ -407,7 +409,13 @@ const SSODefinitionForm = ({
                               color="primary"
                               aria-label={t_i18n('Delete')}
                               style={{ marginTop: 30, marginLeft: 50 }}
-                              onClick={() => remove(index)}
+                              onClick={() => {
+                                remove(index)
+                                remove(index);
+                                const organizationsMapping = [...form.values.organizations_mapping];
+                                organizationsMapping.splice(index,1)
+                                updateField('organizations_mapping', organizationsMapping)
+                              }}
                             >
                               <Delete fontSize="small" />
                             </IconButton>

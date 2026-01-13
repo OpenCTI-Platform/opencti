@@ -68,6 +68,7 @@ const SSODefinitionEdition = ({
   const onEdit = (field: SSOEditionFormInputKeys, value: unknown) => {
     const configurationKeyList = ['privateKey', 'providerMethod', 'issuer', 'callbackUrl', 'signingCert', 'idpCert', 'ssoBindingType', 'entryPoint'];
     const groupManagementKeyList = ['groups_path', 'groups_mapping'];
+    const organizationsManagementKeyList = ['organizations_path', 'organizations_mapping'];
 
     const input: { key: string; value: unknown[] } = { key: field, value: [value] };
 
@@ -87,13 +88,19 @@ const SSODefinitionEdition = ({
 
     if (groupManagementKeyList.includes(field)) {
       input.key = 'groups_management';
-
       input.value = [{
         ...sso.groups_management,
         [field]: field === 'groups_mapping' ? value : [value],
       }];
     }
 
+    if (organizationsManagementKeyList.includes(field)) {
+      input.key = 'organizations_management';
+      input.value = [{
+        ...sso.organizations_management,
+        [field]: field === 'organizations_mapping' ? value : [value],
+      }];
+    }
 
     editMutation({
       variables: { id: sso.id, input: [input] },
