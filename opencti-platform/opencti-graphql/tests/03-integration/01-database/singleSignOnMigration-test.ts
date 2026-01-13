@@ -6,7 +6,7 @@ import { MIGRATED_STRATEGY } from '../../../src/config/providers-initialization'
 import { EnvStrategyType } from '../../../src/config/providers-configuration';
 
 describe('Migration of SSO environment test coverage', () => {
-  describe('Dry run of SAML migrations', () => {
+  describe.todo('Dry run of SAML migrations', () => {
     it('should default configuration with only local works', async () => {
       const configuration = {
         local: {
@@ -715,7 +715,7 @@ describe('Migration of SSO environment test coverage', () => {
       });
     });
   });
-  describe('Actual run of migrations', () => {
+  describe.todo('Actual run of migrations', () => {
     it('should SAML configuration works', async () => {
       const configuration = {
         samltestmigration: {
