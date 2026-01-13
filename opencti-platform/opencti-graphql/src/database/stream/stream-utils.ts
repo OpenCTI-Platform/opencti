@@ -103,7 +103,6 @@ export const buildStixUpdateEvent = (
   user: AuthUser,
   previousStix: StixCoreObject,
   stix: StixCoreObject,
-  message: string,
   changes: Change[],
   opts: UpdateEventOpts = {},
 ): UpdateEvent => {
@@ -122,7 +121,7 @@ export const buildStixUpdateEvent = (
     version: EVENT_CURRENT_VERSION,
     type: EVENT_TYPE_UPDATE,
     scope,
-    message,
+    message: 'Update ' + changes.length + ' elements',
     origin: user.origin,
     data: stix,
     commit: opts.commit,
@@ -136,11 +135,11 @@ export const buildStixUpdateEvent = (
     },
   };
 };
-export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, changes: Change[], opts: UpdateEventOpts): UpdateEvent => {
+export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, changes: Change[], opts: UpdateEventOpts): UpdateEvent => {
   // Build and send the event
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
-  return buildStixUpdateEvent(user, previousStix, stix, message, changes, opts);
+  return buildStixUpdateEvent(user, previousStix, stix, changes, opts);
 };
 // Create
 export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): StreamDataEvent => {

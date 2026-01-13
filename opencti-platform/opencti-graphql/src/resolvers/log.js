@@ -1,12 +1,15 @@
-import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeries, findAudits, findHistory, logsWorkerConfig } from '../domain/log';
+import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeries, findAudits, findHistory, logsWorkerConfig, findById, findAuditById } from '../domain/log';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { logFrontend } from '../config/conf';
 import { filterMembersWithUsersOrgs } from '../utils/access';
+import { enrichContextDataWithMessageAndChanges } from '../database/generate-message';
 
 const logResolvers = {
   Query: {
     logs: (_, args, context) => findHistory(context, context.user, args),
+    log: (_, args, context) => findById(context, context.user, args.id),
+    audit: (_, args, context) => findAuditById(context, context.user, args.id),
     audits: (_, args, context) => findAudits(context, context.user, args),
     auditsNumber: (_, args, context) => auditsNumber(context, context.user, args),
     auditsTimeSeries: (_, args, context) => auditsTimeSeries(context, context.user, args),
@@ -23,7 +26,7 @@ const logResolvers = {
       const filteredUser = await filterMembersWithUsersOrgs(context, context.user, [realUser]);
       return filteredUser[0];
     },
-    context_data: (log, _) => (log.context_data?.id ? { ...log.context_data, entity_id: log.context_data.id } : log.context_data),
+    context_data: (log, args, _) => enrichContextDataWithMessageAndChanges(log, args),
     raw_data: (log, _, __) => JSON.stringify(log, null, 2),
     context_uri: (log, _, __) => (log.context_data.id && log.entity_type === 'History' ? `/dashboard/id/${log.context_data.id}` : undefined),
     event_status: (log, _, __) => log.event_status ?? 'success',

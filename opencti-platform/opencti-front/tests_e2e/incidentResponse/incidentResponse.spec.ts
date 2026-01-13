@@ -170,7 +170,7 @@ test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
   const updateDate = incidentResponseDetailsPage.getTextForHeading('Modification date', now);
   await expect(updateDate).toBeVisible();
 
-  const historyDescription = incidentResponseDetailsPage.getTextForHeading('Most recent history', `admin creates a Case-Incident ${incidentResponseName}`);
+  const historyDescription = incidentResponseDetailsPage.getTextForHeading('Most recent history', `creates a Case-Incident \`${incidentResponseName}\``);
   await expect(historyDescription).toBeVisible();
   const historyDate = incidentResponseDetailsPage.getTextForHeading('Most recent history', format(new Date(), 'MMM d, yyyy'));
   await expect(historyDate).toBeVisible();

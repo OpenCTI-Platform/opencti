@@ -9,10 +9,12 @@ import {
   entityLocationType,
   files,
   iAliasedIds,
+  type IdAttribute,
   identityClass,
   lang,
   modified,
   revoked,
+  UNRESOLVED_ATTRIBUTE,
   xOpenctiAliases,
   xOpenctiModifiedAt,
   xOpenctiReliability,
@@ -44,6 +46,37 @@ import {
 } from '../../schema/stixDomainObject';
 import { CVSS_SEVERITY_VALUES } from '../../domain/vulnerability';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
+import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
+import { X_WORKFLOW_ID } from '../../schema/identifier';
+import { isEntityStatus, isEntityTemplate } from '../workflow/workflow-types';
+import { DefaultFormating } from '../../utils/humanize';
+
+const workflowId: IdAttribute = {
+  name: X_WORKFLOW_ID,
+  label: 'Workflow status',
+  type: 'string',
+  format: 'id',
+  entityTypes: [ENTITY_TYPE_STATUS],
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: true,
+  isFilterable: false,
+  translate: async (item, loaderIds) => {
+    const status = await loaderIds([item]);
+    if (status[item] && isEntityStatus(status[item])) {
+      const templateId = status[item].template_id;
+      const template = await loaderIds([templateId]);
+      if (template[templateId] && isEntityTemplate(template[templateId])) {
+        return { [item]: template[templateId].name };
+      }
+    }
+    return { [item]: UNRESOLVED_ATTRIBUTE };
+  },
+  representative: (item, translate, _ = DefaultFormating): string => {
+    return translate[item];
+  },
+};
 
 const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   created,
@@ -54,7 +87,7 @@ const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   revoked,
   files,
   { name: 'x_opencti_graph_data', label: 'Graph data', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-  { name: 'x_opencti_workflow_id', label: 'Workflow status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+  workflowId,
   {
     name: 'pir_information',
     label: 'PIR information',
@@ -96,7 +129,7 @@ schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_LOCATION, stixDomainOb
 const stixDomainObjectContainerAttributes: Array<AttributeDefinition> = [];
 schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_CONTAINER, stixDomainObjectContainerAttributes);
 
-const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
+const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> } = {
   [ENTITY_TYPE_ATTACK_PATTERN]: [
     aliases,
     iAliasedIds,

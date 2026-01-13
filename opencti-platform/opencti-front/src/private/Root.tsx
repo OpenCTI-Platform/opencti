@@ -4,10 +4,10 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscriptio
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
 import { LICENSE_OPTION_TRIAL } from '@components/LicenceBanner';
-import { ConnectedIntlProvider } from '../components/AppIntlProvider';
+import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
-import { FilterDefinition, UserContext } from '../utils/hooks/useAuth';
+import { FilterDefinition, PlatformLang, UserContext } from '../utils/hooks/useAuth';
 import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
@@ -24,6 +24,8 @@ import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
 import useActiveTheme from '../utils/hooks/useActiveTheme';
 import { AppDataProvider } from '../utils/hooks/useAppData';
 import { TOP_BANNER_HEIGHT } from '../components/TopBanner';
+import defaultBrowserLang, { LANGUAGES } from '../utils/BrowserLanguage';
+import moment from 'moment-timezone';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -470,6 +472,17 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const { isReachable } = useNetworkCheck(`${settings?.platform_xtmhub_url}/health`);
   useBaseHrefAbsolute();
 
+  const platformLanguage = settings.platform_language ?? null;
+  const platformLang = platformLanguage !== null && platformLanguage !== 'auto' ? settings.platform_language : defaultBrowserLang;
+  const lang: PlatformLang = me?.language && me.language !== 'auto' ? (me.language as PlatformLang) : (platformLang as PlatformLang);
+  const supportedLocales: PlatformLang[] = availableLanguage.map(({ value }) => value);
+  const selectedLocale = supportedLocales.includes(lang) ? lang : 'en-us';
+
+  let unitSystem = me.unit_system || 'auto';
+  if (unitSystem === 'auto' || unitSystem === '%future added value') {
+    unitSystem = selectedLocale === LANGUAGES.ENGLISH ? 'Imperial' : 'Metric';
+  }
+
   return (
     <UserContext.Provider
       value={{
@@ -482,6 +495,9 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
         isXTMHubAccessible: isReachable,
         about,
         themes,
+        unitSystem,
+        locale: selectedLocale,
+        tz: moment.tz.guess(),
       }}
     >
       <StyledEngineProvider injectFirst={true}>

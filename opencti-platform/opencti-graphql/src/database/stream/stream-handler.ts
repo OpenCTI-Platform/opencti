@@ -66,13 +66,12 @@ export const storeUpdateEvent = async (
   user: AuthUser,
   previous: StoreObject,
   instance: StoreObject,
-  message: string,
   changes: Change[],
   opts: UpdateEventOpts = {},
 ) => {
   try {
     if (isStixExportableInStreamData(instance)) {
-      const event = buildUpdateEvent(user, previous, instance, message, changes, opts);
+      const event = buildUpdateEvent(user, previous, instance, changes, opts);
       await pushToStream(context, user, event, opts);
       return event;
     }
