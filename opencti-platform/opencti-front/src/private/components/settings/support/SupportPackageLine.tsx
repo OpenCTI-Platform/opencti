@@ -22,8 +22,8 @@ import { minutesBetweenDates, now } from '../../../../utils/Time';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { chipInListBasicStyle } from '../../../../utils/chipStyle';
-import { useTheme } from '@mui/material';
-import type { Theme } from 'src/components/Theme';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../components/Theme';
 
 const styles = {
   bodyItem: {

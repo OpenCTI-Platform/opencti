@@ -9,7 +9,8 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
 import TextField from '../../../../../../components/TextField';
 import JsonMapperRepresentionAttributeSelectedConfigurations from './JsonMapperRepresentionAttributeSelectedConfigurations';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -26,7 +27,7 @@ interface JsonMapperRepresentationAttributeFormProps
 const JsonMapperRepresentationAttributeForm: FunctionComponent<
   JsonMapperRepresentationAttributeFormProps
 > = ({ form, field, schemaAttribute, label, handleErrors }) => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const useStyles = makeStyles(() => ({
     container: {
       width: '100%',

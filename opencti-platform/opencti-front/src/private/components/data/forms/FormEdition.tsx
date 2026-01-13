@@ -15,7 +15,7 @@ import { formCreationQuery } from './FormCreation';
 import type { FormBuilderData, FormFieldAttribute } from './Form.d';
 import { convertFormBuilderDataToSchema } from './FormUtils';
 import Loader from '../../../../components/Loader';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/styles';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -74,7 +74,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
   handleClose,
   queryRef,
 }) => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [isSaving, setIsSaving] = useState(false);

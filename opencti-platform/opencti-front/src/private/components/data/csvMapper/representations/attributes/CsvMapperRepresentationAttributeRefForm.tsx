@@ -18,7 +18,8 @@ import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects, isStixCoreRelationships } from '../../../../../../utils/stixTypeUtils';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -36,7 +37,7 @@ interface CsvMapperRepresentationAttributeRefFormProps
 const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
   CsvMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const useStyles = makeStyles(() => ({
     container: {
       width: '100%',

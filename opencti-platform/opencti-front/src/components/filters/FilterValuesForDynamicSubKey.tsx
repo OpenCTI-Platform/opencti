@@ -12,7 +12,8 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../Loader';
 import { FilterValuesForDynamicSubKeyQuery } from './__generated__/FilterValuesForDynamicSubKeyQuery.graphql';
 import { sanitizeFilterGroupKeysForBackend } from '../../utils/filters/filtersUtils';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../components/Theme';
 
 // TODO, use MAX_RUNTIME_RESOLUTION_SIZE from backend
 const MAX_NUMBER_DYNAMIC_IDS_RESULT = 5000;
@@ -44,7 +45,7 @@ const FilterValuesForDynamicSubKeyContainer = ({
   const { stixCoreObjectsNumber } = usePreloadedQuery(filterValuesForDynamicSubKeyQuery, queryRef);
   const numberOfIdsTargeted = stixCoreObjectsNumber?.total ?? 0;
   const displayWarning = numberOfIdsTargeted > MAX_NUMBER_DYNAMIC_IDS_RESULT;
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
 
   return (
     <Fragment>

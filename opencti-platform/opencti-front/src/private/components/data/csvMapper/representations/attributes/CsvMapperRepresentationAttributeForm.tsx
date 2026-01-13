@@ -12,7 +12,8 @@ import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMa
 import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/styles';
+import { Theme } from '../../../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -30,7 +31,7 @@ const CsvMapperRepresentationAttributeForm: FunctionComponent<
   CsvMapperRepresentationAttributeFormProps
 > = ({ form, field, schemaAttribute, label, handleErrors }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const useStyles = makeStyles(() => ({
     container: {
       width: '100%',
