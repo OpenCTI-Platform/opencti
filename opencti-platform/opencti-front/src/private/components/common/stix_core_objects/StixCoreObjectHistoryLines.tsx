@@ -89,7 +89,12 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
   };
 
   return (
-    <Card title={title} action={action} padding="horizontal">
+    <Card
+      title={title}
+      action={action}
+      padding="horizontal"
+      titleAlignItems="end"
+    >
       {logs.length > 0 ? (
         <List>
           {logs.filter((l) => !!l).map((logEdge) => {

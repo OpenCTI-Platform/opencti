@@ -283,6 +283,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
 
       <Card
         title={t_i18n('Registered connectors')}
+        titleAlignItems="end"
         action={(
           <ConnectorsStatusFilters
             managedConnectorOptions={managedConnectorOptions}

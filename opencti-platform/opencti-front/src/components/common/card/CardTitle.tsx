@@ -1,23 +1,26 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import { Stack, SxProps, Typography } from '@mui/material';
+import { Stack, StackProps, SxProps, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../Theme';
 
 interface CardTitleProps extends PropsWithChildren {
   action?: ReactNode;
+  alignItems?: StackProps['alignItems'];
   sx?: SxProps;
 }
 
 const CardTitle = ({
   children,
+  alignItems = 'center',
   action,
   sx = {},
 }: CardTitleProps) => {
   const theme = useTheme<Theme>();
 
   const containerSx: SxProps = {
-    height: '19px',
+    height: alignItems !== 'center' ? 'inherit' : '19px',
     marginBottom: theme.spacing(1),
+    flex: 0,
     ...sx,
   };
 
@@ -32,7 +35,7 @@ const CardTitle = ({
     <Stack
       direction="row"
       justifyContent="space-between"
-      alignItems="center"
+      alignItems={alignItems}
       sx={containerSx}
     >
       <Typography variant="body2" sx={titleSx}>
