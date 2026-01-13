@@ -221,14 +221,14 @@ const SAMLConfig = ({ updateField }: Props) => {
                       color="primary"
                       aria-label={t_i18n('Delete')}
                       style={{ marginTop: 10 }}
-                      onClick={() => remove(index)} // Delete
-                    >
-                      <Delete fontSize="small" onClick={() => {
+                      onClick={() => {
                         remove(index);
                         const advancedConfigurations = [...form.values.advancedConfigurations];
                         advancedConfigurations.splice(index,1)
                         updateField('advancedConfigurations', advancedConfigurations)
-                      }} />
+                      }} // Delete
+                    >
+                      <Delete fontSize="small" />
                     </IconButton>
                   </div>
                 ),

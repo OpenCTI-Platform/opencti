@@ -6,7 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import SwitchField from '../../../../components/fields/SwitchField';
 import Typography from '@mui/material/Typography';
-import { IconButton } from '@mui/material';
+import { IconButton, InputAdornment  } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import React, { useState } from 'react';
@@ -16,6 +16,9 @@ import { SSODefinitionEditionFragment$data } from '@components/settings/sso_defi
 import TextField from '../../../../components/TextField';
 import { getAdvancedConfigFromData } from '@components/settings/sso_definitions/utils/getConfigAndAdvancedConfigFromData';
 import SAMLConfig from '@components/settings/sso_definitions/SAMLConfig';
+import {
+  ConfigurationTypeInput
+} from '@components/settings/sso_definitions/__generated__/SSODefinitionCreationMutation.graphql';
 
 interface SSODefinitionFormProps {
   onCancel: () => void;
@@ -110,6 +113,7 @@ const SSODefinitionForm = ({
     organizations_path: [],
     organizations_mapping: [],
   };
+
   const privateField = data?.configuration?.find((e) => e.key === 'privateKey');
   const issuerField = data?.configuration?.find((e) => e.key === 'issuer');
   const idpCertField = data?.configuration?.find((e) => e.key === 'idpCert');
@@ -124,7 +128,10 @@ const SSODefinitionForm = ({
   const forceReauthenticationField = data?.configuration?.find((e) => e.key === 'forceReauthentication');
   const enableDebugModeField = data?.configuration?.find((e) => e.key === 'enableDebugMode');
   const entryPointField = data?.configuration?.find((e) => e.key === 'entryPoint');
-  const advancedConfigurations = getAdvancedConfigFromData(data?.configuration ?? []);
+  const advancedConfigurations = getAdvancedConfigFromData((data?.configuration ?? []) as ConfigurationTypeInput[]);
+  const groupsPath = data?.groups_management.groups_path
+  const groupsMapping = data?.groups_management.groups_mapping;
+
 
   if (data) {
     initialValues.name = data.name;
@@ -145,9 +152,10 @@ const SSODefinitionForm = ({
     initialValues.entryPoint = entryPointField?.value ?? '';
     initialValues.forceReauthentication = forceReauthenticationField ? forceReauthenticationField?.value === 'true' : false;
     initialValues.enableDebugMode = enableDebugModeField ? enableDebugModeField?.value === 'true' : false;
-    initialValues.advancedConfigurations = advancedConfigurations
+    initialValues.advancedConfigurations = advancedConfigurations;
+    initialValues.groups_path = groupsPath ?? [];
+    initialValues.groups_mapping = groupsMapping ?? [];
   }
-
 
   const updateField = async (field: SSOEditionFormInputKeys, value: unknown) => {
     if (onSubmitField) {
@@ -229,6 +237,7 @@ const SSODefinitionForm = ({
                   component={TextField}
                   variant="standard"
                   name="groups_path"
+                  onSubmit={updateField}
                   label={t_i18n('Attribute/path in token')}
                   containerstyle={{ marginTop: 12 }}
                   fullWidth
@@ -251,7 +260,7 @@ const SSODefinitionForm = ({
                         size="large"
                         style={{ marginBottom: 12 }}
                         onClick={() =>
-                          push({ value: '', auto_create: 'Boolean' })
+                          push('')
                         }
                       >
                         <Add fontSize="small" />
@@ -272,6 +281,7 @@ const SSODefinitionForm = ({
                             <Field
                               component={TextField}
                               variant="standard"
+                              onSubmit={() => updateField('groups_mapping', form.values.groups_mapping)}
                               name={`groups_mapping[${index}]`}
                               label={t_i18n('Group mapping value')}
                               fullWidth
@@ -295,21 +305,25 @@ const SSODefinitionForm = ({
                               color="primary"
                               aria-label={t_i18n('Delete')}
                               style={{ marginTop: 10 }}
-                              onClick={() => remove(index)} // Delete
+                              onClick={() => {
+                                remove(index);
+                                const groupsMapping = [...form.values.groups_mapping];
+                                groupsMapping.splice(index,1)
+                                updateField('groups_mapping', groupsMapping)
+                              }} // Delete
                             >
                               <Delete fontSize="small" />
                             </IconButton>
-                            <Field
-                              component={SwitchField}
-                              variant="standard"
-                              type="checkbox"
-                              name="auto_create_group"
-                              label={t_i18n('auto-create group')}
-                              containerstyle={{ marginTop: 10 }}
-                            />
+                            {/*<Field*/}
+                            {/*  component={SwitchField}*/}
+                            {/*  variant="standard"*/}
+                            {/*  type="checkbox"*/}
+                            {/*  name="auto_create_group"*/}
+                            {/*  label={t_i18n('auto-create group')}*/}
+                            {/*  containerstyle={{ marginTop: 10 }}*/}
+                            {/*/>*/}
                           </div>
                         ),
-
                       )}
                   </>
                 )}

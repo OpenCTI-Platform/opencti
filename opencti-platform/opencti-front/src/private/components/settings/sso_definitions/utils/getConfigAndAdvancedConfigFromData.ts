@@ -4,19 +4,19 @@ import {
 
 const samlConfigKeys = [
   'privateKey',
-  "issuer",
+  'issuer',
   'idpCert',
-  "callbackUrl",
-  "wantAssertionsSigned",
-  "wantAuthnResponseSigned",
-  "loginIdpDirectly",
-  "logoutRemote",
-  "providerMethod",
-  "signingCert",
-  "ssoBindingType",
-  "forceReauthentication",
-  "enableDebugMode",
-  "entryPoint",
+  'callbackUrl',
+  'wantAssertionsSigned',
+  'wantAuthnResponseSigned',
+  'loginIdpDirectly',
+  'logoutRemote',
+  'providerMethod',
+  'signingCert',
+  'ssoBindingType',
+  'forceReauthentication',
+  'enableDebugMode',
+  'entryPoint',
 ];
 
 export const getAdvancedConfigFromData = (config: ConfigurationTypeInput[]) => {
