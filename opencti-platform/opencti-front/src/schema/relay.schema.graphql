@@ -15082,6 +15082,7 @@ type FormConnection {
 }
 
 enum FormsOrdering {
+  _score
   name
   created_at
   updated_at
