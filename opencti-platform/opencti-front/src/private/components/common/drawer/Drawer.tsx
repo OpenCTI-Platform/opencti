@@ -85,7 +85,7 @@ const getDrawerWidth = (size: DrawerSize) => {
 };
 
 // eslint-disable-next-line react/display-name
-const Drawer = forwardRef(({
+const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   title,
   children,
   open: defaultOpen = false,
@@ -97,7 +97,6 @@ const Drawer = forwardRef(({
   containerStyle,
   disabled = false,
   size = 'large',
-  sx = {},
 }: DrawerProps, ref) => {
   const {
     bannerSettings: { bannerHeightNumber },
@@ -165,20 +164,16 @@ const Drawer = forwardRef(({
         elevation={1}
         onClose={handleClose}
         onClick={(e) => e.stopPropagation()}
-        PaperProps={{ ref }}
+        // PaperProps={{ ref }}
         sx={{
           zIndex: 1202,
         }}
         slotProps={{
           paper: {
+            ref,
             sx: {
               minHeight: '100vh',
               width: getDrawerWidth(size),
-              // width: {
-
-              //   xl: '50%',
-              //   xs: '75%',
-              // },
               position: 'fixed',
               overflow: 'auto',
               transition: theme.transitions.create('width', {
@@ -187,7 +182,6 @@ const Drawer = forwardRef(({
               }),
               paddingTop: `${bannerHeightNumber}px`,
               paddingBottom: `${bannerHeightNumber}px`,
-              ...sx,
             },
           },
         }}
