@@ -1,10 +1,9 @@
-import React from 'react';
 import { useTheme } from '@mui/material/styles';
-import { Grid, Badge, Stack } from '@mui/material';
+import { Badge, Stack } from '@mui/material';
+import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';
 import stopEvent from '../utils/domEvent';
 import EnrichedTooltip from './EnrichedTooltip';
-import Tag from '@common/tag/Tag';
 
 interface Marking {
   id: string;
@@ -114,38 +113,36 @@ const ItemMarkings = ({
     <EnrichedTooltip
       placement="bottom"
       title={(
-        <Grid container={true} spacing={3}>
+        <Stack direction="row" gap={1} flexWrap="wrap">
           {markings.map((markingDefinition) => (
-            <Grid key={markingDefinition.id} item xs={6}>
-              <ChipMarking
-                markingDefinition={markingDefinition}
-                onClick={onClick}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
-    >
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Badge
-          variant={markings.length > limit ? 'dot' : 'standard'}
-          color="primary"
-          sx={{
-            '& .MuiBadge-badge': {
-              right: 8,
-              top: 4,
-            },
-          }}
-        >
-          {markings.slice(0, limit).map((markingDefinition) => (
             <ChipMarking
               key={markingDefinition.id}
               markingDefinition={markingDefinition}
               onClick={onClick}
             />
           ))}
-        </Badge>
-      </div>
+        </Stack>
+      )}
+    >
+      <Stack direction="row" gap={1} flexWrap="wrap">
+        {markings.slice(0, limit).map((markingDefinition) => (
+          <ChipMarking
+            key={markingDefinition.id}
+            markingDefinition={markingDefinition}
+            onClick={onClick}
+          />
+        ))}
+        <Badge
+          variant={markings.length > limit ? 'dot' : 'standard'}
+          color="primary"
+          sx={{
+            '& .MuiBadge-badge': {
+              right: 9,
+              top: 2,
+            },
+          }}
+        />
+      </Stack>
     </EnrichedTooltip>
   );
 };
