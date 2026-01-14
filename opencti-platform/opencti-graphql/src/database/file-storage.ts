@@ -29,7 +29,7 @@ import {
   SUPPORT_STORAGE_PATH,
 } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
-import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
@@ -37,6 +37,8 @@ import { getDraftFilePrefix, isDraftFile } from './draft-utils';
 import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload } from './raw-file-storage';
 import { promiseMap } from '../utils/promiseUtils';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
+import { getEntitiesMapFromCache } from './cache';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 // Minio configuration
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
@@ -560,10 +562,13 @@ export const upload = async (
   opts: FileUploadOpts,
 ): Promise<{ upload: LoadedFile; untouched: boolean }> => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
+  const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const normalized_file_markings = file_markings?.map((m) => (markings.get(m) ? markings.get(m)?.internal_id : m)) ?? [];
+  const filtered_markings = normalized_file_markings.filter((id) => id) as string[];
   // Verify markings
-  for (let index = 0; index < (file_markings ?? []).length; index += 1) {
-    const markingId = file_markings[index];
-    await validateMarking(context, user, markingId);
+  for (let index = 0; index < (filtered_markings ?? []).length; index += 1) {
+    const markingId = filtered_markings[index];
+    await validateMarking(context, user, markingId, markings);
   }
   const metadata: FileMetadata = { ...meta };
   if (!metadata.version) {
@@ -616,7 +621,7 @@ export const upload = async (
     information: '',
     lastModified: new Date(),
     lastModifiedSinceMin: sinceNowInMinutes(new Date()),
-    metaData: { ...fullMetadata, messages: [], errors: [], file_markings },
+    metaData: { ...fullMetadata, messages: [], errors: [], file_markings: filtered_markings },
     uploadStatus: 'complete',
   };
   await indexFileToDocument(context, file);
