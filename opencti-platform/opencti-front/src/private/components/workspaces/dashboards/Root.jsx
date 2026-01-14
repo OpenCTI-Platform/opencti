@@ -61,6 +61,7 @@ const RootDashboard = () => {
         render={({ props }) => {
           if (props) {
             if (props.workspace) {
+              console.log('In Dashboard queryrender');
               return (
                 <Routes>
                   <Route

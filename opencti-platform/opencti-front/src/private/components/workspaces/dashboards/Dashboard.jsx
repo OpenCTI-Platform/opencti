@@ -89,25 +89,30 @@ const DashboardComponent = ({ data, noToolbar }) => {
   // or dimension of widgets.
   const [widgetsLayouts, setWidgetsLayouts] = useState({});
 
+  console.log('Dashboard rerender');
   // Deserialized manifest, refreshed when workspace is updated.
   const manifest = useMemo(() => {
+    console.log('In manifest useMemo', { workspace });
     return workspace.manifest && workspace.manifest.length > 0
       ? deserializeDashboardManifestForFrontend(fromB64(workspace.manifest))
       : { widgets: {}, config: {} };
-  }, [workspace]);
+  }, [workspace.manifest]);
 
   // Array of all widgets, refreshed when workspace is updated.
   const widgetsArray = useMemo(() => {
-    const widgets = Object.values(manifest.widgets).map((widget) => widget);
-    // Sync our local layouts.
+    console.log('In widgetsArray useMemo');
+    return Object.values(manifest.widgets);
+  }, [manifest]);
+
+  useEffect(() => {
+    console.log('In widgetsArray userEffect');
     setWidgetsLayouts(
-      widgets.reduce((res, widget) => {
+      widgetsArray.reduce((res, widget) => {
         res[widget.id] = widget.layout;
         return res;
       }, {}),
     );
-    return widgets;
-  }, [manifest]);
+  }, [widgetsArray]);
 
   /**
    * Merge a manifest with some layouts and transform it in base64.
@@ -139,12 +144,14 @@ const DashboardComponent = ({ data, noToolbar }) => {
 
   const saveManifest = (newManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
     const { layouts, noRefresh } = opts;
+    console.log('In saveManifest');
     const newManifestEncoded = prepareManifest(newManifest, layouts);
     // Sometimes (in case of layout adjustment) we do not want to re-fetch
     // all the manifest because widgets data is still the same, and it's costly
     // in performance.
     const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;
     if (workspace.manifest !== newManifestEncoded) {
+      console.log('Sending manifest');
       commitMutation({
         mutation,
         variables: {
@@ -251,17 +258,18 @@ const DashboardComponent = ({ data, noToolbar }) => {
   };
 
   const onLayoutChange = (layouts) => {
-    if (!deleting) {
-      const newLayouts = layouts.reduce((res, layout) => {
-        res[layout.i] = layout;
-        return res;
-      }, {});
-      setWidgetsLayouts(newLayouts);
-      // Triggering a manifest save with the same manifest.
-      // As this function makes a sync between manifest and local layouts
-      // it will make the update of layouts modification.
-      saveManifest(manifest, { layouts: newLayouts, noRefresh: true });
-    }
+    console.log('In onLayoutChange');
+    if (deleting) return;
+
+    const newLayouts = layouts.reduce((res, layout) => {
+      res[layout.i] = layout;
+      return res;
+    }, {});
+
+    if (R.equals(newLayouts, widgetsLayouts)) return; // ⛔ prevent loop
+
+    setWidgetsLayouts(newLayouts);
+    saveManifest(manifest, { layouts: newLayouts, noRefresh: true });
   };
 
   const paperStyle = {
