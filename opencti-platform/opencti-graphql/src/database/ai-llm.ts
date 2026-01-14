@@ -41,7 +41,7 @@ if (AI_ENABLED && AI_TOKEN) {
         } */
       });
 
-      if (AI_ENDPOINT.includes('https://api.mistral.ai')) {
+      if (isEmptyField(AI_ENDPOINT) || AI_ENDPOINT.includes('https://api.mistral.ai')) {
         // Official MistralAI API
         nlqChat = new ChatMistralAI({
           model: AI_MODEL,
