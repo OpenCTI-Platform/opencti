@@ -1555,7 +1555,7 @@
   "entity_Sighting": "一斑",
   "entity_Software": "ソフトウェア",
   "entity_SSH-Key": "SSHキー",
-  "entity_SSO": "エンティティ_SSO",
+  "entity_SSO": "SSO",
   "entity_SSODefinition": "SSOの定義",
   "entity_StatusTemplate": "ステータステンプレート",
   "entity_Stix-Core-Object": "エンティティと観測可能",

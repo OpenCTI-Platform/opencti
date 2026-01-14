@@ -1555,7 +1555,7 @@
   "entity_Sighting": "Détection",
   "entity_Software": "Logiciel",
   "entity_SSH-Key": "Clé SSH",
-  "entity_SSO": "entité_SSO",
+  "entity_SSO": "SSO",
   "entity_SSODefinition": "Définition du SSO",
   "entity_StatusTemplate": "Modèle de statut",
   "entity_Stix-Core-Object": "Entité et observable",
