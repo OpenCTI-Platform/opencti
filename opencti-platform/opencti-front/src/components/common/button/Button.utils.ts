@@ -91,8 +91,8 @@ export const getGradientColors = (
   switch (gradientVariant) {
     case 'ai':
       return {
-        start: theme.palette?.ai?.dark || '#B286FF',
-        end: theme.palette?.ai?.light || '#D6C2FA',
+        start: theme.palette.mode === 'light' ? theme.palette?.ai?.dark || '#3C108C' : theme.palette?.ai?.light || '#D6C2FA',
+        end: theme.palette?.ai?.main || '#B286FF',
       };
     case 'disabled':
       return {
