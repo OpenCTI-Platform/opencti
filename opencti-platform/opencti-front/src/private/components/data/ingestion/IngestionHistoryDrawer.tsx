@@ -101,7 +101,7 @@ const IngestionHistoryDrawerContent: FunctionComponent<{ ingestionId: string }> 
           {history.length === 0 && (
             <TableRow>
               <TableCell colSpan={4} style={{ textAlign: 'center' }}>
-                {t_i18n('No history data available.')}
+                {t_i18n('No history data available')}
               </TableCell>
             </TableRow>
           )}
