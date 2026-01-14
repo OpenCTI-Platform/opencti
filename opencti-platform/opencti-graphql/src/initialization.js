@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
-import { initializeAdminUser } from './config/providers-initialization';
+import { initializeAdminUser, initializeEnvAuthenticationProviders } from './config/providers-initialization';
 import { storageInit, initializeBucket } from './database/raw-file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
@@ -24,6 +24,9 @@ import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-dom
 import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
 import { initializeStreamStack } from './database/stream/stream-handler';
+import { initAuthenticationProviders } from './modules/singleSignOn/singleSignOn-providers';
+import { isEnterpriseEdition } from './enterprise-edition/ee';
+import { isSingleSignOnInGuiEnabled } from './modules/singleSignOn/singleSignOn';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -90,7 +93,6 @@ const isCompatiblePlatform = async (context) => {
   }
 };
 
-// eslint-disable-next-line
 const platformInit = async (withMarkings = true) => {
   let lock;
   try {
@@ -134,6 +136,15 @@ const platformInit = async (withMarkings = true) => {
       await initDecayRules(context, SYSTEM_USER);
     }
     await initExclusionListCache();
+
+    // Authentication
+    if (await isEnterpriseEdition(context)) {
+      await initializeEnvAuthenticationProviders(context, SYSTEM_USER);
+    }
+
+    if (isSingleSignOnInGuiEnabled || !await isEnterpriseEdition(context)) {
+      await initAuthenticationProviders(context, SYSTEM_USER);
+    }
 
     // parse schema metrics conf to throw error on start if bad configured
     loadEntityMetricsConfiguration();

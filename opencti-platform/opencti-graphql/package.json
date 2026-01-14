@@ -84,6 +84,8 @@
     "@opentelemetry/semantic-conventions": "1.25.1",
     "@pyroscope/nodejs": "0.4.8",
     "@sesamecare-oss/redlock": "1.4.0",
+    "@types/passport": "1.0.17",
+    "@types/passport-local": "1.0.38",
     "ae-cvss-calculator": "1.0.9",
     "ajv": "8.17.1",
     "ajv-formats": "3.0.1",

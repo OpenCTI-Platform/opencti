@@ -80,6 +80,7 @@ enum Capabilities {
   SETTINGS_SETMANAGEXTMHUB
   SETTINGS_SETPARAMETERS
   SETTINGS_SETACCESSES
+  SETTINGS_SETAUTH
   SETTINGS_SETMARKINGS
   SETTINGS_SETDISSEMINATION
   SETTINGS_SETLABELS
@@ -1584,6 +1585,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   metrics_definition: [MetricDefinition!]
   view_all_users: Boolean
   editContext: [EditUserContext!]
+  auth_strategy_migrated: [String!]
   xtm_hub_token: String
   xtm_hub_registration_user_id: String
   xtm_hub_registration_user_name: ID
@@ -9402,6 +9404,8 @@ type Query {
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
+  singleSignOn(id: String!): SingleSignOn
+  singleSignOns(first: Int, after: ID, orderBy: SingleSignOnOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SingleSignOnConnection
 }
 
 type Subscription {
@@ -10333,6 +10337,10 @@ type Mutation {
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   contactUsXtmHub: Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
+  singleSignOnAdd(input: SingleSignOnAddInput!): SingleSignOn
+  singleSignOnFieldPatch(id: ID!, input: [EditInput!]!): SingleSignOn
+  singleSignOnDelete(id: ID!): ID
+  singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult]
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -15262,4 +15270,119 @@ type Metric {
 input PatchMetricInput {
   name: String!
   value: Float!
+}
+
+type SingleSignOn implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  identifier: String!
+  label: String!
+  description: String
+  enabled: Boolean!
+  strategy: StrategyType!
+  organizations_management: OrganizationsManagement
+  groups_management: GroupsManagement
+  configuration: [ConfigurationType!]
+}
+
+type OrganizationsManagement {
+  organizations_path: [String!]
+  organizations_mapping: [String!]!
+  organizations_scope: String
+}
+
+type GroupsManagement {
+  group_attributes: [String!]
+  groups_path: [String!]
+  groups_mapping: [String!]
+  read_userinfo: Boolean
+  token_reference: String
+  groups_scope: String
+}
+
+type ConfigurationType {
+  key: String!
+  value: String!
+  type: String!
+}
+
+enum StrategyType {
+  LocalStrategy
+  ClientCertStrategy
+  HeaderStrategy
+  LdapStrategy
+  OpenIDConnectStrategy
+  SamlStrategy
+}
+
+enum SingleSignOnOrdering {
+  name
+  enabled
+  strategy
+  _score
+}
+
+type SingleSignOnEdge {
+  cursor: String!
+  node: SingleSignOn!
+}
+
+type SingleSignOnConnection {
+  pageInfo: PageInfo!
+  edges: [SingleSignOnEdge!]!
+}
+
+input OrganizationsManagementInput {
+  organizations_path: [String!]
+  organizations_mapping: [String!]
+  organizations_default: [String!]
+}
+
+input GroupsManagementInput {
+  group_attributes: [String!]
+  groups_path: [String!]
+  groups_mapping: [String!]
+  read_userinfo: Boolean
+  token_reference: String
+}
+
+input ConfigurationTypeInput {
+  key: String!
+  value: String!
+  type: String!
+}
+
+input SingleSignOnAddInput {
+  name: String!
+  identifier: String!
+  description: String
+  enabled: Boolean!
+  strategy: StrategyType!
+  organizations_management: OrganizationsManagementInput
+  groups_management: GroupsManagementInput
+  configuration: [ConfigurationTypeInput!]
+  label: String
+}
+
+type SingleSignOnMigrationResult {
+  id: ID!
+  name: String!
+  identifier: String!
+  label: String
+  description: String
+  enabled: Boolean!
+  strategy: StrategyType!
+  organizations_management: OrganizationsManagement
+  groups_management: GroupsManagement
+  configuration: [ConfigurationType!]
+}
+
+input SingleSignMigrationInput {
+  dry_run: Boolean!
 }

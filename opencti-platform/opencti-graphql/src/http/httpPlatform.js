@@ -33,7 +33,7 @@ import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
-import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
+import { EnvStrategyType, isStrategyActivated } from '../config/providers-configuration';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -360,7 +360,7 @@ const createApp = async (app, schema) => {
     try {
       const context = executionContext('cert_strategy');
       const redirect = extractRefererPathFromReq(req) ?? '/';
-      const isActivated = isStrategyActivated(StrategyType.STRATEGY_CERT);
+      const isActivated = isStrategyActivated(EnvStrategyType.STRATEGY_CERT);
       if (!isActivated) {
         setCookieError(res, 'Cert authentication is not available');
         res.redirect(redirect);
