@@ -5,8 +5,6 @@ import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { DrawerControlledDialProps } from '../private/components/common/drawer/Drawer';
 import { useFormatter } from './i18n';
-import useDraftContext from '../utils/hooks/useDraftContext';
-import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 
 interface CreateSplitControlledDialProps extends DrawerControlledDialProps {
   entityType: string;
@@ -30,10 +28,6 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-
-  const draftContext = useDraftContext();
-  const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
-  const canDisplayButton = !draftContext || currentAccessRight.canEdit;
 
   const valueString = entityType ? t_i18n(`entity_${entityType}`) : t_i18n('Entity');
   const defaultButtonValue = t_i18n('', {
@@ -71,8 +65,6 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
     setOpen(false);
   };
 
-  if (!canDisplayButton) return null;
-
   const mainButtonLabel
     = selectedIndex !== null && options[selectedIndex]
       ? options[selectedIndex]
@@ -92,7 +84,6 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
           onClick={handleClickMain}
           title={mainButtonLabel}
           data-testid={`create-${entityType.toLowerCase()}-button`}
-          disabled={mainButtonLabel === defaultButtonValue}
         >
           {mainButtonLabel}
         </Button>
