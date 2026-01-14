@@ -67,7 +67,7 @@ const SSODefinitionEdition = ({
 
   const onEdit = (field: SSOEditionFormInputKeys, value: unknown) => {
     const configurationKeyList = ['privateKey', 'providerMethod', 'issuer', 'callbackUrl', 'signingCert', 'idpCert', 'ssoBindingType', 'entryPoint'];
-    const groupManagementKeyList = ['groups_attributes', 'groups_mapping'];
+    const groupManagementKeyList = ['group_attributes', 'groups_mapping'];
     const organizationsManagementKeyList = ['organizations_path', 'organizations_mapping'];
 
     const input: { key: string; value: unknown[] } = { key: field, value: [value] };

@@ -93,7 +93,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
       read_userinfo: values.read_userinfo,
     };
     const organizations_management = {
-      groups_attributes: values.groups_attributes || null,
+      organizations_path: values.organizations_path || null,
       organizations_mapping: values.organizations_mapping.filter(
         (v) => v && v.trim() !== '',
       ),
