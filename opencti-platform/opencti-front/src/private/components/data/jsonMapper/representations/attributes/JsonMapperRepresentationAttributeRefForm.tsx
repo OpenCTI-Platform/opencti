@@ -263,10 +263,8 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
             const identifierObj = identifiers.find((i) => i.representation === rep.id);
             const identifierValue = identifierObj?.identifier ?? '';
             return (
-              <>
-                <div>
-                  Identifier ({representationLabel(entity_representations.indexOf(rep), rep, t_i18n)})
-                </div>
+              <React.Fragment key={rep.id}>
+                <div>Identifier ({representationLabel(entity_representations.indexOf(rep), rep, t_i18n)})</div>
                 <div>
                   <MuiTextField
                     label={t_i18n('JSON Path')}
@@ -277,7 +275,7 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
                   />
                 </div>
                 <div />
-              </>
+              </React.Fragment>
             );
           });
         })()}

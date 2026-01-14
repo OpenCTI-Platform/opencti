@@ -56,7 +56,7 @@ export const complex_identifier_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: [
               { identifier: '$.source', representation: 'rep_domain_1' },
-            ] as any,
+            ],
             representations: ['rep_domain_1'],
           },
         },

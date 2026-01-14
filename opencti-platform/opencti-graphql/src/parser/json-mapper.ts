@@ -267,20 +267,23 @@ const handleBasedOnAttribute = async (
   if (attribute.based_on && attribute.based_on.representations) {
     const entities = [];
     const ident = attribute.based_on.identifier;
-    const isRetroCompatibilityIdentifier = typeof ident === 'string';
+    const isRetroCompatibilityIdentifier = typeof ident === 'string' && isNotEmptyField(ident);
     for (let index = 0; index < attribute.based_on.representations.length; index += 1) {
       const representation = attribute.based_on.representations[index];
+      let emptyMatching = true;
       let mappedIdentifiers: string[] = [];
       if (isRetroCompatibilityIdentifier) {
+        emptyMatching = false;
         mappedIdentifiers = extractTargetIdentifierFromJson(base, record, ident, definition);
       } else {
         const identifiers = (attribute.based_on.identifier ?? []) as AttributeBasedOnIdentifierComplex[];
         const targetIdentifier = identifiers.find((ident) => ident.representation === representation);
         if (targetIdentifier?.identifier) {
+          emptyMatching = false;
           mappedIdentifiers = extractTargetIdentifierFromJson(base, record, targetIdentifier.identifier, definition);
         }
       }
-      if (mappedIdentifiers.length > 0) {
+      if (!emptyMatching) {
         entities.push(...(otherEntities.get(representation) ?? []).flat()
           .filter((e) => e !== undefined
             && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[]);
@@ -289,23 +292,6 @@ const handleBasedOnAttribute = async (
           .filter((e) => e !== undefined) as Record<string, InputType>[]);
       }
     }
-
-    // let entities;
-    // if (attribute.based_on.identifier) {
-    //   let mappedIdentifiers;
-    //   if (Array.isArray(attribute.based_on.identifier)) {
-    //     mappedIdentifiers = attribute.based_on.identifier.flatMap((identifier) => extractTargetIdentifierFromJson(base, record, identifier, definition));
-    //   } else {
-    //     mappedIdentifiers = extractTargetIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
-    //   }
-    //   entities = attribute.based_on.representations
-    //     .map((id) => otherEntities.get(id)).flat()
-    //     .filter((e) => e !== undefined && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[];
-    // } else {
-    //   entities = attribute.based_on.representations
-    //     .map((id) => otherEntities.get(id)).flat()
-    //     .filter((e) => e !== undefined) as Record<string, InputType>[];
-    // }
 
     if (entities.length > 0) {
       const entity_type = input[entityType.name] as string;
@@ -400,7 +386,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
   };
 
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
-  const baseArray = [baseJson];
+  const baseArray = [baseJson]; // Wrapping in array for base JSON to have JsonPath base array compatibility
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
     // region variables

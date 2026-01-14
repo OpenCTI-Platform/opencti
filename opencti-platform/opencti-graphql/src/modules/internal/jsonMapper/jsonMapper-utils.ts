@@ -52,7 +52,7 @@ export const parseJsonMapper = (mapper: any): JsonMapperParsed => {
   if (representations) {
     representations.forEach((rep) => {
       rep.attributes.forEach((attr) => {
-        if (attr.mode == 'base' && !Array.isArray(attr.based_on.identifier)) {
+        if (attr.mode === 'base' && !Array.isArray(attr.based_on.identifier)) {
           attr.based_on.identifier = (attr.based_on.representations ?? []).map((r) => {
             return { identifier: attr.based_on.identifier, representation: r } as AttributeBasedOnIdentifierComplex;
           });
