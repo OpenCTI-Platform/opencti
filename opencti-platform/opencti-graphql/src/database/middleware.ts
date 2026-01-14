@@ -2475,12 +2475,17 @@ export const buildChanges = async (
   return changes;
 };
 
-const resolveRefsForInputs = async (context, user, type, updateInputs) => {
+const resolveRefsForInputs = async (
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
+  updateInputs: EditInput[],
+) => {
   // endregion
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(type), ...schemaRelationsRefDefinition.getInputNames(type)];
   const meta = updateInputs.filter((e) => metaKeys.includes(e.key));
   const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
-  const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
+  const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true }) as Record<string, BasicStoreBase>;
   const revolvedInputs = updateInputs.map((input) => {
     if (metaKeys.includes(input.key)) {
       const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
@@ -2491,7 +2496,6 @@ const resolveRefsForInputs = async (context, user, type, updateInputs) => {
   return revolvedInputs;
 };
 
-export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
 type UpdateAttributeMetaResolvedOpts = {
   locks?: string[];
   impactStandardId?: boolean;
@@ -2917,7 +2921,7 @@ export const updateAttributeFromLoadedWithRefs = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
   initial: T | undefined | null,
-  inputs: EditInput[],
+  inputs: EditInput | EditInput[],
   opts: UpdateAttributeMetaResolvedOpts = {},
 ) => {
   if (!initial) {
@@ -2931,11 +2935,10 @@ export const updateAttributeFromLoadedWithRefs = async <T extends StoreObject>(
   if (checkConfidence && !opts.bypassIndividualUpdate) {
     controlUserConfidenceAgainstElement(user, initial);
   }
-  const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
-  // endregion
-    const revolvedInputs = await resolveRefsForInputs(context, user, initial.entity_type, newInputs);
+  const newInputs = adaptUpdateInputsConfidence(user, inputs, initial) as EditInput[];
+  const revolvedInputs = await resolveRefsForInputs(context, user, initial.entity_type, newInputs);
 
-    return updateAttributeMetaResolved<T>(context, user, initial, revolvedInputs as EditInput[], opts);
+  return updateAttributeMetaResolved<T>(context, user, initial, revolvedInputs as EditInput[], opts);
 };
 
 const generateEnrichmentLoaders = (context: AuthContext, user: AuthUser, element: BasicStoreBase) => {
