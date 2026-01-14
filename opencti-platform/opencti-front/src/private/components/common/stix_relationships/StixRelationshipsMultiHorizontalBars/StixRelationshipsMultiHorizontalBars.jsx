@@ -4,7 +4,7 @@ import WidgetContainer from '../../../../../components/dashboard/WidgetContainer
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
 import Loader from '../../../../../components/Loader';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { graphql, usePreloadedQuery } from 'react-relay';
 import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
 import { Suspense } from 'react';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
@@ -355,7 +355,7 @@ const StixRelationshipsMultiHorizontalBarsComponent = ({
   finalSubDistributionField,
   finalField,
 }) => {
-  const { stixRelationshipsDistribution } = useLazyLoadQuery(queryToCall, queryRef);
+  const { stixRelationshipsDistribution } = usePreloadedQuery(queryToCall, queryRef);
   if (!stixRelationshipsDistribution || stixRelationshipsDistribution.length === 0) {
     return <WidgetNoData />;
   }
